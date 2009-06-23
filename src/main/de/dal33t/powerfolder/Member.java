@@ -298,6 +298,17 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
+     * @return true if this client is a pre 4.0 client.
+     */
+    public boolean isPre4Client() {
+        Identity id = getIdentity();
+        if (id != null) {
+            return Util.compareVersions("4.0.0", id.getProgramVersion());
+        }
+        return false;
+    }
+
+    /**
      * Answers if this node is interesting for us, that is defined as friends
      * users on LAN and has joined one of our folders. Or if its a supernode of
      * we are a supernode and there are still open connections slots.
@@ -837,7 +848,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             waitForScan(folder);
             // Send filelist of joined folders
-            sendMessagesAsynchron(FileList.createFileListMessages(folder));
+            sendMessagesAsynchron(FileList.createFileListMessages(folder,
+                !isPre4Client()));
         }
 
         boolean ok = waitForFileLists(joinedFolders);
@@ -1232,8 +1244,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFiner(targetFolder + ": Sending new filelist to "
                             + this);
                     }
-                    sendMessagesAsynchron(FileList
-                        .createFileListMessages(targetFolder));
+                    sendMessagesAsynchron(FileList.createFileListMessages(
+                        targetFolder, !isPre4Client()));
                 } else {
                     // Send folder not found if not found or folder is secret
                     sendMessageAsynchron(new Problem("Folder not found: "

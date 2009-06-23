@@ -2092,7 +2092,8 @@ public class Folder extends PFComponent {
         // send him our list of files if completely connected. otherwise this
         // gets sent by Member.completeHandshake();
         if (!wasMember && member.isCompleteyConnected()) {
-            member.sendMessagesAsynchron(FileList.createFileListMessages(this));
+            member.sendMessagesAsynchron(FileList.createFileListMessages(this,
+                !member.isPre4Client()));
         }
         return !wasMember;
     }

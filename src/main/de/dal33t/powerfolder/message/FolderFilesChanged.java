@@ -1,37 +1,34 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.message;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
-
 
 /**
  * A message which contains only the deltas of the folders list
@@ -42,7 +39,8 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FolderFilesChanged extends FolderRelatedMessage {
 
-    private static final Logger log = Logger.getLogger(FolderFilesChanged.class.getName());
+    private static final Logger log = Logger.getLogger(FolderFilesChanged.class
+        .getName());
     private static final long serialVersionUID = 100L;
 
     /** A list of files added to the folder */
@@ -87,40 +85,16 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      * @param foInfo
      *            the folder for the message
      * @param files
-     *            the new fileinfos to include.
-     * @param blacklist
-     *            the blacklist to apply
+     *            the new fileinfos/dirinfos to include.
+     * @param fileInfoFilter
+     *            the filter to apply
      * @param added
-     *            true if the the files are put into the "added" field,
-     *            otherwise into "removed"
-     * @return the splitted list or NULL if nothing to send.
+     *            if set added instead of removed
+     * @return the messages
      */
     public static FolderFilesChanged[] createFolderFilesChangedMessages(
         FolderInfo foInfo, Collection<FileInfo> files,
         DiskItemFilter fileInfoFilter, boolean added)
-    {
-        return createFolderFilesChangedMessages(foInfo, files,
-            Collections.EMPTY_LIST, fileInfoFilter, added);
-    }
-
-    /**
-     * Splits the filelist into small delta message. Splits into multiple
-     * <code>FolderFilesChanged</code> messages
-     * 
-     * @param foInfo
-     *            the folder for the message
-     * @param files
-     *            the new fileinfos to include.
-     * @param blacklist
-     *            the blacklist to apply
-     * @param added
-     *            true if the the files are put into the "added" field,
-     *            otherwise into "removed"
-     * @return the splitted list or NULL if nothing to send.
-     */
-    public static FolderFilesChanged[] createFolderFilesChangedMessages(
-        FolderInfo foInfo, Collection<FileInfo> files, Collection<DirectoryInfo> dirs, DiskItemFilter fileInfoFilter,
-        boolean added)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -175,8 +149,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         }
 
         log.finer("Splitted folder files delta into " + messages.size()
-            + " messages, folder: " + foInfo + "\nSplitted msgs: "
-            + messages);
+            + " messages, folder: " + foInfo + "\nSplitted msgs: " + messages);
 
         return messages.toArray(new FolderFilesChanged[messages.size()]);
     }

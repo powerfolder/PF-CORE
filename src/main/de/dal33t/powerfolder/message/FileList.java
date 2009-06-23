@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.Constants;
@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-
 /**
  * Files of a folder.
  * <p>
@@ -45,7 +44,8 @@ import java.util.logging.Logger;
  */
 public class FileList extends FolderRelatedMessage {
 
-    private static final Logger log = Logger.getLogger(FileList.class.getName());
+    private static final Logger log = Logger
+        .getLogger(FileList.class.getName());
 
     private static final long serialVersionUID = 100L;
 
@@ -74,12 +74,22 @@ public class FileList extends FolderRelatedMessage {
      * ones if required.
      * 
      * @param folder
+     * @param includeDirs
+     *            if directoryInfos should be included in the message(s)
      * @return the splitted filelist messages.
      */
-    public static Message[] createFileListMessages(Folder folder) {
+    public static Message[] createFileListMessages(Folder folder,
+        boolean includeDirs)
+    {
         // Create filelist with blacklist
+        Collection<DirectoryInfo> dirInfos;
+        if (includeDirs) {
+            dirInfos = folder.getKnownDirectories();
+        } else {
+            dirInfos = Collections.emptyList();
+        }
         return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
-            folder.getDiskItemFilter());
+            dirInfos, folder.getDiskItemFilter());
     }
 
     /**
@@ -91,14 +101,15 @@ public class FileList extends FolderRelatedMessage {
      *            the folder for the message
      * @param files
      *            the fileinfos to include.
-     * @param blacklist
-     *            the blacklist to apply
+     * @param diskItemFilter
+     *            the item filter to appy
      * @return the splitted list
      */
-    public static Message[] createFileListMessages(FolderInfo foInfo,
+    public static Message[] createFileListMessagesForTest(FolderInfo foInfo,
         Collection<FileInfo> files, DiskItemFilter diskItemFilter)
     {
-        return createFileListMessages(foInfo, files, Collections.EMPTY_LIST, diskItemFilter);
+        Collection<DirectoryInfo> dirInfos = Collections.emptyList();
+        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter);
     }
 
     /**
@@ -114,7 +125,7 @@ public class FileList extends FolderRelatedMessage {
      *            the blacklist to apply
      * @return the splitted list
      */
-    public static Message[] createFileListMessages(FolderInfo foInfo,
+    private static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, Collection<DirectoryInfo> dirs,
         DiskItemFilter diskItemFilter)
     {
@@ -171,7 +182,6 @@ public class FileList extends FolderRelatedMessage {
             }
         }
 
-
         if (firstMessage && curMsgIndex == 0) {
             // Only ignored files
             return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
@@ -192,9 +202,8 @@ public class FileList extends FolderRelatedMessage {
         // Set the actual number of deltas
         ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
 
-        log.finer("Splitted filelist into " + messages.size()
-            + ", deltas: " + nDeltas + ", folder: " + foInfo
-            + "\nSplitted msgs: " + messages);
+        log.finer("Splitted filelist into " + messages.size() + ", deltas: "
+            + nDeltas + ", folder: " + foInfo + "\nSplitted msgs: " + messages);
 
         return messages.toArray(new Message[messages.size()]);
     }
