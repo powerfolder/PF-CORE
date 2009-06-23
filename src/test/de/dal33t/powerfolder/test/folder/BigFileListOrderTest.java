@@ -79,7 +79,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
             files[i] = createRandomFileInfo(foInfo);
         }
         // Now split
-        final Message[] msgs = FileList.createFileListMessages(foInfo, Arrays
+        final Message[] msgs = FileList.createFileListMessagesForTest(foInfo, Arrays
             .asList(files), new DiskItemFilter(false));
 
         for (int i = 0; i < msgs.length; i++) {

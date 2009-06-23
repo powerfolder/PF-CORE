@@ -69,7 +69,7 @@ public class FileListTest extends TestCase {
         }
 
         // Now split. Empty blacklist
-        Message[] msgs = FileList.createFileListMessages(
+        Message[] msgs = FileList.createFileListMessagesForTest(
             createRandomFolderInfo(), files, new DiskItemFilter(false));
 
         // Test
