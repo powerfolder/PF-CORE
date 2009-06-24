@@ -655,7 +655,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
-            return Util.equals(this.fileName, otherInfo.fileName)
+            return otherInfo.isFile()
+                && Util.equals(this.fileName, otherInfo.fileName)
                 && Util.equals(this.folderInfo, otherInfo.folderInfo);
         }
 
