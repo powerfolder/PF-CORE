@@ -21,6 +21,11 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.Folder;
@@ -61,45 +66,117 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         super.tearDown();
     }
 
-    public void testSyncDeepStrucutre() {
-        int maxDepth = 4;
-        int dirsPerDir = 7;
+    public void testSyncMixedStrucutre() throws IOException {
+        int maxDepth = 2;
+        int dirsPerDir = 10;
+        final List<File> createdFiles = new ArrayList<File>();
         int createdDirs = createSubDirs(getFolderAtBart().getLocalBase(),
-            dirsPerDir, 1, maxDepth);
+            dirsPerDir, 1, maxDepth, new DirVisitor() {
+                public void created(File dir) {
+                    createdFiles.add(TestHelper.createRandomFile(dir));
+                }
+            });
 
-        assertTrue(createdDirs > 100);
+        // assertTrue("Created dirs: " + createdDirs, createdDirs > 100);
+        // assertTrue(createdFiles.size() > 100);
         scanFolder(getFolderAtBart());
-        assertDirs(getFolderAtBart(), createdDirs);
-        assertDirs(getFolderAtHomer(), createdDirs);
-        assertDirs(getFolderAtMarge(), createdDirs);
-        assertDirs(getFolderAtLisa(), createdDirs);
-        assertDirs(getFolderAtMaggie(), createdDirs);
-    }
+        assertFilesAndDirs(getFolderAtBart(), createdDirs, createdFiles.size());
+        assertFilesAndDirs(getFolderAtHomer(), createdDirs, createdFiles.size());
+        assertFilesAndDirs(getFolderAtMarge(), createdDirs, createdFiles.size());
+        assertFilesAndDirs(getFolderAtLisa(), createdDirs, createdFiles.size());
+        assertFilesAndDirs(getFolderAtMaggie(), createdDirs, createdFiles
+            .size());
 
-    private void assertDirs(final Folder folder, final int expectedDirs) {
-        TestHelper.waitForCondition(160, new ConditionWithMessage() {
+        // Now delete
+        FileUtils.recursiveDelete(getFolderAtHomer().getLocalBase());
+        getFolderAtHomer().getSystemSubDir().mkdirs();
+        scanFolder(getFolderAtHomer());
+        assertFilesAndDirs(getFolderAtHomer(), createdDirs,
+            createdFiles.size(), 0);
+        Collection<DirectoryInfo> dirs = getFolderAtHomer()
+            .getKnownDirectories();
+        for (DirectoryInfo directoryInfo : dirs) {
+            assertTrue("Dir not detected as deleted: "
+                + directoryInfo.toDetailString(), directoryInfo.isDeleted());
+            assertEquals(1, directoryInfo.getVersion());
+        }
+
+        TestHelper.waitMilliSeconds(5000);
+        dirs = getFolderAtBart().getKnownDirectories();
+        int actualDirs = countSubDirs(getFolderAtBart().getLocalBase());
+        assertEquals(0, actualDirs);
+        for (DirectoryInfo directoryInfo : dirs) {
+            assertTrue("Dir not detected as deleted: "
+                + directoryInfo.toDetailString(), directoryInfo.isDeleted());
+            File diskFile = directoryInfo.getDiskFile(getContollerBart()
+                .getFolderRepository());
+            assertFalse(diskFile + " info " + directoryInfo.toDetailString(),
+                diskFile.exists());
+            assertEquals(1, directoryInfo.getVersion());
+        }
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
-                return folder + " known: " + folder.getKnownFilesCount()
-                    + " expected: " + expectedDirs;
+                return "Files at bart: "
+                    + Arrays.asList(getFolderAtBart().getLocalBase().list());
             }
 
             public boolean reached() {
-                return folder.getKnownFilesCount() == expectedDirs;
+                return getFolderAtBart().getLocalBase().list().length <= 1;
+            }
+        });
+    }
+
+    public void testSyncDeepStrucutre() {
+        int maxDepth = 9;
+        int dirsPerDir = 2;
+        int createdDirs = createSubDirs(getFolderAtBart().getLocalBase(),
+            dirsPerDir, 1, maxDepth, null);
+
+        assertTrue(createdDirs > 100);
+        scanFolder(getFolderAtBart());
+        assertFilesAndDirs(getFolderAtBart(), createdDirs, 0);
+        assertFilesAndDirs(getFolderAtHomer(), createdDirs, 0);
+        assertFilesAndDirs(getFolderAtMarge(), createdDirs, 0);
+        assertFilesAndDirs(getFolderAtLisa(), createdDirs, 0);
+        assertFilesAndDirs(getFolderAtMaggie(), createdDirs, 0);
+    }
+
+    private void assertFilesAndDirs(final Folder folder,
+        final int expectedDirs, final int expectedFiles)
+    {
+        assertFilesAndDirs(folder, expectedDirs, expectedFiles, expectedDirs);
+    }
+
+    private void assertFilesAndDirs(final Folder folder,
+        final int expectedDirs, final int expectedFiles,
+        int expectedActualSubdirs)
+    {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
+            public String message() {
+                return folder + " known: " + folder.getKnownFilesCount()
+                    + " expected dirs: " + expectedDirs + " expected file: "
+                    + expectedFiles;
+            }
+
+            public boolean reached() {
+                return folder.getKnownFilesCount() == expectedDirs
+                    + expectedFiles;
             }
         });
         int subdirs = countSubDirs(folder.getLocalBase());
-        // Minus system subdir.
-        assertEquals(subdirs - 1, expectedDirs);
-        assertEquals(expectedDirs, folder.getKnownFilesCount());
+        assertEquals(expectedActualSubdirs, subdirs);
+        assertEquals(expectedDirs + expectedFiles, folder.getKnownFilesCount());
         assertEquals(expectedDirs, folder.getKnownDirectories().size());
-        assertEquals(0, folder.getKnownFiles().size());
+        assertEquals(expectedFiles, folder.getKnownFiles().size());
     }
 
     private static int countSubDirs(File baseDir) {
 
         File[] subdirs = baseDir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
-                return pathname.isDirectory();
+                return pathname.isDirectory()
+                    && !pathname.getName().startsWith(".Power");
             }
         });
         int i = subdirs.length;
@@ -111,18 +188,26 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     }
 
     private static int createSubDirs(File baseDir, int nsubdirs, int depth,
-        int maxdepth)
+        int maxdepth, DirVisitor visitor)
     {
         int created = 0;
         for (int i = 0; i < nsubdirs; i++) {
-            File dir = FileUtils.createEmptyDirectory(baseDir, IdGenerator
-                .makeId());
+            File dir = FileUtils.createEmptyDirectory(baseDir, depth + "-"
+                + IdGenerator.makeId().substring(1, 5));
+            if (visitor != null) {
+                visitor.created(dir);
+            }
             created++;
             if (depth < maxdepth) {
-                created += createSubDirs(dir, nsubdirs, depth + 1, maxdepth);
+                created += createSubDirs(dir, nsubdirs, depth + 1, maxdepth,
+                    visitor);
             }
         }
         return created;
+    }
+
+    private interface DirVisitor {
+        void created(File dir);
     }
 
     public void testSyncSingleDir() {

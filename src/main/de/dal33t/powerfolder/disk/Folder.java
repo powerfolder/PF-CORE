@@ -91,6 +91,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -1116,15 +1117,6 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        // remove placeholder file if exist for this file
-        // Commented, no useful until full implementation of placeholder
-        // file
-        /*
-         * if (file.exists()) { File placeHolderFile =
-         * Util.getPlaceHolderFile(file); if (placeHolderFile.exists()) {
-         * logFiner("Removing placeholder file for: " + file);
-         * placeHolderFile.delete(); } }
-         */
         if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
             checkFileName(fInfo);
         }
@@ -1333,73 +1325,7 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
-        if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController()))
-        {
-            return;
-        }
-        String totalName = localBase.getName() + fileInfo.getName();
-
-        if (totalName.length() >= 255) {
-            logWarning("path maybe to long: " + fileInfo);
-            // path may become to long
-            if (UIUtil.isAWTAvailable() && !getController().isConsoleMode()) {
-                String title = Translation
-                    .getTranslation("folder.check_path_length.title");
-                String message = Translation.getTranslation(
-                    "folder.check_path_length.text", getName(), fileInfo
-                        .getName());
-                String neverShowAgainText = Translation
-                    .getTranslation("general.neverAskAgain");
-                NeverAskAgainResponse response = DialogFactory.genericDialog(
-                    getController(), title, message, new String[]{Translation
-                        .getTranslation("general.ok")}, 0,
-                    GenericDialogType.INFO, neverShowAgainText);
-                if (response.isNeverAskAgain()) {
-                    PreferencesEntry.FILE_NAME_CHECK.setValue(getController(),
-                        false);
-                    logWarning("store do not show this dialog again");
-                }
-            } else {
-                logWarning("Path maybe to long for folder: " + getName()
-                    + " File:" + fileInfo.getName());
-            }
-        }
-        // check length of path elements and filename
-        // TODO: The check if 30 chars or more currently disabled
-        // Should only check if on mac system
-        // Jan: No longer needed since there is no java 1.5 for mac classic!
-
-        // String[] parts = totalName.split("\\/");
-        // for (String pathPart : parts) {
-        // if (pathPart.length() > 30) {
-        // logWarning("filename or dir maybe to long: " + fileInfo);
-        // // (sub)directory name or filename to long
-        // if (Util.isAWTAvailable() && !getController().isConsoleMode()) {
-        // String title = Translation
-        // .getTranslation("folder.check_subdirectory_and_filename_length.title");
-        // String message = Translation.getTranslation(
-        // "folder.check_subdirectory_and_filename_length.text",
-        // getName(), fileInfo.getName());
-        // String neverShowAgainText = Translation
-        // .getTranslation("folder.check_subdirectory_and_filename_length.never_show_again");
-        // boolean showAgain = DialogFactory
-        // .showNeverAskAgainMessageDialog(getController()
-        // .getUIController().getMainFrame().getUIComponent(),
-        // title, message, neverShowAgainText);
-        // if (!showAgain) {
-        // getController().getPreferences().putBoolean(
-        // PREF_FILE_NAME_CHECK, false);
-        // logWarning("store do not show this dialog again");
-        // }
-        // } else {
-        // logWarning(
-        // "Filename or subdirectory name maybe to long for folder: "
-        // + getName() + " File:" + fileInfo.getName());
-        //
-        // }
-        // }
-        // }
-
+        // TODO TRAC #1578 Check for filename problems
     }
 
     /**
@@ -2163,7 +2089,7 @@ public class Folder extends PFComponent {
     /**
      * Triggers the deletion sync in background.
      * <p>
-     * TODO Optimize: Sync only with selected member.
+     * TODO Optimize: Sync only with selected member and files
      * 
      * @param force
      */
@@ -2218,12 +2144,16 @@ public class Folder extends PFComponent {
                             + member.getNick() + "' has " + dirList.size()
                             + " possible files");
                     }
-                    for (FileInfo remoteDir : dirList) {
+                    ArrayList<FileInfo> list = new ArrayList<FileInfo>(dirList);
+                    Collections.sort(list, new ReverseComparator(
+                        DiskItemComparator
+                            .getComparator(DiskItemComparator.BY_FULL_NAME)));
+                    //logWarning("" + list.size());
+                    for (FileInfo remoteDir : list) {
                         handleFileDeletion(remoteDir, force, member,
                             removedFiles);
                     }
                 }
-
             }
         }
 
@@ -2295,31 +2225,35 @@ public class Folder extends PFComponent {
         }
 
         // Abort transfers on file.
-        getController().getTransferManager().breakTransfers(
-            localFile);
+        if (localFile.isFile()) {
+            getController().getTransferManager().breakTransfers(localFile);
+        }
 
-        if (localFile.isDiretory() && localCopy.isDirectory()) {
-            logWarning("---DELETING directory from remote: "
-                + localFile.toDetailString());
-            if (localCopy.list().length == 0) {
-                localCopy.delete();
-            }
-        } else if (localCopy.exists()) {
-            if (!deleteFile(localFile, localCopy)) {
-                logWarning("Unable to deleted. was not able to move old file to recycle bin "
-                    + localCopy.getAbsolutePath()
-                    + ". "
+        if (localCopy.exists()) {
+            if (localFile.isDiretory()) {
+                if (isFine()) {
+                    logFine("Deleting directory from remote: "
+                        + localFile.toDetailString());
+                }
+                if (!localCopy.delete()) {
+                    logWarning("Unable to delete directory locally: "
+                        + localCopy + ". Info: " + localFile.toDetailString()
+                        + ". contents: " + Arrays.asList(localCopy.list()));
+                }
+            } else if (localFile.isFile()) {
+                if (!deleteFile(localFile, localCopy)) {
+                    logWarning("Unable to deleted. was not able to move old file to recycle bin "
+                        + localCopy.getAbsolutePath()
+                        + ". "
+                        + localFile.toDetailString());
+                    return;
+                }
+            } else {
+                logSevere("Unable to apply remote deletion: "
                     + localFile.toDetailString());
-                return;
             }
         }
-        // FIXME: Size might not be correct
-        /*
-         * localFile.setDeleted(true);
-         * localFile.setModifiedInfo(remoteFile.getModifiedBy(),
-         * remoteFile.getModifiedDate());
-         * localFile.setVersion(remoteFile.getVersion());
-         */
+       
 
         // File has been removed
         // Changed localFile -> remoteFile

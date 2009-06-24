@@ -116,7 +116,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
-            if (fileInfo instanceof DirectoryInfo && !includeDirs) {
+            if (fileInfo.isDiretory() && !includeDirs) {
                 // No
                 continue;
             }

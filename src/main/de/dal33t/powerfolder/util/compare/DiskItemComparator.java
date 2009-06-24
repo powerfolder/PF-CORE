@@ -163,17 +163,13 @@ public class DiskItemComparator extends Loggable implements
     {
 
         // Sort directories before files.
-        if ((o1 instanceof Directory || o1 instanceof DirectoryInfo)
-            && o2 instanceof FileInfo)
-        {
+        if (o1.isDiretory() && o2.isFile()) {
             return -1;
-        } else if (o1 instanceof FileInfo
-            && (o2 instanceof Directory || o2 instanceof DirectoryInfo))
-        {
+        } else if (o1.isFile() && o2.isDiretory()) {
             return 1;
         }
         if (fullName) {
-            return o1.getName().compareToIgnoreCase(o2.getFilenameOnly());
+            return o1.getName().compareToIgnoreCase(o2.getName());
         } else {
             return o1.getFilenameOnly().compareToIgnoreCase(
                 o2.getFilenameOnly());
