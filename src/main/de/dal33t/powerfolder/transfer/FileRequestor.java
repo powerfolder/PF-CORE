@@ -291,7 +291,10 @@ public class FileRequestor extends PFComponent {
     }
 
     private void createDirectory(DirectoryInfo dirInfo) {
-        logWarning("Creating direcory: " + dirInfo.toDetailString());
+        if (isFiner()) {
+            logFine("Creating/Taking over direcory: "
+                + dirInfo.toDetailString());
+        }
         File dirFile = dirInfo.getDiskFile(getController()
             .getFolderRepository());
         Folder folder = dirInfo
@@ -301,7 +304,6 @@ public class FileRequestor extends PFComponent {
                 + dirInfo.toDetailString());
             return;
         }
-        // TODO Don't create new if already existing.
         dirFile.mkdirs();
         folder.scanDirectory(dirInfo);
     }
