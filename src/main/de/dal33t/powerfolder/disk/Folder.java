@@ -1211,9 +1211,9 @@ public class Folder extends PFComponent {
     public FileInfo scanDirectory(DirectoryInfo dirInfo) {
         Reject.ifNull(dirInfo, "DirInfo is null");
         if (isFiner()) {
-            logFiner("Scanning dir: " + dirInfo);
+            logFiner("Scanning dir: " + dirInfo.toDetailString());
         }
-        
+
         if (!dirInfo.getFolderInfo().equals(currentInfo)) {
             logSevere("Unable to scan of directory. not on folder: " + dirInfo.toDetailString());
             return null;

@@ -66,6 +66,28 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         super.tearDown();
     }
 
+    public void testInitialSync() {
+        File dirBart = new File(getFolderAtBart().getLocalBase(), "testDir");
+        assertTrue(dirBart.mkdir());
+        TestHelper.waitMilliSeconds(3000);
+        final File dirLisa = new File(getFolderAtLisa().getLocalBase(), dirBart
+            .getName());
+        assertTrue(dirLisa.mkdir());
+
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
+
+        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+        DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirBart, infoBart, getContollerBart());
+
+        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+        DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirLisa, infoLisa, getContollerLisa());
+    }
+
     public void testSyncMixedStrucutre() throws IOException {
         int maxDepth = 2;
         int dirsPerDir = 10;
@@ -77,8 +99,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
                 }
             });
 
-        // assertTrue("Created dirs: " + createdDirs, createdDirs > 100);
-        // assertTrue(createdFiles.size() > 100);
+        assertTrue("Created dirs: " + createdDirs, createdDirs > 10);
+        assertTrue(createdFiles.size() > 10);
         scanFolder(getFolderAtBart());
         assertFilesAndDirs(getFolderAtBart(), createdDirs, createdFiles.size());
         assertFilesAndDirs(getFolderAtHomer(), createdDirs, createdFiles.size());
@@ -88,8 +110,11 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             .size());
 
         // Now delete
-        FileUtils.recursiveDelete(getFolderAtHomer().getLocalBase());
-        getFolderAtHomer().getSystemSubDir().mkdirs();
+        for (File file : getFolderAtHomer().getLocalBase().listFiles()) {
+            if (file.isDirectory()) {
+                FileUtils.recursiveDelete(file);
+            }
+        }
         scanFolder(getFolderAtHomer());
         assertFilesAndDirs(getFolderAtHomer(), createdDirs,
             createdFiles.size(), 0);
@@ -101,10 +126,11 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             assertEquals(1, directoryInfo.getVersion());
         }
 
-        TestHelper.waitMilliSeconds(5000);
+        // Wait for delete
+        waitForEmptyFolder(getFolderAtBart());
+        assertFilesAndDirs(getFolderAtBart(), createdDirs, createdFiles.size(),
+            0);
         dirs = getFolderAtBart().getKnownDirectories();
-        int actualDirs = countSubDirs(getFolderAtBart().getLocalBase());
-        assertEquals(0, actualDirs);
         for (DirectoryInfo directoryInfo : dirs) {
             assertTrue("Dir not detected as deleted: "
                 + directoryInfo.toDetailString(), directoryInfo.isDeleted());
@@ -115,14 +141,31 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             assertEquals(1, directoryInfo.getVersion());
         }
 
+        // Check others.
+        waitForEmptyFolder(getFolderAtMarge());
+        assertFilesAndDirs(getFolderAtMarge(), createdDirs,
+            createdFiles.size(), 0);
+        waitForEmptyFolder(getFolderAtLisa());
+        assertFilesAndDirs(getFolderAtLisa(), createdDirs, createdFiles.size(),
+            0);
+        waitForEmptyFolder(getFolderAtMaggie());
+        assertFilesAndDirs(getFolderAtMaggie(), createdDirs, createdFiles
+            .size(), 0);
+    }
+
+    private void waitForEmptyFolder(final Folder folder) {
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
-                return "Files at bart: "
-                    + Arrays.asList(getFolderAtBart().getLocalBase().list());
+                return "Files for " + folder + ": "
+                    + Arrays.asList(folder.getLocalBase().list());
             }
 
             public boolean reached() {
-                return getFolderAtBart().getLocalBase().list().length <= 1;
+                return folder.getLocalBase().listFiles(new FileFilter() {
+                    public boolean accept(File pathname) {
+                        return !pathname.equals(folder.getSystemSubDir());
+                    }
+                }).length == 0;
             }
         });
     }
