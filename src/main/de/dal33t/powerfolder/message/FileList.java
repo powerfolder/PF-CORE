@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -202,8 +203,12 @@ public class FileList extends FolderRelatedMessage {
         // Set the actual number of deltas
         ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
 
-        log.finer("Splitted filelist into " + messages.size() + ", deltas: "
-            + nDeltas + ", folder: " + foInfo + "\nSplitted msgs: " + messages);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Splitted filelist into " + messages.size()
+                + ", deltas: " + nDeltas + ", folder: " + foInfo + ", files: "
+                + files.size() + ", dirs: " + dirs.size() + "\nSplitted msgs: "
+                + messages);
+        }
 
         return messages.toArray(new Message[messages.size()]);
     }
