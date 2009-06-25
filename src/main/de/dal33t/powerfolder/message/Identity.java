@@ -57,10 +57,10 @@ public class Identity extends Message {
      */
     private boolean acknowledgesHandshakeCompletion;
 
-    // uses program version
-    private final String programVersion = Controller.PROGRAM_VERSION;
+    // uses program version. ATTENTION: NEVER MARK THESE FINAL!!!!!
+    private String programVersion = Controller.PROGRAM_VERSION;
 
-    private final Calendar timeGMT = Calendar.getInstance();
+    private Calendar timeGMT = Calendar.getInstance();
 
     // Supports requests for single parts and filepartsrecords.
     // Earlier this was based on a user setting, but that's wrong since we
