@@ -2291,14 +2291,14 @@ public class Folder extends PFComponent {
             if (member.isCompleteyConnected()) {
                 if (!member.isPre4Client()) {
                     if (msgs == null) {
-                        msgs = msgProvider.getMessages();
+                        msgs = msgProvider.getMessages(false);
                     }
                     if (msgs != null) {
                         member.sendMessagesAsynchron(msgs);
                     }
                 } else {
                     if (msgsPre4 == null) {
-                        msgsPre4 = msgProvider.getMessagesForPre4Clients();
+                        msgsPre4 = msgProvider.getMessages(true);
                     }
                     if (msgsPre4 != null) {
                         member.sendMessagesAsynchron(msgsPre4);
@@ -2309,8 +2309,7 @@ public class Folder extends PFComponent {
     }
     
     private static interface MessageProvider {
-        Message[] getMessages();
-        Message[] getMessagesForPre4Clients();
+        Message[] getMessages(boolean pre4Client);
     }
 
     /**
@@ -2331,61 +2330,37 @@ public class Folder extends PFComponent {
 
         if (!scanResult.getNewFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages() {
+                public Message[] getMessages(boolean pre4Client) {
                     return FolderFilesChanged.createFolderFilesChangedMessages(
                         currentInfo, scanResult.getNewFiles(), diskItemFilter,
-                        true, true);
-                }
-
-                public Message[] getMessagesForPre4Clients() {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getNewFiles(), diskItemFilter,
-                        true, false);
+                        true, !pre4Client);
                 }
             });
         }
         if (!scanResult.getChangedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages() {
+                public Message[] getMessages(boolean pre4Client) {
                     return FolderFilesChanged.createFolderFilesChangedMessages(
                         currentInfo, scanResult.getChangedFiles(),
-                        diskItemFilter, true, true);
-                }
-
-                public Message[] getMessagesForPre4Clients() {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getChangedFiles(),
-                        diskItemFilter, true, false);
+                        diskItemFilter, true, !pre4Client);
                 }
             });
         }
         if (!scanResult.getDeletedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages() {
+                public Message[] getMessages(boolean pre4Client) {
                     return FolderFilesChanged.createFolderFilesChangedMessages(
                         currentInfo, scanResult.getDeletedFiles(),
-                        diskItemFilter, false, true);
-                }
-
-                public Message[] getMessagesForPre4Clients() {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getDeletedFiles(),
-                        diskItemFilter, false, false);
+                        diskItemFilter, false, !pre4Client);
                 }
             });
         }
         if (!scanResult.getRestoredFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages() {
+                public Message[] getMessages(boolean pre4Client) {
                     return FolderFilesChanged.createFolderFilesChangedMessages(
                         currentInfo, scanResult.getRestoredFiles(),
-                        diskItemFilter, true, false);
-                }
-
-                public Message[] getMessagesForPre4Clients() {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getRestoredFiles(),
-                        diskItemFilter, true, false);
+                        diskItemFilter, true, !pre4Client);
                 }
             });
         }
