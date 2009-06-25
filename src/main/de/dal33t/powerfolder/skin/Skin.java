@@ -19,33 +19,28 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import javax.swing.LookAndFeel;
+
 /**
  * Interface which describes the information that can be retrieved from a skin,
  * which contains look-and-feel and image information.
- *
+ * 
  * @author harry
  * @version $Revision$
  */
 public interface Skin {
-
     /**
-     * Descriptive name of the skin.
-     *
-     * @return
+     * @return Descriptive name of the skin.
      */
     String getName();
 
     /**
-     * SyntheticaLookAndFeel subclass.
-     *
-     * @return
+     * @return SyntheticaLookAndFeel subclass.
      */
-    Class getLookAndFeelClass();
+    Class<LookAndFeel> getLookAndFeelClass();
 
     /**
-     * Name of an icon properties file with icon overrides.
-     * 
-     * @return
+     * @return Name of an icon properties file with icon overrides.
      */
     String getIconsPropertiesFileName();
 }
