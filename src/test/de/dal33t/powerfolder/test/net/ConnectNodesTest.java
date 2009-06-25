@@ -62,6 +62,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 getContollerMaggie().getNodeManager().getConnectedNodes()
                     .size());
             assertTrue("Connection of Simpsons failed", connectOk);
+           
 
             getContollerBart().getNodeManager().shutdown();
             getContollerLisa().getNodeManager().shutdown();
@@ -223,6 +224,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 return margeAtLisa.isCompleteyConnected();
             }
         });
+        
+        assertTrue(!margeAtLisa.isPre4Client());
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
