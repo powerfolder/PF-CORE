@@ -68,7 +68,6 @@ import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFileList;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.RequestNodeList;
@@ -307,6 +306,9 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (id != null) {
             // Not "4.0.0", because version "4.0.0 - 1.0.1" is before "4.0.0"
             return Util.compareVersions("3.9.9", id.getProgramVersion());
+        } else {
+            logSevere("Unable to determin if client is pre 4.0. Identity: "
+                + id + ". Peer: " + peer);
         }
         return false;
     }
@@ -849,6 +851,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             logFiner("Joined " + joinedFolders.size() + " folders: "
                 + joinedFolders);
         }
+
         for (Folder folder : joinedFolders) {
             // FIX for #924
             waitForScan(folder);
@@ -1242,21 +1245,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     folderListWaiter.notifyAll();
                 }
                 expectedTime = 300;
-            } else if (message instanceof RequestFileList) {
-                if (targetFolder != null) {
-                    // a file list of a folder
-                    if (isFiner()) {
-                        logFiner(targetFolder + ": Sending new filelist to "
-                            + this);
-                    }
-                    sendMessagesAsynchron(FileList.createFileListMessages(
-                        targetFolder, !isPre4Client()));
-                } else {
-                    // Send folder not found if not found or folder is secret
-                    sendMessageAsynchron(new Problem("Folder not found: "
-                        + targetedFolderInfo, false), null);
-                }
-                expectedTime = 100;
 
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
