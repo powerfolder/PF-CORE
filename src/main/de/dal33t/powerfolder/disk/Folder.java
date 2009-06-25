@@ -2860,7 +2860,7 @@ public class Folder extends PFComponent {
             return true;
         } else {
             if (isFine()) {
-                logFine("Deleting file " + fileInfo.toDetailString()
+                logFine("Deleting file " + file
                     + " NOT moving to recycle bin (disabled)");
             }
             if (!file.delete()) {
