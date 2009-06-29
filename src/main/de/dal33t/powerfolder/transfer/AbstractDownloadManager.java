@@ -901,12 +901,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 killTempFile();
                 deleteMetaData();
             }
-        } catch (ClassCastException e) {
-            remotePartRecord = null;
-            filePartsState = null;
-            in.close();
-            deleteMetaData();
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             remotePartRecord = null;
             filePartsState = null;
             in.close();
