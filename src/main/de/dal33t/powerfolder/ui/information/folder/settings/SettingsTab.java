@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -53,7 +52,6 @@ import javax.swing.event.ListSelectionListener;
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -74,11 +72,11 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.action.SelectionBaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.CompilingPatternMatch;
@@ -88,11 +86,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.*;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 
 /**
@@ -120,6 +114,8 @@ public class SettingsTab extends PFUIComponent {
     private final PreviewFolderAction previewFolderAction;
     private final DeleteFolderAction deleteFolderAction;
     private final ValueModel scriptModel;
+    private JButtonMini editButton;
+    private JButtonMini removeButton;
 
     /**
      * Constructor
@@ -212,7 +208,7 @@ public class SettingsTab extends PFUIComponent {
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row));
+            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row, "right, top"));
         builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
 
         row += 2;
@@ -230,25 +226,32 @@ public class SettingsTab extends PFUIComponent {
         }
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.online_storage")), cc.xy(2, row));
         builder.add(createConfigurePanel(), cc.xy(4, row));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.folder_preview")), cc.xy(2, row));
         builder.add(createPreviewPanel(), cc.xy(4, row));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.delete_folder")), cc.xy(2, row));
         builder.add(createDeletePanel(), cc.xy(4, row));
+
+        addSelectionListener();
 
         uiComponent = builder.getPanel();
     }
 
+    private void addSelectionListener() {
+        selectionModel.addSelectionChangeListener(new SelectionChangeListener() {
+            public void selectionChanged(SelectionChangeEvent event) {
+                int selectionsLength = selectionModel.getSelections() == null
+                        ? 0 : selectionModel.getSelections().length;
+                editButton.setEnabled(selectionsLength > 0);
+                removeButton.setEnabled(selectionsLength > 0);
+            }
+        });
+    }
+
     private JPanel createArchivePanel() {
-        FormLayout layout = new FormLayout("pref", "pref");
+        FormLayout layout = new FormLayout("140dlu", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(archivingLocalFiles, cc.xy(1, 1));
@@ -259,7 +262,8 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(deleteFolderAction), cc.xy(1, 1));
+        builder.add(new ActionLabel(getController(),
+                deleteFolderAction).getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -267,7 +271,8 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(confOSAction), cc.xy(1, 1));
+        builder.add(new ActionLabel(getController(),
+                confOSAction).getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -275,7 +280,8 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(previewFolderAction), cc.xy(1, 1));
+        builder.add(new ActionLabel(getController(),
+                previewFolderAction).getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -289,12 +295,12 @@ public class SettingsTab extends PFUIComponent {
 
         });
 
-        Dimension size = new Dimension(200, 150);
+        Dimension size = new Dimension(200, 100);
 
         JScrollPane scroller = new JScrollPane(patternsList);
         scroller.setPreferredSize(size);
 
-        FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("140dlu", "pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -374,27 +380,31 @@ public class SettingsTab extends PFUIComponent {
 
     private JPanel createButtonBar() {
         AddAction addAction = new AddAction(getController());
-        EditAction editAction = new EditAction(getController(), selectionModel);
-        RemoveAction removeAction = new RemoveAction(getController(),
-            selectionModel);
+        EditAction editAction = new EditAction(getController());
+        RemoveAction removeAction = new RemoveAction(getController());
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(addAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(editAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(removeAction));
+        FormLayout layout = new FormLayout("pref, pref, pref, pref:grow", "pref");
+        PanelBuilder bar = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        editButton = new JButtonMini(editAction);
+        removeButton = new JButtonMini(removeAction);
+
+        editButton.setEnabled(false);
+        removeButton.setEnabled(false);
+
+        bar.add(new JButtonMini(addAction), cc.xy(1, 1));
+        bar.add(editButton, cc.xy(2, 1));
+        bar.add(removeButton, cc.xy(3, 1));
 
         return bar.getPanel();
     }
 
     /** removes the selected pattern from the blacklist */
-    private class RemoveAction extends SelectionBaseAction {
-        private RemoveAction(Controller controller,
-            SelectionModel selectionModel)
+    private class RemoveAction extends BaseAction {
+        private RemoveAction(Controller controller)
         {
-            super("action_remove_ignore", controller, selectionModel);
-            setEnabled(false);
+            super("action_remove_ignore", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -403,10 +413,6 @@ public class SettingsTab extends PFUIComponent {
                 folder.getDiskItemFilter().removePattern(selection);
             }
             patternsList.getSelectionModel().clearSelection();
-        }
-
-        public void selectionChanged(SelectionChangeEvent event) {
-            setEnabled(selectionModel.getSelection() != null);
         }
     }
 
@@ -423,9 +429,8 @@ public class SettingsTab extends PFUIComponent {
             Translation.getTranslation("remove_pattern.dont"),
             Translation.getTranslation("general.cancel")};
 
-        StringTokenizer st = new StringTokenizer(patterns, "\n");
-        while (st.hasMoreTokens()) {
-            String pattern = st.nextToken();
+        String[] patternArray = patterns.split("\\n");
+        for (String pattern : patternArray) {
 
             // Match any patterns for this file.
             CompilingPatternMatch patternMatch = new CompilingPatternMatch(
@@ -455,10 +460,9 @@ public class SettingsTab extends PFUIComponent {
     }
 
     /** opens a popup, input dialog to edit the selected pattern */
-    private class EditAction extends SelectionBaseAction {
-        EditAction(Controller controller, SelectionModel selectionModel) {
-            super("action_edit_ignore", controller, selectionModel);
-            setEnabled(false);
+    private class EditAction extends BaseAction {
+        EditAction(Controller controller) {
+            super("action_edit_ignore", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -478,10 +482,6 @@ public class SettingsTab extends PFUIComponent {
                 folder.getDiskItemFilter().addPattern(pattern);
             }
             patternsList.getSelectionModel().clearSelection();
-        }
-
-        public void selectionChanged(SelectionChangeEvent event) {
-            setEnabled(selectionModel.getSelection() != null);
         }
     }
 
@@ -505,9 +505,9 @@ public class SettingsTab extends PFUIComponent {
 
         Reject.ifNull(initialPatterns, "Patterns required");
 
-        StringTokenizer st = new StringTokenizer(initialPatterns, "\n");
-        if (st.countTokens() == 1) {
-            String pattern = st.nextToken();
+        String[] patternArray = initialPatterns.split("\\n");
+        if (patternArray.length == 1) {
+            String pattern = patternArray[0];
             String title = Translation
                 .getTranslation("settings_tab.add_a_pattern.title");
             String text = Translation
@@ -522,8 +522,7 @@ public class SettingsTab extends PFUIComponent {
         } else {
             StringBuilder sb = new StringBuilder();
             int count = 0;
-            while (st.hasMoreTokens()) {
-                String pattern = st.nextToken();
+            for (String pattern : patternArray) {
                 sb.append("    ");
                 if (count++ >= 10) {
                     // Too many selections - enough!!!
@@ -544,9 +543,8 @@ public class SettingsTab extends PFUIComponent {
                     Translation.getTranslation("general.cancel")}, 0,
                 GenericDialogType.QUESTION);
             if (result == 0) {
-                StringTokenizer st2 = new StringTokenizer(initialPatterns, "\n");
-                while (st2.hasMoreTokens()) {
-                    folder.getDiskItemFilter().addPattern(st2.nextToken());
+                for (String pattern : patternArray) {
+                    folder.getDiskItemFilter().addPattern(pattern);
                 }
             }
         }

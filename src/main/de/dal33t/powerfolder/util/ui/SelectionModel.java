@@ -35,7 +35,8 @@ public class SelectionModel {
 
     /** The current selected items * */
     private Object[] selections;
-    /** The previius selected items * */
+
+    /** The previous selected items * */
     private Object[] oldSelections;
 
     /** The list of listeners to the selection changed events */
@@ -66,8 +67,8 @@ public class SelectionModel {
 
     /** Set a list of selections */
     public void setSelections(Object[] newSelections) {
-        this.oldSelections = selections;
-        this.selections = newSelections;
+        oldSelections = selections;
+        selections = newSelections;
         fireSelectionChanged();
     }
 
@@ -116,10 +117,8 @@ public class SelectionModel {
 
     /** fires selectionChange events to all registered listeners */
     private void fireSelectionChanged() {
-        for (int i = 0; i < listeners.size(); i++) {
-            SelectionChangeListener listener = listeners.get(i);
-            listener
-                .selectionChanged(new SelectionChangeEvent(this, selections));
+        for (SelectionChangeListener listener : listeners) {
+            listener.selectionChanged(new SelectionChangeEvent(this, selections));
         }
     }
 }
