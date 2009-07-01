@@ -32,29 +32,22 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  */
 public class WarningEvent {
 
-    private final String name;
     private final Runnable runnable;
 
-    public WarningEvent(String name, Runnable runnable) {
-        this.name = name;
+    public WarningEvent(Runnable runnable) {
         this.runnable = runnable;
     }
 
-    public WarningEvent(final Controller controller, final String name,
+    public WarningEvent(final Controller controller, final String title,
                         final String message) {
-        this.name = name;
         runnable = new Runnable() {
             public void run() {
                 if (controller.isStarted() && !controller.isShuttingDown()) {
-                    DialogFactory.genericDialog(controller, name, message,
+                    DialogFactory.genericDialog(controller, title, message,
                             GenericDialogType.WARN);
                 }
             }
         };
-    }
-
-    public String getName() {
-        return name;
     }
 
     public Runnable getRunnable() {

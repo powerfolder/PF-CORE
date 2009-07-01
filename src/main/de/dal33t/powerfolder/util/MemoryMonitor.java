@@ -69,7 +69,7 @@ public class MemoryMonitor implements Runnable {
      * Add a warning event for the user.
      */
     private void addWarning() {
-        WarningEvent event = new WarningEvent("Memory warning", new Runnable() {
+        WarningEvent event = new WarningEvent(new Runnable() {
             public void run() {
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     int response = DialogFactory.genericDialog(controller, Translation

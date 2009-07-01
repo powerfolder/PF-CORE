@@ -470,7 +470,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
             };
-            WarningEvent warningEvent = new WarningEvent("qwer", runnable);
+            WarningEvent warningEvent = new WarningEvent(runnable);
             controller.getUIController().getApplicationModel()
                     .getWarningsModel().pushWarning(warningEvent);
         }
