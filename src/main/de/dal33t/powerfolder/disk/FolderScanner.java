@@ -646,7 +646,7 @@ public class FolderScanner extends PFComponent {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
                 if (otherFInfo.getName().equalsIgnoreCase(pathname)) {
-                    logWarning("Found local directory with diffrent name-case in db. file: "
+                    logWarning("Found local file/dir with diffrent name-case in db. file: "
                         + dirToScan.getAbsolutePath()
                         + ", dbDir: "
                         + otherFInfo.toDetailString());
@@ -657,7 +657,7 @@ public class FolderScanner extends PFComponent {
                             "Bad failure: DirectoryInfos not equal. "
                                 + dirInfo.toDetailString() + " and "
                                 + otherFInfo.toDetailString()
-                                + " Probably FolderInfo objects are not equal?");
+                                + " Probably FolderInfo objects or type are not equal?");
                     }
                     remaining.remove(otherFInfo);
                     exists = otherFInfo;
