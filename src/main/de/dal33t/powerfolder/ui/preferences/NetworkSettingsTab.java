@@ -233,8 +233,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(1,
-                row));
+                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(
+                1, row));
             builder.add(lanSpeed, cc.xy(3, row));
 
             row += 2;
@@ -247,8 +247,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     .addLabel(Translation
                         .getTranslation("preferences.dialog.server"), cc.xy(1,
                         row));
-                builder.add(severSelector.getUIComponent(), cc.xywh(3, row, 7,
-                    1));
+                builder.add(severSelector.getUIComponent(), cc.xy(3, row));
             }
 
             panel = builder.getPanel();
