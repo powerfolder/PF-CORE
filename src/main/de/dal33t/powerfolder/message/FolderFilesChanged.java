@@ -22,11 +22,11 @@ package de.dal33t.powerfolder.message;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -114,6 +114,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         List<FolderFilesChanged> messages = new ArrayList<FolderFilesChanged>();
         int nDeltas = 0;
         int curMsgIndex = 0;
+        int nDirs = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
             if (fileInfo.isDiretory() && !includeDirs) {
@@ -123,7 +124,10 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             if (!fileInfoFilter.isRetained(fileInfo)) {
                 continue;
             }
-            messageFiles[curMsgIndex] = fileInfo;
+            if (fileInfo.isDiretory()) {
+                nDirs++;
+            }
+            messageFiles[curMsgIndex] = fileInfo; 
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 nDeltas++;
@@ -156,8 +160,12 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             messages.add(msg);
         }
 
-        log.finer("Splitted folder files delta into " + messages.size()
-            + " messages, folder: " + foInfo + "\nSplitted msgs: " + messages);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Splitted folder files change into " + messages.size()
+                + ", deltas: " + nDeltas + ", folder: " + foInfo + ", files: "
+                + files.size() + ", dirs: " + nDirs + "\nSplitted msgs: "
+                + messages);
+        }
 
         return messages.toArray(new FolderFilesChanged[messages.size()]);
     }
