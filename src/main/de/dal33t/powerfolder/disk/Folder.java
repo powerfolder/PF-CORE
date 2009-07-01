@@ -2995,8 +2995,7 @@ public class Folder extends PFComponent {
             logFiner("No Incoming files");
         } else {
             if (isFine()) {
-                logFine("Incoming files (" + incomingFiles.size() + "): "
-                    + incomingFiles);
+                logFine(incomingFiles.size() + " incoming files");
             }
         }
 
