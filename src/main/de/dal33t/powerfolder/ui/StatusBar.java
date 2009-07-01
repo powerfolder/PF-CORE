@@ -127,8 +127,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout lowerLayout;
             if (showPort) {
                 lowerLayout = new FormLayout(
-                 //  online      limit                 port        sep         down        sep         up
-                    "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                 //  online      con quality limit                 port        sep         down        sep         up
+                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                     "pref");
             } else {
                 lowerLayout = new FormLayout(
