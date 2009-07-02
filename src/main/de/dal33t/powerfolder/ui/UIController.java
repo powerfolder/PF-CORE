@@ -1211,6 +1211,9 @@ public class UIController extends PFComponent {
                             Translation.getTranslation("general.close")},
                             0, GenericDialogType.WARN);
                     if (response == 0) {
+                        // Recommended implementation:
+                        // Event should hold the ScanResult which was not commited
+                        // call Folder.commitScanResult as it would have been.
                         // Broadcast deletions
                         // @todo harry
                     } else if (response == 1) {
