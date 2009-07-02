@@ -1195,13 +1195,30 @@ public class UIController extends PFComponent {
      * This pushes warnings into the app model.
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
-        public void localMassDeletion(LocalMassDeletionEvent event) {
-            WarningEvent warningEvent = new WarningEvent(getController(),
-                    Translation.getTranslation(
-                            "uicontroller.local_mass_delete.title"),
-                    Translation.getTranslation(
-                            "uicontroller.local_mass_delete.message",
-                            event.getFolderInfo().name));
+        public void localMassDeletion(final LocalMassDeletionEvent event) {
+            WarningEvent warningEvent = new WarningEvent(new Runnable() {
+                public void run() {
+                    int response = DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation(
+                                    "uicontroller.local_mass_delete.title"),
+                            Translation.getTranslation(
+                                    "uicontroller.local_mass_delete.message", 
+                                    event.getFolderInfo().name), new String[]{
+                            Translation.getTranslation(
+                                    "uicontroller.local_mass_delete.broadcast_deletions"),
+                            Translation.getTranslation(
+                                    "uicontroller.local_mass_delete.remove_folder_locally"),
+                            Translation.getTranslation("general.close")},
+                            0, GenericDialogType.WARN);
+                    if (response == 0) {
+                        // Broadcast deletions
+                        // @todo harry
+                    } else if (response == 1) {
+                        // Remove folder locally
+                        // @todo harry
+                    }
+                }
+            });
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
 
