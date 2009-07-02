@@ -1215,7 +1215,11 @@ public class UIController extends PFComponent {
                         // @todo harry
                     } else if (response == 1) {
                         // Remove folder locally
-                        // @todo harry
+                        FolderRepository folderRepository =
+                                getController().getFolderRepository();
+                        Folder folder = folderRepository.getFolder(
+                                event.getFolderInfo());
+                        folderRepository.removeFolder(folder, false);
                     }
                 }
             });
