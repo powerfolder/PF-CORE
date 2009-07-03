@@ -34,14 +34,16 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -50,9 +52,10 @@ import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -87,8 +90,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     private static final String REMOTECOMMAND_PREFIX = "PowerFolder_RCON_COMMAND";
     // The default encoding
     private static final String ENCODING = "UTF8";
-    // The prefix for pf links
-    private static final String POWERFOLDER_LINK_PREFIX = "powerfolder://";
 
     // All possible commands
     public static final String QUIT = "QUIT";
@@ -257,18 +258,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             StringTokenizer nizer = new StringTokenizer(fileStr, ";");
             while (nizer.hasMoreTokens()) {
                 String token = nizer.nextToken();
-                if (token.toLowerCase().startsWith(POWERFOLDER_LINK_PREFIX)) {
-                    // We got a link
-                    openLink(token);
-                } else {
-                    // Must be a file
-                    File file = new File(token);
-                    openFile(file);
-                }
-
+                // Must be a file
+                File file = new File(token);
+                openFile(file);
             }
         } else if (command.startsWith(MAKEFOLDER)) {
-            String folders = command.substring(MAKEFOLDER.length());
+            String folderConfig = command.substring(MAKEFOLDER.length());
             if (getController().isUIOpen()) {
                 // Popup application
                 getController().getUIController().getMainFrame()
@@ -276,59 +271,22 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 getController().getUIController().getMainFrame()
                     .getUIComponent().setExtendedState(Frame.NORMAL);
             }
-            String nick = getController().getMySelf().getNick();
-            for (String s : folders.split(";")) {
-                File file = new File(s);
-                String lastPart = file.getName();
 
-                // Folder name = nick + '-' + last part of folder path.
-                makeFolder(nick + '-' + lastPart, s);
+            // Old style configuration was simply the Directory, e.g.
+            // C:\The_path
+            boolean oldStyle = !folderConfig.contains("dir=");
+            if (oldStyle) {
+                logWarning("Converted old style folder "
+                    + "make command for directory " + folderConfig);
+                // Convert to new style
+                folderConfig = "dir=" + folderConfig;
             }
+            // New style configuration
+            // dir=%BASE_DIR%\IPAKI\BACKUP;name=IPAKI/BACKUP/%COMPUTERNAME%;syncprofile=true,true,true,true,5,false,12,0,m,Auto-sync;backup_by_server=true
+            makeFolder(folderConfig);
+            
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
-        }
-    }
-
-    /**
-     * Opens a powerfolder link and executes it
-     * 
-     * @param link
-     */
-    private void openLink(String link) {
-        String plainLink = link.substring(POWERFOLDER_LINK_PREFIX.length());
-        log.warning("Got plain link: " + plainLink);
-
-        // Chop off ending /
-        if (plainLink.endsWith("/")) {
-            plainLink = plainLink.substring(1, plainLink.length() - 1);
-        }
-
-        try {
-            // Parse link
-            StringTokenizer nizer = new StringTokenizer(plainLink, "|");
-            // Get type
-            String type = nizer.nextToken();
-
-            if ("file".equalsIgnoreCase(type)) {
-                // Decode the url form
-                String name = Util.decodeFromURL(nizer.nextToken());
-                // SECRET /PUBLIC (depcrecated)
-                nizer.nextToken();
-                String id = Util.decodeFromURL(nizer.nextToken());
-
-                FolderInfo folder = new FolderInfo(name, id);
-
-                String filename = Util.decodeFromURL(nizer.nextToken());
-                FileInfo fInfo = FileInfoFactory.lookupInstance(folder, filename);
-
-                // FIXME: Show warning/join panel if not on folder
-
-                // Enqueue for download
-                getController().getTransferManager().downloadNewestVersion(
-                    fInfo);
-            }
-        } catch (NoSuchElementException e) {
-            log.severe("Illegal link '" + link + '\'');
         }
     }
 
@@ -359,26 +317,101 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
-    /**
-     * "Converts" the given folder to a PowerFolder.
-     * 
-     * @param folder
-     *            the location of the folder
-     */
-    private void makeFolder(String name, String folder) {
-        if (getController().isUIEnabled()) {
-            FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
-            ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
-                getController(), folder, setupPanel);
+    private void makeFolder(String folderConfig) {
+        Map<String, String> config = new HashMap<String, String>();
+        StringTokenizer nizer = new StringTokenizer(folderConfig, ";");
+        while (nizer.hasMoreTokens()) {
+            String keyValuePair = nizer.nextToken();
+            int equal = keyValuePair.indexOf('=');
+            if (equal <= 0) {
+                logSevere("Unable to parse make folder command: '"
+                    + folderConfig + "'");
+                continue;
+            }
+            String key = keyValuePair.substring(0, equal);
+            String value = keyValuePair.substring(equal + 1);
+            config.put(key, value);
+        }
+
+        // Directory
+        if (StringUtils.isBlank(config.get("dir"))) {
+            logSevere("Unable to parse make folder command. directory missing. "
+                + folderConfig);
+            return;
+        }
+        File dir = new File(config.get("dir"));
+
+        // Show user?
+        boolean silent = "true".equalsIgnoreCase(config.get("silent"));
+
+        // Name
+        String name;
+        if (StringUtils.isNotBlank(config.get("name"))) {
+            name = config.get("name");
+        } else {
+            String nick = getController().getMySelf().getNick();
+            String lastPart = dir.getName();
+            name = nick + '-' + lastPart;
+        }
+
+        // ID
+        String id = config.get("id");
+        if (StringUtils.isEmpty(id)) {
+            id = "[" + IdGenerator.makeId() + "]";
+        }
+
+        String syncProfileFieldList = config.get("syncprofile");
+        SyncProfile syncProfile = syncProfileFieldList != null ? SyncProfile
+            .getSyncProfileByFieldList(syncProfileFieldList) : null;
+        boolean backupByServer = "true".equals(config.get("backup_by_server"));
+
+        FolderInfo foInfo = new FolderInfo(name, id);
+
+        String dlScript = config.get("dlscript");
+
+        if (!silent && getController().isUIEnabled()) {
             PFWizard wizard = new PFWizard(getController());
             wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
                 Icons.getIconById(Icons.FILE_SHARING_PICTO));
+
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
+            if (syncProfile != null) {
+                wizard.getWizardContext()
+                    .setAttribute(
+                        WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE,
+                        syncProfile);
+            }
+            wizard.getWizardContext().setAttribute(
+                WizardContextAttributes.BACKUP_ONLINE_STOARGE, backupByServer);
+            wizard.getWizardContext().setAttribute(
+                WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
+
+            FolderSetupPanel setupPanel = new FolderSetupPanel(getController());
+            ChooseDiskLocationPanel panel = new ChooseDiskLocationPanel(
+                getController(), dir.getAbsolutePath(), setupPanel);
             wizard.open(panel);
         } else {
-            log
-                .warning("Remote creation of folders in non-gui mode is not supported yet.");
+            if (syncProfile == null) {
+                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+            }
+            FolderSettings settings = new FolderSettings(dir, syncProfile,
+                true, ConfigurationEntry.USE_RECYCLE_BIN
+                    .getValueBoolean(getController()), ArchiveMode.NO_BACKUP,
+                false, false, dlScript);
+            Folder folder = getController().getFolderRepository().createFolder(
+                foInfo, settings);
+            if (backupByServer) {
+                try {
+                    getController().getOSClient().getFolderService()
+                        .createFolder(folder.getInfo(),
+                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                } catch (Exception e) {
+                    logSevere(
+                        "Unable to setup folder to be backed up by server: "
+                            + folder + ". " + e, e);
+                }
+            }
         }
     }
 
