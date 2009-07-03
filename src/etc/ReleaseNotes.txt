@@ -1,20 +1,17 @@
 PowerFolder Version 3.1.8 - http://www.powerfolder.com
 
 New features and improvements:
- * Optimized speed of folder initial scan / when detecting new files.
- * Reduced number of connection when running as supernode (fix DNS or dynDNS).
- * Several other performance improvements.
+ * Added option to automatically update system service when a new version of
+   PowerFolder is available.
+ * PowerFolder can now be configured by command line / script. Optimal when
+   deploying a large number of clients. Documentation:
+   http://www.powerfolder.com/wiki/Script_configuration
+ * Added the possibility to remotely monitor up- and downloads of a client.
+   Preferences/Pro Settings/Remote monitoring
 
 Bugfixes:
- * Fixed bug, that prevented remote deletions to be locally synchronized.
- * Fixed bug, that causes to download a old file version if file could not
-   be moved into recycle bin on remote computer, e.g. if file was open during
-   the download. Now rolls back complete download in such a case.
- * Default ignore patterns (e.g. Office temporary files) are correctly added
-   when joining a folder. This fixes the wrong sync percentage display.
- * Fixed race condition, that caused files to be moved into recycle bin.
- * Added more debug log output on "duplicate connection" problem.
-
+ * Delta-sync hashing does not longer timeout after three minutes.
+ 
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
@@ -46,6 +43,25 @@ External libraries used:
 
 
 History:
+
+Version 3.1.8
+-------------
+
+New features and improvements:
+ * Optimized speed of folder initial scan / when detecting new files.
+ * Reduced number of connection when running as supernode (fix DNS or dynDNS).
+ * Several other performance improvements.
+
+Bugfixes:
+ * Fixed bug, that prevented remote deletions to be locally synchronized.
+ * Fixed bug, that causes to download a old file version if file could not
+   be moved into recycle bin on remote computer, e.g. if file was open during
+   the download. Now rolls back complete download in such a case.
+ * Default ignore patterns (e.g. Office temporary files) are correctly added
+   when joining a folder. This fixes the wrong sync percentage display.
+ * Fixed race condition, that caused files to be moved into recycle bin.
+ * Added more debug log output on "duplicate connection" problem.
+ 
 
 Version 3.1.7
 -------------
