@@ -7,7 +7,8 @@ New features and improvements:
    deploying a large number of clients. Documentation:
    http://www.powerfolder.com/wiki/Script_configuration
  * Added the possibility to remotely monitor up- and downloads of a client.
-   Preferences/Pro Settings/Remote monitoring
+   Preferences/Pro Settings/Remote monitoring. Documentation:
+   http://www.powerfolder.com/wiki/Transfer_monitoring
 
 Bugfixes:
  * Delta-sync hashing does not longer timeout after three minutes.
