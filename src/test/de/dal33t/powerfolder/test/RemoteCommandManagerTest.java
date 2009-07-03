@@ -64,7 +64,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 + ";dlscript=what.bat");
         assertTrue(sent);
 
-        TestHelper.waitForCondition(10000, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Bart did not join the folder. members at lisa: "
                     + getFolderAtLisa().getMembersCount();
