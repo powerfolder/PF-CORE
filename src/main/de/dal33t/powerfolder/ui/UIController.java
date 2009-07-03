@@ -238,6 +238,13 @@ public class UIController extends PFComponent {
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
 
+        // Hack for customer
+        boolean openWiz = ConfigurationEntry.PREF_SHOW_FIRST_TIME_WIZARD
+            .getValueBoolean(getController());
+        if (!openWiz) {
+            getController().getPreferences().putBoolean("openwizard2", false);
+        }
+
         // The central application model
         applicationModel = new ApplicationModel(getController());
         applicationModel.initialize();
