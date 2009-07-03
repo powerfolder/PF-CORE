@@ -61,9 +61,14 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.JavaVersion;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.TextLinesPanelBuilder;
+import de.dal33t.powerfolder.util.update.ManuallyInvokedUpdateHandler;
+import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
@@ -130,10 +135,10 @@ public class AboutDialog extends PFUIComponent {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
 
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth()
-                - dialog.getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()
-                - dialog.getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
+            .getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
+            .getHeight()) / 2;
         dialog.setLocation(x, y);
         dialog.setResizable(false);
         dialog.setVisible(true);
@@ -188,18 +193,18 @@ public class AboutDialog extends PFUIComponent {
         supportLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.support"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize((JLabel) supportLink.getUiComponent(),
-            SimpleComponentFactory.BIG_FONT_SIZE);
+        SimpleComponentFactory.setFontSize((JLabel) supportLink
+            .getUiComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
             .getTranslation("general.powerfolder"), Translation.getTranslation(
-                "about_dialog.power_folder.text", Controller.PROGRAM_VERSION)
+            "about_dialog.power_folder.text", Controller.PROGRAM_VERSION)
             + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.build_date",
-                buildDate)
+            + Translation.getTranslation(
+                "about_dialog.power_folder.build_date", buildDate)
             + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.build_time",
-                buildTime)
+            + Translation.getTranslation(
+                "about_dialog.power_folder.build_time", buildTime)
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.max",
                 Runtime.getRuntime().maxMemory() / 1024 / 1024)
@@ -215,7 +220,7 @@ public class AboutDialog extends PFUIComponent {
         system = createTextBox(Translation
             .getTranslation("about_dialog.your_system.title"), Translation
             .getTranslation("about_dialog.your_system.java_version",
-                    JavaVersion.systemVersion().toString())
+                JavaVersion.systemVersion().toString())
             + '\n'
             + Translation.getTranslation("about_dialog.your_system.os", System
                 .getProperty("os.name"))
@@ -244,14 +249,16 @@ public class AboutDialog extends PFUIComponent {
      */
     private JLabel buildAboutAnimation() {
         if (Icons.getIconById(Icons.ABOUT_ANIMATION) instanceof ImageIcon) {
-            ((ImageIcon) Icons.getIconById(Icons.ABOUT_ANIMATION)).getImage().flush();
+            ((ImageIcon) Icons.getIconById(Icons.ABOUT_ANIMATION)).getImage()
+                .flush();
             ((ImageIcon) Icons.getIconById(Icons.ABOUT_ANIMATION)).getImage()
                 .setAccelerationPriority(0.2F);
 
         }
         JLabel logo = new JLabel(Icons.getIconById(Icons.ABOUT_ANIMATION));
-        logo.setSize(new Dimension(Icons.getIconById(Icons.ABOUT_ANIMATION).getIconWidth(),
-            Icons.getIconById(Icons.ABOUT_ANIMATION).getIconHeight()));
+        logo.setSize(new Dimension(Icons.getIconById(Icons.ABOUT_ANIMATION)
+            .getIconWidth(), Icons.getIconById(Icons.ABOUT_ANIMATION)
+            .getIconHeight()));
         logo.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 3) {
@@ -294,9 +301,10 @@ public class AboutDialog extends PFUIComponent {
         createSystemMonitorButton();
         createOKButton();
         focusList = new Component[]{okButton, bugReportButton,
-                checkForUpdatesButton, systemMonitorButton};
+            checkForUpdatesButton, systemMonitorButton};
         JPanel buttons = ButtonBarFactory.buildRightAlignedBar(
-                checkForUpdatesButton, bugReportButton, systemMonitorButton, okButton);
+            checkForUpdatesButton, bugReportButton, systemMonitorButton,
+            okButton);
         buttons.setOpaque(false);
 
         builder.add(pacmanPanel, cc.xy(1, 1));
@@ -334,8 +342,6 @@ public class AboutDialog extends PFUIComponent {
     /**
      * Creates an internationlaized ok button. Hides this aboutbox, cleans up
      * resources.
-     * 
-     * @return the ok Button
      */
     private void createOKButton() {
         okButton = new JButton(Translation.getTranslation("general.ok"));
@@ -370,8 +376,11 @@ public class AboutDialog extends PFUIComponent {
     private class UpdateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (getController().getUpdateSettings() != null) {
-                new ManuallyInvokedUpdater(getController(), getController()
-                    .getUpdateSettings()).start();
+                ManuallyInvokedUpdateHandler handler = new ManuallyInvokedUpdateHandler(
+                    getController());
+                Updater updater = new Updater(getController(), getController()
+                    .getUpdateSettings(), handler);
+                updater.start();
             }
             PreferencesEntry.CHECK_UPDATE.setValue(getController(), true);
         }
@@ -400,14 +409,14 @@ public class AboutDialog extends PFUIComponent {
     /**
      * Creates an internationlaized check for updates button. This button will
      * invoke the manual updatechecker.
-     *
+     * 
      * @return The Button
      */
     private JButton createSystemMonitorButton() {
         systemMonitorButton = new JButton(Translation
             .getTranslation("about_dialog.system_monitor.text"));
-        systemMonitorButton.setToolTipText(Translation.getTranslation(
-            "about_dialog.system_monitor.tips"));
+        systemMonitorButton.setToolTipText(Translation
+            .getTranslation("about_dialog.system_monitor.tips"));
         systemMonitorButton.setMnemonic(Translation.getTranslation(
             "about_dialog.system_monitor.key").trim().charAt(0));
         systemMonitorButton.setIcon(Icons.getIconById(Icons.SYSTEM_MONITOR));
@@ -419,14 +428,12 @@ public class AboutDialog extends PFUIComponent {
     /**
      * Creates an internationlaized check for updates button. This button will
      * invoke the manual updatechecker.
-     *
-     * @return The Button
      */
     private void createCheckForUpdatesButton() {
         checkForUpdatesButton = new JButton(Translation
             .getTranslation("about_dialog.check_for_updates.text"));
-        checkForUpdatesButton.setToolTipText(Translation.getTranslation(
-            "about_dialog.check_for_updates.tips"));
+        checkForUpdatesButton.setToolTipText(Translation
+            .getTranslation("about_dialog.check_for_updates.tips"));
         checkForUpdatesButton.setMnemonic(Translation.getTranslation(
             "about_dialog.check_for_updates.key").trim().charAt(0));
         checkForUpdatesButton.setIcon(Icons.getIconById(Icons.UPDATES));
@@ -434,15 +441,12 @@ public class AboutDialog extends PFUIComponent {
         checkForUpdatesButton.setBackground(Color.WHITE);
     }
 
-    /**
-     * @return a button that opens the bug report url
-     */
     private void createBugReportButton() {
         bugReportButton = new JButton(Translation
             .getTranslation("about_dialog.send_bug_report.text"));
         bugReportButton.setIcon(Icons.getIconById(Icons.DEBUG));
-        bugReportButton.setToolTipText(Translation.getTranslation(
-            "about_dialog.send_bug_report.tips"));
+        bugReportButton.setToolTipText(Translation
+            .getTranslation("about_dialog.send_bug_report.tips"));
         bugReportButton.setMnemonic(Translation.getTranslation(
             "about_dialog.send_bug_report.key").trim().charAt(0));
         bugReportButton.addActionListener(bugReportAction);
