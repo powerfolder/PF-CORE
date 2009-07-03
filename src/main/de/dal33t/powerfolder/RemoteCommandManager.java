@@ -354,8 +354,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         // ID
         String id = config.get("id");
+        boolean createInvitationFile = false;
         if (StringUtils.isEmpty(id)) {
             id = "[" + IdGenerator.makeId() + "]";
+            createInvitationFile = true;
         }
 
         String syncProfileFieldList = config.get("syncprofile");
@@ -393,10 +395,11 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (syncProfile == null) {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
+            boolean recycleBin = ConfigurationEntry.USE_RECYCLE_BIN
+                .getValueBoolean(getController());
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                true, ConfigurationEntry.USE_RECYCLE_BIN
-                    .getValueBoolean(getController()), ArchiveMode.NO_BACKUP,
-                false, false, dlScript);
+                createInvitationFile, recycleBin, ArchiveMode.NO_BACKUP, false,
+                false, dlScript);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {
