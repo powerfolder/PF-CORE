@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -459,6 +460,10 @@ public class ReconnectManager extends PFComponent {
                 currentNode.shutdown();
             }
         }
+        
+        private int getIdleWaitSeconds() {
+            return ConfigurationEntry.CONNECT_WAIT.getValueInt(getController());
+        }
 
         public void run() {
             if (isFiner()) {
@@ -487,13 +492,15 @@ public class ReconnectManager extends PFComponent {
                     }
                 }
                 if (goIdle) {
-                    logFine("Reconnection queue empty after rebuild."
-                        + "Going on idle for 20 seconds");
+                    int idleSeconds = getIdleWaitSeconds();
+                    logFine(
+                        "Reconnection queue empty after rebuild."
+                            + "Going on idle for " + idleSeconds + " seconds");
                     synchronized (reconnectionQueue) {
                         try {
-                            reconnectionQueue.wait(20000);
+                            reconnectionQueue.wait(1000L * idleSeconds);
                         } catch (InterruptedException e) {
-                            logFiner("InterruptedException", e);
+                            logFiner(e);
                             break;
                         }
                     }
