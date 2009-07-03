@@ -72,6 +72,11 @@ public class WinUtils extends Loggable {
 
     // e.g. C:\Windows
     public static final int CSIDL_WINDOWS = 0x0024;
+    
+    /**
+     * Very common app data
+     */
+    public final static int CSIDL_COMMON_APPDATA = 0x0023;
 
     // Program files
     public static final int CSIDL_APP_DATA = 0x001A;
