@@ -1272,7 +1272,11 @@ public class UIController extends PFComponent {
                         // Event should hold the ScanResult which was not commited
                         // call Folder.commitScanResult as it would have been.
                         // Broadcast deletions
-                        // @todo harry
+                        FolderRepository folderRepository =
+                                getController().getFolderRepository();
+                        Folder folder = folderRepository.getFolder(
+                                event.getFolderInfo());
+                        folder.scanLocalFiles(true);
                     } else if (response == 1) {
                         // Remove folder locally
                         FolderRepository folderRepository =

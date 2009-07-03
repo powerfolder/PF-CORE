@@ -498,11 +498,15 @@ public class Folder extends PFComponent {
      * 
      * @param scanResult
      *            the scanresult to commit.
+     * @param ignoreLocalMassDeletions
+     *            bypass the local mass delete checks.
      */
-    private void commitScanResult(ScanResult scanResult) {
+    private void commitScanResult(ScanResult scanResult,
+                                  boolean ignoreLocalMassDeletions) {
 
         // See if everything has been deleted.
-        if (getKnownFilesCount() > 0
+        if (!ignoreLocalMassDeletions
+            && getKnownFilesCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
             && scanResult.getTotalFilesCount() == 0
             && PreferencesEntry.MASS_DELETE_PROTECTION
@@ -871,10 +875,23 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     * 
+     *
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
+        return scanLocalFiles(false);
+    }
+
+    /**
+     * Scans the local directory for new files. Be carefull! This method is not
+     * Thread safe. In most cases you want to use
+     * recommendScanOnNextMaintenance() followed by maintain().
+     *
+     * @param ignoreLocalMassDeletions
+     *            bypass the local mass delete checks.
+     * @return if the local files where scanned
+     */
+    public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
 
         boolean wasDeviceDisconnected = deviceDisconnected;
         /**
@@ -944,7 +961,7 @@ public class Folder extends PFComponent {
                         addProblem(problem);
                     }
                 }
-                commitScanResult(result);
+                commitScanResult(result, ignoreLocalMassDeletion);
                 lastScan = new Date();
                 return true;
             }
