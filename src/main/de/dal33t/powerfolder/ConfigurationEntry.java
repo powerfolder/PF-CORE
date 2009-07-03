@@ -24,6 +24,8 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
@@ -407,11 +409,6 @@ public enum ConfigurationEntry {
     DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
 
     /**
-     * Whether to show dialog testing panel
-     */
-    DIALOG_TESTING("dialog.testing", Boolean.FALSE.toString()),
-
-    /**
      * Whether to do auto-cleanup for downloads.
      */
     DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.TRUE.toString()),
@@ -515,8 +512,7 @@ public enum ConfigurationEntry {
     UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", "5"),
 
     /**
-     * Days until auto cleanup of downloads.
-     * Zero = cleanup on completion.
+     * Days until auto cleanup of downloads. Zero = cleanup on completion.
      */
     DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", "5"),
 
@@ -524,8 +520,15 @@ public enum ConfigurationEntry {
     FOLDER_SYNC_USE("sync.folder.use", Boolean.TRUE.toString()),
 
     /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN("sync.folder.warn", "10");
+    FOLDER_SYNC_WARN("sync.folder.warn", "10"),
 
+    /**
+     * Ugly hack to make it possible to pre-configure client with
+     * "ConfigurationLoaderDialog" to skip the first time wizard.
+     * <p>
+     * TODO Make Preferences pre-configurable too.
+     */
+    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String.valueOf(Boolean.TRUE));
 
     // Methods/Constructors ***************************************************
 
