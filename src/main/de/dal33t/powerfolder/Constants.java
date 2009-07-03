@@ -53,6 +53,11 @@ public class Constants {
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
 
     /**
+     * Check for updates every hour.
+     */
+    public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
+ 
+    /**
      * The maximum number of lines in a chat.
      */
     public static final int MAX_CHAT_LINES = 500;
