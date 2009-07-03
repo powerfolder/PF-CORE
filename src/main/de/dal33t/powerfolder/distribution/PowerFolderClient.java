@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.distribution;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.util.Updater.UpdateSetting;
+import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderClient extends AbstractDistribution {
 

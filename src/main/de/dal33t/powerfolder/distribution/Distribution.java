@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.util.Updater.UpdateSetting;
+import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 /**
  * Interface which describes the information that can be retrieved from an
