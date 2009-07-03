@@ -428,6 +428,11 @@ public enum ConfigurationEntry {
     AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
 
     /**
+     * The number of seconds to go on idle between connection tries.
+     */
+    CONNECT_WAIT("connect.wait.seconds", "30"),
+
+    /**
      * Enable/Disable relayed connections.
      */
     RELAYED_CONNECTIONS_ENABLED("connections.relayed", Boolean.TRUE.toString()),
