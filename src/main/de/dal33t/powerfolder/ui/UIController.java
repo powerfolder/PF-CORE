@@ -19,49 +19,102 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.skin.*;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
-import de.dal33t.powerfolder.ui.chat.ChatFrame;
-import de.dal33t.powerfolder.ui.information.InformationCard;
-import de.dal33t.powerfolder.ui.information.InformationFrame;
-import de.dal33t.powerfolder.ui.model.ApplicationModel;
-import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notification.NotificationHandler;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
-import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceLoader;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.WarningEvent;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.skin.BlackMoonSkin;
+import de.dal33t.powerfolder.skin.BlackStarSkin;
+import de.dal33t.powerfolder.skin.BlueIceSkin;
+import de.dal33t.powerfolder.skin.BlueMoonSkin;
+import de.dal33t.powerfolder.skin.BlueSteelSkin;
+import de.dal33t.powerfolder.skin.GreenDreamSkin;
+import de.dal33t.powerfolder.skin.MauveMetallicSkin;
+import de.dal33t.powerfolder.skin.OrangeMetallicSkin;
+import de.dal33t.powerfolder.skin.SilverMoonSkin;
+import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.skin.SkyMetallicSkin;
+import de.dal33t.powerfolder.skin.WhiteVisionSkin;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.chat.ChatFrame;
+import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
+import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
+import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.InformationFrame;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.notification.NotificationHandler;
+import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
+import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.update.UIUpdateHandler;
+import de.dal33t.powerfolder.util.update.Updater;
+import de.dal33t.powerfolder.util.update.UpdaterHandler;
 
 /**
  * The ui controller.
@@ -264,6 +317,10 @@ public class UIController extends PFComponent {
                 new MainFrameBlinkManager(UIController.this);
             }
         });
+        
+        
+        UpdaterHandler updateHandler = new UIUpdateHandler(getController());
+        Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
     }
 
     private void gotoHPIfRequired() {
