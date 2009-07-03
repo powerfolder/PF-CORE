@@ -50,8 +50,8 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * Client to a server.
