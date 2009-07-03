@@ -99,7 +99,6 @@ import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Updater;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -107,6 +106,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.task.PersistentTaskManager;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -855,21 +855,6 @@ public class Controller extends PFComponent {
      * Sets up the task, which should be executes periodically.
      */
     private void setupPeriodicalTasks() {
-        // Check every hour for an update
-        long updateCheckTime = 60 * 60;
-        TimerTask updateCheckTask = new TimerTask() {
-            @Override
-            public void run() {
-                // Check for an update
-                if (updateSettings != null) {
-                    new Updater(getController(), updateSettings).start();
-                }
-            }
-        };
-        // Check for update 20 seconds after start.
-        threadPool.scheduleWithFixedDelay(updateCheckTask, Controller
-            .getWaitTime() * 3, 1000L * updateCheckTime, TimeUnit.MILLISECONDS);
-
         // Test the connectivity after a while.
         LimitedConnectivityChecker.install(this);
 
