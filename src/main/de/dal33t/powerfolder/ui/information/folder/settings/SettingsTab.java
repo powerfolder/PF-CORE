@@ -318,12 +318,12 @@ public class SettingsTab extends PFUIComponent {
     private JComponent createScriptField() {
         scriptModel.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                folder.setDownloadScript(String.valueOf(evt.getNewValue()));
+                folder.setDownloadScript((String) evt.getNewValue());
             }
         });
 
-        FormLayout layout = new FormLayout(
-            "pref:grow, 4dlu, 15dlu, 4dlu, pref", "pref");
+        FormLayout layout = new FormLayout("0:grow, 4dlu, 15dlu, 4dlu, pref",
+            "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
