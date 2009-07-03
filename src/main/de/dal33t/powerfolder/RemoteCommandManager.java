@@ -284,7 +284,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // New style configuration
             // dir=%BASE_DIR%\IPAKI\BACKUP;name=IPAKI/BACKUP/%COMPUTERNAME%;syncprofile=true,true,true,true,5,false,12,0,m,Auto-sync;backup_by_server=true
             makeFolder(folderConfig);
-            
+
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
@@ -349,9 +349,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (StringUtils.isNotBlank(config.get("name"))) {
             name = config.get("name");
         } else {
-            String nick = getController().getMySelf().getNick();
-            String lastPart = dir.getName();
-            name = nick + '-' + lastPart;
+            name = dir.getName();
         }
 
         // ID
