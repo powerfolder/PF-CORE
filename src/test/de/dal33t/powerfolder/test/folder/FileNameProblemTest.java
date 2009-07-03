@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.PreferencesEntry;
 
 public class FileNameProblemTest extends ControllerTestCase {
 
@@ -67,13 +68,14 @@ public class FileNameProblemTest extends ControllerTestCase {
     }
 
     public void testFilenameProblems() {
+        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
         FolderInfo folderInfo = new FolderInfo("testFolder", "ID");
         assertFalse(FilenameProblemHelper
             .hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
-        assertEquals(1, FilenameProblemHelper.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd ")).size());
 
         // Windows/Unix/Mac
@@ -83,14 +85,14 @@ public class FileNameProblemTest extends ControllerTestCase {
         // FilenameProblem.getProblems(FileInfoFactory.lookupInstance(folderInfo,
         // "ddd/d")).size());
         // windows/Mac
-        assertEquals(2, FilenameProblemHelper.getProblems(
+        assertEquals(2, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).size());
         // windows
-        assertEquals(1, FilenameProblemHelper.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "AUX")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "aux")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(
+        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "aux.txt")).size());
         // 255 chars
         assertFalse(FilenameProblemHelper
@@ -99,13 +101,24 @@ public class FileNameProblemTest extends ControllerTestCase {
         assertEquals(
             1,
             FilenameProblemHelper
-                .getProblems(
+                .getProblems(getController(),
                     FileInfoFactory
                         .lookupInstance(
                             folderInfo,
                             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345"))
                 .size());
     }
+
+    public void testFilenameProblemsNoCheck() {
+        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), false);
+        FolderInfo folderInfo = new FolderInfo("testFolder", "ID");
+        assertFalse(FilenameProblemHelper
+            .hasProblems("a valid filename.whatever"));
+        // cannot end with . and space ( ) on windows
+        assertEquals(0, FilenameProblemHelper.getProblems(getController(),
+            FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
+    }
+
 
     public void testStripExtension() {
         try {

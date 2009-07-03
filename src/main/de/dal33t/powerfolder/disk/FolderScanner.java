@@ -378,7 +378,8 @@ public class FolderScanner extends PFComponent {
                 if (problemList == null) {
                     problemList = new ArrayList<Problem>();
                 }
-                problemList.addAll(FilenameProblemHelper.getProblems(fileInfo));
+                problemList.addAll(FilenameProblemHelper.getProblems(
+                        getController(), fileInfo));
 
             }
             if (problemList != null) {

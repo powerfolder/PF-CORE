@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -71,35 +72,40 @@ public class FilenameProblemHelper {
     /**
      * Create problems for the file.
      *
+     * @param controller
      * @param fileInfo
      * @return
      */
-    public static List<Problem> getProblems(FileInfo fileInfo) {
+    public static List<Problem> getProblems(Controller controller,
+                                            FileInfo fileInfo) {
         String filename = fileInfo.getFilenameOnly();
         List<Problem> returnValue = new ArrayList<Problem>();
 
-        if (containsIllegalLinuxChar(filename)) {
-            returnValue.add(new IllegalLinuxCharsFilenameProblem(fileInfo));
-        }
+        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(controller)) {
 
-        if (containsIllegalMacOSXChar(filename)) {
-            returnValue.add(new IllegalMacosxCharsFilenameProblem(fileInfo));
-        }
+            if (containsIllegalLinuxChar(filename)) {
+                returnValue.add(new IllegalLinuxCharsFilenameProblem(fileInfo));
+            }
 
-        if (containsIllegalWindowsChars(filename)) {
-            returnValue.add(new IllegalWindowsCharsFilenameProblem(fileInfo));
-        }
+            if (containsIllegalMacOSXChar(filename)) {
+                returnValue.add(new IllegalMacosxCharsFilenameProblem(fileInfo));
+            }
 
-        if (endsWithIllegalWindowsChar(filename)) {
-            returnValue.add(new EndIllegalCharsFilenameProblem(fileInfo));
-        }
+            if (containsIllegalWindowsChars(filename)) {
+                returnValue.add(new IllegalWindowsCharsFilenameProblem(fileInfo));
+            }
 
-        if (isReservedWindowsFilename(filename)) {
-            returnValue.add(new ReservedWordFilenameProblem(fileInfo));
-        }
+            if (endsWithIllegalWindowsChar(filename)) {
+                returnValue.add(new EndIllegalCharsFilenameProblem(fileInfo));
+            }
 
-        if (isTooLong(filename)) {
-            returnValue.add(new TooLongFilenameProblem(fileInfo));
+            if (isReservedWindowsFilename(filename)) {
+                returnValue.add(new ReservedWordFilenameProblem(fileInfo));
+            }
+
+            if (isTooLong(filename)) {
+                returnValue.add(new TooLongFilenameProblem(fileInfo));
+            }
         }
         return returnValue;
     }
