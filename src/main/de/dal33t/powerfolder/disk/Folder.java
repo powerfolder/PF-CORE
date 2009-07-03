@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -1130,9 +1131,7 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
-            checkFileName(fInfo);
-        }
+        checkFileName(fInfo);
 
         // First relink modified by memberinfo to
         // actual instance if available on nodemanager
@@ -1256,9 +1255,7 @@ public class Folder extends PFComponent {
             return null;
         }
      
-        if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController())) {
-            checkFileName(dirInfo);
-        }
+        checkFileName(dirInfo);
 
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
@@ -1338,7 +1335,11 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     private void checkFileName(FileInfo fileInfo) {
-        // TODO TRAC #1578 Check for filename problems
+        List<Problem> problemList = FilenameProblemHelper.getProblems(
+                getController(), fileInfo);
+        for (Problem problem : problemList) {
+            addProblem(problem);
+        }
     }
 
     /**
