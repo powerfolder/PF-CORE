@@ -149,7 +149,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         try {
-            log.log(Level.SEVERE, "Sending remote command '" + command + '\'');
+            log.log(Level.INFO, "Sending remote command '" + command + '\'');
             Socket socket = new Socket("127.0.0.1", 1338);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
