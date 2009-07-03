@@ -38,6 +38,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        assertFalse("PowerFolder already running", RemoteCommandManager.hasRunningInstance());
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
