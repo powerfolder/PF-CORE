@@ -1,4 +1,4 @@
-PowerFolder Version 3.1.8 - http://www.powerfolder.com
+PowerFolder Version 3.1.9 - http://www.powerfolder.com
 
 New features and improvements:
  * Added option to automatically update system service when a new version of
