@@ -73,7 +73,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel showAdvancedSettingsModel;
 
     private JCheckBox backupOnlyClientBox;
-    private ValueModel backupOnlyClientModel;
 
     private JCheckBox usePowerFolderIconBox;
 
@@ -120,9 +119,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsModel = new ValueHolder(
             PreferencesEntry.SHOW_ADVANCED_SETTINGS
                 .getValueBoolean(getController()));
-        backupOnlyClientModel = new ValueHolder(
-            ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController()));
+        ValueModel backupOnlyClientModel = new ValueHolder(
+                ConfigurationEntry.BACKUP_ONLY_CLIENT
+                        .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
@@ -144,7 +143,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.show_advanced"));
 
         backupOnlyClientBox = BasicComponentFactory.createCheckBox(
-            backupOnlyClientModel, Translation
+                backupOnlyClientModel, Translation
                 .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel urbModel = new ValueHolder(
@@ -357,6 +356,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             showAdvancedSettingsBox.isSelected());
 
         // set bu only
+        if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
+                .equals(String.valueOf(backupOnlyClientBox.isSelected()))) {
+            needsRestart = true;
+        }
         ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
             String.valueOf(backupOnlyClientBox.isSelected()));
 
