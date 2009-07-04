@@ -528,7 +528,10 @@ public enum ConfigurationEntry {
      * <p>
      * TODO Make Preferences pre-configurable too.
      */
-    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String.valueOf(Boolean.TRUE));
+    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String.valueOf(Boolean.TRUE)),
+
+    /** Online storage only client. */
+    BACKUP_ONLY_CLIENT("backup.only.client", Boolean.FALSE.toString());
 
     // Methods/Constructors ***************************************************
 

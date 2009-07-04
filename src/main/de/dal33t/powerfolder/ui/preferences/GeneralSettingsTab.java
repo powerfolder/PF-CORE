@@ -72,6 +72,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
 
+    private JCheckBox backupOnlyClientBox;
+    private ValueModel backupOnlyClientModel;
+
     private JCheckBox usePowerFolderIconBox;
 
     private boolean needsRestart;
@@ -117,6 +120,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsModel = new ValueHolder(
             PreferencesEntry.SHOW_ADVANCED_SETTINGS
                 .getValueBoolean(getController()));
+        backupOnlyClientModel = new ValueHolder(
+            ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController()));
+
         nickField = new JTextField(getController().getMySelf().getNick());
 
         // Local base selection
@@ -135,6 +142,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
                 .getTranslation("preferences.dialog.show_advanced"));
+
+        backupOnlyClientBox = BasicComponentFactory.createCheckBox(
+            backupOnlyClientModel, Translation
+                .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel urbModel = new ValueHolder(
             ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
@@ -215,7 +226,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -276,6 +287,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }
@@ -341,6 +355,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
             showAdvancedSettingsBox.isSelected());
+
+        // set bu only
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
+            String.valueOf(backupOnlyClientBox.isSelected()));
 
         // UseRecycleBin
         ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean

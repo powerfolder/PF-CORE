@@ -2273,4 +2273,23 @@ public class Controller extends PFComponent {
             }
         }
     }
+
+    /**
+     * If this client is running in backup only mode.
+     * <p>
+     * Backup only client feature. Controls:
+     * <p>
+     * 1) If the client can send invitations
+     * <p>
+     * 2) If the client can add friends
+     * <p>
+     * 3) The client can connect to others except the server.
+     *
+     * @return true if running as backup only client.
+     */
+    public boolean isBackupOnly() {
+        return ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(this);
+    }
+
+
 }
