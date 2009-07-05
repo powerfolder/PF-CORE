@@ -312,9 +312,9 @@ public class MainFrame extends PFUIComponent {
         }
 
         if (getController().isVerbose()
-            && getController().getBuildTime() != null)
+            && Controller.getBuildTime() != null)
         {
-            title.append(" | build: " + getController().getBuildTime());
+            title.append(" | build: " + Controller.getBuildTime());
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());

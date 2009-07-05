@@ -653,7 +653,7 @@ public class Controller extends PFComponent {
             logFine("Setting up pro loader");
             String newPluginConfig = Constants.PRO_LOADER_PLUGIN_CLASS;
             if (!StringUtils.isBlank(pluginConfig)) {
-                newPluginConfig += "," + pluginConfig;
+                newPluginConfig += ',' + pluginConfig;
             }
             ConfigurationEntry.PLUGINS.setValue(getController(),
                 newPluginConfig);
@@ -696,7 +696,7 @@ public class Controller extends PFComponent {
                 logInfo("Running in VERBOSE mode, logging to file '"
                     + LoggingManager.getLoggingFileName() + '\'');
             } else {
-                logInfo("Running in VERBOSE mode, not logging to file");
+                logInfo("Running in VERBOSE mode, no logging to file");
             }
             Profiling.setEnabled(false);
             Profiling.reset();
@@ -1181,7 +1181,7 @@ public class Controller extends PFComponent {
      * @return true if in LAN only mode else false
      */
     public boolean isLanOnly() {
-        return getNetworkingMode().equals(NetworkingMode.LANONLYMODE);
+        return getNetworkingMode() == NetworkingMode.LANONLYMODE;
     }
 
     /**
@@ -1195,19 +1195,24 @@ public class Controller extends PFComponent {
 
     /**
      * returns the enum with the current networkin mode.
-     * 
+     *
      * @return The Networking mode either NetworkingMode.PUBLICMODE,
      *         NetworkingMode.PRIVATEMODE or NetworkingMode.LANONLYMODE
      */
     public NetworkingMode getNetworkingMode() {
         if (networkingMode == null) {
+            if (isBackupOnly()) {
+                // ALWAYS server only mode.
+                networkingMode = NetworkingMode.SERVERONLYMODE;
+                return networkingMode;
+            }
             // default = private
             String value = ConfigurationEntry.NETWORKING_MODE.getValue(this);
             try {
                 networkingMode = NetworkingMode.valueOf(value);
             } catch (Exception e) {
                 logSevere(
-                    "Unable to read networking mode, reverting to PRIVATEMODE: "
+                        "Unable to read networking mode, reverting to PRIVATEMODE: "
                         + e.toString(), e);
                 networkingMode = NetworkingMode.PRIVATEMODE;
             }
@@ -1216,19 +1221,25 @@ public class Controller extends PFComponent {
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
+        if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
+            // ALWAYS server only mode if backup-only.
+            newMode = NetworkingMode.SERVERONLYMODE;
+            logWarning(
+                    "Backup only client. Only supports server only networking mode");
+        }
         logFine("setNetworkingMode: " + newMode);
         NetworkingMode oldValue = getNetworkingMode();
-        if (!newMode.equals(oldValue)) {
+        if (newMode != oldValue) {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
 
             networkingMode = newMode;
             firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
                 .toString());
 
-            // Restart nodemanager
+            // Restart nodeManager
             nodeManager.shutdown();
             nodeManager.start();
-            getController().getReconnectManager().buildReconnectionQueue();
+            reconnectManager.buildReconnectionQueue();
         }
     }
 
@@ -1887,7 +1898,7 @@ public class Controller extends PFComponent {
      * 
      * @return the Date the PowerFolder.jar was build.
      */
-    public Date getBuildTime() {
+    public static Date getBuildTime() {
         File jar = new File("PowerFolder.jar");
         if (jar.exists()) {
             return new Date(jar.lastModified());
@@ -2029,7 +2040,7 @@ public class Controller extends PFComponent {
         }
         if (!isStartMinimized() && isUIEnabled()
                 && !commandLine.hasOption('z')) {
-            Object[] options = new Object[]{
+            Object[] options = {
                 Translation
                     .getTranslation("dialog.already_running.start_button"),
                 Translation

@@ -34,7 +34,7 @@ package de.dal33t.powerfolder;
  * folders.<BR>
  * Further PowerFolder connects to some other users so so the finding of your
  * friends in the network is posible.</LI>
- * <LI>PUBLICMODE : NOT LONGER AVAILABLE<BR>
+ * <LI>PUBLICMODE : NO LONGER AVAILABLE<BR>
  * Private folders will always require an Invitation, regardless of the
  * networking mode.</LI>
  * </UL>

@@ -223,7 +223,7 @@ public class Debug {
             long uptimeMinutes = c.getUptime() / 1000 / 60;
 
             b.append("\nVersion: " + Controller.PROGRAM_VERSION + " ("
-                + c.getBuildTime() + ')');
+                + Controller.getBuildTime() + ')');
             b.append("\nConfig: " + c.getConfigName());
             b.append("\nCurrent time: " + new Date());
             b.append("\nLocale: " + Locale.getDefault() + " ("
