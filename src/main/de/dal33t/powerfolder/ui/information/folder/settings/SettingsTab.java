@@ -577,7 +577,14 @@ public class SettingsTab extends PFUIComponent {
             .getActiveFrame());
         if (i == JFileChooser.APPROVE_OPTION) {
             File selectedFile = dc.getSelectedFile();
-            moveDirectory(originalDirectory, selectedFile, moveContent == 0);
+            if (FileUtils.isSubdirectory(originalDirectory, selectedFile)) {
+                DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("settings_tab.subdir.title"),
+                        Translation.getTranslation("settings_tab.subdir.text"),
+                        GenericDialogType.ERROR);
+            } else {
+                moveDirectory(originalDirectory, selectedFile, moveContent == 0);
+            }
         }
     }
 
