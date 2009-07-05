@@ -270,4 +270,120 @@ public class FileUtilsTest extends TestCase {
         assertTrue(foundSub);
     }
 
+    /**
+     * Copy build/test/a to build/test/a
+     * Should not be permitted.
+     *
+     * @throws IOException
+     */
+    public void testRecursiveCopy() throws IOException {
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+
+        // Setup base dir with dirs and files.
+        assertTrue(baseDir.mkdir());
+        File dir = new File(baseDir, "dir");
+        assertTrue(dir.mkdir());
+        File sub = new File(dir, "sub");
+        assertTrue(sub.mkdir());
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Copy
+        File copyDir = new File("build/test/sub");
+        boolean success = true;
+        try {
+            FileUtils.recursiveCopy(baseDir, copyDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            success = false;
+        }
+
+        assertFalse(success);
+
+        // Copy
+        copyDir = new File("build/test/sub/subsub");
+        copyDir.mkdirs();
+        
+        success = true;
+        try {
+            FileUtils.recursiveCopy(baseDir, copyDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            success = false;
+        }
+
+        assertFalse(success);
+
+    }
+
+    /**
+     * Move build/test to build/test
+     * Should not be permitted.
+     *
+     * @throws IOException
+     */
+    public void testRecursiveMove() throws IOException {
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+
+        // Setup base dir with dirs and files.
+        assertTrue(baseDir.mkdir());
+        File dir = new File(baseDir, "dir");
+        assertTrue(dir.mkdir());
+        File sub = new File(dir, "sub");
+        assertTrue(sub.mkdir());
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Move
+        File copyDir = new File("build/test/sub");
+        boolean success = true;
+        try {
+            FileUtils.recursiveMove(baseDir, copyDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            success = false;
+        }
+
+        assertFalse(success);
+
+        // Move
+        copyDir = new File("build/test/sub/subsub");
+        copyDir.mkdirs();
+
+        success = true;
+        try {
+            FileUtils.recursiveMove(baseDir, copyDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            success = false;
+        }
+
+        assertFalse(success);
+
+    }
+
+    public void testIsSubdirectory() {
+        File parent = new File("parent/");
+        parent.mkdir();
+
+        File file = new File("parent/sub/");
+        file.mkdir();
+        assertTrue(FileUtils.isSubdirectory(parent, file));
+
+        file = new File("parent/sub/subsub");
+        file.mkdir();
+        assertTrue(FileUtils.isSubdirectory(parent, file));
+
+        file = new File("sub/subsub");
+        file.mkdirs();
+        assertFalse(FileUtils.isSubdirectory(parent, file));
+
+    }
+
 }

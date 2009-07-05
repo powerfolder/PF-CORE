@@ -411,15 +411,21 @@ public class FileUtils {
         }
 
         if (sourceFile.isDirectory() && targetFile.isDirectory()) {
-            File[] files = sourceFile.listFiles();
-            for (File nextOriginalFile : files) {
-                // Synthesize target file name.
-                String lastPart = nextOriginalFile.getName();
-                File nextTargetFile = new File(targetFile, lastPart);
-                recursiveMove(nextOriginalFile, nextTargetFile);
+            if (isSubdirectory(sourceFile, targetFile)) {
+                // Need to be careful if moving to a subdirectory,
+                // avoid infinite recursion.
+                throw new IOException("Move to a subdirectory not permitted");
+            } else {
+                File[] files = sourceFile.listFiles();
+                for (File nextOriginalFile : files) {
+                    // Synthesize target file name.
+                    String lastPart = nextOriginalFile.getName();
+                    File nextTargetFile = new File(targetFile, lastPart);
+                    recursiveMove(nextOriginalFile, nextTargetFile);
+                }
+                // Delete directory after move
+                sourceFile.delete();
             }
-            // Delete directory after move
-            sourceFile.delete();
         } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()) {
             sourceFile.renameTo(targetFile);
         } else {
@@ -459,12 +465,18 @@ public class FileUtils {
         }
 
         if (sourceFile.isDirectory() && targetFile.isDirectory()) {
-            File[] files = sourceFile.listFiles();
-            for (File nextOriginalFile : files) {
-                // Synthesize target file name.
-                String lastPart = nextOriginalFile.getName();
-                File nextTargetFile = new File(targetFile, lastPart);
-                recursiveCopy(nextOriginalFile, nextTargetFile);
+            if (isSubdirectory(sourceFile, targetFile)) {
+                // Need to be careful if copying to a subdirectory,
+                // avoid infinite recursion.
+                throw new IOException("Copy to a subdirectory not permitted");
+            } else {
+                File[] files = sourceFile.listFiles();
+                for (File nextOriginalFile : files) {
+                    // Synthesize target file name.
+                    String lastPart = nextOriginalFile.getName();
+                    File nextTargetFile = new File(targetFile, lastPart);
+                    recursiveCopy(nextOriginalFile, nextTargetFile);
+                }
             }
         } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()) {
             copyFile(sourceFile, targetFile);
@@ -771,6 +783,31 @@ public class FileUtils {
             return digest.digest();
         } finally {
             in.close();
+        }
+    }
+
+    /**
+     * See if 'child' is a subdirectory of 'parent', recursively.
+     *
+     * @param parent
+     * @param targetChild
+     * @return
+     */
+    public static boolean isSubdirectory(File parent, File targetChild) {
+        if (parent.isDirectory() && targetChild.isDirectory()) {
+            for (File child : parent.listFiles()) {
+                if (child.isDirectory()) {
+                    if (child.equals(targetChild)) {
+                        return true;
+                    }
+                    if (isSubdirectory(child, targetChild)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            throw new IllegalArgumentException("Can conly compare directories.");
         }
     }
 }
