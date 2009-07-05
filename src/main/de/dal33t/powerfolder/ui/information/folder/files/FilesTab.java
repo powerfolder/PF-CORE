@@ -23,6 +23,8 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.uif_lite.component.UIFSplitPane;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -31,6 +33,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -52,6 +55,7 @@ public class FilesTab extends PFUIComponent
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
     private FilesTreePanel treePanel;
+    private ValueModel flatMode;
 
     /**
      * Constructor
@@ -60,6 +64,8 @@ public class FilesTab extends PFUIComponent
      */
     public FilesTab(Controller controller) {
         super(controller);
+
+        flatMode = new ValueHolder();
 
         statsPanel = new FilesStatsPanel(getController());
 
@@ -71,7 +77,7 @@ public class FilesTab extends PFUIComponent
 
         tablePanel = new FilesTablePanel(controller, this);
         directoryFilter.addListener(tablePanel);
-        directoryFilter.setFlatMode(tablePanel.getFlatMode());
+        directoryFilter.setFlatMode(flatMode);
         treePanel.addTreeSelectionListener(tablePanel);
 
         splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -98,6 +104,7 @@ public class FilesTab extends PFUIComponent
         filterSelectionComboBox.addItem(Translation
                 .getTranslation("files_tab.combo.deleted_and_previous_files"));
         filterSelectionComboBox.addActionListener(new MyActionListener());
+
     }
 
     /**
@@ -179,12 +186,29 @@ public class FilesTab extends PFUIComponent
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:pref:grow",
+
+        final JCheckBox flatViewCB = new JCheckBox(
+                Translation.getTranslation("files_tab.flat_view.text"));
+        flatViewCB.setToolTipText(
+                Translation.getTranslation("files_tab.flat_view.tip"));
+        flatViewCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                flatMode.setValue(flatViewCB.isSelected());
+            }
+        });
+
+
+
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref",
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(filterSelectionComboBox, cc.xy(1, 1));
+        builder.add(new JToggleButton(new DetailsAction(getController())),
+                cc.xy(1, 1));
         builder.add(filterTextField.getUIComponent(), cc.xy(3, 1));
+        builder.add(flatViewCB, cc.xy(5, 1));
+        builder.add(filterSelectionComboBox, cc.xy(7, 1));
+
         return builder.getPanel();
     }
 
@@ -228,4 +252,17 @@ public class FilesTab extends PFUIComponent
             }
         }
     }
+
+    private class DetailsAction extends BaseAction {
+
+        DetailsAction(Controller controller) {
+            super("action_details", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            tablePanel.toggleDetails();
+        }
+    }
+
+
 }

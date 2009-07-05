@@ -19,12 +19,9 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -54,7 +51,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -78,7 +74,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private JScrollPane tableScroller;
     private JLabel emptyLabel;
     private FilesTab parent;
-    private ValueModel flatMode;
 
     public FilesTablePanel(Controller controller, FilesTab parent) {
         super(controller);
@@ -90,11 +85,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         table.addMouseListener(new TableMouseListener());
-        flatMode = new ValueHolder();
-    }
-
-    public ValueModel getFlatMode() {
-        return flatMode;
     }
 
     /**
@@ -113,9 +103,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * Builds the ui component.
      */
     private void buildUIComponent() {
+
+        createToolBar();
+
         FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref");
-        //       tools       sep,        table,             details
+                "fill:0:grow, 3dlu, pref");
+        //       table,             details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -128,14 +121,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         UIUtil.setZeroHeight(tableScroller);
         UIUtil.removeBorder(tableScroller);
 
-        builder.add(createToolBar(), cc.xy(1, 1));
-        builder.addSeparator(null, cc.xy(1, 3));
-
         // tableScroller and emptyLabel occupy the same slot
-        builder.add(tableScroller, cc.xy(1, 5));
-        builder.add(emptyLabel, cc.xy(1, 5));
+        builder.add(tableScroller, cc.xy(1, 1));
+        builder.add(emptyLabel, cc.xy(1, 1));
 
-        builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 7));
+        builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 3));
 
         buildPopupMenus();
 
@@ -146,9 +136,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     /**
      * @return the toolbar
      */
-    private JPanel createToolBar() {
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        
+    private void createToolBar() {
         openFileAction = new OpenFileAction();
         openFileAction.setEnabled(false);
         downloadFileAction = new DownloadFileAction();
@@ -167,29 +155,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         unmarkAction.setEnabled(false);
         singleFileTransferAction = new SingleFileTransferAction(getController());
         singleFileTransferAction.setEnabled(false);
-
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(downloadFileAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(openFileAction));
-
-        final JCheckBox flatViewCB = new JCheckBox(
-                Translation.getTranslation("files_tab.flat_view.text"));
-        flatViewCB.setToolTipText(
-                Translation.getTranslation("files_tab.flat_view.tip"));
-        flatViewCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                flatMode.setValue(flatViewCB.isSelected());
-            }
-        });
-
-        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
-        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(flatViewCB, cc.xy(1, 1));
-        builder.add(bar.getPanel(), cc.xy(3, 1));
-        return builder.getPanel();
     }
 
     /**
@@ -197,10 +162,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      */
     private void buildPopupMenus() {
         fileMenu = new JPopupMenu();
-        fileMenu.add(downloadFileAction);
         if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
             fileMenu.add(openFileAction);
         }
+        fileMenu.add(downloadFileAction);
         fileMenu.add(abortDownloadAction);
         fileMenu.add(deleteFileAction);
         fileMenu.add(restoreFileAction);
@@ -384,6 +349,20 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 // Double click on a directory makes that directory the
                 // selected one in the tree.
                 parent.setSelection(directory);
+            } else {
+                FileInfo fileInfo = tableModel.getFileInfoAtRow(index);
+                if (fileInfo != null) {
+                    // Default to open if possible, else try download.
+                    if (openFileAction.isEnabled()) {
+                        ActionEvent ae = new ActionEvent(this, 0,
+                                openFileAction.getName());
+                        openFileAction.actionPerformed(ae);
+                    } else if (downloadFileAction.isEnabled()) {
+                        ActionEvent ae = new ActionEvent(this, 0,
+                                openFileAction.getName());
+                        downloadFileAction.actionPerformed(ae);
+                    }
+                }
             }
         }
     }
@@ -467,17 +446,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
-    private class DetailsAction extends BaseAction {
-
-        DetailsAction(Controller controller) {
-            super("action_details", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            toggleDetails();
-        }
-    }
-
     private class MyListSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
@@ -485,7 +453,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             TransferManager tm = getController().getTransferManager();
             if (fileInfo != null) {
                 fileDetailsPanel.setFileInfo(fileInfo);
-                openFileAction.setEnabled(true);
+                if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+                    openFileAction.setEnabled(true);
+                }
 
                 // Enable download action if file is download-able.
                 FolderRepository repo = getController()
@@ -528,8 +498,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             }
 
             fileDetailsPanel.setFileInfo(null);
-            openFileAction.setEnabled(false);
-            openFileAction.setEnabled(false);
             restoreFileAction.setEnabled(false);
             deleteFileAction.setEnabled(false);
             abortDownloadAction.setEnabled(false);
