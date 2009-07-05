@@ -63,7 +63,6 @@ public class PreferencesDialog extends BaseDialog {
     private JTabbedPane tabbedPane;
 
     private static final int DYNDNS_TAB_INDEX = 3;
-    private static final int ADVANCED_TAB_INDEX = 4;
 
     private GeneralSettingsTab generalSettingsTab;
     private UISettingsTab uiSettingsTab;
@@ -102,7 +101,8 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.setSelectedIndex(index);
     }
 
-    private void showTab(boolean enable, PreferenceTab tab, int tabindex, Icon icon) {
+    private void showTab(boolean enable, PreferenceTab tab, int tabindex,
+                         Icon icon) {
         Reject.ifNull(tab, "Unable to show/hide tab. Tab is null");
         Reject.ifTrue(tabindex < 0, "Unable to show/hide tab. Invalid index: "
             + tabindex);
@@ -122,17 +122,19 @@ public class PreferencesDialog extends BaseDialog {
         rePack();
     }
 
-    private void showAdvancedTab(boolean enable) {
-        showTab(enable, advancedSettingsTab, ADVANCED_TAB_INDEX, Icons.getIconById(Icons.ADVANCED));
+    /**
+     * Advanced tab is after DYN DNS.
+     * DYN DNS tab shown if not backup only.
+     * 
+     * @return
+     */
+    private int getAdvancedTabIndex() {
+        return DYNDNS_TAB_INDEX + (getController().isBackupOnly() ? 0 : 1);
     }
 
-    void showDynDNSTab(boolean enable) {
-        if (dynDnsSettingsTab == null) {
-            // Initalize dyndns tab lazy
-            dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-                mydnsndsModel);
-        }
-        showTab(enable, dynDnsSettingsTab, DYNDNS_TAB_INDEX, Icons.getIconById(Icons.DYN_DNS));
+    private void showAdvancedTab(boolean enable) {
+        showTab(enable, advancedSettingsTab, getAdvancedTabIndex(),
+                Icons.getIconById(Icons.ADVANCED));
     }
 
     public Component getContent() {
@@ -160,7 +162,8 @@ public class PreferencesDialog extends BaseDialog {
             getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
-            Icons.getIconById(Icons.PREFERENCES), generalSettingsTab.getUIPanel(), null);
+            Icons.getIconById(Icons.PREFERENCES),
+                generalSettingsTab.getUIPanel(), null);
 
         uiSettingsTab = new UISettingsTab(
             getController());
@@ -171,14 +174,19 @@ public class PreferencesDialog extends BaseDialog {
         networkSettingsTab = new NetworkSettingsTab(
             getController());
         preferenceTabs.add(networkSettingsTab);
-        tabbedPane.addTab(networkSettingsTab.getTabName(), Icons.getIconById(Icons.ONLINE_STORAGE),
+        tabbedPane.addTab(networkSettingsTab.getTabName(),
+                Icons.getIconById(Icons.ONLINE_STORAGE),
             networkSettingsTab.getUIPanel(), null);
 
-        dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
-            mydnsndsModel);
-        preferenceTabs.add(dynDnsSettingsTab);
-        tabbedPane.addTab(dynDnsSettingsTab.getTabName(), Icons.getIconById(Icons.DYN_DNS),
-            dynDnsSettingsTab.getUIPanel(), null);
+        // Do not show DYN DNS if in backup only mode.
+        if (!getController().isBackupOnly()) {
+            dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
+                mydnsndsModel);
+            preferenceTabs.add(dynDnsSettingsTab);
+            tabbedPane.addTab(dynDnsSettingsTab.getTabName(),
+                    Icons.getIconById(Icons.DYN_DNS),
+                dynDnsSettingsTab.getUIPanel(), null);
+        }
 
         dialogsSettingsTab = new DialogsSettingsTab(
             getController());
@@ -186,9 +194,8 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.getIconById(
                 Icons.DIALOG), dialogsSettingsTab.getUIPanel(), null);
 
-        pluginSettingsTab = new PluginSettingsTab(
-            getController(), this);
         if (getController().getPluginManager().countPlugins() > 0) {
+            pluginSettingsTab = new PluginSettingsTab(getController(), this);
             preferenceTabs.add(pluginSettingsTab);
             tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
                 pluginSettingsTab.getUIPanel(), null);
@@ -212,7 +219,8 @@ public class PreferencesDialog extends BaseDialog {
             .getValueBoolean(getController()))
         {
             preferenceTabs.add(advancedSettingsTab);
-            tabbedPane.addTab(advancedSettingsTab.getTabName(), Icons.getIconById(Icons.ADVANCED),
+            tabbedPane.addTab(advancedSettingsTab.getTabName(),
+                    Icons.getIconById(Icons.ADVANCED),
                 advancedSettingsTab.getUIPanel(), null);
         }
 
@@ -248,7 +256,7 @@ public class PreferencesDialog extends BaseDialog {
      * Creates the okay button for the whole pref dialog
      */
     private JButton createOKButton() {
-        JButton theButton = createOKButton(new ActionListener() {
+        return createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //
                 // OK button event handler
@@ -290,7 +298,6 @@ public class PreferencesDialog extends BaseDialog {
                 worker.start();
             }
         });
-        return theButton;
     }
 
     private JButton createCancelButton() {
@@ -320,7 +327,8 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(helpButton, okButton, cancelButton);
+        return ButtonBarFactory.buildCenteredBar(helpButton, okButton,
+                cancelButton);
     }
 
     private void saveSettings() {
@@ -365,23 +373,31 @@ public class PreferencesDialog extends BaseDialog {
         public void helpAction() {
             Component component = tabbedPane.getSelectedComponent();
             String article = "";
-            if (generalSettingsTab != null && component == generalSettingsTab.getUIPanel()) {
+            if (generalSettingsTab != null && component
+                    == generalSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_GENERAL;
-            } else if (uiSettingsTab != null && component == uiSettingsTab.getUIPanel()) {
+            } else if (uiSettingsTab != null && component
+                    == uiSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_UI;
-            } else if (networkSettingsTab != null && component == networkSettingsTab.getUIPanel()) {
+            } else if (networkSettingsTab != null && component
+                    == networkSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_NETWORK;
-            } else if (dialogsSettingsTab != null && component == dialogsSettingsTab.getUIPanel()) {
+            } else if (dialogsSettingsTab != null && component
+                    == dialogsSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_DIALOG;
-            } else if (dynDnsSettingsTab != null && component == dynDnsSettingsTab.getUIPanel()) {
+            } else if (dynDnsSettingsTab != null && component
+                    == dynDnsSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_DYN_DNS;
-            } else if (advancedSettingsTab != null && component == advancedSettingsTab.getUIPanel()) {
+            } else if (advancedSettingsTab != null && component
+                    == advancedSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_ADVANCED;
-            } else if (pluginSettingsTab != null && component == pluginSettingsTab.getUIPanel()) {
+            } else if (pluginSettingsTab != null && component
+                    == pluginSettingsTab.getUIPanel()) {
                 article = WikiLinks.SETTINGS_PLUGIN;
             }
 
-            String wikiArticleURL = Help.getWikiArticleURL(getController(), article);
+            String wikiArticleURL = Help.getWikiArticleURL(getController(),
+                    article);
             try {
                 BrowserLauncher.openURL(wikiArticleURL);
             } catch (IOException e1) {
