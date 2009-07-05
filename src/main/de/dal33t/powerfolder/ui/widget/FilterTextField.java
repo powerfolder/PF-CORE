@@ -52,7 +52,7 @@ public class FilterTextField {
     private String hint;
     private JPanel panel;
     private JTextField jTextField;
-    private JButton cancelTextJButton;
+    private JButton clearTextJButton;
     private JLabel spacerIcon;
     private JLabel glassIcon;
     private ValueModel externalValueModel;
@@ -91,7 +91,7 @@ public class FilterTextField {
 
             builder.add(glassIcon, cc.xy(1, 1));
             builder.add(jTextField, cc.xy(3, 1));
-            builder.add(cancelTextJButton, cc.xy(4, 1, CellConstraints.RIGHT,
+            builder.add(clearTextJButton, cc.xy(4, 1, CellConstraints.RIGHT,
                     CellConstraints.DEFAULT));
             builder.add(spacerIcon, cc.xy(4, 1));
             builder.setBorder(new EtchedBorder());
@@ -117,14 +117,16 @@ public class FilterTextField {
         spacerIcon = SimpleComponentFactory
                 .createLabel(Icons.getIconById(Icons.BLANK));
         spacerIcon.setVisible(false);
-        cancelTextJButton = new JButton3Icons(
+        clearTextJButton = new JButton3Icons(
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
-        cancelTextJButton.setVisible(false);
+        clearTextJButton.setVisible(false);
+        clearTextJButton.setToolTipText(Translation.getTranslation(
+                "filter_text_field.clear.hint"));
         // make sure the background is never drawn
-        cancelTextJButton.setContentAreaFilled(false);
-        cancelTextJButton.addActionListener(new ActionListener() {
+        clearTextJButton.setContentAreaFilled(false);
+        clearTextJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 jTextField.setText("");
                 externalValueModel.setValue("");
@@ -139,7 +141,7 @@ public class FilterTextField {
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
 
         MyFocusListener focusListener = new MyFocusListener();
-        cancelTextJButton.addFocusListener(focusListener);
+        clearTextJButton.addFocusListener(focusListener);
         jTextField.addFocusListener(focusListener);
         setHint();
     }
@@ -195,7 +197,7 @@ public class FilterTextField {
             }
             // visible if there is text else invisible
             boolean hasExternalText = hasExternalText();
-            cancelTextJButton.setVisible(hasExternalText);
+            clearTextJButton.setVisible(hasExternalText);
             spacerIcon.setVisible(!hasExternalText);
         }
     }
@@ -215,7 +217,7 @@ public class FilterTextField {
         }
 
         private void doFocusChange() {
-            focus = cancelTextJButton.hasFocus() || jTextField.hasFocus();
+            focus = clearTextJButton.hasFocus() || jTextField.hasFocus();
             if (focus) {
                 clearHint();
             } else {
