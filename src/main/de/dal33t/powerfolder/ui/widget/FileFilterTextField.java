@@ -45,9 +45,9 @@ import java.beans.PropertyChangeListener;
  * text field changes. The external one is what the public accessor sees.
  * External value does not expose 'hint' text.
  *
- * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
+ * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</A>
  */
-public class FilterTextField {
+public class FileFilterTextField {
     private int columns;
     private String hint;
     private JPanel panel;
@@ -66,7 +66,7 @@ public class FilterTextField {
      *
      * @param columns
      */
-    public FilterTextField(int columns, String hint, String tooltip) {
+    public FileFilterTextField(int columns, String hint, String tooltip) {
         this.columns = columns;
         this.hint = hint;
         this.tooltip = tooltip;
@@ -134,7 +134,9 @@ public class FilterTextField {
             }
         });
         glassIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS));
+                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS_ARROW));
+        glassIcon.setToolTipText(Translation.getTranslation("filter_text_field.glass.hint"));
+        glassIcon.addMouseListener(new MyMouseListener());
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
 
@@ -221,6 +223,18 @@ public class FilterTextField {
             } else {
                 setHint();
             }
+        }
+    }
+
+    private class MyMouseListener extends MouseAdapter {
+
+        public void mouseClicked(MouseEvent e) {
+            showContextMenu(e);
+        }
+
+        private void showContextMenu(MouseEvent e) {
+            createPopupMenu().show(e.getComponent(), glassIcon.getX(),
+                    glassIcon.getY() + glassIcon.getHeight());
         }
     }
 }

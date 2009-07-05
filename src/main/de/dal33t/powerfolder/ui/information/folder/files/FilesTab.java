@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
-import de.dal33t.powerfolder.ui.widget.FilterTextField;
+import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -50,7 +50,7 @@ public class FilesTab extends PFUIComponent
     private JPanel uiComponent;
     private JSplitPane splitPane;
     private FilesTablePanel tablePanel;
-    private FilterTextField filterTextField;
+    private FileFilterTextField filterTextField;
     private JComboBox filterSelectionComboBox;
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
@@ -86,7 +86,7 @@ public class FilesTab extends PFUIComponent
                 "files.tab.location", 150);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
-        filterTextField = new FilterTextField(12,
+        filterTextField = new FileFilterTextField(15,
                 Translation.getTranslation("files_tab.filter_by_file_name.hint"),
                 Translation.getTranslation("files_tab.filter_by_file_name.tool_tip"));
         directoryFilter.setSearchField(filterTextField.getValueModel());

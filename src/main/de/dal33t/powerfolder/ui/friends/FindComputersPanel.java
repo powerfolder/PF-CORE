@@ -91,7 +91,7 @@ public class FindComputersPanel extends PFUIPanel {
     }
 
     private void initComponents() {
-        searchInput = new FilterTextField(12, Translation
+        searchInput = new FilterTextField(15, Translation
                 .getTranslation("find_computers_panel.search_for_computer.hint"),
                 Translation
                 .getTranslation("find_computers_panel.search_for_computer.tooltip"));
@@ -152,13 +152,13 @@ public class FindComputersPanel extends PFUIPanel {
         JButton connectButton = new JButton(getApplicationModel()
                 .getActionModel().getConnectAction());
 
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, 105dlu",
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, fill:pref:grow",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(hideOffline, cc.xy(1, 1));
-        builder.add(connectButton, cc.xy(3, 1));
-        builder.add(searchInput.getUIComponent(), cc.xy(5, 1));
+        builder.add(connectButton, cc.xy(1, 1));
+        builder.add(searchInput.getUIComponent(), cc.xy(3, 1));
+        builder.add(hideOffline, cc.xy(5, 1));
         return builder.getPanel();
 
     }
