@@ -77,6 +77,7 @@ public class Icons {
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = "filter_text_field_clear_button_hover.icon";
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = "filter_text_field_clear_button_push.icon";
     public static final String FILTER_TEXT_FIELD_GLASS = "filter_text_field_glass.icon";
+    public static final String FILTER_TEXT_FIELD_GLASS_ARROW = "filter_text_field_glass_arrow.icon";
 
     public static final String BLANK = "blank.icon";
     public static final String WARNING = "warning.icon";

@@ -27,14 +27,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -55,11 +53,13 @@ public class FilterTextField {
     private JPanel panel;
     private JTextField jTextField;
     private JButton cancelTextJButton;
+    private JLabel spacerIcon;
     private JLabel glassIcon;
     private ValueModel externalValueModel;
     private ValueModel localValueModel;
     private String tooltip;
     private boolean focus;
+    private JPopupMenu contextMenu;
 
     /**
      * create a FilterTextField
@@ -84,16 +84,19 @@ public class FilterTextField {
     public JPanel getUIComponent() {
         if (panel == null) {
             initComponents();
-            FormLayout layout = new FormLayout("pref:grow, pref, 1dlu", "pref");
+            FormLayout layout = new FormLayout("pref, 1dlu, pref:grow, 15dlu",
+                    "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            builder.add(jTextField, cc.xy(1, 1));
-            builder.add(cancelTextJButton, cc.xy(2, 1));
-            builder.add(glassIcon, cc.xy(2, 1));
+            builder.add(glassIcon, cc.xy(1, 1));
+            builder.add(jTextField, cc.xy(3, 1));
+            builder.add(cancelTextJButton, cc.xy(4, 1, CellConstraints.RIGHT,
+                    CellConstraints.DEFAULT));
+            builder.add(spacerIcon, cc.xy(4, 1));
             builder.setBorder(new EtchedBorder());
             panel = builder.getPanel();
-            panel.setBackground(Color.WHITE);
+            panel.setOpaque(false);
         }
         return panel;
     }
@@ -111,6 +114,9 @@ public class FilterTextField {
         if (tooltip != null && tooltip.length() > 0) {
             jTextField.setToolTipText(tooltip);
         }
+        spacerIcon = SimpleComponentFactory
+                .createLabel(Icons.getIconById(Icons.BLANK));
+        spacerIcon.setVisible(false);
         cancelTextJButton = new JButton3Icons(
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
@@ -126,7 +132,9 @@ public class FilterTextField {
             }
         });
         glassIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS));
+                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS_ARROW));
+        glassIcon.setToolTipText(Translation.getTranslation("filter_text_field.glass.hint"));
+        glassIcon.addMouseListener(new MyMouseListener());
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
 
@@ -166,6 +174,16 @@ public class FilterTextField {
                 && ((CharSequence) externalValueModel.getValue()).length() > 0;
     }
 
+    public JPopupMenu createPopupMenu() {
+        if (contextMenu == null) {
+            contextMenu = new JPopupMenu();
+            contextMenu.add(new JMenuItem("todo"));
+//            contextMenu.add(addRemoveFriendAction);
+//            contextMenu.add(reconnectAction);
+        }
+        return contextMenu;
+    }
+
     /**
      * Listens for changes to the local text value model.
      * if the component has focus, set the external vm.
@@ -178,7 +196,7 @@ public class FilterTextField {
             // visible if there is text else invisible
             boolean hasExternalText = hasExternalText();
             cancelTextJButton.setVisible(hasExternalText);
-            glassIcon.setVisible(!hasExternalText);
+            spacerIcon.setVisible(!hasExternalText);
         }
     }
 
@@ -203,6 +221,18 @@ public class FilterTextField {
             } else {
                 setHint();
             }
+        }
+    }
+
+    private class MyMouseListener extends MouseAdapter {
+
+        public void mouseClicked(MouseEvent e) {
+            showContextMenu(e);
+        }
+
+        private void showContextMenu(MouseEvent e) {
+            createPopupMenu().show(e.getComponent(), glassIcon.getX(),
+                    glassIcon.getY() + glassIcon.getHeight());
         }
     }
 }

@@ -197,8 +197,6 @@ public class FilesTab extends PFUIComponent
             }
         });
 
-
-
         FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref",
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
