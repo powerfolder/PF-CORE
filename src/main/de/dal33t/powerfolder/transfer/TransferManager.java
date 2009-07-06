@@ -1184,7 +1184,9 @@ public class TransferManager extends PFComponent {
         if (!fileInSyncWithDisk) {
             // This should free up an otherwise waiting for download partner
             Folder folder = dl.file.getFolder(repo);
-            folder.recommendScanOnNextMaintenance();
+            if (folder != null) {
+                folder.recommendScanOnNextMaintenance();
+            }
             logWarning("File not in sync with disk: '"
                 + dl.file.toDetailString() + "', should be modified at "
                 + diskFile.lastModified());
