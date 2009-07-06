@@ -42,18 +42,19 @@ public abstract class FilterModel extends PFComponent {
     /** The task that performs the filtering */
     private TimerTask task;
 
-    /** The value model of the searchfield we listen to */
+    /** The value model <String> of the searchfield we listen to */
     private ValueModel searchField;
+
+    /** The value model <Integer> of the search we listen to */
+    private ValueModel modeField;
 
     /** The value model setting flat mode */
     private ValueModel flatMode;
 
-    public FilterModel(Controller controller) {
+    protected FilterModel(Controller controller) {
         super(controller);
         setSearchField(new ValueHolder());
     }
-
-    public abstract void reset();
 
     public abstract void scheduleFiltering();
 
@@ -61,13 +62,13 @@ public abstract class FilterModel extends PFComponent {
         return searchField;
     }
 
+    public ValueModel getModeField() {
+        return modeField;
+    }
+
     public boolean isFlatMode() {
         Object value = flatMode.getValue();
-        if (value == null) {
-            return false;
-        } else {
-            return (Boolean)flatMode.getValue();
-        }
+        return value != null && (Boolean) flatMode.getValue();
     }
 
     public void setFlatMode(ValueModel flatMode) {
@@ -105,4 +106,14 @@ public abstract class FilterModel extends PFComponent {
             }
         });
     }
+
+    /**
+     * Expect a valueModel<Integer> with modes from FileFilterTextField.
+     *
+     * @param modeField
+     */
+    public void setSearchMode(ValueModel modeField) {
+        this.modeField = modeField;
+    }
+
 }

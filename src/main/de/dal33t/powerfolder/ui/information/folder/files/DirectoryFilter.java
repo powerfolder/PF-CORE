@@ -119,14 +119,6 @@ public class DirectoryFilter extends FilterModel {
     }
 
     /**
-     * Clears the filter text.
-     */
-    public void reset() {
-        getSearchField().setValue("");
-        queueFilterEvent();
-    }
-
-    /**
      * Called from the FilterModel when text search field changed.
      */
     public void scheduleFiltering() {
@@ -433,6 +425,7 @@ public class DirectoryFilter extends FilterModel {
         // All keywords matched!
         return true;
     }
+
 
     /**
      * Listener to respond to folder events. Queue filter event if our folder.

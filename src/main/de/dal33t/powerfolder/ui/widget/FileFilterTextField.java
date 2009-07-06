@@ -48,37 +48,50 @@ import java.beans.PropertyChangeListener;
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</A>
  */
 public class FileFilterTextField {
+
+    public static final int FILE_NAME_FILTER_MODE = 0;
+    public static final int MODIFIER_FILTER_MODE = 1;
+
     private int columns;
-    private String hint;
     private JPanel panel;
     private JTextField textField;
     private JButton clearTextJButton;
     private JLabel spacerIcon;
     private JLabel glassIcon;
-    private ValueModel externalValueModel;
+    private ValueModel externalTextValueModel; // String
+    private ValueModel externalModeValueModel; // Integer
     private ValueModel localValueModel;
-    private String tooltip;
     private boolean focus;
     private JPopupMenu contextMenu;
+
+    private JRadioButtonMenuItem fileNameRBMI;
+    private JRadioButtonMenuItem modifierRBMI;
 
     /**
      * create a FilterTextField
      *
      * @param columns
      */
-    public FileFilterTextField(int columns, String hint, String tooltip) {
+    public FileFilterTextField(int columns) {
         this.columns = columns;
-        this.hint = hint;
-        this.tooltip = tooltip;
         localValueModel = new ValueHolder();
-        externalValueModel = new ValueHolder();
+        externalTextValueModel = new ValueHolder();
+        externalModeValueModel = new ValueHolder();
+        externalModeValueModel.setValue(FILE_NAME_FILTER_MODE);
     }
 
     /**
      * @return The value model holding the text (excludes hint text value)
      */
-    public ValueModel getValueModel() {
-        return externalValueModel;
+    public ValueModel getTextValueModel() {
+        return externalTextValueModel;
+    }
+
+    /**
+     * @return The value model holding the filter mode
+     */
+    public ValueModel getModeValueModel() {
+        return externalModeValueModel;
     }
 
     public JPanel getUIComponent() {
@@ -111,9 +124,7 @@ public class FileFilterTextField {
         // since the button may not be visible we need to force the height
         // else the ui will "jump"
         textField.setPreferredSize(new Dimension(17, 17));
-        if (tooltip != null && tooltip.length() > 0) {
-            textField.setToolTipText(tooltip);
-        }
+        textField.setToolTipText(Translation.getTranslation("filter_text_field.tip"));
         spacerIcon = SimpleComponentFactory
                 .createLabel(Icons.getIconById(Icons.BLANK));
         spacerIcon.setVisible(false);
@@ -129,13 +140,14 @@ public class FileFilterTextField {
         clearTextJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 textField.setText("");
-                externalValueModel.setValue("");
+                externalTextValueModel.setValue("");
                 textField.requestFocus();
             }
         });
-        glassIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS_ARROW));
-        glassIcon.setToolTipText(Translation.getTranslation("filter_text_field.glass.hint"));
+        glassIcon = SimpleComponentFactory.createLabel(Icons.getIconById(
+                Icons.FILTER_TEXT_FIELD_GLASS_ARROW));
+        glassIcon.setToolTipText(Translation.getTranslation(
+                "filter_text_field.glass.hint"));
         glassIcon.addMouseListener(new MyMouseListener());
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
@@ -143,26 +155,26 @@ public class FileFilterTextField {
         MyFocusListener focusListener = new MyFocusListener();
         clearTextJButton.addFocusListener(focusListener);
         textField.addFocusListener(focusListener);
-        setHint();
+        updateForFocus();
     }
 
-    /**
-     * Sets the hint text if there is no external text.
-     */
-    private void setHint() {
+    private void updateForFocus() {
+        focus = clearTextJButton.hasFocus() || textField.hasFocus();
         if (!hasExternalText()) {
-            textField.setForeground(Color.lightGray);
-            textField.setText(hint);
-        }
-    }
-
-    /**
-     * Clears the hint text if there is no external text.
-     */
-    private void clearHint() {
-        if (!hasExternalText()) {
+        if (focus) {
             textField.setText("");
             textField.setForeground(SystemColor.textText);
+        } else {
+            textField.setForeground(Color.lightGray);
+            int mode = (Integer) externalModeValueModel.getValue();
+            if (mode == FILE_NAME_FILTER_MODE) {
+                textField.setText(Translation.getTranslation(
+                    "filter_text_field.menu.file_name.text"));
+            } else if (mode == MODIFIER_FILTER_MODE) {
+                textField.setText(Translation.getTranslation(
+                    "filter_text_field.menu.modifier.text"));
+            }
+        }
         }
     }
 
@@ -172,16 +184,26 @@ public class FileFilterTextField {
      * @return
      */
     private boolean hasExternalText() {
-        return externalValueModel.getValue() != null
-                && ((CharSequence) externalValueModel.getValue()).length() > 0;
+        return externalTextValueModel.getValue() != null
+                && ((CharSequence) externalTextValueModel.getValue()).length() > 0;
     }
 
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
+            MyActionListener listener = new MyActionListener();
             contextMenu = new JPopupMenu();
-            contextMenu.add(new JMenuItem("todo"));
-//            contextMenu.add(addRemoveFriendAction);
-//            contextMenu.add(reconnectAction);
+            fileNameRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
+                    "filter_text_field.menu.file_name.text"));
+            fileNameRBMI.setSelected(true);
+            fileNameRBMI.addActionListener(listener);
+            modifierRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
+                    "filter_text_field.menu.modifier.text"));
+            modifierRBMI.addActionListener(listener);
+            ButtonGroup bg = new ButtonGroup();
+            bg.add(fileNameRBMI);
+            bg.add(modifierRBMI);
+            contextMenu.add(fileNameRBMI);
+            contextMenu.add(modifierRBMI);
         }
         return contextMenu;
     }
@@ -193,7 +215,7 @@ public class FileFilterTextField {
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (focus) {
-                externalValueModel.setValue(localValueModel.getValue());
+                externalTextValueModel.setValue(localValueModel.getValue());
             }
             // visible if there is text else invisible
             boolean hasExternalText = hasExternalText();
@@ -209,20 +231,11 @@ public class FileFilterTextField {
     private class MyFocusListener extends FocusAdapter {
 
         public void focusGained(FocusEvent e) {
-            doFocusChange();
+            updateForFocus();
         }
 
         public void focusLost(FocusEvent e) {
-            doFocusChange();
-        }
-
-        private void doFocusChange() {
-            focus = clearTextJButton.hasFocus() || textField.hasFocus();
-            if (focus) {
-                clearHint();
-            } else {
-                setHint();
-            }
+            updateForFocus();
         }
     }
 
@@ -235,6 +248,17 @@ public class FileFilterTextField {
         private void showContextMenu(MouseEvent e) {
             createPopupMenu().show(e.getComponent(), glassIcon.getX(),
                     glassIcon.getY() + glassIcon.getHeight());
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == fileNameRBMI) {
+                externalModeValueModel.setValue(FILE_NAME_FILTER_MODE);
+            } else if (e.getSource() == modifierRBMI) {
+                externalModeValueModel.setValue(MODIFIER_FILTER_MODE);
+            }
+            updateForFocus();
         }
     }
 }

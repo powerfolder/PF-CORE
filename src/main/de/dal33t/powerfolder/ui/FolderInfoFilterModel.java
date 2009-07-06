@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.FolderInfoChangedEvent;
@@ -36,20 +35,14 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @version $Revision: 1.5 $
  */
 public class FolderInfoFilterModel extends FilterModel {
-    private List folderList;
-    private List filteredFolderList;
+    private List<FolderInfo> folderList;
+    private List<FolderInfo> filteredFolderList;
 
     private List<FolderInfoFilterChangeListener> listeners = new LinkedList<FolderInfoFilterChangeListener>();
-    private boolean showEmpty = false;
+    private boolean showEmpty;
 
     public FolderInfoFilterModel(Controller controller) {
         super(controller);
-    }
-
-    /** reset to empty filter */
-    public void reset() {
-        showEmpty = false;
-        getSearchField().setValue("");
     }
 
     public boolean isShowEmpty() {
@@ -61,8 +54,8 @@ public class FolderInfoFilterModel extends FilterModel {
         scheduleFiltering();
     }
 
-    public List filter(List aFolderList) {
-        this.folderList = aFolderList;
+    public List<FolderInfo> filter(List<FolderInfo> aFolderList) {
+        folderList = aFolderList;
         scheduleFiltering();
         return filteredFolderList;
     }
@@ -73,7 +66,7 @@ public class FolderInfoFilterModel extends FilterModel {
                 filteredFolderList = filter0();
                 fireFolderInfoFilterChanged();
             } else {
-                List old = filteredFolderList;
+                List<FolderInfo> old = filteredFolderList;
                 filteredFolderList = folderList;
                 if (old != filteredFolderList) {
                     fireFolderInfoFilterChanged();
@@ -87,13 +80,10 @@ public class FolderInfoFilterModel extends FilterModel {
             return true;
         }
         String textFilter = (String) getSearchField().getValue();
-        if (!StringUtils.isBlank(textFilter)) {
-            return true;
-        }
-        return false;
+        return !StringUtils.isBlank(textFilter);
     }
 
-    private List filter0() {
+    private List<FolderInfo> filter0() {
         if (folderList == null) {
             throw new IllegalStateException("file list = null");
         }
@@ -106,28 +96,20 @@ public class FolderInfoFilterModel extends FilterModel {
         // Prepare keywords from text filter
         String textFilter = (String) getSearchField().getValue();
         String[] keywords = null;
-        if (StringUtils.isBlank(textFilter)) {
-            // Set to null to improve performance later in loop
-            textFilter = null;
-        } else {
+        if (!StringUtils.isBlank(textFilter)) {
             // Match lowercase
             textFilter = textFilter.toLowerCase();
-            StringTokenizer nizer = new StringTokenizer(textFilter, " ");
-            keywords = new String[nizer.countTokens()];
-            int i = 0;
-            while (nizer.hasMoreTokens()) {
-                keywords[i++] = nizer.nextToken();
-            }
+            keywords = textFilter.split(" ");
         }
 
-        for (int i = 0; i < folderList.size(); i++) {
-            FolderInfo fInfo = (FolderInfo) folderList.get(i);
+        for (Object aFolderList : folderList) {
+            FolderInfo fInfo = (FolderInfo) aFolderList;
 
             boolean showFolderInfo = true;
             boolean isEmpty = fInfo.filesCount == 0;
 
             // text filter
-            if (textFilter != null) {
+            if (keywords != null) {
                 // Check for match
                 showFolderInfo = matches(fInfo, keywords);
             }
@@ -155,7 +137,7 @@ public class FolderInfoFilterModel extends FilterModel {
      *            the keyword array, all lowercase
      * @return the file matches the keywords
      */
-    private boolean matches(FolderInfo folder, String[] keywords) {
+    private static boolean matches(FolderInfo folder, String[] keywords) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -168,7 +150,7 @@ public class FolderInfoFilterModel extends FilterModel {
 
             // Match for foldername
             String filename = folder.name.toLowerCase();
-            if (filename.indexOf(keyword) >= 0) {
+            if (filename.contains(keyword)) {
                 // Match by name. Ok, continue
                 continue;
             }
@@ -197,9 +179,8 @@ public class FolderInfoFilterModel extends FilterModel {
         if (filteredFolderList != null) {
             FolderInfoChangedEvent event = new FolderInfoChangedEvent(this,
                 filteredFolderList);
-            for (int i = 0; i < listeners.size(); i++) {
+            for (FolderInfoFilterChangeListener listener : listeners) {
 
-                FolderInfoFilterChangeListener listener = listeners.get(i);
                 listener.filterChanged(event);
             }
         }

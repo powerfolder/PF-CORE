@@ -86,10 +86,9 @@ public class FilesTab extends PFUIComponent
                 "files.tab.location", 150);
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
-        filterTextField = new FileFilterTextField(15,
-                Translation.getTranslation("files_tab.filter_by_file_name.hint"),
-                Translation.getTranslation("files_tab.filter_by_file_name.tool_tip"));
-        directoryFilter.setSearchField(filterTextField.getValueModel());
+        filterTextField = new FileFilterTextField(15);
+        directoryFilter.setSearchField(filterTextField.getTextValueModel());
+        directoryFilter.setSearchMode(filterTextField.getModeValueModel());
         filterSelectionComboBox = new JComboBox();
         filterSelectionComboBox.setToolTipText(Translation
                 .getTranslation("files_tab.combo.tool_tip"));
