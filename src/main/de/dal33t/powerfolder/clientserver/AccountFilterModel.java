@@ -111,7 +111,7 @@ public class AccountFilterModel extends Model {
         if (disabledOnly && !account.getOSSubscription().isDisabled()) {
             return false;
         }
-        if (payingOSOnly && account.getOSSubscription().getType().isTrial()) {
+        if (payingOSOnly && account.getOSSubscription().isTrial()) {
             return false;
         }
         if (proUsersOnly && !account.isProUser()) {
@@ -125,7 +125,7 @@ public class AccountFilterModel extends Model {
             }
         }
         if (activeTrial) {
-            return account.getOSSubscription().getType().isTrial()
+            return account.getOSSubscription().isTrial()
                 && !account.getOSSubscription().isDisabledExpiration();
         }
         return true;

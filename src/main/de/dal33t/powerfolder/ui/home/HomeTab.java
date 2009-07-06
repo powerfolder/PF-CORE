@@ -24,15 +24,21 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.util.Date;
-import java.util.List;
-import java.util.Collection;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -43,18 +49,27 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerModelEvent;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
+import de.dal33t.powerfolder.event.OverallFolderStatEvent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -456,19 +471,22 @@ public class HomeTab extends PFUIComponent {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
                 "home_tab.online_storage.account_connecting", client
                     .getUsername()));
-            onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
-                "home_tab.online_storage.account_connecting.tips"));
+            onlineStorageAccountLabel
+                .setToolTipText(Translation
+                    .getTranslation("home_tab.online_storage.account_connecting.tips"));
         }
         if (active) {
-            OnlineStorageSubscriptionType storageSubscriptionType = client.getAccount().getOSSubscription().getType();
-            long totalStorage = storageSubscriptionType.getStorageSize();
+            OnlineStorageSubscription storageSubscription = client.getAccount()
+                .getOSSubscription();
+            long totalStorage = storageSubscription.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
 
             onlineStorageSection.getUIComponent().setVisible(true);
-            boolean trial = storageSubscriptionType.isTrial();
-            int daysLeft = client.getAccount().getOSSubscription().getDaysLeft();
-            onlineStorageSection.setInfo(totalStorage, spaceUsed,
-                    trial, daysLeft);
+            boolean trial = storageSubscription.isTrial();
+            int daysLeft = client.getAccount().getOSSubscription()
+                .getDaysLeft();
+            onlineStorageSection.setInfo(totalStorage, spaceUsed, trial,
+                daysLeft);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);
         }

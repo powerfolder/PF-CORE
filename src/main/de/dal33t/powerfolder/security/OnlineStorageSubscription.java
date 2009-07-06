@@ -154,9 +154,35 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public boolean isDisabledExpiration() {
         return disabledExpirationDate != null;
     }
-    
+
     public boolean isDisabled() {
         return isDisabledExpiration() || isDisabledUsage();
+    }
+
+    /**
+     * @return the storage size in bytes
+     */
+    public long getStorageSize() {
+        return type.getStorageSize();
+    }
+
+    /**
+     * @return the storage size in GBs
+     */
+    public int getStorageSizeGB() {
+        return (int) (getStorageSize() / 1024 / 1024 / 1024);
+    }
+    
+    public boolean isTrial() {
+        return type.isTrial();
+    }
+    
+    public String getArticleNo() {
+        return type.getArticleNo();
+    }
+
+    public String getDescription() {
+        return type.getDescription();
     }
 
     public OnlineStorageSubscriptionType getType() {

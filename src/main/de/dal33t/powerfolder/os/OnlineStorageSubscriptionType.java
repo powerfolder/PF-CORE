@@ -89,10 +89,12 @@ public enum OnlineStorageSubscriptionType {
                 + articleNo);
     }
 
+    @Deprecated
     public String getArticleNo() {
         return articleNo;
     }
 
+    @Deprecated
     public String getDescription() {
         return description;
     }
@@ -100,14 +102,17 @@ public enum OnlineStorageSubscriptionType {
     /**
      * @return the storage size in bytes
      */
+    @Deprecated
     public long getStorageSize() {
         return storageSize;
     }
 
+    @Deprecated
     public int getStorageSizeGB() {
         return (int) (storageSize / 1024 / 1024 / 1024);
     }
 
+    @Deprecated
     public boolean isTrial() {
         return trial;
     }
