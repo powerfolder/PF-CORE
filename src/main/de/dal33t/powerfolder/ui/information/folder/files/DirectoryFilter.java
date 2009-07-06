@@ -34,20 +34,24 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.util.StringUtils;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * Class to filter a directory.
  */
 public class DirectoryFilter extends FilterModel {
 
-    public static final int MODE_LOCAL_AND_INCOMING = 0;
-    public static final int MODE_LOCAL_ONLY = 1;
-    public static final int MODE_INCOMING_ONLY = 2;
-    public static final int MODE_NEW_ONLY = 3;
-    public static final int MODE_DELETED_PREVIOUS = 4;
+    public static final int FILE_FILTER_MODE_LOCAL_AND_INCOMING = 0;
+    public static final int FILE_FILTER_MODE_LOCAL_ONLY = 1;
+    public static final int FILE_FILTER_MODE_INCOMING_ONLY = 2;
+    public static final int FILE_FILTER_MODE_NEW_ONLY = 3;
+    public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 4;
+
+    public static final int SEARCH_MODE_FILE_NAME = 10;
+    public static final int SEARCH_MODE_MODIFIER = 11;
 
     private Folder folder;
-    private int filterMode;
+    private int fileFilterMode;
     private final MyFolderListener folderListener;
     private final AtomicBoolean running;
     private final AtomicBoolean pending;
@@ -58,6 +62,9 @@ public class DirectoryFilter extends FilterModel {
     private final List<DirectoryFilterListener> listeners;
 
     private final AtomicBoolean folderChanged = new AtomicBoolean();
+
+    /** The value model <Integer> of the search we listen to */
+    private ValueModel searchMode;
 
     /**
      * Filter of a folder directory.
@@ -92,6 +99,19 @@ public class DirectoryFilter extends FilterModel {
         listeners.remove(listener);
     }
 
+    public ValueModel getSearchMode() {
+        return searchMode;
+    }
+
+    /**
+     * Expect a valueModel<Integer> with modes from FileFilterTextField.
+     *
+     * @param searchMode
+     */
+    public void setSearchMode(ValueModel searchMode) {
+        this.searchMode = searchMode;
+    }
+
     /**
      * Sets the folder to filter the directory for.
      *
@@ -110,11 +130,11 @@ public class DirectoryFilter extends FilterModel {
     /**
      * Sets the mode of the filter. See the MODE constants.
      *
-     * @param filterMode
+     * @param fileFilterMode
      */
-    public void setFilterMode(int filterMode) {
-        this.filterMode = filterMode;
-        logInfo("Set filter mode to " + filterMode);
+    public void setFileFilterMode(int fileFilterMode) {
+        this.fileFilterMode = fileFilterMode;
+        logInfo("Set filter mode to " + fileFilterMode);
         queueFilterEvent();
     }
 
@@ -280,20 +300,20 @@ public class DirectoryFilter extends FilterModel {
             if (showFile) {
                 boolean isNew = transferManager.isCompletedDownload(fileInfo);
 
-                switch (filterMode) {
-                    case MODE_LOCAL_ONLY :
+                switch (fileFilterMode) {
+                    case FILE_FILTER_MODE_LOCAL_ONLY:
                         showFile = !isIncoming && !isDeleted;
                         break;
-                    case MODE_INCOMING_ONLY :
+                    case FILE_FILTER_MODE_INCOMING_ONLY:
                         showFile = isIncoming;
                         break;
-                    case MODE_NEW_ONLY :
+                    case FILE_FILTER_MODE_NEW_ONLY:
                         showFile = isNew;
                         break;
-                    case MODE_DELETED_PREVIOUS :
+                    case FILE_FILTER_MODE_DELETED_PREVIOUS:
                         showFile = isDeleted;
                         break;
-                    case MODE_LOCAL_AND_INCOMING :
+                    case FILE_FILTER_MODE_LOCAL_AND_INCOMING:
                     default :
                         showFile = !isDeleted;
                         break;

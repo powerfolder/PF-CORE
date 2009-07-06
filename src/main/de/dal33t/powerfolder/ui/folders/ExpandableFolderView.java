@@ -953,7 +953,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformation(folderInfo,
-                    DirectoryFilter.MODE_INCOMING_ONLY);
+                    DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
         }
     }
 

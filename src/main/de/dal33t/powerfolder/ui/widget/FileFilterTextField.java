@@ -26,6 +26,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -49,17 +50,14 @@ import java.beans.PropertyChangeListener;
  */
 public class FileFilterTextField {
 
-    public static final int FILE_NAME_FILTER_MODE = 0;
-    public static final int MODIFIER_FILTER_MODE = 1;
-
     private int columns;
     private JPanel panel;
     private JTextField textField;
     private JButton clearTextJButton;
     private JLabel spacerIcon;
     private JLabel glassIcon;
-    private ValueModel externalTextValueModel; // String
-    private ValueModel externalModeValueModel; // Integer
+    private ValueModel externalSearchTextValueModel; // String
+    private ValueModel externalSearchModeValueModel; // Integer
     private ValueModel localValueModel;
     private boolean focus;
     private JPopupMenu contextMenu;
@@ -75,23 +73,23 @@ public class FileFilterTextField {
     public FileFilterTextField(int columns) {
         this.columns = columns;
         localValueModel = new ValueHolder();
-        externalTextValueModel = new ValueHolder();
-        externalModeValueModel = new ValueHolder();
-        externalModeValueModel.setValue(FILE_NAME_FILTER_MODE);
+        externalSearchTextValueModel = new ValueHolder();
+        externalSearchModeValueModel = new ValueHolder();
+        externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME);
     }
 
     /**
      * @return The value model holding the text (excludes hint text value)
      */
-    public ValueModel getTextValueModel() {
-        return externalTextValueModel;
+    public ValueModel getSearchTextValueModel() {
+        return externalSearchTextValueModel;
     }
 
     /**
      * @return The value model holding the filter mode
      */
-    public ValueModel getModeValueModel() {
-        return externalModeValueModel;
+    public ValueModel getSearchModeValueModel() {
+        return externalSearchModeValueModel;
     }
 
     public JPanel getUIComponent() {
@@ -140,7 +138,7 @@ public class FileFilterTextField {
         clearTextJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 textField.setText("");
-                externalTextValueModel.setValue("");
+                externalSearchTextValueModel.setValue("");
                 textField.requestFocus();
             }
         });
@@ -166,11 +164,11 @@ public class FileFilterTextField {
             textField.setForeground(SystemColor.textText);
         } else {
             textField.setForeground(Color.lightGray);
-            int mode = (Integer) externalModeValueModel.getValue();
-            if (mode == FILE_NAME_FILTER_MODE) {
+            int mode = (Integer) externalSearchModeValueModel.getValue();
+            if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME) {
                 textField.setText(Translation.getTranslation(
                     "filter_text_field.menu.file_name.text"));
-            } else if (mode == MODIFIER_FILTER_MODE) {
+            } else if (mode == DirectoryFilter.SEARCH_MODE_MODIFIER) {
                 textField.setText(Translation.getTranslation(
                     "filter_text_field.menu.modifier.text"));
             }
@@ -184,8 +182,8 @@ public class FileFilterTextField {
      * @return
      */
     private boolean hasExternalText() {
-        return externalTextValueModel.getValue() != null
-                && ((CharSequence) externalTextValueModel.getValue()).length() > 0;
+        return externalSearchTextValueModel.getValue() != null
+                && ((CharSequence) externalSearchTextValueModel.getValue()).length() > 0;
     }
 
     public JPopupMenu createPopupMenu() {
@@ -215,7 +213,7 @@ public class FileFilterTextField {
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (focus) {
-                externalTextValueModel.setValue(localValueModel.getValue());
+                externalSearchTextValueModel.setValue(localValueModel.getValue());
             }
             // visible if there is text else invisible
             boolean hasExternalText = hasExternalText();
@@ -254,9 +252,9 @@ public class FileFilterTextField {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == fileNameRBMI) {
-                externalModeValueModel.setValue(FILE_NAME_FILTER_MODE);
+                externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME);
             } else if (e.getSource() == modifierRBMI) {
-                externalModeValueModel.setValue(MODIFIER_FILTER_MODE);
+                externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_MODIFIER);
             }
             updateForFocus();
         }

@@ -87,8 +87,8 @@ public class FilesTab extends PFUIComponent
         splitPane.setDividerLocation(dividerLocation);
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
         filterTextField = new FileFilterTextField(15);
-        directoryFilter.setSearchField(filterTextField.getTextValueModel());
-        directoryFilter.setSearchMode(filterTextField.getModeValueModel());
+        directoryFilter.setSearchText(filterTextField.getSearchTextValueModel());
+        directoryFilter.setSearchMode(filterTextField.getSearchModeValueModel());
         filterSelectionComboBox = new JComboBox();
         filterSelectionComboBox.setToolTipText(Translation
                 .getTranslation("files_tab.combo.tool_tip"));
@@ -126,7 +126,7 @@ public class FilesTab extends PFUIComponent
     public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
         setFolderInfo(folderInfo);
         if (directoryFilterMode >= 0) {
-            directoryFilter.setFilterMode(directoryFilterMode);
+            directoryFilter.setFileFilterMode(directoryFilterMode);
             directoryFilter.scheduleFiltering();
         }
     }
@@ -147,7 +147,7 @@ public class FilesTab extends PFUIComponent
 
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.MODE_LOCAL_AND_INCOMING);
+                DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
     }
 
     /**
@@ -243,7 +243,7 @@ public class FilesTab extends PFUIComponent
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource().equals(filterSelectionComboBox)) {
-                directoryFilter.setFilterMode(filterSelectionComboBox
+                directoryFilter.setFileFilterMode(filterSelectionComboBox
                         .getSelectedIndex());
                 directoryFilter.scheduleFiltering();
             }
