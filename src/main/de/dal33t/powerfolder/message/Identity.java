@@ -68,11 +68,11 @@ public class Identity extends Message {
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
     @SuppressWarnings("unused")
-    private final boolean supportingPartTransfers = true;
+    private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
 
-    private final boolean supportingFileHistoryRequests = true;
+    private boolean supportingFileHistoryRequests = true;
 
     /**
      * If I got interesting pending messages for you. Better keep the
