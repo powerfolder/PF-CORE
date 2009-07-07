@@ -229,12 +229,7 @@ public class FileRequestor extends PFComponent {
 
         retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
             public boolean accept(FileInfo info) {
-                return folder.getSyncProfile().getConfiguration()
-                    .isAutoDownloadFromOthers()
-                    || folder.getSyncProfile().getConfiguration()
-                        .isAutoDownloadFromFriends()
-                    && info.getModifiedBy().getNode(getController(), true)
-                        .isFriend();
+                return folder.getSyncProfile().isAutodownload();
             }
         }, true);
     }
