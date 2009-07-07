@@ -78,6 +78,14 @@ public class SerializationTest extends TestCase {
         // If this is null it means newfield WAS initialized to null by
         // deserialization
         assertNull(t.newfield);
+        // If this is true it means supportsNewStuff was initialized by true,
+        // although it SHOULD have been false
+        assertFalse(t.supportsNewStuff);
+        // If this is true it means supportsNewStuff was initialized by true,
+        // although it SHOULD have been false. (yes this is a "bug")
+        assertTrue(t.supportsEvenMore);
+        // Check if it works for Boolean at least.
+        assertNull(t.supportsMucho);
         assertNotSame(new Test().newfield, t.newfield);
     }
 
@@ -85,5 +93,12 @@ public class SerializationTest extends TestCase {
         private static final long serialVersionUID = 1L;
         final Object test = 1;
         final Object newfield = 2;
+        final boolean supportsNewStuff;
+        final boolean supportsEvenMore = true;
+        final Boolean supportsMucho = Boolean.TRUE;
+
+        private Test() {
+            supportsNewStuff = true;
+        }
     }
 }
