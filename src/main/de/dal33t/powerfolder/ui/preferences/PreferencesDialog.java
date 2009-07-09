@@ -151,15 +151,14 @@ public class PreferencesDialog extends BaseDialog {
 
     public void initComponents() {
         preferenceTabs.clear();
-        
-        mydnsndsModel = new ValueHolder(ConfigurationEntry.DYNDNS_HOSTNAME
+
+        mydnsndsModel = new ValueHolder(ConfigurationEntry.HOSTNAME
             .getValue(getController()));
 
-        tabbedPane = new JTabbedPane(SwingConstants.TOP, 
-                JTabbedPane.WRAP_TAB_LAYOUT);
+        tabbedPane = new JTabbedPane(SwingConstants.TOP,
+            JTabbedPane.WRAP_TAB_LAYOUT);
 
-        generalSettingsTab = new GeneralSettingsTab(
-            getController());
+        generalSettingsTab = new GeneralSettingsTab(getController());
         preferenceTabs.add(generalSettingsTab);
         tabbedPane.addTab(generalSettingsTab.getTabName(),
             Icons.getIconById(Icons.PREFERENCES),

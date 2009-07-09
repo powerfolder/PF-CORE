@@ -120,10 +120,10 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     public void save() {
         String theDyndnsHost = (String) mydnsndsModel.getValue();
         if (StringUtils.isBlank(theDyndnsHost)) {
-            ConfigurationEntry.DYNDNS_HOSTNAME.removeValue(getController());
+            ConfigurationEntry.HOSTNAME.removeValue(getController());
         } else {
-            ConfigurationEntry.DYNDNS_HOSTNAME.setValue(getController(),
-                    theDyndnsHost);
+            ConfigurationEntry.HOSTNAME
+                .setValue(getController(), theDyndnsHost);
         }
 
         if (!StringUtils.isBlank(theDyndnsHost)) {
