@@ -80,8 +80,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         this.interfaceAddress = bindToInterface;
 
         // check our own dyndns address
-        String dns = ConfigurationEntry.DYNDNS_HOSTNAME
-            .getValue(getController());
+        String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
         String clidns = controller.getCommandLine() != null ? controller
             .getCommandLine().getOptionValue("d") : null;
 

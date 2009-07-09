@@ -102,7 +102,7 @@ public class DynDnsManager extends PFComponent {
 
     public String getHost2Update() {
         if (DynDnsSettingsTab.getNewDyndns() == null) {
-            return ConfigurationEntry.DYNDNS_HOSTNAME.getValue(getController());
+            return ConfigurationEntry.HOSTNAME.getValue(getController());
         }
         return DynDnsSettingsTab.getNewDyndns();
     }
@@ -365,7 +365,7 @@ public class DynDnsManager extends PFComponent {
      * @return false, if the dyndns service should be updated.
      */
     private boolean dyndnsValid() {
-        String dyndnsIP = getHostIP(ConfigurationEntry.DYNDNS_HOSTNAME
+        String dyndnsIP = getHostIP(ConfigurationEntry.HOSTNAME
             .getValue(getController()));
         if (StringUtils.isEmpty(dyndnsIP)) {
             return true;
