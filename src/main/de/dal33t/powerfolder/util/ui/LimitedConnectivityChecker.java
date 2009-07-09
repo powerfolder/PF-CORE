@@ -199,7 +199,7 @@ public class LimitedConnectivityChecker {
     // Internal logic *********************************************************
 
     private boolean resolveHostAndPort() {
-        String dyndns = ConfigurationEntry.DYNDNS_HOSTNAME.getValue(controller);
+        String dyndns = ConfigurationEntry.HOSTNAME.getValue(controller);
         boolean hasDyndnsSetup = !StringUtils.isEmpty(dyndns);
         port = controller.getConnectionListener().getPort();
 
