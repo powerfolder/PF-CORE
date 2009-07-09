@@ -330,13 +330,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         FolderInfo folderInfo = (FolderInfo) getWizardContext().getAttribute(
             FOLDERINFO_ATTRIBUTE);
         if (folderInfo == null) {
-            transientDirectory = ConfigurationEntry.FOLDER_BASEDIR
-                .getValue(getController());
+            transientDirectory = getController().getFolderRepository()
+                .getFoldersBasedir();
         } else {
             Folder folder1 = folderInfo.getFolder(getController());
             if (folder1 == null) {
-                transientDirectory = ConfigurationEntry.FOLDER_BASEDIR
-                    .getValue(getController());
+                transientDirectory = getController().getFolderRepository()
+                    .getFoldersBasedir();
             } else {
                 transientDirectory = folder1.getLocalBase().getAbsolutePath();
             }

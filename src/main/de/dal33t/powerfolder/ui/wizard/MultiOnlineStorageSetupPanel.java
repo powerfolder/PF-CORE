@@ -19,11 +19,34 @@
 */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -31,17 +54,6 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.javasoft.synthetica.addons.DirectoryChooser;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.util.*;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -157,15 +169,16 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     public void afterDisplay() {
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
         folderLocalBaseMap = new HashMap<FolderInfo, File>();
-        String folderBasedir = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String folderBasedir = getController().getFolderRepository()
+            .getFoldersBasedir();
 
         List<FolderInfo> folderInfoList = (List<FolderInfo>) getWizardContext()
-                .getAttribute(WizardContextAttributes.FOLDER_INFOS);
+            .getAttribute(WizardContextAttributes.FOLDER_INFOS);
         for (FolderInfo folderInfo : folderInfoList) {
             folderProfileMap.put(folderInfo,
-                    SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             folderLocalBaseMap.put(folderInfo, new File(folderBasedir,
-                    folderInfo.name));
+                folderInfo.name));
             folderInfoComboModel.addElement(folderInfo.name);
         }
     }
