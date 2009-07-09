@@ -47,8 +47,9 @@ public class DirectoryFilter extends FilterModel {
     public static final int FILE_FILTER_MODE_NEW_ONLY = 3;
     public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 4;
 
-    public static final int SEARCH_MODE_FILE_NAME = 10;
-    public static final int SEARCH_MODE_MODIFIER = 11;
+    public static final int SEARCH_MODE_FILE_NAME_ONLY = 10;
+    public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 11;
+    public static final int SEARCH_MODE_MODIFIER = 12;
 
     private Folder folder;
     private int fileFilterMode;

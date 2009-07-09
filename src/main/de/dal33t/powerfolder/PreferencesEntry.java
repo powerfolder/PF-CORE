@@ -23,6 +23,7 @@ import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 
 import java.util.logging.Level;
 
@@ -125,7 +126,10 @@ public enum PreferencesEntry {
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
 
     /** Warn user if connection is poor. */
-    WARN_POOR_QUALITY("warn.poor.quality", true);
+    WARN_POOR_QUALITY("warn.poor.quality", true),
+
+    FILE_SEARCH_MODE("file.search.mode", DirectoryFilter
+            .SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
 
     /** String, Boolean, Integer */
     private Class type;

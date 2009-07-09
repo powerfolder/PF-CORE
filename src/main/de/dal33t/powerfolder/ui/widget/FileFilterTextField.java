@@ -29,6 +29,9 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -48,13 +51,11 @@ import java.beans.PropertyChangeListener;
  *
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</A>
  */
-public class FileFilterTextField {
+public class FileFilterTextField extends PFComponent {
 
-    private int columns;
     private JPanel panel;
     private JTextField textField;
     private JButton clearTextJButton;
-    private JLabel spacerIcon;
     private JLabel glassIcon;
     private ValueModel externalSearchTextValueModel; // String
     private ValueModel externalSearchModeValueModel; // Integer
@@ -62,7 +63,8 @@ public class FileFilterTextField {
     private boolean focus;
     private JPopupMenu contextMenu;
 
-    private JRadioButtonMenuItem fileNameRBMI;
+    private JRadioButtonMenuItem fileNameDirectoryNameRBMI;
+    private JRadioButtonMenuItem fileNameOnlyRBMI;
     private JRadioButtonMenuItem modifierRBMI;
 
     /**
@@ -70,12 +72,13 @@ public class FileFilterTextField {
      *
      * @param columns
      */
-    public FileFilterTextField(int columns) {
-        this.columns = columns;
+    public FileFilterTextField(Controller controller) {
+        super(controller);
         localValueModel = new ValueHolder();
         externalSearchTextValueModel = new ValueHolder();
         externalSearchModeValueModel = new ValueHolder();
-        externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME);
+        externalSearchModeValueModel.setValue(PreferencesEntry
+                .FILE_SEARCH_MODE.getValueInt(controller));
     }
 
     /**
@@ -104,7 +107,6 @@ public class FileFilterTextField {
             builder.add(textField, cc.xy(3, 1));
             builder.add(clearTextJButton, cc.xy(4, 1, CellConstraints.RIGHT,
                     CellConstraints.DEFAULT));
-            builder.add(spacerIcon, cc.xy(4, 1));
             builder.setBorder(new EtchedBorder());
             panel = builder.getPanel();
             panel.setBackground(Color.white);
@@ -116,16 +118,13 @@ public class FileFilterTextField {
         // true = editable
         textField = BasicComponentFactory.createTextField(localValueModel,
                 false);
-        textField.setColumns(columns);
+        textField.setColumns(15);
         textField.setBorder(null);
         // make sure we have room for the button
         // since the button may not be visible we need to force the height
         // else the ui will "jump"
         textField.setPreferredSize(new Dimension(17, 17));
         textField.setToolTipText(Translation.getTranslation("filter_text_field.tip"));
-        spacerIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.BLANK));
-        spacerIcon.setVisible(false);
         clearTextJButton = new JButton3Icons(
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
                 Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
@@ -165,9 +164,12 @@ public class FileFilterTextField {
         } else {
             textField.setForeground(Color.lightGray);
             int mode = (Integer) externalSearchModeValueModel.getValue();
-            if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME) {
+            if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY) {
                 textField.setText(Translation.getTranslation(
-                    "filter_text_field.menu.file_name.text"));
+                        "filter_text_field.menu.file_name_only.text"));
+            } else if (mode == DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME) {
+                textField.setText(Translation.getTranslation(
+                    "filter_text_field.menu.file_name_directory_name.text"));
             } else if (mode == DirectoryFilter.SEARCH_MODE_MODIFIER) {
                 textField.setText(Translation.getTranslation(
                     "filter_text_field.menu.modifier.text"));
@@ -190,17 +192,26 @@ public class FileFilterTextField {
         if (contextMenu == null) {
             MyActionListener listener = new MyActionListener();
             contextMenu = new JPopupMenu();
-            fileNameRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
-                    "filter_text_field.menu.file_name.text"));
-            fileNameRBMI.setSelected(true);
-            fileNameRBMI.addActionListener(listener);
+
+            Integer current = PreferencesEntry.FILE_SEARCH_MODE.getValueInt(getController());
+            fileNameDirectoryNameRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
+                    "filter_text_field.menu.file_name_directory_name.text"));
+            fileNameDirectoryNameRBMI.addActionListener(listener);
+            fileNameDirectoryNameRBMI.setSelected(current == DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
+            fileNameOnlyRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
+                    "filter_text_field.menu.file_name_only.text"));
+            fileNameOnlyRBMI.addActionListener(listener);
+            fileNameOnlyRBMI.setSelected(current == DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY);
             modifierRBMI = new JRadioButtonMenuItem(Translation.getTranslation(
                     "filter_text_field.menu.modifier.text"));
             modifierRBMI.addActionListener(listener);
+            modifierRBMI.setSelected(current == DirectoryFilter.SEARCH_MODE_MODIFIER);
             ButtonGroup bg = new ButtonGroup();
-            bg.add(fileNameRBMI);
+            bg.add(fileNameDirectoryNameRBMI);
+            bg.add(fileNameOnlyRBMI);
             bg.add(modifierRBMI);
-            contextMenu.add(fileNameRBMI);
+            contextMenu.add(fileNameDirectoryNameRBMI);
+            contextMenu.add(fileNameOnlyRBMI);
             contextMenu.add(modifierRBMI);
         }
         return contextMenu;
@@ -218,7 +229,6 @@ public class FileFilterTextField {
             // visible if there is text else invisible
             boolean hasExternalText = hasExternalText();
             clearTextJButton.setVisible(hasExternalText);
-            spacerIcon.setVisible(!hasExternalText);
         }
     }
 
@@ -251,11 +261,16 @@ public class FileFilterTextField {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == fileNameRBMI) {
-                externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME);
+            if (e.getSource() == fileNameOnlyRBMI) {
+                externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY);
+            } else if (e.getSource() == fileNameDirectoryNameRBMI) {
+                externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
             } else if (e.getSource() == modifierRBMI) {
                 externalSearchModeValueModel.setValue(DirectoryFilter.SEARCH_MODE_MODIFIER);
             }
+            PreferencesEntry.FILE_SEARCH_MODE.setValue(getController(),
+                    (Integer) externalSearchModeValueModel.getValue());
+
             updateForFocus();
         }
     }
