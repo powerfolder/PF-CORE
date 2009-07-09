@@ -291,18 +291,17 @@ public enum ConfigurationEntry {
      */
     FOLDER_BASEDIR("foldersbase") {
         @Override
-        protected void setDefaults() {
+        public String getDefaultValue() {
             if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
-                    defaultValue = util.getSystemFolderPath(
-                        WinUtils.CSIDL_PERSONAL, false)
+                    return util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
+                        false)
                         + System.getProperty("file.separator") + "PowerFolders";
-                    return;
                 }
             }
             // Also place the base dir into user home on Vista.
-            defaultValue = System.getProperty("user.home")
+            return System.getProperty("user.home")
                 + System.getProperty("file.separator") + "PowerFolders";
         }
     },
@@ -536,8 +535,8 @@ public enum ConfigurationEntry {
     private static final Logger LOG = Logger.getLogger(ConfigurationEntry.class
         .getName());
 
-    private String configKey;
-    protected String defaultValue;
+    private final String configKey;
+    protected final String defaultValue;
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -546,10 +545,11 @@ public enum ConfigurationEntry {
     ConfigurationEntry(String aConfigKey, String theDefaultValue) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         configKey = aConfigKey;
-        defaultValue = theDefaultValue;
-
-        if (theDefaultValue == null) {
-            setDefaults();
+        if (theDefaultValue != null) {
+            defaultValue = theDefaultValue;
+        } else {
+            // Try harder. Use getter. might have been overridden
+            defaultValue = getDefaultValue();
         }
     }
 
@@ -562,7 +562,7 @@ public enum ConfigurationEntry {
         Reject.ifNull(controller, "Controller is null");
         String value = controller.getConfig().getProperty(configKey);
         if (value == null) {
-            value = defaultValue;
+            value = getDefaultValue();
         }
         return value;
     }
@@ -578,14 +578,14 @@ public enum ConfigurationEntry {
     public Integer getValueInt(Controller controller) {
         String value = getValue(controller);
         if (value == null) {
-            value = defaultValue;
+            value = getDefaultValue();
         }
         try {
             return new Integer(value);
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a int. Value: " + value, e);
-            return new Integer(defaultValue);
+            return new Integer(getDefaultValue());
         }
     }
 
@@ -600,14 +600,14 @@ public enum ConfigurationEntry {
     public Boolean getValueBoolean(Controller controller) {
         String value = getValue(controller);
         if (value == null) {
-            value = defaultValue;
+            value = getDefaultValue();
         }
         try {
             return value.equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a boolean. Value: " + value, e);
-            return defaultValue.equalsIgnoreCase("true");
+            return "true".equalsIgnoreCase(getDefaultValue());
         }
     }
 
@@ -668,10 +668,7 @@ public enum ConfigurationEntry {
     /**
      * @return the key in config
      */
-    public String getConfigKey() {
+    public final String getConfigKey() {
         return configKey;
-    }
-
-    protected void setDefaults() {
     }
 }
