@@ -666,7 +666,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the default basedir for all folders. basedir is just suggested
      */
     public String getFoldersBasedir() {
-        return ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String cmdBaseDir = getController().getCommandLine() != null
+            ? getController().getCommandLine().getOptionValue("b")
+            : null;
+        if (StringUtils.isNotBlank(cmdBaseDir)) {
+            return cmdBaseDir;
+        } else {
+            return ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        }
     }
 
     /**
