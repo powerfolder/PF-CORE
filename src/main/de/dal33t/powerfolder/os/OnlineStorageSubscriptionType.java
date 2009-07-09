@@ -19,12 +19,14 @@
  */
 package de.dal33t.powerfolder.os;
 
+
 /**
  * The subscription types possible.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
+@Deprecated
 public enum OnlineStorageSubscriptionType {
     TRIAL("OS-T", "1 GB (30 days)", 1, true, false),
     TRIAL_PRO("OS-TP", "DONTUSE: 1 GB (60)", 1, true, false), 
