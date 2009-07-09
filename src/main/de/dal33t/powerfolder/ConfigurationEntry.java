@@ -261,7 +261,17 @@ public enum ConfigurationEntry {
     /**
      * My dynamic dns hostname or fix ip.
      */
-    DYNDNS_HOSTNAME("mydyndns"),
+    HOSTNAME("hostname") {
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                value = controller.getConfig().getProperty("mydyndns");
+            }
+            return value;
+        }
+    },
 
     /**
      * Setting to enable/disable zip compression on LAN
