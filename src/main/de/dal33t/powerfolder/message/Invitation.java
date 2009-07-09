@@ -107,8 +107,7 @@ public class Invitation extends FolderRelatedMessage {
         } else if (suggestedLocalBase.getAbsolutePath().startsWith(folderBase))
         {
             String filePath = suggestedLocalBase.getAbsolutePath();
-            String baseDirPath = ConfigurationEntry.FOLDER_BASEDIR
-                .getValue(controller);
+            String baseDirPath = controller.getFolderRepository().getFoldersBasedir();
             suggestedLocalBasePath = filePath.substring(baseDirPath.length());
 
             // Remove any leading file separators.
