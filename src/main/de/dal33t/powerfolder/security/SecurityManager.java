@@ -28,7 +28,7 @@ package de.dal33t.powerfolder.security;
  */
 public interface SecurityManager {
 
-    // Basic CRUD and logic ***************************************************
+    // Authentication *********************************************************
 
     /**
      * Authenticates the user. If successful the session is set afterwards.
@@ -42,26 +42,6 @@ public interface SecurityManager {
      *         logged in.
      */
     Account authenticate(String username, String password);
-
-    /**
-     * Saves a new or updates an old account. Afterwards the account is
-     * persisted.
-     * 
-     * @param account
-     *            the Account to save
-     * @Deprecated use {@link #getDAO()} instead.
-     */
-    void saveAccount(Account account);
-
-    // Full CRUD **************************************************************
-
-    /**
-     * @return the DAO to modify the underling database.
-     * @throws UnsupportedOperationException
-     *             if the security manager does not support extended CRUD
-     *             operations via DAO.
-     */
-    AccountDAO getDAO();
 
     // Session handling *******************************************************
 

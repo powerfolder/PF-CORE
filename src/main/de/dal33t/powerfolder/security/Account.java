@@ -411,6 +411,8 @@ public class Account extends Model implements Serializable {
      * Sets all folders to SyncProfile.BACKUP_TARGET.
      * <p>
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
+     * <p>
+     * Account needs to be stored afterwards!!
      * 
      * @param controller
      *            the controller
@@ -422,7 +424,6 @@ public class Account extends Model implements Serializable {
         getOSSubscription().setDisabledUsageDate(null);
         getOSSubscription().setWarnedExpirationDate(null);
         getOSSubscription().setDisabledExpirationDate(null);
-        controller.getSecurityManager().getDAO().store(this);
 
         enableSync(controller);
     }
