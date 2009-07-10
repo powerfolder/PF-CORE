@@ -59,14 +59,16 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
-    protected boolean loadTranslation(String customTranslationId) {
+    protected boolean loadTranslation(String customTranslationId,
+        String language)
+    {
         // Load texts
-        String translationFile = "Translation_en_" + customTranslationId
-            + ".properties";
+        String translationFile = "Translation_" + language + "_"
+            + customTranslationId + ".properties";
         if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
             translationFile) != null)
         {
-            Locale l = new Locale("en", customTranslationId);
+            Locale l = new Locale(language, customTranslationId);
             Translation.saveLocalSetting(l);
             Translation.resetResourceBundle();
             logInfo("Translation file loaded: " + translationFile);
