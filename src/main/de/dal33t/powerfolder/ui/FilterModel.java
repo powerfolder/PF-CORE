@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -43,20 +42,37 @@ public abstract class FilterModel extends PFComponent {
     private TimerTask task;
 
     /** The value model <String> of the searchfield we listen to */
-    private ValueModel searchField;
+    private final ValueModel searchFieldVM;
 
     /** The value model setting flat mode */
     private ValueModel flatMode;
 
-    protected FilterModel(Controller controller) {
+    protected FilterModel(Controller controller, ValueModel searchFieldVM) {
         super(controller);
-        setSearchText(new ValueHolder());
+        this.searchFieldVM = searchFieldVM;
+        searchFieldVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (task != null) {
+                    task.cancel(); // cancel if seachfield changed before delay
+                    // was reached
+                }
+                task = new TimerTask() {
+                    public void run() {
+                        scheduleFiltering();
+                        task = null;
+                    }
+                };
+                // schedule to filter after DELAY to make sure that fast typer
+                // can complete their words before filtering
+                getController().schedule(task, DELAY);
+            }
+        });
     }
 
     public abstract void scheduleFiltering();
 
-    public ValueModel getSearchField() {
-        return searchField;
+    public ValueModel getSearchFieldVM() {
+        return searchFieldVM;
     }
 
     public boolean isFlatMode() {
@@ -78,26 +94,4 @@ public abstract class FilterModel extends PFComponent {
             }
         });
     }
-
-    public void setSearchText(ValueModel searchField) {
-        this.searchField = searchField;
-        searchField.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (task != null) {
-                    task.cancel(); // cancel if seachfield changed before delay
-                    // was reached
-                }
-                task = new TimerTask() {
-                    public void run() {
-                        scheduleFiltering();
-                        task = null;
-                    }
-                };
-                // schedule to filter after DELAY to make sure that fast typer
-                // can complete their words before filtering
-                getController().schedule(task, DELAY);
-            }
-        });
-    }
-
 }

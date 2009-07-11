@@ -23,14 +23,18 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -47,8 +51,8 @@ public class DirectoryFilter extends FilterModel {
     public static final int FILE_FILTER_MODE_NEW_ONLY = 3;
     public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 4;
 
-    public static final int SEARCH_MODE_FILE_NAME_ONLY = 10;
-    public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 11;
+    public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 10;
+    public static final int SEARCH_MODE_FILE_NAME_ONLY = 11;
     public static final int SEARCH_MODE_MODIFIER = 12;
 
     private Folder folder;
@@ -65,15 +69,22 @@ public class DirectoryFilter extends FilterModel {
     private final AtomicBoolean folderChanged = new AtomicBoolean();
 
     /** The value model <Integer> of the search we listen to */
-    private ValueModel searchMode;
+    private final ValueModel searchModeVM;
 
     /**
      * Filter of a folder directory.
      *
      * @param controller
      */
-    public DirectoryFilter(Controller controller) {
-        super(controller);
+    public DirectoryFilter(Controller controller, ValueModel searchFieldVM,
+                           ValueModel searchModeVM) {
+        super(controller, searchFieldVM);
+        this.searchModeVM = searchModeVM;
+        searchModeVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                queueFilterEvent();
+            }
+        });
         folderListener = new MyFolderListener();
         running = new AtomicBoolean();
         pending = new AtomicBoolean();
@@ -100,17 +111,8 @@ public class DirectoryFilter extends FilterModel {
         listeners.remove(listener);
     }
 
-    public ValueModel getSearchMode() {
-        return searchMode;
-    }
-
-    /**
-     * Expect a valueModel<Integer> with modes from FileFilterTextField.
-     *
-     * @param searchMode
-     */
-    public void setSearchMode(ValueModel searchMode) {
-        this.searchMode = searchMode;
+    public ValueModel getSearchModeVM() {
+        return searchModeVM;
     }
 
     /**
@@ -143,7 +145,7 @@ public class DirectoryFilter extends FilterModel {
      * Called from the FilterModel when text search field changed.
      */
     public void scheduleFiltering() {
-        logInfo("Set search field to " + getSearchField());
+        logInfo("Set search field to " + getSearchFieldVM());
         queueFilterEvent();
     }
 
@@ -199,7 +201,7 @@ public class DirectoryFilter extends FilterModel {
         Directory originalDirectory = folder.getDirectory();
 
         // Prepare keywords from text filter
-        String textFilter = (String) getSearchField().getValue();
+        String textFilter = (String) getSearchFieldVM().getValue();
         String[] keywords = null;
         if (!StringUtils.isBlank(textFilter)) {
 
@@ -276,6 +278,8 @@ public class DirectoryFilter extends FilterModel {
 
         for (FileInfo fileInfo : directory.getFiles()) {
 
+            int searchMode = (Integer) searchModeVM.getValue();
+
             originalCount.incrementAndGet();
 
             // Text filter
@@ -283,7 +287,7 @@ public class DirectoryFilter extends FilterModel {
             if (keywords != null) {
 
                 // Check for match
-                showFile = matches(fileInfo, keywords);
+                showFile = matches(fileInfo, keywords, searchMode);
             }
 
             boolean isDeleted = fileInfo.isDeleted();
@@ -389,14 +393,14 @@ public class DirectoryFilter extends FilterModel {
      * Answers if the file matches the searching keywords. Keywords have to be
      * in lowercase. A file must match all keywords. (AND)
      *
-     * @param file
+     * @param fileInfo
      *            the file
      * @param keywords
      *            the keyword array, all lowercase
      * @return the file matches the keywords
      */
-    private static boolean matches(FileInfo file, String[] keywords) {
-
+    private boolean matches(FileInfo fileInfo, String[] keywords,
+                                   int searchMode) {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -411,40 +415,59 @@ public class DirectoryFilter extends FilterModel {
 
                 // Negative search:
                 keyword = keyword.substring(1);
-                if (keyword.length() != 0) {
+                if (keyword.length() == 0) {
 
-                    // Match for filename
-                    String filename = file.getFilenameOnly().toLowerCase();
-                    if (filename.contains(keyword)) {
-                        // If negative keyword match we don't want to see this
-                        // file
-                        return false;
-                    }
-
-                    // Does not match the negative keyword
+                    // Only a minus sign in the keyword - ignore
                     continue;
                 }
 
-                // Only a minus sign in the keyword ignore
+                if (matchFileInfo(fileInfo, keyword, searchMode)) {
+                    // If negative match we don't want to see this file
+                    return true;
+                }
+
+                // Does not match the negative keyword
                 continue;
             }
 
             // Normal search
 
-            // Match for filename
-            String filename = file.getFilenameOnly().toLowerCase();
-            if (filename.contains(keyword)) {
-
-                // Match by name. Ok, continue
+            if (matchFileInfo(fileInfo, keyword, searchMode)) {
+                // Match Ok, continue
                 continue;
             }
 
-            // Keyword does not match file, break
+            // Keyword does not match, break
             return false;
         }
 
         // All keywords matched!
         return true;
+    }
+
+    private boolean matchFileInfo(FileInfo fileInfo, String keyword, int searchMode) {
+        if (searchMode == SEARCH_MODE_FILE_NAME_DIRECTORY_NAME) {
+            String filename = fileInfo.getLowerCaseName();
+            if (filename.contains(keyword)) {
+                return true;
+            }
+        } else if (searchMode == SEARCH_MODE_FILE_NAME_ONLY) {
+            String filename = fileInfo.getFilenameOnly().toLowerCase();
+            if (filename.contains(keyword)) {
+                return true;
+            }
+        } else if (searchMode == SEARCH_MODE_MODIFIER) {
+            MemberInfo modifiedBy = fileInfo.getModifiedBy();
+            if (modifiedBy != null) {
+                Member node = modifiedBy.getNode(getController(), false);
+                if (node != null) {
+                    if (node.getNick().toLowerCase().contains(keyword)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 
