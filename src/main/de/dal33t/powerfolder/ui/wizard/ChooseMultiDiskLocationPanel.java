@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -522,6 +523,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             String dir = DialogFactory.chooseDirectory(getController(),
                     initialDirectory);
+            File newLocation = new File(dir);
+            File localBase = new File(getController().getFolderRepository().getFoldersBasedir());
+            if (newLocation.equals(localBase)) {
+                DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("wizard.choose_disk_location.local_base.title"),
+                        Translation.getTranslation("wizard.choose_disk_location.local_base.text"),
+                        GenericDialogType.ERROR);
+                return;
+            }
             if (new File(dir).exists()) {
                 initialDirectory = dir;
                 if (!customDirectoryListModel.contains(dir)) {
