@@ -196,12 +196,29 @@ public class Updater extends Thread {
     }
 
     /**
-     * Returns the newer program version available on the net. Otherwise returns
-     * null
-     * 
-     * @return
+     * @return the newer program version available on the net. Otherwise returns
+     *         null.
      */
     private String newerReleaseVersionAvailable() {
+        String latestVersion = latestReleaseVersionAvailable();
+        if (latestVersion == null) {
+            LOG.warning("Unable to retrieve latest version from "
+                + settings.versionCheckURL);
+            return null;
+        }
+        if (Util.compareVersions(latestVersion, Controller.PROGRAM_VERSION)) {
+            LOG.info("Latest version is newer than this one");
+            return latestVersion;
+        }
+        LOG.info("This version is up-to-date");
+        return null;
+    }
+
+    /**
+     * @return the latest program version available on the net.
+     * @private public because of test
+     */
+    public String latestReleaseVersionAvailable() {
         URL url;
         try {
             url = new URL(settings.versionCheckURL);
@@ -215,6 +232,10 @@ public class Updater extends Thread {
             while (in.available() > 0) {
                 latestVersion += (char) in.read();
             }
+            URLConnection con = url.openConnection();
+
+            System.err.println(settings.versionCheckURL + " is '"
+                + latestVersion + "'.");
 
             if (latestVersion != null) {
                 if (latestVersion.length() > 50) {
@@ -224,14 +245,7 @@ public class Updater extends Thread {
                     return null;
                 }
                 LOG.info("Latest available version: " + latestVersion);
-
-                if (Util.compareVersions(latestVersion,
-                    Controller.PROGRAM_VERSION))
-                {
-                    LOG.info("Latest version is newer than this one");
-                    return latestVersion;
-                }
-                LOG.info("This version is up-to-date");
+                return latestVersion;
             }
         } catch (IOException e) {
             LOG.log(Level.WARNING,
