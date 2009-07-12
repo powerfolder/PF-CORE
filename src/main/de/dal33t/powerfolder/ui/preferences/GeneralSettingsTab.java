@@ -26,6 +26,7 @@ import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.util.Hashtable;
 import java.util.Dictionary;
 
@@ -43,6 +44,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -50,6 +52,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -386,9 +389,25 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            String file = DialogFactory.chooseDirectory(getController(),
+            String newLocationName = DialogFactory.chooseDirectory(getController(),
                 initial);
-            locationModel.setValue(file);
+            File newLocation = new File(newLocationName);
+
+            // Make sure that the user is not setting this to the base dir of
+            // an existing folder.
+            for (Folder folder : getController().getFolderRepository().getFolders()) {
+                if (folder.getLocalBase().equals(newLocation)) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation(
+                                    "preferences.dialog.duplicate_localbase.title"),
+                            Translation.getTranslation(
+                                    "preferences.dialog.duplicate_localbase.message", 
+                                    folder.getName()),
+                            GenericDialogType.ERROR);
+                    return;
+                }
+            }
+            locationModel.setValue(newLocationName);
         }
     }
 

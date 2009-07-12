@@ -583,7 +583,16 @@ public class SettingsTab extends PFUIComponent {
                         Translation.getTranslation("settings_tab.subdir.text"),
                         GenericDialogType.ERROR);
             } else {
-                moveDirectory(originalDirectory, selectedFile, moveContent == 0);
+                File foldersBaseDir = new File(getController()
+                        .getFolderRepository().getFoldersBasedir());
+                if (selectedFile.equals(foldersBaseDir)) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation("settings_tab.basedir.title"),
+                            Translation.getTranslation("settings_tab.basedir.text"),
+                            GenericDialogType.ERROR);
+                } else {
+                    moveDirectory(originalDirectory, selectedFile, moveContent == 0);
+                }
             }
         }
     }
