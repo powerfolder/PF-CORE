@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.home.HomeTab;
@@ -86,14 +87,20 @@ public class MainTabbedPane extends PFUIComponent {
                 Translation.getTranslation("main_tabbed_pane.folders.description"));
         uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
 
-        uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
-                computersTab.getUIComponent());
-        key = Translation.getTranslation("main_tabbed_pane.computers.key");
-        uiComponent.setMnemonicAt(COMPUTERS_INDEX, 
-                (int) Character.toUpperCase(key.charAt(0)));
-        uiComponent.setToolTipTextAt(COMPUTERS_INDEX,
-                Translation.getTranslation("main_tabbed_pane.computers.description"));
-        uiComponent.setIconAt(COMPUTERS_INDEX, Icons.getIconById(Icons.COMPUTER));
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            // Do not display computers tab in backup only mode, BUT
+            // need to create it anyways to prevent UI events breaking.
+            computersTab.getUIComponent();
+        } else {
+            uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
+                    computersTab.getUIComponent());
+            key = Translation.getTranslation("main_tabbed_pane.computers.key");
+            uiComponent.setMnemonicAt(COMPUTERS_INDEX,
+                    (int) Character.toUpperCase(key.charAt(0)));
+            uiComponent.setToolTipTextAt(COMPUTERS_INDEX,
+                    Translation.getTranslation("main_tabbed_pane.computers.description"));
+            uiComponent.setIconAt(COMPUTERS_INDEX, Icons.getIconById(Icons.COMPUTER));
+        }
 
         uiComponent.addChangeListener(new MyChagelistener());
 
@@ -163,7 +170,14 @@ public class MainTabbedPane extends PFUIComponent {
      * @param homeIcon
      */
     public void setComputersIcon(Icon computersIcon) {
-        uiComponent.setIconAt(COMPUTERS_INDEX, computersIcon);
+        if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            try {
+                uiComponent.setIconAt(COMPUTERS_INDEX, computersIcon);
+            } catch (Exception e) {
+                // Ignore. This will fail on preference setting change,
+                // just before restart.
+            }
+        }
     }
 
     /**

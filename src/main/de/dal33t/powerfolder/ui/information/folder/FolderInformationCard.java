@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.Folder;
@@ -40,11 +41,6 @@ import java.util.List;
  * Information card for a folder. Includes files, members and settings tabs.
  */
 public class FolderInformationCard extends InformationCard {
-
-    private static final int TAB_FILES = 0;
-    private static final int TAB_MEMBERS = 1;
-    private static final int TAB_SETTIGNS = 2;
-    private static final int TAB_PROBLEMS = 3; // Must be the last tab.
 
     private FolderInfo folderInfo;
     private JTabbedPane tabbedPane;
@@ -151,8 +147,8 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.problems.title"),
                 problemsTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_PROBLEMS, Icons.getIconById(Icons.PROBLEMS));
-        tabbedPane.setToolTipTextAt(TAB_PROBLEMS, Translation.getTranslation(
+        tabbedPane.setIconAt(getProblemsTabIndex(), Icons.getIconById(Icons.PROBLEMS));
+        tabbedPane.setToolTipTextAt(getProblemsTabIndex(), Translation.getTranslation(
                 "folder_information_card.problems.tips"));
     }
 
@@ -160,8 +156,8 @@ public class FolderInformationCard extends InformationCard {
      * Remove the problems tab if displayed.
      */
     private void removeProblemsTab() {
-        if (tabbedPane.getComponentCount() >= 1 + TAB_PROBLEMS) {
-            tabbedPane.remove(TAB_PROBLEMS);
+        if (tabbedPane.getComponentCount() >= 1 + getProblemsTabIndex()) {
+            tabbedPane.remove(getProblemsTabIndex());
         }
     }
 
@@ -206,22 +202,32 @@ public class FolderInformationCard extends InformationCard {
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.files.title"),
                 filesTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_FILES, Icons.getIconById(Icons.FILES));
-        tabbedPane.setToolTipTextAt(TAB_FILES, Translation.getTranslation(
+        tabbedPane.setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
+        tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation.getTranslation(
                 "folder_information_card.files.tips"));
 
-        tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.members.title"),
-                membersTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_MEMBERS, Icons.getIconById(Icons.NODE_FRIEND_CONNECTED));
-        tabbedPane.setToolTipTextAt(TAB_MEMBERS, Translation.getTranslation(
-                "folder_information_card.members.tips"));
+        // No computers stuff if backup mode.
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            // Create component anyways to stop UI exceptions if mode changes.
+            membersTab.getUIComponent();
+        } else {
+            tabbedPane.addTab(Translation.getTranslation(
+                    "folder_information_card.members.title"),
+                    membersTab.getUIComponent());
+            tabbedPane.setIconAt(getMembersTabIndex(), Icons.getIconById(
+                    Icons.NODE_FRIEND_CONNECTED));
+            tabbedPane.setToolTipTextAt(getMembersTabIndex(),
+                    Translation.getTranslation(
+                    "folder_information_card.members.tips"));
+        }
 
         tabbedPane.addTab(Translation.getTranslation(
                 "folder_information_card.settings.title"),
                 settingsTab.getUIComponent());
-        tabbedPane.setIconAt(TAB_SETTIGNS, Icons.getIconById(Icons.SETTINGS));
-        tabbedPane.setToolTipTextAt(TAB_SETTIGNS, Translation.getTranslation(
+        tabbedPane.setIconAt(getSettingsTabIndex(),
+                Icons.getIconById(Icons.SETTINGS));
+        tabbedPane.setToolTipTextAt(getSettingsTabIndex(),
+                Translation.getTranslation(
                 "folder_information_card.settings.tips"));
 
     }
@@ -230,28 +236,77 @@ public class FolderInformationCard extends InformationCard {
      * Display the files tab.
      */
     public void showFiles() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_FILES);
+        ((JTabbedPane) getUIComponent()).setSelectedIndex(getFilesTabIndex());
     }
 
     /**
      * Display the members tab.
      */
     public void showMembers() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_MEMBERS);
+        if (hasMembersTab()) {
+            ((JTabbedPane) getUIComponent()).setSelectedIndex(getMembersTabIndex());
+        } else {
+            logSevere("Called showMembers() for a backup only client ?!");
+        }
     }
 
     /**
      * Display the settings tab.
      */
     public void showSettings() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_SETTIGNS);
+        ((JTabbedPane) getUIComponent()).setSelectedIndex(getSettingsTabIndex());
     }
 
     /**
      * Display the problems tab.
      */
     public void showProblems() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(TAB_PROBLEMS);
+        ((JTabbedPane) getUIComponent()).setSelectedIndex(getProblemsTabIndex());
+    }
+
+    /**
+     * Non members tab if backup only client
+     *
+     * @return
+     */
+    private boolean hasMembersTab() {
+        return !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController());
+    }
+
+    /**
+     * Files tab is tab index zero.
+     *
+     * @return
+     */
+    private static int getFilesTabIndex() {
+        return 0;
+    }
+
+    /**
+     * Members tab is tab index 1 - if tab enabled.
+     * 
+     * @return
+     */
+    private int getMembersTabIndex() {
+        return 1;
+    }
+
+    /**
+     * Settings tab is tab index 2, or 1 if members tab not enabled.
+     *
+     * @return
+     */
+    private int getSettingsTabIndex() {
+        return hasMembersTab() ? 2 : 1;
+    }
+
+    /**
+     * Problems tab is tab index 3, or 2 if members tab not enabled.
+     *
+     * @return
+     */
+    private int getProblemsTabIndex() {
+        return hasMembersTab() ? 3 : 2;
     }
 
     private class MyProblemListener implements ProblemListener {

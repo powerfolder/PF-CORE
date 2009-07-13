@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -233,8 +234,15 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         jLabel.addMouseListener(ma);
 
         // Build lower detials with line border.
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+        FormLayout lowerLayout;
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            // Skip computers stuff
+            lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+        } else {
+            lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+        }
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
@@ -254,15 +262,23 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
 
-        lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 17));
-        lowerBuilder.add(inviteButton, cc.xy(5, 17));
+        // No computers stuff if backup mode.
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
+            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 19, 4, 1));
+            lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 18, 4, 1));
+        } else {
+            lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 17));
+            lowerBuilder.add(inviteButton, cc.xy(5, 17));
 
-        lowerBuilder.add(transferModeLabel, cc.xy(2, 21));
-        lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 21));
+            lowerBuilder.addSeparator(null, cc.xywh(2, 19, 4, 1));
 
-        lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
+            lowerBuilder.add(transferModeLabel, cc.xy(2, 21));
+            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 21));
+
+            lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
+        }
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
