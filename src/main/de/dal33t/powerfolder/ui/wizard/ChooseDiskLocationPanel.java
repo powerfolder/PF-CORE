@@ -58,9 +58,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -294,8 +294,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         // Send Invite
-        row += 2;
-        builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            // Cannot invite in backup only mode
+            sendInviteAfterCB.setSelected(false);
+        } else {
+            row += 2;
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
+        }
 
         if (OSUtil.isWindowsSystem()) {
             row += 2;

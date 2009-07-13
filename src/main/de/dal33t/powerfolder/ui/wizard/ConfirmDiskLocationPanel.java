@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
@@ -110,8 +111,13 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         }
 
         // Send Invite
-        row += 2;
-        builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            // Cannot invite in backup only mode
+            sendInviteAfterCB.setSelected(false);
+        } else {
+            row += 2;
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
+        }
 
         return builder.getPanel();
     }
