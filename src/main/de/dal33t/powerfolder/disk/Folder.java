@@ -512,7 +512,7 @@ public class Folder extends PFComponent {
 
             // Advise controller of the carnage.
             getController().localMassDeletionDetected(
-                new LocalMassDeletionEvent(currentInfo));
+                new LocalMassDeletionEvent(this));
 
             return;
 
