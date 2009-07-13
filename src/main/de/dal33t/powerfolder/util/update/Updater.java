@@ -232,11 +232,6 @@ public class Updater extends Thread {
             while (in.available() > 0) {
                 latestVersion += (char) in.read();
             }
-            URLConnection con = url.openConnection();
-
-            System.err.println(settings.versionCheckURL + " is '"
-                + latestVersion + "'.");
-
             if (latestVersion != null) {
                 if (latestVersion.length() > 50) {
                     LOG.log(Level.SEVERE,
