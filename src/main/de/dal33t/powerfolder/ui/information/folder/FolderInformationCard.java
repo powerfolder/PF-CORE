@@ -277,7 +277,7 @@ public class FolderInformationCard extends InformationCard {
      * 
      * @return
      */
-    private int getMembersTabIndex() {
+    private static int getMembersTabIndex() {
         return 1;
     }
 
