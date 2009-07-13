@@ -361,6 +361,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
      *            the file to add to this Directory
      */
     private void addFile(Member member, FileInfo fileInfo) {
+        if (fileInfo.isDiretory()) {
+            // Not supported yet.
+            return;
+        }
         // Keep synchronization here.
         synchronized (fileInfoHolderMap) {
             if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
@@ -435,6 +439,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /** add a file recursive to this or correct sub Directory */
     void add(Member member, FileInfo file) {
+        if (file.isDiretory()) {
+            // Not supported yet.
+            return;
+        }
         String thePath = file.getLocationInFolder();
         if (thePath.length() == 0) {
             addFile(member, file);
@@ -467,6 +475,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     private void add(Member member, FileInfo file, String restPath) {
+        if (file.isDiretory()) {
+            // Not supported yet.
+            return;
+        }
         if (restPath.length() == 0) {
             addFile(member, file);
         } else {
