@@ -30,7 +30,7 @@ package de.dal33t.powerfolder.os;
 public enum OnlineStorageSubscriptionType {
     TRIAL("OS-T", "1 GB (30 days)", 1, true, false),
     TRIAL_PRO("OS-TP", "DONTUSE: 1 GB (60)", 1, true, false), 
-    STARTER("OS-1", "1 GB", 1, false, false),
+    STARTER("OS-1", "1 GB", 1, false, true),
     BASIC("OS-5", "5 GB", 5, false, true),
     ADVANCED("OS-10", "10 GB", 10, false, true),
 
