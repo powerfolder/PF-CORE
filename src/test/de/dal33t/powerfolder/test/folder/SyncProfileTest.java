@@ -39,10 +39,10 @@ public class SyncProfileTest extends TestCase {
                 .getSyncProfileByFieldList("false,true,false,true,334");
 
         // Test setting custom name with another custom name
-        String tweedledumName = tweedledum.getProfileName();
+        String tweedledumName = tweedledum.getName();
         boolean passed = false;
         try {
-            tweedledee.setProfileName(tweedledumName);
+            tweedledee.setName(tweedledumName);
         } catch (RuntimeException e) {
             e.printStackTrace();
             passed = true;
@@ -52,10 +52,10 @@ public class SyncProfileTest extends TestCase {
 
         // Test setting custom name with preset name
         String presetProfileName = SyncProfile.getSyncProfilesCopy().get(0)
-                .getProfileName();
+                .getName();
         passed = false;
         try {
-            tweedledee.setProfileName(presetProfileName);
+            tweedledee.setName(presetProfileName);
         } catch (RuntimeException e) {
             e.printStackTrace();
             passed = true;
@@ -100,7 +100,7 @@ public class SyncProfileTest extends TestCase {
         // Check cannot set name.
         boolean passed = false;
         try {
-            presetProfile.setProfileName("Snowball");
+            presetProfile.setName("Snowball");
         } catch (RuntimeException e) {
             e.printStackTrace();
             passed = true;
@@ -139,9 +139,9 @@ public class SyncProfileTest extends TestCase {
         assertSame("Loading identical config profiles should only create one new profile (1)",
                 finalSize - initialSize, 2);
         assertEquals("Loading identical config profiles should only create one new profile (2)",
-                patty.getProfileName(), selma.getProfileName());
+                patty.getName(), selma.getName());
         assertFalse("Loading different config profiles should create two new profile",
-                patty.getProfileName().equals(marge.getProfileName()));
+                patty.getName().equals(marge.getName()));
     }
 
     /**

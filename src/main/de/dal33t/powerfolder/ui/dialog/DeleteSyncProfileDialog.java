@@ -96,7 +96,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
         SyncProfile syncProfile = syncProfileSelectorPanel.getSyncProfile();
 
         // Message
-        builder.add(new JLabel("Delete profile " + syncProfile.getProfileName() +
+        builder.add(new JLabel("Delete profile " + syncProfile.getName() +
                 '?'), cc.xyw(1, 1, 3));
 
         // Substitute
@@ -119,7 +119,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
 
             // Don't add the profile being deleted.
             if (!syncProfile.equals(initialProfile)) {
-                syncProfilesCombo.addItem(syncProfile.getProfileName());
+                syncProfilesCombo.addItem(syncProfile.getName());
             }
         }
     }
@@ -160,7 +160,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
         SyncProfile oldProfile = syncProfileSelectorPanel.getSyncProfile();
         String newProfileName = (String) syncProfilesCombo.getSelectedItem();
         for (SyncProfile newProfile : SyncProfile.getSyncProfilesCopy()) {
-            if (newProfile.getProfileName().equals(newProfileName)) {
+            if (newProfile.getName().equals(newProfileName)) {
 
                 // Found the required folder. Set in required folders.
                 for (Folder folder : getController().getFolderRepository().getFolders()) {

@@ -130,7 +130,8 @@ public class SyncProfile implements Serializable {
         false, new SyncProfileConfiguration(false, false, true, true, 0));
 
     /**
-     * Backup source preset profile for Online Storage. Don't locally detect changes
+     * Backup source preset profile for Online Storage. Don't locally detect
+     * changes
      */
     public static final SyncProfile BACKUP_TARGET_NO_CHANGE_DETECT = new SyncProfile(
         "backup_target", false, new SyncProfileConfiguration(true, true, true,
@@ -195,11 +196,9 @@ public class SyncProfile implements Serializable {
     }
 
     /**
-     * Returns the profile name.
-     * 
-     * @return
+     * @return the profile name.
      */
-    public String getProfileName() {
+    public String getName() {
         if (custom) {
             return profileName;
         } else {
@@ -213,20 +212,17 @@ public class SyncProfile implements Serializable {
      * Always test for name uniqueness first with the safe checkName() method.
      * 
      * @param profileName
-     * @see #checkName(String)
      */
-    public void setProfileName(String profileName) {
+    public void setName(String profileName) {
 
         Reject.ifFalse(custom, "Cannot set the profileName of preset profile "
-            + getProfileName() + " to " + profileName);
+            + getName() + " to " + profileName);
         Reject.ifBlank(profileName, "ProfileName not supplied");
 
         // Ensure that the name is not being set to an existing sync profile
         // name
         for (SyncProfile profile : PRESET_SYNC_PROFILES) {
-            if (!equals(profile)
-                && profile.getProfileName().equals(profileName))
-            {
+            if (!equals(profile) && profile.getName().equals(profileName)) {
                 throw new RuntimeException(
                     "Preset profile name already exists.");
             }
@@ -234,7 +230,7 @@ public class SyncProfile implements Serializable {
         synchronized (customProfiles) {
             for (SyncProfile customProfile : customProfiles) {
                 if (!equals(customProfile)
-                    && customProfile.getProfileName().equals(profileName))
+                    && customProfile.getName().equals(profileName))
                 {
                     throw new RuntimeException(
                         "Custom profile name already exists.");
@@ -252,8 +248,7 @@ public class SyncProfile implements Serializable {
     public void setConfiguration(SyncProfileConfiguration configuration) {
 
         Reject.ifFalse(custom,
-            "Cannot set the configuration of preset profile "
-                + getProfileName());
+            "Cannot set the configuration of preset profile " + getName());
         Reject.ifNull(configuration, "configuration not supplied");
 
         // Ensure that the config is unique
@@ -295,7 +290,7 @@ public class SyncProfile implements Serializable {
             + configuration.getDailyHour() + FIELD_LIST_DELIMITER
             + configuration.getDailyDay() + FIELD_LIST_DELIMITER
             + configuration.getRegularTimeType() + FIELD_LIST_DELIMITER
-            + getProfileName();
+            + getName();
     }
 
     /**
@@ -331,7 +326,7 @@ public class SyncProfile implements Serializable {
 
                 return profile;
             }
-            names.add(profile.getProfileName());
+            names.add(profile.getName());
         }
 
         // Check existing profiles
@@ -342,7 +337,7 @@ public class SyncProfile implements Serializable {
                 {
                     return customProfile;
                 }
-                names.add(customProfile.getProfileName());
+                names.add(customProfile.getName());
             }
         }
 

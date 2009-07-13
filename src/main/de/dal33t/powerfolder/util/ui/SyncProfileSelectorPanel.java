@@ -174,10 +174,10 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         ignoreChanges = true;
         syncProfilesCombo.removeAllItems();
         for (SyncProfile aSyncProfile : SyncProfile.getSyncProfilesCopy()) {
-            syncProfilesCombo.addItem(aSyncProfile.getProfileName());
+            syncProfilesCombo.addItem(aSyncProfile.getName());
             if (syncProfile.equals(aSyncProfile)) {
                 syncProfilesCombo
-                    .setSelectedItem(aSyncProfile.getProfileName());
+                    .setSelectedItem(aSyncProfile.getName());
             }
         }
 
@@ -224,7 +224,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         }
 
         // Show warning if user wants to switch to a mode
-        String profName = syncProfile.getProfileName();
+        String profName = syncProfile.getName();
         return JOptionPane
             .showConfirmDialog(
                 null,

@@ -1303,8 +1303,8 @@ public class UIController extends PFComponent {
                     "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, event.getDeletePercentage(),
                     event.getFolderInfo().name, event.getOldProfile()
-                        .getProfileName(), event.getNewProfile()
-                        .getProfileName()));
+                        .getName(), event.getNewProfile()
+                        .getName()));
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
     }

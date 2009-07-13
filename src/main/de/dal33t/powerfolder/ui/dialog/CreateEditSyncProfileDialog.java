@@ -86,7 +86,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         this.create = create;
         originalConfiguration = syncProfileSelectorPanel.getSyncProfile()
                 .getConfiguration();
-        originalProfileName = syncProfileSelectorPanel.getSyncProfile().getProfileName();
+        originalProfileName = syncProfileSelectorPanel.getSyncProfile().getName();
     }
 
     /**
@@ -202,10 +202,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         // Profile name
         syncProfileName = new JTextField();
         if (create) {
-            String suggestedName = calculateBestName(initialProfile.getProfileName());
+            String suggestedName = calculateBestName(initialProfile.getName());
             syncProfileName.setText(suggestedName);
         } else {
-            syncProfileName.setText(initialProfile.getProfileName());
+            syncProfileName.setText(initialProfile.getName());
         }
 
         syncProfileName.addKeyListener(this);
@@ -213,7 +213,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         syncProfilesCombo = new JComboBox();
         syncProfilesCombo.addItem("");
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
-            syncProfilesCombo.addItem(syncProfile.getProfileName());
+            syncProfilesCombo.addItem(syncProfile.getName());
         }
         syncProfilesCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
@@ -342,7 +342,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
             for (SyncProfile loopSyncProfile :
                     SyncProfile.getSyncProfilesCopy()) {
-                String loopProfileName = loopSyncProfile.getProfileName();
+                String loopProfileName = loopSyncProfile.getName();
                 if (loopProfileName.equalsIgnoreCase(profileNameCopy)) {
                     unique = false;
                     break;
@@ -486,7 +486,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
                 }
 
                 // Update the profile with name change.
-                syncProfile.setProfileName(newProfileName);
+                syncProfile.setName(newProfileName);
 
                 // Set in the selector panel so it sees the name change.
                 syncProfileSelectorPanel.setSyncProfile(syncProfile, true);
@@ -506,12 +506,12 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     private boolean checkDuplicateProfileName(String profileName) {
 
         for (SyncProfile syncProfile : SyncProfile.getSyncProfilesCopy()) {
-            if (syncProfile.getProfileName().equals(profileName)) {
+            if (syncProfile.getName().equals(profileName)) {
                 String title = Translation.
                         getTranslation("dialog.create_edit_profile.duplicate_profile_title");
                 String message = Translation
                         .getTranslation("dialog.create_edit_profile.cannot_save_name", 
-                        syncProfile.getProfileName());
+                        syncProfile.getName());
                 DialogFactory.genericDialog(getController(),
                         title, message, GenericDialogType.ERROR);
                 return true;
@@ -534,7 +534,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
                         getTranslation("dialog.create_edit_profile.duplicate_profile_title");
                 String message = Translation
                         .getTranslation("dialog.create_edit_profile.cannot_save_profile",
-                        syncProfile.getProfileName());
+                        syncProfile.getName());
                 DialogFactory.genericDialog(getController(),
                         title, message, GenericDialogType.ERROR);
                 return true;

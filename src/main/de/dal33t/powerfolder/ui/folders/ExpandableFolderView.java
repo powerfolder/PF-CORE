@@ -601,7 +601,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     "?");
         } else {
             transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
-                    folder.getSyncProfile().getProfileName());
+                    folder.getSyncProfile().getName());
         }
         transferModeLabel.setText(transferMode);
     }

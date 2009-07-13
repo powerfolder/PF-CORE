@@ -511,7 +511,7 @@ public class Debug {
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
             + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
             + f.getMembersCount() + ", sync: "
-            + f.getSyncProfile().getProfileName());
+            + f.getSyncProfile().getName());
     }
 
     /**

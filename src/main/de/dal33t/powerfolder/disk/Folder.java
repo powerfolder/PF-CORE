@@ -1925,7 +1925,7 @@ public class Folder extends PFComponent {
         Reject.ifTrue(previewOnly,
             "Can not change Sync Profile in Preview mode.");
 
-        logFine("Setting " + aSyncProfile.getProfileName());
+        logFine("Setting " + aSyncProfile.getName());
         syncProfile = aSyncProfile;
 
         // Store on disk
@@ -2475,9 +2475,9 @@ public class Folder extends PFComponent {
                             + " percent of known files in folder "
                             + currentInfo.name
                             + ". The sync profile has been switched from "
-                            + original.getProfileName()
+                            + original.getName()
                             + " to "
-                            + syncProfile.getProfileName()
+                            + syncProfile.getName()
                             + " to protect the files.");
 
                         // Advise the controller of the problem.

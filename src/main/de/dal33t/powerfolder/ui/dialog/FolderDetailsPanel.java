@@ -151,7 +151,7 @@ public class FolderDetailsPanel extends PFUIComponent {
         sizeField.setCaretPosition(0);
 
         if (folder != null) {
-            syncProfileField.setText(folder.getSyncProfile().getProfileName());
+            syncProfileField.setText(folder.getSyncProfile().getName());
 
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
             totalSyncField.setText(SyncProfileUtil.renderSyncPercentage(sync));

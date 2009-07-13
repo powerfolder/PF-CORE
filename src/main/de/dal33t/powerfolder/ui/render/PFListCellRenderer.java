@@ -61,7 +61,7 @@ public class PFListCellRenderer extends DefaultListCellRenderer {
         } else if (value instanceof SyncProfile) {
             // Sync profile
             SyncProfile syncProfile = (SyncProfile) value;
-            String text = syncProfile.getProfileName();
+            String text = syncProfile.getName();
             setText(text);
         }
 
