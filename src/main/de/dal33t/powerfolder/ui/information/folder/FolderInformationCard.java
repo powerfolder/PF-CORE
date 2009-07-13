@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.Folder;
@@ -207,7 +206,7 @@ public class FolderInformationCard extends InformationCard {
                 "folder_information_card.files.tips"));
 
         // No computers stuff if backup mode.
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (getController().isBackupOnly()) {
             // Create component anyways to stop UI exceptions if mode changes.
             membersTab.getUIComponent();
         } else {
@@ -243,10 +242,10 @@ public class FolderInformationCard extends InformationCard {
      * Display the members tab.
      */
     public void showMembers() {
-        if (hasMembersTab()) {
-            ((JTabbedPane) getUIComponent()).setSelectedIndex(getMembersTabIndex());
-        } else {
+        if (getController().isBackupOnly()) {
             logSevere("Called showMembers() for a backup only client ?!");
+        } else {
+            ((JTabbedPane) getUIComponent()).setSelectedIndex(getMembersTabIndex());
         }
     }
 
@@ -262,15 +261,6 @@ public class FolderInformationCard extends InformationCard {
      */
     public void showProblems() {
         ((JTabbedPane) getUIComponent()).setSelectedIndex(getProblemsTabIndex());
-    }
-
-    /**
-     * Non members tab if backup only client
-     *
-     * @return
-     */
-    private boolean hasMembersTab() {
-        return !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController());
     }
 
     /**
@@ -297,7 +287,7 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     private int getSettingsTabIndex() {
-        return hasMembersTab() ? 2 : 1;
+        return getController().isBackupOnly() ? 1 : 2;
     }
 
     /**
@@ -306,7 +296,7 @@ public class FolderInformationCard extends InformationCard {
      * @return
      */
     private int getProblemsTabIndex() {
-        return hasMembersTab() ? 3 : 2;
+        return getController().isBackupOnly() ? 2 : 3;
     }
 
     private class MyProblemListener implements ProblemListener {

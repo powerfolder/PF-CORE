@@ -60,7 +60,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -294,7 +293,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         // Send Invite
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (getController().isBackupOnly()) {
             // Cannot invite in backup only mode
             sendInviteAfterCB.setSelected(false);
         } else {

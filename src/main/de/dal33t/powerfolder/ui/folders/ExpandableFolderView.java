@@ -25,7 +25,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -235,7 +234,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (getController().isBackupOnly()) {
             // Skip computers stuff
             lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
@@ -263,7 +262,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
 
         // No computers stuff if backup mode.
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (getController().isBackupOnly()) {
             lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
 

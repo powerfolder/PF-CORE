@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.home.HomeTab;
@@ -87,7 +86,7 @@ public class MainTabbedPane extends PFUIComponent {
                 Translation.getTranslation("main_tabbed_pane.folders.description"));
         uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
 
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (getController().isBackupOnly()) {
             // Do not display computers tab in backup only mode, BUT
             // need to create it anyways to prevent UI events breaking.
             computersTab.getUIComponent();
@@ -170,7 +169,7 @@ public class MainTabbedPane extends PFUIComponent {
      * @param homeIcon
      */
     public void setComputersIcon(Icon computersIcon) {
-        if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        if (!getController().isBackupOnly()) {
             try {
                 uiComponent.setIconAt(COMPUTERS_INDEX, computersIcon);
             } catch (Exception e) {
