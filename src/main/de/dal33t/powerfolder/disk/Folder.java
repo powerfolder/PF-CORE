@@ -2463,7 +2463,7 @@ public class Folder extends PFComponent {
                     if (config.isSyncDeletionWithFriends()
                         || config.isSyncDeletionWithOthers())
                     {
-                        String originalName = syncProfile.getProfileName();
+                        SyncProfile original = syncProfile;
 
                         // Emergency profile switch to something safe.
                         setSyncProfile(SyncProfile.HOST_FILES);
@@ -2475,7 +2475,7 @@ public class Folder extends PFComponent {
                             + " percent of known files in folder "
                             + currentInfo.name
                             + ". The sync profile has been switched from "
-                            + originalName
+                            + original.getProfileName()
                             + " to "
                             + syncProfile.getProfileName()
                             + " to protect the files.");
@@ -2483,8 +2483,8 @@ public class Folder extends PFComponent {
                         // Advise the controller of the problem.
                         getController().remoteMassDeletionDetected(
                             new RemoteMassDeletionEvent(currentInfo, from
-                                .getInfo(), delPercentage, originalName,
-                                syncProfile.getProfileName()));
+                                .getInfo(), delPercentage, original,
+                                syncProfile));
                     }
                 }
             }
