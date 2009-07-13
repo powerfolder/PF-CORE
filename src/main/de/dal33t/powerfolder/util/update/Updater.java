@@ -229,8 +229,9 @@ public class Updater extends Thread {
         try {
             InputStream in = (InputStream) url.getContent();
             String latestVersion = "";
-            while (in.available() > 0) {
-                latestVersion += (char) in.read();
+            int read;
+            while ((read = in.read()) >= 0) {
+                latestVersion += (char) read;
             }
             if (latestVersion != null) {
                 if (latestVersion.length() > 50) {
