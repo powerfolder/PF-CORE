@@ -1163,7 +1163,7 @@ public class Folder extends PFComponent {
                     }
 
                     if (fInfo.isDeleted()) {
-                        fInfo = FileInfoFactory.unmarshallDelectedFile(
+                        fInfo = FileInfoFactory.unmarshallDeletedFile(
                             currentInfo, fInfo.getName(), modifiedBy, modDate,
                             fInfo.getVersion());
                     } else {

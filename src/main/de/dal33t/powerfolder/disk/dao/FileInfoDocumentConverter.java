@@ -140,7 +140,7 @@ public class FileInfoDocumentConverter {
             .get(FileInfo.PROPERTYNAME_LAST_MODIFIED_DATE));
 
         if (Boolean.valueOf(doc.get(FileInfo.PROPERTYNAME_DELETED))) {
-            return FileInfoFactory.unmarshallDelectedFile(foInfo, fileName,
+            return FileInfoFactory.unmarshallDeletedFile(foInfo, fileName,
                 modifiedByInfo, new Date(modifiedTime), Integer.parseInt(doc
                     .get(FileInfo.PROPERTYNAME_VERSION)));
         } else {

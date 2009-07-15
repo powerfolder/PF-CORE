@@ -73,7 +73,7 @@ public final class FileInfoFactory {
         return new FileInfo(fileName, size, modby, modDate, version, false, fi);
     }
 
-    public static FileInfo unmarshallDelectedFile(FolderInfo fi,
+    public static FileInfo unmarshallDeletedFile(FolderInfo fi,
         String fileName, MemberInfo modby, Date modDate, int version)
     {
         // TODO DIRECTORY
