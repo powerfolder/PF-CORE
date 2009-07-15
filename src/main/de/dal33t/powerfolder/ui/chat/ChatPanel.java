@@ -71,6 +71,9 @@ public class ChatPanel extends PFUIComponent {
     /**
      * Constructor
      *
+     * NOTE: This panel is NOT responsible for receiving messages. That is
+     * handled by the ChatFrame.
+     *
      * @param controller
      */
     public ChatPanel(Controller controller, ChatFrame chatFrame,
@@ -81,7 +84,6 @@ public class ChatPanel extends PFUIComponent {
         this.chatFrame = chatFrame;
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
-        chatModel.addChatModelListener(new MyChatModelListener());
     }
 
     /**
@@ -215,7 +217,7 @@ public class ChatPanel extends PFUIComponent {
     /**
      * Update the chat lines if for me.
      */
-    private void updateChat() {
+    public void updateChat() {
         ChatLine[] lines = chatModel.getChatText(chatPartner);
         if (lines != null) {
             updateChat(lines);
@@ -226,7 +228,7 @@ public class ChatPanel extends PFUIComponent {
      * Called if a chatline is recieved, completely replaces the text in the
      * output field.
      */
-    void updateChat(ChatLine[] lines) {
+    private void updateChat(ChatLine[] lines) {
         final StyledDocument doc = new DefaultStyledDocument();
         createStyles(doc);
         try {
@@ -399,27 +401,6 @@ public class ChatPanel extends PFUIComponent {
             if (e.getNode().equals(chatPartner)) {
                 updateInputField();
                 configureAddRemoveAction();
-            }
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
-
-    /** Updates the chat if the current chat is changed */
-    private class MyChatModelListener implements ChatModelListener {
-        /**
-         * Called from the model if a message (about a Member) is
-         * received from other member or typed by this member (myself)
-         */
-        public void chatChanged(ChatModelEvent event) {
-            Object source = event.getSource();
-            if (source instanceof Member) {
-                Member eventMember = (Member) source;
-                if (chatPartner != null && chatPartner.equals(eventMember)) {
-                    updateChat();
-                }
             }
         }
 

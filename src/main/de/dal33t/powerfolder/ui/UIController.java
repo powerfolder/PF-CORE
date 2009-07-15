@@ -287,6 +287,8 @@ public class UIController extends PFComponent {
             logSevere("InvocationTargetException", e);
         }
 
+        chatFrame.initializeChatModelListener(applicationModel.getChatModel());
+
         started = true;
 
         // Process all pending runners
@@ -794,7 +796,7 @@ public class UIController extends PFComponent {
      * @param memberInfo info of the folder to display files information for.
      */
     public void openChat(MemberInfo memberInfo) {
-        chatFrame.displayChat(memberInfo);
+        chatFrame.displayChat(memberInfo, true);
         chatFrame.getUIComponent().setVisible(true);
     }
 

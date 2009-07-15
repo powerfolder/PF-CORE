@@ -103,6 +103,7 @@ public class Icons {
     public static final String WAKE_UP = "wake_up.icon";
 
     public static final String CHAT = "chat.icon";
+    public static final String CHAT_PENDING = "chat_pending.icon";
     public static final String SETTINGS = "settings.icon";
     public static final String PROBLEMS = "problems.icon";
     public static final String ADVANCED = "advanced.icon";

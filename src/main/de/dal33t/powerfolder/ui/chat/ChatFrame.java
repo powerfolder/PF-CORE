@@ -34,12 +34,16 @@ import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.RootPaneUI;
-import java.awt.*;
 import java.awt.event.*;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.prefs.Preferences;
 
 /**
@@ -48,9 +52,9 @@ import java.util.prefs.Preferences;
 public class ChatFrame extends MagneticFrame {
 
     private JFrame uiComponent;
-    private JTabbedPane tabbedPane;
+    private final JTabbedPane tabbedPane;
     private final Map<MemberInfo, ChatPanel> memberPanels;
-
+    private final List<MemberInfo> newMessages;
     /**
      * Constructor.
      *
@@ -62,6 +66,12 @@ public class ChatFrame extends MagneticFrame {
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
         memberPanels = new HashMap<MemberInfo, ChatPanel>();
+        tabbedPane.addChangeListener(new MyChangeListener());
+        newMessages = new CopyOnWriteArrayList<MemberInfo>();
+    }
+
+    public void initializeChatModelListener(ChatModel chatModel) {
+        chatModel.addChatModelListener(new MyChatModelListener());
     }
 
     /**
@@ -170,14 +180,19 @@ public class ChatFrame extends MagneticFrame {
      * Display a chat session, creats new one if needed.
      *
      * @param memberInfo
+     * @param autoSelect
+     * @return
      */
-    public void displayChat(MemberInfo memberInfo) {
+    public ChatPanel displayChat(MemberInfo memberInfo, boolean autoSelect) {
 
         // Find existing session.
         for (int i = 0; i < tabbedPane.getComponentCount(); i++) {
             if (tabbedPane.getTitleAt(i).equals(memberInfo.nick)) {
-                tabbedPane.setSelectedIndex(i);
-                return;
+                if (autoSelect) {
+                    tabbedPane.setSelectedIndex(i);
+                }
+                clearMessagesIcon();
+                return memberPanels.get(memberInfo);
             }
         }
 
@@ -188,7 +203,11 @@ public class ChatFrame extends MagneticFrame {
         tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member),
                 chatPanel.getUiComponent(), Translation.getTranslation(
                 "chat_frame.tool_tip", member.getNick()));
-        tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
+        if (autoSelect) {
+            tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
+        }
+        clearMessagesIcon();
+        return chatPanel;
     }
 
     /**
@@ -199,7 +218,12 @@ public class ChatFrame extends MagneticFrame {
     private void updateTabIcons(Member member) {
         for (MemberInfo memberInfo : memberPanels.keySet()) {
             if (member.getInfo().equals(memberInfo)) {
-                Icon icon = Icons.getIconFor(member);
+                Icon icon;
+                if (newMessages.contains(member.getInfo())) {
+                    icon = Icons.getIconById(Icons.CHAT_PENDING);
+                } else {
+                    icon = Icons.getIconFor(member);
+                }
                 Component component = memberPanels.get(memberInfo).getUiComponent();
                 int count = tabbedPane.getComponentCount();
                 for (int i = 0; i < count; i++) {
@@ -235,6 +259,70 @@ public class ChatFrame extends MagneticFrame {
         // No tabs? - so hide
         if (tabbedPane.getComponentCount() == 0) {
             getUIComponent().setVisible(false);
+        }
+    }
+
+    private boolean showingTabForMember(MemberInfo info) {
+        ChatPanel panel = memberPanels.get(info);
+        if (panel != null) {
+            Component component = tabbedPane.getSelectedComponent();
+            return component == panel.getUiComponent();
+        }
+        return false;
+    }
+
+    /**
+     * Handle all chat events. Diseminate to the required panel.
+     * 
+     * @param event
+     */
+    private void handleChatEvent(ChatModelEvent event) {
+        if (getUIComponent().isVisible()) {
+            if (event.getSource() instanceof Member) {
+                Member source = (Member) event.getSource();
+
+                // Okay, we are up.
+                // Do we have a tab for this guy?
+                ChatPanel panel = null;
+                for (MemberInfo memberInfo : memberPanels.keySet()) {
+                    if (source.getInfo().equals(memberInfo)) {
+                        // We have this guy. Is he selected?
+                        panel = memberPanels.get(memberInfo);
+                        if (tabbedPane.getSelectedComponent()
+                                == panel.getUiComponent()) {
+                            break;
+                        }
+                    }
+                }
+
+                // Message from someone new. Add panel.
+                if (panel == null) {
+                    panel = displayChat(source.getInfo(), false);
+                }
+
+                if (!showingTabForMember(source.getInfo())) {
+                    newMessages.add(source.getInfo());
+                    updateTabIcons(source);
+                }
+
+                // Now display message.
+                panel.updateChat();
+            }
+        } else {
+            // @todo push back event to application
+        }
+    }
+
+    private void clearMessagesIcon() {
+        Component component = tabbedPane.getSelectedComponent();
+        for (MemberInfo memberInfo : memberPanels.keySet()) {
+            ChatPanel panel = memberPanels.get(memberInfo);
+            if (panel.getUiComponent() == component) {
+                newMessages.remove(memberInfo);
+                Member member = getController().getNodeManager()
+                        .getNode(memberInfo);
+                updateTabIcons(member);
+            }
         }
     }
 
@@ -283,4 +371,20 @@ public class ChatFrame extends MagneticFrame {
         }
     }
 
+
+    private class MyChatModelListener implements ChatModelListener {
+        public void chatChanged(ChatModelEvent event) {
+            handleChatEvent(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
+
+    private class MyChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            clearMessagesIcon();
+        }
+    }
 }
