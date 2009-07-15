@@ -93,7 +93,7 @@ public class Invitation extends FolderRelatedMessage {
             .getFoldersBasedir();
         String appsDir = getAppsDir();
         String userHomeDir = getUserHomeDir();
-        if (OSUtil.isWindowsSystem()
+        if (OSUtil.isWindowsSystem() && appsDir != null
             && suggestedLocalBase.getAbsolutePath().startsWith(appsDir))
         {
             String filePath = suggestedLocalBase.getAbsolutePath();
@@ -104,10 +104,12 @@ public class Invitation extends FolderRelatedMessage {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_APP_DATA;
-        } else if (suggestedLocalBase.getAbsolutePath().startsWith(folderBase))
+        } else if (folderBase != null
+            && suggestedLocalBase.getAbsolutePath().startsWith(folderBase))
         {
             String filePath = suggestedLocalBase.getAbsolutePath();
-            String baseDirPath = controller.getFolderRepository().getFoldersBasedir();
+            String baseDirPath = controller.getFolderRepository()
+                .getFoldersBasedir();
             suggestedLocalBasePath = filePath.substring(baseDirPath.length());
 
             // Remove any leading file separators.
@@ -115,7 +117,8 @@ public class Invitation extends FolderRelatedMessage {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
             relative = RELATIVE_PF_BASE;
-        } else if (suggestedLocalBase.getAbsolutePath().startsWith(userHomeDir))
+        } else if (userHomeDir != null
+            && suggestedLocalBase.getAbsolutePath().startsWith(userHomeDir))
         {
             String filePath = suggestedLocalBase.getAbsolutePath();
             suggestedLocalBasePath = filePath.substring(userHomeDir.length());
