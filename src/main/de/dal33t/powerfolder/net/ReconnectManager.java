@@ -99,7 +99,7 @@ public class ReconnectManager extends PFComponent {
             reconnectionQueue.notifyAll();
         }
     }
-    
+
     public boolean isStarted() {
         return started;
     }
@@ -134,7 +134,7 @@ public class ReconnectManager extends PFComponent {
         if (isFiner()) {
             logFiner("Marking node for immediate reconnect: " + node);
         }
-        if (node.isCompleteyConnected() || node.isReconnecting()) {
+        if (node.isCompleteyConnected() || node.isConnecting()) {
             // Skip, not neccessary.
             return;
         }
@@ -259,7 +259,7 @@ public class ReconnectManager extends PFComponent {
             // not process already connected nodes
             return false;
         }
-        if (node.isReconnecting()) {
+        if (node.isConnecting()) {
             return false;
         }
         if (node.receivedWrongIdentity()) {
@@ -460,7 +460,7 @@ public class ReconnectManager extends PFComponent {
                 currentNode.shutdown();
             }
         }
-        
+
         private int getIdleWaitSeconds() {
             return ConfigurationEntry.CONNECT_WAIT.getValueInt(getController());
         }
@@ -511,7 +511,7 @@ public class ReconnectManager extends PFComponent {
 
                         currentNode = reconnectionQueue.remove(0);
                         if (currentNode.isConnected()
-                            || currentNode.isReconnecting())
+                            || currentNode.isConnecting())
                         {
                             // Already reconnecting. Skip
                             if (isFiner()) {
@@ -522,79 +522,89 @@ public class ReconnectManager extends PFComponent {
                             currentNode = null;
                         }
                     }
-                }
-
-                if (currentNode == null) {
-                    continue;
-                }
-
-                // A node could be obtained from the reconnection queue, try
-                // to connect now
-                long start = System.currentTimeMillis();
-                if (!ServerClient.isTempServerNode(currentNode.getInfo())) {
-                    try {
-                        // Reconnect
-                        currentNode.reconnect();
-                    } catch (InvalidIdentityException e) {
-                        Identity otherNodeId = e.getFrom().getIdentity();
-                        MemberInfo otherNodeInfo = otherNodeId != null
-                            && otherNodeId.getMemberInfo() != null
-                            ? otherNodeId.getMemberInfo()
-                            : null;
-
-                        if (otherNodeInfo != null
-                            && otherNodeInfo.isOnSameNetwork(getController()))
-                        {
-                            logWarning("Invalid identity from " + currentNode
-                                + ". Triing to connect to IP. " + e);
-                            logFiner(e);
-                            try {
-                                ConnectionHandler conHan = getController()
-                                    .getIOProvider()
-                                    .getConnectionHandlerFactory()
-                                    .tryToConnect(otherNodeInfo);
-                                getController().getNodeManager()
-                                    .acceptConnection(conHan);
-                            } catch (ConnectionException e1) {
-                                logFiner(e1);
-                            }
-                        }
+                    if (currentNode == null) {
+                        continue;
                     }
-                } else {
-                    // Temporary server node, directly connect to IP/hostname
-                    logFine("Tring to connect to temporary server node at "
-                        + currentNode.getHostName() + ":"
-                        + currentNode.getPort() + ". ID: "
-                        + currentNode.getId());
-                    try {
-                        ConnectionHandler conHan = getController()
-                            .getIOProvider().getConnectionHandlerFactory()
-                            .tryToConnect(currentNode.getInfo());
-                        getController().getNodeManager().acceptConnection(
-                            conHan);
-                    } catch (ConnectionException e1) {
-                        logFiner("ConnectionException", e1);
-                    }
+                    
+                    // MARK connecting ***
+                    currentNode.markConnecting();
                 }
 
-                long reconnectTook = System.currentTimeMillis() - start;
-                long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT / 2
-                    - reconnectTook;
-                if (waitUntilNextTry > 0) {
-                    synchronized (reconnectionQueue) {
+                try { // UNMARK connecting try/finally ***
+                    // A node could be obtained from the reconnection queue, try
+                    // to connect now
+                    long start = System.currentTimeMillis();
+                    if (!ServerClient.isTempServerNode(currentNode.getInfo())) {
                         try {
-                            if (isFiner()) {
-                                logFiner(this + ": Going on idle for "
-                                    + waitUntilNextTry + "ms");
+                            // Reconnect, Don't mark connecting. already done.
+                            currentNode.reconnect(false);
+                        } catch (InvalidIdentityException e) {
+                            Identity otherNodeId = e.getFrom().getIdentity();
+                            MemberInfo otherNodeInfo = otherNodeId != null
+                                && otherNodeId.getMemberInfo() != null
+                                ? otherNodeId.getMemberInfo()
+                                : null;
+
+                            if (otherNodeInfo != null
+                                && otherNodeInfo
+                                    .isOnSameNetwork(getController()))
+                            {
+                                logWarning("Invalid identity from "
+                                    + currentNode
+                                    + ". Triing to connect to IP. " + e);
+                                logFiner(e);
+                                try {
+                                    ConnectionHandler conHan = getController()
+                                        .getIOProvider()
+                                        .getConnectionHandlerFactory()
+                                        .tryToConnect(otherNodeInfo);
+                                    getController().getNodeManager()
+                                        .acceptConnection(conHan);
+                                } catch (ConnectionException e1) {
+                                    logFiner(e1);
+                                }
                             }
-                            reconnectionQueue.wait(waitUntilNextTry);
-                        } catch (InterruptedException e) {
-                            logFiner(this + " interrupted, breaking");
-                            break;
+                        }
+                    } else {
+                        // Temporary server node, directly connect to
+                        // IP/hostname
+                        logFine("Tring to connect to temporary server node at "
+                            + currentNode.getHostName() + ":"
+                            + currentNode.getPort() + ". ID: "
+                            + currentNode.getId());
+                        try {
+                            ConnectionHandler conHan = getController()
+                                .getIOProvider().getConnectionHandlerFactory()
+                                .tryToConnect(currentNode.getInfo());
+                            getController().getNodeManager().acceptConnection(
+                                conHan);
+                        } catch (ConnectionException e1) {
+                            logFiner("ConnectionException", e1);
                         }
                     }
+
+                    long reconnectTook = System.currentTimeMillis() - start;
+                    long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT
+                        / 2 - reconnectTook;
+                    if (waitUntilNextTry > 0) {
+                        synchronized (reconnectionQueue) {
+                            try {
+                                if (isFiner()) {
+                                    logFiner(this + ": Going on idle for "
+                                        + waitUntilNextTry + "ms");
+                                }
+                                reconnectionQueue.wait(waitUntilNextTry);
+                            } catch (InterruptedException e) {
+                                logFiner(this + " interrupted, breaking");
+                                break;
+                            }
+                        }
+                    }
+                } finally {
+                    currentNode.unmarkConnecting();
                 }
             }
+
         }
 
         public String toString() {

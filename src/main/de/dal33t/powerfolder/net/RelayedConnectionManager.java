@@ -502,7 +502,7 @@ public class RelayedConnectionManager extends PFComponent {
                 if (canidate.isConnected()) {
                     continue;
                 }
-                if (canidate.isReconnecting()) {
+                if (canidate.isConnecting()) {
                     continue;
                 }
                 logFine("Triing to connect to relay: " + canidate + " id: "

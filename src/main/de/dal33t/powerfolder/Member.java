@@ -122,10 +122,10 @@ public class Member extends PFComponent implements Comparable<Member> {
     private volatile boolean handshaked;
 
     /** The number of connection retries to the most recent known remote address */
-    private int connectionRetries;
+    private volatile int connectionRetries;
 
     /** The total number of reconnection tries at this moment */
-    private final AtomicInteger currentReconTries = new AtomicInteger(0);
+    private final AtomicInteger currentConnectTries = new AtomicInteger(0);
 
     /** his member information */
     private final MemberInfo info;
@@ -391,12 +391,34 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
-     * Answers if this node is currently reconnecting
-     * 
-     * @return true if currently reconnecting
+     * @return true if this node is currently reconnecting (outbound) or
+     *         connecting inbound
      */
-    public boolean isReconnecting() {
-        return currentReconTries.get() > 0;
+    public boolean isConnecting() {
+        return currentConnectTries.get() > 0;
+    }
+
+    /**
+     * Marks the node as connecting (inbound or outbound).
+     * <P>
+     * Make sure to unmark the connecting status
+     * 
+     * @return the number of currently running connection tries. Should be 1
+     */
+    public int markConnecting() {
+        int connectTries = currentConnectTries.incrementAndGet();
+        if (connectTries >= 2) {
+            logWarning("Multiple connection tries detected (" + connectTries
+                + ")", new RuntimeException("from here"));
+        }
+        return connectTries;
+    }
+
+    /**
+     * @return the current connection tries. 0 if not longer connecting.
+     */
+    public int unmarkConnecting() {
+        return currentConnectTries.decrementAndGet();
     }
 
     /**
@@ -651,6 +673,21 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @throws InvalidIdentityException
      */
     public ConnectResult reconnect() throws InvalidIdentityException {
+        return reconnect(true);
+    }
+
+    /**
+     * Tries to reconnect peer
+     * 
+     * @param markConnecting
+     *            true if this member should be marked as connecting. sometimes
+     *            this has already been done by calling code.
+     * @return the result of the connection attempt.
+     * @throws InvalidIdentityException
+     */
+    public ConnectResult reconnect(boolean markConnecting)
+        throws InvalidIdentityException
+    {
         // do not reconnect if controller is not running
         if (!getController().isStarted()) {
             return ConnectResult.failure("Controller is not started");
@@ -679,10 +716,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // }
 
             // Set reconnecting state
-            int reconTries = currentReconTries.incrementAndGet();
-            if (reconTries >= 2) {
-                logWarning("Multiple reconnection tries detected ("
-                    + reconTries + ")", new RuntimeException("from here"));
+            if (markConnecting) {
+                markConnecting();
             }
 
             // Re-resolve connect address
@@ -721,7 +756,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             connectResult = ConnectResult.failure(e.getMessage());
         } finally {
-            currentReconTries.decrementAndGet();
+            if (markConnecting) {
+                // Was marked, unmark it.
+                unmarkConnecting();
+            }
         }
 
         if (connectResult.isSuccess()) {

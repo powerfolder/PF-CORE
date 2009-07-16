@@ -666,8 +666,8 @@ public class ServerClient extends PFComponent {
                 for (MemberInfo serverMInfo : servers) {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
-                    if (hostingServer.isCompleteyConnected()
-                        || hostingServer.isReconnecting()
+                    if (hostingServer.isConnected()
+                        || hostingServer.isConnecting()
                         || hostingServer.equals(server))
                     {
                         // Already connected / reconnecting
@@ -980,7 +980,7 @@ public class ServerClient extends PFComponent {
             {
                 return;
             }
-            if (server.isReconnecting() || server.isConnected()) {
+            if (server.isConnecting() || server.isConnected()) {
                 return;
             }
             // Try to connect

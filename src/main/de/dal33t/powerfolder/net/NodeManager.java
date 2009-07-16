@@ -989,9 +989,14 @@ public class NodeManager extends PFComponent {
                 logWarning("Taking a better conHandler for " + member.getNick());
             }
             // Complete handshake
-            if (member.setPeer(handler).isFailure()) {
-                throw new ConnectionException("Unable to connect to node "
-                    + member);
+            try {
+                member.markConnecting();
+                if (member.setPeer(handler).isFailure()) {
+                    throw new ConnectionException("Unable to connect to node "
+                        + member);
+                }
+            } finally {
+                member.unmarkConnecting();
             }
         } else {
             logWarning(rejectCause + ", connected? " + handler.isConnected());
