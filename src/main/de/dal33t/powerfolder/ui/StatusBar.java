@@ -217,7 +217,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         sleepButton = new JButtonMini(Icons.getIconById(Icons.SLEEP),
                 Translation
             .getTranslation("status_bar.sleep.tips"));
-        sleepButton.addActionListener(new MyActionListener());
+        MyActionListener listener = new MyActionListener();
+        sleepButton.addActionListener(listener);
 
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
@@ -290,6 +291,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         pendingMessagesButton = new JButtonMini(new MyPendingMessageAction(
                 getController()));
+        pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
 
         syncButtonComponent = new SyncButtonComponent(getController());
@@ -516,7 +518,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            getController().setSilentMode(!getController().isSilentMode());
+            if (e.getSource() == sleepButton) {
+                getController().setSilentMode(!getController().isSilentMode());
+            } else if (e.getSource() == pendingMessagesButton) {
+                getController().getUIController().openChat(null);
+            }
         }
     }
 

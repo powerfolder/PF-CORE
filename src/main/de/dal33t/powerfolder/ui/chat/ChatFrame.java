@@ -208,6 +208,7 @@ public class ChatFrame extends MagneticFrame {
         if (autoSelect) {
             tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
         }
+
         clearMessagesIcon();
         return chatPanel;
     }
@@ -317,6 +318,9 @@ public class ChatFrame extends MagneticFrame {
         }
     }
 
+    /**
+     * Clear the message icon for the currently selected tab.
+     */
     private void clearMessagesIcon() {
         Component component = tabbedPane.getSelectedComponent();
         for (MemberInfo memberInfo : memberPanels.keySet()) {

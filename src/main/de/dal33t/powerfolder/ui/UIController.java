@@ -796,7 +796,9 @@ public class UIController extends PFComponent {
      * @param memberInfo info of the folder to display files information for.
      */
     public void openChat(MemberInfo memberInfo) {
-        chatFrame.displayChat(memberInfo, true);
+        if (memberInfo != null) {
+            chatFrame.displayChat(memberInfo, true);
+        }
         chatFrame.getUIComponent().setVisible(true);
     }
 
