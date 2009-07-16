@@ -26,8 +26,6 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.MainTabbedPane;
 import de.dal33t.powerfolder.ui.MainFrame;
-import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
-import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -65,8 +63,6 @@ public class MainFrameBlinkManager extends PFUIComponent {
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
-        uiController.getApplicationModel().getChatModel().addChatModelListener(
-            new MyChatModelListener());
         uiController.getApplicationModel().getWarningsModel()
             .getWarningsCountVM().addValueChangeListener(
                 new MyWarningsCountListener());
@@ -139,29 +135,6 @@ public class MainFrameBlinkManager extends PFUIComponent {
     /* ------------- */
     /* Inner Classes */
     /* ------------- */
-
-    /**
-     * Listens for chat messages.
-     */
-    private class MyChatModelListener implements ChatModelListener {
-
-        public void chatChanged(ChatModelEvent event) {
-
-            // Ignore status updates or if member tab selected
-            // or if chat frame visible.
-            if (event.isStatus() || uiController.chatFrameVisible()
-                || selectedMainTab.get() == MainTabbedPane.COMPUTERS_INDEX)
-            {
-                return;
-            }
-            flashMemberTabIcon(true);
-            update();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
 
     /**
      * Timer task, always running, updates the tab icons.

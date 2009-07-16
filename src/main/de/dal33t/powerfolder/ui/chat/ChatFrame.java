@@ -85,6 +85,7 @@ public class ChatFrame extends MagneticFrame {
             initialize();
             buildUIComponent();
         }
+        uiComponent.addWindowListener(new MyWindowListener());
         return uiComponent;
     }
 
@@ -249,8 +250,8 @@ public class ChatFrame extends MagneticFrame {
                 int count = tabbedPane.getComponentCount();
                 for (int i = 0; i < count; i++) {
                     if (tabbedPane.getComponentAt(i).equals(component)) {
-                        tabbedPane.remove(i);
                         iter.remove();
+                        tabbedPane.remove(i);
                         break;
                     }
                 }
@@ -278,39 +279,41 @@ public class ChatFrame extends MagneticFrame {
      * @param event
      */
     private void handleChatEvent(ChatModelEvent event) {
-        if (getUIComponent().isVisible()) {
-            if (event.getSource() instanceof Member) {
-                Member source = (Member) event.getSource();
+        if (event.getSource() instanceof Member) {
+            Member source = (Member) event.getSource();
 
-                // Okay, we are up.
-                // Do we have a tab for this guy?
-                ChatPanel panel = null;
-                for (MemberInfo memberInfo : memberPanels.keySet()) {
-                    if (source.getInfo().equals(memberInfo)) {
-                        // We have this guy. Is he selected?
-                        panel = memberPanels.get(memberInfo);
-                        if (tabbedPane.getSelectedComponent()
-                                == panel.getUiComponent()) {
-                            break;
-                        }
+            // Okay, we are up.
+            // Do we have a tab for this guy?
+            ChatPanel panel = null;
+            for (MemberInfo memberInfo : memberPanels.keySet()) {
+                if (source.getInfo().equals(memberInfo)) {
+                    // We have this guy. Is he selected?
+                    panel = memberPanels.get(memberInfo);
+                    if (tabbedPane.getSelectedComponent()
+                            == panel.getUiComponent()) {
+                        break;
                     }
                 }
-
-                // Message from someone new. Add panel.
-                if (panel == null) {
-                    panel = displayChat(source.getInfo(), false);
-                }
-
-                if (!showingTabForMember(source.getInfo())) {
-                    newMessages.add(source.getInfo());
-                    updateTabIcons(source);
-                }
-
-                // Now display message.
-                panel.updateChat();
             }
-        } else {
-            // @todo push back event to application
+
+            // Message from someone new. Add panel.
+            if (panel == null) {
+                panel = displayChat(source.getInfo(), false);
+            }
+
+            if (!showingTabForMember(source.getInfo())) {
+                newMessages.add(source.getInfo());
+                updateTabIcons(source);
+            }
+
+            // Now display message.
+            panel.updateChat();
+        }
+
+        // If this is not being displayed, show the pending messages button
+        // in the UI, alerting the user to the messages.
+        if (!getUIComponent().isVisible()) {
+            getController().getUIController().showPendingMessages(true);
         }
     }
 
@@ -385,7 +388,27 @@ public class ChatFrame extends MagneticFrame {
 
     private class MyChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
-            clearMessagesIcon();
+            // Avoid race for memberPanels
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    clearMessagesIcon();
+                }
+            });
+        }
+    }
+
+    private class MyWindowListener extends WindowAdapter {
+
+        // Clear the pending messages button in the UI, because user can
+        // see the messages now.
+        public void windowActivated(WindowEvent e) {
+            getController().getUIController().showPendingMessages(false);
+        }
+
+        // Clear the pending messages button in the UI, because user can
+        // see the messages now.
+        public void windowOpened(WindowEvent e) {
+            getController().getUIController().showPendingMessages(false);
         }
     }
 }

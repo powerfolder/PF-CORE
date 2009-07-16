@@ -447,6 +447,15 @@ public class MainFrame extends PFUIComponent {
         return mainTabbedPane.getSelectedTabIndex();
     }
 
+    /**
+     * Show the pending messages button in the status bar.
+     *
+     * @param show
+     */
+    public void showPendingMessages(boolean show) {
+        statusBar.showPendingMessages(show);
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////

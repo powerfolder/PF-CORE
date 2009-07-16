@@ -936,6 +936,15 @@ public class UIController extends PFComponent {
         return chatFrame.getUIComponent().isVisible();
     }
 
+    /**
+     * Show the pending messages button in the status bar.
+     *
+     * @param show
+     */
+    public void showPendingMessages(boolean show) {
+        mainFrame.showPendingMessages(show);
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
