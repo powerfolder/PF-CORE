@@ -55,6 +55,7 @@ public class ChatFrame extends MagneticFrame {
     private final JTabbedPane tabbedPane;
     private final Map<MemberInfo, ChatPanel> memberPanels;
     private final List<MemberInfo> newMessages;
+
     /**
      * Constructor.
      *

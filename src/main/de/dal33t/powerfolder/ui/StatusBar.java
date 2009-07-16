@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -79,6 +80,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
     private JButton openDebugButton;
+    private JButton pendingMessagesButton;
     private SyncButtonComponent syncButtonComponent;
     private boolean shownQualityWarningToday;
 
@@ -107,10 +109,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout leftLayout = new FormLayout("pref, fill:pref:grow", "pref, 3dlu, pref");
             DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
             leftBuilder.add(sleepButton, cc.xy(1, 1));
-            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                leftBuilder.add(openDebugButton,cc.xy(1, 3));
-            }
-            
+            leftBuilder.add(pendingMessagesButton,cc.xy(1, 3));
+
             upperPanel.add(leftBuilder.getPanel());
             
             upperPanel.add(syncButtonComponent.getUIComponent());
@@ -124,22 +124,30 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             // Lower section
 
-            FormLayout lowerLayout;
-            if (showPort) {
-                lowerLayout = new FormLayout(
-                 //  online      con quality limit                 port        sep         down        sep         up
-                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
-                    "pref");
-            } else {
-                lowerLayout = new FormLayout(
-                 //  online      con quality limit                 down        sep         up
-                    "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref",
-                    "pref");
+            String showDebugArea = "";
+            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+                showDebugArea = "pref, 3dlu, ";
             }
+
+            String showPortArea = "";
+            if (showPort) {
+                showPortArea = "pref, 3dlu, pref, 3dlu, ";
+            }
+
+            FormLayout lowerLayout = new FormLayout(
+             // debug            online      con qual    limit                     port & sep      down        sep         up
+                showDebugArea + "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, " + showPortArea + "pref, 3dlu, pref, 3dlu, pref",
+                "pref");
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
-                lowerLayout);
+                    lowerLayout);
 
             int col = 1;
+
+            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+                lowerBuilder.add(openDebugButton, cc.xy(col, 1));
+                col += 2;
+
+            }
 
             lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
@@ -181,6 +189,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             comp = mainBuilder.getPanel();
         }
         return comp;
+    }
+
+    public void showPendingMessages(boolean show) {
+        pendingMessagesButton.setVisible(show);
     }
 
     private void initComponents() {
@@ -275,6 +287,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             .getActionModel().getOpenAboutBoxAction());
         openDebugButton = new JButtonMini(getApplicationModel().getActionModel()
             .getOpenDebugInformationAction());
+
+        pendingMessagesButton = new JButtonMini(new MyPendingMessageAction(
+                getController()));
+        showPendingMessages(false);
 
         syncButtonComponent = new SyncButtonComponent(getController());
     }
@@ -521,6 +537,16 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
             });
+        }
+    }
+
+    private class MyPendingMessageAction extends BaseAction {
+
+        private MyPendingMessageAction(Controller controller) {
+            super("action_pending_messages", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 }
