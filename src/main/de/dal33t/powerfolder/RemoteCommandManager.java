@@ -84,8 +84,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     private static final Logger log = Logger
         .getLogger(RemoteCommandManager.class.getName());
 
-    // The default port to listen for remote commands
-    private static final int DEFAULT_REMOTECOMMAND_PORT = 1338;
     // The default prefix for all rcon commands
     private static final String REMOTECOMMAND_PREFIX = "PowerFolder_RCON_COMMAND";
     // The default encoding
@@ -110,17 +108,30 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     }
 
     /**
-     * Checks if there is a running instance of RemoteComamndManager. Determains
-     * this by opening a server socket port on the DEFAULT_REMOTECOMMAND_PORT.
+     * Checks if there is a running instance of RemoteComamndManager. Determines
+     * this by opening a server socket port on the default remote command port.
      * 
      * @return true if port allready taken
      */
     public static boolean hasRunningInstance() {
+        return hasRunningInstance(Integer
+            .valueOf(ConfigurationEntry.NET_RCON_PORT.getDefaultValue()));
+    }
+
+    /**
+     * Checks if there is a running instance of RemoteComamndManager. Determines
+     * this by opening a server socket port.
+     * 
+     * @param port
+     *            the port to check
+     * @return true if port allready taken
+     */
+    public static boolean hasRunningInstance(int port) {
         ServerSocket testSocket = null;
         try {
             // Only bind to localhost
-            testSocket = new ServerSocket(DEFAULT_REMOTECOMMAND_PORT, 0,
-                InetAddress.getByName("127.0.0.1"));
+            testSocket = new ServerSocket(Integer.valueOf(port), 0, InetAddress
+                .getByName("127.0.0.1"));
 
             // Server socket can be opend, no instance of PowerFolder running
             return false;
@@ -148,9 +159,23 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * @return true if succeeded, otherwise false
      */
     public static boolean sendCommand(String command) {
+        return sendCommand(Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
+            .getDefaultValue()), command);
+    }
+
+    /**
+     * Sends a remote command to a running instance of PowerFolder
+     * 
+     * @param port
+     *            the port to send this to.
+     * @param command
+     *            the command
+     * @return true if succeeded, otherwise false
+     */
+    public static boolean sendCommand(int port, String command) {
         try {
             log.log(Level.INFO, "Sending remote command '" + command + '\'');
-            Socket socket = new Socket("127.0.0.1", 1338);
+            Socket socket = new Socket("127.0.0.1", port);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
                 .getOutputStream(), ENCODING));
 
@@ -170,21 +195,23 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * Starts the remote command processor
      */
     public void start() {
+        Integer port = ConfigurationEntry.NET_RCON_PORT
+            .getValueInt(getController());
         try {
             // Only bind to localhost
-            serverSocket = new ServerSocket(DEFAULT_REMOTECOMMAND_PORT, 0,
-                InetAddress.getByName("127.0.0.1"));
+            serverSocket = new ServerSocket(port, 0, InetAddress
+                .getByName("127.0.0.1"));
 
             // Start thread
             myThread = new Thread(this, "Remote command Manager");
             myThread.start();
         } catch (UnknownHostException e) {
-            log.warning("Unable to open remote command manager on port "
-                + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log.warning("Unable to open remote command manager on port " + port
+                + ": " + e);
             log.log(Level.FINER, "UnknownHostException", e);
         } catch (IOException e) {
-            log.warning("Unable to open remote command manager on port "
-                + DEFAULT_REMOTECOMMAND_PORT + ": " + e);
+            log.warning("Unable to open remote command manager on port " + port
+                + ": " + e);
             log.log(Level.FINER, "IOException", e);
         }
     }

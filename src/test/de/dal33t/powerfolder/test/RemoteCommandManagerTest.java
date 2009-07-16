@@ -38,7 +38,8 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        assertFalse("PowerFolder already running", RemoteCommandManager.hasRunningInstance());
+        assertFalse("PowerFolder already running on port 3458", RemoteCommandManager
+            .hasRunningInstance(3458));
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -59,10 +60,9 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
 
     public void testJoinExistingFolder() {
         assertEquals(1, getFolderAtLisa().getMembersCount());
-        boolean sent = RemoteCommandManager
-            .sendCommand(RemoteCommandManager.MAKEFOLDER + "dir="
-                + oldDir.getAbsolutePath() + ";id=" + getFolderAtLisa().getId()
-                + ";dlscript=what.bat");
+        boolean sent = RemoteCommandManager.sendCommand(3458,
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
+                + ";id=" + getFolderAtLisa().getId() + ";dlscript=what.bat");
         assertTrue(sent);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -89,11 +89,13 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             .getFoldersCount());
         assertEquals(1, getFolderAtLisa().getMembersCount());
         boolean sent = RemoteCommandManager
-            .sendCommand(RemoteCommandManager.MAKEFOLDER
-                + "dir="
-                + oldDir.getAbsolutePath()
-                + ";name=XXX"
-                + ";syncprofile=false,false,false,false,5,true,22,0,m,Backup daily at 2200");
+            .sendCommand(
+                3458,
+                RemoteCommandManager.MAKEFOLDER
+                    + "dir="
+                    + oldDir.getAbsolutePath()
+                    + ";name=XXX"
+                    + ";syncprofile=false,false,false,false,5,true,22,0,m,Backup daily at 2200");
         assertTrue(sent);
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {

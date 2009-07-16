@@ -925,11 +925,13 @@ public class Controller extends PFComponent {
             alreadyRunningCheck();
         }
 
-        if (Boolean.valueOf(config.getProperty("disablercon"))) {
-            logWarning("RCon manager disabled");
-        } else {
+        if (ConfigurationEntry.NET_RCON_MANAGER
+            .getValueBoolean(getController()))
+        {
             rconManager = new RemoteCommandManager(this);
             rconManager.start();
+        } else {
+            logWarning("RCon manager disabled");
         }
     }
 

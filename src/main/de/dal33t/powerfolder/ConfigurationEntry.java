@@ -188,6 +188,27 @@ public enum ConfigurationEntry {
     NET_FIREWALL_OPENPORT("net.openport", Boolean.TRUE.toString()),
 
     /**
+     * If the {@link RemoteCommandManager} should be started or not.
+     */
+    NET_RCON_MANAGER("net.rcon", Boolean.TRUE.toString()) {
+        @Override
+        public String getValue(Controller controller) {
+            // Backward compatibility
+            if (controller.getConfig().getProperty("disablercon") != null) {
+                return String.valueOf(!Boolean.valueOf(controller.getConfig()
+                    .getProperty("disablercon")));
+            }
+            // Defaults to TRUE.
+            return super.getValue(controller);
+        }
+    },
+
+    /**
+     * The TCP port for the {@link RemoteCommandManager}
+     */
+    NET_RCON_PORT("net.rcon.port", String.valueOf(1338)),
+
+    /**
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
