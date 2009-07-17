@@ -192,7 +192,7 @@ public enum ConfigurationEntry {
      * Usually this does not make sense. Only for special scenarios. e.g.
      * ILY-570834
      */
-    NET_USE_RELAY_TUNNEL_ON_LAN("net.relaytunne.lan.enabled", String
+    NET_USE_RELAY_TUNNEL_ON_LAN("net.relaytunnel.lan.enabled", String
         .valueOf(Boolean.FALSE)),
 
     /**
