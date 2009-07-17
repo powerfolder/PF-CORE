@@ -2192,15 +2192,10 @@ public class Folder extends PFComponent {
             // Not interesting...
             return;
         }
-        boolean modifiedByFriend = remoteFile
-            .isModifiedByFriend(getController());
-        boolean syncFromMemberAllowed = (modifiedByFriend && syncProfile
-            .getConfiguration().isSyncDeletionWithFriends())
-            || (!modifiedByFriend && syncProfile.getConfiguration()
-                .isSyncDeletionWithOthers()) || force;
+        boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
 
         if (!syncFromMemberAllowed) {
-            // Not allowed to sync from that guy.
+            // Not allowed to sync
             return;
         }
 
@@ -2458,11 +2453,7 @@ public class Folder extends PFComponent {
                 if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
                     .getValueInt(getController()))
                 {
-                    SyncProfileConfiguration config = syncProfile
-                        .getConfiguration();
-                    if (config.isSyncDeletionWithFriends()
-                        || config.isSyncDeletionWithOthers())
-                    {
+                    if (syncProfile.isSyncDeletion()) {
                         SyncProfile original = syncProfile;
 
                         // Emergency profile switch to something safe.
@@ -2477,8 +2468,7 @@ public class Folder extends PFComponent {
                             + ". The sync profile has been switched from "
                             + original.getName()
                             + " to "
-                            + syncProfile.getName()
-                            + " to protect the files.");
+                            + syncProfile.getName() + " to protect the files.");
 
                         // Advise the controller of the problem.
                         getController().remoteMassDeletionDetected(
@@ -2889,30 +2879,23 @@ public class Folder extends PFComponent {
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
      * 
-     * @param includeNonFriendFiles
-     *            if files should be included, that are modified by non-friends
      * @return the list of files that are incoming/newer available on remote
      *         side as unmodifiable collection.
      */
-    public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles)
-    {
-        return getIncomingFiles(includeNonFriendFiles, true);
+    public Collection<FileInfo> getIncomingFiles() {
+        return getIncomingFiles(true);
     }
 
     /**
      * Gets all the incoming files. That means files that exist on the remote
      * side with a higher version.
      * 
-     * @param includeNonFriendFiles
-     *            if files should be included, that are modified by non-friends
      * @param includeDeleted
      *            true if also deleted files should be considered.
      * @return the list of files that are incoming/newer available on remote
      *         side as unmodifiable collection.
      */
-    public Collection<FileInfo> getIncomingFiles(boolean includeNonFriendFiles,
-        boolean includeDeleted)
-    {
+    public Collection<FileInfo> getIncomingFiles(boolean includeDeleted) {
         // build a temp list
         // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
         // FileInfo>();
@@ -2935,11 +2918,6 @@ public class Folder extends PFComponent {
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (memberFiles != null) {
                 for (FileInfo remoteFile : memberFiles) {
-                    boolean modificatorOk = includeNonFriendFiles
-                        || remoteFile.isModifiedByFriend(getController());
-                    if (!modificatorOk) {
-                        continue;
-                    }
                     if (remoteFile.isDeleted() && !includeDeleted) {
                         continue;
                     }
@@ -2971,11 +2949,6 @@ public class Folder extends PFComponent {
                 .getId());
             if (memberDirs != null) {
                 for (DirectoryInfo remoteDir : memberDirs) {
-                    boolean modificatorOk = includeNonFriendFiles
-                        || remoteDir.isModifiedByFriend(getController());
-                    if (!modificatorOk) {
-                        continue;
-                    }
                     if (remoteDir.isDeleted() && !includeDeleted) {
                         continue;
                     }

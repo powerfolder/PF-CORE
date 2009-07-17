@@ -281,10 +281,14 @@ public class SyncProfile implements Serializable {
      * @return string representation of the profile config as a list of fields
      */
     public String getFieldList() {
-        return configuration.isAutoDownloadFromFriends() + FIELD_LIST_DELIMITER
-            + configuration.isAutoDownloadFromOthers() + FIELD_LIST_DELIMITER
-            + configuration.isSyncDeletionWithFriends() + FIELD_LIST_DELIMITER
-            + configuration.isSyncDeletionWithOthers() + FIELD_LIST_DELIMITER
+        // Twice for backward compatibility. TRAC #1626
+        return configuration.isAutoDownload()
+            + FIELD_LIST_DELIMITER
+            + configuration.isAutoDownload()
+            + FIELD_LIST_DELIMITER
+            // Twice for backward compatibility. TRAC #1626
+            + configuration.isSyncDeletion() + FIELD_LIST_DELIMITER
+            + configuration.isSyncDeletion() + FIELD_LIST_DELIMITER
             + configuration.getTimeBetweenRegularScans() + FIELD_LIST_DELIMITER
             + configuration.isDailySync() + FIELD_LIST_DELIMITER
             + configuration.getDailyHour() + FIELD_LIST_DELIMITER
@@ -487,22 +491,17 @@ public class SyncProfile implements Serializable {
     }
 
     /**
-     * Convinience method. Anwers if autodownload is enabled (from friends or
-     * others)
-     * 
-     * @return
+     * @return true if new/update files should be automatically downloaded;
      */
     public boolean isAutodownload() {
-        return configuration.isAutoDownloadFromFriends()
-            || configuration.isAutoDownloadFromOthers();
+        return configuration.isAutoDownload();
     }
 
     /**
      * @return true if syncing deletions with any other user
      */
     public boolean isSyncDeletion() {
-        return configuration.isSyncDeletionWithFriends()
-            || configuration.isSyncDeletionWithOthers();
+        return configuration.isSyncDeletion();
     }
 
     /**

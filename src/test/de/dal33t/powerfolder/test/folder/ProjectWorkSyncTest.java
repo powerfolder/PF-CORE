@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
@@ -102,13 +102,13 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Wait for filelist from bart
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles(false).size() >= expectedFilesAtBart;
+                return getFolderAtLisa().getIncomingFiles().size() >= expectedFilesAtBart;
             }
         });
 
         // Now perform manual sync on lisa
         getContollerLisa().getFolderRepository().getFileRequestor()
-            .requestMissingFiles(getFolderAtLisa(), true, false, false);
+            .requestMissingFiles(getFolderAtLisa(), false);
 
         // Copy
         TestHelper.waitForCondition(50, new Condition() {
@@ -155,20 +155,20 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Wait for filelists
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles(false).size() >= 3;
+                return getFolderAtLisa().getIncomingFiles().size() >= 3;
             }
         });
         TestHelper.waitForCondition(2, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getIncomingFiles(false).size() >= 2;
+                return getFolderAtBart().getIncomingFiles().size() >= 2;
             }
         });
 
         // Now perform manual sync on lisa
         getContollerLisa().getFolderRepository().getFileRequestor()
-            .requestMissingFiles(getFolderAtLisa(), true, false, false);
+            .requestMissingFiles(getFolderAtLisa(), false);
         getContollerBart().getFolderRepository().getFileRequestor()
-            .requestMissingFiles(getFolderAtBart(), true, false, false);
+            .requestMissingFiles(getFolderAtBart(), false);
 
         // Copy
         TestHelper.waitForCondition(25, new Condition() {
@@ -216,10 +216,12 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(2, countExisting(getFolderAtLisa().getKnowFilesAsArray()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
-        assertEquals("Files at lisa: " + Arrays.asList(getFolderAtLisa().getLocalBase().list()),
-            2 + 1, getFolderAtLisa().getLocalBase().list().length);
-        assertEquals("File at bart: " + Arrays.asList(getFolderAtBart().getLocalBase().list()),
-            2 + 1, getFolderAtBart().getLocalBase().list().length);
+        assertEquals("Files at lisa: "
+            + Arrays.asList(getFolderAtLisa().getLocalBase().list()), 2 + 1,
+            getFolderAtLisa().getLocalBase().list().length);
+        assertEquals("File at bart: "
+            + Arrays.asList(getFolderAtBart().getLocalBase().list()), 2 + 1,
+            getFolderAtBart().getLocalBase().list().length);
     }
 
     private int countDeleted(FileInfo[] files) {

@@ -244,10 +244,10 @@ public class FolderJoinTest extends TwoControllerTestCase {
         // Bart has 3 files. Lisa is disconnected not expecting anything
         assertEquals(3, folderBart.getKnownFiles().size());
         assertEquals(0, folderLisa.getKnownFiles().size());
-        assertEquals(0, folderLisa.getIncomingFiles(true).size());
+        assertEquals(0, folderLisa.getIncomingFiles().size());
 
         connectBartAndLisa();
         // Lisa should now know the new files of bart
-        assertEquals(3, folderLisa.getIncomingFiles(true).size());
+        assertEquals(3, folderLisa.getIncomingFiles().size());
     }
 }

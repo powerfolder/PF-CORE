@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
@@ -36,8 +36,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 public class FindSameFilesTest extends TwoControllerTestCase {
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.HOST_FILES);
@@ -64,7 +63,8 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         TestHelper.changeFile(testFile);
         scanFolder(getFolderAtBart());
         // File changed. version: 3
-        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next()
+            .getVersion());
 
         // File gets copied to lisa.
         File testFileCopy = new File(getFolderAtLisa().getLocalBase(),
@@ -74,15 +74,16 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         // somehow the copie process is not complete sometimes what results in
         // different filesizes!
         TestHelper.waitMilliSeconds(1000);
-        
+
         // Let lisa scan it.
         scanFolder(getFolderAtLisa());
 
         // List should have detected the file from bart as the same!
-        assertEquals(0, getFolderAtLisa().getIncomingFiles(true).size());
+        assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
 
         // File modifications should be adapted from Bart, because same file!
-        assertEquals(3, getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+        assertEquals(3, getFolderAtLisa().getKnownFiles().iterator().next()
+            .getVersion());
         assertEquals(getContollerBart().getMySelf().getInfo(),
             getFolderAtLisa().getKnownFiles().iterator().next().getModifiedBy());
     }

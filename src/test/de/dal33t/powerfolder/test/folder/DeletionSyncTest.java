@@ -409,14 +409,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(2, new ConditionWithMessage() {
             public String message() {
                 return "Bart incoming: "
-                    + getFolderAtBart().getIncomingFiles(true, true)
+                    + getFolderAtBart().getIncomingFiles(true)
                     + " Lisa known files: "
                     + getFolderAtLisa().getKnownFilesCount();
             }
 
             public boolean reached() {
                 // Only files should be incoming
-                return getFolderAtBart().getIncomingFiles(true, true).size() == 3;
+                return getFolderAtBart().getIncomingFiles(true).size() == 3;
             }
         });
 

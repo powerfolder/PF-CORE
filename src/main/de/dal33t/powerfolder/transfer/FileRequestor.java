@@ -150,30 +150,19 @@ public class FileRequestor extends PFComponent {
      * FIXME: Does requestFromFriends work?
      * 
      * @param folder
-     * @param requestFromFriends
-     * @param requestFromOthers
      * @param autoDownload
      */
-    public void requestMissingFiles(Folder folder,
-        final boolean requestFromFriends, final boolean requestFromOthers,
-        boolean autoDownload)
-    {
+    public void requestMissingFiles(Folder folder, boolean autoDownload) {
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
             return;
         }
 
         // TODO: Detect conflicts. Raise problem.
-
-        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(
-            requestFromOthers, false);
-
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false);
         retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
             public boolean accept(FileInfo fInfo) {
-                return requestFromOthers
-                    || requestFromFriends
-                    && fInfo.getModifiedBy().getNode(getController(), true)
-                        .isFriend();
+                return true;
             }
         }, autoDownload);
     }
@@ -217,9 +206,7 @@ public class FileRequestor extends PFComponent {
             }
             return;
         }
-        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(folder
-            .getSyncProfile().getConfiguration().isAutoDownloadFromOthers(),
-            false);
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false);
         if (incomingFiles.isEmpty()) {
             if (isFiner()) {
                 logFiner("Not requesting files. No incoming files " + folder);
@@ -229,7 +216,7 @@ public class FileRequestor extends PFComponent {
 
         retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
             public boolean accept(FileInfo info) {
-                return folder.getSyncProfile().isAutodownload();
+                return true;
             }
         }, true);
     }

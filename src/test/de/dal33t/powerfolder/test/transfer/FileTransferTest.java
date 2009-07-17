@@ -170,11 +170,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Icoming files at lisa: "
-                    + getFolderAtLisa().getIncomingFiles(true, true).size();
+                    + getFolderAtLisa().getIncomingFiles(true).size();
             }
 
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles(true, true).size() == 1;
+                return getFolderAtLisa().getIncomingFiles(true).size() == 1;
             }
 
         });
@@ -784,8 +784,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        FileInfo fInfo = getFolderAtLisa().getIncomingFiles(true).iterator()
-            .next();
+        FileInfo fInfo = getFolderAtLisa().getIncomingFiles().iterator().next();
         File file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final File incompleteFile = new File(getFolderAtLisa()
             .getSystemSubDir(), "transfers").listFiles(new FilenameFilter() {

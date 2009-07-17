@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.util.Reject;
@@ -24,13 +24,12 @@ import de.dal33t.powerfolder.util.Reject;
 import java.io.Serializable;
 
 /**
- * Class representing the configuration of a SyncProfile.
- * This determines how a folder with a particular SyncProfile behaves.
- * SyncProfileConfigurations are immutable.
- *
+ * Class representing the configuration of a SyncProfile. This determines how a
+ * folder with a particular SyncProfile behaves. SyncProfileConfigurations are
+ * immutable.
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 3.0 $
-
  */
 public class SyncProfileConfiguration implements Serializable {
 
@@ -93,14 +92,14 @@ public class SyncProfileConfiguration implements Serializable {
     private final boolean syncDeletionWithOthers;
 
     /**
-     * The time between regular scans.
-     * TimeType determins whether this period is hours, minutes or seconds
+     * The time between regular scans. TimeType determins whether this period is
+     * hours, minutes or seconds
      */
     private final int timeBetweenRegularScans;
 
     /**
-     * Whther this scan is regular (every n hours, minutes or seconds),
-     * or daily (once per day / week period at a particular hour of the day).
+     * Whther this scan is regular (every n hours, minutes or seconds), or daily
+     * (once per day / week period at a particular hour of the day).
      */
     private final boolean dailySync;
 
@@ -110,11 +109,9 @@ public class SyncProfileConfiguration implements Serializable {
     private final int dailyHour;
 
     /**
-     * Day / week period to do daily scans.
-     * 0 == every day,
-     * 1 through 7 as Calendar.DAY_OF_WEEK,
-     * 8 == weekdays (Monday through Friday),
-     * 9 == weekends.
+     * Day / week period to do daily scans. 0 == every day, 1 through 7 as
+     * Calendar.DAY_OF_WEEK, 8 == weekdays (Monday through Friday), 9 ==
+     * weekends.
      */
     private final int dailyDay;
 
@@ -126,7 +123,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Simple construtor. Default values set for advanced configuration.
-     *
+     * 
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -134,20 +131,19 @@ public class SyncProfileConfiguration implements Serializable {
      * @param timeBetweenRegularScans
      */
     public SyncProfileConfiguration(boolean autoDownloadFromFriends,
-                                    boolean autoDownloadFromOthers,
-                                    boolean syncDeletionWithFriends,
-                                    boolean syncDeletionWithOthers,
-                                    int timeBetweenRegularScans) {
+        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
+        boolean syncDeletionWithOthers, int timeBetweenRegularScans)
+    {
 
         this(autoDownloadFromFriends, autoDownloadFromOthers,
-                syncDeletionWithFriends, syncDeletionWithOthers,
-                timeBetweenRegularScans, false, DAILY_HOUR_DEFAULT,
-                DAILY_DAY_EVERY_DAY, REGULAR_TIME_TYPE_MINUTES);
+            syncDeletionWithFriends, syncDeletionWithOthers,
+            timeBetweenRegularScans, false, DAILY_HOUR_DEFAULT,
+            DAILY_DAY_EVERY_DAY, REGULAR_TIME_TYPE_MINUTES);
     }
 
     /**
      * Full construtor.
-     *
+     * 
      * @param autoDownloadFromFriends
      * @param autoDownloadFromOthers
      * @param syncDeletionWithFriends
@@ -159,13 +155,10 @@ public class SyncProfileConfiguration implements Serializable {
      * @param regularTimeType
      */
     public SyncProfileConfiguration(boolean autoDownloadFromFriends,
-                                    boolean autoDownloadFromOthers,
-                                    boolean syncDeletionWithFriends,
-                                    boolean syncDeletionWithOthers,
-                                    int timeBetweenRegularScans,
-                                    boolean dailySync, int dailyHour,
-                                    int dailyDay,
-                                    String regularTimeType) {
+        boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
+        boolean syncDeletionWithOthers, int timeBetweenRegularScans,
+        boolean dailySync, int dailyHour, int dailyDay, String regularTimeType)
+    {
 
         Reject.ifBlank(regularTimeType, "Missing regularTimeType");
 
@@ -181,45 +174,23 @@ public class SyncProfileConfiguration implements Serializable {
     }
 
     /**
-     * Whether to automatically download from friends
-     *
-     * @return
+     * @return true if new/update files should be automatically downloaded;
      */
-    public boolean isAutoDownloadFromFriends() {
-        return autoDownloadFromFriends;
+    public boolean isAutoDownload() {
+        return autoDownloadFromFriends || autoDownloadFromOthers;
     }
 
     /**
-     * Whether to automatically download from non-friends
-     *
-     * @return
+     * @return to synchronize deletions
      */
-    public boolean isAutoDownloadFromOthers() {
-        return autoDownloadFromOthers;
+    public boolean isSyncDeletion() {
+        return syncDeletionWithFriends || syncDeletionWithOthers;
     }
 
     /**
-     * Whether to synchronize deletions from friends
-     *
-     * @return
-     */
-    public boolean isSyncDeletionWithFriends() {
-        return syncDeletionWithFriends;
-    }
-
-    /**
-     * Whether to synchronize deletions from non-friends
-     *
-     * @return
-     */
-    public boolean isSyncDeletionWithOthers() {
-        return syncDeletionWithOthers;
-    }
-
-    /**
-     * The time between regular scans.
-     * TimeType determins whether this period is hours, minutes or seconds.
-     *
+     * The time between regular scans. TimeType determins whether this period is
+     * hours, minutes or seconds.
+     * 
      * @return
      */
     public int getTimeBetweenRegularScans() {
@@ -227,9 +198,9 @@ public class SyncProfileConfiguration implements Serializable {
     }
 
     /**
-     * Whther this scan is regular (every n hours, minutes or seconds),
-     * or daily (once per day / week period at a particular hour of the day).
-     *
+     * Whther this scan is regular (every n hours, minutes or seconds), or daily
+     * (once per day / week period at a particular hour of the day).
+     * 
      * @return
      */
     public boolean isDailySync() {
@@ -238,7 +209,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * The hour of the day to do a daily scan. 0 through 23.
-     *
+     * 
      * @return
      */
     public int getDailyHour() {
@@ -246,12 +217,10 @@ public class SyncProfileConfiguration implements Serializable {
     }
 
     /**
-     * Day / week period to do daily scans.
-     * 0 == every day,
-     * 1 through 7 as Calendar.DAY_OF_WEEK,
-     * 8 == weekdays (Monday through Friday),
-     * 9 == weekends.
-     *
+     * Day / week period to do daily scans. 0 == every day, 1 through 7 as
+     * Calendar.DAY_OF_WEEK, 8 == weekdays (Monday through Friday), 9 ==
+     * weekends.
+     * 
      * @return
      */
     public int getDailyDay() {
@@ -261,7 +230,7 @@ public class SyncProfileConfiguration implements Serializable {
     /**
      * The time type to do regular sacns (every n hours, minutes or seconds)
      * Hours, minutes or seconds.
-     *
+     * 
      * @return
      */
     public String getRegularTimeType() {
@@ -270,7 +239,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * True if object is identical to this.
-     *
+     * 
      * @param obj
      * @return
      */
@@ -309,9 +278,9 @@ public class SyncProfileConfiguration implements Serializable {
         if (timeBetweenRegularScans != that.timeBetweenRegularScans) {
             return false;
         }
-        if (regularTimeType != null ?
-                !regularTimeType.equals(that.regularTimeType) :
-                that.regularTimeType != null) {
+        if (regularTimeType != null ? !regularTimeType
+            .equals(that.regularTimeType) : that.regularTimeType != null)
+        {
             return false;
         }
 
@@ -320,7 +289,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Reasonably unique hash.
-     *
+     * 
      * @return
      */
     public int hashCode() {
@@ -332,25 +301,24 @@ public class SyncProfileConfiguration implements Serializable {
         result = 31 * result + (dailySync ? 1 : 0);
         result = 31 * result + dailyHour;
         result = 31 * result + dailyDay;
-        result = 31 * result + (regularTimeType != null ? regularTimeType.hashCode() : 0);
+        result = 31 * result
+            + (regularTimeType != null ? regularTimeType.hashCode() : 0);
         return result;
     }
 
     /**
      * String representation.
-     *
+     * 
      * @return
      */
     public String toString() {
-        return "SyncProfileConfiguration [" +
-                " autoDownloadFromFriends = " + autoDownloadFromFriends +
-                " autoDownloadFromOthers = " + autoDownloadFromOthers +
-                " syncDeletionWithFriends = " + syncDeletionWithFriends +
-                " syncDeletionWithOthers = " + syncDeletionWithOthers +
-                " timeBetweenRegularScans = " + timeBetweenRegularScans +
-                " dailySync = " + dailySync + " dailyHour = " + dailyHour +
-                " dailyDay = " + dailyDay +
-                " regularTimeType =     " + regularTimeType +
-                ']';
+        return "SyncProfileConfiguration [" + " autoDownloadFromFriends = "
+            + autoDownloadFromFriends + " autoDownloadFromOthers = "
+            + autoDownloadFromOthers + " syncDeletionWithFriends = "
+            + syncDeletionWithFriends + " syncDeletionWithOthers = "
+            + syncDeletionWithOthers + " timeBetweenRegularScans = "
+            + timeBetweenRegularScans + " dailySync = " + dailySync
+            + " dailyHour = " + dailyHour + " dailyDay = " + dailyDay
+            + " regularTimeType =     " + regularTimeType + ']';
     }
 }
