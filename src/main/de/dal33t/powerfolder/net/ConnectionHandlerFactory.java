@@ -36,9 +36,9 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
 
 /**
- * The default factory which creates <code>ConnectionHandler</code>s. Is
- * capable of connecting to a remote node by {@link #tryToConnect(MemberInfo)}
- * or to a remote address by {@link #tryToConnect(InetSocketAddress)}.
+ * The default factory which creates <code>ConnectionHandler</code>s. Is capable
+ * of connecting to a remote node by {@link #tryToConnect(MemberInfo)} or to a
+ * remote address by {@link #tryToConnect(InetSocketAddress)}.
  * <p>
  * The connection attempt by {@link #tryToConnect(MemberInfo)} should always be
  * prefered since it include the logical peer address (<code>MemberInfo</code>)
@@ -80,13 +80,14 @@ public class ConnectionHandlerFactory extends PFComponent {
         throws ConnectionException
     {
         boolean nullIP = remoteNode.getConnectAddress() == null
-                || remoteNode.getConnectAddress().getAddress() == null
-                || NetworkUtil.isNullIP(remoteNode.getConnectAddress()
-                .getAddress());
+            || remoteNode.getConnectAddress().getAddress() == null
+            || NetworkUtil
+                .isNullIP(remoteNode.getConnectAddress().getAddress());
 
         if (!nullIP) {
             try {
-                ConnectionHandler handler = tryToConnectTCP(remoteNode.getConnectAddress());
+                ConnectionHandler handler = tryToConnectTCP(remoteNode
+                    .getConnectAddress());
                 goodConnections.incrementAndGet();
                 return handler;
             } catch (ConnectionException e) {
@@ -95,7 +96,9 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
 
         try {
-            if (useUDTConnections() && !isOnLAN(remoteNode) && !nullIP) {
+            if (useUDTConnections()
+                && useRelayedTunneledConnection(remoteNode) && !nullIP)
+            {
                 ConnectionHandler handler = tryToConnectUDTRendezvous(remoteNode);
                 mediumConnections.incrementAndGet();
                 return handler;
@@ -105,7 +108,9 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
 
         try {
-            if (useRelayedConnections() && !isOnLAN(remoteNode)) {
+            if (useRelayedConnections()
+                && useRelayedTunneledConnection(remoteNode))
+            {
                 ConnectionHandler handler = tryToConnectRelayed(remoteNode);
                 poorConnections.incrementAndGet();
                 return handler;
@@ -218,8 +223,8 @@ public class ConnectionHandlerFactory extends PFComponent {
      * @throws ConnectionException
      *             if no connection is possible.
      */
-    protected ConnectionHandler tryToConnectTCP(
-        InetSocketAddress remoteAddress) throws ConnectionException
+    protected ConnectionHandler tryToConnectTCP(InetSocketAddress remoteAddress)
+        throws ConnectionException
     {
         try {
             Socket socket = new Socket();
@@ -303,21 +308,47 @@ public class ConnectionHandlerFactory extends PFComponent {
         return getController().getNodeManager().isOnLANorConfiguredOnLAN(adr);
     }
 
+    protected boolean useRelayedTunneledConnection(MemberInfo node) {
+        boolean onLan = isOnLAN(node);
+        if (!onLan) {
+            // Always try for Internet connection.
+            return true;
+        } else {
+            // Only if really wanted.
+            return ConfigurationEntry.NET_USE_RELAY_TUNNEL_ON_LAN
+                .getValueBoolean(getController());
+        }
+    }
+
+    protected boolean useRelayedTunneledConnection(InetAddress adr) {
+        boolean onLan = getController().getNodeManager()
+            .isOnLANorConfiguredOnLAN(adr);
+        if (!onLan) {
+            // Always try for Internet connection.
+            return true;
+        } else {
+            // Only if really wanted.
+            return ConfigurationEntry.NET_USE_RELAY_TUNNEL_ON_LAN
+                .getValueBoolean(getController());
+        }
+    }
+
     public ConnectionQuality getConnectionQuality() {
         if (isFiner()) {
-            logFiner("Connections ==> good: " + goodConnections.get() +
-                    ", medium: " + mediumConnections.get() +
-                    ", poor: " + poorConnections.get());
+            logFiner("Connections ==> good: " + goodConnections.get()
+                + ", medium: " + mediumConnections.get() + ", poor: "
+                + poorConnections.get());
         }
 
-        if (goodConnections.get() == 0 &&
-                mediumConnections.get() == 0 &&
-                poorConnections.get() == 0) {
+        if (goodConnections.get() == 0 && mediumConnections.get() == 0
+            && poorConnections.get() == 0)
+        {
             return null;
         }
-        
+
         if (goodConnections.get() > poorConnections.get()
-                && goodConnections.get() > mediumConnections.get()) {
+            && goodConnections.get() > mediumConnections.get())
+        {
             return ConnectionQuality.GOOD;
         } else if (mediumConnections.get() > poorConnections.get()) {
             return ConnectionQuality.MEDIUM;
