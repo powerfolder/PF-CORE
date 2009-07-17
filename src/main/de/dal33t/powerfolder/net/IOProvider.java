@@ -174,9 +174,7 @@ public class IOProvider extends PFComponent {
         if (isFiner()) {
             logFiner("Starting IO for " + ioWorker);
         }
-        // Ensure clean security context. Unsure destructed session.
-        Runnable sessionDestroyer = new SessionDestroyerRunnable(ioWorker);
-        ioThreadPool.submit(sessionDestroyer);
+        ioThreadPool.submit(ioWorker);
     }
 
     /**
@@ -203,38 +201,6 @@ public class IOProvider extends PFComponent {
     public void removeKeepAliveCheck(ConnectionHandler conHan) {
         Reject.ifNull(conHan, "Connection handler is null");
         keepAliveList.remove(conHan);
-    }
-
-    /**
-     * Class to wrap a runnable, especially IO receivers, which ensures a clean
-     * security context on the executing thread. Destroys session before run()
-     * is executed.
-     */
-    private final class SessionDestroyerRunnable implements Runnable {
-        private final Runnable ioWorker;
-
-        private SessionDestroyerRunnable(Runnable ioWorker) {
-            this.ioWorker = ioWorker;
-        }
-
-        public void run() {
-            try {
-                destroySession();
-                ioWorker.run();
-            } catch (RuntimeException e) {
-                logSevere("RuntimeError in IO worker: " + e, e);
-                throw e;
-            } finally {
-                destroySession();
-            }
-        }
-
-        private void destroySession() {
-            SecurityManager secMan = getController().getSecurityManager();
-            if (secMan != null) {
-                secMan.destroySession();
-            }
-        }
     }
 
     private class KeepAliveChecker implements Runnable {

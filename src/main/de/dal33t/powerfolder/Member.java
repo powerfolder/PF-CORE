@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -85,7 +86,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
-import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -169,10 +169,9 @@ public class Member extends PFComponent implements Comparable<Member> {
     private TransferStatus lastTransferStatus;
 
     /**
-     * The account that is logged in from this node. Filled in SERVER only.
-     * Clients have this always NULL for connected clients.
+     * The account that is logged in from this node.
      */
-    private Account account;
+    private AccountInfo accountInfo;
 
     /**
      * the last problem
@@ -1136,7 +1135,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         lastHandshakeCompleted = null;
         lastTransferStatus = null;
         expectedListMessages = null;
-        account = null;
+        accountInfo = null;
         messageListenerSupport = null;
         if (wasHandshaked) {
             // Inform nodemanger about it
@@ -1227,12 +1226,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             profilingEntry = Profiling.start("Member.handleMessage", message
                 .getClass().getSimpleName());
         }
-
-        // Create security context
-        if (getController().getSecurityManager() != null) {
-            getController().getSecurityManager().setSession(account);
-        }
-
+        
         int expectedTime = -1;
         try {
             // related folder is filled if message is a folder related message
@@ -1709,11 +1703,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             fireMessageToListeners(message);
         } finally {
             Profiling.end(profilingEntry, expectedTime);
-
-            // Destroy security context
-            if (getController().getSecurityManager() != null) {
-                getController().getSecurityManager().destroySession();
-            }
         }
     }
 
@@ -2198,12 +2187,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         this.server = server;
     }
 
-    public Account getAccount() {
-        return account;
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setAccountInfo(AccountInfo accountInfo) {
+        this.accountInfo = accountInfo;
     }
 
     /**

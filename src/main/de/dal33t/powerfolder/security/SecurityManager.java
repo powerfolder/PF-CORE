@@ -31,9 +31,8 @@ public interface SecurityManager {
     // Authentication *********************************************************
 
     /**
-     * Authenticates the user. If successful the session is set afterwards.
+     * Authenticates the user.
      * 
-     * @see #setSession(Account)
      * @param username
      *            the username of the login
      * @param password
@@ -43,23 +42,5 @@ public interface SecurityManager {
      */
     Account authenticate(String username, String password);
 
-    // Session handling *******************************************************
-
-    /**
-     * @return the active session/account associated with the current thread.
-     */
-    Account getSession();
-
-    /**
-     * Associates the current thread with the given account
-     * 
-     * @param account
-     *            the account to set for the current thread.
-     */
-    void setSession(Account account);
-
-    /**
-     * Clears the currently active session.
-     */
-    void destroySession();
+    // Permission questions on Member level
 }
