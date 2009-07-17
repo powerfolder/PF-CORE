@@ -188,6 +188,14 @@ public enum ConfigurationEntry {
     NET_FIREWALL_OPENPORT("net.openport", Boolean.TRUE.toString()),
 
     /**
+     * If relayed or tunnel connections should be tried for LAN based computers.
+     * Usually this does not make sense. Only for special scenarios. e.g.
+     * ILY-570834
+     */
+    NET_USE_RELAY_TUNNEL_ON_LAN("net.relaytunne.lan.enabled", String
+        .valueOf(Boolean.FALSE)),
+
+    /**
      * If the {@link RemoteCommandManager} should be started or not.
      */
     NET_RCON_MANAGER("net.rcon", Boolean.TRUE.toString()) {
