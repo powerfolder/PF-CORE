@@ -34,6 +34,7 @@ import com.jgoodies.binding.beans.Model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -76,7 +77,7 @@ public class Account extends Model implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean newsLetter;
     private boolean proUser;
-    
+
     /**
      * The list of computers associated with this account.
      */
@@ -111,6 +112,13 @@ public class Account extends Model implements Serializable {
         this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
         this.computers = new CopyOnWriteArrayList<MemberInfo>();
+    }
+
+    /**
+     * @return a leightweight/reference object to this account.
+     */
+    public AccountInfo createInfo() {
+        return new AccountInfo(oid, username);
     }
 
     // Basic permission stuff *************************************************

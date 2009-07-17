@@ -21,8 +21,11 @@ package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 
@@ -63,6 +66,23 @@ public interface AccountService {
      * @return Account details about the currently logged in user.
      */
     AccountDetails getAccountDetails();
+
+    /**
+     * @return all license key content for this account. or null if no key was
+     *         found.
+     */
+    List<String> getLicenseKeyContents();
+
+    /**
+     * Resulting map may not contain all nodes only those connected to the
+     * server.
+     * 
+     * @param nodes
+     * @return the {@link AccountInfo} for the nodes.
+     */
+    Map<MemberInfo, AccountInfo> getAccountInfos(Collection<MemberInfo> nodes);
+
+    // DAO related / admin methods ********************************************
 
     /**
      * @param filterModel
@@ -113,12 +133,6 @@ public interface AccountService {
      *            the username of the users to check.
      */
     void checkAccounts(String... usernames);
-
-    /**
-     * @return all license key content for this account. or null if no key was
-     *         found.
-     */
-    List<String> getLicenseKeyContents();
 
     /**
      * @return the folder containing the license keys.
