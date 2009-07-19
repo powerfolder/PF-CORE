@@ -906,7 +906,7 @@ public class Icons {
                 buf = new BufferedInputStream(inputStream);
                 overrideIconProperties.load(buf);
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Cannot read: " + overridePropertiesFilename, ioe);
+                log.log(Level.INFO, "Cannot read: " + overridePropertiesFilename, ioe);
             } finally {
                 if (buf != null) {
                     try {
