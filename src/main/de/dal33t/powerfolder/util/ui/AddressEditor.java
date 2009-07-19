@@ -107,7 +107,7 @@ class AddressEditor extends BaseDialog {
     @Override
     protected Component getContent()
     {
-        FormLayout layout = new FormLayout("pref", "pref, 3dlu, 30dlu");
+        FormLayout layout = new FormLayout("pref", "pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setDefaultDialogBorder();
         CellConstraints cc = new CellConstraints();
