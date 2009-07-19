@@ -553,8 +553,8 @@ public class TestHelper {
             }
         });
 
-        // Scan
-        if (!folder.scanLocalFiles()) {
+        // Scan // Ignore mass deletion
+        if (!folder.scanLocalFiles(true)) {
             throw new RuntimeException("Unable to scan " + folder
                 + ". Last scan result: " + folder.getLastScanResultState());
         }
