@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.Permission;
 
 /**
  * Contins all methods to modify/alter, create or notify Accounts.
@@ -72,6 +73,8 @@ public interface AccountService {
      *         found.
      */
     List<String> getLicenseKeyContents();
+    
+    // Security / Permission stuff ********************************************
 
     /**
      * Resulting map may not contain all nodes only those connected to the
@@ -81,6 +84,13 @@ public interface AccountService {
      * @return the {@link AccountInfo} for the nodes.
      */
     Map<MemberInfo, AccountInfo> getAccountInfos(Collection<MemberInfo> nodes);
+    
+    /**
+     * @param accountOID
+     * @param permission
+     * @return true if the account with the given OID has that permission.
+     */
+    boolean hasPermission(String accountOID, Permission permission);
 
     // DAO related / admin methods ********************************************
 
@@ -90,12 +100,6 @@ public interface AccountService {
      * @return the filtered list of accounts.
      */
     Collection<AccountDetails> getAccounts(AccountFilterModel filterModel);
-
-    /**
-     * @param username
-     * @return the with the given username or null if not found
-     */
-    Account findByUsername(String username);
 
     /**
      * Saves or updates the given Account.

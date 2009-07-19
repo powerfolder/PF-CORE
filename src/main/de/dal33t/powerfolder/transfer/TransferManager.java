@@ -1166,10 +1166,17 @@ public class TransferManager extends PFComponent {
                 + " has illegally requested to download a folder database file");
             return null;
         }
-        if (dl.file.getFolder(getController().getFolderRepository()) == null) {
+        Folder folder = dl.file
+            .getFolder(getController().getFolderRepository());
+        if (folder == null) {
             logSevere("Received illegal download request from "
                 + from.getNick() + ". Not longer on folder "
                 + dl.file.getFolderInfo());
+            return null;
+        }
+        if (!folder.hasReadPermission(from)) {
+            logWarning("No Read permission: " + from + " on " + folder);
+            return null;
         }
 
         if (dlManagers.containsKey(dl.file)) {
@@ -1183,10 +1190,7 @@ public class TransferManager extends PFComponent {
             && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
             // This should free up an otherwise waiting for download partner
-            Folder folder = dl.file.getFolder(repo);
-            if (folder != null) {
-                folder.recommendScanOnNextMaintenance();
-            }
+            folder.recommendScanOnNextMaintenance();
             logWarning("File not in sync with disk: '"
                 + dl.file.toDetailString() + "', should be modified at "
                 + diskFile.lastModified());

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import de.dal33t.powerfolder.light.AccountInfo;
+
 /**
  * A security manager handles the access control to a powerfolder security
  * realm.
@@ -42,5 +44,12 @@ public interface SecurityManager {
      */
     Account authenticate(String username, String password);
 
-    // Permission questions on Member level
+    // Permission questions on Member level ***********************************
+
+    /**
+     * @param aInfo
+     * @param permission
+     * @return true if this account has the given permission.
+     */
+    boolean hasPermission(AccountInfo aInfo, Permission permission);
 }

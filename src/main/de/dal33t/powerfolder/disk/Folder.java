@@ -60,10 +60,10 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -81,6 +82,11 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderOwnerPermission;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderReadPermission;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -204,6 +210,12 @@ public class Folder extends PFComponent {
     private boolean whitelist;
 
     /**
+     * #1046: The default permission for computers where nonbody is logged in or
+     * no security information can be retrieved.
+     */
+    private FolderPermission defaultPermission;
+
+    /**
      * The FileInfos that have problems inlcuding the desciptions of the
      * problems. DISABLED
      */
@@ -289,6 +301,7 @@ public class Folder extends PFComponent {
         useRecycleBin = folderSettings.isUseRecycleBin();
         whitelist = folderSettings.isWhitelist();
         downloadScript = folderSettings.getDownloadScript();
+        defaultPermission = new FolderAdminPermission(currentInfo);
 
         // Initially there are no other members, so is in sync (with self).
         inSyncWithOthers = new AtomicBoolean(true);
@@ -2011,6 +2024,10 @@ public class Folder extends PFComponent {
      * @param member
      */
     public void join(Member member) {
+        if (!hasReadPermission(member)) {
+            logWarning("No read permisson. Not joining member " + member);
+            return;
+        }
         if (join0(member)) {
             // Fire event if this member is new
             fireMemberJoined(member);
@@ -2135,6 +2152,10 @@ public class Folder extends PFComponent {
             for (Member member : getMembersAsCollection()) {
                 if (!member.isCompleteyConnected()) {
                     // disconected go to next member
+                    continue;
+                }
+                if (!hasWritePermission(member)) {
+                    logSevere("No write permission for " + member);
                     continue;
                 }
 
@@ -2914,6 +2935,12 @@ public class Folder extends PFComponent {
                 }
                 continue;
             }
+            if (!hasWritePermission(member)) {
+                if (isWarning()) {
+                    logWarning("Skipping " + member + " no write permission");
+                }
+                continue;
+            }
 
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (memberFiles != null) {
@@ -3174,6 +3201,47 @@ public class Folder extends PFComponent {
         inv.setSuggestedLocalBase(getController(), localBase);
         return inv;
     }
+
+    // Security methods *******************************************************
+
+    public boolean hasReadPermission(Member member) {
+        return hasFolderPermission(member,
+            new FolderReadPermission(currentInfo));
+    }
+
+    public boolean hasWritePermission(Member member) {
+        return hasFolderPermission(member, new FolderReadWritePermission(
+            currentInfo));
+    }
+
+    public boolean hasAdminPermission(Member member) {
+        return hasFolderPermission(member, new FolderAdminPermission(
+            currentInfo));
+    }
+
+    public boolean hasOwnerPermission(Member member) {
+        return hasFolderPermission(member, new FolderOwnerPermission(
+            currentInfo));
+    }
+
+    private boolean hasFolderPermission(Member member,
+        FolderPermission permission)
+    {
+        AccountInfo aInfo = member.getAccountInfo();
+        if (aInfo == null) {
+            logWarning("Using default permission: " + defaultPermission
+                + " to check " + permission + " for " + member);
+            if (defaultPermission == null) {
+                return false;
+            }
+            return defaultPermission.equals(permission)
+                || defaultPermission.implies(permission);
+        }
+        return getController().getSecurityManager().hasPermission(aInfo,
+            permission);
+    }
+
+    // General stuff **********************************************************
 
     @Override
     public String toString() {

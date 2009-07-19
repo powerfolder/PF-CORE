@@ -42,4 +42,9 @@ public class AnonymousAccount extends Account {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "Account ANON, 0 permissions";
+    }
+
 }
