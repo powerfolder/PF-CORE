@@ -1164,7 +1164,7 @@ public class UIController extends PFComponent {
             synchronized (synchronizing) {
                 if (synchronizingFolders == 0) {
                     text1 = Translation
-                        .getTranslation("quickinfo.my_folders.in_sync_all");
+                        .getTranslation("check_status.in_sync_all");
                     if (synchronizing.get()) {
                         changed = true;
                         synchronizing.set(false);
@@ -1173,7 +1173,7 @@ public class UIController extends PFComponent {
 
                 else {
                     text1 = Translation.getTranslation(
-                        "quickinfo.my_folders.syncing", synchronizingFolders);
+                            "check_status.syncing", synchronizingFolders);
                     if (!synchronizing.get()) {
                         changed = true;
                         synchronizing.set(true);
@@ -1187,11 +1187,11 @@ public class UIController extends PFComponent {
                     .getValueBoolean(getController()))
             {
                 String text2 = Translation.getTranslation(
-                    "quickinfo.my_folders.powerfolders", Format
+                        "check_status.powerfolders", Format
                         .formatBytes(nTotalBytes), folders.size());
 
                 notifyMessage(Translation
-                    .getTranslation("quickinfo.my_folders.title"), text1
+                    .getTranslation("check_status.title"), text1
                     + "\n\n" + text2, false);
             }
         }
