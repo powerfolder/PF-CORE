@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
@@ -339,7 +340,7 @@ public class SettingsTab extends PFUIComponent {
         locationButton.addActionListener(new SelectScriptListener());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
-            "Script_execution"), cc.xy(5, 1));
+            WikiLinks.SCRIPT_EXECUTION), cc.xy(5, 1));
         return builder.getPanel();
     }
 

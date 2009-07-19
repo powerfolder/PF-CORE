@@ -39,4 +39,6 @@ public interface WikiLinks {
     String PROBLEM_RESERVED_WORD = "Reserved-Word";
     String PROBLEM_FILENAME_TOO_LONG = "File-Name-Too-Long";
     String PROBLEM_NO_CONFLICT_DETECTION_POSSIBLE = "Version_Conflict_With_Old_Client";
+    String SCRIPT_EXECUTION = "Script_execution";
+    String DEFAULT_FOLDER = "Default_Folder";
 }

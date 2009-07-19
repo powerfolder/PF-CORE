@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
 import static de.dal33t.powerfolder.ui.wizard.PFWizard.SUCCESS_PANEL;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.*;
 import jwf.WizardContext;
 import jwf.WizardPanel;
@@ -96,7 +97,8 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
             builder.add(setupDefaultCB, cc.xy(1, 1));
-            builder.add(Help.createWikiLinkButton(getController(), "Default_Folder"),
+            builder.add(Help.createWikiLinkButton(getController(),
+                    WikiLinks.DEFAULT_FOLDER),
                     cc.xy(3, 1));
             builder.setOpaque(true);
             builder.setBackground(Color.white);
