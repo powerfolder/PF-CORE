@@ -288,10 +288,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
+            builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
+            builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }

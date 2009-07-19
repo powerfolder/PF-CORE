@@ -3267,8 +3267,7 @@ public class Folder extends PFComponent {
         addPattern(WORD_TEMP);
 
         // Add desktop.ini to ignore pattern on windows systems
-        if (!OSUtil.isWindowsVistaSystem()
-            && ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
+        if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
         {
             addPattern(FileUtils.DESKTOP_INI_FILENAME);
         }

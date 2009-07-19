@@ -257,15 +257,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
+            builder.add(randomPort, cc.xyw(3, row, 2));
+
+            row += 2;
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.advPort"),
                 cc.xy(1, row)).setToolTipText(
                 Translation
                     .getTranslation("preferences.dialog.advPort.tooltip"));
             builder.add(advPort, cc.xy(3, row));
-
-            row += 2;
-            builder.add(randomPort, cc.xyw(3, row, 2));
 
             if (FirewallUtil.isFirewallAccessible()) {
                 row += 2;

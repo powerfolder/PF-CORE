@@ -47,8 +47,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -67,7 +65,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
     private static String dyndnsSystem;
 
     private JTextField myDnsField;
-    private LinkLabel myDnsLabel;
+    private JLabel myDnsLabel;
 
     private JPanel panel;
     private JTextField dyndnsUserField;
@@ -166,7 +164,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(myDnsLabel.getUiComponent(), cc.xy(1, row));
+            builder.add(myDnsLabel, cc.xy(1, row));
             builder.add(myDnsField, cc.xy(3, row));
             
             row += 2;
@@ -222,9 +220,7 @@ public class DynDnsSettingsTab extends PFComponent implements PreferenceTab {
                 updateDynDnsInfo();
             }
         });
-        myDnsLabel = new LinkLabel(getController(), Translation
-            .getTranslation("preferences.dialog.dyn_dns"), Help
-            .getWikiArticleURL(getController(), "DynDNS"));
+        myDnsLabel = new JLabel(Translation.getTranslation("preferences.dialog.dyn_dns"));
 
         if (ConfigurationEntry.DYNDNS_USERNAME.getValue(getController()) == null)
         {

@@ -25,7 +25,6 @@ package de.dal33t.powerfolder.ui;
  */
 public interface WikiLinks {
 
-    String TOTAL_FOLDER_DELETE = "Total-Folder-Delete";
     String SETTINGS_GENERAL = "Settings-General";
     String SETTINGS_UI = "Settings-UI";
     String SETTINGS_NETWORK = "Settings-Network";
