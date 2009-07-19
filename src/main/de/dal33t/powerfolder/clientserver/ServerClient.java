@@ -90,6 +90,8 @@ public class ServerClient extends PFComponent {
     private final Object loginLock = new Object();
 
     private AccountDetails accountDetails;
+    
+    private ServiceProvider serviceProvider;
     private AccountService userService;
     private FolderService folderService;
     private PublicKeyService publicKeyService;
@@ -132,6 +134,7 @@ public class ServerClient extends PFComponent {
         this.updateConfig = updateConfig;
         this.webURL = !StringUtils.isBlank(webURL) ? Util
             .removeLastSlashFromURI(webURL) : null;
+        this.serviceProvider = new RemoteServiceProvider();
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation
@@ -260,23 +263,42 @@ public class ServerClient extends PFComponent {
      * @param serverChange
      */
     public void setServer(Member serverNode, boolean serverChange) {
+        setServer(serverNode, serverChange, new RemoteServiceProvider());
+    }
+
+    /**
+     * Sets/Changes the server.
+     * 
+     * @param serverNode
+     * @param serverChange
+     * @param serviceProvider the service provider to use.
+     */
+    public void setServer(Member serverNode, boolean serverChange,
+        ServiceProvider serviceProvider)
+    {
         Reject.ifNull(serverNode, "Server node is null");
+        Reject.ifNull(serviceProvider, "ServiceProvider is null");
+        this.serviceProvider = serviceProvider;
         setNewServerNode(serverNode);
         this.allowServerChange = serverChange;
         if (isConnected()) {
             loginWithLastKnown();
         } else {
-        	setAnonAccount();
+            setAnonAccount();
             fireLogin(getAccountDetails());
             getServer().markForImmediateConnect();
         }
+    }
+    
+    public ServiceProvider getServiceProvider() {
+        return serviceProvider;
     }
 
     /**
      * @return if the server is connected
      */
     public boolean isConnected() {
-        return server.isCompleteyConnected();
+        return server.isMySelf() || server.isCompleteyConnected();
     }
 
     /**
@@ -752,12 +774,16 @@ public class ServerClient extends PFComponent {
     }
 
     private void initializeServiceStubs() {
-        userService = ServiceProvider.createRemoteStub(getController(),
-            AccountService.class, server);
-        folderService = ServiceProvider.createRemoteStub(getController(),
-            FolderService.class, server);
-        publicKeyService = ServiceProvider.createRemoteStub(getController(),
-            PublicKeyService.class, server);
+        userService = serviceProvider.getService(AccountService.class);
+        folderService = serviceProvider.getService(FolderService.class);
+        publicKeyService = serviceProvider.getService(PublicKeyService.class);
+    }
+
+    private class RemoteServiceProvider implements ServiceProvider {
+        public <T> T getService(Class<? extends T> serviceInterface) {
+            return RemoteServiceStubFactory.createRemoteStub(getController(),
+                serviceInterface, server);
+        }
     }
 
     private void setAnonAccount() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -19,87 +19,23 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Arrays;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
-import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Reject;
-
-public class ServiceProvider {
-
-    private ServiceProvider() {
-        // Not allowed
-    }
+/**
+ * A provider to retrieve services.
+ * 
+ * @author sprajc
+ */
+public interface ServiceProvider {
 
     /**
-     * Constructs a stub implementing the given service interface. All calls are
-     * executed against the remote service repository of the remote site.
+     * Retrieves a service
      * 
      * @param <T>
      *            The interface class of the service
      * @param controller
      *            the controller
      * @param serviceInterface
-     * @param remoteSide
-     * @return the remote stub implementing the service interface
+     * @return the service interface
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T createRemoteStub(Controller controller,
-        Class<? extends T> serviceInterface, Member remoteSide)
-    {
-        Reject.ifNull(controller, "Controller is null");
-        Reject.ifNull(remoteSide, "Remote site is null");
-        Reject.ifFalse(serviceInterface.isInterface(),
-            "Service interface class is not a interface! " + serviceInterface);
-        InvocationHandler handler = new RemoteInvocationHandler(controller,
-            serviceInterface.getName(), remoteSide);
-        return (T) Proxy.newProxyInstance(ServiceProvider.class
-            .getClassLoader(), new Class[]{serviceInterface}, handler);
-    }
+    <T> T getService(Class<? extends T> serviceInterface);
 
-    private static class RemoteInvocationHandler implements InvocationHandler {
-        private Controller controller;
-        private Member remoteSide;
-        private String serviceId;
-
-        private RemoteInvocationHandler(Controller controller,
-            String serviceId, Member remoteSide)
-        {
-            super();
-            this.controller = controller;
-            this.remoteSide = remoteSide;
-            this.serviceId = serviceId;
-        }
-
-        public Object invoke(Object proxy, Method method, Object[] args)
-            throws Throwable
-        {
-            RequestExecutor executor = new RequestExecutor(controller,
-                remoteSide);
-            RemoteMethodCallRequest request = new RemoteMethodCallRequest(
-                serviceId, method, args);
-            RemoteMethodCallResponse response;
-            try {
-                response = (RemoteMethodCallResponse) executor.execute(request);
-            } catch (ConnectionException e) {
-                throw new RemoteCallException(e);
-            }
-            if (response.isException()) {
-                boolean exceptionDeclared = Arrays.asList(
-                    method.getExceptionTypes()).contains(
-                    response.getException().getClass());
-                if (exceptionDeclared) {
-                    throw response.getException();
-                }
-                throw new RemoteCallException(response.getException());
-            }
-            return response.getResult();
-        }
-    }
 }
