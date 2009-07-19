@@ -48,7 +48,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -62,7 +61,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JTextField advPort;
     private JComboBox bindAddress;
     private JTextArea ifDescr;
-    private JCheckBox showPreviewPanelBox;
     private JCheckBox useZipOnLanCheckBox;
     private JCheckBox useDeltaSyncOnLanCheckBox;
     private LANList lanList;
@@ -155,12 +153,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         });
 
-        showPreviewPanelBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.show_preview_panel"));
-        showPreviewPanelBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.show_preview_panel.tooltip"));
-        showPreviewPanelBox.setSelected(PreferencesEntry.SHOW_PREVIEW_PANEL
-            .getValueBoolean(getController()));
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.use_zip_on_lan"));
         useZipOnLanCheckBox.setToolTipText(Translation
@@ -293,9 +285,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(useZipOnLanCheckBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(showPreviewPanelBox, cc.xyw(3, row, 2));
-
-            row += 2;
             builder.add(useDeltaSyncOnInternetCheckBox, cc.xyw(3, row, 2));
             
             row += 2;
@@ -385,17 +374,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 needsRestart = true;
             }
         }
-        // image previewer
-        boolean current = PreferencesEntry.SHOW_PREVIEW_PANEL
-            .getValueBoolean(getController());
-        if (current != showPreviewPanelBox.isSelected()) {
-            PreferencesEntry.SHOW_PREVIEW_PANEL.setValue(getController(),
-                showPreviewPanelBox.isSelected());
-            needsRestart = true;
-        }
 
         // zip on lan?
-        current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
+        boolean current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
                 getController());
         if (current != useZipOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),

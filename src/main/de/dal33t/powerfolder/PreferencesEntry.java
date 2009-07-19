@@ -58,8 +58,6 @@ public enum PreferencesEntry {
 
     ASK_FOR_FRIENDSHIP_MESSAGE("AskForFriendshipMessage", true),
 
-    SHOW_PREVIEW_PANEL("ShowPreviewPanel", false),
-
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
     UNDERLINE_LINKS("UnderlineLinks", true),
