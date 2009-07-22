@@ -194,6 +194,14 @@ public class DownloadsTablePanel extends PFUIComponent {
                                 DownloadManager dlm = tableModel.getDownloadManagerAtRow(i);
                                 if (dlm.isCompleted()) {
                                     downloadManagersToClear.add(dlm);
+                                } else {
+                                    // Also take out any broken downloads.
+                                    for (Download download : dlm.getSources()) {
+                                        if (download.isBroken()) {
+                                            downloadManagersToClear.add(dlm);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -202,20 +210,6 @@ public class DownloadsTablePanel extends PFUIComponent {
                                     .clearCompletedDownload(dlm);
                         }
 
-                        // Also take out any broken downloads.
-                        for (int i = 0; i < table.getRowCount(); i++) {
-                            if (noneSelected || table.isRowSelected(i)) {
-                                DownloadManager dlm = tableModel.getDownloadManagerAtRow(i);
-                                for (Download download : dlm.getSources()) {
-                                    if (download.isBroken()) {
-                                        getController().getTransferManager()
-                                                .clearCompletedDownload(dlm);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        
                         return null;
                     }
                 };
