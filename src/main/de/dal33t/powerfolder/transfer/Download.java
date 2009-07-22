@@ -78,7 +78,7 @@ public class Download extends Transfer {
      * <code>request(Member)</code>
      */
     Download(TransferManager tm, FileInfo file, boolean automatic) {
-        super(tm, (FileInfo) file, null);
+        super(tm, file, null);
         // from can be null
         this.lastTouch = new Date();
         this.automatic = automatic;
@@ -127,7 +127,7 @@ public class Download extends Transfer {
      * 
      * @param fileInfo
      *            the fileInfo the remote side uses.
-     * @param usedFileInfo
+     * @param fileInfo
      */
     public void uploadStarted(FileInfo fileInfo) {
         checkFileInfo(fileInfo);
@@ -328,11 +328,7 @@ public class Download extends Transfer {
      * @return if this is a pending download
      */
     public boolean isPending() {
-        if (isCompleted()) {
-            // not pending when completed
-            return false;
-        }
-        return getPartner() == null;
+        return !isCompleted() && getPartner() == null;
     }
 
     /**

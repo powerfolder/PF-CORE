@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -200,6 +201,21 @@ public class DownloadsTablePanel extends PFUIComponent {
                             getController().getTransferManager()
                                     .clearCompletedDownload(dlm);
                         }
+
+                        // Also take out any broken downloads.
+                        for (int i = 0; i < table.getRowCount(); i++) {
+                            if (noneSelected || table.isRowSelected(i)) {
+                                DownloadManager dlm = tableModel.getDownloadManagerAtRow(i);
+                                for (Download download : dlm.getSources()) {
+                                    if (download.isBroken()) {
+                                        getController().getTransferManager()
+                                                .clearCompletedDownload(dlm);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
                         return null;
                     }
                 };
