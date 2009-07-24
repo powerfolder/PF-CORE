@@ -151,7 +151,7 @@ public class ChatModel {
      * @param source
      * @param line
      */
-    private void fireChatModelChanged(Object source, ChatLine line) {
+    private void fireChatModelChanged(Member source, ChatLine line) {
         chatModelListeners.chatChanged(new ChatModelEvent(source, line.getText(),
                 line.isStatus()));
     }
