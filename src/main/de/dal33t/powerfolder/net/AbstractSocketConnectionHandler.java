@@ -460,7 +460,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (isFiner()) {
                     logFiner("-- (sending) -> " + message);
                 }
-                // logWarning("-- (sending) -> " + message);
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
