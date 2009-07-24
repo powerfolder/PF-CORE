@@ -66,9 +66,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     private Controller controllerBart;
     private Controller controllerLisa;
 
-    // The optional test folders
-    private Folder folderBart;
-    private Folder folderLisa;
+    // The optional test folder
+    private FolderInfo testFolder;
 
     @Override
     protected void setUp() throws Exception {
@@ -209,7 +208,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @return the test folder @ bart. or null if not setup.
      */
     protected Folder getFolderAtBart() {
-        return folderBart;
+        return testFolder.getFolder(getContollerBart());
     }
 
     /**
@@ -217,7 +216,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @return the test folder @ lisa. or null if not setup.
      */
     protected Folder getFolderAtLisa() {
-        return folderLisa;
+        return testFolder.getFolder(getContollerLisa());
     }
 
     /**
@@ -228,14 +227,9 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @see #getFolderAtLisa()
      */
     protected void joinTestFolder(SyncProfile syncprofile) {
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString());
+        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
-        folderBart = getContollerBart().getFolderRepository().getFolder(
-            testFolder);
-        folderLisa = getContollerLisa().getFolderRepository().getFolder(
-            testFolder);
     }
 
     /**
