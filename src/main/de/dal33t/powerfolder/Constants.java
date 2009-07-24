@@ -37,9 +37,9 @@ public class Constants {
      * The minimum suported version for AWTUtilities.setWindowOpacity is
      * 1.6.0_10-b12. And not in Linux, but okay in Mac and Windows.
      */
-    public static final boolean OPACITY_SUPPORTED = JavaVersion.systemVersion()
-               .compareTo(new JavaVersion(1, 6, 0, 10, 12)) >= 0 &&
-            !OSUtil.isLinux(); 
+    public static final boolean OPACITY_SUPPORTED = !OSUtil.isLinux()
+        && JavaVersion.systemVersion().compareTo(
+            new JavaVersion(1, 6, 0, 10, 12)) >= 0;
 
     /**
      * The name of the subdirectory in every folder to store powerfolder
@@ -56,6 +56,11 @@ public class Constants {
      * Check for updates every hour.
      */
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
+    
+    /**
+     * Threads in threadpool of {@link Controller}
+     */
+    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
  
     /**
      * The maximum number of lines in a chat.

@@ -87,6 +87,7 @@ import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.ReconnectManager;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
+import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
@@ -360,8 +361,9 @@ public class Controller extends PFComponent {
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
-        threadPool = new WrappedScheduledThreadPoolExecutor(10,
-            new NamedThreadFactory("Controller-Thread-"));
+        threadPool = new WrappedScheduledThreadPoolExecutor(
+            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
+                "Controller-Thread-"));
 
         // Initalize resouce bundle eager
         // check forced language file from commandline
@@ -476,6 +478,7 @@ public class Controller extends PFComponent {
         // Create os client
         osClient = new ServerClient(this);
         setLoadingCompletion(35, 60);
+        securityManager = new SecurityManagerClient(getController(), osClient);
 
         // init repo (read folders)
         folderRepository.init();
@@ -556,7 +559,7 @@ public class Controller extends PFComponent {
             osClient.loginWithLastKnown();
             osClient.start();
         } else {
-            logWarning("NOT starting Online Storage (reconnection), "
+            logWarning("Not starting Online Storage (reconnection), "
                 + "feature disable");
         }
 
@@ -924,15 +927,14 @@ public class Controller extends PFComponent {
         if (RemoteCommandManager.hasRunningInstance()) {
             alreadyRunningCheck();
         }
-
-        if (ConfigurationEntry.NET_RCON_MANAGER
+        if (!ConfigurationEntry.NET_RCON_MANAGER
             .getValueBoolean(getController()))
         {
-            rconManager = new RemoteCommandManager(this);
-            rconManager.start();
-        } else {
-            logWarning("RCon manager disabled");
+            logWarning("Not starting RemoteCommandManager");
+            return;
         }
+        rconManager = new RemoteCommandManager(this);
+        rconManager.start();
     }
 
     /**
