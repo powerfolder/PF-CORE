@@ -63,7 +63,7 @@ public class Download extends Transfer {
 
     private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
 
-    private transient DownloadManager handler;
+    private transient DownloadManager dlManager;
 
     /** for serialisation */
     public Download() {
@@ -112,14 +112,14 @@ public class Download extends Transfer {
             getFile()), "Fileinfos mismatch. expected "
             + getFile().toDetailString() + ", got "
             + handler.getFileInfo().toDetailString());
-        if (this.handler != null) {
+        if (this.dlManager != null) {
             throw new IllegalStateException("DownloadManager already set!");
         }
-        this.handler = handler;
+        this.dlManager = handler;
     }
 
     public DownloadManager getDownloadManager() {
-        return handler;
+        return dlManager;
     }
 
     /**
@@ -141,7 +141,7 @@ public class Download extends Transfer {
         logFiner("Uploader supports partial transfers for "
             + fileInfo.toDetailString());
         setStarted();
-        handler.readyForRequests(Download.this);
+        dlManager.readyForRequests(Download.this);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Download extends Transfer {
 
         lastTouch.setTime(System.currentTimeMillis());
         logInfo("Received parts record");
-        handler.filePartsRecordReceived(Download.this, record);
+        dlManager.filePartsRecordReceived(Download.this, record);
     }
 
     /**
@@ -255,7 +255,7 @@ public class Download extends Transfer {
 
         getCounter().chunkTransferred(chunk);
 
-        handler.chunkReceived(Download.this, chunk);
+        dlManager.chunkReceived(Download.this, chunk);
         return true;
     }
 
@@ -459,7 +459,7 @@ public class Download extends Transfer {
 
     // Checks ****************************************************************
     private void requestCheckState() {
-        if (handler == null) {
+        if (dlManager == null) {
             throw new IllegalStateException("DownloadManager not set!");
         }
     }
