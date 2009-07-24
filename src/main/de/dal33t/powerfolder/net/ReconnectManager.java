@@ -527,7 +527,11 @@ public class ReconnectManager extends PFComponent {
                     }
                     
                     // MARK connecting ***
-                    currentNode.markConnecting();
+                    if (currentNode.markConnecting() >= 2) {
+                        currentNode.unmarkConnecting();
+                        logWarning("Skipping: " + currentNode);
+                        continue;
+                    }
                 }
 
                 try { // UNMARK connecting try/finally ***
