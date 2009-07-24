@@ -19,8 +19,6 @@
 */
 package de.dal33t.powerfolder.message;
 
-import de.dal33t.powerfolder.util.logging.Loggable;
-
 import java.io.Serializable;
 
 /**

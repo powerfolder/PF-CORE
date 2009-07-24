@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -33,6 +35,8 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
 
 public class RemoteServiceStubFactory {
+    private static final Logger LOG = Logger
+        .getLogger(RemoteServiceStubFactory.class.getName());
 
     private RemoteServiceStubFactory() {
         // No instance allowed
@@ -81,6 +85,16 @@ public class RemoteServiceStubFactory {
         public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable
         {
+            RuntimeException rte = new RuntimeException("Invalid call");
+            StackTraceElement[] te = rte.getStackTrace();
+            for (StackTraceElement stackTraceElement : te) {
+                if (stackTraceElement.getMethodName().contains("handleMessage")) {
+                    throw new RemoteCallException(
+                        "Illegal to call remote service method (" + serviceId
+                            + " " + method + ") in message handling code ("
+                            + stackTraceElement + ").", rte);
+                }
+            }
             RequestExecutor executor = new RequestExecutor(controller,
                 remoteSide);
             RemoteMethodCallRequest request = new RemoteMethodCallRequest(

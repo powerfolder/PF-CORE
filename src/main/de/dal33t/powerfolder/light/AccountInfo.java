@@ -76,6 +76,6 @@ public class AccountInfo implements Serializable {
 
     @Override
     public String toString() {
-        return username + " (" + oid + ')';
+        return "AccountInfo '" + username + "' (" + oid + ')';
     }
 }

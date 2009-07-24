@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Administration permission on one folder.
@@ -42,6 +43,10 @@ public class FolderAdminPermission extends FolderPermission {
         super(foInfo);
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo;
+    }
+
+    public String getName() {
+        return Translation.getTranslation("permissions.folder.admin");
     }
 
     public boolean migrate() {

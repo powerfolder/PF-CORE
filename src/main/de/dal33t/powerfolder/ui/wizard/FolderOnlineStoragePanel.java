@@ -118,20 +118,25 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
             if (hasJoined) {
                 getController().getOSClient().getFolderService().removeFolder(
-                        folder.getInfo(), true);
-                getController().getOSClient().refreshAccountDetails();
-                return new TextPanelPanel(getController(),
-                        Translation.getTranslation("wizard.folder_online_storage.remove_success_title"),
-                        Translation.getTranslation("wizard.folder_online_storage.remove_success_message",
-                                folder.getName()));
+                    folder.getInfo(), true);
+                return new TextPanelPanel(
+                    getController(),
+                    Translation
+                        .getTranslation("wizard.folder_online_storage.remove_success_title"),
+                    Translation.getTranslation(
+                        "wizard.folder_online_storage.remove_success_message",
+                        folder.getName()));
             } else {
                 getController().getOSClient().getFolderService().createFolder(
-                        folder.getInfo(), SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                getController().getOSClient().refreshAccountDetails();
-                return new TextPanelPanel(getController(),
-                        Translation.getTranslation("wizard.folder_online_storage.backup_success_title"),
-                        Translation.getTranslation("wizard.folder_online_storage.backup_success_message",
-                                folder.getName()));
+                    folder.getInfo(),
+                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                return new TextPanelPanel(
+                    getController(),
+                    Translation
+                        .getTranslation("wizard.folder_online_storage.backup_success_title"),
+                    Translation.getTranslation(
+                        "wizard.folder_online_storage.backup_success_message",
+                        folder.getName()));
             }
         } catch (Exception e) {
             log.log(Level.SEVERE, "", e);

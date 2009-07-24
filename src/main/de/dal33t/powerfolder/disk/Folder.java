@@ -71,7 +71,6 @@ import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -210,12 +209,6 @@ public class Folder extends PFComponent {
     private boolean whitelist;
 
     /**
-     * #1046: The default permission for computers where nonbody is logged in or
-     * no security information can be retrieved.
-     */
-    private FolderPermission defaultPermission;
-
-    /**
      * The FileInfos that have problems inlcuding the desciptions of the
      * problems. DISABLED
      */
@@ -301,7 +294,6 @@ public class Folder extends PFComponent {
         useRecycleBin = folderSettings.isUseRecycleBin();
         whitelist = folderSettings.isWhitelist();
         downloadScript = folderSettings.getDownloadScript();
-        defaultPermission = new FolderAdminPermission(currentInfo);
 
         // Initially there are no other members, so is in sync (with self).
         inSyncWithOthers = new AtomicBoolean(true);
@@ -396,8 +388,8 @@ public class Folder extends PFComponent {
             .createListenerSupport(ProblemListener.class);
 
         setArchiveMode(folderSettings.getArchiveMode());
-        
-     // Create invitation
+
+        // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
             Invitation inv = createInvitation();
             InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
@@ -443,8 +435,6 @@ public class Folder extends PFComponent {
 
     /**
      * Remove all problems from the list of known problems.
-     * 
-     * @param problem
      */
     public void removeAllProblems() {
         List<Problem> list = new ArrayList<Problem>();
@@ -456,18 +446,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Count problems in folder?
-     * 
-     * @return
+     * @return Count problems in folder?
      */
     public int countProblems() {
         return problems.size();
     }
 
     /**
-     * Return unmodifyable list of problems.
-     * 
-     * @return
+     * @return unmodifyable list of problems.
      */
     public List<Problem> getProblems() {
         return Collections.unmodifiableList(problems);
@@ -485,18 +471,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Returns the active ArchiveMode
-     * 
-     * @return
+     * @return the active ArchiveMode
      */
     public ArchiveMode getArchiveMode() {
         return archiveMode;
     }
 
     /**
-     * Returns the FileArchiver used
-     * 
-     * @return
+     * @return the FileArchiver used
      */
     public FileArchiver getFileArchiver() {
         return fileArchiver;
@@ -512,7 +494,8 @@ public class Folder extends PFComponent {
      *            bypass the local mass delete checks.
      */
     private void commitScanResult(ScanResult scanResult,
-                                  boolean ignoreLocalMassDeletions) {
+        boolean ignoreLocalMassDeletions)
+    {
 
         // See if everything has been deleted.
         if (!ignoreLocalMassDeletions
@@ -563,9 +546,9 @@ public class Folder extends PFComponent {
                 for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
                 {
                     File diskFile = getDiskFile(restoredFileInfo);
-                    fiList.add(FileInfoFactory.modifiedFile(restoredFileInfo, getController()
-                        .getFolderRepository(), diskFile, getController()
-                        .getMySelf().getInfo()));
+                    fiList.add(FileInfoFactory.modifiedFile(restoredFileInfo,
+                        getController().getFolderRepository(), diskFile,
+                        getController().getMySelf().getInfo()));
                 }
                 scanResult.restoredFiles = fiList;
                 dao.store(null, fiList);
@@ -885,7 +868,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     *
+     * 
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
@@ -896,7 +879,7 @@ public class Folder extends PFComponent {
      * Scans the local directory for new files. Be carefull! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
-     *
+     * 
      * @param ignoreLocalMassDeletions
      *            bypass the local mass delete checks.
      * @return if the local files where scanned
@@ -1240,10 +1223,11 @@ public class Folder extends PFComponent {
         }
 
         if (!dirInfo.getFolderInfo().equals(currentInfo)) {
-            logSevere("Unable to scan of directory. not on folder: " + dirInfo.toDetailString());
+            logSevere("Unable to scan of directory. not on folder: "
+                + dirInfo.toDetailString());
             return null;
         }
-        
+
         File dir = getDiskFile(dirInfo);
 
         if (!dir.canRead()) {
@@ -1256,7 +1240,7 @@ public class Folder extends PFComponent {
             logWarning("Ignoring scan of folder system subdirectory: " + dir);
             return null;
         }
-        
+
         // ignore our database file
         if (dir.getName().equals(DB_FILENAME)
             || dir.getName().equals(DB_BACKUP_FILENAME))
@@ -1267,7 +1251,7 @@ public class Folder extends PFComponent {
             logFiner("Ignoring folder database file: " + dir);
             return null;
         }
-     
+
         checkFileName(dirInfo);
 
         synchronized (scanLock) {
@@ -1283,26 +1267,27 @@ public class Folder extends PFComponent {
                         modifiedBy = getController().getMySelf().getInfo();
                     }
                     Member from = modifiedBy.getNode(getController(), true);
-                    Date modDate = dirInfo.getModifiedDate();
-                    long size = dirInfo.getSize();
+
                     if (from != null) {
                         modifiedBy = from.getInfo();
                     }
 
-                    if (dir.exists()) {
-                        modDate = new Date(dir.lastModified());
-                        size = dir.length();
-                    }
+                    // Date modDate = dirInfo.getModifiedDate();
+                    // long size = dirInfo.getSize();
+                    // if (dir.exists()) {
+                    // modDate = new Date(dir.lastModified());
+                    // size = dir.length();
+                    // }
 
-//                    if (dirInfo.isDeleted()) {
-//                        fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
-//                            fInfo.getName(), modifiedBy, modDate, fInfo
-//                                .getVersion());
-//                    } else {
-//                        fInfo = FileInfo.unmarshallExistingFile(currentInfo,
-//                            fInfo.getName(), size, modifiedBy, modDate, fInfo
-//                                .getVersion());
-//                    }
+                    // if (dirInfo.isDeleted()) {
+                    // fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
+                    // fInfo.getName(), modifiedBy, modDate, fInfo
+                    // .getVersion());
+                    // } else {
+                    // fInfo = FileInfo.unmarshallExistingFile(currentInfo,
+                    // fInfo.getName(), size, modifiedBy, modDate, fInfo
+                    // .getVersion());
+                    // }
 
                     dao.store(null, addFile(dirInfo));
 
@@ -1349,7 +1334,7 @@ public class Folder extends PFComponent {
      */
     private void checkFileName(FileInfo fileInfo) {
         List<Problem> problemList = FilenameProblemHelper.getProblems(
-                getController(), fileInfo);
+            getController(), fileInfo);
         for (Problem problem : problemList) {
             addProblem(problem);
         }
@@ -1655,7 +1640,7 @@ public class Folder extends PFComponent {
      * This is the date that the folder last 100% synced with other members. It
      * may be null if never synchronized externally.
      * 
-     * @return
+     * @return the last sync date.
      */
     public Date getLastSyncDate() {
         return lastSyncDate;
@@ -2022,26 +2007,24 @@ public class Folder extends PFComponent {
      * Joins a member to the folder,
      * 
      * @param member
+     * @return true if actually joined the folder.
      */
-    public void join(Member member) {
+    public boolean join(Member member) {
         if (!hasReadPermission(member)) {
             logWarning("No read permisson. Not joining member " + member);
-            return;
+            member.sendMessagesAsynchron(FileList.createNullList(currentInfo));
+            return false;
         }
-        if (join0(member)) {
-            // Fire event if this member is new
-            fireMemberJoined(member);
-        }
+        join0(member);
+        return true;
     }
 
     /**
      * Joins a member to the folder. Does not fire the event
      * 
      * @param member
-     * @return true if this member is new to the folder. false if he was already
-     *         a member.
      */
-    private boolean join0(Member member) {
+    private void join0(Member member) {
         Reject.ifNull(member, "Member is null, unable to join");
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
@@ -2054,7 +2037,10 @@ public class Folder extends PFComponent {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this,
                 !member.isPre4Client()));
         }
-        return !wasMember;
+        if (!wasMember) {
+            // Fire event if this member is new
+            fireMemberJoined(member);
+        }
     }
 
     /**
@@ -2070,7 +2056,7 @@ public class Folder extends PFComponent {
         logFine("Member left " + member);
 
         // remove files of this member in our datastructure
-        member.removeFileList(currentInfo);
+        dao.deleteDomain(member.getId());
         if (rootDirectory != null) {
             rootDirectory.removeFilesOfMember(member);
         }
@@ -2183,7 +2169,7 @@ public class Folder extends PFComponent {
                     Collections.sort(list, new ReverseComparator(
                         DiskItemComparator
                             .getComparator(DiskItemComparator.BY_FULL_NAME)));
-                    //logWarning("" + list.size());
+                    // logWarning("" + list.size());
                     for (FileInfo remoteDir : list) {
                         handleFileDeletion(remoteDir, force, member,
                             removedFiles);
@@ -2249,9 +2235,9 @@ public class Folder extends PFComponent {
         }
 
         if (isFine()) {
-            logFine("File was deleted by " + member
-                + ", deleting local: " + localFile.toDetailString()
-                + " at " + localCopy.getAbsolutePath());
+            logFine("File was deleted by " + member + ", deleting local: "
+                + localFile.toDetailString() + " at "
+                + localCopy.getAbsolutePath());
         }
 
         // Abort transfers on file.
@@ -2283,7 +2269,6 @@ public class Folder extends PFComponent {
                     + localFile.toDetailString());
             }
         }
-       
 
         // File has been removed
         // Changed localFile -> remoteFile
@@ -2305,7 +2290,7 @@ public class Folder extends PFComponent {
             }
         }
     }
-    
+
     /**
      * Broadcasts a message through the folder with support for pre 4.0 clients.
      * <p>
@@ -2337,7 +2322,7 @@ public class Folder extends PFComponent {
             }
         }
     }
-    
+
     private static interface MessageProvider {
         Message[] getMessages(boolean pre4Client);
     }
@@ -2352,7 +2337,7 @@ public class Folder extends PFComponent {
         Message scanCommand = new ScanCommand(currentInfo);
         broadcastMessages(scanCommand);
     }
-    
+
     private void broadcastFolderChanges(final ScanResult scanResult) {
         if (getConnectedMembersCount() == 0) {
             return;
@@ -2412,6 +2397,10 @@ public class Folder extends PFComponent {
 
         // Update DAO
         dao.deleteDomain(from.getId());
+        if (newList.isNull()) {
+            // Do nothing.
+            return;
+        }
         dao.store(from.getId(), newList.files);
 
         // logFine(
@@ -3227,19 +3216,11 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
-        AccountInfo aInfo = member.getAccountInfo();
-        if (aInfo == null) {
-            logWarning("Using default permission: " + defaultPermission
-                + " to check " + permission + " for " + member);
-            if (defaultPermission == null) {
-                return false;
-            }
-            return defaultPermission.equals(permission)
-                || defaultPermission.implies(permission);
-        }
-        return getController().getSecurityManager().hasPermission(aInfo,
+        return getController().getSecurityManager().hasFolderPermission(member,
             permission);
     }
+    
+    
 
     // General stuff **********************************************************
 

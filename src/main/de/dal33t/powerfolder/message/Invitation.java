@@ -19,17 +19,15 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.File;
+
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ConfigurationEntry;
-
-import java.io.File;
 
 /**
  * A Invitation to a folder
@@ -60,7 +58,6 @@ public class Invitation extends FolderRelatedMessage {
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
     private int relative;
-    private int permissions;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
@@ -185,10 +182,6 @@ public class Invitation extends FolderRelatedMessage {
         return relative;
     }
 
-    public int getPermissions() {
-        return permissions;
-    }
-
     public SyncProfile getSuggestedSyncProfile() {
         if (suggestedSyncProfileConfig == null) {
             // For backward compatibility.
@@ -214,10 +207,6 @@ public class Invitation extends FolderRelatedMessage {
 
     private static String getUserHomeDir() {
         return System.getProperty("user.home");
-    }
-
-    public void setPermissions(int permissions) {
-        this.permissions = permissions;
     }
 
 }

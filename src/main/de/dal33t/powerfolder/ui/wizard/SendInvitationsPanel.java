@@ -20,42 +20,52 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.ui.widget.AutoTextField;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collection;
-import java.io.File;
-import java.beans.PropertyChangeListener;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import jwf.WizardPanel;
 import jwf.Wizard;
+import jwf.WizardPanel;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.AutoTextField;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -83,7 +93,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     /**
      * Handles the invitation to nodes option.
-     *
+     * 
      * @return true if send otherwise false
      */
     private boolean sendInvitationToNodes() {
@@ -92,23 +102,23 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         boolean theResult = false;
         Collection<Member> members = getController().getNodeManager()
-                .getNodesAsCollection();
+            .getNodesAsCollection();
 
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
             boolean sent = false;
             for (Member member : members) {
                 if (invitee.equalsIgnoreCase(member.getNick())) {
-                    InvitationUtil.invitationToNode(getController(), invitation,
-                            member);
+                    InvitationUtil.invitationToNode(getController(),
+                        invitation, member);
                     sent = true;
                     break;
-                }                
+                }
             }
             if (!sent) {
                 if (invitee.contains("@")) {
-                    InvitationUtil.invitationToMail(getController(), invitation,
-                            invitee);
+                    InvitationUtil.invitationToMail(getController(),
+                        invitation, invitee);
                 }
             }
             theResult = true;
@@ -117,8 +127,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         Object value = locationModel.getValue();
         if (value != null && ((String) value).length() > 0) {
             File file = new File((String) value, constructInviteFileName());
-            InvitationUtil.invitationToDisk(getController(), invitation,
-                    file);
+            InvitationUtil.invitationToDisk(getController(), invitation, file);
             theResult = true;
         }
 
@@ -126,9 +135,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return !inviteesListModel.isEmpty()
-                || locationModel.getValue() != null
-                && ((String) locationModel.getValue()).length() > 0;
+        return !inviteesListModel.isEmpty() || locationModel.getValue() != null
+            && ((String) locationModel.getValue()).length() > 0;
     }
 
     public boolean validateNext() {
@@ -139,30 +147,30 @@ public class SendInvitationsPanel extends PFWizardPanel {
     public WizardPanel next() {
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
+            PFWizard.SUCCESS_PANEL);
     }
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-                "140dlu, pref:grow",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref");
-              // inv join    untrust     inv text    inv fdl     hint1 hint2       auto        list  remove      adv
+            "140dlu, pref:grow",
+            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref");
+        // inv join untrust inv text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation.getTranslation(
-                "wizard.send_invitations.join"), cc.xyw(1, row, 2));
+        builder.addLabel(Translation
+            .getTranslation("wizard.send_invitations.join"), cc.xyw(1, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation(
-                "wizard.send_invitations.never_untrusted"), cc.xyw(
-                1, row, 2));
+        builder.addLabel(Translation
+            .getTranslation("wizard.send_invitations.never_untrusted"), cc.xyw(
+            1, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation(
-                "wizard.send_invitations.invitation_text"), cc.xyw(
-                1, row, 2));
+        builder.addLabel(Translation
+            .getTranslation("wizard.send_invitations.invitation_text"), cc.xyw(
+            1, row, 2));
 
         row += 2;
         JScrollPane invTextScroll = new JScrollPane(invitationTextField);
@@ -172,14 +180,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         row += 2;
 
         builder.addLabel(Translation
-                .getTranslation("wizard.send_invitations.invitation_hint1"), cc.xyw(
-                1, row, 2));
+            .getTranslation("wizard.send_invitations.invitation_hint1"), cc
+            .xyw(1, row, 2));
 
         row++;
 
         builder.addLabel(Translation
-                .getTranslation("wizard.send_invitations.invitation_hint2"), cc.xyw(
-                1, row, 2));
+            .getTranslation("wizard.send_invitations.invitation_hint2"), cc
+            .xyw(1, row, 2));
 
         row += 2;
 
@@ -196,7 +204,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         JScrollPane scrollPane = new JScrollPane(inviteesList);
         UIUtil.removeBorder(scrollPane);
-        scrollPane.setPreferredSize(new Dimension(getPreferredSize().width, 50));
+        scrollPane
+            .setPreferredSize(new Dimension(getPreferredSize().width, 50));
         builder.add(new JScrollPane(scrollPane), cc.xy(1, row));
 
         row += 1;
@@ -220,7 +229,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     protected void initComponents() {
         FolderInfo folder = (FolderInfo) getWizardContext().getAttribute(
-                FOLDERINFO_ATTRIBUTE);
+            FOLDERINFO_ATTRIBUTE);
         Reject.ifNull(folder, "Unable to send invitation, folder is null");
 
         // Clear folder attribute
@@ -239,24 +248,23 @@ public class SendInvitationsPanel extends PFWizardPanel {
         inviteesListModel = new DefaultListModel();
         inviteesList = new JList(inviteesListModel);
         inviteesList.getSelectionModel().setSelectionMode(
-                ListSelectionModel.SINGLE_SELECTION);
+            ListSelectionModel.SINGLE_SELECTION);
         inviteesList.getSelectionModel().addListSelectionListener(
-                new MyListSelectionListener());
+            new MyListSelectionListener());
 
         List<String> friendNicks = new ArrayList<String>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             friendNicks.add(friend.getNick());
         }
         viaPowerFolderText.setDataList(friendNicks);
-        advancedLink = new ActionLabel(getController(),
-                new MyAdvanceAction(getController()));
+        advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
+            getController()));
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
 
-        permissionsModel = new ValueHolder();
-        permissionsModel = new ValueHolder(FolderPermission.READ_WRITE_PERMISSION);
-        permissionsModel.addValueChangeListener(new MyPropertyChangeListener());
+        permissionsModel = new ValueHolder(
+            new FolderReadWritePermission(folder));
 
         enableAddButton();
         enableRemoveButton();
@@ -277,7 +285,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
     private void enableRemoveButton() {
         removeButton.setEnabled(!inviteesListModel.isEmpty()
-                && inviteesList.getSelectedIndex() >= 0);
+            && inviteesList.getSelectedIndex() >= 0);
     }
 
     private void processInvitee() {
@@ -295,9 +303,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return invitation.folder.name + ".invitation";
     }
 
-    ///////////////////
+    // /////////////////
     // Inner classes //
-    ///////////////////
+    // /////////////////
 
     private class MyAddAction extends BaseAction {
 
@@ -320,8 +328,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
             Collection<Member> selectedMembers = new ArrayList<Member>();
             NodesSelectDialog2 nsd2 = new NodesSelectDialog2(getController(),
-                    (Dialog) getWizardContext().getAttribute(Wizard.DIALOG_ATTRIBUTE),
-                    selectedMembers);
+                (Dialog) getWizardContext().getAttribute(
+                    Wizard.DIALOG_ATTRIBUTE), selectedMembers);
             nsd2.open();
             for (Member selectedMember : selectedMembers) {
                 boolean got = false;
@@ -383,10 +391,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            SendInvitationsAdvancedPanel advPanel =
-                    new SendInvitationsAdvancedPanel(getController(),
-                            locationModel, permissionsModel,
-                            constructInviteFileName());
+            SendInvitationsAdvancedPanel advPanel = new SendInvitationsAdvancedPanel(
+                getController(), invitation.folder, locationModel,
+                permissionsModel, constructInviteFileName());
             advPanel.open();
         }
     }
@@ -395,8 +402,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == locationModel) {
                 updateButtons();
-            } else if (evt.getSource() == permissionsModel) {
-                invitation.setPermissions((Integer) permissionsModel.getValue());
             }
         }
     }

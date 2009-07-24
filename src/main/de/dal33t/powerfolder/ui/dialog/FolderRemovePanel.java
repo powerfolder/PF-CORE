@@ -215,7 +215,6 @@ public class FolderRemovePanel extends BaseDialog {
                 client.getFolderService().revokeAdmin(
                     folder.getInfo());
             }
-            client.refreshAccountDetails();
 
             if (!removeLocal) {
                 FolderSettings folderSettings = folderRepository

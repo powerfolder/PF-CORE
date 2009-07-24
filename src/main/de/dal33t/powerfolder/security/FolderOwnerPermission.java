@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Administration permission on one folder.
@@ -32,6 +33,10 @@ public class FolderOwnerPermission extends FolderPermission {
 
     public FolderOwnerPermission(FolderInfo foInfo) {
         super(foInfo);
+    }
+    
+    public String getName() {
+        return Translation.getTranslation("permissions.folder.owner");
     }
 
     public boolean implies(Permission impliedPermision) {

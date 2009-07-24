@@ -55,8 +55,6 @@ import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * Client to a server.
- * <p>
- * Maybe FIXME: Check if MemberInfos with ID = "" cause problems. (Temporary for
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
@@ -90,7 +88,7 @@ public class ServerClient extends PFComponent {
     private final Object loginLock = new Object();
 
     private AccountDetails accountDetails;
-    
+
     private ServiceProvider serviceProvider;
     private AccountService userService;
     private FolderService folderService;
@@ -117,12 +115,12 @@ public class ServerClient extends PFComponent {
      * Constructs a server client with the defaults from the config.
      * 
      * @param controller
-     * @param name 
-     * @param host 
-     * @param nodeId 
-     * @param webURL 
+     * @param name
+     * @param host
+     * @param nodeId
+     * @param webURL
      * @param allowServerChange
-     * @param updateConfig 
+     * @param updateConfig
      */
     public ServerClient(Controller controller, String name, String host,
         String nodeId, String webURL, boolean allowServerChange,
@@ -162,8 +160,7 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        logInfo(
-            "Using server from config: " + theNode + ", ID: " + theNodeId);
+        logInfo("Using server from config: " + theNode + ", ID: " + theNodeId);
         init(theNode, allowServerChange);
     }
 
@@ -188,9 +185,8 @@ public class ServerClient extends PFComponent {
 
     public void start() {
         if (getController().isLanOnly() && !server.isOnLAN()) {
-            logFine(
-                "Not connecting to server: " + server
-                    + ". Reason: Server not on LAN");
+            logFine("Not connecting to server: " + server
+                + ". Reason: Server not on LAN");
         }
         getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
             3L * 1000L, 1000L * 20);
@@ -271,7 +267,8 @@ public class ServerClient extends PFComponent {
      * 
      * @param serverNode
      * @param serverChange
-     * @param serviceProvider the service provider to use.
+     * @param serviceProvider
+     *            the service provider to use.
      */
     public void setServer(Member serverNode, boolean serverChange,
         ServiceProvider serviceProvider)
@@ -281,15 +278,12 @@ public class ServerClient extends PFComponent {
         this.serviceProvider = serviceProvider;
         setNewServerNode(serverNode);
         this.allowServerChange = serverChange;
-        if (isConnected()) {
-            loginWithLastKnown();
-        } else {
-            setAnonAccount();
-            fireLogin(getAccountDetails());
+        loginWithLastKnown();
+        if (!isConnected()) {
             getServer().markForImmediateConnect();
         }
     }
-    
+
     public ServiceProvider getServiceProvider() {
         return serviceProvider;
     }
@@ -334,7 +328,7 @@ public class ServerClient extends PFComponent {
     public boolean supportsWebRegistration() {
         return getRegisterURL() != null;
     }
-    
+
     /**
      * Convenience method for getting register URL
      * 
@@ -478,17 +472,16 @@ public class ServerClient extends PFComponent {
             }
             boolean loginOk = userService.login(theUsername, passwordMD5, salt);
             if (!loginOk) {
-                logWarning(
-                    "Login to server server " + server.getReconnectAddress()
-                        + " (user " + theUsername + ") failed!");
+                logWarning("Login to server server "
+                    + server.getReconnectAddress() + " (user " + theUsername
+                    + ") failed!");
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
             }
             AccountDetails newAccountDetails = userService.getAccountDetails();
-            logFine(
-                "Login to server " + server.getReconnectAddress() + " (user "
-                    + theUsername + ") result: " + accountDetails);
+            logFine("Login to server " + server.getReconnectAddress()
+                + " (user " + theUsername + ") result: " + accountDetails);
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
 
@@ -573,6 +566,7 @@ public class ServerClient extends PFComponent {
             setAnonAccount();
             fireLogin(accountDetails);
         }
+        logWarning("Refreshed " + accountDetails);
         return accountDetails;
     }
 
@@ -593,8 +587,7 @@ public class ServerClient extends PFComponent {
      */
     public List<Folder> getJoinedFolders() {
         List<Folder> mirroredFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (hasJoined(folder)) {
                 mirroredFolders.add(folder);
@@ -793,10 +786,10 @@ public class ServerClient extends PFComponent {
     private void saveLastKnowLogin() {
         if (StringUtils.isBlank(username)) {
             getController().getPreferences().remove(
-                    PREFS_PREFIX + '.' + server.getIP() + ".username");
+                PREFS_PREFIX + '.' + server.getIP() + ".username");
         } else {
             getController().getPreferences().put(
-                    PREFS_PREFIX + '.' + server.getIP() + ".username", username);
+                PREFS_PREFIX + '.' + server.getIP() + ".username", username);
         }
 
         if (isRememberPassword() && !StringUtils.isBlank(password)) {
@@ -861,9 +854,8 @@ public class ServerClient extends PFComponent {
             PublicKey serverKey = publicKeyService.getPublicKey(newServerInfo
                 .getNode());
             if (serverKey != null) {
-                logFine(
-                    "Retrieved new key for server " + newServerInfo.getNode()
-                        + ". " + serverKey);
+                logFine("Retrieved new key for server "
+                    + newServerInfo.getNode() + ". " + serverKey);
                 Util.addNodeToKeyStore(getController(),
                     newServerInfo.getNode(), serverKey);
             }
@@ -996,9 +988,8 @@ public class ServerClient extends PFComponent {
                 return;
             }
             if (getController().isLanOnly() && !server.isOnLAN()) {
-                logFiner(
-                    "NOT connecting to server: " + server
-                        + ". Reason: Not on LAN");
+                logFiner("NOT connecting to server: " + server
+                    + ". Reason: Not on LAN");
                 return;
             }
             if (!getController().getNodeManager().isStarted()

@@ -1298,9 +1298,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 Collection<Member> connectedNodes = getController()
                     .getNodeManager().getConnectedNodes();
-                Collection<FolderInfo> myJoinedFolders = getJoinedFolderInfos();
                 for (Member node : connectedNodes) {
-                    node.synchronizeFolderMemberships(myJoinedFolders);
+                    node.synchronizeFolderMemberships();
                     if (canceled) {
                         logFiner("Foldermemberships synchroniziation cancelled");
                         return;

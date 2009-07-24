@@ -341,7 +341,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
                         client.getFolderService().createFolder(folderInfoFolderSettingsEntry.getKey(),
                             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                        client.refreshAccountDetails();
 
                         // Set as default synced folder?
                         attribute = getWizardContext().getAttribute(
@@ -352,7 +351,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                             // folder? Which is placed on WizardContext.
                             client.getFolderService()
                                 .setDefaultSynchronizedFolder(folderInfoFolderSettingsEntry.getKey());
-                            client.refreshAccountDetails();
                             createDefaultFolderHelpFile(folder);
                             folder.recommendScanOnNextMaintenance();
                             try {

@@ -19,27 +19,40 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.list.SelectionInList;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderReadPermission;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.Translation;
-
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.binding.value.ValueModel;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
@@ -55,17 +68,20 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
     private final ValueModel locationValueModel;
     private final ValueModel permissionsValueModel;
     private String location;
+    private final FolderInfo foInfo;
     private final String fileName;
     private JComboBox permissionsCombo;
 
     public SendInvitationsAdvancedPanel(Controller controller,
-                                        ValueModel locationValueModel,
-                                        ValueModel permissionsValueModel,
-                                        String fileName) {
+        FolderInfo foInfo, ValueModel locationValueModel,
+        ValueModel permissionsValueModel, String fileName)
+    {
         super(controller, true);
+        Reject.ifNull(foInfo, "Folder info is null");
         this.locationValueModel = locationValueModel;
         this.permissionsValueModel = permissionsValueModel;
         this.fileName = fileName;
+        this.foInfo = foInfo;
         initComponents();
     }
 
@@ -86,24 +102,33 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 Translation.getTranslation("send_invitations_advanced.location_tip"));
         locationButton.addActionListener(new MyActionListener());
         clearButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
-                Translation.getTranslation("send_invitations_advanced.clear_tip"));
+            Translation.getTranslation("send_invitations_advanced.clear_tip"));
         clearButton.addActionListener(new MyActionListener());
         location = (String) locationValueModel.getValue();
         locationDirectoryField.setText(location);
-        DefaultComboBoxModel permissionsModel = new DefaultComboBoxModel(
-                new String[]{
-                        FolderPermission.getNameForPermission(FolderPermission.READ_WRITE_PERMISSION),
-                        FolderPermission.getNameForPermission(FolderPermission.READ_PERMISSION),
-                        FolderPermission.getNameForPermission(FolderPermission.ADMIN_PERMISSION)});
-        permissionsCombo = new JComboBox(permissionsModel);
-        permissionsCombo.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                // Slight generalization here: Assume that Invite.permissions
-                // are sequential from zero.
-                permissionsValueModel.setValue(permissionsCombo.getSelectedIndex());
-            }
-        });
-        permissionsCombo.setSelectedIndex((Integer) permissionsValueModel.getValue());
+        
+        SelectionInList<FolderPermission> permissionsModel = new SelectionInList<FolderPermission>(permissionsValueModel);
+        permissionsModel.getList().add(new FolderReadPermission(foInfo));
+        permissionsModel.getList().add(new FolderReadWritePermission(foInfo));
+        permissionsModel.getList().add(new FolderAdminPermission(foInfo));
+        permissionsModel.getList().add(new FolderOwnerPermission(foInfo));
+    
+        permissionsCombo = BasicComponentFactory.createComboBox(
+            permissionsModel, new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus)
+                {
+                    Component comp = super.getListCellRendererComponent(list,
+                        value, index, isSelected, cellHasFocus);
+                    if (value instanceof FolderPermission) {
+                        FolderPermission fp = (FolderPermission) value;
+                        setText(fp.getName());
+                    }
+                    return comp;
+                }
+            });
         updateButtons();
     }
 

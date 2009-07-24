@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The permission to read files in the folder. Write
@@ -33,6 +34,11 @@ public class FolderReadPermission extends FolderPermission {
     public FolderReadPermission(FolderInfo foInfo) {
        super(foInfo);
     }
+    
+    public String getName() {
+        return Translation.getTranslation("permissions.folder.read");
+    }
+
 
     public boolean implies(Permission impliedPermision) {
         return false;

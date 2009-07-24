@@ -544,6 +544,15 @@ public class Account extends Model implements Serializable {
         return hasPermission(new FolderAdminPermission(foInfo));
     }
 
+    /**
+     * @param foInfo
+     * @return true if the user is owner of the folder.
+     */
+    public boolean hasOwnerPermission(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        return hasPermission(new FolderOwnerPermission(foInfo));
+    }
+
     private void readObject(java.io.ObjectInputStream stream)
         throws IOException, ClassNotFoundException
     {

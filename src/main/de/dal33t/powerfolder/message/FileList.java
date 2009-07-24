@@ -19,6 +19,13 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
@@ -26,13 +33,6 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Files of a folder.
@@ -68,6 +68,25 @@ public class FileList extends FolderRelatedMessage {
         this.files = files;
         this.folder = folderInfo;
         this.nFollowingDeltas = nDetlas2Follow;
+    }
+
+    private FileList(FolderInfo folderInfo) {
+        Reject.ifNull(folderInfo, "FolderInfo is null");
+        this.files = null;
+        this.folder = folderInfo;
+        this.nFollowingDeltas = 0;
+    }
+
+    /**
+     * Just to inform that we won't or can't send any information about the
+     * files.
+     * 
+     * @param foInfo
+     * @return a list that contains null information about the files in a
+     *         folder.
+     */
+    public static FileList createNullList(FolderInfo foInfo) {
+        return new FileList(foInfo);
     }
 
     /**
@@ -213,7 +232,21 @@ public class FileList extends FolderRelatedMessage {
         return messages.toArray(new Message[messages.size()]);
     }
 
+    /**
+     * A filelist that does contains any information of the remote folder.
+     * 
+     * @return if this filelist contains null / nothing / nada.
+     */
+    public boolean isNull() {
+        return files == null;
+    }
+
     public String toString() {
-        return "FileList of " + folder + ": " + files.length + " file(s)";
+        return "FileList of "
+            + folder
+            + ": "
+            + (files != null
+                ? files.length + " file(s)"
+                : "No information about files.");
     }
 }
