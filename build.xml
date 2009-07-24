@@ -65,18 +65,8 @@ For creation of the installer:
         <property name="etc.dir" location="src/etc" />
         <property name="applet.dir" location="src/applet" />
         <property name="demo.src.dir" location="src/demo" />
-		<property name="src.test.dir" location="src/test" />
-        <property name="skins.blackmoon.src.dir" location="src/skins/blackmoon" />
-        <property name="skins.blackstar.src.dir" location="src/skins/blackstar" />
-        <property name="skins.blueice.src.dir" location="src/skins/blueice" />
-        <property name="skins.bluemoon.src.dir" location="src/skins/bluemoon" />
-        <property name="skins.bluesteel.src.dir" location="src/skins/bluesteel" />
-        <property name="skins.greendream.src.dir" location="src/skins/greendream" />
-        <property name="skins.mauvemetallic.src.dir" location="src/skins/mauvemetallic" />
-        <property name="skins.orangemetallic.src.dir" location="src/skins/orangemetallic" />
-        <property name="skins.silvermoon.src.dir" location="src/skins/silvermoon" />
-        <property name="skins.skymetallic.src.dir" location="src/skins/skymetallic" />
-        <property name="skins.whitevision.src.dir" location="src/skins/whitevision" />
+		<property name="test.src.dir" location="src/test" />
+        <property name="skins.src.dir" location="src/skins" />
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
@@ -155,17 +145,7 @@ For creation of the installer:
 
 			<src path="${main.src.dir}" />
 			<src path="${jwf.src.dir}" />
-            <src path="${skins.blackmoon.src.dir}" />
-            <src path="${skins.blackstar.src.dir}" />
-            <src path="${skins.blueice.src.dir}" />
-            <src path="${skins.bluemoon.src.dir}" />
-            <src path="${skins.bluesteel.src.dir}" />
-            <src path="${skins.greendream.src.dir}" />
-            <src path="${skins.mauvemetallic.src.dir}" />
-            <src path="${skins.orangemetallic.src.dir}" />
-            <src path="${skins.silvermoon.src.dir}" />
-            <src path="${skins.skymetallic.src.dir}" />
-            <src path="${skins.whitevision.src.dir}" />
+            <src path="${skins.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -279,7 +259,7 @@ For creation of the installer:
 		<!-- Compile tests -->
 		<javac destdir="${build.dir}" debug="${Debug}" deprecation="false" optimize="false" failonerror="true" encoding="UTF-8">
 
-			<src path="${src.test.dir}" />
+			<src path="${test.src.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<pathelement location="${junit.lib}" />
@@ -302,7 +282,7 @@ For creation of the installer:
 
 
 			<batchtest fork="yes" todir="${build.reports.dir}/raw">
-				<fileset dir="${src.test.dir}">
+				<fileset dir="${test.src.dir}">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
