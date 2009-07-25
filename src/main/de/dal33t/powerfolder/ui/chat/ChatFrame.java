@@ -299,6 +299,12 @@ public class ChatFrame extends MagneticFrame {
 
             // Message from someone new. Add panel.
             if (panel == null) {
+
+                // Was this a status event? If so, we do not care.
+                // Do not add a new chat panel just for a status event.
+                if (event.isStatus()) {
+                    return;
+                }
                 panel = displayChat(source.getInfo(), false);
             }
 
