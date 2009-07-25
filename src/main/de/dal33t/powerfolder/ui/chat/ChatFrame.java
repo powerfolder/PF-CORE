@@ -288,12 +288,9 @@ public class ChatFrame extends MagneticFrame {
             ChatPanel panel = null;
             for (MemberInfo memberInfo : memberPanels.keySet()) {
                 if (source.getInfo().equals(memberInfo)) {
-                    // We have this guy. Is he selected?
+                    // We have this guy.
                     panel = memberPanels.get(memberInfo);
-                    if (tabbedPane.getSelectedComponent()
-                            == panel.getUiComponent()) {
-                        break;
-                    }
+                    break;
                 }
             }
 
