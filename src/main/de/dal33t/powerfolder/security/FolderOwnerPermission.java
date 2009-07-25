@@ -36,7 +36,7 @@ public class FolderOwnerPermission extends FolderPermission {
     }
     
     public String getName() {
-        return Translation.getTranslation("permissions.folder.owner");
+        return Translation.getTranslation("permissions.owner");
     }
 
     public boolean implies(Permission impliedPermision) {

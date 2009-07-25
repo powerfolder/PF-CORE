@@ -36,7 +36,7 @@ public class FolderReadWritePermission extends FolderPermission {
     }
     
     public String getName() {
-        return Translation.getTranslation("permissions.folder.read_write");
+        return Translation.getTranslation("permissions.read_write");
     }
     
     public boolean implies(Permission impliedPermision) {
