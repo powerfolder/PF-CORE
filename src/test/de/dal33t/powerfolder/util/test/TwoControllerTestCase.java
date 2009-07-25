@@ -315,7 +315,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         // Wait to make sure all affected threads (ConnectionHandler) have
         // finished theier work.
         TestHelper.waitMilliSeconds(500);
-        System.out.println("Both Controller DISconnected");
+        System.out.println("Both Controllers disconnected");
     }
 
     private void stopControllers() throws InterruptedException {
