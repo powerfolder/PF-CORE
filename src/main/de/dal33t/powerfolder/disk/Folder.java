@@ -2582,6 +2582,10 @@ public class Folder extends PFComponent {
             logFiner("Triing to find same files in remote list with "
                 + remoteFileInfos.size() + " files from " + remotePeer);
         }
+        if (!hasWritePermission(remotePeer)) {
+            logWarning("Skipping " + remotePeer + " no write permission");
+            return;
+        }
 
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
@@ -3219,8 +3223,6 @@ public class Folder extends PFComponent {
         return getController().getSecurityManager().hasFolderPermission(member,
             permission);
     }
-    
-    
 
     // General stuff **********************************************************
 
@@ -3248,8 +3250,7 @@ public class Folder extends PFComponent {
         addPattern(WORD_TEMP);
 
         // Add desktop.ini to ignore pattern on windows systems
-        if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
-        {
+        if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController())) {
             addPattern(FileUtils.DESKTOP_INI_FILENAME);
         }
 
