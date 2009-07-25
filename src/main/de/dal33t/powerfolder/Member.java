@@ -947,6 +947,9 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // Inform nodemanger about it
         getController().getNodeManager().onlineStateChanged(this);
+        
+        // Inform security manager to update account state.
+        getController().getSecurityManager().nodeAccountStateChanged(this);
 
         if (isInfo()) {
             logInfo("Connected ("
