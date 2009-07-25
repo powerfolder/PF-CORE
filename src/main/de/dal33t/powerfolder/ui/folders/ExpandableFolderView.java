@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimerTask;
 import java.io.IOException;
 
 /**
@@ -815,6 +816,28 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      * Class to respond to expand / collapse events.
      */
     private class MyMouseAdapter extends MouseAdapter {
+
+        private volatile boolean mouseOver;
+
+        // Auto expand if user hovers for three seconds.
+        public void mouseEntered(MouseEvent e) {
+            mouseOver = true;
+            if (!expanded.get()) {
+                getController().schedule(new TimerTask() {
+                    public void run() {
+                        if (mouseOver) {
+                            if (!expanded.get()) {
+                                expand();
+                            }
+                        }
+                    }
+                }, 3000);
+            }
+        }
+
+        public void mouseExited(MouseEvent e) {
+            mouseOver = false;
+        }
 
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {

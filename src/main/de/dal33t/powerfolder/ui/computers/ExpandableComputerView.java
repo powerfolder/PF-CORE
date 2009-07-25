@@ -158,7 +158,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
           // sep,        last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xyw(1, 1, 7));
+        lowerBuilder.addSeparator(null, cc.xyw(1, 1, 9));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
         lowerBuilder.add(connectionQualityLabel, cc.xy(4, 3));
@@ -404,6 +404,28 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      */
     private class MyMouseAdapter extends MouseAdapter {
 
+        private volatile boolean mouseOver;
+
+        // Auto expand if user hovers for three seconds.
+        public void mouseEntered(MouseEvent e) {
+            mouseOver = true;
+            if (!expanded.get()) {
+                getController().schedule(new TimerTask() {
+                    public void run() {
+                        if (mouseOver) {
+                            if (!expanded.get()) {
+                                expand();
+                            }
+                        }
+                    }
+                }, 3000);
+            }
+        }
+
+        public void mouseExited(MouseEvent e) {
+            mouseOver = false;
+        }
+
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
@@ -432,6 +454,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             }
         }
     }
+
     /**
      * Listener of node events.
      */
