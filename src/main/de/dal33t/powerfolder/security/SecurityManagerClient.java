@@ -42,13 +42,15 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class SecurityManagerClient extends AbstractSecurityManager {
     private ServerClient client;
-    private Map<Member, AccountInfo> sessions;
+    private Map<Member, Session> sessions;
+    private Map<AccountInfo, PermissionsCacheSegment> permissionsCache;
 
     public SecurityManagerClient(Controller controller, ServerClient client) {
         super(controller);
         Reject.ifNull(client, "Client is null");
         this.client = client;
-        this.sessions = new ConcurrentHashMap<Member, AccountInfo>();
+        this.sessions = new ConcurrentHashMap<Member, Session>();
+        this.permissionsCache = new ConcurrentHashMap<AccountInfo, PermissionsCacheSegment>();
     }
 
     public Account authenticate(String username, String password) {
@@ -61,12 +63,35 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         if (!Feature.SECURITY_CHECKS.isEnabled()) {
             return true;
         }
+        try {
+            Boolean hasPermission;
+            PermissionsCacheSegment cache = permissionsCache.get(info);
+            if (cache != null) {
+                hasPermission = cache.hasPermission(permission);
+            } else {
+                // Create cache
+                hasPermission = null;
+                cache = new PermissionsCacheSegment();
+                permissionsCache.put(info, cache);
+            }
+            boolean cacheHit;
+            // hasPermission = null;
+            if (hasPermission == null) {
+                hasPermission = Boolean.valueOf(client.getAccountService()
+                    .hasPermission(info.getOID(), permission));
+                cache.set(permission, hasPermission);
+                cacheHit = false;
+            } else {
+                cacheHit = true;
+            }
+            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + info + " has "
+                + (hasPermission ? "" : "NOT ") + permission);
 
-        boolean hasPermission = client.getAccountService().hasPermission(
-            info.getOID(), permission);
-        // TODO Cache permissions
-        logWarning(info + " has " + (hasPermission ? "" : "NOT ") + permission);
-        return hasPermission;
+            return hasPermission;
+        } catch (RemoteCallException e) {
+            logWarning("Unable to check permission for " + info);
+            return false;
+        }
     }
 
     public AccountInfo getAccountInfo(Member node) {
@@ -74,10 +99,11 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         return getAccountInfo(node, false);
     }
 
-    public AccountInfo getAccountInfo(Member node, boolean forceRefresh) {
-        AccountInfo aInfo = sessions.get(node);
+    private AccountInfo getAccountInfo(Member node, boolean forceRefresh) {
+        Session session = sessions.get(node);
+        AccountInfo aInfo;
         // Cache
-        if (aInfo == null || forceRefresh) {
+        if (session == null || forceRefresh) {
             try {
                 Map<MemberInfo, AccountInfo> res = client.getAccountService()
                     .getAccountInfos(Collections.singleton(node.getInfo()));
@@ -86,11 +112,14 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 logSevere("Unable to retrieve account info for " + node + ". "
                     + e);
                 logFiner(e);
+                aInfo = null;
             }
             logWarning("Retrieved account " + aInfo + " for " + node);
             if (aInfo != null) {
-                sessions.put(node, aInfo);
+                sessions.put(node, new Session(aInfo));
             }
+        } else {
+            aInfo = session.getAccountInfo();
         }
         return aInfo;
     }
@@ -101,12 +130,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             refresher = new Runnable() {
                 public void run() {
                     client.refreshAccountDetails();
+                    // Make sure nothing is left in cache.
+                    permissionsCache.remove(client.getAccount().createInfo());
                     sessions.remove(node);
-                    // Broadcast this information to all connected nodes.
-                    // getController().getNodeManager().broadcastMessage(
-                    // new AccountStateChanged(getController().getMySelf()
-                    // .getInfo()));
-                    // And now sync folder memberhips.
                     node.synchronizeFolderMemberships();
                 }
             };
@@ -115,6 +141,10 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         } else {
             refresher = new Runnable() {
                 public void run() {
+                    AccountInfo aInfo = getAccountInfo(node);
+                    if (aInfo != null) {
+                        permissionsCache.remove(aInfo);
+                    }
                     // Refresh account info on that node.
                     getAccountInfo(node, true);
                     // This is required because of probably changed access
@@ -142,4 +172,32 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             return new FolderAdminPermission(foInfo);
         }
     }
+
+    private class Session {
+        private AccountInfo info;
+
+        public Session(AccountInfo info) {
+            super();
+            this.info = info;
+        }
+
+        public AccountInfo getAccountInfo() {
+            return info;
+        }
+    }
+
+    private class PermissionsCacheSegment {
+        Map<Permission, Boolean> permissions = new ConcurrentHashMap<Permission, Boolean>();
+
+        void set(Permission permission, Boolean hasPermission) {
+            Reject.ifNull(permission, "Permission is null");
+            permissions.put(permission, hasPermission);
+        }
+
+        Boolean hasPermission(Permission permission) {
+            Reject.ifNull(permission, "Permission is null");
+            return permissions.get(permission);
+        }
+    }
+
 }
