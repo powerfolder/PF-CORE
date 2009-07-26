@@ -53,10 +53,18 @@ public class TellFriendPanel extends PFWizardPanel {
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
+            "pref, 3dlu, pref, 10dlu, pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         int row = 1;
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.tell_friend.information1")), cc.xyw(1, row, 2));
+        row += 2;
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.tell_friend.information2")), cc.xyw(1, row, 2));
+        row += 2;
 
         builder.add(new JLabel(Translation.getTranslation(
                 "wizard.tell_friend.add_email_address")), cc.xyw(1, row, 2));
@@ -101,7 +109,15 @@ public class TellFriendPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return null;
+
+        // @todo TOT - send emails server side.
+
+        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
+            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
+        
+        return new TextPanelPanel(getController(), Translation.getTranslation(
+                "wizard.tell_friend.title"), Translation.getTranslation(
+                "wizard.tell_friend.success"));
     }
 
     public boolean validateNext() {
