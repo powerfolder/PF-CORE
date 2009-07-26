@@ -26,7 +26,7 @@ public interface NotificationService {
      * @return all notifications for the logged in client, that have not yet
      *         been marked as received.
      */
-    List<NotificationService> getNotReceivedNotifications();
+    List<Notification> getNotReceivedNotifications();
 
     /**
      * Marks the {@link Notification} with the given OID as received in client.
