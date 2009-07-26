@@ -46,7 +46,7 @@ public class FolderAdminPermission extends FolderPermission {
     }
 
     public String getName() {
-        return Translation.getTranslation("permissions.admin");
+        return Translation.getTranslation("permissions.folder.admin");
     }
 
     public boolean migrate() {
