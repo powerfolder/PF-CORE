@@ -97,6 +97,8 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private ActionLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
+    private ActionLabel tellFriendLabel;
+
     private final ValueModel newWarningsCountVM;
     private final ValueModel newFriendRequestsCountVM;
     private final ValueModel newInvitationsCountVM;
@@ -217,6 +219,16 @@ public class HomeTab extends PFUIComponent {
             }
         });
         onlineStorageSection = new OnlineStorageSection(getController());
+        tellFriendLabel = new ActionLabel(getController(), new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                // @todo harry
+            }
+        });
+        tellFriendLabel.setText(Translation.getTranslation(
+                "home_tab.tell_friend.text"));
+        tellFriendLabel.setToolTipText(Translation.getTranslation(
+                "home_tab.tell_friend.tip"));
+
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
@@ -254,9 +266,18 @@ public class HomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow");
-        //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec
+        FormLayout layout;
+        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+            layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
+            //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec                  tell friend
+
+        } else {
+            layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, 3dlu, pref:grow, pref");
+            //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp                   tell friend
+
+        }
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -268,13 +289,13 @@ public class HomeTab extends PFUIComponent {
         row += 2;
 
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-        row +=2;
+        row += 2;
 
         JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
         Font f = youHaveLabel.getFont();
         youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
         builder.add(youHaveLabel, cc.xywh(2, row, 2, 1));
-        row +=2;
+        row += 2;
 
         builder.add(newWarningsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
@@ -298,7 +319,7 @@ public class HomeTab extends PFUIComponent {
         row++;
 
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-        row +=2;
+        row += 2;
 
         builder.add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
@@ -307,20 +328,25 @@ public class HomeTab extends PFUIComponent {
         row++;
 
         builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+
         row++;
 
         if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
     
             builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-            row +=2;
+            row += 2;
 
             builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
             row += 2;
 
             builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
-            row++;
+            row += 3;
 
+        } else {
+            row += 2;
         }
+
+        builder.add(tellFriendLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
 
         return builder.getPanel();
     }
