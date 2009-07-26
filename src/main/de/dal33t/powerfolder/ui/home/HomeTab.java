@@ -67,6 +67,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
@@ -221,7 +222,8 @@ public class HomeTab extends PFUIComponent {
         onlineStorageSection = new OnlineStorageSection(getController());
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                // @todo harry
+                PFWizard wizard = new PFWizard(getController());
+                wizard.open(new TellFriendPanel(getController()));
             }
         });
         tellFriendLabel.setText(Translation.getTranslation(
