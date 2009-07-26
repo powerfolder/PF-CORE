@@ -29,13 +29,22 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.ui.Icons;
+
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.*;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
- * @version $Revision: 4.0 $
+ * @version $Revision: 4.0$
  */
 public class TellFriendPanel extends PFWizardPanel {
+
+    private JTextArea emailTextArea;
+    private JTextArea personalMessageTextArea;
 
     public TellFriendPanel(Controller controller) {
         super(controller);
@@ -44,9 +53,28 @@ public class TellFriendPanel extends PFWizardPanel {
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout(
             "140dlu, pref:grow",
-            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref");
+            "pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
+        int row = 1;
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.tell_friend.add_email_address")), cc.xyw(1, row, 2));
+        row += 2;
+
+        JScrollPane scrollPane = new JScrollPane(emailTextArea);
+        scrollPane.setPreferredSize(new Dimension(50, 60));
+        builder.add(scrollPane, cc.xy(1, row));
+        row += 2;
+
+        builder.add(new JLabel(Translation.getTranslation(
+                "wizard.tell_friend.personal_message")), cc.xyw(1, row, 2));
+        row += 2;
+
+        scrollPane = new JScrollPane(personalMessageTextArea);
+        scrollPane.setPreferredSize(new Dimension(50, 60));
+        builder.add(scrollPane,  cc.xy(1, row));
+
         return builder.getPanel();
     }
 
@@ -59,13 +87,40 @@ public class TellFriendPanel extends PFWizardPanel {
     }
 
     protected void initComponents() {
+        emailTextArea = new JTextArea();
+        emailTextArea.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                updateButtons();
+            }
+        });
+        personalMessageTextArea = new JTextArea();
     }
 
     public boolean hasNext() {
-        return false;
+        return emailTextArea.getText().contains("@");
     }
 
     public WizardPanel next() {
         return null;
+    }
+
+    public boolean validateNext() {
+        String[] emails = emailTextArea.getText().split("\\n");
+        for (String email : emails) {
+            email = email.trim();
+            if (email.length() > 0) {
+                if (!email.contains("@")) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation(
+                                    "wizard.tell_friend.title.warning_title"),
+                            Translation.getTranslation(
+                                    "wizard.tell_friend.title.warning_bad_email", 
+                                    email),
+                            GenericDialogType.ERROR);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
