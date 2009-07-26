@@ -73,7 +73,7 @@ public interface AccountService {
      *         found.
      */
     List<String> getLicenseKeyContents();
-    
+
     // Security / Permission stuff ********************************************
 
     /**
@@ -84,13 +84,13 @@ public interface AccountService {
      * @return the {@link AccountInfo} for the nodes.
      */
     Map<MemberInfo, AccountInfo> getAccountInfos(Collection<MemberInfo> nodes);
-    
+
     /**
-     * @param accountOID
+     * @param node
      * @param permission
-     * @return true if the account with the given OID has that permission.
+     * @return true if the account with the given node has that permission.
      */
-    boolean hasPermission(String accountOID, Permission permission);
+    boolean hasPermission(MemberInfo node, Permission permission);
 
     // DAO related / admin methods ********************************************
 

@@ -43,53 +43,60 @@ import de.dal33t.powerfolder.util.Reject;
 public class SecurityManagerClient extends AbstractSecurityManager {
     private ServerClient client;
     private Map<Member, Session> sessions;
-    private Map<AccountInfo, PermissionsCacheSegment> permissionsCache;
+    private Map<Member, PermissionsCacheSegment> permissionsCache;
+    private Map<FolderInfo, FolderPermission> defaultPermissionsCache;
+
+    private static final boolean CACHE_ENABLED = true;
 
     public SecurityManagerClient(Controller controller, ServerClient client) {
         super(controller);
         Reject.ifNull(client, "Client is null");
         this.client = client;
         this.sessions = new ConcurrentHashMap<Member, Session>();
-        this.permissionsCache = new ConcurrentHashMap<AccountInfo, PermissionsCacheSegment>();
+        this.permissionsCache = new ConcurrentHashMap<Member, PermissionsCacheSegment>();
+        this.defaultPermissionsCache = new ConcurrentHashMap<FolderInfo, FolderPermission>();
     }
 
     public Account authenticate(String username, String password) {
         return client.login(username, password);
     }
 
-    public boolean hasPermission(AccountInfo info, Permission permission) {
-        Reject.ifNull(info, "Account info is null");
+    public boolean hasPermission(Member node, Permission permission) {
+        Reject.ifNull(node, "Node is null");
         Reject.ifNull(permission, "Permission info is null");
         if (!Feature.SECURITY_CHECKS.isEnabled()) {
             return true;
         }
         try {
             Boolean hasPermission;
-            PermissionsCacheSegment cache = permissionsCache.get(info);
+            PermissionsCacheSegment cache = permissionsCache.get(node);
             if (cache != null) {
                 hasPermission = cache.hasPermission(permission);
             } else {
                 // Create cache
                 hasPermission = null;
                 cache = new PermissionsCacheSegment();
-                permissionsCache.put(info, cache);
+                permissionsCache.put(node, cache);
             }
             boolean cacheHit;
-            // hasPermission = null;
+            if (!CACHE_ENABLED) {
+                hasPermission = null;
+            }
             if (hasPermission == null) {
                 hasPermission = Boolean.valueOf(client.getAccountService()
-                    .hasPermission(info.getOID(), permission));
+                    .hasPermission(node.getInfo(), permission));
                 cache.set(permission, hasPermission);
                 cacheHit = false;
             } else {
                 cacheHit = true;
             }
-            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + info + " has "
+            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + node + " has "
                 + (hasPermission ? "" : "NOT ") + permission);
 
             return hasPermission;
         } catch (RemoteCallException e) {
-            logWarning("Unable to check permission for " + info);
+            logWarning("Unable to check permission for " + node + ". " + e);
+            logFiner(e);
             return false;
         }
     }
@@ -115,7 +122,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 aInfo = null;
             }
             logWarning("Retrieved account " + aInfo + " for " + node);
-            if (aInfo != null) {
+            if (aInfo != null && CACHE_ENABLED) {
                 sessions.put(node, new Session(aInfo));
             }
         } else {
@@ -131,7 +138,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 public void run() {
                     client.refreshAccountDetails();
                     // Make sure nothing is left in cache.
-                    permissionsCache.remove(client.getAccount().createInfo());
+                    permissionsCache.remove(node);
                     sessions.remove(node);
                     node.synchronizeFolderMemberships();
                 }
@@ -141,12 +148,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         } else {
             refresher = new Runnable() {
                 public void run() {
-                    AccountInfo aInfo = getAccountInfo(node);
-                    if (aInfo != null) {
-                        permissionsCache.remove(aInfo);
-                    }
+                    permissionsCache.remove(node);
                     // Refresh account info on that node.
-                    getAccountInfo(node, true);
+                    sessions.remove(node);
                     // This is required because of probably changed access
                     // permissions to folder.
                     node.synchronizeFolderMemberships();
@@ -166,9 +170,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             return getController().getOSClient().getFolderService()
                 .getDefaultPermission(foInfo);
         } catch (Exception e) {
-            logWarning(
-                "Unable to retrieve default permission from server. Using admin as fallback. "
-                    + e, e);
+            logWarning("Unable to retrieve default permission from server. Using admin as fallback. "
+                + e);
+            logFiner(e);
             return new FolderAdminPermission(foInfo);
         }
     }

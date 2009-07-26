@@ -62,18 +62,19 @@ public interface SecurityManager {
     // Security stuff *********************************************************
 
     /**
-     * @param member
-     *            the member to get the account info for.
+     * @param node
+     *            the node to get the account info for.
      * @return the account info for the given member.
      */
-    AccountInfo getAccountInfo(Member member);
+    AccountInfo getAccountInfo(Member node);
 
     /**
-     * @param aInfo
+     * @param node
+     *            the node to check the permission.
      * @param permission
      * @return true if this account has the given permission.
      */
-    boolean hasPermission(AccountInfo aInfo, Permission permission);
+    boolean hasPermission(Member node, Permission permission);
 
     /**
      * Takes also {@link FolderSecuritySettings} and default permission into
