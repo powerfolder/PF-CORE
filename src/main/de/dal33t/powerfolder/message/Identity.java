@@ -104,7 +104,7 @@ public class Identity extends Message {
         // identity is created, so we have to use this workaround.
         this.pendingMessages = controller.getTaskManager().hasSendMessageTask();
 
-        useCompressedStream = !handler.isOnLAN()
+        this.useCompressedStream = !handler.isOnLAN()
             || (handler.isOnLAN() && controller.useZipOnLan());
     }
 
