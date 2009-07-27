@@ -162,7 +162,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * on that folder. Might contain negativ values! means we received deltas
      * after the inital filelist.
      */
-    private Map<FolderInfo, Integer> expectedListMessages;
+    private Map<FolderInfo, Integer> expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
@@ -1042,9 +1042,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
-                logWarning("No message received since 1 minute ("
-                    + (waiter.getTimoutTimeMS() / (1000 * 60))
-                    + " minutes) while waiting for filelist");
+                logWarning("No message received since 1 minute while waiting for filelist");
                 return false;
             }
 
@@ -1130,7 +1128,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         handshaked = false;
         lastHandshakeCompleted = null;
         lastTransferStatus = null;
-        expectedListMessages = null;
+        expectedListMessages.clear();
         messageListenerSupport = null;
 
         // Inform security manager to update account state.
@@ -1423,10 +1421,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                         + remoteFileList.nFollowingDeltas + " more deltas. "
                         + message);
                 }
-                if (expectedListMessages == null) {
-                    // Lazy init
-                    expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
-                }
                 // Reset counter of expected filelists
                 expectedListMessages.put(remoteFileList.folder,
                     remoteFileList.nFollowingDeltas);
@@ -1446,7 +1440,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 FolderFilesChanged changes = (FolderFilesChanged) message;
                 Convert.cleanFileList(getController(), changes.added);
                 Convert.cleanFileList(getController(), changes.removed);
-
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     logSevere("Received folder changes on "
@@ -1928,9 +1921,6 @@ public class Member extends PFComponent implements Comparable<Member> {
      *         on that folder.
      */
     public boolean hasCompleteFileListFor(FolderInfo foInfo) {
-        if (expectedListMessages == null) {
-            return false;
-        }
         Integer nUpcomingMsgs = expectedListMessages.get(foInfo);
         if (nUpcomingMsgs == null) {
             return false;
