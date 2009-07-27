@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Utility class for all low level networking stuff.
@@ -43,12 +44,13 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.4 $
  */
 public class NetworkUtil {
-    private final static Logger LOG = Logger.getLogger(NetworkUtil.class.getName());
+    private final static Logger LOG = Logger.getLogger(NetworkUtil.class
+        .getName());
 
-//    private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
-//    private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
-//    private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
-//    private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
+    // private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
+    // private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
+    // private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
+    // private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
 
     private static final long CACHE_TIMEOUT = 10 * 1000;
 
@@ -245,4 +247,28 @@ public class NetworkUtil {
         return nullIP;
     }
 
+    /**
+     * Tries to retrieve the hostname of the address if available, but returns
+     * the IP only if not available. Does NOT perform a reverse lookup.
+     * 
+     * @param addr
+     * @return the hostname or IP of the address.
+     */
+    public static final String getHostAddressNoResolve(InetAddress addr) {
+        Reject.ifNull(addr, "Address is null");
+        try {
+            String[] str = addr.toString().split("/");
+            if (StringUtils.isNotBlank(str[0])) {
+                return str[0];
+            } else if (StringUtils.isNotBlank(str[1])) {
+                return str[1];
+            }
+        } catch (Exception e) {
+            LOG
+                .warning("Unable to resolve hostname/ip from " + addr + ". "
+                    + e);
+        }
+        // Fallback
+        return addr.getHostAddress();
+    }
 }
