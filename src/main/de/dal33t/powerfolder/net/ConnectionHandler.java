@@ -154,6 +154,11 @@ public interface ConnectionHandler {
      * @return our magic id, which has been sent to the remote side
      */
     String getMyMagicId();
+    
+    /**
+     * @return my Identity sent to the remote side.
+     */
+    Identity getMyIdentity();
 
     /**
      * @return the magic id, which has been sent by the remote side
