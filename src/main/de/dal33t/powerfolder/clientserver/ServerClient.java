@@ -90,6 +90,7 @@ public class ServerClient extends PFComponent {
     private AccountDetails accountDetails;
 
     private ServiceProvider serviceProvider;
+    private SecurityService securityService;
     private AccountService userService;
     private FolderService folderService;
     private PublicKeyService publicKeyService;
@@ -470,7 +471,8 @@ public class ServerClient extends PFComponent {
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("UTF-8 not found", e);
             }
-            boolean loginOk = userService.login(theUsername, passwordMD5, salt);
+            boolean loginOk = securityService.login(theUsername, passwordMD5,
+                salt);
             if (!loginOk) {
                 logWarning("Login to server server "
                     + server.getReconnectAddress() + " (user " + theUsername
@@ -479,7 +481,8 @@ public class ServerClient extends PFComponent {
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
             }
-            AccountDetails newAccountDetails = userService.getAccountDetails();
+            AccountDetails newAccountDetails = securityService
+                .getAccountDetails();
             logFine("Login to server " + server.getReconnectAddress()
                 + " (user " + theUsername + ") result: " + accountDetails);
             if (newAccountDetails != null) {
@@ -558,7 +561,7 @@ public class ServerClient extends PFComponent {
      * @return the new account details
      */
     public AccountDetails refreshAccountDetails() {
-        AccountDetails newDetails = userService.getAccountDetails();
+        AccountDetails newDetails = securityService.getAccountDetails();
         if (newDetails != null) {
             accountDetails = newDetails;
             fireAccountUpdates(accountDetails);
@@ -571,6 +574,10 @@ public class ServerClient extends PFComponent {
     }
 
     // Services ***************************************************************
+
+    public SecurityService getSecurityService() {
+        return securityService;
+    }
 
     public AccountService getAccountService() {
         return userService;
@@ -767,6 +774,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void initializeServiceStubs() {
+        securityService = serviceProvider.getService(SecurityService.class);
         userService = serviceProvider.getService(AccountService.class);
         folderService = serviceProvider.getService(FolderService.class);
         publicKeyService = serviceProvider.getService(PublicKeyService.class);

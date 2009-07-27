@@ -89,7 +89,7 @@ public class PreviewFolderRemoveAction extends BaseAction {
                 getController().getOSClient().getFolderService().removeFolder(
                     folder.getInfo(), true);
             } else {
-                getController().getOSClient().getFolderService().revokeAdmin(
+                getController().getOSClient().getSecurityService().revokeAdmin(
                     folder.getInfo());
             }
             getController().getOSClient().refreshAccountDetails();

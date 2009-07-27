@@ -83,7 +83,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 hasPermission = null;
             }
             if (hasPermission == null) {
-                hasPermission = Boolean.valueOf(client.getAccountService()
+                hasPermission = Boolean.valueOf(client.getSecurityService()
                     .hasPermission(node.getInfo(), permission));
                 cache.set(permission, hasPermission);
                 cacheHit = false;
@@ -112,7 +112,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         // Cache
         if (session == null || forceRefresh) {
             try {
-                Map<MemberInfo, AccountInfo> res = client.getAccountService()
+                Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                     .getAccountInfos(Collections.singleton(node.getInfo()));
                 aInfo = res.get(node.getInfo());
             } catch (RemoteCallException e) {
@@ -167,7 +167,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     protected FolderPermission retrieveDefaultPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "FolderInfo is null");
         try {
-            return getController().getOSClient().getFolderService()
+            return getController().getOSClient().getSecurityService()
                 .getDefaultPermission(foInfo);
         } catch (Exception e) {
             logWarning("Unable to retrieve default permission from server. Using admin as fallback. "

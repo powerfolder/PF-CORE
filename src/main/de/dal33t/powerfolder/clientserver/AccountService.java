@@ -52,45 +52,10 @@ public interface AccountService {
     Account register(String username, String password, boolean newsLetter);
 
     /**
-     * Logs in from a remote location.
-     * 
-     * @param username
-     * @param passwordMD5
-     *            the password mixed with the salt as MD5
-     * @param salt
-     *            the salt - a random string.
-     * @return the Account with this username or null if login failed.
-     */
-    boolean login(String username, String passwordMD5, String salt);
-
-    /**
-     * @return Account details about the currently logged in user.
-     */
-    AccountDetails getAccountDetails();
-
-    /**
      * @return all license key content for this account. or null if no key was
      *         found.
      */
     List<String> getLicenseKeyContents();
-
-    // Security / Permission stuff ********************************************
-
-    /**
-     * Resulting map may not contain all nodes only those connected to the
-     * server.
-     * 
-     * @param nodes
-     * @return the {@link AccountInfo} for the nodes.
-     */
-    Map<MemberInfo, AccountInfo> getAccountInfos(Collection<MemberInfo> nodes);
-
-    /**
-     * @param node
-     * @param permission
-     * @return true if the account with the given node has that permission.
-     */
-    boolean hasPermission(MemberInfo node, Permission permission);
 
     // DAO related / admin methods ********************************************
 

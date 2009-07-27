@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.security.FolderPermission;
 
 /**
  * Access/Control over folders of a server.
@@ -111,38 +110,4 @@ public interface FolderService {
      * @return the list of servers the folders are hosted on.
      */
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
-
-    // Security related *******************************************************
-
-    /**
-     * @param foInfo
-     * @return the default permission for the given folder.
-     */
-    FolderPermission getDefaultPermission(FolderInfo foInfo);
-
-    /**
-     * Sets the default permission for the given folder.
-     * 
-     * @param foInfo
-     * @param permission
-     */
-    void setDefaultPermission(FolderInfo foInfo, FolderPermission permission);
-
-    // /**
-    // * Grants the currently logged in user access to folder. the folder is NOT
-    // * setup on the remote server.
-    // *
-    // * @param foInfos
-    // * @see #createFolder(FolderInfo, SyncProfile)
-    // */
-    // void grantAdmin(FolderInfo... foInfos);
-
-    /**
-     * Revokes the currently logged in user access to folder. the folder is NOT
-     * setup on the remote server.
-     * 
-     * @param foInfos
-     * @see #removeFolder(FolderInfo, boolean)
-     */
-    void revokeAdmin(FolderInfo... foInfos);
 }
