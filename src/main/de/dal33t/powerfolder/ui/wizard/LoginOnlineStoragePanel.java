@@ -137,7 +137,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             LOG.log(Level.SEVERE, "Problem logging in", e);
             DialogFactory.genericDialog(getController(),
                     Translation.getTranslation("wizard.error_title"),
-                    Translation.getTranslation("online_storage.general_error"),
+                    Translation.getTranslation("online_storage.general_error",
+                            e.getMessage()),
                     GenericDialogType.INFO);
         }
         return loginOk;

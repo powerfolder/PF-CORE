@@ -110,7 +110,7 @@ public class SettingsTab extends PFUIComponent {
     private final JTextField localFolderField;
     private final JButton localFolderButton;
     private final PatternChangeListener patternChangeListener;
-    private final FolderOnlineStorageAction confOSAction;
+    private ActionLabel confOSActionLabel;
     private final ServerClient serverClient;
     private ActionLabel previewFolderActionLabel;
     private final DeleteFolderAction deleteFolderAction;
@@ -144,8 +144,6 @@ public class SettingsTab extends PFUIComponent {
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
-        confOSAction = new FolderOnlineStorageAction(getController());
-        confOSAction.setEnabled(false);
         deleteFolderAction = new DeleteFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         scriptModel = new ValueHolder(null, false);
@@ -270,8 +268,9 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new ActionLabel(getController(),
-                confOSAction).getUIComponent(), cc.xy(1, 1));
+        confOSActionLabel = new ActionLabel(getController(),
+                new FolderOnlineStorageAction(getController()));
+        builder.add(confOSActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -772,9 +771,16 @@ public class SettingsTab extends PFUIComponent {
             enabled = true;
 
             boolean osConfigured = serverClient.hasJoined(folder);
-            confOSAction.configure(!osConfigured);
+                if (osConfigured) {
+                    confOSActionLabel.setText("action_stop_online_storage.name");
+                    confOSActionLabel.setText("action_stop_online_storage.description");
+                } else {
+                    confOSActionLabel.setToolTipText("action_backup_online_storage.name");
+                    confOSActionLabel.setToolTipText("action_backup_online_storage.description");
+                }
+
         }
-        confOSAction.setEnabled(enabled);
+        confOSActionLabel.setEnabled(enabled);
     }
 
     /**
@@ -932,14 +938,6 @@ public class SettingsTab extends PFUIComponent {
 
         private FolderOnlineStorageAction(Controller controller) {
             super("action_backup_online_storage", controller);
-        }
-
-        public void configure(boolean backup) {
-            if (backup) {
-                configureFromActionId("action_backup_online_storage");
-            } else {
-                configureFromActionId("action_stop_online_storage");
-            }
         }
 
         public void actionPerformed(ActionEvent e) {
