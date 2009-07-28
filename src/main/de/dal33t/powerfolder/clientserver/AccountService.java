@@ -52,6 +52,15 @@ public interface AccountService {
     Account register(String username, String password, boolean newsLetter);
 
     /**
+     * TRAC #1567, #1042
+     * 
+     * @param emails
+     * @param personalMessage
+     * @return true if all messages was successfully delivered
+     */
+    boolean tellFriend(Collection<String> emails, String personalMessage);
+
+    /**
      * @return all license key content for this account. or null if no key was
      *         found.
      */
