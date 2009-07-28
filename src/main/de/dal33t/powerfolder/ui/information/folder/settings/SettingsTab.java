@@ -112,7 +112,7 @@ public class SettingsTab extends PFUIComponent {
     private final PatternChangeListener patternChangeListener;
     private final FolderOnlineStorageAction confOSAction;
     private final ServerClient serverClient;
-    private final PreviewFolderAction previewFolderAction;
+    private ActionLabel previewFolderActionLabel;
     private final DeleteFolderAction deleteFolderAction;
     private final ValueModel scriptModel;
     private JButtonMini editButton;
@@ -120,18 +120,18 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      */
     public SettingsTab(Controller controller) {
         super(controller);
         serverClient = controller.getOSClient();
         transferModeSelectorPanel = new SyncProfileSelectorPanel(
-            getController());
+                getController());
         useRecycleBinBox = new JCheckBox(Translation
-            .getTranslation("settings_tab.use_recycle_bin"));
+                .getTranslation("settings_tab.use_recycle_bin"));
         archivingLocalFiles = new JComboBox(EnumSet.allOf(ArchiveMode.class)
-            .toArray());
+                .toArray());
         MyActionListener myActionListener = new MyActionListener();
         useRecycleBinBox.addActionListener(myActionListener);
         archivingLocalFiles.addActionListener(myActionListener);
@@ -139,15 +139,13 @@ public class SettingsTab extends PFUIComponent {
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
         localFolderButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-            Translation.getTranslation("settings_tab.select_directory.text"));
+                Translation.getTranslation("settings_tab.select_directory.text"));
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
         confOSAction = new FolderOnlineStorageAction(getController());
         confOSAction.setEnabled(false);
-        previewFolderAction = new PreviewFolderAction(getController());
-        previewFolderAction.setEnabled(false);
         deleteFolderAction = new DeleteFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         scriptModel = new ValueHolder(null, false);
@@ -155,7 +153,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Set the tab with details for a folder.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -188,41 +186,41 @@ public class SettingsTab extends PFUIComponent {
     private void buildUIComponent() {
         // label folder butn padding
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
         builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(2, row));
+                .getTranslation("general.transfer_mode")), cc.xy(2, row));
         builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, row,
-            4));
+                4));
 
         row += 2;
         builder.add(useRecycleBinBox, cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.archive_mode")), cc.xy(2, row));
+                .getTranslation("settings_tab.archive_mode")), cc.xy(2, row));
         builder.add(createArchivePanel(), cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row, "right, top"));
+                .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row, "right, top"));
         builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
-            row));
+                .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
+                row));
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
 
         if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("settings_tab.download_script"), cc.xy(2, row));
+                    .getTranslation("settings_tab.download_script"), cc.xy(2, row));
             builder.add(createScriptField(), cc.xy(4, row));
         }
 
@@ -281,8 +279,9 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new ActionLabel(getController(),
-                previewFolderAction).getUIComponent(), cc.xy(1, 1));
+        previewFolderActionLabel = new ActionLabel(getController(),
+                new PreviewFolderAction(getController()));
+        builder.add(previewFolderActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -313,7 +312,7 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Creates a pair of location text field and button.
-     * 
+     *
      * @return
      */
     private JComponent createScriptField() {
@@ -324,23 +323,23 @@ public class SettingsTab extends PFUIComponent {
         });
 
         FormLayout layout = new FormLayout("0:grow, 4dlu, 15dlu, 4dlu, pref",
-            "pref");
+                "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         JTextField locationTF = BasicComponentFactory.createTextField(
-            scriptModel, false);
+                scriptModel, false);
         locationTF.setEditable(true);
         builder.add(locationTF, cc.xy(1, 1));
 
         JButton locationButton = new JButton(Icons.DIRECTORY);
         locationButton.setToolTipText(Translation
-            .getTranslation("settings_tab.download_script"));
+                .getTranslation("settings_tab.download_script"));
         locationButton.addActionListener(new SelectScriptListener());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
-            WikiLinks.SCRIPT_EXECUTION), cc.xy(5, 1));
+                WikiLinks.SCRIPT_EXECUTION), cc.xy(5, 1));
         return builder.getPanel();
     }
 
@@ -354,8 +353,8 @@ public class SettingsTab extends PFUIComponent {
             JFileChooser chooser = DialogFactory.createFileChooser();
             chooser.setSelectedFile(new File(initial));
             int res = chooser.showDialog(getUIController().getMainFrame()
-                .getUIComponent(), Translation
-                .getTranslation("settings_tab.download_script.select"));
+                    .getUIComponent(), Translation
+                    .getTranslation("settings_tab.download_script.select"));
 
             if (res == JFileChooser.APPROVE_OPTION) {
                 String script = chooser.getSelectedFile().getAbsolutePath();
@@ -364,7 +363,9 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    /** refreshes the UI elements with the current data */
+    /**
+     * refreshes the UI elements with the current data
+     */
     private void update() {
         rebuildPatterns();
         localFolderField.setText(folder.getLocalBase().getAbsolutePath());
@@ -401,10 +402,11 @@ public class SettingsTab extends PFUIComponent {
         return bar.getPanel();
     }
 
-    /** removes the selected pattern from the blacklist */
+    /**
+     * removes the selected pattern from the blacklist
+     */
     private class RemoveAction extends BaseAction {
-        private RemoveAction(Controller controller)
-        {
+        private RemoveAction(Controller controller) {
             super("action_remove_ignore", controller);
         }
 
@@ -420,37 +422,36 @@ public class SettingsTab extends PFUIComponent {
     /**
      * Removes any patterns for this file name. Directories should have "/*"
      * added to the name.
-     * 
+     *
      * @param patterns
      */
     public void removePatterns(String patterns) {
 
         String[] options = {
-            Translation.getTranslation("remove_pattern.remove"),
-            Translation.getTranslation("remove_pattern.dont"),
-            Translation.getTranslation("general.cancel")};
+                Translation.getTranslation("remove_pattern.remove"),
+                Translation.getTranslation("remove_pattern.dont"),
+                Translation.getTranslation("general.cancel")};
 
         String[] patternArray = patterns.split("\\n");
         for (String pattern : patternArray) {
 
             // Match any patterns for this file.
             CompilingPatternMatch patternMatch = new CompilingPatternMatch(
-                pattern);
+                    pattern);
             for (String blackListPattern : folder.getDiskItemFilter()
-                .getPatterns())
-            {
+                    .getPatterns()) {
                 if (patternMatch.isMatch(blackListPattern)) {
 
                     // Confirm that the user wants to remove this.
                     int result = DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("remove_pattern.title"),
-                        Translation.getTranslation("remove_pattern.prompt",
-                            pattern), options, 0, GenericDialogType.INFO);
+                            Translation.getTranslation("remove_pattern.title"),
+                            Translation.getTranslation("remove_pattern.prompt",
+                                    pattern), options, 0, GenericDialogType.INFO);
                     // Default is remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
                         folder.getDiskItemFilter().removePattern(
-                            blackListPattern);
+                                blackListPattern);
                     } else if (result == 2) { // Cancel
                         // Abort for all other patterns.
                         break;
@@ -460,7 +461,9 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    /** opens a popup, input dialog to edit the selected pattern */
+    /**
+     * opens a popup, input dialog to edit the selected pattern
+     */
     private class EditAction extends BaseAction {
         EditAction(Controller controller) {
             super("action_edit_ignore", controller);
@@ -468,18 +471,18 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             String text = Translation
-                .getTranslation("settings_tab.edit_a_pattern.text");
+                    .getTranslation("settings_tab.edit_a_pattern.text");
             String title = Translation
-                .getTranslation("settings_tab.edit_a_pattern.title");
+                    .getTranslation("settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getActiveFrame(), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null,
-                // the text to edit:
-                selectionModel.getSelection());
+                    getUIController().getActiveFrame(), text, title,
+                    JOptionPane.PLAIN_MESSAGE, null, null,
+                    // the text to edit:
+                    selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
                 folder.getDiskItemFilter().removePattern(
-                    (String) selectionModel.getSelection());
+                        (String) selectionModel.getSelection());
                 folder.getDiskItemFilter().addPattern(pattern);
             }
             patternsList.getSelectionModel().clearSelection();
@@ -498,7 +501,7 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                .getTranslation("settings_tab.add_a_pattern.example"));
+                    .getTranslation("settings_tab.add_a_pattern.example"));
         }
     }
 
@@ -510,12 +513,12 @@ public class SettingsTab extends PFUIComponent {
         if (patternArray.length == 1) {
             String pattern = patternArray[0];
             String title = Translation
-                .getTranslation("settings_tab.add_a_pattern.title");
+                    .getTranslation("settings_tab.add_a_pattern.title");
             String text = Translation
-                .getTranslation("settings_tab.add_a_pattern.text");
+                    .getTranslation("settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
-                getUIController().getActiveFrame(), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null, pattern);
+                    getUIController().getActiveFrame(), text, title,
+                    JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
                 folder.getDiskItemFilter().addPattern(patternResult);
             }
@@ -528,21 +531,21 @@ public class SettingsTab extends PFUIComponent {
                 if (count++ >= 10) {
                     // Too many selections - enough!!!
                     sb.append(Translation
-                        .getTranslation("general.more.lower_case")
-                        + "...\n");
+                            .getTranslation("general.more.lower_case")
+                            + "...\n");
                     break;
                 }
                 sb.append(pattern + '\n');
             }
             String message = Translation
-                .getTranslation("settings_tab.add_patterns.text_1")
-                + "\n\n" + sb.toString();
+                    .getTranslation("settings_tab.add_patterns.text_1")
+                    + "\n\n" + sb.toString();
             String title = Translation
-                .getTranslation("settings_tab.add_patterns.title");
+                    .getTranslation("settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getController(), title,
-                message, new String[]{Translation.getTranslation("general.ok"),
-                    Translation.getTranslation("general.cancel")}, 0,
-                GenericDialogType.QUESTION);
+                    message, new String[]{Translation.getTranslation("general.ok"),
+                            Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.QUESTION);
             if (result == 0) {
                 for (String pattern : patternArray) {
                     folder.getDiskItemFilter().addPattern(pattern);
@@ -575,7 +578,7 @@ public class SettingsTab extends PFUIComponent {
             dc.setCurrentDirectory(originalDirectory);
         }
         int i = dc.showOpenDialog(getController().getUIController()
-            .getActiveFrame());
+                .getActiveFrame());
         if (i == JFileChooser.APPROVE_OPTION) {
             File selectedFile = dc.getSelectedFile();
             if (FileUtils.isSubdirectory(originalDirectory, selectedFile)) {
@@ -600,25 +603,24 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Should the content of the existing folder be moved to the new location?
-     * 
+     *
      * @return true if should move.
      */
     private int shouldMoveContent() {
         return DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("settings_tab.move_content.title"), Translation
-            .getTranslation("settings_tab.move_content"), new String[]{
-            Translation.getTranslation("settings_tab.move_content.move"),
-            Translation.getTranslation("settings_tab.move_content.dont"),
-            Translation.getTranslation("general.cancel"),}, 0,
-            GenericDialogType.INFO);
+                .getTranslation("settings_tab.move_content.title"), Translation
+                .getTranslation("settings_tab.move_content"), new String[]{
+                Translation.getTranslation("settings_tab.move_content.move"),
+                Translation.getTranslation("settings_tab.move_content.dont"),
+                Translation.getTranslation("general.cancel"),}, 0,
+                GenericDialogType.INFO);
     }
 
     /**
      * Move the directory.
      */
     public void moveDirectory(File originalDirectory, File newDirectory,
-        boolean moveContent)
-    {
+                              boolean moveContent) {
         if (!newDirectory.equals(originalDirectory)) {
 
             // Check for any problems with the new folder.
@@ -629,18 +631,18 @@ public class SettingsTab extends PFUIComponent {
                     try {
                         // Move contentes selected
                         ActivityVisualizationWorker worker = new MyActivityVisualizationWorker(
-                            moveContent, originalDirectory, newDirectory);
+                                moveContent, originalDirectory, newDirectory);
                         worker.start();
                     } catch (Exception e) {
                         // Probably failed to create temp directory.
                         DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .getTranslation("settings_tab.move_error.title"),
-                                Translation
-                                    .getTranslation("settings_tab.move_error.temp"),
-                                getController().isVerbose(), e);
+                                .genericDialog(
+                                        getController(),
+                                        Translation
+                                                .getTranslation("settings_tab.move_error.title"),
+                                        Translation
+                                                .getTranslation("settings_tab.move_error.temp"),
+                                        getController().isVerbose(), e);
                     }
                 }
             }
@@ -649,28 +651,28 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Confirm that the user really does want to go ahead with the move.
-     * 
+     *
      * @param newDirectory
      * @return true if the user wishes to move.
      */
     private boolean shouldMoveLocal(File newDirectory) {
         String title = Translation
-            .getTranslation("settings_tab.confirm_local_folder_move.title");
+                .getTranslation("settings_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
-            "settings_tab.confirm_local_folder_move.text", folder
-                .getLocalBase().getAbsolutePath(), newDirectory
-                .getAbsolutePath());
+                "settings_tab.confirm_local_folder_move.text", folder
+                        .getLocalBase().getAbsolutePath(), newDirectory
+                        .getAbsolutePath());
 
         return DialogFactory.genericDialog(getController(), title, message,
-            new String[]{Translation.getTranslation("general.continue"),
-                Translation.getTranslation("general.cancel")}, 0,
-            GenericDialogType.INFO) == 0;
+                new String[]{Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.INFO) == 0;
     }
 
     /**
      * Do some basic validation. Warn if moving to a folder that has files /
      * directories in it.
-     * 
+     *
      * @param newDirectory
      * @return
      */
@@ -678,16 +680,15 @@ public class SettingsTab extends PFUIComponent {
 
         // Warn if target directory is not empty.
         if (newDirectory != null && newDirectory.exists()
-            && newDirectory.listFiles().length > 0)
-        {
+                && newDirectory.listFiles().length > 0) {
             int result = DialogFactory.genericDialog(getController(),
-                Translation
-                    .getTranslation("settings_tab.folder_not_empty.title"),
-                Translation.getTranslation("settings_tab.folder_not_empty",
-                    newDirectory.getAbsolutePath()), new String[]{
-                    Translation.getTranslation("general.continue"),
-                    Translation.getTranslation("general.cancel")}, 1,
-                GenericDialogType.WARN); // Default is cancel.
+                    Translation
+                            .getTranslation("settings_tab.folder_not_empty.title"),
+                    Translation.getTranslation("settings_tab.folder_not_empty",
+                            newDirectory.getAbsolutePath()), new String[]{
+                            Translation.getTranslation("general.continue"),
+                            Translation.getTranslation("general.cancel")}, 1,
+                    GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
                 // User does not want to move to new folder.
                 return false;
@@ -700,22 +701,21 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Moves the contents of a folder to another via a temporary directory.
-     * 
+     *
      * @param moveContent
      * @param originalDirectory
      * @param newDirectory
      * @return
      */
     private Object transferFolder(boolean moveContent, File originalDirectory,
-        File newDirectory)
-    {
+                                  File newDirectory) {
         try {
 
             // Copy the files to the new local base
             if (!newDirectory.exists()) {
                 if (!newDirectory.mkdirs()) {
                     throw new IOException("Failed to create directory: "
-                        + newDirectory);
+                            + newDirectory);
                 }
             }
 
@@ -731,9 +731,9 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.isUseRecycleBin(), folder
-                .getArchiveMode(), folder.isPreviewOnly(),
-                folder.isWhitelist(), folder.getDownloadScript());
+                    .getSyncProfile(), false, folder.isUseRecycleBin(), folder
+                    .getArchiveMode(), folder.isPreviewOnly(),
+                    folder.isWhitelist(), folder.getDownloadScript());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -750,15 +750,14 @@ public class SettingsTab extends PFUIComponent {
 
     /**
      * Displays an error if the folder move failed.
-     * 
-     * @param e
-     *            the error
+     *
+     * @param e the error
      */
     private void displayError(Exception e) {
         DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("settings_tab.move_error.title"), Translation
-            .getTranslation("settings_tab.move_error.other", e.getMessage()),
-            GenericDialogType.WARN);
+                .getTranslation("settings_tab.move_error.title"), Translation
+                .getTranslation("settings_tab.move_error.other", e.getMessage()),
+                GenericDialogType.WARN);
     }
 
     /**
@@ -769,8 +768,7 @@ public class SettingsTab extends PFUIComponent {
 
         boolean enabled = false;
         if (folder != null && serverClient.isConnected()
-            && serverClient.isLastLoginOK())
-        {
+                && serverClient.isLastLoginOK()) {
             enabled = true;
 
             boolean osConfigured = serverClient.hasJoined(folder);
@@ -788,14 +786,25 @@ public class SettingsTab extends PFUIComponent {
         boolean enabled = false;
         if (folder != null) {
             enabled = true;
-            previewFolderAction.configure(!folder.isPreviewOnly());
+            if (folder.isPreviewOnly()) {
+                previewFolderActionLabel.setText(Translation.getTranslation(
+                        "action_stop_preview_folder.name"));
+                previewFolderActionLabel.setToolTipText(Translation.getTranslation(
+                        "action_stop_preview_folder.description"));
+            } else {
+                previewFolderActionLabel.setText(Translation.getTranslation(
+                        "action_preview_folder.name"));
+                previewFolderActionLabel.setToolTipText(Translation.getTranslation(
+                        "action_preview_folder.description"));
+            }
+
         }
-        previewFolderAction.setEnabled(enabled);
+        previewFolderActionLabel.setEnabled(enabled);
     }
 
-    // /////////////////
+    ///////////////////
     // Inner Classes //
-    // /////////////////
+    ///////////////////
 
     /**
      * Local class to handel action events.
@@ -808,20 +817,20 @@ public class SettingsTab extends PFUIComponent {
                 folder.setUseRecycleBin(useRecycleBinBox.isSelected());
                 Properties config = getController().getConfig();
                 String md5 = new String(Util.encodeHex(Util.md5(folder
-                    .getInfo().id.getBytes())));
+                        .getInfo().id.getBytes())));
                 config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                    + FOLDER_SETTINGS_RECYCLE, String.valueOf(useRecycleBinBox
-                    .isSelected()));
+                        + FOLDER_SETTINGS_RECYCLE, String.valueOf(useRecycleBinBox
+                        .isSelected()));
                 getController().saveConfig();
             } else if (e.getSource() == archivingLocalFiles) {
                 ArchiveMode mode = (ArchiveMode) archivingLocalFiles
-                    .getSelectedItem();
+                        .getSelectedItem();
                 folder.setArchiveMode(mode);
                 Properties config = getController().getConfig();
                 String md5 = new String(Util.encodeHex(Util.md5(folder
-                    .getInfo().id.getBytes())));
+                        .getInfo().id.getBytes())));
                 config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                    + FOLDER_SETTINGS_ARCHIVE, mode.name());
+                        + FOLDER_SETTINGS_ARCHIVE, mode.name());
                 getController().saveConfig();
             }
         }
@@ -831,16 +840,14 @@ public class SettingsTab extends PFUIComponent {
      * Visualisation worker for folder move.
      */
     private class MyActivityVisualizationWorker extends
-        ActivityVisualizationWorker
-    {
+            ActivityVisualizationWorker {
 
         private final boolean moveContent;
         private final File originalDirectory;
         private final File newDirectory;
 
         MyActivityVisualizationWorker(boolean moveContent,
-            File originalDirectory, File newDirectory)
-        {
+                                      File originalDirectory, File newDirectory) {
             super(getUIController());
             this.moveContent = moveContent;
             this.originalDirectory = originalDirectory;
@@ -860,7 +867,7 @@ public class SettingsTab extends PFUIComponent {
         @Override
         protected String getWorkingText() {
             return Translation
-                .getTranslation("settings_tab.working.description");
+                    .getTranslation("settings_tab.working.description");
         }
 
         @Override
@@ -879,57 +886,44 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             FolderRemovePanel panel = new FolderRemovePanel(getController(),
-                folder);
+                    folder);
             panel.open();
         }
     }
 
     private class PreviewFolderAction extends BaseAction {
 
-        private boolean preview;
-
         private PreviewFolderAction(Controller controller) {
             super("action_preview_folder", controller);
         }
 
-        public void configure(boolean previewArg) {
-            preview = previewArg;
-            if (previewArg) {
-                configureFromActionId("action_preview_folder");
-            } else {
-                configureFromActionId("action_stop_preview_folder");
-            }
-        }
-
         public void actionPerformed(ActionEvent e) {
 
-            if (preview) {
+            if (folder.isPreviewOnly()) {
 
-                int result = DialogFactory
-                    .genericDialog(
-                        getController(),
-                        Translation
-                            .getTranslation("settings_tab.preview_warning_title"),
-                        Translation
-                            .getTranslation("settings_tab.preview_warning_message"),
-                        new String[]{
-                            Translation
-                                .getTranslation("settings_tab.preview_warning_convert"),
-                            Translation.getTranslation("general.cancel")}, 0,
-                        GenericDialogType.WARN);
+                // Join preview folder.
+                PreviewToJoinPanel panel = new PreviewToJoinPanel(
+                        getController(), folder);
+                panel.open();
+
+            } else {
+
+                int result = DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "settings_tab.preview_warning_title"),
+                                Translation.getTranslation(
+                                        "settings_tab.preview_warning_message"),
+                                new String[]{Translation.getTranslation(
+                                        "settings_tab.preview_warning_convert"),
+                                        Translation.getTranslation("general.cancel")},
+                        0, GenericDialogType.WARN);
 
                 if (result == 0) { // Convert to preview
 
                     // Convert folder to preview.
                     FolderPreviewHelper.convertFolderToPreview(getController(),
-                        folder);
+                            folder);
                 }
-            } else {
-
-                // Join preview folder.
-                PreviewToJoinPanel panel = new PreviewToJoinPanel(
-                    getController(), folder);
-                panel.open();
             }
         }
     }

@@ -28,15 +28,13 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.RecycleBin;
-import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.*;
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -946,7 +944,17 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().syncFolder(folderInfo);
+            if (folder.isPreviewOnly()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        PreviewToJoinPanel panel = new PreviewToJoinPanel(
+                            getController(), folder);
+                        panel.open();
+                    }
+                });
+            } else {
+                getController().getUIController().syncFolder(folderInfo);
+            }
         }
     }
 
