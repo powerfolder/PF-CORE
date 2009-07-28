@@ -19,7 +19,15 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Arrays;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import jwf.WizardPanel;
 
@@ -28,14 +36,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.ui.Icons;
-
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.*;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
@@ -51,23 +55,25 @@ public class TellFriendPanel extends PFWizardPanel {
     }
 
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout(
-            "140dlu, pref:grow",
+        FormLayout layout = new FormLayout("140dlu, pref:grow",
             "pref, 3dlu, pref, 10dlu, pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.tell_friend.information1")), cc.xyw(1, row, 2));
+        builder.add(new JLabel(Translation
+            .getTranslation("wizard.tell_friend.information1")), cc.xyw(1, row,
+            2));
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.tell_friend.information2")), cc.xyw(1, row, 2));
+        builder.add(new JLabel(Translation
+            .getTranslation("wizard.tell_friend.information2")), cc.xyw(1, row,
+            2));
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.tell_friend.add_email_address")), cc.xyw(1, row, 2));
+        builder.add(new JLabel(Translation
+            .getTranslation("wizard.tell_friend.add_email_address")), cc.xyw(1,
+            row, 2));
         row += 2;
 
         JScrollPane scrollPane = new JScrollPane(emailTextArea);
@@ -75,13 +81,14 @@ public class TellFriendPanel extends PFWizardPanel {
         builder.add(scrollPane, cc.xy(1, row));
         row += 2;
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.tell_friend.personal_message")), cc.xyw(1, row, 2));
+        builder.add(new JLabel(Translation
+            .getTranslation("wizard.tell_friend.personal_message")), cc.xyw(1,
+            row, 2));
         row += 2;
 
         scrollPane = new JScrollPane(personalMessageTextArea);
         scrollPane.setPreferredSize(new Dimension(50, 60));
-        builder.add(scrollPane,  cc.xy(1, row));
+        builder.add(scrollPane, cc.xy(1, row));
 
         return builder.getPanel();
     }
@@ -109,15 +116,16 @@ public class TellFriendPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-
-        // @todo TOT - send emails server side.
+        String[] emails = emailTextArea.getText().split("\n");
+        getController().getOSClient().getAccountService().tellFriend(
+            Arrays.asList(emails), personalMessageTextArea.getText());
 
         getWizardContext().setAttribute(PFWizard.PICTO_ICON,
             Icons.getIconById(Icons.PROJECT_WORK_PICTO));
-        
-        return new TextPanelPanel(getController(), Translation.getTranslation(
-                "wizard.tell_friend.title"), Translation.getTranslation(
-                "wizard.tell_friend.success"));
+
+        return new TextPanelPanel(getController(), Translation
+            .getTranslation("wizard.tell_friend.title"), Translation
+            .getTranslation("wizard.tell_friend.success"));
     }
 
     public boolean validateNext() {
@@ -126,13 +134,14 @@ public class TellFriendPanel extends PFWizardPanel {
             email = email.trim();
             if (email.length() > 0) {
                 if (!email.contains("@")) {
-                    DialogFactory.genericDialog(getController(),
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("wizard.tell_friend.title.warning_title"),
                             Translation.getTranslation(
-                                    "wizard.tell_friend.title.warning_title"),
-                            Translation.getTranslation(
-                                    "wizard.tell_friend.title.warning_bad_email", 
-                                    email),
-                            GenericDialogType.ERROR);
+                                "wizard.tell_friend.title.warning_bad_email",
+                                email), GenericDialogType.ERROR);
                     return false;
                 }
             }
