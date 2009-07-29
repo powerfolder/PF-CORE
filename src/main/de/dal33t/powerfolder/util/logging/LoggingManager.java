@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: LoggingManager.java 4734 2008-07-28 03:14:24Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: LoggingManager.java 4734 2008-07-28 03:14:24Z harry $
+ */
 package de.dal33t.powerfolder.util.logging;
 
 import java.io.File;
@@ -41,12 +41,11 @@ import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
 import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
 
 /**
- * Class to manage logging handler.
- * This maintains up to three handlers; document, file and console.
- * The file handler is only constructed when required.
- * root logging is adjusted to the minimum required by the handlers. This
- * allows Logger.isLoggable() to optimize based on root logging level.
- * Root logging level is never set above SEVERE, so that runtime exceptions get
+ * Class to manage logging handler. This maintains up to three handlers;
+ * document, file and console. The file handler is only constructed when
+ * required. root logging is adjusted to the minimum required by the handlers.
+ * This allows Logger.isLoggable() to optimize based on root logging level. Root
+ * logging level is never set above SEVERE, so that runtime exceptions get
  * handled.
  */
 public class LoggingManager {
@@ -62,10 +61,9 @@ public class LoggingManager {
 
     /** The console handler */
     private static final ConsoleHandler consoleHandler;
-    
+
     /** The buffer handler */
     private static final BufferedHandler bufferedHandler;
-
 
     /** The file handler */
     private static FileHandler fileHandler;
@@ -81,20 +79,21 @@ public class LoggingManager {
 
     /** The file logging level */
     private static Level fileLoggingLevel;
-    
+
     /** The buffered logging level */
     private static Level bufferedLoggingLevel;
 
     /** The name of the file logging file */
     private static String fileLoggingFileName;
-    
+
     /**
      * The default filter for the handlers
      */
     private static Filter filter = new Filter() {
         public boolean isLoggable(LogRecord record) {
             // return false;
-            return record.getLoggerName().startsWith("de.dal33t");
+            return record.getLoggerName() != null
+                && record.getLoggerName().startsWith("de.dal33t");
         }
     };
 
@@ -139,11 +138,11 @@ public class LoggingManager {
     }
 
     /**
-     * Set the document handler level.
-     * Add handler to root logger if this is the first time.
-     *
+     * Set the document handler level. Add handler to root logger if this is the
+     * first time.
+     * 
      * @param level
-     * @param controller 
+     * @param controller
      */
     public static void setDocumentLogging(Level level, Controller controller) {
         if (documentLoggingLevel == null) {
@@ -158,11 +157,10 @@ public class LoggingManager {
     }
 
     /**
-     * Set the file handler level.
-     * Add handler to root logger if this is the first time.
-     * Create the file handler inside a synchronized block to stop
+     * Set the file handler level. Add handler to root logger if this is the
+     * first time. Create the file handler inside a synchronized block to stop
      * other threads trying to access it during construction.
-     *
+     * 
      * @param level
      */
     public static void setFileLogging(Level level) {
@@ -179,7 +177,7 @@ public class LoggingManager {
 
         setMinimumBaseLoggingLevel();
     }
-    
+
     /**
      * Set the console handler level. Add handler to root logger if this is the
      * first time.
@@ -210,8 +208,7 @@ public class LoggingManager {
                 String logFilename = prefix + '-' + sdf.format(new Date())
                     + "-log.txt";
                 fileLoggingFileName = new File(getDebugDir(), FileUtils
-                    .removeInvalidFilenameChars(logFilename))
-                    .getAbsolutePath();
+                    .removeInvalidFilenameChars(logFilename)).getAbsolutePath();
                 fileHandler = new FileHandler(fileLoggingFileName);
                 fileHandler.setFormatter(new LoggingFormatter());
                 getRootLogger().addHandler(fileHandler);
@@ -227,8 +224,8 @@ public class LoggingManager {
      * @return the document handler document for display in the debug panel.
      */
     public static StyledDocument getLogBuffer() {
-        Reject.ifNull(documentHandler.getLogBuffer(),
-                "DocumentHandler not set");
+        Reject
+            .ifNull(documentHandler.getLogBuffer(), "DocumentHandler not set");
         return documentHandler.getLogBuffer();
     }
 
@@ -259,7 +256,7 @@ public class LoggingManager {
 
     /**
      * Convenience method for getting the root logger.
-     *
+     * 
      * @return
      */
     private static Logger getRootLogger() {
@@ -295,9 +292,8 @@ public class LoggingManager {
     }
 
     /**
-     * Sets the file logging file name prefix.
-     * Should be the config name.
-     *
+     * Sets the file logging file name prefix. Should be the config name.
+     * 
      * @param prefix
      */
     public static void setPrefix(String prefix) {
@@ -315,19 +311,25 @@ public class LoggingManager {
     }
 
     /**
-     * Set the root logging level to the highest possible,
-     * so that Logger.isLoggable() has the desired effect in the code.
+     * Set the root logging level to the highest possible, so that
+     * Logger.isLoggable() has the desired effect in the code.
      */
     private static void setMinimumBaseLoggingLevel() {
         Level level = Level.SEVERE;
-        if (documentLoggingLevel != null && documentLoggingLevel.intValue() < level.intValue()) {
+        if (documentLoggingLevel != null
+            && documentLoggingLevel.intValue() < level.intValue())
+        {
             level = documentLoggingLevel;
         }
-        if (consoleLoggingLevel != null && consoleLoggingLevel.intValue() < level.intValue()) {
+        if (consoleLoggingLevel != null
+            && consoleLoggingLevel.intValue() < level.intValue())
+        {
             level = consoleLoggingLevel;
         }
         synchronized (fileHandlerLock) {
-            if (fileLoggingLevel != null && fileLoggingLevel.intValue() < level.intValue()) {
+            if (fileLoggingLevel != null
+                && fileLoggingLevel.intValue() < level.intValue())
+            {
                 level = fileLoggingLevel;
             }
         }
@@ -374,7 +376,7 @@ public class LoggingManager {
             // Close off the old one first.
             fileHandler.flush();
             fileHandler.close();
-            
+
             createFileHandler();
         }
     }
