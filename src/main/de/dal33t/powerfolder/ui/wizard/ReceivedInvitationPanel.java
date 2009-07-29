@@ -218,7 +218,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Invitor label
         invitorHintLabel = new JLabel(Translation
-            .getTranslation("general.invitor"));
+            .getTranslation("general.inviter"));
         invitorHintLabel.setEnabled(false);
         invitorLabel = SimpleComponentFactory.createLabel();
 

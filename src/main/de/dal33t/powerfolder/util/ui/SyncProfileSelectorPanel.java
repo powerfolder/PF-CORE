@@ -229,8 +229,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             .showConfirmDialog(
                 null,
                 Translation
-                    .getTranslation("synchronisation.warning.automatic_deletions_notice"),
-                Translation.getTranslation("synchronisation.notice.title",
+                    .getTranslation("synchronization.warning.automatic_deletions_notice"),
+                Translation.getTranslation("synchronization.notice.title",
                     profName), JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
     }
