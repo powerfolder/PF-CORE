@@ -528,26 +528,29 @@ public class HomeTab extends PFUIComponent {
         if (synchronizationStatusLabel != null) {
             String syncStatsText;
             if (getController().getFolderRepository().getFoldersCount() == 0) {
+                // No folders
                 syncStatsText = Translation.getTranslation("home_tab.no_folders");
+            } else if (syncDate == null && synced) { // Never synced
+                syncStatsText = Translation.getTranslation("home_tab.never_synced");
             } else {
-            syncStatsText = synced
-                    ? Translation.getTranslation("home_tab.in_sync")
-                    : Translation.getTranslation("home_tab.synchronizing");
+                syncStatsText = synced
+                        ? Translation.getTranslation("home_tab.in_sync")
+                        : Translation.getTranslation("home_tab.synchronizing");
             }
             synchronizationStatusLabel.setText(syncStatsText);
         }
 
         if (synchronizationDateLabel != null) {
-            String syncDateText;
             if (syncDate == null) {
-                syncDateText = Translation.getTranslation("home_tab.none_synced");
+                synchronizationDateLabel.setVisible(false);
             } else {
                 String date = Format.formatDate(syncDate);
-                syncDateText = synced
+                String syncDateText = synced
                         ? Translation.getTranslation("home_tab.last_synced", date)
                         : Translation.getTranslation("home_tab.sync_eta", date);
+                synchronizationDateLabel.setVisible(true);
+                synchronizationDateLabel.setText(syncDateText);
             }
-            synchronizationDateLabel.setText(syncDateText);
         }
     }
 
