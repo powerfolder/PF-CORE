@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util.os.Win32;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.Controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class WinUtils extends Loggable {
     /**
      * Very common app data
      */
-    public final static int CSIDL_COMMON_APPDATA = 0x0023;
+    public static final int CSIDL_COMMON_APPDATA = 0x0023;
 
     // Program files
     public static final int CSIDL_APP_DATA = 0x001A;
@@ -114,6 +115,33 @@ public class WinUtils extends Loggable {
 	public native String getSystemFolderPath(int id, boolean defaultPath);
 	public native void createLink(ShellLink link, String lnkTarget) throws IOException;
 	private native void init();
+
+    /**
+     * Create a 'PowerFolders' link in Links, pointing to the PowerFolder base
+     * dir.
+     * @param setup
+     * @param baseDir
+     * @throws IOException
+     */
+    public void setPFFavorite(boolean setup, Controller controller) throws
+            IOException {
+        String userHome = System.getProperty("user.home");
+        File linksDir = new File(userHome, "Links");
+        if (!linksDir.exists()) {
+            logWarning("Could not locate the Links directory");
+            return;
+        }
+        File shortCut = new File(linksDir, "PowerFolders.lnk");
+        if (setup) {
+            File baseDir = new File(controller.getFolderRepository()
+                    .getFoldersBasedir());
+            ShellLink link = new ShellLink(null, "PowerFolders",
+                    baseDir.getAbsolutePath(), null);
+            createLink(link, shortCut.getAbsolutePath());
+        } else {
+            shortCut.delete();
+        }
+    }
 
 	public void setPFStartup(boolean setup) throws IOException {
 		File pfile = new File(

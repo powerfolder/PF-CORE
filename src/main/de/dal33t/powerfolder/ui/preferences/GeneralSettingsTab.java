@@ -78,6 +78,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox backupOnlyClientBox;
 
     private JCheckBox usePowerFolderIconBox;
+    private JCheckBox usePowerFolderFavorite;
 
     private boolean needsRestart;
 
@@ -208,7 +209,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.start_with_windows"));
             }
 
-            // DesktopIni does not work on Vista
             if (OSUtil.isWindowsSystem()) {
                 ValueModel pfiModel = new ValueHolder(
                     ConfigurationEntry.USE_PF_ICON
@@ -216,6 +216,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
                     new BufferedValueModel(pfiModel, writeTrigger), Translation
                         .getTranslation("preferences.dialog.use_pf_icon"));
+
+                ValueModel pffModel = new ValueHolder(
+                    ConfigurationEntry.USE_PF_FAVORITE
+                        .getValueBoolean(getController()));
+                usePowerFolderFavorite = BasicComponentFactory.createCheckBox(
+                    new BufferedValueModel(pffModel, writeTrigger), Translation
+                        .getTranslation("preferences.dialog.show_pf_favorite"));
             }
 
         }
@@ -277,6 +284,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("pref");
                 row += 2;
                 builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
+
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderFavorite, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
@@ -376,10 +388,30 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .toString(usePowerFolderIconBox.isSelected()));
         }
 
+        if (usePowerFolderFavorite != null) {
+            boolean oldValue = Boolean.parseBoolean(ConfigurationEntry
+                    .USE_PF_FAVORITE.getValue(getController()));
+            boolean newValue = usePowerFolderFavorite.isSelected();
+            if (oldValue ^ newValue) {
+                configureFavorite(newValue);
+            }
+            // PowerFolder favorite
+            ConfigurationEntry.USE_PF_FAVORITE.setValue(getController(), Boolean
+                .toString(usePowerFolderFavorite.isSelected()));
+        }
+
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),
                 massDeleteBox.isSelected());
         PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
                 massDeleteSlider.getValue()); 
+    }
+
+    private void configureFavorite(boolean newValue) {
+        try {
+            WinUtils.getInstance().setPFFavorite(newValue, getController());
+        } catch (IOException e) {
+            logSevere(e);
+        }
     }
 
     /**
