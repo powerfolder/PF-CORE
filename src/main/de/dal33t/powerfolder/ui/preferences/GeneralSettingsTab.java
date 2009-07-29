@@ -78,7 +78,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox backupOnlyClientBox;
 
     private JCheckBox usePowerFolderIconBox;
-    private JCheckBox usePowerFolderFavorite;
+    private JCheckBox usePowerFolderLink;
 
     private boolean needsRestart;
 
@@ -217,12 +217,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     new BufferedValueModel(pfiModel, writeTrigger), Translation
                         .getTranslation("preferences.dialog.use_pf_icon"));
 
-                ValueModel pffModel = new ValueHolder(
-                    ConfigurationEntry.USE_PF_FAVORITE
+                ValueModel pflModel = new ValueHolder(
+                    ConfigurationEntry.USE_PF_LINK
                         .getValueBoolean(getController()));
-                usePowerFolderFavorite = BasicComponentFactory.createCheckBox(
-                    new BufferedValueModel(pffModel, writeTrigger), Translation
-                        .getTranslation("preferences.dialog.show_pf_favorite"));
+                usePowerFolderLink = BasicComponentFactory.createCheckBox(
+                    new BufferedValueModel(pflModel, writeTrigger), Translation
+                        .getTranslation("preferences.dialog.show_pf_link"));
             }
 
         }
@@ -288,7 +288,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(usePowerFolderFavorite, cc.xyw(3, row, 2));
+                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
@@ -388,16 +388,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .toString(usePowerFolderIconBox.isSelected()));
         }
 
-        if (usePowerFolderFavorite != null) {
+        if (usePowerFolderLink != null) {
             boolean oldValue = Boolean.parseBoolean(ConfigurationEntry
-                    .USE_PF_FAVORITE.getValue(getController()));
-            boolean newValue = usePowerFolderFavorite.isSelected();
+                    .USE_PF_LINK.getValue(getController()));
+            boolean newValue = usePowerFolderLink.isSelected();
             if (oldValue ^ newValue) {
                 configureFavorite(newValue);
             }
             // PowerFolder favorite
-            ConfigurationEntry.USE_PF_FAVORITE.setValue(getController(), Boolean
-                .toString(usePowerFolderFavorite.isSelected()));
+            ConfigurationEntry.USE_PF_LINK.setValue(getController(), Boolean
+                .toString(usePowerFolderLink.isSelected()));
         }
 
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),

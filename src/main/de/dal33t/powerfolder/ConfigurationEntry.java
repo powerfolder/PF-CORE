@@ -412,9 +412,9 @@ public enum ConfigurationEntry {
     USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
 
     /**
-     * Whether to set PowerFolders as a Favorite.
+     * Whether to set PowerFolders as a Favorite Link.
      */
-    USE_PF_FAVORITE("use.pf.favorite", Boolean.FALSE.toString()),
+    USE_PF_LINK("use.pf.link", Boolean.FALSE.toString()),
 
     /**
      * Whether to show chat notifications when minimized.
