@@ -199,8 +199,9 @@ public class FolderRemovePanel extends BaseDialog {
                                      boolean deleteSystemSubFolder,
                                      boolean removeFromOS) {
 
-        // Dispose before closing parent frame, otherwise parent closes and
-        // this is orphanned, and reappears next time Info window displays.
+        // Dispose before closing parent frame (when folder is deleted),
+        // otherwise parent closes and this is orphanned, and reappears next
+        // time Info window displays.
         close();
 
         FolderRepository folderRepository =
