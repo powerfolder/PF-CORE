@@ -817,7 +817,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         private volatile boolean mouseOver;
 
-        // Auto expand if user hovers for three seconds.
+        // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
             mouseOver = true;
             if (!expanded.get()) {
@@ -829,7 +829,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                             }
                         }
                     }
-                }, 3000);
+                }, 2000);
             }
         }
 

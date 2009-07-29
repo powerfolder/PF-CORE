@@ -406,7 +406,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         private volatile boolean mouseOver;
 
-        // Auto expand if user hovers for three seconds.
+        // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
             mouseOver = true;
             if (!expanded.get()) {
@@ -418,7 +418,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
                             }
                         }
                     }
-                }, 3000);
+                }, 2000);
             }
         }
 
