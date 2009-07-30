@@ -43,7 +43,7 @@ public class ManuallyInvokedUpdateHandler extends UIUpdateHandler {
             public void run() {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("general.powerfolder"), Translation
-                    .getTranslation("dialog.updatecheck.noUpdateAvailable"),
+                    .getTranslation("dialog.update_check.noUpdateAvailable"),
                     GenericDialogType.INFO);
             }
         });

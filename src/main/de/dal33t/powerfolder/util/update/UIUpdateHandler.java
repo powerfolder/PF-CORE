@@ -34,18 +34,18 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
         getController().waitForUIOpen();
 
         final String text = Translation.getTranslation(
-            "dialog.updatecheck.text", Controller.PROGRAM_VERSION, event
+            "dialog.update_check.text", Controller.PROGRAM_VERSION, event
                 .getNewReleaseVersion());
 
         final List<String> options = new ArrayList<String>(4);
         String downloadAndUpdateSilent = Translation
-            .getTranslation("dialog.updatecheck.downloadAndUpdateSilent");
+            .getTranslation("dialog.update_check.downloadAndUpdateSilent");
         String downloadAndUpdate = Translation
-            .getTranslation("dialog.updatecheck.downloadAndUpdate");
+            .getTranslation("dialog.update_check.downloadAndUpdate");
         String gotoHomepage = Translation
-            .getTranslation("dialog.updatecheck.gotoHomepage");
+            .getTranslation("dialog.update_check.gotoHomepage");
         String nothingNeverAsk = Translation
-            .getTranslation("dialog.updatecheck.nothingNeverAsk");
+            .getTranslation("dialog.update_check.nothingNeverAsk");
 
         if (OSUtil.isWindowsSystem()) {
             options.add(downloadAndUpdate);
@@ -60,7 +60,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                 public void run() {
                     option = JOptionPane.showInputDialog(getParentFrame(),
                         text, Translation
-                            .getTranslation("dialog.updatecheck.title"),
+                            .getTranslation("dialog.update_check.title"),
                         JOptionPane.OK_CANCEL_OPTION, null, options.toArray(),
                         options.get(0));
                 }
@@ -92,9 +92,9 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                                 .genericDialog(
                                     getController(),
                                     Translation
-                                        .getTranslation("dialog.updatecheck.failed.title"),
+                                        .getTranslation("dialog.update_check.failed.title"),
                                     Translation
-                                        .getTranslation("dialog.updatecheck.failed.text"),
+                                        .getTranslation("dialog.update_check.failed.text"),
                                     GenericDialogType.WARN);
                         }
                     });
