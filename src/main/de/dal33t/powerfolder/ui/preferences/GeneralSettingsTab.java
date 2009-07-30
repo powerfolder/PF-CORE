@@ -285,10 +285,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
 
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
+                // Links only available in Vista
+                if (OSUtil.isWindowsVistaSystem()) {
+                    builder.appendRow("3dlu");
+                    builder.appendRow("pref");
+                    row += 2;
+                    builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
+                }
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
