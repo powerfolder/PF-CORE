@@ -2396,12 +2396,14 @@ public class Folder extends PFComponent {
         }
 
         // Update DAO
-        dao.deleteDomain(from.getId());
-        if (newList.isNull()) {
-            // Do nothing.
-            return;
+        synchronized (dbAccessLock) {
+            dao.deleteDomain(from.getId());
+            if (newList.isNull()) {
+                // Do nothing.
+                return;
+            }
+            dao.store(from.getId(), newList.files);
         }
-        dao.store(from.getId(), newList.files);
 
         // logFine(
         // "New Filelist received from " + from + " #files: "
@@ -2676,7 +2678,6 @@ public class Folder extends PFComponent {
                     fileChanged(localFileInfo);
                 }
             }
-
         }
     }
 
