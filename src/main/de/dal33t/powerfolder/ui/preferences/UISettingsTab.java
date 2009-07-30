@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Component;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -46,7 +44,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -350,14 +347,14 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(transPercLabel, cc.xy(1, row));
                 builder.add(getTransSpinnerPanel(), cc.xy(3, row));
-
-                row += 2;
-                builder.add(folderSyncCB, cc.xyw(3, row, 2));
-
-                row += 2;
-                builder.add(folderSyncLabel, cc.xy(1, row));
-                builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
             }
+
+            row += 2;
+            builder.add(folderSyncCB, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(folderSyncLabel, cc.xy(1, row));
+            builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
 
             panel = builder.getPanel();
 
