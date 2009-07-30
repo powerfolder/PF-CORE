@@ -102,31 +102,25 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     }
 
     public AccountInfo getAccountInfo(Member node) {
-        // Use cache
-        return getAccountInfo(node, false);
-    }
-
-    private AccountInfo getAccountInfo(Member node, boolean forceRefresh) {
         Session session = sessions.get(node);
+        // Cache hit
+        if (session != null && CACHE_ENABLED) {
+            return session.getAccountInfo();
+        }
+
         AccountInfo aInfo;
-        // Cache
-        if (session == null || forceRefresh) {
-            try {
-                Map<MemberInfo, AccountInfo> res = client.getSecurityService()
-                    .getAccountInfos(Collections.singleton(node.getInfo()));
-                aInfo = res.get(node.getInfo());
-            } catch (RemoteCallException e) {
-                logSevere("Unable to retrieve account info for " + node + ". "
-                    + e);
-                logFiner(e);
-                aInfo = null;
-            }
-            logWarning("Retrieved account " + aInfo + " for " + node);
-            if (aInfo != null && CACHE_ENABLED) {
-                sessions.put(node, new Session(aInfo));
-            }
-        } else {
-            aInfo = session.getAccountInfo();
+        try {
+            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
+                .getAccountInfos(Collections.singleton(node.getInfo()));
+            aInfo = res.get(node.getInfo());
+        } catch (RemoteCallException e) {
+            logSevere("Unable to retrieve account info for " + node + ". " + e);
+            logFiner(e);
+            aInfo = null;
+        }
+        logWarning("Retrieved account " + aInfo + " for " + node);
+        if (aInfo != null && CACHE_ENABLED) {
+            sessions.put(node, new Session(aInfo));
         }
         return aInfo;
     }
