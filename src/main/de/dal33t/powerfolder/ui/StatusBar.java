@@ -113,7 +113,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             upperPanel.add(leftBuilder.getPanel());
             
-            upperPanel.add(syncButtonComponent.getUIComponent());
+           // upperPanel.add(syncButtonComponent.getUIComponent());
 
             FormLayout rightLayout = new FormLayout("fill:pref:grow, pref", "pref, 3dlu, pref");
             DefaultFormBuilder rightBuilder = new DefaultFormBuilder(rightLayout);
