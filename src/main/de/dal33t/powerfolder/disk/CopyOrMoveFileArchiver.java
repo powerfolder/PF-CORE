@@ -107,7 +107,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 }
             }
             if (tryCopy) {
+                long lastModified = source.lastModified();
                 FileUtils.copyFile(source, target);
+                // Preserve last modification date.
+                target.setLastModified(lastModified);
             }
             // Success, now check if we have to remove a file
             File[] list = getArchivedFiles(target.getParentFile(),

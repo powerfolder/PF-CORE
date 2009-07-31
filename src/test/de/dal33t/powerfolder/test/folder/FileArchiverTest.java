@@ -28,6 +28,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         File tb = TestHelper.createRandomFile(fb.getLocalBase(), 1024);
 
         scanFolder(fb);
+        TestHelper.waitMilliSeconds(3000);
 
         FileInfo fib = fb.getKnowFilesAsArray()[0];
 
@@ -41,6 +42,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         File expected = new File(fb.getSystemSubDir(), "archive");
         expected = new File(expected, fib.getName() + "_K_" + fib.getVersion());
         assertTrue(expected.exists());
+        assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
     }
 
     public void testBackupOnDownload() {
