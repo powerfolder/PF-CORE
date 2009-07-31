@@ -102,6 +102,9 @@ public class MassDeletionTest extends TwoControllerTestCase {
                             == 101; // The files + .PowerFolder dir
                 }
             });
+            System.out.println("Protection: " + protection);
+            System.out.println("Lisa's sync profile: " + getFolderAtLisa().getSyncProfile().getName());
+            System.out.println("Required sync profile: " + SyncProfile.HOST_FILES.getName());
             assertEquals(getFolderAtLisa().getSyncProfile(), SyncProfile.HOST_FILES);
         } else {
             // Files should have been deleted and profile remains same.
@@ -111,6 +114,9 @@ public class MassDeletionTest extends TwoControllerTestCase {
                             == 1; // The .PowerFolder dir
                 }
             });
+            System.out.println("Protection: " + protection);
+            System.out.println("Lisa's sync profile: " + getFolderAtLisa().getSyncProfile().getName());
+            System.out.println("Required sync profile: " + SyncProfile.AUTOMATIC_SYNCHRONIZATION.getName());
             assertEquals(getFolderAtLisa().getSyncProfile(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
 
