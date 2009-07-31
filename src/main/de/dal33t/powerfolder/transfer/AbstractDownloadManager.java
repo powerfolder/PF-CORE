@@ -313,7 +313,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     .getInstance("MD5"), new ProgressListener() {
 
                     public void progressReached(double percentageReached) {
-                        setTransferState(percentageReached);
+                        setTransferState(percentageReached / 100.0);
                     }
 
                 });
