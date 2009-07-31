@@ -21,10 +21,12 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.TimerTask;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -39,6 +41,9 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 public class FileVersionsPanel extends PFUIComponent {
 
     private JPanel panel;
+    private JLabel emptyLabel;
+    private JLabel otherComponent;
+    private volatile FileInfo fileInfo;
 
     public FileVersionsPanel(Controller controller) {
         super(controller);
@@ -51,10 +56,14 @@ public class FileVersionsPanel extends PFUIComponent {
             initComponents();
 
             FormLayout layout = new FormLayout(
-                        "right:max(p;50dlu), 3dlu, 107dlu, 40dlu, right:p, 3dlu, 107dlu, p:g",
-                        "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu");
+                        "pref:grow",
+                        "fill:0:grow");
             DefaultFormBuilder builder = new DefaultFormBuilder(layout);
             CellConstraints cc = new CellConstraints();
+
+            // emptyLabel and scrollPane occupy the same slot.
+            builder.add(emptyLabel, cc.xy(1, 1));
+            builder.add(otherComponent, cc.xy(1, 1));
 
             panel = builder.getPanel();
         }
@@ -62,21 +71,69 @@ public class FileVersionsPanel extends PFUIComponent {
     }
 
     private void initComponents() {
+        emptyLabel = new JLabel(Translation.getTranslation(
+                "file_version_tab.no_versions_available"), SwingConstants.CENTER);
+        emptyLabel.setEnabled(false);
+
+        otherComponent = new JLabel("Temporary text component...");
     }
 
     public void setFileInfo(FileInfo fileInfo) {
         if (panel == null) {
-            // Panel not initalizes yet
+            // Panel not initalized yet
             return;
         }
 
+        this.fileInfo = fileInfo;
+
         if (fileInfo == null) {
-            clearComponents();
+            setEmptyState(true, false);
             return;
+        }
+
+        getController().schedule(new TimerTask() {
+            public void run() {
+                loadVersionHistory();
+            }
+        }, 100);
+    }
+
+    private void loadVersionHistory() {
+
+        setEmptyState(true, true);
+
+        // Loading...
+
+        // @todo harry work in progress...
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+        }
+
+        // Loaded...
+
+        if (fileInfo == null) {
+            // Huh. Loaded the history, but now no FileInfo is selected.
+            setEmptyState(true, false);
+        } else {
+            // Got it. Show it.
+            setEmptyState(false, false);
         }
     }
 
-    private void clearComponents() {
+    private void setEmptyState(boolean empty, boolean loading) {
+        if (panel == null) {
+            return;
+        }
 
+        emptyLabel.setVisible(empty);
+        if (loading) {
+            emptyLabel.setText(Translation.getTranslation(
+                    "file_version_tab.loading"));
+        } else {
+            emptyLabel.setText(Translation.getTranslation(
+                    "file_version_tab.no_versions_available"));
+        }
+        otherComponent.setVisible(!empty);
     }
 }
