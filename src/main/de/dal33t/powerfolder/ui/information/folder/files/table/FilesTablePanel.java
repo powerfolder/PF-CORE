@@ -60,6 +60,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
+    private FileVersionsPanel fileVersionsPanel;
     private JPanel detailsPanel;
     private FilesTableModel tableModel;
     private FilesTable table;
@@ -81,6 +82,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         super(controller);
         this.parent = parent;
         fileDetailsPanel = new FileDetailsPanel(controller, false);
+        fileVersionsPanel = new FileVersionsPanel(controller);
         detailsPanel = createDetailsPanel();
         detailsPanel.setVisible(false);
         tableModel = new FilesTableModel(controller);
@@ -390,7 +392,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 "files_table_panel.file_details_tab.tip"));
         tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
 
-        tabbedPane.add(new JPanel(), Translation.getTranslation(
+        tabbedPane.add(fileVersionsPanel.getPanel(), Translation.getTranslation(
                 "files_table_panel.file_versions_tab.text"));
         tabbedPane.setToolTipTextAt(1, Translation.getTranslation(
                 "files_table_panel.file_versions_tab.tip"));
@@ -485,6 +487,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             TransferManager tm = getController().getTransferManager();
             if (fileInfo != null) {
                 fileDetailsPanel.setFileInfo(fileInfo);
+                fileVersionsPanel.setFileInfo(fileInfo);
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
                     openFileAction.setEnabled(true);
                 }
@@ -530,6 +533,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             }
 
             fileDetailsPanel.setFileInfo(null);
+            fileVersionsPanel.setFileInfo(null);
             restoreFileAction.setEnabled(false);
             deleteFileAction.setEnabled(false);
             abortDownloadAction.setEnabled(false);
