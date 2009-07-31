@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.*;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -59,6 +60,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
+    private JPanel detailsPanel;
     private FilesTableModel tableModel;
     private FilesTable table;
     private OpenFileAction openFileAction;
@@ -78,7 +80,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     public FilesTablePanel(Controller controller, FilesTab parent) {
         super(controller);
         this.parent = parent;
-        fileDetailsPanel = new FileDetailsPanel(controller);
+        fileDetailsPanel = new FileDetailsPanel(controller, false);
+        detailsPanel = createDetailsPanel();
+        detailsPanel.setVisible(false);
         tableModel = new FilesTableModel(controller);
         tableModel.addTableModelListener(new MyTableModelListener());
         table = new FilesTable(tableModel);
@@ -125,7 +129,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         builder.add(tableScroller, cc.xy(1, 1));
         builder.add(emptyLabel, cc.xy(1, 1));
 
-        builder.add(fileDetailsPanel.getPanel(), cc.xy(1, 3));
+        builder.add(detailsPanel, cc.xy(1, 3));
 
         buildPopupMenus();
 
@@ -179,8 +183,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * Toggle the details panel visibility.
      */
     public void toggleDetails() {
-        fileDetailsPanel.getPanel().setVisible(
-                !fileDetailsPanel.getPanel().isVisible());
+        detailsPanel.setVisible(
+                !detailsPanel.isVisible());
     }
 
     /**
@@ -365,6 +369,34 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
             }
         }
+    }
+
+    private JPanel createDetailsPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow",
+                "pref, 3dlu, pref");
+        //       spacer,     tabs
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        // Spacer
+        builder.addSeparator(null, cc.xy(1, 1));
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        builder.add(tabbedPane, cc.xy(1, 3));
+
+        tabbedPane.add(fileDetailsPanel.getPanel(), Translation.getTranslation(
+                "files_table_panel.file_details_tab.text"));
+        tabbedPane.setToolTipTextAt(0, Translation.getTranslation(
+                "files_table_panel.file_details_tab.tip"));
+        tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
+
+        tabbedPane.add(new JPanel(), Translation.getTranslation(
+                "files_table_panel.file_versions_tab.text"));
+        tabbedPane.setToolTipTextAt(1, Translation.getTranslation(
+                "files_table_panel.file_versions_tab.tip"));
+        tabbedPane.setIconAt(1, Icons.getIconById(Icons.FILE_VERSION));
+
+        return builder.getPanel();
     }
 
     ///////////////////

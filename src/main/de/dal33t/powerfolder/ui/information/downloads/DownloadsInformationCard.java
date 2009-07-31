@@ -106,7 +106,7 @@ public class DownloadsInformationCard extends InformationCard
                 clearCompletedDownloadsAction);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
-        detailsPanel = new FileDetailsPanel(getController());
+        detailsPanel = new FileDetailsPanel(getController(), true);
         update();
     }
 

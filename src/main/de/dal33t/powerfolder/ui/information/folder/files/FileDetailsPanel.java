@@ -46,6 +46,7 @@ import java.util.List;
  */
 public class FileDetailsPanel extends PFUIComponent {
 
+    private final boolean includeSeparator;
     private JPanel panel;
     private JTextField nameField;
     private JTextField locationField;
@@ -63,8 +64,9 @@ public class FileDetailsPanel extends PFUIComponent {
      *
      * @param controller
      */
-    public FileDetailsPanel(Controller controller) {
+    public FileDetailsPanel(Controller controller, boolean includeSeparator) {
         super(controller);
+        this.includeSeparator = includeSeparator;
     }
 
     /**
@@ -201,60 +203,78 @@ public class FileDetailsPanel extends PFUIComponent {
             // Initalize components
             initComponents();
 
-            FormLayout layout = new FormLayout(
-                    "right:max(p;50dlu), 3dlu, 107dlu, 40dlu, right:p, 3dlu, 107dlu, p:g",
-                    "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu");
+            FormLayout layout;
+            if (includeSeparator) {
+                layout = new FormLayout(
+                        "right:max(p;50dlu), 3dlu, 107dlu, 40dlu, right:p, 3dlu, 107dlu, p:g",
+                        "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu");
+            } else {
+                layout = new FormLayout(
+                        "right:max(p;50dlu), 3dlu, 107dlu, 40dlu, right:p, 3dlu, 107dlu, p:g",
+                        "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu");
+            }
             DefaultFormBuilder builder = new DefaultFormBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
-            // Spacer
-            builder.addSeparator(null, cc.xyw(1, 1, 8));
+            int row = 1;
 
-            // Top
+            if (includeSeparator) {
+                builder.addSeparator(null, cc.xyw(1, row, 8));
+
+                row +=2;
+            }
+
             builder.addLabel(Translation.getTranslation("file_details_panel.name"),
-                    cc.xy(1, 3));
-            builder.add(nameField, cc.xywh(3, 3, 5, 1));
+                    cc.xy(1, row));
+            builder.add(nameField, cc.xywh(3, row, 5, 1));
 
-            // First column
+            row += 2;
+
             builder.addLabel(Translation.getTranslation("file_details_panel.location"),
-                    cc.xy(1, 5));
-            builder.add(locationField, cc.xy(3, 5));
+                    cc.xy(1, row));
+            builder.add(locationField, cc.xy(3, row));
+
+            builder.addLabel(Translation.getTranslation("general.folder"),
+                    cc.xy(5, row));
+            builder.add(folderField, cc.xy(7, row));
+
+            row += 2;
 
             builder.addLabel(Translation.getTranslation("general.size"),
-                    cc.xy(1, 7));
-            builder.add(sizeField, cc.xy(3, 7));
-
-            builder.addLabel(Translation.getTranslation("file_details_panel.status"),
-                    cc.xy(1, 9));
-            builder.add(statusField, cc.xy(3, 9));
-
-            // Second column
-            builder.addLabel(Translation.getTranslation("general.folder"),
-                    cc.xy(5, 5));
-            builder.add(folderField, cc.xy(7, 5));
+                    cc.xy(1, row));
+            builder.add(sizeField, cc.xy(3, row));
 
             builder.addLabel(Translation.getTranslation("file_details_panel.modified_by"),
-                    cc.xy(5, 7));
-            builder.add(modifiedByField, cc.xy(7, 7));
+                    cc.xy(5, row));
+            builder.add(modifiedByField, cc.xy(7, row));
+
+            row += 2;
+
+            builder.addLabel(Translation.getTranslation("file_details_panel.status"),
+                    cc.xy(1, row));
+            builder.add(statusField, cc.xy(3, row));
 
             builder.addLabel(
                     Translation.getTranslation("file_details_panel.modified_date"),
-                    cc.xy(5, 9));
-            builder.add(modifiedDateField, cc.xy(7, 9));
+                    cc.xy(5, row));
+            builder.add(modifiedDateField, cc.xy(7, row));
+
+            row += 2;
 
             builder.addLabel(Translation.getTranslation("file_details_panel.version"),
-                    cc.xy(5, 11));
-            builder.add(versionField, cc.xy(7, 11));
+                    cc.xy(5, row));
+            builder.add(versionField, cc.xy(7, row));
 
             builder.addLabel(
                     Translation.getTranslation("file_details_panel.availability"),
-                    cc.xy(1, 11));
-            builder.add(sourcesField, cc.xy(3, 11));
+                    cc.xy(1, row));
+            builder.add(sourcesField, cc.xy(3, row));
 
-            // Bottom
+            row += 2;
+
             builder.addLabel(Translation.getTranslation("general.local_copy_at"),
-                    cc.xy(1, 13));
-            builder.add(localCopyAtField, cc.xywh(3, 13, 5, 1));
+                    cc.xy(1, row));
+            builder.add(localCopyAtField, cc.xywh(3, row, 5, 1));
 
             panel = builder.getPanel();
             panel.setVisible(false);

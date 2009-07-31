@@ -100,7 +100,7 @@ public class UploadsInformationCard extends InformationCard
         cleanupLabel = new JLabel();
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(), clearCompletedUploadsAction);
-        detailsPanel = new FileDetailsPanel(getController());
+        detailsPanel = new FileDetailsPanel(getController(), true);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         update();

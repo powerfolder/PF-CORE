@@ -50,7 +50,6 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
@@ -130,6 +129,9 @@ public class Icons {
     public static final String SORT_DOWN = "sort_down.icon";
     public static final String SORT_BLANK = "sort_blank.icon";
     public static final String DYN_DNS = "dyn_dns.icon";
+
+    public static final String FILE_DETAILS = "file_details.icon";
+    public static final String FILE_VERSION = "file_version.icon";
 
     // Directories in navigation tree
     public static final String DIRECTORY = "directory.icon";
@@ -861,12 +863,12 @@ public class Icons {
 
             InputStream in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(DEFAULT_ICON_PROPERTIES_FILENAME);
-            BufferedInputStream buffered = null;
             if (in == null) {
                 throw new IllegalArgumentException(
                     "Icon properties file not found: " + DEFAULT_ICON_PROPERTIES_FILENAME);
             }
 
+            BufferedInputStream buffered = null;
             try {
                 buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
