@@ -42,7 +42,7 @@ public class FileVersionsPanel extends PFUIComponent {
 
     private JPanel panel;
     private JLabel emptyLabel;
-    private JLabel otherComponent;
+    private JScrollPane scrollPane;
     private volatile FileInfo fileInfo;
 
     public FileVersionsPanel(Controller controller) {
@@ -63,9 +63,11 @@ public class FileVersionsPanel extends PFUIComponent {
 
             // emptyLabel and scrollPane occupy the same slot.
             builder.add(emptyLabel, cc.xy(1, 1));
-            builder.add(otherComponent, cc.xy(1, 1));
+            builder.add(scrollPane, cc.xy(1, 1));
 
             panel = builder.getPanel();
+
+            setEmptyState(true, false);
         }
         return panel;
     }
@@ -75,7 +77,7 @@ public class FileVersionsPanel extends PFUIComponent {
                 "file_version_tab.no_versions_available"), SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
-        otherComponent = new JLabel("Temporary text component...");
+        scrollPane = new JScrollPane();
     }
 
     public void setFileInfo(FileInfo fileInfo) {
@@ -134,6 +136,6 @@ public class FileVersionsPanel extends PFUIComponent {
             emptyLabel.setText(Translation.getTranslation(
                     "file_version_tab.no_versions_available"));
         }
-        otherComponent.setVisible(!empty);
+        scrollPane.setVisible(!empty);
     }
 }
