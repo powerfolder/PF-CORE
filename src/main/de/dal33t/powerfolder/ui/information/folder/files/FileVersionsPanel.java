@@ -104,23 +104,8 @@ public class FileVersionsPanel extends PFUIComponent {
 
         setEmptyState(true, true);
 
-        // Loading...
-
-        // @todo harry work in progress...
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-        }
-
-        // Loaded...
-
-        if (fileInfo == null) {
-            // Huh. Loaded the history, but now no FileInfo is selected.
-            setEmptyState(true, false);
-        } else {
-            // Got it. Show it.
-            setEmptyState(false, false);
-        }
+        MySwingWorker swingWorker = new MySwingWorker();
+        swingWorker.execute();
     }
 
     private void setEmptyState(boolean empty, boolean loading) {
@@ -137,5 +122,38 @@ public class FileVersionsPanel extends PFUIComponent {
                     "file_version_tab.no_versions_available"));
         }
         scrollPane.setVisible(!empty);
+    }
+
+    ///////////////////
+    // Inner Classes //
+    ///////////////////
+
+    /**
+     * Swing worker to load the versions in the background.
+     */
+    private class MySwingWorker extends SwingWorker {
+
+        protected Object doInBackground() {
+            // Loading...
+            
+            // @todo harry work in progress...
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+
+            // Loaded...
+            return null;
+        }
+
+        protected void done() {
+            if (fileInfo == null) {
+                // Huh. Loaded the history, but now no FileInfo is selected.
+                setEmptyState(true, false);
+            } else {
+                // Got it. Show it.
+                setEmptyState(false, false);
+            }
+        }
     }
 }
