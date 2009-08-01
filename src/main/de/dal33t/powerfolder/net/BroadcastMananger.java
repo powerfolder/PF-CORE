@@ -335,7 +335,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 }
 
             } catch (ConnectionException e) {
-                logWarning("Unable to connect to node on subnet: " + address, e);
+                logWarning("Unable to connect to node on subnet: " + address
+                    + ". " + e);
+                logFiner(e);
             }
         } else {
             if (isFiner()) {
