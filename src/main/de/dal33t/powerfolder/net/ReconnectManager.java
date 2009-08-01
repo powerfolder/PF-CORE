@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -54,7 +55,7 @@ public class ReconnectManager extends PFComponent {
     /** The collection of reconnector */
     private List<Reconnector> reconnectors;
     // Counter for started reconntor, running number
-    private static int reconnectorCounter;
+    private static AtomicInteger reconnectorCounter = new AtomicInteger(0);
     private boolean started;
 
     public ReconnectManager(Controller controller) {
@@ -429,7 +430,7 @@ public class ReconnectManager extends PFComponent {
         private Member currentNode;
 
         private Reconnector() {
-            super("Reconnector " + ++reconnectorCounter);
+            super("Reconnector " + reconnectorCounter.addAndGet(1));
         }
 
         public void start() {
@@ -446,11 +447,7 @@ public class ReconnectManager extends PFComponent {
          */
         public void softShutdown() {
             reconStarted = false;
-            reconnectorCounter--;
-            // interrupt();
-            // if (currentNode != null) {
-            // currentNode.shutdown();
-            // }
+            reconnectorCounter.decrementAndGet();
         }
 
         public void shutdown() {
