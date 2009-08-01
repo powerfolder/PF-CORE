@@ -590,6 +590,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
     }
     
     public ConnectionQuality getConnectionQuality() {
+        // FIXME: Direct UDP should be GOOD.
         return ConnectionQuality.MEDIUM;
     }
 
