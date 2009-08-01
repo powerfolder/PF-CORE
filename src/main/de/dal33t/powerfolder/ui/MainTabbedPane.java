@@ -102,7 +102,6 @@ public class MainTabbedPane extends PFUIComponent {
         }
 
         uiComponent.addChangeListener(new MyChagelistener());
-        uiComponent.setSelectedIndex(COMPUTERS_INDEX);
 
         return uiComponent;
     }
