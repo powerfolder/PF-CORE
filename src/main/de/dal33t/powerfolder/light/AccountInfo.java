@@ -45,6 +45,23 @@ public class AccountInfo implements Serializable {
         return oid;
     }
 
+    /**
+     * TODO Don't actually transfer unscrambled emails to any client.
+     * 
+     * @return a scrabled version of the username in case its a email.
+     */
+    public String getScrabledUsername() {
+        if (username == null) {
+            return null;
+        }
+        int i = username.indexOf('@');
+        if (i < 0) {
+            return username;
+        }
+        int chopIndex = Math.max(i - 3, 1);
+        return username.substring(0, chopIndex) + "..." + username.substring(i);
+    }
+
     public String getUsername() {
         return username;
     }
@@ -76,6 +93,6 @@ public class AccountInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "AccountInfo '" + username + "' (" + oid + ')';
+        return "AccountInfo '" + getScrabledUsername() + "' (" + oid + ')';
     }
 }

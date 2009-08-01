@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The security manager for the client.
@@ -101,25 +103,49 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
+    /**
+     * Gets the {@link AccountInfo} for the given node. Retrieves it from server
+     * if necessary. NEVER refreshes from server when running in EDT thread.
+     * 
+     * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
+     */
     public AccountInfo getAccountInfo(Member node) {
         Session session = sessions.get(node);
         // Cache hit
         if (session != null && CACHE_ENABLED) {
             return session.getAccountInfo();
         }
-
+        if (!client.isConnected()) {
+            // Not available yet.
+            return null;
+        }
+        if (node.isMySelf()) {
+            Account myAccount = client.getAccount();
+            if (myAccount == null || !myAccount.isValid()) {
+                return null;
+            }
+            return myAccount.createInfo();
+        }
+        // Smells like hack
+        if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
+            if (isFiner()) {
+                logFiner("Not trying to refresh account of " + node
+                    + " running in EDT thread");
+            }
+            return null;
+        }
         AccountInfo aInfo;
         try {
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(Collections.singleton(node.getInfo()));
             aInfo = res.get(node.getInfo());
+            logWarning("Retrieved account " + aInfo + " for " + node);
         } catch (RemoteCallException e) {
             logSevere("Unable to retrieve account info for " + node + ". " + e);
             logFiner(e);
             aInfo = null;
         }
-        logWarning("Retrieved account " + aInfo + " for " + node);
-        if (aInfo != null && CACHE_ENABLED) {
+        if (CACHE_ENABLED) {
             sessions.put(node, new Session(aInfo));
         }
         return aInfo;
@@ -128,30 +154,13 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     public void nodeAccountStateChanged(final Member node) {
         Runnable refresher = null;
         if (node.isMySelf()) {
-            refresher = new Runnable() {
-                public void run() {
-                    client.refreshAccountDetails();
-                    // Make sure nothing is left in cache.
-                    permissionsCache.remove(node);
-                    sessions.remove(node);
-                    node.synchronizeFolderMemberships();
-                }
-            };
+            refresher = new MySelfRefrehser(node);
         } else if (!node.isCompleteyConnected()) {
-            sessions.remove(node);
+            refresher = new DisconnectRefresher(node);
         } else {
-            refresher = new Runnable() {
-                public void run() {
-                    permissionsCache.remove(node);
-                    // Refresh account info on that node.
-                    sessions.remove(node);
-                    // This is required because of probably changed access
-                    // permissions to folder.
-                    node.synchronizeFolderMemberships();
-                }
-            };
+            refresher = new DefaultRefresher(node);
         }
-        if (refresher != null) {
+        if (refresher != null && getController().isStarted()) {
             getController().getThreadPool().schedule(refresher, 0,
                 TimeUnit.SECONDS);
         }
@@ -171,11 +180,112 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
+    // Internal helper ********************************************************
+
+    private void clearNodeCache(Member node) {
+        permissionsCache.remove(node);
+        sessions.remove(node);
+    }
+
+    /**
+     * Handle server connect: Refresh/Precache AccountInfos of friends and
+     * members on our folders.
+     */
+    private void prefetchAccountInfos() {
+        // TODO Bulk request new account infos.
+        for (Member node : getController().getNodeManager()
+            .getNodesAsCollection())
+        {
+            AccountInfo aInfo = autoRefresh(node);
+            fireNodeAccountStateChanged(node, aInfo);
+        }
+    }
+
+    /**
+     * Refreshes a AccountInfo for the given node if it should be pre-fetched.
+     * Otherwise tries to return cached entry.
+     * 
+     * @param node
+     * @return
+     */
+    private AccountInfo autoRefresh(Member node) {
+        // TODO: Use Member.isInteresting() ?
+        boolean refresh = node.isCompleteyConnected()
+            && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
+        if (refresh) {
+            return getAccountInfo(node);
+        }
+        // Try to return cached
+        Session session = sessions.get(node);
+        // Cache hit
+        if (session != null && CACHE_ENABLED) {
+            return session.getAccountInfo();
+        }
+        // Unknown.
+        return null;
+    }
+
+    private final class DefaultRefresher implements Runnable {
+        private final Member node;
+
+        private DefaultRefresher(Member node) {
+            this.node = node;
+        }
+
+        public void run() {
+            clearNodeCache(node);
+
+            // This is required because of probably changed access
+            // permissions to folder.
+            node.synchronizeFolderMemberships();
+            if (client.isServer(node) && node.isCompleteyConnected()) {
+                prefetchAccountInfos();
+            }
+
+            AccountInfo aInfo = autoRefresh(node);
+            fireNodeAccountStateChanged(node, aInfo);
+        }
+    }
+
+    private final class MySelfRefrehser implements Runnable {
+        private final Member node;
+
+        private MySelfRefrehser(Member node) {
+            this.node = node;
+        }
+
+        public void run() {
+            clearNodeCache(node);
+            client.refreshAccountDetails();
+
+            node.synchronizeFolderMemberships();
+
+            AccountInfo aInfo = autoRefresh(node);
+            fireNodeAccountStateChanged(node, aInfo);
+        }
+    }
+
+    private final class DisconnectRefresher implements Runnable {
+        private final Member node;
+
+        private DisconnectRefresher(Member node) {
+            this.node = node;
+        }
+
+        public void run() {
+            clearNodeCache(node);
+            AccountInfo aInfo = autoRefresh(node);
+            fireNodeAccountStateChanged(node, aInfo);
+        }
+
+    }
+
     private class Session {
         private AccountInfo info;
 
         public Session(AccountInfo info) {
             super();
+            // Info CAN be null! Means no login
             this.info = info;
         }
 

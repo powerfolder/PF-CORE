@@ -48,7 +48,7 @@ public class ComputersList extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public ComputersList(Controller controller, ComputersTab computersTab) {
@@ -56,13 +56,13 @@ public class ComputersList extends PFUIComponent {
         this.computersTab = computersTab;
         expansionListener = new MyExpansionListener();
         nodeManagerModel = getUIController().getApplicationModel()
-                .getNodeManagerModel();
+            .getNodeManagerModel();
         viewList = new CopyOnWriteArraySet<ExpandableComputerView>();
     }
 
     /**
      * Get the UI component
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -80,8 +80,7 @@ public class ComputersList extends PFUIComponent {
         initComponents();
 
         // Build ui
-        FormLayout layout = new FormLayout("pref:grow",
-            "pref, pref:grow");
+        FormLayout layout = new FormLayout("pref:grow", "pref, pref:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -95,15 +94,15 @@ public class ComputersList extends PFUIComponent {
     private void initComponents() {
         computerListPanel = new JPanel();
         computerListPanel.setLayout(new BoxLayout(computerListPanel,
-                BoxLayout.PAGE_AXIS));
+            BoxLayout.PAGE_AXIS));
         getUIController().getApplicationModel().getNodeManagerModel()
-                .addNodeManagerModelListener(new MyNodeManagerModelListener());
+            .addNodeManagerModelListener(new MyNodeManagerModelListener());
         rebuild();
     }
 
     /**
      * Add a view to the list
-     *
+     * 
      * @param node
      */
     private void addViewForNode(Member node) {
@@ -113,8 +112,8 @@ public class ComputersList extends PFUIComponent {
             return;
         }
 
-        ExpandableComputerView view = new ExpandableComputerView(getController(),
-                node);
+        ExpandableComputerView view = new ExpandableComputerView(
+            getController(), node);
         synchronized (viewList) {
             computerListPanel.add(view.getUIComponent());
             viewList.add(view);
@@ -125,7 +124,7 @@ public class ComputersList extends PFUIComponent {
 
     /**
      * Remove a view from the list.
-     *
+     * 
      * @param node
      */
     private void removeViewForNode(Member node) {
@@ -137,8 +136,7 @@ public class ComputersList extends PFUIComponent {
 
         synchronized (viewList) {
             ExpandableComputerView viewToRemove = null;
-            outerLoop:
-            for (ExpandableComputerView existingView : viewList) {
+            outerLoop : for (ExpandableComputerView existingView : viewList) {
                 if (existingView.getNode().equals(node)) {
                     viewToRemove = existingView;
                     int count = computerListPanel.getComponentCount();
@@ -173,12 +171,13 @@ public class ComputersList extends PFUIComponent {
         synchronized (viewList) {
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
+                view.removeCoreListeners();
             }
             viewList.clear();
             computerListPanel.removeAll();
             for (Member node : nodeManagerModel.getNodes()) {
                 ExpandableComputerView view = new ExpandableComputerView(
-                        getController(), node);
+                    getController(), node);
                 computerListPanel.add(view.getUIComponent());
                 viewList.add(view);
                 view.addExpansionListener(expansionListener);
@@ -192,24 +191,25 @@ public class ComputersList extends PFUIComponent {
     }
 
     /**
-     * Enable the view processing methods so that views get processed.
-     * This is done so views do not get added before Synthetica has set all the
-     * colors, else views look different before and after.
+     * Enable the view processing methods so that views get processed. This is
+     * done so views do not get added before Synthetica has set all the colors,
+     * else views look different before and after.
      */
     public void populate() {
         populated = true;
         rebuild();
     }
 
-    //////////////////
+    // ////////////////
     // Inner Classes//
-    //////////////////
+    // ////////////////
 
     /**
      * Node Manager Model listener.
      */
     private class MyNodeManagerModelListener implements
-            NodeManagerModelListener {
+        NodeManagerModelListener
+    {
 
         public void nodeRemoved(NodeManagerModelEvent e) {
             Member node = e.getNode();

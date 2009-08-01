@@ -100,7 +100,8 @@ public class RemoteServiceStubFactory {
             }
             if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
                 LOG.log(Level.WARNING,
-                    "Call to remote service executed in EDT thread", rte);
+                    "Call to remote service executed in EDT thread. Args: "
+                        + (args != null ? Arrays.asList(args) : "n/a"), rte);
             }
             RequestExecutor executor = new RequestExecutor(controller,
                 remoteSide);

@@ -22,12 +22,13 @@ package de.dal33t.powerfolder.util.compare;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.light.AccountInfo;
 
 import java.util.Comparator;
 
 /**
  * Comparator for members of a folder
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
@@ -36,20 +37,24 @@ public class FolderMemberComparator implements Comparator {
     private Folder folder;
 
     /** Sorts members by connected / disconnected and friend / non-friend. */
-    public static final FolderMemberComparator BY_TYPE =
-            new FolderMemberComparator(0);
+    public static final FolderMemberComparator BY_TYPE = new FolderMemberComparator(
+        0);
 
     /** Sorts members by nick name */
-    public static final FolderMemberComparator BY_NICK =
-            new FolderMemberComparator(1);
+    public static final FolderMemberComparator BY_NICK = new FolderMemberComparator(
+        1);
 
     /** Sorts nodes by sync status */
-    public static final FolderMemberComparator BY_SYNC_STATUS =
-            new FolderMemberComparator(2);
+    public static final FolderMemberComparator BY_SYNC_STATUS = new FolderMemberComparator(
+        2);
 
     /** Sorts nodes by local size */
-    public static final FolderMemberComparator BY_LOCAL_SIZE =
-            new FolderMemberComparator(3);
+    public static final FolderMemberComparator BY_LOCAL_SIZE = new FolderMemberComparator(
+        3);
+
+    /** Sorts members by account */
+    public static final FolderMemberComparator BY_USERNAME = new FolderMemberComparator(
+        4);
 
     private int type;
 
@@ -71,9 +76,9 @@ public class FolderMemberComparator implements Comparator {
                 boolean m1f = member1.isFriend();
                 boolean m2f = member2.isFriend();
                 boolean m1cc = member1.isCompleteyConnected()
-                        || member1.isMySelf();
+                    || member1.isMySelf();
                 boolean m2cc = member2.isCompleteyConnected()
-                        || member2.isMySelf();
+                    || member2.isMySelf();
                 if (m1f != m2f) {
                     return m1f ? 1 : -1;
                 }
@@ -96,6 +101,16 @@ public class FolderMemberComparator implements Comparator {
                 Double syncPerc1 = statistic.getSyncPercentage(member1);
                 Double syncPerc2 = statistic.getSyncPercentage(member2);
                 return syncPerc1.compareTo(syncPerc2);
+            } else if (type == 4) {
+                AccountInfo a1 = member1.getAccountInfo();
+                AccountInfo a2 = member2.getAccountInfo();
+                if (a1 == null) {
+                    return a2 == null ? 0 : 1;
+                }
+                if (a2 == null) {
+                    return -1;
+                }
+                return a1.getUsername().compareTo(a2.getUsername());
             }
         }
         return 0;

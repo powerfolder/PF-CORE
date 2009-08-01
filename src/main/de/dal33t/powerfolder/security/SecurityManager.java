@@ -86,4 +86,10 @@ public interface SecurityManager {
      */
     boolean hasFolderPermission(Member member, FolderPermission permission);
 
+    // Event handling *********************************************************
+
+    void addListener(SecurityManagerListener listner);
+
+    void removeListener(SecurityManagerListener listner);
+
 }

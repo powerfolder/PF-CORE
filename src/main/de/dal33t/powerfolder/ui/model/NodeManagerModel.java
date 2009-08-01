@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import com.jgoodies.binding.list.ArrayListModel;
@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 import javax.swing.*;
@@ -39,8 +40,8 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Model for the node manager. Create filtered list of nodes based on
- * friend and lan values.
+ * Model for the node manager. Create filtered list of nodes based on friend and
+ * lan values.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
@@ -58,7 +59,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public NodeManagerModel(Controller controller) {
@@ -71,19 +72,19 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Add a node manager model listener.
-     *
+     * 
      * @param l
      */
-    public void addNodeManagerModelListener (NodeManagerModelListener l) {
+    public void addNodeManagerModelListener(NodeManagerModelListener l) {
         listeners.add(l);
     }
 
     /**
      * Remove a node manager model listener.
-     *
+     * 
      * @param l
      */
-    public void removeNodeManagerModelListener (NodeManagerModelListener l) {
+    public void removeNodeManagerModelListener(NodeManagerModelListener l) {
         listeners.remove(l);
     }
 
@@ -92,22 +93,22 @@ public class NodeManagerModel extends PFUIComponent {
      */
     private synchronized void initalize() {
 
-        PropertyChangeListener propertyChangeListener =
-                new PropertyChangeListener() {
+        PropertyChangeListener propertyChangeListener = new PropertyChangeListener()
+        {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 rebuildSet();
             }
         };
-        
+
         friendsListModel = new ArrayListModel<Member>();
 
-        hideOfflineFriendsModel = PreferencesEntry
-                .NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS.getModel(getController());
+        hideOfflineFriendsModel = PreferencesEntry.NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS
+            .getModel(getController());
         hideOfflineFriendsModel.addValueChangeListener(propertyChangeListener);
 
-        includeOnlineLanModel = PreferencesEntry
-                .NODE_MANAGER_MODEL_INCLUDE_ONLINE_LAN_USERS.getModel(getController());
+        includeOnlineLanModel = PreferencesEntry.NODE_MANAGER_MODEL_INCLUDE_ONLINE_LAN_USERS
+            .getModel(getController());
         includeOnlineLanModel.addValueChangeListener(propertyChangeListener);
 
         rebuildSet();
@@ -132,7 +133,7 @@ public class NodeManagerModel extends PFUIComponent {
         for (NodeManagerModelListener listener : listeners) {
             listener.rebuilt(new NodeManagerModelEvent(this, null));
         }
-        
+
         Member[] friends = getController().getNodeManager().getFriends();
         friendsListModel.clear();
         friendsListModel.addAll(Arrays.asList(friends));
@@ -141,17 +142,23 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Answers if the node is required based on value models.
-     *
+     * 
      * @param node
      * @return
      */
     private boolean required(Member node) {
 
-        boolean hideOfflineFriends = (Boolean) hideOfflineFriendsModel.getValue();
+        boolean hideOfflineFriends = (Boolean) hideOfflineFriendsModel
+            .getValue();
         boolean includeOnlineLan = (Boolean) includeOnlineLanModel.getValue();
         boolean connected = node.isCompleteyConnected();
         boolean online = connected || node.isConnectedToNetwork();
-        
+
+        if (node.isMySelf()) {
+            // Never add ourself
+            return false;
+        }
+
         if (node.isFriend()) {
             if (hideOfflineFriends) {
                 if (online) {
@@ -171,7 +178,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Gets a read-only set of filtered nodes.
-     *
+     * 
      * @return
      */
     public Set<Member> getNodes() {
@@ -201,7 +208,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Update method responding to addition or removal of nodes.
-     *
+     * 
      * @param node
      */
     private void updateNode(Member node) {

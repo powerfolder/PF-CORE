@@ -264,7 +264,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
 
         permissionsModel = new ValueHolder(
-            new FolderReadWritePermission(folder));
+            new FolderReadWritePermission(folder), true);
 
         enableAddButton();
         enableRemoveButton();

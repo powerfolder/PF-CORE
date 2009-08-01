@@ -19,51 +19,72 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.ExpansionEvent;
+import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.security.SecurityManagerEvent;
+import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
-import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.io.File;
-import java.io.IOException;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
 /**
  * Class to render expandable view of a folder.
  */
-public class ExpandableComputerView extends PFUIComponent implements ExpandableView {
+public class ExpandableComputerView extends PFUIComponent implements
+    ExpandableView
+{
 
     private final Member node;
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
+    private JLabel infoLabel;
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
@@ -74,6 +95,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private MyReconnectAction reconnectAction;
     private JLabel lastSeenLabel;
     private MyNodeManagerListener nodeManagerListener;
+    private MySecurityManagerListener secManagerListener;
 
     private ExpansionListener listenerSupport;
 
@@ -81,7 +103,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param node
      */
@@ -97,8 +119,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      */
     public void expand() {
         expanded.set(true);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_computer_view.collapse"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_computer_view.collapse"));
         lowerOuterPanel.setVisible(true);
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
     }
@@ -108,13 +130,14 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      */
     public void collapse() {
         expanded.set(false);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_computer_view.expand"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_computer_view.expand"));
         lowerOuterPanel.setVisible(false);
     }
 
     /**
      * Gets the ui component, building if required.
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -132,30 +155,31 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         initComponent();
 
         // Build ui
-                                             //  icon        name  space            chat
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref",
-            "pref");
+        // icon name space chat
+        FormLayout upperLayout = new FormLayout(
+            "pref, 3dlu, pref, pref:grow, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
-        upperBuilder.add(new JLabel(node.getNick()), cc.xy(3, 1));
+        upperBuilder.add(infoLabel, cc.xy(3, 1));
         upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_computer_view.expand"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_computer_view.expand"));
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         pictoLabel.addMouseListener(ma);
 
         // Build lower detials with line border.
-                                                //     last,       qual                   rmve  recon
-        FormLayout lowerLayout = new FormLayout("3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
+        // last, qual rmve recon
+        FormLayout lowerLayout = new FormLayout(
+            "3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
             "pref, 3dlu, pref");
-          // sep,        last
+        // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 9));
@@ -169,8 +193,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         lowerPanel.setOpaque(false);
 
         // Build spacer then lower outer with lower panel
-        FormLayout lowerOuterLayout = new FormLayout("pref:grow",
-            "3dlu, pref");
+        FormLayout lowerOuterLayout = new FormLayout("pref:grow", "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
         lowerOuterPanel.setOpaque(false);
@@ -206,14 +229,15 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
-
+        infoLabel = new JLabel(renderInfo(node, null));
         connectionQualityLabel = new JLabel();
         lastSeenLabel = new JLabel();
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction, true);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
-        chatButton = new JButtonMini(new MyOpenChatAction(getController()), true);
+        chatButton = new JButtonMini(new MyOpenChatAction(getController()),
+            true);
         pictoLabel = new JLabel();
         updateDetails();
         configureAddRemoveButton();
@@ -223,8 +247,10 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     /**
      * Call this to unregister listeners if computer is being removed.
      */
-    public void removeListeners() {
-        unregisterListeners();
+    public void removeCoreListeners() {
+        getController().getNodeManager().removeNodeManagerListener(
+            nodeManagerListener);
+        getController().getSecurityManager().removeListener(secManagerListener);
     }
 
     /**
@@ -233,19 +259,14 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
     private void registerListeners() {
         nodeManagerListener = new MyNodeManagerListener();
         getController().getNodeManager().addNodeManagerListener(
-                nodeManagerListener);
-    }
-
-    /**
-     * Unregister listeners of the folder.
-     */
-    private void unregisterListeners() {
-        getController().getNodeManager().removeNodeManagerListener(
-                nodeManagerListener);
+            nodeManagerListener);
+        secManagerListener = new MySecurityManagerListener();
+        getController().getSecurityManager().addListener(secManagerListener);
     }
 
     /**
      * Gets the name of the associated folder.
+     * 
      * @return
      */
     public Member getNode() {
@@ -254,17 +275,34 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
     /**
      * Updates the displayed details if for this member.
-     *
+     * 
      * @param e
      */
-    private void updateDetailsIfRequired(NodeManagerEvent e) {
-        Member eventNode = e.getNode();
-        if (eventNode == null) {
+    private void updateDetailsIfRequired(Member eventNode) {
+        if (node == null) {
             return;
         }
         if (node.equals(eventNode)) {
             updateDetails();
             configureAddRemoveButton();
+        }
+    }
+
+    /**
+     * Updates the displayed info if for this member.
+     * 
+     * @param e
+     */
+    private void updateInfoIfRequired(Member eventNode) {
+        if (node == null) {
+            return;
+        }
+        if (node.equals(eventNode)) {
+            // Only if account info has also been refreshed already.
+            // logWarning("UI: PROCESSING ACCOUNT UPDATE ON: " + node +
+            // " is now "
+            // + node.getAccountInfo());
+            infoLabel.setText(renderInfo(node, node.getAccountInfo()));
         }
     }
 
@@ -291,28 +329,28 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         if (peer != null) {
             ConnectionQuality quality = peer.getConnectionQuality();
             if (quality != null) {
-                switch(quality) {
-                    case GOOD:
+                switch (quality) {
+                    case GOOD :
                         iconName = Icons.CONNECTION_GOOD;
-                        text = Translation.getTranslation(
-                                "connection_quality_good.text");
+                        text = Translation
+                            .getTranslation("connection_quality_good.text");
                         break;
-                    case MEDIUM:
+                    case MEDIUM :
                         iconName = Icons.CONNECTION_MEDIUM;
-                        text = Translation.getTranslation(
-                                "connection_quality_medium.text");
+                        text = Translation
+                            .getTranslation("connection_quality_medium.text");
                         break;
-                    case POOR:
+                    case POOR :
                         iconName = Icons.CONNECTION_POOR;
-                        text = Translation.getTranslation(
-                                "connection_quality_poor.text");
+                        text = Translation
+                            .getTranslation("connection_quality_poor.text");
                         break;
                 }
             }
         }
         connectionQualityLabel.setToolTipText(text);
         connectionQualityLabel.setIcon(Icons.getIconById(iconName));
-        
+
         Date time = node.getLastConnectTime();
         String lastConnectedTime;
         if (time == null) {
@@ -321,27 +359,35 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             lastConnectedTime = Format.formatDate(time);
         }
         lastSeenLabel.setText(Translation.getTranslation(
-                "exp_computer_view.last_seen_text", lastConnectedTime));
+            "exp_computer_view.last_seen_text", lastConnectedTime));
 
         if (node.isCompleteyConnected()) {
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED));
-                pictoLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_friend_connected_text"));
+                pictoLabel.setIcon(Icons
+                    .getIconById(Icons.NODE_FRIEND_CONNECTED));
+                pictoLabel
+                    .setToolTipText(Translation
+                        .getTranslation("exp_computer_view.node_friend_connected_text"));
             } else {
-                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_NON_FRIEND_CONNECTED));
-                pictoLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_non_friend_connected_text"));
+                pictoLabel.setIcon(Icons
+                    .getIconById(Icons.NODE_NON_FRIEND_CONNECTED));
+                pictoLabel
+                    .setToolTipText(Translation
+                        .getTranslation("exp_computer_view.node_non_friend_connected_text"));
             }
         } else {
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_FRIEND_DISCONNECTED));
-                pictoLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_friend_disconnected_text"));
+                pictoLabel.setIcon(Icons
+                    .getIconById(Icons.NODE_FRIEND_DISCONNECTED));
+                pictoLabel
+                    .setToolTipText(Translation
+                        .getTranslation("exp_computer_view.node_friend_disconnected_text"));
             } else {
-                pictoLabel.setIcon(Icons.getIconById(Icons.NODE_NON_FRIEND_DISCONNECTED));
-                pictoLabel.setToolTipText(Translation.getTranslation(
-                        "exp_computer_view.node_non_friend_disconnected_text"));
+                pictoLabel.setIcon(Icons
+                    .getIconById(Icons.NODE_NON_FRIEND_DISCONNECTED));
+                pictoLabel
+                    .setToolTipText(Translation
+                        .getTranslation("exp_computer_view.node_non_friend_disconnected_text"));
             }
         }
 
@@ -370,7 +416,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
     /**
      * Add an expansion listener.
-     *
+     * 
      * @param listener
      */
     public void addExpansionListener(ExpansionListener listener) {
@@ -379,7 +425,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
     /**
      * Remove an expansion listener.
-     *
+     * 
      * @param listener
      */
     public void removeExpansionListener(ExpansionListener listener) {
@@ -395,9 +441,19 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         return contextMenu;
     }
 
-    ///////////////////
+    private String renderInfo(Member node, AccountInfo aInfo) {
+        String text = node.getNick();
+        if (aInfo != null) {
+            text += " (";
+            text += aInfo.getScrabledUsername();
+            text += ')';
+        }
+        return text;
+    }
+
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
      * Class to respond to expand / collapse events.
@@ -440,7 +496,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         private void showContextMenu(MouseEvent evt) {
             if (!expanded.get()) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+                createPopupMenu().show(evt.getComponent(), evt.getX(),
+                    evt.getY());
             }
         }
 
@@ -465,35 +522,46 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeRemoved(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void startStop(NodeManagerEvent e) {
-            updateDetailsIfRequired(e);
+            updateDetailsIfRequired(e.getNode());
+        }
+    }
+
+    private class MySecurityManagerListener implements SecurityManagerListener {
+
+        public void nodeAccountStateChanged(SecurityManagerEvent event) {
+            updateInfoIfRequired(event.getNode());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 
@@ -517,7 +585,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         public void actionPerformed(ActionEvent e) {
 
             // Build new connect dialog
-            final ConnectDialog connectDialog = new ConnectDialog(getController());
+            final ConnectDialog connectDialog = new ConnectDialog(
+                getController());
 
             Runnable connector = new Runnable() {
                 public void run() {
@@ -538,7 +607,8 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();
-                        if (!connectDialog.isCanceled() && !node.isConnected()) {
+                        if (!connectDialog.isCanceled() && !node.isConnected())
+                        {
                             // Show if user didn't cancel
                             ex.show(getController());
                         }
@@ -553,7 +623,6 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
             new Thread(connector, "Reconnector to " + node.getNick()).start();
         }
     }
-
 
     private class MyAddRemoveFriendAction extends BaseAction {
 
@@ -574,21 +643,22 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
 
         public void actionPerformed(ActionEvent e) {
             if (add) {
-                boolean askForFriendshipMessage = PreferencesEntry.
-                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
+                    .getValueBoolean(getController());
                 if (askForFriendshipMessage) {
 
                     // Prompt for personal message.
                     String[] options = {
-                            Translation.getTranslation("general.ok"),
-                            Translation.getTranslation("general.cancel")};
+                        Translation.getTranslation("general.ok"),
+                        Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref",
+                        "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String nick = node.getNick();
                     String text = Translation.getTranslation(
-                            "friend.search.personal.message.text2", nick);
+                        "friend.search.personal.message.text2", nick);
                     builder.add(new JLabel(text), cc.xy(1, 1));
                     JTextArea textArea = new JTextArea();
                     JScrollPane scrollPane = new JScrollPane(textArea);
@@ -596,9 +666,11 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
                     builder.add(scrollPane, cc.xy(1, 3));
                     JPanel innerPanel = builder.getPanel();
 
-                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(
                             getController(),
-                            Translation.getTranslation("friend.search.personal.message.title"),
+                            Translation
+                                .getTranslation("friend.search.personal.message.title"),
                             innerPanel, options, 0, GenericDialogType.INFO,
                             Translation.getTranslation("general.neverAskAgain"));
                     if (response.getButtonIndex() == 0) { // == OK
@@ -608,7 +680,7 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
                     if (response.isNeverAskAgain()) {
                         // don't ask me again
                         PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                                getController(), false);
+                            getController(), false);
                     }
                 } else {
                     // Send with no personal messages
@@ -652,18 +724,17 @@ public class ExpandableComputerView extends PFUIComponent implements ExpandableV
         }
 
         /**
-         * Get the directory to import.
-         * The transfer is a list of files; need to check the list has one
-         * directory, else return null.
-         *
+         * Get the directory to import. The transfer is a list of files; need to
+         * check the list has one directory, else return null.
+         * 
          * @param support
          * @return
          */
         private File getFileList(TransferSupport support) {
             Transferable t = support.getTransferable();
             try {
-                List list = (List) t.getTransferData(
-                        DataFlavor.javaFileListFlavor);
+                List list = (List) t
+                    .getTransferData(DataFlavor.javaFileListFlavor);
                 if (list.size() == 1) {
                     for (Object o : list) {
                         if (o instanceof File) {

@@ -106,8 +106,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     public boolean hasNext() {
         if (entryRequired) {
-            return client.isConnected() &&
-                    !StringUtils.isEmpty(usernameField.getText());  
+            return client.isConnected()
+                && !StringUtils.isEmpty(usernameField.getText());
         } else {
             return true;
         }
@@ -118,8 +118,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-        if (noThanks ||
-                !entryRequired && StringUtils.isEmpty(usernameField.getText()))
+        if (noThanks || !entryRequired
+            && StringUtils.isEmpty(usernameField.getText()))
         {
             return true;
         }
@@ -128,18 +128,19 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             loginOk = client.login(usernameField.getText(),
                 new String(passwordField.getPassword())).isValid();
             if (!loginOk) {
-                DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("wizard.error_title"),
-                        Translation.getTranslation("online_storage.account_data"),
-                        GenericDialogType.INFO);
+                DialogFactory.genericDialog(getController(), Translation
+                    .getTranslation("wizard.error_title"), Translation
+                    .getTranslation("online_storage.account_data"),
+                    GenericDialogType.INFO);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.log(Level.SEVERE, "Problem logging in", e);
-            DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation("wizard.error_title"),
-                    Translation.getTranslation("online_storage.general_error",
-                            e.getMessage()),
-                    GenericDialogType.INFO);
+            DialogFactory.genericDialog(getController(), Translation
+                .getTranslation("wizard.error_title"), Translation
+                .getTranslation("online_storage.general_error",
+                    e.getMessage() == null ? e.toString() : e.getMessage()),
+                GenericDialogType.INFO);
         }
         return loginOk;
     }
@@ -157,12 +158,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         if (entryRequired) {
             builder.addLabel(Translation
-                .getTranslation("wizard.webservice.enter_account"),
-                    cc.xyw(1, 1, 4));
+                .getTranslation("wizard.webservice.enter_account"), cc.xyw(1,
+                1, 4));
         } else {
             builder.addLabel(Translation
-                .getTranslation("wizard.webservice.enter_account_optional"),
-                    cc.xyw(1, 1, 4));
+                .getTranslation("wizard.webservice.enter_account_optional"), cc
+                .xyw(1, 1, 4));
         }
 
         builder.add(usernameLabel, cc.xy(1, 3));
@@ -182,9 +183,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         int row = 9;
 
         if (!entryRequired) {
-            builder.add(new ActionLabel(getController(),
-                    new MySkipLoginAction(getController())).getUIComponent(),
-                    cc.xyw(1, row, 4));
+            builder.add(new ActionLabel(getController(), new MySkipLoginAction(
+                getController())).getUIComponent(), cc.xyw(1, row, 4));
             row += 2;
         }
 
@@ -202,9 +202,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
             builder.add(new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.recover_password"),
-                    getController().getOSClient().getWebURL() +
-                            "/storage_login.html").getUiComponent(),
-                    cc.xyw(1, row, 4));
+                getController().getOSClient().getWebURL()
+                    + "/storage_login.html").getUiComponent(), cc
+                .xyw(1, row, 4));
             row += 2;
         }
 
@@ -218,12 +218,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      */
     protected void initComponents() {
         // FIXME Use separate account stores for diffrent servers?
-        usernameLabel = new JLabel(Translation.getTranslation(
-                "wizard.webservice.username"));
+        usernameLabel = new JLabel(Translation
+            .getTranslation("wizard.webservice.username"));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
-        passwordLabel = new JLabel(Translation.getTranslation(
-                "wizard.webservice.password"));
+        passwordLabel = new JLabel(Translation
+            .getTranslation("wizard.webservice.password"));
         passwordField = new JPasswordField();
 
         if (client.isConnected()) {
@@ -231,10 +231,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             passwordField.setText(client.getPassword());
         }
 
-        rememberPasswordBox = BasicComponentFactory.createCheckBox(
-            PreferencesEntry.SERVER_REMEMBER_PASSWORD.getModel(getController()),
-            Translation.getTranslation(
-                    "wizard.login_online_storage.remember_password"));
+        rememberPasswordBox = BasicComponentFactory
+            .createCheckBox(
+                PreferencesEntry.SERVER_REMEMBER_PASSWORD
+                    .getModel(getController()),
+                Translation
+                    .getTranslation("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
@@ -307,11 +309,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             getController().getUIController().hideOSLines();
 
             // User is not interested in OS. Hide OS stuff in UI.
-            PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), false);
+            PreferencesEntry.USE_ONLINE_STORAGE
+                .setValue(getController(), false);
 
             // User will not want to back up to OS.
             PreferencesEntry.BACKUP_OS.setValue(getController(), false);
-            
+
             Wizard wizard = (Wizard) getWizardContext().getAttribute(
                 Wizard.WIZARD_ATTRIBUTE);
             wizard.next();

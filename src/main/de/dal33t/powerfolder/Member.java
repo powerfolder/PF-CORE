@@ -784,6 +784,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (peer == null) {
             return ConnectResult.failure("Peer is not set");
         }
+        boolean wasHandshaked = handshaked;
         boolean thisHandshakeCompleted = true;
         Identity identity = peer.getIdentity();
 
@@ -945,11 +946,13 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Reset things
         connectionRetries = 0;
 
-        // Inform nodemanger about it
-        getController().getNodeManager().onlineStateChanged(this);
-        
-        // Inform security manager to update account state.
-        getController().getSecurityManager().nodeAccountStateChanged(this);
+        if (wasHandshaked != handshaked) {
+            // Inform nodemanger about it
+            getController().getNodeManager().onlineStateChanged(this);
+
+            // Inform security manager to update account state.
+            getController().getSecurityManager().nodeAccountStateChanged(this);
+        }
 
         if (isInfo()) {
             logInfo("Connected ("
@@ -1131,10 +1134,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         expectedListMessages.clear();
         messageListenerSupport = null;
 
-        // Inform security manager to update account state.
-        getController().getSecurityManager().nodeAccountStateChanged(this);
-
         if (wasHandshaked) {
+            // Inform security manager to update account state.
+            getController().getSecurityManager().nodeAccountStateChanged(this);
+
             // Inform nodemanger about it
             getController().getNodeManager().onlineStateChanged(this);
 
@@ -1780,7 +1783,6 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Synchronizes the folder memberships on both sides
      */
     public void synchronizeFolderMemberships() {
-        logWarning("Sync memberships");
         if (isMySelf()) {
             return;
         }
