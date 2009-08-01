@@ -93,7 +93,7 @@ public enum Feature {
     /**
      * #1046: If the new security checks should be enabled.
      */
-    SECURITY_CHECKS();
+    SECURITY_CHECKS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
