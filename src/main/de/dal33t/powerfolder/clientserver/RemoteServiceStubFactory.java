@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.clientserver;
  * $Id$
  */
 
+import java.awt.EventQueue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class RemoteServiceStubFactory {
     private static final Logger LOG = Logger
@@ -85,15 +87,20 @@ public class RemoteServiceStubFactory {
         public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable
         {
-            RuntimeException rte = new RuntimeException("Invalid call");
+            RuntimeException rte = new RuntimeException("Call source");
             StackTraceElement[] te = rte.getStackTrace();
             for (StackTraceElement stackTraceElement : te) {
-                if (stackTraceElement.getMethodName().contains("handleMessage")) {
+                if (stackTraceElement.getMethodName().contains("handleMessage"))
+                {
                     throw new RemoteCallException(
                         "Illegal to call remote service method (" + serviceId
                             + " " + method + ") in message handling code ("
                             + stackTraceElement + ").", rte);
                 }
+            }
+            if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
+                LOG.log(Level.WARNING,
+                    "Call to remote service executed in EDT thread", rte);
             }
             RequestExecutor executor = new RequestExecutor(controller,
                 remoteSide);
