@@ -464,17 +464,19 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
-            mouseOver = true;
-            if (!expanded.get()) {
-                getController().schedule(new TimerTask() {
-                    public void run() {
-                        if (mouseOver) {
-                            if (!expanded.get()) {
-                                expand();
+            if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
+                mouseOver = true;
+                if (!expanded.get()) {
+                    getController().schedule(new TimerTask() {
+                        public void run() {
+                            if (mouseOver) {
+                                if (!expanded.get()) {
+                                    expand();
+                                }
                             }
                         }
-                    }
-                }, 2000);
+                    }, 2000);
+                }
             }
         }
 

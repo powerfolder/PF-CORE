@@ -64,6 +64,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox magneticFrameBox;
     private JCheckBox translucentMainFrameCB;
     private JCheckBox mainAlwaysOnTopCB;
+    private JCheckBox autoExpandCB;
     private JLabel transPercLabel;
     private JSlider transPercSlider;
     private JCheckBox folderSyncCB;
@@ -166,6 +167,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 doMainOnTop(mainAlwaysOnTopCB.isSelected());
             }
         });
+
+        ValueModel aeModel = new ValueHolder(
+            PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
+        autoExpandCB = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(aeModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.auto_expand"));
 
         transPercSlider = new JSlider();
         transPercSlider.setMinimum(10);
@@ -294,7 +301,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -328,6 +335,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(autoExpandCB, cc.xyw(3, row, 2));
 
             if (getUIController().getMainFrame().getUIComponent()
                     .isAlwaysOnTopSupported()) {
@@ -424,6 +434,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
            mainAlwaysOnTopCB.isSelected());
+
+        PreferencesEntry.AUTO_EXPAND.setValue(getController(),
+           autoExpandCB.isSelected());
 
         PreferencesEntry.MIN_TO_SYS_TRAY.setValue(getController(),
            minToSysTrayCB.isSelected());

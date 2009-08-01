@@ -96,6 +96,8 @@ public enum PreferencesEntry {
 
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
 
+    AUTO_EXPAND("auto.expand", true),
+
     /** Whether the backup os check box is checked. */
     BACKUP_OS("backup.os", true),
 

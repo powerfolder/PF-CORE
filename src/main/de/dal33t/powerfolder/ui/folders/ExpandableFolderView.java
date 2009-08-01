@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -819,17 +820,19 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
-            mouseOver = true;
-            if (!expanded.get()) {
-                getController().schedule(new TimerTask() {
-                    public void run() {
-                        if (mouseOver) {
-                            if (!expanded.get()) {
-                                expand();
+            if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
+                mouseOver = true;
+                if (!expanded.get()) {
+                    getController().schedule(new TimerTask() {
+                        public void run() {
+                            if (mouseOver) {
+                                if (!expanded.get()) {
+                                    expand();
+                                }
                             }
                         }
-                    }
-                }, 2000);
+                    }, 2000);
+                }
             }
         }
 
