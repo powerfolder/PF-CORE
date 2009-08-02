@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -19,21 +19,16 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaOrangeMetallicLookAndFeel;
 
 public class OrangeMetallicSkin implements Skin {
 
-    private final String name;
-
-    public OrangeMetallicSkin(String name) {
-        this.name = name;
-    }
-
     public String getName() {
-        return name;
+        return Translation.getTranslation("skin.orange_metallic");
     }
 
-    public Class getLookAndFeelClass() {
+    public Class<SyntheticaOrangeMetallicLookAndFeel> getLookAndFeelClass() {
         return SyntheticaOrangeMetallicLookAndFeel.class;
     }
 

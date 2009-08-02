@@ -124,9 +124,10 @@ import de.dal33t.powerfolder.util.update.UpdaterHandler;
  */
 public class UIController extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(UIController.class.getName());
+    private static final Logger log = Logger.getLogger(UIController.class
+        .getName());
     private static final long TEN_GIG = 10L << 30;
-    
+
     public static final int MAIN_FRAME_ID = 0;
     public static final int INFO_FRAME_ID = 1;
     public static final int CHAT_FRAME_ID = 2;
@@ -326,8 +327,7 @@ public class UIController extends PFComponent {
                 new MainFrameBlinkManager(UIController.this);
             }
         });
-        
-        
+
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
     }
@@ -345,7 +345,8 @@ public class UIController extends PFComponent {
                 BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL
                     .getValue(getController()));
             } catch (IOException e1) {
-                log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
+                log.log(Level.WARNING, "Unable to goto PowerFolder homepage",
+                    e1);
             }
         }
         thisVersionStartCount++;
@@ -370,8 +371,7 @@ public class UIController extends PFComponent {
 
     private long calculateTotalLocalSharedSize() {
         long totalSize = 0L;
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             totalSize += folder.getStatistic().getSize(
                 getController().getMySelf());
@@ -417,7 +417,8 @@ public class UIController extends PFComponent {
                         BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
                             .getValue(getController()));
                     } catch (IOException e1) {
-                        log.log(Level.WARNING, "Unable to goto PowerFolder homepage", e1);
+                        log.log(Level.WARNING,
+                            "Unable to goto PowerFolder homepage", e1);
                     }
                 }
             }
@@ -429,45 +430,45 @@ public class UIController extends PFComponent {
         menu.addSeparator();
 
         Menu notificationsMenu = new Menu(Translation
-                .getTranslation("systray.notifications"));
+            .getTranslation("systray.notifications"));
         menu.add(notificationsMenu);
         notificationsMenu.addActionListener(systrayActionHandler);
 
         final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(Translation
-                .getTranslation("systray.notifications.chat"));
+            .getTranslation("systray.notifications.chat"));
         notificationsMenu.add(chatMenuItem);
         chatMenuItem.setState((Boolean) applicationModel
-                .getChatNotificationsValueModel().getValue());
+            .getChatNotificationsValueModel().getValue());
         chatMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 applicationModel.getChatNotificationsValueModel().setValue(
-                        chatMenuItem.getState());
+                    chatMenuItem.getState());
             }
         });
-        applicationModel.getChatNotificationsValueModel().addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                chatMenuItem.setState((Boolean) evt.getNewValue());
-            }
-        });
+        applicationModel.getChatNotificationsValueModel()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    chatMenuItem.setState((Boolean) evt.getNewValue());
+                }
+            });
 
-        final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(Translation
-                .getTranslation("systray.notifications.system"));
+        final CheckboxMenuItem systemMenuItem = new CheckboxMenuItem(
+            Translation.getTranslation("systray.notifications.system"));
         notificationsMenu.add(systemMenuItem);
         systemMenuItem.setState((Boolean) applicationModel
-                .getSystemNotificationsValueModel().getValue());
+            .getSystemNotificationsValueModel().getValue());
         systemMenuItem.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 applicationModel.getSystemNotificationsValueModel().setValue(
-                        systemMenuItem.getState());
+                    systemMenuItem.getState());
             }
         });
-        applicationModel.getSystemNotificationsValueModel().addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                systemMenuItem.setState((Boolean) evt.getNewValue());
-            }
-        });
+        applicationModel.getSystemNotificationsValueModel()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    systemMenuItem.setState((Boolean) evt.getNewValue());
+                }
+            });
 
         sysTrayFoldersMenu = new Menu(Translation
             .getTranslation("general.powerfolder"));
@@ -572,7 +573,8 @@ public class UIController extends PFComponent {
                     try {
                         FileUtils.openFile(localBase);
                     } catch (IOException e1) {
-                        log.log(Level.WARNING, "Problem opening folder " + folderName, e1);
+                        log.log(Level.WARNING, "Problem opening folder "
+                            + folderName, e1);
                     }
                 }
             }
@@ -607,17 +609,14 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Returns the skin - may be empty;
-     *
-     * @return
+     * @return the available skins - may be empty;
      */
     public Skin[] getSkins() {
         return skins;
     }
 
     /**
-     * Returns the active skin - may be null.
-     * @return
+     * @return the active skin - may be null.
      */
     public Skin getActiveSkin() {
         return activeSkin;
@@ -627,22 +626,10 @@ public class UIController extends PFComponent {
 
         List<Skin> skinList = new ArrayList<Skin>();
 
-        // Load our defaults.
-        skinList.add(new BlackMoonSkin(Translation.getTranslation("skin.black_moon")));
-        skinList.add(new BlackStarSkin(Translation.getTranslation("skin.black_star")));
-        skinList.add(new BlueIceSkin(Translation.getTranslation("skin.blue_ice")));
-        skinList.add(new BlueMoonSkin(Translation.getTranslation("skin.blue_moon")));
-        skinList.add(new BlueSteelSkin(Translation.getTranslation("skin.blue_steel")));
-        skinList.add(new GreenDreamSkin(Translation.getTranslation("skin.green_dream")));
-        skinList.add(new MauveMetallicSkin(Translation.getTranslation("skin.mauve_metallic")));
-        skinList.add(new OrangeMetallicSkin(Translation.getTranslation("skin.orange_metallic")));
-        skinList.add(new SilverMoonSkin(Translation.getTranslation("skin.silver_moon")));
-        skinList.add(new SkyMetallicSkin(Translation.getTranslation("skin.sky_metallic")));
-        skinList.add(new WhiteVisionSkin(Translation.getTranslation("skin.white_vision")));
-
-        // Now load any others
+        // Now all skins (defaults + additional skins)
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
         for (Skin sk : skinLoader) {
+            logWarning("Loading skin " + sk.getName());
             skinList.add(sk);
         }
 
@@ -658,7 +645,8 @@ public class UIController extends PFComponent {
             skins[i++] = skin;
         }
 
-        String skinName = PreferencesEntry.SKIN_NAME.getValueString(getController());
+        String skinName = PreferencesEntry.SKIN_NAME
+            .getValueString(getController());
         boolean found = false;
         for (Skin skin : skins) {
             if (skin.getName().equals(skinName)) {
@@ -670,23 +658,24 @@ public class UIController extends PFComponent {
         if (!found) {
             // Can not find one with this name - use the first one.
             activeSkin = skins[0];
-            PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin.getName());
+            PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin
+                .getName());
         }
 
         String fileName = activeSkin.getIconsPropertiesFileName();
         Icons.loadOverrideFile(fileName);
         try {
-            LookAndFeelSupport.setLookAndFeel((LookAndFeel) 
-                    activeSkin.getLookAndFeelClass().newInstance());
+            LookAndFeelSupport.setLookAndFeel((LookAndFeel) activeSkin
+                .getLookAndFeelClass().newInstance());
         } catch (InstantiationException e) {
-            logSevere("Failed to set look and feel for skin " +
-                    activeSkin.getName(), e);
+            logSevere("Failed to set look and feel for skin "
+                + activeSkin.getName(), e);
         } catch (IllegalAccessException e) {
-            logSevere("Failed to set look and feel for skin " +
-                    activeSkin.getName(), e);
+            logSevere("Failed to set look and feel for skin "
+                + activeSkin.getName(), e);
         } catch (UnsupportedLookAndFeelException e) {
-            logSevere("Failed to set look and feel for skin " +
-                    activeSkin.getName(), e);
+            logSevere("Failed to set look and feel for skin "
+                + activeSkin.getName(), e);
         }
     }
 
@@ -699,9 +688,8 @@ public class UIController extends PFComponent {
         if (!seenOome) {
             seenOome = true;
             int response = DialogFactory.genericDialog(getController(),
-                Translation
-                .getTranslation("low_memory.error.title"), Translation
-                .getTranslation("low_memory.error.text"),
+                Translation.getTranslation("low_memory.error.title"),
+                Translation.getTranslation("low_memory.error.text"),
                 new String[]{
                     Translation.getTranslation("general.ok"),
                     Translation
@@ -729,8 +717,9 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
-     * @param folderInfo info of the folder to display files information for.
+     * 
+     * @param folderInfo
+     *            info of the folder to display files information for.
      */
     public void openFilesInformation(FolderInfo folderInfo) {
         openFilesInformation(folderInfo, Integer.MIN_VALUE);
@@ -738,8 +727,9 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
-     * @param folderInfo info of the folder to display files information for.
+     * 
+     * @param folderInfo
+     *            info of the folder to display files information for.
      */
     public void openFilesInformationLatest(FolderInfo folderInfo) {
         informationFrame.displayFolderFilesLatest(folderInfo);
@@ -748,20 +738,24 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
-     * @param folderInfo info of the folder to display files information for.
-     * @param directoryFilterMode the directory filter mode to be in
+     * 
+     * @param folderInfo
+     *            info of the folder to display files information for.
+     * @param directoryFilterMode
+     *            the directory filter mode to be in
      */
-    public void openFilesInformation(FolderInfo folderInfo, int directoryFilterMode) {
+    public void openFilesInformation(FolderInfo folderInfo,
+        int directoryFilterMode)
+    {
         informationFrame.displayFolderFiles(folderInfo, directoryFilterMode);
         displayInformationWindow();
     }
 
     /**
      * Opens the Settings information for a folder.
-     *
-     * @param folderInfo info of the folder to display member settings
-     * information for.
+     * 
+     * @param folderInfo
+     *            info of the folder to display member settings information for.
      */
     public void openSettingsInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderSettings(folderInfo);
@@ -770,9 +764,9 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Members information for a folder.
-     *
-     * @param folderInfo info of the folder to display member computer
-     * information for.
+     * 
+     * @param folderInfo
+     *            info of the folder to display member computer information for.
      */
     public void openMembersInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderMembers(folderInfo);
@@ -781,9 +775,9 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Problems information for a folder.
-     *
-     * @param folderInfo info of the folder to display problems
-     * information for.
+     * 
+     * @param folderInfo
+     *            info of the folder to display problems information for.
      */
     public void openProblemsInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderProblems(folderInfo);
@@ -792,8 +786,9 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
-     * @param memberInfo info of the folder to display files information for.
+     * 
+     * @param memberInfo
+     *            info of the folder to display files information for.
      */
     public void openChat(MemberInfo memberInfo) {
         if (memberInfo != null) {
@@ -816,7 +811,7 @@ public class UIController extends PFComponent {
         informationFrame.displayDebug();
         displayInformationWindow();
     }
-    
+
     public void openInformationCard(InformationCard card) {
         informationFrame.displayCard(card);
         displayInformationWindow();
@@ -832,7 +827,8 @@ public class UIController extends PFComponent {
     }
 
     public void syncFolder(FolderInfo folderInfo) {
-        Folder folder = getController().getFolderRepository().getFolder(folderInfo);
+        Folder folder = getController().getFolderRepository().getFolder(
+            folderInfo);
 
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
@@ -858,39 +854,39 @@ public class UIController extends PFComponent {
     /**
      * This method handles movement of the main frame and nudges any
      * MagneticFrames. USE_MAGNETIC_FRAMES pref xor control key activates this.
-     *
+     * 
      * @param diffX
      * @param diffY
      */
     public void mainFrameMoved(boolean controlKeyDown, int diffX, int diffY) {
 
         Boolean magnetic = PreferencesEntry.USE_MAGNETIC_FRAMES
-                .getValueBoolean(getController());
+            .getValueBoolean(getController());
         if (magnetic ^ controlKeyDown) {
-            informationFrame.nudge(diffX,  diffY);
-            chatFrame.nudge(diffX,  diffY);
-            systemMonitorFrame.nudge(diffX,  diffY);
+            informationFrame.nudge(diffX, diffY);
+            chatFrame.nudge(diffX, diffY);
+            systemMonitorFrame.nudge(diffX, diffY);
         }
     }
 
     /**
      * Handles single file transfer requests. Displays dialog to send offer to
      * member.
-     *
+     * 
      * @param file
      * @param node
      */
     public void transferSingleFile(File file, Member node) {
         SingleFileTransferDialog sftd = new SingleFileTransferDialog(
-                getController(), file, node);
+            getController(), file, node);
         sftd.open();
     }
 
     /**
-     * This returns most recently active PowerFolder frame. Possibly
-     * the InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs,
-     * so focus does not always jump to the wrong (Main) frame.
-     *
+     * This returns most recently active PowerFolder frame. Possibly the
+     * InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs, so
+     * focus does not always jump to the wrong (Main) frame.
+     * 
      * @return
      */
     public Window getActiveFrame() {
@@ -940,16 +936,16 @@ public class UIController extends PFComponent {
 
     /**
      * Show the pending messages button in the status bar.
-     *
+     * 
      * @param show
      */
     public void showPendingMessages(boolean show) {
         mainFrame.showPendingMessages(show);
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class UpdateSystrayTask extends TimerTask {
         public void run() {
@@ -1172,8 +1168,8 @@ public class UIController extends PFComponent {
                 }
 
                 else {
-                    text1 = Translation.getTranslation(
-                            "check_status.syncing", synchronizingFolders);
+                    text1 = Translation.getTranslation("check_status.syncing",
+                        synchronizingFolders);
                     if (!synchronizing.get()) {
                         changed = true;
                         synchronizing.set(true);
@@ -1187,34 +1183,36 @@ public class UIController extends PFComponent {
                     .getValueBoolean(getController()))
             {
                 String text2 = Translation.getTranslation(
-                        "check_status.powerfolders", Format
+                    "check_status.powerfolders", Format
                         .formatBytes(nTotalBytes), folders.size());
 
-                notifyMessage(Translation
-                    .getTranslation("check_status.title"), text1
-                    + "\n\n" + text2, false);
+                notifyMessage(Translation.getTranslation("check_status.title"),
+                    text1 + "\n\n" + text2, false);
             }
         }
     }
 
     /**
      * Shows a notification message only if the UI is minimized.
-     *
+     * 
      * @param title
      *            The title to display under 'PowerFolder'.
      * @param message
      *            Message to show if notification is displayed.
      * @param chat
-     *           True if this is a chat message,
-     *           otherwise it is a system message
+     *            True if this is a chat message, otherwise it is a system
+     *            message
      */
     public void notifyMessage(String title, String message, boolean chat) {
         if (started && mainFrame.isIconifiedOrHidden()
-            && !getController().isShuttingDown()) {
-            if (chat ? (Boolean) applicationModel
-                    .getChatNotificationsValueModel().getValue() : (Boolean)
-                    applicationModel.getSystemNotificationsValueModel()
-                            .getValue()) {
+            && !getController().isShuttingDown())
+        {
+            if (chat
+                ? (Boolean) applicationModel.getChatNotificationsValueModel()
+                    .getValue()
+                : (Boolean) applicationModel.getSystemNotificationsValueModel()
+                    .getValue())
+            {
                 NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message, true);
                 notificationHandler.show();
@@ -1223,17 +1221,17 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Only use this for preview from the DialogSettingsTab.
-     * It by-passes all the usual safty checks.
-     *
+     * Only use this for preview from the DialogSettingsTab. It by-passes all
+     * the usual safty checks.
+     * 
      * @param title
      * @param message
      */
     public void previewMessage(String title, String message) {
 
-            NotificationHandler notificationHandler = new NotificationHandler(
-                getController(), title, message, false);
-            notificationHandler.show();
+        NotificationHandler notificationHandler = new NotificationHandler(
+            getController(), title, message, false);
+        notificationHandler.show();
     }
 
     /**
@@ -1252,11 +1250,14 @@ public class UIController extends PFComponent {
      *            Whether to run the task if PF is already shown.
      */
     public void notifyMessage(String title, String message, TimerTask task,
-        boolean runIfShown) {
-        if (started && mainFrame.isIconifiedOrHidden() &&
-                !getController().isShuttingDown() && (Boolean)
-                applicationModel.getSystemNotificationsValueModel()
-                        .getValue()) {
+        boolean runIfShown)
+    {
+        if (started
+            && mainFrame.isIconifiedOrHidden()
+            && !getController().isShuttingDown()
+            && (Boolean) applicationModel.getSystemNotificationsValueModel()
+                .getValue())
+        {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
             notificationHandler.show();
@@ -1268,38 +1269,41 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Class to handle local and remote mass deletion events.
-     * This pushes warnings into the app model.
+     * Class to handle local and remote mass deletion events. This pushes
+     * warnings into the app model.
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(final LocalMassDeletionEvent event) {
             WarningEvent warningEvent = new WarningEvent(new Runnable() {
                 public void run() {
-                    int response = DialogFactory.genericDialog(getController(),
+                    int response = DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("uicontroller.local_mass_delete.title"),
                             Translation.getTranslation(
-                                    "uicontroller.local_mass_delete.title"),
-                            Translation.getTranslation(
-                                    "uicontroller.local_mass_delete.message", 
-                                    event.getFolderInfo().name), new String[]{
-                            Translation.getTranslation(
-                                    "uicontroller.local_mass_delete.broadcast_deletions"),
-                            Translation.getTranslation(
-                                    "uicontroller.local_mass_delete.remove_folder_locally"),
-                            Translation.getTranslation("general.close")},
+                                "uicontroller.local_mass_delete.message", event
+                                    .getFolderInfo().name),
+                            new String[]{
+                                Translation
+                                    .getTranslation("uicontroller.local_mass_delete.broadcast_deletions"),
+                                Translation
+                                    .getTranslation("uicontroller.local_mass_delete.remove_folder_locally"),
+                                Translation.getTranslation("general.close")},
                             0, GenericDialogType.WARN);
                     if (response == 0) {
                         // Broadcast deletions
-                        FolderRepository folderRepository =
-                                getController().getFolderRepository();
-                        Folder folder = folderRepository.getFolder(
-                                event.getFolderInfo());
+                        FolderRepository folderRepository = getController()
+                            .getFolderRepository();
+                        Folder folder = folderRepository.getFolder(event
+                            .getFolderInfo());
                         folder.scanLocalFiles(true);
                     } else if (response == 1) {
                         // Remove folder locally
-                        FolderRepository folderRepository =
-                                getController().getFolderRepository();
-                        Folder folder = folderRepository.getFolder(
-                                event.getFolderInfo());
+                        FolderRepository folderRepository = getController()
+                            .getFolderRepository();
+                        Folder folder = folderRepository.getFolder(event
+                            .getFolderInfo());
                         folderRepository.removeFolder(folder, false);
                     }
                 }
@@ -1315,8 +1319,8 @@ public class UIController extends PFComponent {
                 Translation.getTranslation(
                     "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, event.getDeletePercentage(),
-                    event.getFolderInfo().name, event.getOldProfile()
-                        .getName(), event.getNewProfile()
+                    event.getFolderInfo().name,
+                    event.getOldProfile().getName(), event.getNewProfile()
                         .getName()));
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }

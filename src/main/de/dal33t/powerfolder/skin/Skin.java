@@ -37,7 +37,7 @@ public interface Skin {
     /**
      * @return SyntheticaLookAndFeel subclass.
      */
-    Class<LookAndFeel> getLookAndFeelClass();
+    Class<? extends LookAndFeel> getLookAndFeelClass();
 
     /**
      * @return Name of an icon properties file with icon overrides.

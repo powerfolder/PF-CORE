@@ -19,21 +19,16 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaWhiteVisionLookAndFeel;
 
 public class WhiteVisionSkin implements Skin {
 
-    private final String name;
-
-    public WhiteVisionSkin(String name) {
-        this.name = name;
-    }
-
     public String getName() {
-        return name;
+        return Translation.getTranslation("skin.white_vision");
     }
 
-    public Class getLookAndFeelClass() {
+    public Class<SyntheticaWhiteVisionLookAndFeel> getLookAndFeelClass() {
         return SyntheticaWhiteVisionLookAndFeel.class;
     }
 

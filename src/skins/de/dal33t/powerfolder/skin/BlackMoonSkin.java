@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -19,21 +19,16 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaBlackMoonLookAndFeel;
 
 public class BlackMoonSkin implements Skin {
 
-    private final String name;
-
-    public BlackMoonSkin(String name) {
-        this.name = name;
-    }
-
     public String getName() {
-        return name;
+        return Translation.getTranslation("skin.black_moon");
     }
 
-    public Class getLookAndFeelClass() {
+    public Class<SyntheticaBlackMoonLookAndFeel> getLookAndFeelClass() {
         return SyntheticaBlackMoonLookAndFeel.class;
     }
 
