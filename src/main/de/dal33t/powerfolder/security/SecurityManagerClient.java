@@ -20,8 +20,11 @@
 package de.dal33t.powerfolder.security;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -192,37 +195,54 @@ public class SecurityManagerClient extends AbstractSecurityManager {
      * members on our folders.
      */
     private void prefetchAccountInfos() {
-        // TODO Bulk request new account infos.
+        Collection<MemberInfo> refresh = new ArrayList<MemberInfo>();
         for (Member node : getController().getNodeManager()
             .getNodesAsCollection())
         {
-            AccountInfo aInfo = autoRefresh(node);
-            fireNodeAccountStateChanged(node, aInfo);
+            if (shouldAutoRefresh(node)) {
+                refresh.add(node.getInfo());
+            }
+        }
+        try {
+            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
+                .getAccountInfos(refresh);
+            logWarning("Retrieved " + res.size() + " AccountInfos");
+            for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
+                Member node = entry.getKey().getNode(getController(), false);
+                if (node == null) {
+                    continue;
+                }
+                AccountInfo aInfo = entry.getValue();
+                if (CACHE_ENABLED) {
+                    sessions.put(node, new Session(aInfo));
+                }
+                fireNodeAccountStateChanged(node);
+            }
+        } catch (RemoteCallException e) {
+            logSevere("Unable to retrieve account info for " + refresh.size()
+                + " nodes. " + e);
+            logFiner(e);
         }
     }
 
     /**
      * Refreshes a AccountInfo for the given node if it should be pre-fetched.
-     * Otherwise tries to return cached entry.
+     * Otherwise tries to return cached entry. also fires account state change
+     * event.
      * 
      * @param node
-     * @return
      */
-    private AccountInfo autoRefresh(Member node) {
+    private void autoRefresh(Member node) {
+        if (shouldAutoRefresh(node)) {
+            getAccountInfo(node);
+        }
+        fireNodeAccountStateChanged(node);
+    }
+
+    private boolean shouldAutoRefresh(Member node) {
         // TODO: Use Member.isInteresting() ?
-        boolean refresh = node.isCompleteyConnected()
+        return node.isCompleteyConnected()
             && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
-        if (refresh) {
-            return getAccountInfo(node);
-        }
-        // Try to return cached
-        Session session = sessions.get(node);
-        // Cache hit
-        if (session != null && CACHE_ENABLED) {
-            return session.getAccountInfo();
-        }
-        // Unknown.
-        return null;
     }
 
     private final class DefaultRefresher implements Runnable {
@@ -242,8 +262,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 prefetchAccountInfos();
             }
 
-            AccountInfo aInfo = autoRefresh(node);
-            fireNodeAccountStateChanged(node, aInfo);
+            autoRefresh(node);
         }
     }
 
@@ -260,8 +279,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
             node.synchronizeFolderMemberships();
 
-            AccountInfo aInfo = autoRefresh(node);
-            fireNodeAccountStateChanged(node, aInfo);
+            autoRefresh(node);
         }
     }
 
@@ -274,10 +292,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
         public void run() {
             clearNodeCache(node);
-            AccountInfo aInfo = autoRefresh(node);
-            fireNodeAccountStateChanged(node, aInfo);
+            autoRefresh(node);
         }
-
     }
 
     private class Session {

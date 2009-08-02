@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.security;
 import java.util.EventObject;
 
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -32,23 +31,13 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class SecurityManagerEvent extends EventObject {
 
-    private AccountInfo accountInfo;
-
-    public SecurityManagerEvent(Member node, AccountInfo accountInfo) {
+    public SecurityManagerEvent(Member node) {
         super(node);
         Reject.ifNull(node, "Node is null");
-        this.accountInfo = accountInfo;
     }
 
     public Member getNode() {
         return (Member) getSource();
-    }
-
-    /**
-     * @return the new {@link AccountInfo} or null if not known / not available.
-     */
-    public AccountInfo getAccountInfo() {
-        return accountInfo;
     }
 
 }

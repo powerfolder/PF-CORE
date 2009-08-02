@@ -100,11 +100,8 @@ public abstract class AbstractSecurityManager extends PFComponent implements
 
     // Event handling *********************************************************
 
-    protected void fireNodeAccountStateChanged(Member node,
-        AccountInfo accountInfo)
-    {
-        listners.nodeAccountStateChanged(new SecurityManagerEvent(node,
-            accountInfo));
+    protected void fireNodeAccountStateChanged(Member node) {
+        listners.nodeAccountStateChanged(new SecurityManagerEvent(node));
     }
 
     public void addListener(SecurityManagerListener listner) {
