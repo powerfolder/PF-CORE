@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import javax.swing.LookAndFeel;
+
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaMauveMetallicLookAndFeel;
 
@@ -28,7 +30,7 @@ public class MauveMetallicSkin implements Skin {
         return Translation.getTranslation("skin.mauve_metallic");
     }
 
-    public Class<SyntheticaMauveMetallicLookAndFeel> getLookAndFeelClass() {
+    public Class<? extends LookAndFeel> getLookAndFeelClass() {
         return SyntheticaMauveMetallicLookAndFeel.class;
     }
 

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import javax.swing.LookAndFeel;
+
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaGreenDreamLookAndFeel;
 
@@ -28,7 +30,7 @@ public class GreenDreamSkin implements Skin {
         return Translation.getTranslation("skin.green_dream");
     }
 
-    public Class<SyntheticaGreenDreamLookAndFeel> getLookAndFeelClass() {
+    public Class<? extends LookAndFeel> getLookAndFeelClass() {
         return SyntheticaGreenDreamLookAndFeel.class;
     }
 

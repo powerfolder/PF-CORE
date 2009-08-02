@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import javax.swing.LookAndFeel;
+
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaWhiteVisionLookAndFeel;
 
@@ -28,7 +30,7 @@ public class WhiteVisionSkin implements Skin {
         return Translation.getTranslation("skin.white_vision");
     }
 
-    public Class<SyntheticaWhiteVisionLookAndFeel> getLookAndFeelClass() {
+    public Class<? extends LookAndFeel> getLookAndFeelClass() {
         return SyntheticaWhiteVisionLookAndFeel.class;
     }
 

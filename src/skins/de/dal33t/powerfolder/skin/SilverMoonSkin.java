@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import javax.swing.LookAndFeel;
+
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaSilverMoonLookAndFeel;
 
@@ -28,7 +30,7 @@ public class SilverMoonSkin implements Skin {
         return Translation.getTranslation("skin.silver_moon");
     }
 
-    public Class<SyntheticaSilverMoonLookAndFeel> getLookAndFeelClass() {
+    public Class<? extends LookAndFeel> getLookAndFeelClass() {
         return SyntheticaSilverMoonLookAndFeel.class;
     }
 
