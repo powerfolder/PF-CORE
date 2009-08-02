@@ -40,6 +40,10 @@ import de.dal33t.powerfolder.Controller;
  * archive first, and falls back to copying otherwise, or if forced to.
  * <i>Note:</i> No support for removal of old files (yet) - special care of
  * directories might be required
+ *
+ * Archives are stored in an archives directory, with suffix '_K_nnn', where
+ * 'nnn' is the version number. So 'data/info.txt' archive version 6 would be
+ * 'archive/data/info.txt_K_6'.
  * 
  * @author dante
  */
@@ -47,12 +51,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     private static final Logger log = Logger.getLogger(
             CopyOrMoveFileArchiver.class.getName());
-    private static final Comparator<File> VERSION_COMPARATOR = new Comparator<File>()
-    {
-        public int compare(File o1, File o2) {
-            return getVersionNumber(o1) - getVersionNumber(o2);
-        }
-    };
+    private static final VersionComparator VERSION_COMPARATOR =
+            new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern.compile(
             "(.*)_K_\\d+");
 
@@ -214,6 +214,15 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             + fileInfo.getVersion());
     }
 
+    /**
+     * Parse the file name for the last '_' and extract the following version
+     * number. Like 'file.txt_K_45' returns 45.
+     *
+     * @param file
+     *          file to parse name.
+     * @return
+     *          the version.
+     */
     private static int getVersionNumber(File file) {
         String tmp = file.getName();
         tmp = tmp.substring(tmp.lastIndexOf('_') + 1);
@@ -242,27 +251,42 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
-    public List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo) {
+    /**
+     * Find arcive directory and return a list of file versions found for a
+     * FileInfo.
+     *
+     * @param fileInfo
+     * @return
+     */
+    public List<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
 
         // Find archive subdirectory.
-        File subdirectory = new File(archiveDirectory, fileInfo.getLocationInFolder());
+        File subdirectory = new File(archiveDirectory,
+                fileInfo.getLocationInFolder());
         if (!subdirectory.exists()) {
             return EMPTY_VERSIONS_LIST;
         }
 
-        // Iterate files and find versions.
+        List<FileVersionInfo> list = new ArrayList<FileVersionInfo>();
+
+        // Iterate files in the archive and find versions.
         for (File file : subdirectory.listFiles()) {
 
-            // Look for version numbers; should be after the last '_'.
-            String fileName = file.getName();
-            int lastUnderscoreIndex = fileName.lastIndexOf('_');
-            String versionString = fileName.substring(lastUnderscoreIndex + 1);
-            int version = Integer.parseInt(versionString);
-
             FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
-                    version, file.length(), new Date(file.lastModified()));
+                    getVersionNumber(file), file.length(),
+                    new Date(file.lastModified()));
+            list.add(fileVersionInfo);
         }
 
-        return null;
+        return list;
+    }
+
+    /**
+     * Comparator for comparing file versions.
+     */
+    private static class VersionComparator implements Comparator<File> {
+        public int compare(File o1, File o2) {
+            return getVersionNumber(o1) - getVersionNumber(o2);
+        }
     }
 }

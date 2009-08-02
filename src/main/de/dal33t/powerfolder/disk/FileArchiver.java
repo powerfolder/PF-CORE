@@ -62,5 +62,5 @@ public interface FileArchiver {
 
     ArchiveMode getArchiveMode();
 
-    List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo);
+    List<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo);
 }

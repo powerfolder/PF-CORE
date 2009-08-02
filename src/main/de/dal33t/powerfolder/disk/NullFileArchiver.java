@@ -42,7 +42,7 @@ public class NullFileArchiver implements FileArchiver {
         return ArchiveMode.NO_BACKUP;
     }
 
-    public List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo) {
+    public List<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
         return EMPTY_VERSIONS_LIST;
     }
 }
