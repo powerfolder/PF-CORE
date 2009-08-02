@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.text.ParseException;
+
 import javax.swing.LookAndFeel;
 
 import de.dal33t.powerfolder.util.Translation;
@@ -30,8 +32,8 @@ public class SkyMetallicSkin implements Skin {
         return Translation.getTranslation("skin.sky_metallic");
     }
 
-    public Class<? extends LookAndFeel> getLookAndFeelClass() {
-        return SyntheticaSkyMetallicLookAndFeel.class;
+    public LookAndFeel getLookAndFeel() throws ParseException {
+        return new SyntheticaSkyMetallicLookAndFeel();
     }
 
     public String getIconsPropertiesFileName() {

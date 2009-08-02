@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.text.ParseException;
+
 import javax.swing.LookAndFeel;
 
 import de.dal33t.powerfolder.util.Translation;
@@ -27,12 +29,11 @@ import de.javasoft.plaf.synthetica.SyntheticaBlueMoonLookAndFeel;
 public class BlueMoonSkin implements Skin {
 
     public String getName() {
-        return Translation
-        .getTranslation("skin.blue_moon");
+        return Translation.getTranslation("skin.blue_moon");
     }
 
-    public Class<? extends LookAndFeel> getLookAndFeelClass() {
-        return SyntheticaBlueMoonLookAndFeel.class;
+    public LookAndFeel getLookAndFeel() throws ParseException {
+        return new SyntheticaBlueMoonLookAndFeel();
     }
 
     public String getIconsPropertiesFileName() {

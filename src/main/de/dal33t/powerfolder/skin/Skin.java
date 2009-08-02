@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.text.ParseException;
+
 import javax.swing.LookAndFeel;
 
 /**
@@ -35,9 +37,11 @@ public interface Skin {
     String getName();
 
     /**
-     * @return SyntheticaLookAndFeel subclass.
+     * @return LookAndFeel.
+     * @throws ParseException
+     *             If something went wrong on parsing the skin.
      */
-    Class<? extends LookAndFeel> getLookAndFeelClass();
+    LookAndFeel getLookAndFeel() throws ParseException;
 
     /**
      * @return Name of an icon properties file with icon overrides.

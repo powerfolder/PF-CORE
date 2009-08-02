@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.text.ParseException;
+
 import javax.swing.LookAndFeel;
 
 import de.dal33t.powerfolder.util.Translation;
@@ -30,10 +32,10 @@ public class GreenDreamSkin implements Skin {
         return Translation.getTranslation("skin.green_dream");
     }
 
-    public Class<? extends LookAndFeel> getLookAndFeelClass() {
-        return SyntheticaGreenDreamLookAndFeel.class;
+    public LookAndFeel getLookAndFeel() throws ParseException {
+        return new SyntheticaGreenDreamLookAndFeel();
     }
-
+    
     public String getIconsPropertiesFileName() {
         return "skin/GreenDreamIcons.properties";
     }

@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,18 +80,7 @@ import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.skin.BlackMoonSkin;
-import de.dal33t.powerfolder.skin.BlackStarSkin;
-import de.dal33t.powerfolder.skin.BlueIceSkin;
-import de.dal33t.powerfolder.skin.BlueMoonSkin;
-import de.dal33t.powerfolder.skin.BlueSteelSkin;
-import de.dal33t.powerfolder.skin.GreenDreamSkin;
-import de.dal33t.powerfolder.skin.MauveMetallicSkin;
-import de.dal33t.powerfolder.skin.OrangeMetallicSkin;
-import de.dal33t.powerfolder.skin.SilverMoonSkin;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.skin.SkyMetallicSkin;
-import de.dal33t.powerfolder.skin.WhiteVisionSkin;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.chat.ChatFrame;
 import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
@@ -666,14 +656,11 @@ public class UIController extends PFComponent {
         Icons.loadOverrideFile(fileName);
         try {
             LookAndFeelSupport.setLookAndFeel((LookAndFeel) activeSkin
-                .getLookAndFeelClass().newInstance());
-        } catch (InstantiationException e) {
-            logSevere("Failed to set look and feel for skin "
-                + activeSkin.getName(), e);
-        } catch (IllegalAccessException e) {
-            logSevere("Failed to set look and feel for skin "
-                + activeSkin.getName(), e);
+                .getLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
+            logSevere("Failed to set look and feel for skin "
+                + activeSkin.getName(), e);
+        } catch (ParseException e) {
             logSevere("Failed to set look and feel for skin "
                 + activeSkin.getName(), e);
         }
