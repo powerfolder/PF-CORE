@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.disk.FileVersionInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -28,7 +29,10 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.Set;
 
 import com.jgoodies.forms.layout.FormLayout;
@@ -51,7 +55,9 @@ public class FileVersionsPanel extends PFUIComponent {
     private JLabel emptyLabel;
     private JScrollPane scrollPane;
     private FileVersionsTableModel fileVersionsTableModel;
+    private FileVersionsTable fileVersionsTable;
     private volatile FileInfo fileInfo;
+    private RestoreAction restoreAction;
 
     public FileVersionsPanel(Controller controller) {
         super(controller);
@@ -63,15 +69,20 @@ public class FileVersionsPanel extends PFUIComponent {
             // Initalize components
             initComponents();
 
+            scrollPane = new JScrollPane(fileVersionsTable);
+
             FormLayout layout = new FormLayout(
-                        "pref:grow",
-                        "fill:0:grow");
+                    "pref:grow", "pref, 3dlu, pref, 3dlu, fill:0:grow");
             DefaultFormBuilder builder = new DefaultFormBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
+
+            builder.add(createButtonPanel(), cc.xy(1, 1));
+            builder.addSeparator(null, cc.xy(1, 3));
+
             // emptyLabel and scrollPane occupy the same slot.
-            builder.add(emptyLabel, cc.xy(1, 1));
-            builder.add(scrollPane, cc.xy(1, 1));
+            builder.add(emptyLabel, cc.xy(1, 5));
+            builder.add(scrollPane, cc.xy(1, 5));
 
             panel = builder.getPanel();
 
@@ -80,17 +91,32 @@ public class FileVersionsPanel extends PFUIComponent {
         return panel;
     }
 
+    private Component createButtonPanel() {
+        FormLayout layout = new FormLayout(
+                "pref, fill:0:grow", "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(new JButton(restoreAction), cc.xy(1, 1));
+        return builder.getPanel();
+    }
+
     private void initComponents() {
 
         fileVersionsTableModel = new FileVersionsTableModel(getController());
-        FileVersionsTable fileVersionsTable 
-                = new FileVersionsTable(fileVersionsTableModel);
+        fileVersionsTable = new FileVersionsTable(fileVersionsTableModel);
+        fileVersionsTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        enableRestoreAction();
+                    }
+                });
 
         emptyLabel = new JLabel(Translation.getTranslation(
                 "file_version_tab.no_versions_available"), SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
-        scrollPane = new JScrollPane(fileVersionsTable);
+        restoreAction = new RestoreAction(getController());
     }
 
     public void setFileInfo(FileInfo fileInfo) {
@@ -125,10 +151,17 @@ public class FileVersionsPanel extends PFUIComponent {
 
         if (state == STATE_LOADING) {
             emptyLabel.setText("");
-        } else if (state == STATE_EMPTY)  {
+        } else if (state == STATE_EMPTY) {
             emptyLabel.setText(Translation.getTranslation(
                     "file_version_tab.no_versions_available"));
         }
+
+        enableRestoreAction();
+    }
+
+    private void enableRestoreAction() {
+        restoreAction.setEnabled(scrollPane.isVisible() &&
+                fileVersionsTable.getSelectedRow() > -1);
     }
 
     ///////////////////
@@ -166,6 +199,17 @@ public class FileVersionsPanel extends PFUIComponent {
             }
 
             return null;
+        }
+    }
+
+    private class RestoreAction extends BaseAction {
+
+        RestoreAction(Controller controller) {
+            super("action_restore_archive", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // @todo harry to implement
         }
     }
 }

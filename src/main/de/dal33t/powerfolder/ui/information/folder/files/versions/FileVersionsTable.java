@@ -24,8 +24,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -37,7 +36,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 /**
- * Table to display files of a folder.
+ * Table to display file versions of a file.
  */
 public class FileVersionsTable extends JTable {
 
@@ -51,6 +50,8 @@ public class FileVersionsTable extends JTable {
 
         setColumnSelectionAllowed(false);
         setShowGrid(false);
+        getSelectionModel().setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION);
 
         setupColumns();
 
@@ -73,11 +74,11 @@ public class FileVersionsTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(40);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(40);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(40);
     }
 
     /**
