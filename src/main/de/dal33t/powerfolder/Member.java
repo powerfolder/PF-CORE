@@ -399,12 +399,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the number of currently running connection tries. Should be 1
      */
     public int markConnecting() {
-        int connectTries = currentConnectTries.incrementAndGet();
-        if (connectTries >= 2) {
-            logWarning("Multiple connection tries detected (" + connectTries
-                + ")", new RuntimeException("from here"));
-        }
-        return connectTries;
+        return currentConnectTries.incrementAndGet();
     }
 
     /**

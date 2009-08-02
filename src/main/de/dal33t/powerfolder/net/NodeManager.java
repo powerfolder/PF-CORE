@@ -79,7 +79,8 @@ import de.dal33t.powerfolder.util.task.SendMessageTask;
  */
 public class NodeManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(NodeManager.class.getName());
+    private static final Logger log = Logger.getLogger(NodeManager.class
+        .getName());
 
     /** The list of active acceptors for incoming connections */
     List<AbstractAcceptor> acceptors;
@@ -93,7 +94,7 @@ public class NodeManager extends PFComponent {
     private List<AddressRange> lanRanges;
 
     private Member mySelf;
-    
+
     /**
      * Set containing all nodes, that went online in the meanwhile (since last
      * broadcast)
@@ -137,7 +138,8 @@ public class NodeManager extends PFComponent {
             }
             ConfigurationEntry.NODE_ID.setValue(getController(), id);
         }
-        String networkId = ConfigurationEntry.NETWORK_ID.getValue(getController());
+        String networkId = ConfigurationEntry.NETWORK_ID
+            .getValue(getController());
         mySelf = new Member(getController(),
             new MemberInfo(nick, id, networkId));
         logInfo("I am '" + mySelf.getNick() + "'");
@@ -154,7 +156,7 @@ public class NodeManager extends PFComponent {
 
         // Acceptors
         acceptors = new CopyOnWriteArrayList<AbstractAcceptor>();
-        
+
         // Value message/event listner support
         valveMessageListenerSupport = new MessageListenerSupport(this);
 
@@ -239,8 +241,8 @@ public class NodeManager extends PFComponent {
 
         Collection<Member> conNode = new ArrayList<Member>(connectedNodes);
         logFine("Shutting down connected nodes (" + conNode.size() + ")");
-        ExecutorService shutdownThreadPool = Executors.newFixedThreadPool(Math.max(1,
-            conNode.size() / 5));
+        ExecutorService shutdownThreadPool = Executors.newFixedThreadPool(Math
+            .max(1, conNode.size() / 5));
         Collection<Future<?>> shutdowns = new ArrayList<Future<?>>();
         for (final Member node : conNode) {
             Runnable killer = new Runnable() {
@@ -396,7 +398,7 @@ public class NodeManager extends PFComponent {
     public Member getMySelf() {
         return mySelf;
     }
-    
+
     /**
      * @return the network ID this nodemanager belongs to. #1373
      */
@@ -596,7 +598,7 @@ public class NodeManager extends PFComponent {
      * 
      * @param node
      * @param friend
-     * @param personalMessage 
+     * @param personalMessage
      */
     public void friendStateChanged(Member node, boolean friend,
         String personalMessage)
@@ -990,7 +992,12 @@ public class NodeManager extends PFComponent {
             }
             // Complete handshake
             try {
-                member.markConnecting();
+                int connectionTries = member.markConnecting();
+                if (connectionTries >= 2) {
+                    logWarning("Multiple connection tries detected ("
+                        + connectionTries + ")", new RuntimeException(
+                        "from here"));
+                }
                 if (member.setPeer(handler).isFailure()) {
                     throw new ConnectionException("Unable to connect to node "
                         + member);
@@ -1044,12 +1051,11 @@ public class NodeManager extends PFComponent {
         }
 
         knownNodes.put(node.getId(), node);
-        
+
         if (!node.isOnSameNetwork()) {
-            logWarning(
-                "Added node with diffrent network id. Our netID: " + getNetworkId()
-                    + ", node netID: " + node.getInfo().networkId + ". "
-                    + node, new RuntimeException("here"));
+            logWarning("Added node with diffrent network id. Our netID: "
+                + getNetworkId() + ", node netID: " + node.getInfo().networkId
+                + ". " + node, new RuntimeException("here"));
         }
 
         // Fire new node event
@@ -1341,8 +1347,8 @@ public class NodeManager extends PFComponent {
         valveMessageListenerSupport.addMessageListener(listener);
     }
 
-    public void addMessageListenerToAllNodes(Class<? extends Message> messageType,
-        MessageListener listener)
+    public void addMessageListenerToAllNodes(
+        Class<? extends Message> messageType, MessageListener listener)
     {
         valveMessageListenerSupport.addMessageListener(messageType, listener);
     }
@@ -1352,7 +1358,7 @@ public class NodeManager extends PFComponent {
     }
 
     // Internal classes *******************************************************
-    
+
     /**
      * Sets up all tasks, that needs to be periodically executed.
      */
