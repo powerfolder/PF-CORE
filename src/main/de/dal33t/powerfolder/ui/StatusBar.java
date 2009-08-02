@@ -294,7 +294,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
 
-        syncButtonComponent = new SyncButtonComponent(getController());
+      // syncButtonComponent = new SyncButtonComponent(getController());
     }
 
     private void configureConnectionLabels() {
