@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
+import java.util.Set;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -143,9 +143,8 @@ public class FileVersionsPanel extends PFUIComponent {
                 Folder folder = fileInfo.getFolder(getController()
                         .getFolderRepository());
                 FileArchiver fileArchiver = folder.getFileArchiver();
-                List<FileVersionInfo> archivedFilesVersions =
-                        fileArchiver.getArchivedFilesVersions(getController(),
-                                fileInfo);
+                Set<FileVersionInfo> archivedFilesVersions =
+                        fileArchiver.getArchivedFilesVersions(fileInfo);
             }
 
             // Loaded...

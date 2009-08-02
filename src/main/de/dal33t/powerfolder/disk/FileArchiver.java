@@ -21,13 +21,10 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.util.*;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * This class represents an archive for Files. Subclasses can store file as they
@@ -37,8 +34,8 @@ import de.dal33t.powerfolder.Controller;
  */
 public interface FileArchiver {
 
-    List<FileVersionInfo> EMPTY_VERSIONS_LIST = Collections.unmodifiableList(
-            new ArrayList<FileVersionInfo>());
+    Set<FileVersionInfo> EMPTY_VERSIONS_SET = Collections.unmodifiableSet(
+            new TreeSet<FileVersionInfo>());
 
     /**
      * Archives the given file under the given FileInfo. On return the file will
@@ -62,5 +59,5 @@ public interface FileArchiver {
 
     ArchiveMode getArchiveMode();
 
-    List<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo);
+    Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo);
 }

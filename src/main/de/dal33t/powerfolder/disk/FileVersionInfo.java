@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * Class holding information about a file version.
  */
-public class FileVersionInfo {
+public class FileVersionInfo implements Comparable<FileVersionInfo> {
 
     /** This is the FileInfo that the version is for. */
     private final FileInfo baseFileInfo;
@@ -62,5 +62,48 @@ public class FileVersionInfo {
 
     public Date getCreated() {
         return created;
+    }
+
+    /**
+     * This assumes that we are comparing versions with the same base file
+     * info ;-)
+     *
+     * @param o
+     * @return
+     */
+    public int compareTo(FileVersionInfo o) {
+        return version - o.version;
+    }
+
+    /**
+     * Only care about base file info and version for equals (like compare).
+     *
+     * @param obj
+     * @return
+     */
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        FileVersionInfo that = (FileVersionInfo) obj;
+
+        if (!baseFileInfo.equals(that.baseFileInfo)) {
+            return false;
+        }
+        if (version != that.version) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result = baseFileInfo.hashCode();
+        result = 31 * result + version;
+        return result;
     }
 }

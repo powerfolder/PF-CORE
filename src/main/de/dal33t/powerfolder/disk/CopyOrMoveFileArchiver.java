@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -258,16 +257,16 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * @param fileInfo
      * @return
      */
-    public List<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
+    public Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
 
         // Find archive subdirectory.
         File subdirectory = new File(archiveDirectory,
                 fileInfo.getLocationInFolder());
         if (!subdirectory.exists()) {
-            return EMPTY_VERSIONS_LIST;
+            return EMPTY_VERSIONS_SET;
         }
 
-        List<FileVersionInfo> list = new ArrayList<FileVersionInfo>();
+        Set<FileVersionInfo> set = new TreeSet<FileVersionInfo>();
 
         // Iterate files in the archive and find versions.
         for (File file : subdirectory.listFiles()) {
@@ -275,10 +274,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
                     getVersionNumber(file), file.length(),
                     new Date(file.lastModified()));
-            list.add(fileVersionInfo);
+            set.add(fileVersionInfo);
         }
 
-        return list;
+        return set;
     }
 
     /**
