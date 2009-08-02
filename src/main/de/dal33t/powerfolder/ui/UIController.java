@@ -619,7 +619,7 @@ public class UIController extends PFComponent {
         // Now all skins (defaults + additional skins)
         ServiceLoader<Skin> skinLoader = ServiceLoader.load(Skin.class);
         for (Skin sk : skinLoader) {
-            logWarning("Loading skin " + sk.getName());
+            logFine("Loading skin " + sk.getName());
             skinList.add(sk);
         }
 
