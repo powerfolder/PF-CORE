@@ -22,14 +22,7 @@ package de.dal33t.powerfolder.disk;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -40,6 +33,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -50,18 +44,19 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author dante
  */
 public class CopyOrMoveFileArchiver implements FileArchiver {
-    private static final Logger log = Logger
-        .getLogger(CopyOrMoveFileArchiver.class.getName());
+
+    private static final Logger log = Logger.getLogger(
+            CopyOrMoveFileArchiver.class.getName());
     private static final Comparator<File> VERSION_COMPARATOR = new Comparator<File>()
     {
-
         public int compare(File o1, File o2) {
             return getVersionNumber(o1) - getVersionNumber(o2);
         }
-
     };
-    private static final Pattern BASE_NAME = Pattern.compile("(.*)_K_\\d+");
-    private final File archDir;
+    private static final Pattern BASE_NAME_PATTERN = Pattern.compile(
+            "(.*)_K_\\d+");
+
+    private final File archiveDirectory;
     private volatile int versionsPerFile;
 
     /**
@@ -74,12 +69,11 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.notNull(archiveDirectory, "archiveDirectory");
         Reject.ifFalse(archiveDirectory.isDirectory(),
             "archiveDirectory not a directory!");
-        this.archDir = archiveDirectory;
+        this.archiveDirectory = archiveDirectory;
     }
 
     /**
-     * @see de.dal33t.powerfolder.disk.FileArchiver#archive(de.dal33t.powerfolder.light.FileInfo,
-     *      java.io.File, boolean)
+     * @see FileArchiver#archive(FileInfo, File, boolean)
      */
     public void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
         throws IOException
@@ -99,7 +93,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         if (target.getParentFile().exists() || target.getParentFile().mkdirs())
         {
             boolean tryCopy = forceKeepSource;
-            if (!forceKeepSource) {
+            if (!tryCopy) {
                 if (!source.renameTo(target)) {
                     log.severe("Failed to rename " + source
                         + ", falling back to copying");
@@ -164,7 +158,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      *         it failed for at least one file
      */
     public boolean maintain() {
-        return checkRecursive(archDir, new HashSet<File>());
+        return checkRecursive(archiveDirectory, new HashSet<File>());
     }
 
     private boolean checkRecursive(File dir, Set<File> checked) {
@@ -193,7 +187,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         }
         for (Collection<File> files : fileMap.values()) {
             try {
-                checkArchivedFile(files.toArray(new File[0]));
+                checkArchivedFile(files.toArray(new File[files.size()]));
             } catch (IOException e) {
                 allSuccessful = false;
                 log.log(Level.WARNING, "Failed to check " + files, e);
@@ -202,12 +196,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return allSuccessful;
     }
 
-    protected String getBaseName(FileInfo fileInfo) {
+    protected static String getBaseName(FileInfo fileInfo) {
         return fileInfo.getName();
     }
 
-    private String getBaseName(File file) {
-        Matcher m = BASE_NAME.matcher(file.getName());
+    private static String getBaseName(File file) {
+        Matcher m = BASE_NAME_PATTERN.matcher(file.getName());
         if (m.matches()) {
             return m.group(1);
         } else {
@@ -216,7 +210,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private File getArchiveTarget(FileInfo fileInfo) {
-        return new File(archDir, getBaseName(fileInfo) + "_K_"
+        return new File(archiveDirectory, getBaseName(fileInfo) + "_K_"
             + fileInfo.getVersion());
     }
 
@@ -226,7 +220,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return Integer.parseInt(tmp);
     }
 
-    private File[] getArchivedFiles(File dir, final String baseName) {
+    private static File[] getArchivedFiles(File dir, final String baseName) {
         return dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return belongsTo(name, baseName);
@@ -234,8 +228,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         });
     }
 
-    private boolean belongsTo(String name, String baseName) {
-        Matcher m = BASE_NAME.matcher(name);
+    private static boolean belongsTo(String name, String baseName) {
+        Matcher m = BASE_NAME_PATTERN.matcher(name);
         if (m.matches()) {
             return OSUtil.isWindowsSystem()
                 && m.group(1).equalsIgnoreCase(baseName)
@@ -246,5 +240,29 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     public ArchiveMode getArchiveMode() {
         return ArchiveMode.FULL_BACKUP;
+    }
+
+    public List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo) {
+
+        // Find archive subdirectory.
+        File subdirectory = new File(archiveDirectory, fileInfo.getLocationInFolder());
+        if (!subdirectory.exists()) {
+            return EMPTY_VERSIONS_LIST;
+        }
+
+        // Iterate files and find versions.
+        for (File file : subdirectory.listFiles()) {
+
+            // Look for version numbers; should be after the last '_'.
+            String fileName = file.getName();
+            int lastUnderscoreIndex = fileName.lastIndexOf('_');
+            String versionString = fileName.substring(lastUnderscoreIndex + 1);
+            int version = Integer.parseInt(versionString);
+
+            FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
+                    version, file.length(), new Date(file.lastModified()));
+        }
+
+        return null;
     }
 }

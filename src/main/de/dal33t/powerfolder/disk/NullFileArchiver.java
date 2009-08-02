@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * An implementation of {@link FileArchiver} that does nothing.
@@ -30,10 +32,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
  * @author sprajc
  */
 public class NullFileArchiver implements FileArchiver {
-
-    public NullFileArchiver() {
-
-    }
 
     public void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
     {
@@ -44,4 +42,7 @@ public class NullFileArchiver implements FileArchiver {
         return ArchiveMode.NO_BACKUP;
     }
 
+    public List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo) {
+        return EMPTY_VERSIONS_LIST;
+    }
 }

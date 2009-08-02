@@ -21,12 +21,15 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FileVersionInfo;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.TimerTask;
+import java.util.List;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -93,21 +96,18 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
-        getController().schedule(new TimerTask() {
-            public void run() {
-                loadVersionHistory();
-            }
-        }, 100);
+        VersionHistoryLoader loader = new VersionHistoryLoader();
+        loader.execute();
     }
 
-    private void loadVersionHistory() {
-
-        setEmptyState(true, true);
-
-        MySwingWorker swingWorker = new MySwingWorker();
-        swingWorker.execute();
-    }
-
+    /**
+     * Display empty / loading text, or the actual results.
+     *
+     * @param empty
+     *           empty ? show text : show results
+     * @param loading
+     *           loading ? show 'loading text' : show 'empty' text
+     */
     private void setEmptyState(boolean empty, boolean loading) {
         if (panel == null) {
             return;
@@ -131,15 +131,21 @@ public class FileVersionsPanel extends PFUIComponent {
     /**
      * Swing worker to load the versions in the background.
      */
-    private class MySwingWorker extends SwingWorker {
+    private class VersionHistoryLoader extends SwingWorker {
 
         protected Object doInBackground() {
+
             // Loading...
-            
+            setEmptyState(true, true);
+
             // @todo harry work in progress...
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
+            if (fileInfo != null) {
+                Folder folder = fileInfo.getFolder(getController()
+                        .getFolderRepository());
+                FileArchiver fileArchiver = folder.getFileArchiver();
+                List<FileVersionInfo> archivedFilesVersions =
+                        fileArchiver.getArchivedFilesVersions(getController(),
+                                fileInfo);
             }
 
             // Loaded...

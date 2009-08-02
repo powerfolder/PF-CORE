@@ -21,9 +21,13 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * This class represents an archive for Files. Subclasses can store file as they
@@ -32,6 +36,10 @@ import de.dal33t.powerfolder.util.ArchiveMode;
  * @author Dennis Waldherr
  */
 public interface FileArchiver {
+
+    List<FileVersionInfo> EMPTY_VERSIONS_LIST = Collections.unmodifiableList(
+            new ArrayList<FileVersionInfo>());
+
     /**
      * Archives the given file under the given FileInfo. On return the file will
      * most likely have been removed. TODO: For Versioning the FileInfo should
@@ -39,16 +47,20 @@ public interface FileArchiver {
      * be provided.
      * 
      * @param fileInfo
+     *            the local file info for this file.
      * @param source
-     * @param forcekeepSource
+     *            the actual file to be archived.
+     * @param forceKeepSource
      *            if this is true the archiver <b>must</b> not remove the file
      *            given in the source parameter. Otherwise it <b>may</b> keep or
      *            delete the file.
      * @throws IOException
      *             if the archiving failed
      */
-    void archive(FileInfo fileInfo, File source, boolean forcekeepSource)
+    void archive(FileInfo fileInfo, File source, boolean forceKeepSource)
         throws IOException;
 
     ArchiveMode getArchiveMode();
+
+    List<FileVersionInfo> getArchivedFilesVersions(Controller controller, FileInfo fileInfo);
 }
