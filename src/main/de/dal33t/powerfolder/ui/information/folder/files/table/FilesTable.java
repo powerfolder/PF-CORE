@@ -29,12 +29,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
-import javax.swing.Icon;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
@@ -48,7 +46,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.information.folder.members.MembersTableModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -120,7 +117,7 @@ public class FilesTable extends JTable {
      *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class TableHeaderMouseListener extends MouseAdapter {
+    private static class TableHeaderMouseListener extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 JTableHeader tableHeader = (JTableHeader) e.getSource();
@@ -129,9 +126,13 @@ public class FilesTable extends JTable {
                     columnNo);
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof MembersTableModel) {
-                    MembersTableModel membersTableModel = (MembersTableModel) model;
-                    membersTableModel.sortBy(modelColumnNo);
+                if (model instanceof FilesTableModel) {
+                    FilesTableModel filesTableModel = (FilesTableModel) model;
+                    boolean freshSorted = filesTableModel.sortBy(modelColumnNo);
+                    if (!freshSorted) {
+                        // reverse list
+                        filesTableModel.reverseList();
+                    }
                 }
             }
         }

@@ -34,14 +34,13 @@ import de.dal33t.powerfolder.util.ArchiveMode;
  */
 public interface FileArchiver {
 
+    /** Convenience empty Set of FileVersionInfos */
     Set<FileVersionInfo> EMPTY_VERSIONS_SET = Collections.unmodifiableSet(
             new TreeSet<FileVersionInfo>());
 
     /**
      * Archives the given file under the given FileInfo. On return the file will
-     * most likely have been removed. TODO: For Versioning the FileInfo should
-     * be replaced by VersionedFile, also additional info like file delta should
-     * be provided.
+     * most likely have been removed.
      * 
      * @param fileInfo
      *            the local file info for this file.
@@ -59,5 +58,13 @@ public interface FileArchiver {
 
     ArchiveMode getArchiveMode();
 
+    /**
+     * Retrieves a Set of existing FileVersionInfos for an archived file.
+     *
+     * @param fileInfo
+     *            fileInfo of the file to get archived versions for.
+     * @return
+     *            archive Set.
+     */
     Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo);
 }

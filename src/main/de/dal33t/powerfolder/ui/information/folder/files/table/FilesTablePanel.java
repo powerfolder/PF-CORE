@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.*;
+import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.Icons;
@@ -45,9 +46,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -89,7 +87,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel.addTableModelListener(new MyTableModelListener());
         table = new FilesTable(tableModel);
         table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
-        table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         table.addMouseListener(new TableMouseListener());
     }
 
@@ -541,32 +538,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             removeIgnoreAction.setEnabled(false);
             unmarkAction.setEnabled(false);
             singleFileTransferAction.setEnabled(false);
-        }
-    }
-
-    /**
-     * Listener on table header, takes care about the sorting of table
-     *
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private static class TableHeaderMouseListener extends MouseAdapter {
-        public void mouseClicked(MouseEvent e) {
-            if (SwingUtilities.isLeftMouseButton(e)) {
-                JTableHeader tableHeader = (JTableHeader) e.getSource();
-                int columnNo = tableHeader.columnAtPoint(e.getPoint());
-                TableColumn column = tableHeader.getColumnModel().getColumn(
-                    columnNo);
-                int modelColumnNo = column.getModelIndex();
-                TableModel model = tableHeader.getTable().getModel();
-                if (model instanceof FilesTableModel) {
-                    FilesTableModel filesTableModel = (FilesTableModel) model;
-                    boolean freshSorted = filesTableModel.sortBy(modelColumnNo);
-                    if (!freshSorted) {
-                        // reverse list
-                        filesTableModel.reverseList();
-                    }
-                }
-            }
         }
     }
 

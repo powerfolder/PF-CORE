@@ -17,7 +17,7 @@
 *
 * $Id: FileDetailsPanel.java 5457 2009-07-31 14:25:41Z harry $
 */
-package de.dal33t.powerfolder.ui.information.folder.files;
+package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
@@ -43,9 +43,14 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
  */
 public class FileVersionsPanel extends PFUIComponent {
 
+    private static final int STATE_EMPTY = 0;
+    private static final int STATE_LOADING = 1;
+    private static final int STATE_RESULTS = 2;
+
     private JPanel panel;
     private JLabel emptyLabel;
     private JScrollPane scrollPane;
+    private FileVersionsTableModel fileVersionsTableModel;
     private volatile FileInfo fileInfo;
 
     public FileVersionsPanel(Controller controller) {
@@ -70,17 +75,22 @@ public class FileVersionsPanel extends PFUIComponent {
 
             panel = builder.getPanel();
 
-            setEmptyState(true, false);
+            setState(STATE_EMPTY);
         }
         return panel;
     }
 
     private void initComponents() {
+
+        fileVersionsTableModel = new FileVersionsTableModel(getController());
+        FileVersionsTable fileVersionsTable 
+                = new FileVersionsTable(fileVersionsTableModel);
+
         emptyLabel = new JLabel(Translation.getTranslation(
                 "file_version_tab.no_versions_available"), SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
-        scrollPane = new JScrollPane();
+        scrollPane = new JScrollPane(fileVersionsTable);
     }
 
     public void setFileInfo(FileInfo fileInfo) {
@@ -92,7 +102,7 @@ public class FileVersionsPanel extends PFUIComponent {
         this.fileInfo = fileInfo;
 
         if (fileInfo == null) {
-            setEmptyState(true, false);
+            setState(STATE_EMPTY);
             return;
         }
 
@@ -101,27 +111,24 @@ public class FileVersionsPanel extends PFUIComponent {
     }
 
     /**
-     * Display empty / loading text, or the actual results.
+     * Display empty text or the actual results.
      *
-     * @param empty
-     *           empty ? show text : show results
-     * @param loading
-     *           loading ? show 'loading text' : show 'empty' text
+     * @param state
      */
-    private void setEmptyState(boolean empty, boolean loading) {
+    private void setState(int state) {
         if (panel == null) {
             return;
         }
 
-        emptyLabel.setVisible(empty);
-        if (loading) {
-            emptyLabel.setText(Translation.getTranslation(
-                    "file_version_tab.loading"));
-        } else {
+        emptyLabel.setVisible(state != STATE_RESULTS);
+        scrollPane.setVisible(state == STATE_RESULTS);
+
+        if (state == STATE_LOADING) {
+            emptyLabel.setText("");
+        } else if (state == STATE_EMPTY)  {
             emptyLabel.setText(Translation.getTranslation(
                     "file_version_tab.no_versions_available"));
         }
-        scrollPane.setVisible(!empty);
     }
 
     ///////////////////
@@ -136,29 +143,29 @@ public class FileVersionsPanel extends PFUIComponent {
         protected Object doInBackground() {
 
             // Loading...
-            setEmptyState(true, true);
-
-            // @todo harry work in progress...
-            if (fileInfo != null) {
-                Folder folder = fileInfo.getFolder(getController()
-                        .getFolderRepository());
-                FileArchiver fileArchiver = folder.getFileArchiver();
-                Set<FileVersionInfo> archivedFilesVersions =
-                        fileArchiver.getArchivedFilesVersions(fileInfo);
+            setState(STATE_LOADING);
+            try {
+                if (fileInfo != null) {
+                    Folder folder = fileInfo.getFolder(getController()
+                            .getFolderRepository());
+                    FileArchiver fileArchiver = folder.getFileArchiver();
+                    Set<FileVersionInfo> archivedFilesVersions =
+                            fileArchiver.getArchivedFilesVersions(fileInfo);
+                    if (archivedFilesVersions.isEmpty()) {
+                        setState(STATE_EMPTY);
+                    } else {
+                        setState(STATE_RESULTS);
+                        fileVersionsTableModel.setVersionInfos(archivedFilesVersions);
+                    }
+                } else {
+                    setState(STATE_EMPTY);
+                }
+            } catch (Exception e) {
+                // Huh?
+                logSevere(e);
             }
 
-            // Loaded...
             return null;
-        }
-
-        protected void done() {
-            if (fileInfo == null) {
-                // Huh. Loaded the history, but now no FileInfo is selected.
-                setEmptyState(true, false);
-            } else {
-                // Got it. Show it.
-                setEmptyState(false, false);
-            }
         }
     }
 }

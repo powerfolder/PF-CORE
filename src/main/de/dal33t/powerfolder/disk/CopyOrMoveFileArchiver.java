@@ -271,10 +271,18 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         // Iterate files in the archive and find versions.
         for (File file : subdirectory.listFiles()) {
 
-            FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
-                    getVersionNumber(file), file.length(),
-                    new Date(file.lastModified()));
-            set.add(fileVersionInfo);
+            // Not archiving directories :->
+            if (file.isDirectory()) {
+                continue;
+            }
+
+            // Archive for this file?
+            if (belongsTo(file.getName(), fileInfo.getFilenameOnly())) {
+                FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
+                        getVersionNumber(file), file.length(),
+                        new Date(file.lastModified()));
+                set.add(fileVersionInfo);
+            }
         }
 
         return set;
