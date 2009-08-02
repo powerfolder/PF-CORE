@@ -163,6 +163,7 @@ public class SettingsTab extends PFUIComponent {
         transferModeSelectorPanel.setUpdateableFolder(folder);
         useRecycleBinBox.setSelected(folder.isUseRecycleBin());
         scriptModel.setValue(folder.getDownloadScript());
+        archivingLocalFiles.setSelectedItem(folder.getArchiveMode());
         update();
         enableConfigOSAction();
         enablePreviewFolderAction();
