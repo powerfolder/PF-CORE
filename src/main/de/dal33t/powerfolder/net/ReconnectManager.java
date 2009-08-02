@@ -490,9 +490,8 @@ public class ReconnectManager extends PFComponent {
                 }
                 if (goIdle) {
                     int idleSeconds = getIdleWaitSeconds();
-                    logFine(
-                        "Reconnection queue empty after rebuild."
-                            + "Going on idle for " + idleSeconds + " seconds");
+                    logFine("Reconnection queue empty after rebuild."
+                        + "Going on idle for " + idleSeconds + " seconds");
                     synchronized (reconnectionQueue) {
                         try {
                             reconnectionQueue.wait(1000L * idleSeconds);
@@ -522,11 +521,13 @@ public class ReconnectManager extends PFComponent {
                     if (currentNode == null) {
                         continue;
                     }
-                    
+
                     // MARK connecting ***
                     if (currentNode.markConnecting() >= 2) {
                         currentNode.unmarkConnecting();
-                        logWarning("Skipping: " + currentNode);
+                        if (isFine()) {
+                            logFine("Skipping: " + currentNode);
+                        }
                         continue;
                     }
                 }
