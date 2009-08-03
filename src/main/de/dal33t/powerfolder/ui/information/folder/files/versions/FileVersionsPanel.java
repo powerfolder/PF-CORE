@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.information.folder.files.versions;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
 import de.dal33t.powerfolder.disk.FileVersionInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -164,6 +165,18 @@ public class FileVersionsPanel extends PFUIComponent {
                 fileVersionsTable.getSelectedRow() > -1);
     }
 
+    /**
+     * Restore a file archive
+     */
+    private void restoreFile() {
+        if (fileInfo != null) {
+            FileVersionInfo selectedInfo = fileVersionsTable.getSelectedInfo();
+            RestoreArchiveDialog dialog = new RestoreArchiveDialog(
+                    getController(), selectedInfo);
+            dialog.open();
+        }
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -209,7 +222,8 @@ public class FileVersionsPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // @todo harry to implement
+            restoreFile();
         }
     }
+
 }

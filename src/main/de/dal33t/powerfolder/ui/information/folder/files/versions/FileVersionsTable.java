@@ -81,6 +81,15 @@ public class FileVersionsTable extends JTable {
         column.setPreferredWidth(40);
     }
 
+    public FileVersionInfo getSelectedInfo() {
+        int row = getSelectedRow();
+        if (row >= 0) {
+            FileVersionsTableModel model = (FileVersionsTableModel) getModel();
+            return (FileVersionInfo) model.getValueAt(row, 0);
+        }
+        return null;
+    }
+
     /**
      * Listener on table header, takes care about the sorting of table
      *
