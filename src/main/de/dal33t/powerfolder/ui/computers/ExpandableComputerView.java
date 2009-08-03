@@ -229,7 +229,7 @@ public class ExpandableComputerView extends PFUIComponent implements
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
-        infoLabel = new JLabel(renderInfo(node, null));
+        infoLabel = new JLabel(renderInfo(node, node.getAccountInfo()));
         connectionQualityLabel = new JLabel();
         lastSeenLabel = new JLabel();
         reconnectAction = new MyReconnectAction(getController());
