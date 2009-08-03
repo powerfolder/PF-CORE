@@ -531,14 +531,6 @@ public class UIController extends PFComponent {
      * @param folder
      */
     private void addFolderToSysTray(Folder folder) {
-        for (int i = 0; i < sysTrayFoldersMenu.getItemCount(); i++) {
-            MenuItem menuItem = sysTrayFoldersMenu.getItem(i);
-            if (menuItem.getLabel().equals(folder.getName())) {
-                logWarning("Already have folder " + folder.getName());
-                return;
-            }
-        }
-
         MenuItem menuItem = new MenuItem(folder.getName());
         // Insert in the correct position.
         boolean done = false;
