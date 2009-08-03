@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -104,5 +103,15 @@ public interface SecurityService {
      * @param foInfos
      */
     void revokeAdmin(FolderInfo... foInfos);
+
+    // Misc *******************************************************************
+
+    /**
+     * TRAC #1566
+     * 
+     * @param pattern
+     * @return the nodes
+     */
+    Map<MemberInfo, AccountInfo> searchNodes(String pattern);
 
 }

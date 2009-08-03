@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.model;
 
 import com.jgoodies.binding.list.LinkedListModel;
@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.security.SecurityManagerEvent;
+import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -51,11 +53,12 @@ import java.util.List;
  * @version $Revision: 1.2 $
  */
 public class SearchNodeTableModel extends PFUIComponent implements TableModel,
-        SortedTableModel {
+    SortedTableModel
+{
 
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private ObservableList<Member> members = new LinkedListModel<Member>();
-    
+
     /**
      * The comparators for the columns, initalized in constructor
      */
@@ -66,6 +69,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
     private static final String[] COLUMN_NAMES = new String[]{
         Translation.getTranslation("friend_search.node_table.name"),
+        Translation.getTranslation("friend_search.node_table.account"),
         Translation.getTranslation("friend_search.node_table.last_seen_online"),
         Translation.getTranslation("friend_search.node_table.ip"),
         Translation.getTranslation("friend_search.node_table.on_local_network")};
@@ -81,13 +85,15 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         // Add listener to nodemanager
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
+        controller.getSecurityManager().addListener(
+            new MySecurityManagerListener());
 
         members.addListDataListener(new ListModelListener());
         columComparators[0] = MemberComparator.NICK;
-        columComparators[1] = MemberComparator.BY_LAST_CONNECT_DATE;
-        columComparators[2] = MemberComparator.IP;
-        columComparators[3] = MemberComparator.BY_CONNECTION_TYPE;
-
+        columComparators[1] = MemberComparator.USERNAME;
+        columComparators[2] = MemberComparator.BY_LAST_CONNECT_DATE;
+        columComparators[3] = MemberComparator.IP;
+        columComparators[4] = MemberComparator.BY_CONNECTION_TYPE;
     }
 
     /**
@@ -197,10 +203,9 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * 
      * @return the listmodel containing the nodes.
      */
-    public ObservableList<Member> getListModel() {        
+    public ObservableList<Member> getListModel() {
         return members;
     }
-    
 
     // TableModel interface ***************************************************
 
@@ -209,9 +214,10 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     }
 
     public Object getDataAt(int rowIndex) {
-     
+
         if (members.isEmpty()) {
-            return Translation.getTranslation("friend_search.no_computers_found");
+            return Translation
+                .getTranslation("friend_search.no_computers_found");
         }
         return members.get(rowIndex);
     }
@@ -248,8 +254,24 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         listeners.remove(listener);
     }
 
+    private void updateNode(Member node) {
+        int row = members.indexOf(node);
+        if (row < 0) {
+            return;
+        }
+        TableModelEvent te = new TableModelEvent(this, row, row,
+            TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
+        fireTableModelEvent(te);
+    }
+
     private void fireModelChanged() {
         TableModelEvent te = new TableModelEvent(this, 0, getRowCount(),
+            TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
+        fireTableModelEvent(te);
+    }
+
+    private void fireRowChanged(int row) {
+        TableModelEvent te = new TableModelEvent(this, row, row,
             TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
         fireTableModelEvent(te);
     }
@@ -308,23 +330,24 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            fireModelChanged();
+            updateNode(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            fireModelChanged();
+            updateNode(e.getNode());
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            
+            updateNode(e.getNode());
+
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            
+            updateNode(e.getNode());
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            fireModelChanged();
+            updateNode(e.getNode());
         }
 
         public void startStop(NodeManagerEvent e) {
@@ -333,5 +356,17 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         public boolean fireInEventDispatchThread() {
             return false;
         }
+    }
+
+    private class MySecurityManagerListener implements SecurityManagerListener {
+
+        public void nodeAccountStateChanged(SecurityManagerEvent e) {
+            updateNode(e.getNode());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 }

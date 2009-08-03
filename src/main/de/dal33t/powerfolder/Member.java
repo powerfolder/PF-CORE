@@ -208,7 +208,30 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @see MemberInfo#matches(String)
      */
     public boolean matches(String searchString) {
-        return info.matches(searchString);
+        return matches(searchString, false);
+    }
+
+    /**
+     * @param searchString
+     * @param matchAccount
+     *            true if the Account username should be also considerd for
+     *            matching.
+     * @return if this member matches the search string or if it equals the IP
+     *         nick contains the search String
+     * @see MemberInfo#matches(String)
+     */
+    public boolean matches(String searchString, boolean matchAccount) {
+        if (info.matches(searchString)) {
+            return true;
+        }
+        if (!matchAccount) {
+            return false;
+        }
+        AccountInfo aInfo = getAccountInfo();
+        if (aInfo == null) {
+            return false;
+        }
+        return aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0;
     }
 
     public String getHostName() {
@@ -1530,27 +1553,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof SearchNodeRequest) {
                 // Send nodelist that matches the search.
                 final SearchNodeRequest request = (SearchNodeRequest) message;
-                Runnable searcher = new Runnable() {
-                    public void run() {
-                        List<MemberInfo> reply = new LinkedList<MemberInfo>();
-                        for (Member m : getController().getNodeManager()
-                            .getNodesAsCollection())
-                        {
-                            if (m.getInfo().isInvalid(getController())) {
-                                continue;
-                            }
-                            if (m.matches(request.searchString)) {
-                                reply.add(m.getInfo());
-                            }
-                        }
-
-                        if (!reply.isEmpty()) {
-                            sendMessageAsynchron(new KnownNodes(reply
-                                .toArray(new MemberInfo[reply.size()])), null);
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(searcher);
+                getController().getNodeManager().receivedSearchNodeRequest(request,this);
                 expectedTime = 50;
 
             } else if (message instanceof AddFriendNotification) {

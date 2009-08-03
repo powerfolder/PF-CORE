@@ -1,28 +1,50 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.friends;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -32,21 +54,17 @@ import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.DoubleClickAction;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.PopupMenuOpener;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Search for members, use to "make friends".
- *
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.7 $
  */
@@ -90,10 +108,19 @@ public class FindComputersPanel extends PFUIPanel {
         return panel;
     }
 
+    public void cancelSearch() {
+        // Block until the search has been killed if there's one running
+        if (searcher != null && searcher.isSearching()) {
+            searcher.cancelSearch();
+        }
+    }
+
     private void initComponents() {
-        searchInput = new FilterTextField(15, Translation
+        searchInput = new FilterTextField(
+            15,
+            Translation
                 .getTranslation("find_computers_panel.search_for_computer.hint"),
-                Translation
+            Translation
                 .getTranslation("find_computers_panel.search_for_computer.tooltip"));
         searchInputVM = searchInput.getValueModel();
         searchInputVM.addValueChangeListener(new MySearchInputVMListener());
@@ -150,10 +177,10 @@ public class FindComputersPanel extends PFUIPanel {
         });
 
         JButton connectButton = new JButton(getApplicationModel()
-                .getActionModel().getConnectAction());
+            .getActionModel().getConnectAction());
 
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref, fill:pref:grow",
-            "pref");
+        FormLayout layout = new FormLayout(
+            "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(connectButton, cc.xy(1, 1));
@@ -175,14 +202,11 @@ public class FindComputersPanel extends PFUIPanel {
             return;
         }
 
-        // Block until the search has been killed if there's one running
-        if (searcher != null && searcher.isSearching()) {
-            searcher.cancelSearch();
-        }
+        cancelSearch();
 
-        searcher = new NodeSearcher(getController(),
-                searchText, searchNodeTableModel.getListModel(), false,
-            hideOffline.isSelected());
+        searcher = new NodeSearcher(getController(), searchText,
+            searchNodeTableModel.getListModel(), false, hideOffline
+                .isSelected());
         searcher.start();
     }
 
@@ -192,49 +216,48 @@ public class FindComputersPanel extends PFUIPanel {
             int[] selectedIndexes = searchResult.getSelectedRows();
             if (selectedIndexes != null && selectedIndexes.length > 0) {
 
-                boolean askForFriendshipMessage = PreferencesEntry.
-                        ASK_FOR_FRIENDSHIP_MESSAGE
+                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
                     .getValueBoolean(getController());
                 if (askForFriendshipMessage) {
 
                     // Prompt for personal message.
                     String[] options = {
-                            Translation
-                                    .getTranslation("general.ok"),
-                            Translation
-                                    .getTranslation("general.cancel")};
+                        Translation.getTranslation("general.ok"),
+                        Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref",
+                        "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String text;
                     if (selectedIndexes.length == 1) {
-                        Object o = searchNodeTableModel.getDataAt(selectedIndexes[0]);
+                        Object o = searchNodeTableModel
+                            .getDataAt(selectedIndexes[0]);
                         if (o instanceof Member) {
                             Member member = (Member) o;
                             String nick = member.getNick();
-                            text = Translation.
-                                getTranslation("friend.search.personal.message.text2",
-                                        nick);
+                            text = Translation.getTranslation(
+                                "friend.search.personal.message.text2", nick);
                         } else {
-                            text = Translation.
-                                getTranslation("friend.search.personal.message.text");
+                            text = Translation
+                                .getTranslation("friend.search.personal.message.text");
                         }
                     } else {
-                        text = Translation.
-                            getTranslation("friend.search.personal.message.text");
+                        text = Translation
+                            .getTranslation("friend.search.personal.message.text");
                     }
-                    builder.add(new JLabel(text),
-                            cc.xy(1, 1));
+                    builder.add(new JLabel(text), cc.xy(1, 1));
                     JTextArea textArea = new JTextArea();
                     JScrollPane scrollPane = new JScrollPane(textArea);
                     scrollPane.setPreferredSize(new Dimension(400, 200));
                     builder.add(scrollPane, cc.xy(1, 3));
                     JPanel innerPanel = builder.getPanel();
 
-                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(
                             getController(),
-                            Translation.getTranslation("friend.search.personal.message.title"),
+                            Translation
+                                .getTranslation("friend.search.personal.message.title"),
                             innerPanel, options, 0, GenericDialogType.INFO,
                             Translation.getTranslation("general.neverAskAgain"));
                     if (response.getButtonIndex() == 0) { // == OK
@@ -249,8 +272,8 @@ public class FindComputersPanel extends PFUIPanel {
                     }
                     if (response.isNeverAskAgain()) {
                         // dont ask me again
-                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
-                            .setValue(getController(), false);
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
+                            getController(), false);
                     }
                 } else {
                     // Send with no personal messages
@@ -293,7 +316,8 @@ public class FindComputersPanel extends PFUIPanel {
     /** The hide offline user to perform on click on checkbox */
     private class HideOfflineAction extends BaseAction {
         private HideOfflineAction() {
-            super("action_hide_offline", FindComputersPanel.this.getController());
+            super("action_hide_offline", FindComputersPanel.this
+                .getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -315,7 +339,7 @@ public class FindComputersPanel extends PFUIPanel {
     /**
      * listens to keys in the search input updates the searchAction state if
      * enough chars are available and preforms a search on enter key
-     *
+     * 
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class MySearchInputVMListener implements PropertyChangeListener {
@@ -328,7 +352,7 @@ public class FindComputersPanel extends PFUIPanel {
     /**
      * Helper class which tracks the selections int the search Results and
      * updates the actions to the correct state
-     *
+     * 
      * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
      */
     private class SearchResultSelectionListener implements

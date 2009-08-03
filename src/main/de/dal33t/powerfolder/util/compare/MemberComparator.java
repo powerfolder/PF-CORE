@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.TransferStatus;
 
@@ -67,6 +68,9 @@ public class MemberComparator implements Comparator {
     /** Sorts nodes by IP */
     public static final MemberComparator IP = new MemberComparator(7);
 
+    /** Sorts nodes by account username */
+    public static final MemberComparator USERNAME = new MemberComparator(8);
+    
     private int type;
 
     private MemberComparator(int type) {
@@ -173,6 +177,16 @@ public class MemberComparator implements Comparator {
                     ip2 = "";
                 }
                 return compareIPs(ip1, ip2);
+            } else if (type == 9) {
+                AccountInfo a1 = member1.getAccountInfo();
+                AccountInfo a2 = member2.getAccountInfo();
+                if (a1 == null) {
+                    return a2 == null ? 0 : 1;
+                }
+                if (a2 == null) {
+                    return -1;
+                }
+                return a1.getUsername().compareTo(a2.getUsername());
             }
 
             return result;

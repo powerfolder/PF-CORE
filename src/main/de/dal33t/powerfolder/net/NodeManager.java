@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
+import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
@@ -167,13 +168,7 @@ public class NodeManager extends PFComponent {
         // Default behaviour:
         // 1) Add all nodes when acting as supernode
         // 2) Add if remote side is supernode or connected.
-        nodeFilters.add(new NodeFilter() {
-            public boolean shouldAddNode(MemberInfo nodeInfo) {
-                boolean supernodeOrConnected = nodeInfo.isSupernode
-                    || nodeInfo.isConnected;
-                return mySelf.isSupernode() || supernodeOrConnected;
-            }
-        });
+        nodeFilters.add(new DefaultNodeFilter());
 
         lanRanges = new LinkedList<AddressRange>();
         String lrs[] = ConfigurationEntry.LANLIST.getValue(controller).split(
@@ -705,6 +700,32 @@ public class NodeManager extends PFComponent {
         from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list));
     }
 
+    public void receivedSearchNodeRequest(final SearchNodeRequest request,
+        final Member from)
+    {
+        Runnable searcher = new Runnable() {
+            public void run() {
+                List<MemberInfo> reply = new LinkedList<MemberInfo>();
+                for (Member m : getController().getNodeManager()
+                    .getNodesAsCollection())
+                {
+                    if (m.getInfo().isInvalid(getController())) {
+                        continue;
+                    }
+                    if (m.matches(request.searchString)) {
+                        reply.add(m.getInfo());
+                    }
+                }
+
+                if (!reply.isEmpty()) {
+                    from.sendMessageAsynchron(new KnownNodes(reply
+                        .toArray(new MemberInfo[reply.size()])), null);
+                }
+            }
+        };
+        getController().getIOProvider().startIO(searcher);
+    }
+
     /**
      * Creates the default request for nodelist according to our own status. In
      * supernode mode we might want to request more node information that in
@@ -995,8 +1016,7 @@ public class NodeManager extends PFComponent {
                 int connectionTries = member.markConnecting();
                 if (connectionTries >= 2) {
                     logWarning("Multiple connection tries detected ("
-                        + connectionTries + ")", new RuntimeException(
-                        "from here"));
+                        + connectionTries + ")");
                 }
                 if (member.setPeer(handler).isFailure()) {
                     throw new ConnectionException("Unable to connect to node "
@@ -1392,6 +1412,18 @@ public class NodeManager extends PFComponent {
     }
 
     // Workers ****************************************************************
+
+    /**
+     * Default behaviour: 1) Add all nodes when acting as supernode 2) Add if
+     * remote side is supernode or connected.
+     */
+    private final class DefaultNodeFilter implements NodeFilter {
+        public boolean shouldAddNode(MemberInfo nodeInfo) {
+            boolean supernodeOrConnected = nodeInfo.isSupernode
+                || nodeInfo.isConnected;
+            return mySelf.isSupernode() || supernodeOrConnected;
+        }
+    }
 
     /**
      * Broadcasts the transferstatus

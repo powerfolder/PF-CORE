@@ -27,7 +27,8 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import java.util.Comparator;
 
 /**
- * Comparator for members of a folder
+ * Comparator for members of a folder. TODO Clean up this MESS!!!! Comparators
+ * MUST NOT BE STATIC because they relate to a folder.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $

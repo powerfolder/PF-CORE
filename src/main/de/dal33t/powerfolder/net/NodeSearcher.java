@@ -1,23 +1,30 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
+
+import java.lang.Thread.State;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -25,17 +32,13 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
+import de.dal33t.powerfolder.security.SecurityManager;
+import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.util.Reject;
-
-import java.lang.Thread.State;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class searches nodes matching a given pattern.
@@ -47,7 +50,6 @@ import java.util.logging.Logger;
  */
 public class NodeSearcher extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(NodeSearcher.class.getName());
     private String pattern;
     /** indicates that we want to interrupt a search */
     private boolean stopSearching;
@@ -96,7 +98,7 @@ public class NodeSearcher extends PFComponent {
 
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
-        nodeSearchFilter = new NodeSearchFilter();
+        this.nodeSearchFilter = new NodeSearchFilter();
     }
 
     /**
@@ -138,21 +140,21 @@ public class NodeSearcher extends PFComponent {
 
     // Internal code **********************************************************
 
-    private void checkAndAddMember(Member member) {
+    private boolean checkMember(Member member) {
+        // /logWarning("Checking: " + member + " - " + member.getAccountInfo());
         if (hideOffline && !member.isConnectedToNetwork()) {
-            return;
+            return false;
         }
         if (ignoreFriends && member.isFriend()) {
-            return;
-        }
-        if (!member.matches(pattern) || searchResultListModel.contains(member))
-        {
-            return;
+            return false;
         }
         if (!member.isOnSameNetwork()) {
-            return;
+            return false;
         }
-        searchResultListModel.add(member);
+        if (member.isMySelf()) {
+            return false;
+        }
+        return !searchResultListModel.contains(member);
     }
 
     private class NodeSearchFilter implements NodeFilter {
@@ -222,6 +224,9 @@ public class NodeSearcher extends PFComponent {
             // Search local database first
             searchLocal();
 
+            // Ask server
+            searchServer();
+
             // Ask connected SuperNodes for search results
             searchSupernodes();
         }
@@ -230,8 +235,11 @@ public class NodeSearcher extends PFComponent {
             for (Member member : getController().getNodeManager()
                 .getNodesAsCollection())
             {
-                checkAndAddMember(member);
+                if (checkMember(member) && member.matches(pattern)) {
+                    searchResultListModel.add(member);
+                }
             }
+            fetchAccountInfos(searchResultListModel);
         }
 
         private void searchSupernodes() {
@@ -247,14 +255,20 @@ public class NodeSearcher extends PFComponent {
                 Constants.N_LAN_NODES_TO_CONTACT_FOR_NODE_SEARCH);
 
             while (!stopSearching) {
-                synchronized (searchThread) {
-                    while (!canidatesFromSupernodes.isEmpty()) {
-                        checkAndAddMember(canidatesFromSupernodes.remove());
+                while (!canidatesFromSupernodes.isEmpty()) {
+                    Member node = canidatesFromSupernodes.remove();
+                    if (checkMember(node) && node.matches(pattern)) {
+                        searchResultListModel.add(node);
                     }
+                }
+
+                fetchAccountInfos(searchResultListModel);
+
+                synchronized (searchThread) {
                     try {
                         searchThread.wait();
                     } catch (InterruptedException e) {
-                        log.log(Level.WARNING, "Search was interrupted", e);
+                        logWarning("Search was interrupted", e);
                         break;
                     }
                 }
@@ -265,6 +279,29 @@ public class NodeSearcher extends PFComponent {
             getController().getNodeManager().removeNodeFilter(nodeSearchFilter);
             synchronized (searchThread) {
                 searchThread.notifyAll();
+            }
+        }
+
+        private void searchServer() {
+            if (!getController().getOSClient().isConnected()) {
+                return;
+            }
+            Map<MemberInfo, AccountInfo> res = getController().getOSClient()
+                .getSecurityService().searchNodes(pattern);
+            for (MemberInfo nodeInfo : res.keySet()) {
+                Member node = nodeInfo.getNode(getController(), true);
+                if (checkMember(node)) {
+                    searchResultListModel.add(node);
+                }
+            }
+            fetchAccountInfos(searchResultListModel);
+        }
+
+        private void fetchAccountInfos(Collection<Member> nodes) {
+            SecurityManager secMan = getController().getSecurityManager();
+            if (secMan instanceof SecurityManagerClient) {
+                SecurityManagerClient secManClient = (SecurityManagerClient) secMan;
+                secManClient.fetchAccountInfos(nodes, false);
             }
         }
     }

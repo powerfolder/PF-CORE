@@ -65,14 +65,14 @@ public class FindComputersTable extends JTable {
         TableColumn column = getColumn(getColumnName(0));
         column.setPreferredWidth(140);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(100);
+        column.setPreferredWidth(140);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(100);
         column = getColumn(getColumnName(3));
+        column.setPreferredWidth(100);
+        column = getColumn(getColumnName(4));
         column.setPreferredWidth(20);
     }
-
-
 
     /**
      * Listner on table header, takes care about the sorting of table

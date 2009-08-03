@@ -118,10 +118,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         if (session != null && CACHE_ENABLED) {
             return session.getAccountInfo();
         }
-        if (!client.isConnected()) {
-            // Not available yet.
-            return null;
-        }
+        // Own info.
         if (node.isMySelf()) {
             Account myAccount = client.getAccount();
             if (myAccount == null || !myAccount.isValid()) {
@@ -133,8 +130,12 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
             if (isFiner()) {
                 logFiner("Not trying to refresh account of " + node
-                    + " running in EDT thread");
+                    + ". Running in EDT thread");
             }
+            return null;
+        }
+        if (!client.isConnected()) {
+            // Not available yet.
             return null;
         }
         AccountInfo aInfo;
@@ -143,13 +144,13 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 .getAccountInfos(Collections.singleton(node.getInfo()));
             aInfo = res.get(node.getInfo());
             logWarning("Retrieved account " + aInfo + " for " + node);
+            if (CACHE_ENABLED) {
+                sessions.put(node, new Session(aInfo));
+            }
         } catch (RemoteCallException e) {
             logSevere("Unable to retrieve account info for " + node + ". " + e);
             logFiner(e);
             aInfo = null;
-        }
-        if (CACHE_ENABLED) {
-            sessions.put(node, new Session(aInfo));
         }
         return aInfo;
     }
@@ -183,6 +184,48 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
+    public void fetchAccountInfos(Collection<Member> nodes, boolean forceRefresh)
+    {
+        Reject.ifNull(nodes, "Nodes is null");
+        try {
+            Collection<MemberInfo> reqNodes = new ArrayList<MemberInfo>(nodes
+                .size());
+            for (Member node : nodes) {
+                if (forceRefresh || !sessions.containsKey(node)) {
+                    reqNodes.add(node.getInfo());
+                }
+            }
+            if (reqNodes.isEmpty()) {
+                return;
+            }
+            if (!client.isConnected()) {
+                return;
+            }
+            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
+                .getAccountInfos(reqNodes);
+            logWarning("Retrieved " + res.size() + " AccountInfos for "
+                + reqNodes.size() + " requested of " + nodes.size()
+                + " nodes: " + res);
+            for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
+                Member node = entry.getKey().getNode(getController(), false);
+                if (node == null) {
+                    continue;
+                }
+                AccountInfo aInfo = res.get(node.getInfo());
+                if (CACHE_ENABLED) {
+                    sessions.put(node, new Session(aInfo));
+                }
+                // logWarning("Fire account state change on " + node + " - "
+                // + aInfo);
+                fireNodeAccountStateChanged(node);
+            }
+        } catch (RemoteCallException e) {
+            logSevere("Unable to retrieve account info for " + nodes.size()
+                + " nodes. " + e);
+            logFiner(e);
+        }
+    }
+
     // Internal helper ********************************************************
 
     private void clearNodeCache(Member node) {
@@ -195,44 +238,23 @@ public class SecurityManagerClient extends AbstractSecurityManager {
      * members on our folders.
      */
     private void prefetchAccountInfos() {
-        Collection<MemberInfo> refresh = new ArrayList<MemberInfo>();
+        Collection<Member> nodesToRefresh = new ArrayList<Member>();
         for (Member node : getController().getNodeManager()
             .getNodesAsCollection())
         {
             if (shouldAutoRefresh(node)) {
-                refresh.add(node.getInfo());
+                nodesToRefresh.add(node);
             }
         }
-        try {
-            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
-                .getAccountInfos(refresh);
-            logWarning("Retrieved " + res.size() + " AccountInfos");
-            for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
-                Member node = entry.getKey().getNode(getController(), false);
-                if (node == null) {
-                    continue;
-                }
-                AccountInfo aInfo = entry.getValue();
-                if (CACHE_ENABLED) {
-                    sessions.put(node, new Session(aInfo));
-                }
-                fireNodeAccountStateChanged(node);
-            }
-        } catch (RemoteCallException e) {
-            logSevere("Unable to retrieve account info for " + refresh.size()
-                + " nodes. " + e);
-            logFiner(e);
-        }
+        fetchAccountInfos(nodesToRefresh, true);
     }
 
     /**
      * Refreshes a AccountInfo for the given node if it should be pre-fetched.
-     * Otherwise tries to return cached entry. also fires account state change
-     * event.
      * 
      * @param node
      */
-    private void autoRefresh(Member node) {
+    private void refresh(Member node) {
         if (shouldAutoRefresh(node)) {
             getAccountInfo(node);
         }
@@ -261,7 +283,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 prefetchAccountInfos();
             }
 
-            autoRefresh(node);
+            refresh(node);
         }
     }
 
@@ -278,7 +300,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
             node.synchronizeFolderMemberships();
 
-            autoRefresh(node);
+            refresh(node);
         }
     }
 
@@ -291,7 +313,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
         public void run() {
             clearNodeCache(node);
-            autoRefresh(node);
+            refresh(node);
         }
     }
 
