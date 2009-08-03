@@ -346,14 +346,15 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         }
 
         // close socket
-        if (socket != null) {
+        UDTSocket thisSocket = socket;
+        if (thisSocket != null) {
             try {
-                if (socket.getLocalAddress() != null) {
+                if (thisSocket.getLocalAddress() != null) {
                     getController().getIOProvider()
                         .getUDTSocketConnectionManager().releaseSlot(
-                            socket.getLocalAddress().getPort());
+                            thisSocket.getLocalAddress().getPort());
                 }
-                socket.close();
+                thisSocket.close();
             } catch (IOException e) {
                 logFiner("IOException", e);
             }
