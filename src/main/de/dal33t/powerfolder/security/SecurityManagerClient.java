@@ -240,7 +240,6 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     }
 
     private boolean shouldAutoRefresh(Member node) {
-        // TODO: Use Member.isInteresting() ?
         return node.isCompleteyConnected()
             && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
     }
