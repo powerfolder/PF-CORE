@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.13";
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.14";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -879,8 +879,7 @@ public class Controller extends PFComponent {
         long midnight = cal.getTime().getTime();
         // How long to wait initially?
         long secondsToMidnight = (midnight - now) / 1000;
-        log.info("Initial log reconfigure in " + secondsToMidnight
-            + " seconds");
+        logInfo("Initial log reconfigure in " + secondsToMidnight + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 logInfo("Reconfiguring logs for new day");
