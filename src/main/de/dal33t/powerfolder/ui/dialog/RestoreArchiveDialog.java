@@ -125,20 +125,16 @@ public class RestoreArchiveDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
-            .charAt(0));
-        JButton cancelButton = new JButton(Translation
-            .getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation(
-            "general.cancel.key").charAt(0));
-        cancelButton.addActionListener(new ActionListener() {
+        JButton okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
             }
         });
-
-        okButton.addActionListener(new MyOkListener());
+        JButton cancelButton = createCancelButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
 
         return ButtonBarFactory.buildCenteredBar(okButton,
             cancelButton);
@@ -148,20 +144,5 @@ public class RestoreArchiveDialog extends BaseDialog {
         boolean enabled = saveRB.isSelected();
         fileLocationLabel.setEnabled(enabled);
         fileLocationButton.setEnabled(enabled);
-    }
-
-    /**
-     * Confirmation button action.
-     */
-    private class MyOkListener implements ActionListener {
-
-        /**
-         * Set the value model and user collection in the underlying wizard.
-         *
-         * @param e
-         */
-        public void actionPerformed(ActionEvent e) {
-            close();
-        }
     }
 }
