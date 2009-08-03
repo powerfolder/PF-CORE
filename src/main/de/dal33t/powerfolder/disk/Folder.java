@@ -310,8 +310,6 @@ public class Folder extends PFComponent {
             deviceDisconnected = true;
         }
 
-        statistic = new FolderStatistic(this);
-
         FileFilter allExceptSystemDirFilter = new FileFilter() {
             public boolean accept(File pathname) {
                 return !isSystemSubDir(pathname);
@@ -340,6 +338,9 @@ public class Folder extends PFComponent {
 
         // put myself in membership
         join0(controller.getMySelf());
+        
+        // Now calc.
+        statistic = new FolderStatistic(this);
 
         // Check desktop ini in Windows environments
         FileUtils.maintainDesktopIni(getController(), localBase);
