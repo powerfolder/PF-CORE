@@ -13,7 +13,7 @@ Defaults
 
     <state>
       <font id="SyntheticaDefaultFont" name="Tahoma" size="11"/>
-      <color type="FOREGROUND" value="#333333" /> 
+      <color type="FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
   	<state value="DISABLED">
@@ -316,7 +316,7 @@ Button
       <insets top="7" left="5" bottom="5" right="5"/>
       <property key="Button.margin" type="insets" value="0 10 0 10"/>
       <font name="Tahoma" size="11" style="BOLD"/>
-      <color type="FOREGROUND" value="#333333" /> 
+      <color type="FOREGROUND" value="#FFFFFF" /> 
 
       <defaultsProperty key="Synthetica.button.border.insets" type="insets" value="5 5 5 5"/>
       <defaultsProperty key="Synthetica.button.12x12.border.insets" type="insets" value="4 4 4 4"/>
@@ -532,9 +532,9 @@ Note: editable ComboBox contains TextField and ArrowButton
     <insets top="2" left="2" bottom="2" right="2"/>
 
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedTextColor">
-        <!-- #333333 -->
+        <!-- #FFFFFF -->
         <int>51</int>
         <int>51</int>
         <int>51</int>
@@ -542,7 +542,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.locked.textColor" type="idref" value="lockedTextColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="lockedBackgroundColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -550,7 +550,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.locked.backgroundColor" type="idref" value="lockedBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -588,7 +588,7 @@ Note: editable ComboBox contains TextField and ArrowButton
 
     <state value="FOCUSED">
       <object class="javax.swing.plaf.ColorUIResource" id="focusedTextColor">
-        <!-- #333333 -->
+        <!-- #FFFFFF -->
         <int>51</int>
         <int>51</int>
         <int>51</int>
@@ -596,7 +596,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.focused.textColor" type="idref" value="focusedTextColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="focusedBackgroundColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -604,7 +604,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.focused.backgroundColor" type="idref" value="focusedBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="focusedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -628,7 +628,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.disabled.textColor" type="idref" value="disabledTextColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="disabledBackgroundColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -636,7 +636,7 @@ Note: editable ComboBox contains TextField and ArrowButton
       <defaultsProperty key="Synthetica.comboBox.disabled.backgroundColor" type="idref" value="disabledBackgroundColor"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -657,7 +657,7 @@ DesktopIcon
 -->
   <style id="desktopIcon">
     <state>
-      <color type="BACKGROUND" value="#ffffff" />
+      <color type="BACKGROUND" value="#354559" />
       <color type="TEXT_FOREGROUND" value="#EE0000" />
     </state>
   </style>
@@ -689,9 +689,9 @@ EditorPane
 -->
   <style id="editorPane">
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #ffffff -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -709,13 +709,13 @@ EditorPane
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -834,7 +834,7 @@ Flexdock
   <defaultsProperty key="Synthetica.docking.titlebar.color" type="idref" value="flexdockTitlebarColor" />
 
   <object class="javax.swing.plaf.ColorUIResource" id="flexdockTitlebarColorSelected">
-    <!-- #333333 -->
+    <!-- #FFFFFF -->
     <int>51</int>
     <int>51</int>
     <int>51</int>
@@ -997,9 +997,9 @@ FormattedTextField
     <insets top="3" left="3" bottom="3" right="3"/>
 
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -1021,13 +1021,13 @@ FormattedTextField
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -1058,7 +1058,7 @@ InternalFrame
     <defaultsProperty key="Synthetica.internalFrame.titlePane.dropShadow.distance" type="integer" value="-8"/>
     <defaultsProperty key="Synthetica.internalFrame.titlePane.dropShadow.highQuality" type="boolean" value="false"/>
     <object class="javax.swing.plaf.ColorUIResource" id="dropShadowColor">
-      <!-- #FFFFFF -->
+      <!-- #354559 -->
       <int>255</int>
       <int>255</int>
       <int>255</int>
@@ -1114,7 +1114,7 @@ InternalFrame
       <font name="Tahoma" size="11" style="BOLD" />
       <insets top="2" left="2" bottom="2" right="2"/>
       <color type="FOREGROUND" value="#C0C0C0" />
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <color type="BACKGROUND" value="#354559" />
 
       <string id="internalFrameTitlePaneBackground">/de/dal33t/powerfolder/skin/powerfolder2/images/internalFrameTitlePaneBackground.png</string>
       <defaultsProperty key="Synthetica.internalFrameTitlePane.background" type="idref" value="internalFrameTitlePaneBackground"/>
@@ -1132,8 +1132,8 @@ InternalFrame
       <property key="InternalFrameTitlePane.maximizeIcon" value="internalFrameMaximizeIcon"/>
       <property key="InternalFrameTitlePane.iconifyIcon" value="internalFrameIconifyIcon"/>
 
-      <color type="TEXT_FOREGROUND" value="#333333" />
-      <color type="FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
+      <color type="FOREGROUND" value="#FFFFFF" />
       <color type="BACKGROUND" value="#FCFCFC" />
 	  <painter method="internalFrameTitlePaneBackground" idref="syntheticaPainter" />
     </state>
@@ -1208,13 +1208,13 @@ List
     <defaultsProperty key="Synthetica.list.focusCellHighlightBorder.color" type="idref" value="hlBorderColor" />
 
     <state>
-      <color type="BACKGROUND" value="#FFFFFF" /> 
-      <color type="FOREGROUND" value="#333333" /> 
+      <color type="BACKGROUND" value="#354559" /> 
+      <color type="FOREGROUND" value="#FFFFFF" /> 
     </state>
 
     <!-- Note: Opaque has to be set to true for region Label.selected -->
     <state value="SELECTED">
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
       <color type="TEXT_BACKGROUND" value="#a5b6c3" /> 
     </state>
   </style>
@@ -1258,13 +1258,13 @@ Menu
 
     <state>
       <opaque value="false" />
-      <color type="BACKGROUND" value="#FFFFFF" />
-      <color type="FOREGROUND" value="#333333" />
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="BACKGROUND" value="#354559" />
+      <color type="FOREGROUND" value="#FFFFFF" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <property key="Menu.arrowIcon" value="arrowIcon"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="toplevelTextColor">
-        <!-- #333333 -->
+        <!-- #FFFFFF -->
         <int>51</int>
         <int>51</int>
         <int>51</int>
@@ -1291,11 +1291,11 @@ Menu
     <state value="SELECTED">
       <opaque value="true" />
       <color type="BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <property key="Menu.arrowIcon" value="arrowIconSelected"/>
 
       <object class="javax.swing.plaf.ColorUIResource" id="toplevelSelectedTextColor">
-        <!-- #333333 -->
+        <!-- #FFFFFF -->
         <int>51</int>
         <int>51</int>
         <int>51</int>
@@ -1379,8 +1379,8 @@ MenuItem
     <imageIcon id="checkBoxIconDisabledAndSelected" path="/de/dal33t/powerfolder/skin/powerfolder2/images/checkBoxIcon_disabledSelected.png"/>
 
     <state>
-      <color type="FOREGROUND" value="#333333" />
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="FOREGROUND" value="#FFFFFF" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <property key="RadioButtonMenuItem.checkIcon" value="radioButtonIconDefault"/>
       <property key="CheckBoxMenuItem.checkIcon" value="checkBoxIconDefault"/>
       <defaultsProperty key="Synthetica.menuItem.insets" type="insets" value="5 5 5 5"/>
@@ -1394,7 +1394,7 @@ MenuItem
     </state>
 
     <state value="MOUSE_OVER">
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <string id="menuItemBackground">/de/dal33t/powerfolder/skin/powerfolder2/images/menuItem_hover.png,/de/dal33t/powerfolder/skin/powerfolder2/images/menuItem_hover2.png,/de/dal33t/powerfolder/skin/powerfolder2/images/menuItem_hover3.png,/de/dal33t/powerfolder/skin/powerfolder2/images/menuItem_hover4.png,/de/dal33t/powerfolder/skin/powerfolder2/images/menuItem_hover5.png</string>
       <defaultsProperty key="Synthetica.menuItem.hover" type="idref" value="menuItemBackground"/>
 	  <painter method="menuItemBackground" idref="syntheticaPainter" />
@@ -1403,7 +1403,7 @@ MenuItem
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <property key="RadioButtonMenuItem.checkIcon" value="radioButtonIconSelected"/>
       <property key="CheckBoxMenuItem.checkIcon" value="checkBoxIconSelected"/>
     </state>
@@ -1411,7 +1411,7 @@ MenuItem
     <state value="MOUSE_OVER AND SELECTED">
       <property key="RadioButtonMenuItem.checkIcon" value="radioButtonIconSelected"/>
       <property key="CheckBoxMenuItem.checkIcon" value="checkBoxIconSelected"/>
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
 
 	  <painter method="menuItemBackground" idref="syntheticaPainter" />
 	  <painter method="radioButtonMenuItemBackground" idref="syntheticaPainter" />
@@ -1432,7 +1432,7 @@ MenuItem
 
     <state value="DISABLED AND SELECTED">
   	  <color type="TEXT_FOREGROUND" value="#AAAAAA" /> 
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <color type="BACKGROUND" value="#354559" />
       <property key="RadioButtonMenuItem.checkIcon" value="radioButtonIconDisabledAndSelected"/>
       <property key="CheckBoxMenuItem.checkIcon" value="checkBoxIconDisabledAndSelected"/>
     </state>
@@ -1475,7 +1475,7 @@ MonthView
   <defaultsProperty key="JXMonthView.monthUpFileName" type="idref" value="jxmonthUpArrow"/>
 
   <object class="javax.swing.plaf.ColorUIResource" id="jxmonthMonthColor">
-    <!-- #333333 -->
+    <!-- #FFFFFF -->
     <int>51</int>
     <int>51</int>
     <int>51</int>
@@ -1558,8 +1558,8 @@ Panel
 
     <state>
       <!-- <font name="Tahoma" size="11" style="BOLD" /> -->
-      <!-- <color type="FOREGROUND" value="#333333" /> -->
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <!-- <color type="FOREGROUND" value="#FFFFFF" /> -->
+      <color type="BACKGROUND" value="#354559" />
       <opaque value="true"/>
 
       <string id="titledBorder">/de/dal33t/powerfolder/skin/powerfolder2/images/titledBorder.png</string>
@@ -1580,9 +1580,9 @@ PasswordField
     <insets top="3" left="3" bottom="3" right="3"/>
 
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -1604,11 +1604,11 @@ PasswordField
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
 
       <string id="passwordFieldBorderDisabled">/de/dal33t/powerfolder/skin/powerfolder2/images/border_disabled.png</string>
       <defaultsProperty key="Synthetica.passwordField.border.disabled" type="idref" value="passwordFieldBorderDisabled"/>
@@ -1817,7 +1817,7 @@ RootPane
     <defaultsProperty key="Synthetica.rootPane.titlePane.iconifyButton.gap" type="integer" value="2"/>
     <defaultsProperty key="Synthetica.rootPane.titlePane.toggleButton.gap" type="integer" value="2"/>
     <object class="javax.swing.plaf.ColorUIResource" id="dropShadowColor">
-      <!-- #FFFFFF -->
+      <!-- #354559 -->
       <int>255</int>
       <int>255</int>
       <int>255</int>
@@ -1929,7 +1929,7 @@ Spinner
     </state>
 
     <state value="DISABLED">
-      <color type="BACKGROUND" value="#FFFFFF"/>
+      <color type="BACKGROUND" value="#354559"/>
       <string id="spinnerBorderDisabled">/de/dal33t/powerfolder/skin/powerfolder2/images/border_disabled.png</string>
       <defaultsProperty key="Synthetica.spinner.border.disabled" type="idref" value="spinnerBorderDisabled"/>
       <painter method="spinnerBorder" idref="syntheticaPainter" />
@@ -2177,7 +2177,7 @@ SplitPane
     <defaultsProperty key="Syntetica.splitPane.centerOneTouchButtons" type="boolean" value="true"/>
     <state>
       <opaque value="false"/>
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <color type="BACKGROUND" value="#000000" />
     </state>
   </style>
   <bind style="splitPane" type="region" key="SplitPane"/>
@@ -2236,7 +2236,7 @@ TabbedPane
   <style id="tabbedPane">
     <insets top="0" left="0" bottom="0" right="0"/>
     <state>
-      <color type="FOREGROUND" value="#333333"/>
+      <color type="FOREGROUND" value="#FFFFFF"/>
     </state>
   </style>
   <bind style="tabbedPane" type="region" key="TabbedPane"/>
@@ -2245,7 +2245,7 @@ TabbedPane
     <insets top="3" left="3" bottom="3" right="3"/>
     <state>
       <opaque value="true"/>
-      <color type="BACKGROUND" value="#FFFFFF"/>
+      <color type="BACKGROUND" value="#354559"/>
       <string id="tabbedPaneContentBorderImage">/de/dal33t/powerfolder/skin/powerfolder2/images/tabbedPaneContentBorder.png</string>
       <defaultsProperty key="Synthetica.tabbedPane.contentBorder.image" type="idref" value="tabbedPaneContentBorderImage"/>
       <defaultsProperty key="Synthetica.tabbedPane.contentBorder.image.sourceInsets" type="insets" value="2 2 2 2"/>
@@ -2317,12 +2317,12 @@ TabbedPane
     </state>
 
     <state value="FOCUSED">
-      <color type="TEXT_FOREGROUND" value="#333333"/>
+      <color type="TEXT_FOREGROUND" value="#FFFFFF"/>
 	  <painter method="tabbedPaneTabBackground" idref="syntheticaPainter" />
     </state>
 
     <state value="SELECTED">
-      <color type="TEXT_FOREGROUND" value="#333333"/>
+      <color type="TEXT_FOREGROUND" value="#FFFFFF"/>
 
       <string id="tabbedPaneTabTop">/de/dal33t/powerfolder/skin/powerfolder2/images/tabbedPaneTab_selected.png</string>
       <defaultsProperty key="Synthetica.tabbedPane.tab.selected.top" type="idref" value="tabbedPaneTabTop"/>
@@ -2374,8 +2374,8 @@ Table
     <state>
       <insets top="3" left="3" bottom="3" right="3"/>
       <property key="Table.rendererUseUIBorder" type="boolean" value="true"/>
-      <color type="BACKGROUND" value="#FFFFFF" />
-      <color type="FOREGROUND" value="#333333" />
+      <color type="BACKGROUND" value="#000000" />
+      <color type="FOREGROUND" value="#FFFFFF" />
 
       <object class="javax.swing.plaf.ColorUIResource" id="hlBorderColor">
         <!-- #3680A3 -->
@@ -2410,7 +2410,7 @@ Table
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
     </state>    
   </style>
   <bind style="table" type="region" key="Table"/>
@@ -2418,7 +2418,7 @@ Table
   <style id="tableHeader">
     <state>
       <font name="Tahoma" size="11" style="BOLD"/>
-      <color type="FOREGROUND" value="#333333" /> 
+      <color type="FOREGROUND" value="#FFFFFF" /> 
       <color type="BACKGROUND" value="#a5b6c3" />
 
       <object class="javax.swing.plaf.ColorUIResource" id="gridColor">
@@ -2482,7 +2482,7 @@ TaskPane
   <defaultsProperty key="TaskPane.borderColor" type="idref" value="taskPaneBorderColor"/>
 
   <object class="javax.swing.plaf.ColorUIResource" id="taskPaneBackground">
-    <!-- #FFFFFF -->
+    <!-- #354559 -->
     <int>239</int>
     <int>239</int>
     <int>239</int>
@@ -2499,7 +2499,7 @@ TaskPane
   <defaultsProperty key="Synthetica.taskPane.title.background.expanded" type="idref" value="taskPaneTitleExpandedBackground"/>
 
   <object class="javax.swing.plaf.ColorUIResource" id="taskPaneTitleForeground">
-    <!-- #333333 -->
+    <!-- #FFFFFF -->
     <int>51</int>
     <int>51</int>
     <int>51</int>
@@ -2571,9 +2571,9 @@ TextArea
 -->
   <style id="textArea">
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -2591,13 +2591,13 @@ TextArea
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -2618,9 +2618,9 @@ TextField
     <insets top="3" left="3" bottom="3" right="3"/>
 
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -2642,11 +2642,11 @@ TextField
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <string id="textFieldBorderDisabled">/de/dal33t/powerfolder/skin/powerfolder2/images/border_disabled.png</string>
       <defaultsProperty key="Synthetica.textField.border.disabled" type="idref" value="textFieldBorderDisabled"/>
       <painter method="textFieldBackground" idref="syntheticaPainter" />
@@ -2663,9 +2663,9 @@ TextPane
 -->
   <style id="textPane">
     <state>
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="lockedColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -2683,13 +2683,13 @@ TextPane
 
     <state value="SELECTED">
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
-      <color type="TEXT_FOREGROUND" value="#333333" /> 
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
   	</state>
 
     <state value="DISABLED">
-      <color value="#FFFFFF" type="BACKGROUND"/>
+      <color value="#354559" type="BACKGROUND"/>
       <object class="javax.swing.plaf.ColorUIResource" id="disabledColor">
-        <!-- #FFFFFF -->
+        <!-- #354559 -->
         <int>243</int>
         <int>243</int>
         <int>243</int>
@@ -2727,7 +2727,7 @@ TitledPanel
   <defaultsProperty key="Synthetica.titledPanel.dropShadow.distance" type="integer" value="-8"/>
   <defaultsProperty key="Synthetica.titledPanel.dropShadow.highQuality" type="boolean" value="false"/>
   <object class="javax.swing.plaf.ColorUIResource" id="dropShadowColor">
-    <!-- #FFFFFF -->
+    <!-- #354559 -->
     <int>255</int>
     <int>255</int>
     <int>255</int>
@@ -2744,7 +2744,7 @@ TitledPanel
   <defaultsProperty key="Synthetica.titledPanel.title.insets" type="insets" value="0 6 4 6"/>
 
   <object class="javax.swing.plaf.ColorUIResource" id="titledPanelForeground">
-    <!-- #333333 -->
+    <!-- #FFFFFF -->
     <int>51</int>
     <int>51</int>
     <int>51</int>
@@ -2764,7 +2764,7 @@ ToggleButton
 
     <state>
       <font name="Tahoma" size="11" style="BOLD"/>
-      <color type="FOREGROUND" value="#333333" /> 
+      <color type="FOREGROUND" value="#FFFFFF" /> 
       <defaultsProperty key="Synthetica.toggleButton.border.insets" type="insets" value="5 5 5 5"/>
 
       <string id="buttonBorder">/de/dal33t/powerfolder/skin/powerfolder2/images/button_hover4.png,/de/dal33t/powerfolder/skin/powerfolder2/images/button_hover3.png,/de/dal33t/powerfolder/skin/powerfolder2/images/button_hover2.png,/de/dal33t/powerfolder/skin/powerfolder2/images/button_hover.png,/de/dal33t/powerfolder/skin/powerfolder2/images/button.png</string>
@@ -2900,7 +2900,7 @@ ToolBar
     <defaultsProperty key="Synthetica.toolBar.toggleButton.font.style" type="idref" value="toolBarToggleButtonFontStyle"/>  
 
     <state>
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <color type="BACKGROUND" value="#354559" />
       <color type="FOREGROUND" value="#05F4F4" />
 
       <string id="toolBarBackground">/de/dal33t/powerfolder/skin/powerfolder2/images/toolBar.png</string>
@@ -2981,7 +2981,7 @@ ToolTip
     </state>
 
     <state value="DISABLED">
-  	  <color type="TEXT_FOREGROUND" value="#333333" /> 
+  	  <color type="TEXT_FOREGROUND" value="#FFFFFF" /> 
 	  <painter method="toolTipBackground" idref="syntheticaPainter" />
     </state>
   </style>
@@ -3042,9 +3042,9 @@ Tree
 
 	  <painter method="treeBackground" idref="syntheticaPainter" />
       <opaque value="true"/>
-      <color type="BACKGROUND" value="#FFFFFF" />
+      <color type="BACKGROUND" value="#354559" />
       <!-- Text color can be separately set through "TreeCell-Section" (TEXT_FOREGROUND) -->
-      <color type="FOREGROUND" value="#333333" />
+      <color type="FOREGROUND" value="#FFFFFF" />
     </state>
   </style>
   <bind style="tree" type="region" key="Tree"/>
@@ -3056,7 +3056,7 @@ Tree
       -->
     </state>
     <state value="SELECTED">
-      <color type="TEXT_FOREGROUND" value="#333333" />
+      <color type="TEXT_FOREGROUND" value="#FFFFFF" />
       <color type="TEXT_BACKGROUND" value="#a5b6c3" />
     </state>
   </style>
