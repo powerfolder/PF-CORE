@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
  */
 public class SyncFolderPanel extends BaseDialog {
 
+    private JButton okButton;
     private static final Object SEND_OPTION = new Object();
     private static final Object RECEIVE_OPTION = new Object();
     private static final Object SEND_RECEIVE_OPTION = new Object();
@@ -108,7 +109,7 @@ public class SyncFolderPanel extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        JButton okButton = createOKButton(new ActionListener() {
+        okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 performSync();
                 // remove window
@@ -123,6 +124,10 @@ public class SyncFolderPanel extends BaseDialog {
         });
 
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+    }
+
+    protected JButton getDefaultButton() {
+        return okButton;
     }
 
     // UI Building ************************************************************

@@ -48,6 +48,8 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
  */
 public class FreeLimitationDialog extends BaseDialog {
 
+    private JButton buyProButton;
+
     protected FreeLimitationDialog(Controller controller) {
         super(controller, false);
     }
@@ -109,8 +111,12 @@ public class FreeLimitationDialog extends BaseDialog {
         return builder.getPanel();
     }
 
+    protected JButton getDefaultButton() {
+        return buyProButton;
+    }
+
     private Component buildToolbar() {
-        JButton buyProButton = new JButton(Translation
+        buyProButton = new JButton(Translation
             .getTranslation("free_limit_dialog.buy_pro"));
         buyProButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -425,6 +425,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         return ButtonBarFactory.buildCenteredBar(saveButton, cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return saveButton;
+    }
+
     // Methods for FolderPreferencesPanel **************************************
 
     /**

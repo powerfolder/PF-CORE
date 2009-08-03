@@ -49,14 +49,15 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.AddressRange;
 
-class AddressEditor extends BaseDialog {
+public class AddressEditor extends BaseDialog {
+
     public enum EditorResult {
         OK, CANCEL
     }
 
     private JTextField inputLine;
-    JButton okButton;
-    JButton cancelButton;
+    private JButton okButton;
+    private JButton cancelButton;
 
     private EditorResult result;
 
@@ -119,6 +120,10 @@ class AddressEditor extends BaseDialog {
         return builder.getPanel();
     }
 
+    protected JButton getDefaultButton() {
+        return okButton;
+    }
+
     @Override
     protected Icon getIcon()
     {
@@ -157,8 +162,7 @@ class AddressEditor extends BaseDialog {
         /**
          * @param input
          */
-        public AddressRangeValidator(String input) {
-            super();
+        AddressRangeValidator(String input) {
             this.input = input;
         }
 

@@ -107,13 +107,20 @@ public abstract class BaseDialog extends PFUIComponent {
     protected abstract Component getContent();
 
     /**
+     * This is the button to make the default button for the dialog.
+     *
+     * @return default button
+     */
+    protected abstract JButton getDefaultButton();
+
+    /**
      * Method should return the button bar on the lower side of the dialog
      * 
      * @return the component
      */
     protected abstract Component getButtonBar();
 
-    /** overwrite amnd return null to allow resize */
+    /** override and return true to allow resize */
     protected boolean allowResize() {
         return false;
     }
@@ -269,6 +276,8 @@ public abstract class BaseDialog extends PFUIComponent {
 
             // Add panel to component
             dialog.getContentPane().add(builder.getPanel());
+
+            dialog.getRootPane().setDefaultButton(getDefaultButton());
 
             // Add escape key as close
             KeyStroke strokeEsc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);

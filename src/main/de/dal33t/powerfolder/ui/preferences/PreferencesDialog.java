@@ -330,6 +330,10 @@ public class PreferencesDialog extends BaseDialog {
                 cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return okButton;
+    }
+
     private void saveSettings() {
         for (PreferenceTab tab : preferenceTabs) {
             tab.save();

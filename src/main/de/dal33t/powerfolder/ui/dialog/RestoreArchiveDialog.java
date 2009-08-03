@@ -43,6 +43,7 @@ import java.awt.event.ItemEvent;
  */
 public class RestoreArchiveDialog extends BaseDialog {
 
+    private JButton okButton;
     private JPanel uiComponent;
 
     private FileVersionInfo fileVersionInfo;
@@ -125,7 +126,7 @@ public class RestoreArchiveDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        JButton okButton = createOKButton(new ActionListener() {
+        okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
             }
@@ -136,8 +137,11 @@ public class RestoreArchiveDialog extends BaseDialog {
             }
         });
 
-        return ButtonBarFactory.buildCenteredBar(okButton,
-            cancelButton);
+        return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+    }
+
+    protected JButton getDefaultButton() {
+        return okButton;
     }
 
     private void enableFileLocationComponents() {

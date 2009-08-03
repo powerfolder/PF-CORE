@@ -150,6 +150,10 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return okButton;
+    }
+
     protected Component getContent() {
         FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
             "pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, pref");

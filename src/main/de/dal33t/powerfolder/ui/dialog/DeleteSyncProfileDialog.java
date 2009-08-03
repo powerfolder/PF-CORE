@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 public class DeleteSyncProfileDialog extends BaseDialog
 {
 
+    private JButton deleteButton;
+
     private JComboBox syncProfilesCombo;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
@@ -131,7 +133,7 @@ public class DeleteSyncProfileDialog extends BaseDialog
      */
     protected Component getButtonBar() {
 
-        JButton deleteButton = new JButton(Translation.getTranslation("general.delete"));
+        deleteButton = new JButton(Translation.getTranslation("general.delete"));
         deleteButton.setMnemonic(Translation.getTranslation("general.delete.key")
             .trim().charAt(0));
         deleteButton.addActionListener(new ActionListener() {
@@ -147,6 +149,10 @@ public class DeleteSyncProfileDialog extends BaseDialog
         });
 
         return ButtonBarFactory.buildCenteredBar(deleteButton, cancelButton);
+    }
+
+    protected JButton getDefaultButton() {
+        return deleteButton;
     }
 
     // Methods fo FolderPreferencesPanel **************************************

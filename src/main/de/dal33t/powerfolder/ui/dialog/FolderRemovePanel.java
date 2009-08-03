@@ -184,6 +184,10 @@ public class FolderRemovePanel extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(leaveButton, cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return leaveButton;
+    }
+
     private void configureComponents() {
             deleteSystemSubFolderBox.setEnabled(removeFromLocalBox.isSelected());
             leaveButton.setEnabled(removeFromLocalBox.isSelected());

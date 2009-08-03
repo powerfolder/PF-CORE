@@ -67,6 +67,10 @@ public class FindComputersDialog extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(addToFriendsButton, closeButton);
     }
 
+    protected JButton getDefaultButton() {
+        return addToFriendsButton;
+    }
+
     /**
      * Creates the okay button for the whole pref dialog
      */

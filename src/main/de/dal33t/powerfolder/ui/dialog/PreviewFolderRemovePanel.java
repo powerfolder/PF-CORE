@@ -115,6 +115,10 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         return Icons.getIconById(Icons.REMOVE_FOLDER_48);
     }
 
+    protected JButton getDefaultButton() {
+        return okButton;
+    }
+
     protected Component getContent() {
         initComponents();
 

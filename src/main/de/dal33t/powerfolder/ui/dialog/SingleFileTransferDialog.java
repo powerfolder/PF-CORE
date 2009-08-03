@@ -97,6 +97,10 @@ public class SingleFileTransferDialog extends BaseDialog {
         return Icons.getIconById(Icons.SYNC_FOLDER_48);
     }
 
+    protected JButton getDefaultButton() {
+        return transferButton;
+    }
+
     /**
      * Creates the visual component.
      *

@@ -173,6 +173,10 @@ public class PreviewToJoinPanel extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(joinButton, cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return joinButton;
+    }
+
     /**
      * Creates a pair of location text field and button.
      * 

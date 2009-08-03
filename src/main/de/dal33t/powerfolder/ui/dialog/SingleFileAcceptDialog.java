@@ -76,6 +76,10 @@ public class SingleFileAcceptDialog extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(acceptButton, cancelButton);
     }
 
+    protected JButton getDefaultButton() {
+        return acceptButton;
+    }
+
     /**
      * Gets the icon for the dialog.
      *
