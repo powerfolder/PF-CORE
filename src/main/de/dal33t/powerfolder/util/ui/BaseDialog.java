@@ -23,6 +23,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.*;
 
@@ -193,7 +196,7 @@ public abstract class BaseDialog extends PFUIComponent {
     /**
      * Disposes the dialog.
      */
-    public final void close() {
+    public void close() {
         if (dialog != null) {
             dialog.dispose();
             dialog = null;
@@ -244,10 +247,20 @@ public abstract class BaseDialog extends PFUIComponent {
     protected final JDialog getUIComponent() {
         if (dialog == null) {
             dialog = new JDialog(getUIController().getActiveFrame(),
-                    getTitle(), modal ? Dialog.ModalityType.APPLICATION_MODAL :
-                    Dialog.ModalityType.MODELESS);
+                getTitle(), modal
+                    ? Dialog.ModalityType.APPLICATION_MODAL
+                    : Dialog.ModalityType.MODELESS);
             dialog.setResizable(allowResize());
             dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            dialog.addWindowListener(new WindowAdapter() {
+                public void windowClosed(WindowEvent e) {
+                    close();
+                }
+
+                public void windowClosing(WindowEvent e) {
+                    close();
+                }
+            });
 
             FormLayout layout = new FormLayout("pref, pref:grow",
                 "pref:grow, pref");
@@ -286,11 +299,10 @@ public abstract class BaseDialog extends PFUIComponent {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
             dialog.pack();
-            int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth()
-                    - dialog.getWidth()) / 2;
-            int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()
-                    - dialog.getHeight())
-                / 2;
+            int x = ((int) Toolkit.getDefaultToolkit().getScreenSize()
+                .getWidth() - dialog.getWidth()) / 2;
+            int y = ((int) Toolkit.getDefaultToolkit().getScreenSize()
+                .getHeight() - dialog.getHeight()) / 2;
             dialog.setLocation(x, y);
 
         }
