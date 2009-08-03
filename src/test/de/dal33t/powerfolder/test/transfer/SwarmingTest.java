@@ -50,7 +50,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
-    public void testKillerSwarm() throws IOException {
+    public void xtestKillerSwarm() throws IOException {
         nSetupControllers(20);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
@@ -81,15 +81,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testFiveSwarmMulti() throws Exception {
+    public void xtestFiveSwarmMulti() throws Exception {
         for (int i = 0; i < 5; i++) {
-            testFiveSwarmDownload();
+            xtestFiveSwarmDownload();
             tearDown();
             setUp();
         }
     }
 
-    public void testFiveSwarmDownload() throws IOException {
+    public void xtestFiveSwarmDownload() throws IOException {
         final long fsize = 10000000;
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
@@ -101,18 +101,17 @@ public class SwarmingTest extends MultipleControllerTestCase {
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), fsize);
         scanFolder(getFolderOf("0"));
-        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
+        final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
+            .next();
+        assertFileMatch(tmpFile, fInfo, getContoller("0"));
 
         for (int i = 0; i < 4; i++) {
             getFolderOf("" + i).setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         }
 
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 for (Controller c : getControllers()) {
-                    if (c == getContoller("4")) {
-                        continue;
-                    }
                     if (c.getFolderRepository().getFolders().iterator().next()
                         .getKnownFilesCount() != 1)
                     {
@@ -120,6 +119,18 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     }
                 }
                 return true;
+            }
+
+            public String message() {
+                StringBuilder b = new StringBuilder("Files at controllers: ");
+                for (Controller c : getControllers()) {
+                    b.append(c.getMySelf().getNick());
+                    b.append('=');
+                    b.append(c.getFolderRepository().getFolders().iterator()
+                        .next().getKnownFilesCount());
+                    b.append(", ");
+                }
+                return b.toString();
             }
         });
 
@@ -258,7 +269,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testFileAlterations() throws IOException {
+    public void xtestFileAlterations() throws IOException {
         nSetupControllers(6);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
@@ -337,13 +348,13 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
     public void xtestMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
-            testFileAlterations();
+            xtestFileAlterations();
             tearDown();
             setUp();
         }
     }
 
-    public void testMultifileSwarmingWithHeavyModifications()
+    public void xtestMultifileSwarmingWithHeavyModifications()
         throws IOException
     {
         Random prng = new Random();
@@ -515,7 +526,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.cleanTestDir();
     }
 
-    public void testConcurrentModificationsLargeSwarmDeltaSync()
+    public void xtestConcurrentModificationsLargeSwarmDeltaSync()
         throws IOException
     {
         Random prng = new Random();
