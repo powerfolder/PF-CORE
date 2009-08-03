@@ -286,6 +286,9 @@ public class NodeSearcher extends PFComponent {
             if (!getController().getOSClient().isConnected()) {
                 return;
             }
+            if (!getController().getOSClient().getAccount().isValid()) {
+                return;
+            }
             Map<MemberInfo, AccountInfo> res = getController().getOSClient()
                 .getSecurityService().searchNodes(pattern);
             for (MemberInfo nodeInfo : res.keySet()) {
