@@ -349,10 +349,11 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         UDTSocket thisSocket = socket;
         if (thisSocket != null) {
             try {
-                if (thisSocket.getLocalAddress() != null) {
+                InetSocketAddress addr = thisSocket.getLocalAddress();
+                if (addr != null) {
                     getController().getIOProvider()
                         .getUDTSocketConnectionManager().releaseSlot(
-                            thisSocket.getLocalAddress().getPort());
+                            addr.getPort());
                 }
                 thisSocket.close();
             } catch (IOException e) {
@@ -589,7 +590,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
     }
-    
+
     public ConnectionQuality getConnectionQuality() {
         // FIXME: Direct UDP should be GOOD.
         return ConnectionQuality.MEDIUM;
