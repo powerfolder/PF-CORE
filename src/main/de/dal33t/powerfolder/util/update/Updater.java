@@ -234,6 +234,7 @@ public class Updater extends Thread {
                 latestVersion += (char) read;
             }
             if (latestVersion != null) {
+                latestVersion = latestVersion.trim();
                 if (latestVersion.length() > 50) {
                     LOG.log(Level.SEVERE,
                         "Received illegal response while checking latest available version from "
