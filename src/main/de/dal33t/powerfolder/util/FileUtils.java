@@ -525,7 +525,7 @@ public class FileUtils {
                 String herePath = hereFile.getAbsolutePath();
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
-                    log.severe("Could not find PowerFolder.exe at "
+                    log.warning("Could not find PowerFolder.exe at "
                         + powerFolderFile.getAbsolutePath());
                     return;
                 }
