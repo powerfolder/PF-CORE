@@ -141,7 +141,7 @@ public class FindComputersPanel extends PFUIPanel {
     }
 
     private JComponent createContentPanel() {
-        FormLayout layout = new FormLayout("500",
+        FormLayout layout = new FormLayout("600",
             "pref, 3dlu, pref, min(pref;300)");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

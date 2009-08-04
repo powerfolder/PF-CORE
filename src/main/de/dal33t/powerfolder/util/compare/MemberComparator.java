@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -40,6 +41,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.12 $
  */
 public class MemberComparator implements Comparator {
+    private static final Logger LOG = Logger.getLogger(MemberComparator.class
+        .getName());
+
     /** In gui used member sorting */
     public static final MemberComparator IN_GUI = new MemberComparator(0);
     /** Sorts members by last (direct) connection date, latest first */
@@ -70,7 +74,7 @@ public class MemberComparator implements Comparator {
 
     /** Sorts nodes by account username */
     public static final MemberComparator USERNAME = new MemberComparator(8);
-    
+
     private int type;
 
     private MemberComparator(int type) {
@@ -177,7 +181,7 @@ public class MemberComparator implements Comparator {
                     ip2 = "";
                 }
                 return compareIPs(ip1, ip2);
-            } else if (type == 9) {
+            } else if (type == 8) {
                 AccountInfo a1 = member1.getAccountInfo();
                 AccountInfo a2 = member2.getAccountInfo();
                 if (a1 == null) {
@@ -187,6 +191,8 @@ public class MemberComparator implements Comparator {
                     return -1;
                 }
                 return a1.getUsername().compareTo(a2.getUsername());
+            } else {
+                LOG.severe("Unknow comparing type: " + type);
             }
 
             return result;
