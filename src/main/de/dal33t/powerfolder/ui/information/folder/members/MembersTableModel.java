@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -40,15 +39,15 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FolderMemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class to model a folder's members. provides columns for image, name, sync
@@ -60,11 +59,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     private static final int COL_TYPE = 0;
     private static final int COL_NICK = 1;
-    private static final int COL_USERNAME = 2;
-    private static final int COL_SYNC_STATUS = 3;
-    private static final int COL_LOCAL_SIZE = 4;
+    private static final int COL_SYNC_STATUS = 2;
+    private static final int COL_LOCAL_SIZE = 3;
+    private static final int COL_USERNAME = 4;
+    private static final int COL_PERMISSION = 5;
 
-    private final List<Member> members;
+    private final List<FolderMember> members;
     private final List<TableModelListener> listeners;
     private Folder folder;
     private final FolderRepository folderRepository;
@@ -75,9 +75,10 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private String[] columnHeaders = {
         Translation.getTranslation("folder_member_table_model.icon"), // 0
         Translation.getTranslation("folder_member_table_model.name"), // 1
-        Translation.getTranslation("folder_member_table_model.account"), // 2
-        Translation.getTranslation("folder_member_table_model.sync_status"), // 3
-        Translation.getTranslation("folder_member_table_model.local_size")}; // 4
+        Translation.getTranslation("folder_member_table_model.sync_status"), // 2
+        Translation.getTranslation("folder_member_table_model.local_size"), // 3
+        Translation.getTranslation("folder_member_table_model.account"), // 4
+        Translation.getTranslation("folder_member_table_model.permission")}; // 5
 
     /**
      * Constructor
@@ -88,8 +89,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         super(controller);
 
         folderRepository = controller.getFolderRepository();
-        members = new ArrayList<Member>();
-        listeners = new CopyOnWriteArrayList<TableModelListener>();
+        members = new ArrayList<FolderMember>();
+        listeners = new ArrayList<TableModelListener>();
 
         // Node changes
         NodeManager nodeManager = controller.getNodeManager();
@@ -107,7 +108,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         folder = folderRepository.getFolder(folderInfo);
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
-            members.add(member);
+            members.add(new FolderMember(folder, member,
+                new FolderAdminPermission(folder.getInfo())));
         }
         modelChanged(new TableModelEvent(this, 0, members.size() - 1));
     }
@@ -131,50 +133,36 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     /**
-     * Getst the column class.
-     * 
      * @param columnIndex
-     * @return
+     * @return the column class.
      */
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0 :
                 return Member.class;
-            case 1 :
-            case 2 :
-            case 3 :
-            case 4 :
-                return String.class;
             default :
-                throw new IllegalArgumentException("columnIndex too big: "
-                    + columnIndex);
+                return String.class;
 
         }
     }
 
     /**
-     * Gets a count of the displayable columns.
-     * 
-     * @return
+     * @return count of the displayable columns.
      */
     public int getColumnCount() {
         return columnHeaders.length;
     }
 
     /**
-     * Getst the column header name.
-     * 
      * @param columnIndex
-     * @return
+     * @return the column header name.
      */
     public String getColumnName(int columnIndex) {
         return columnHeaders[columnIndex];
     }
 
     /**
-     * Gets a count of the rows.
-     * 
-     * @return
+     * @return count of the rows.
      */
     public int getRowCount() {
         return members.size();
@@ -192,7 +180,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @return
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Member member = members.get(rowIndex);
+        Member member = members.get(rowIndex).getMember();
         FolderStatistic stats = folder.getStatistic();
 
         if (columnIndex == COL_TYPE) {
@@ -205,6 +193,13 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 return "";
             } else {
                 return aInfo.getScrabledUsername();
+            }
+        } else if (columnIndex == COL_PERMISSION) {
+            FolderPermission permission = members.get(rowIndex).getPermission();
+            if (permission == null) {
+                return "";
+            } else {
+                return permission.getName();
             }
         } else if (columnIndex == COL_SYNC_STATUS) {
             double sync = stats.getSyncPercentage(member);
@@ -254,7 +249,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             check(member);
             Collection<Member> folderMembers = folder.getMembersAsCollection();
             if (folderMembers.contains(member) && !members.contains(member)) {
-                members.add(member);
+                members.add(new FolderMember(folder, member,
+                    new FolderAdminPermission(folder.getInfo())));
             }
             modelChanged(new TableModelEvent(this, 0, members.size() - 1));
         } catch (IllegalStateException ex) {
@@ -298,20 +294,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private void handleNodeChanged(Member eventMember) {
         try {
             check(eventMember);
-            Collection<Member> folderMembers = folder.getMembersAsCollection();
-
-            if (folderMembers.contains(eventMember)) {
-                // Update member.
-                members.add(eventMember);
-                int row = 0;
-                for (Member localMember : members) {
-                    if (eventMember.equals(localMember)) {
-
-                        // Found the member.
-                        modelChanged(new TableModelEvent(this, row, row));
-                        return;
-                    }
-                    row++;
+            for (int i = 0; i < members.size(); i++) {
+                FolderMember localMember = members.get(i);
+                if (eventMember.equals(localMember)) {
+                    // Found the member.
+                    modelChanged(new TableModelEvent(this, i, i));
+                    return;
                 }
             }
         } catch (IllegalStateException ex) {
@@ -338,31 +326,20 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * Fires a model event to all listeners, that model has changed
      */
     private void modelChanged(final TableModelEvent e) {
-        Runnable runner = new Runnable() {
-            public void run() {
-                synchronized (listeners) {
-                    for (TableModelListener listener : listeners) {
-                        listener.tableChanged(e);
-                    }
-                }
-            }
-        };
-        UIUtil.invokeLaterInEDT(runner);
+        for (TableModelListener listener : listeners) {
+            listener.tableChanged(e);
+        }
     }
 
     /**
-     * Returns the sorting column.
-     * 
-     * @return
+     * @return the sorting column.
      */
     public int getSortColumn() {
         return sortColumn;
     }
 
     /**
-     * Answers if sorting ascending.
-     * 
-     * @return
+     * @return if sorting ascending.
      */
     public boolean isSortAscending() {
         return sortAscending;
@@ -393,6 +370,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             case COL_LOCAL_SIZE :
                 sortMe(FolderMemberComparator.BY_LOCAL_SIZE, newSortColumn);
                 break;
+            default :
+                logWarning("Unknown sort column: " + columnIndex);
         }
         return true;
     }
@@ -405,12 +384,11 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             sortAscending = !sortAscending;
         }
 
-        comparator.setFolder(folder);
-
         if (sortAscending) {
             Collections.sort(members, comparator);
         } else {
-            Collections.sort(members, new ReverseComparator(comparator));
+            Collections.sort(members, new ReverseComparator<FolderMember>(
+                comparator));
         }
 
         modelChanged(new TableModelEvent(this, 0, members.size() - 1));

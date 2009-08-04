@@ -50,12 +50,12 @@ public interface SecurityService {
      */
     boolean login(String username, String passwordMD5, String salt);
 
+    // Nodes information retrieval ********************************************
+
     /**
      * @return Account details about the currently logged in user.
      */
     AccountDetails getAccountDetails();
-
-    // Security / Permission stuff ********************************************
 
     /**
      * Resulting map may not contain all nodes only those connected to the
@@ -65,6 +65,16 @@ public interface SecurityService {
      * @return the {@link AccountInfo} for the nodes.
      */
     Map<MemberInfo, AccountInfo> getAccountInfos(Collection<MemberInfo> nodes);
+
+    /**
+     * TRAC #1566
+     * 
+     * @param pattern
+     * @return the nodes
+     */
+    Collection<MemberInfo> searchNodes(String pattern);
+
+    // Security / Permission stuff ********************************************
 
     /**
      * @param node
@@ -78,6 +88,13 @@ public interface SecurityService {
      * @return the default permission for the given folder.
      */
     FolderPermission getDefaultPermission(FolderInfo foInfo);
+
+    /**
+     * @param foInfo
+     * @param nodeInfos
+     * @return the permissions of the nodes on the given folder.
+     */
+    Map<AccountInfo, FolderPermission> getFolderPermission(FolderInfo foInfo);
 
     /**
      * Sets the default permission for the given folder.
@@ -103,15 +120,5 @@ public interface SecurityService {
      * @param foInfos
      */
     void revokeAdmin(FolderInfo... foInfos);
-
-    // Misc *******************************************************************
-
-    /**
-     * TRAC #1566
-     * 
-     * @param pattern
-     * @return the nodes
-     */
-    Map<MemberInfo, AccountInfo> searchNodes(String pattern);
 
 }

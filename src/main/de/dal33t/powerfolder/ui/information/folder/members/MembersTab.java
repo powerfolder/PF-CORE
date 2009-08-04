@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: MembersTab.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: MembersTab.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -65,18 +65,19 @@ public class MembersTab extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public MembersTab(Controller controller) {
         super(controller);
-        controller.getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
         model = new MembersTableModel(getController());
     }
 
     /**
      * Set the tab with details for a folder.
-     *
+     * 
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -85,7 +86,7 @@ public class MembersTab extends PFUIComponent {
 
     /**
      * Gets the ui component
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -102,9 +103,9 @@ public class MembersTab extends PFUIComponent {
         reconnectAction = new MyReconnectAction(getController());
         membersTable = new MembersTable(model);
         membersTable.getSelectionModel().setSelectionMode(
-                ListSelectionModel.SINGLE_SELECTION);
+            ListSelectionModel.SINGLE_SELECTION);
         membersTable.getSelectionModel().addListSelectionListener(
-                new MySelectionListener());
+            new MySelectionListener());
         scrollPane = new JScrollPane(membersTable);
         membersTable.addMouseListener(new TableMouseListener());
 
@@ -130,13 +131,12 @@ public class MembersTab extends PFUIComponent {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow, 3dlu");
+            "3dlu, pref, 3dlu, pref , 3dlu, fill:0:grow, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(createToolBar(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(scrollPane, cc.xy(2, 6));
-
         buildPopupMenus();
 
         uiComponent = builder.getPanel();
@@ -164,8 +164,8 @@ public class MembersTab extends PFUIComponent {
     private void enableOnSelection() {
         int selectedRow = membersTable.getSelectedRow();
         if (selectedRow >= 0) {
-            selectedMember = (Member) model.getValueAt(
-                    membersTable.getSelectedRow(), 0);
+            selectedMember = (Member) model.getValueAt(membersTable
+                .getSelectedRow(), 0);
 
             if (selectedMember.equals(getController().getMySelf())) {
                 selectedMember = null;
@@ -211,9 +211,9 @@ public class MembersTab extends PFUIComponent {
         }
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class MyOpenChatAction extends BaseAction {
 
@@ -222,7 +222,8 @@ public class MembersTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openChat(selectedMember.getInfo());
+            getController().getUIController()
+                .openChat(selectedMember.getInfo());
         }
     }
 
@@ -274,21 +275,22 @@ public class MembersTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (add) {
-                boolean askForFriendshipMessage = PreferencesEntry.
-                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
+                    .getValueBoolean(getController());
                 if (askForFriendshipMessage) {
 
                     // Prompt for personal message.
                     String[] options = {
-                            Translation.getTranslation("general.ok"),
-                            Translation.getTranslation("general.cancel")};
+                        Translation.getTranslation("general.ok"),
+                        Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref",
+                        "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String nick = selectedMember.getNick();
                     String text = Translation.getTranslation(
-                            "friend.search.personal.message.text2", nick);
+                        "friend.search.personal.message.text2", nick);
                     builder.add(new JLabel(text), cc.xy(1, 1));
                     JTextArea textArea = new JTextArea();
                     JScrollPane scrollPane = new JScrollPane(textArea);
@@ -296,9 +298,11 @@ public class MembersTab extends PFUIComponent {
                     builder.add(scrollPane, cc.xy(1, 3));
                     JPanel innerPanel = builder.getPanel();
 
-                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(
                             getController(),
-                            Translation.getTranslation("friend.search.personal.message.title"),
+                            Translation
+                                .getTranslation("friend.search.personal.message.title"),
                             innerPanel, options, 0, GenericDialogType.INFO,
                             Translation.getTranslation("general.neverAskAgain"));
                     if (response.getButtonIndex() == 0) { // == OK
@@ -308,7 +312,7 @@ public class MembersTab extends PFUIComponent {
                     if (response.isNeverAskAgain()) {
                         // don't ask me again
                         PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                                getController(), false);
+                            getController(), false);
                     }
                 } else {
                     // Send with no personal messages
@@ -333,7 +337,8 @@ public class MembersTab extends PFUIComponent {
             }
 
             // Build new connect dialog
-            final ConnectDialog connectDialog = new ConnectDialog(getController());
+            final ConnectDialog connectDialog = new ConnectDialog(
+                getController());
 
             Runnable connector = new Runnable() {
                 public void run() {
@@ -354,7 +359,9 @@ public class MembersTab extends PFUIComponent {
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();
-                        if (!connectDialog.isCanceled() && !selectedMember.isConnected()) {
+                        if (!connectDialog.isCanceled()
+                            && !selectedMember.isConnected())
+                        {
                             // Show if user didn't cancel
                             ex.show(getController());
                         }
@@ -366,7 +373,8 @@ public class MembersTab extends PFUIComponent {
             };
 
             // Start connect in anonymous thread
-            new Thread(connector, "Reconnector to " + selectedMember.getNick()).start();
+            new Thread(connector, "Reconnector to " + selectedMember.getNick())
+                .start();
         }
     }
 

@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FilesTablePanel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FilesTablePanel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -54,7 +54,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
-        TreeSelectionListener, DirectoryFilterListener {
+    TreeSelectionListener, DirectoryFilterListener
+{
 
     private JPanel uiComponent;
     private FileDetailsPanel fileDetailsPanel;
@@ -86,13 +87,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         tableModel = new FilesTableModel(controller);
         tableModel.addTableModelListener(new MyTableModelListener());
         table = new FilesTable(tableModel);
-        table.getSelectionModel().addListSelectionListener(new MyListSelectionListener());
+        table.getSelectionModel().addListSelectionListener(
+            new MyListSelectionListener());
         table.addMouseListener(new TableMouseListener());
     }
 
     /**
      * Gets the ui component
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -110,14 +112,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         createToolBar();
 
         FormLayout layout = new FormLayout("fill:pref:grow",
-                "fill:0:grow, 3dlu, pref");
-        //       table,             details
+            "fill:0:grow, 3dlu, pref");
+        // table, details
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         tableScroller = new JScrollPane(table);
-        emptyLabel = new JLabel(Translation.getTranslation(
-                "files_table_panel.no_files_available"), SwingConstants.CENTER);
+        emptyLabel = new JLabel(Translation
+            .getTranslation("files_table_panel.no_files_available"),
+            SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
         UIUtil.whiteStripTable(table);
@@ -175,32 +178,33 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(addIgnoreAction);
         fileMenu.add(removeIgnoreAction);
         fileMenu.add(unmarkAction);
-        fileMenu.add(singleFileTransferAction);
+        // fileMenu.add(singleFileTransferAction);
     }
 
     /**
      * Toggle the details panel visibility.
      */
     public void toggleDetails() {
-        detailsPanel.setVisible(
-                !detailsPanel.isVisible());
+        detailsPanel.setVisible(!detailsPanel.isVisible());
     }
 
     /**
      * Find the correct model in the tree to display when a change occurs.
+     * 
      * @param event
      */
     public void adviseOfChange(FilteredDirectoryEvent event) {
         // Try to find the correct FilteredDirectoryModel for the selected
         // directory.
         FilteredDirectoryModel filteredDirectoryModel = event.getFlatModel();
-        tableModel.setFilteredDirectoryModel(filteredDirectoryModel, event.isFlat());
+        tableModel.setFilteredDirectoryModel(filteredDirectoryModel, event
+            .isFlat());
     }
 
     /**
      * Handle tree selection changes, which determine the table entries to
      * display.
-     *
+     * 
      * @param e
      */
     public void valueChanged(TreeSelectionEvent e) {
@@ -211,8 +215,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) lastItem;
                 Object userObject = node.getUserObject();
                 if (userObject instanceof DirectoryTreeNodeUserObject) {
-                    DirectoryTreeNodeUserObject dtnuo =
-                            (DirectoryTreeNodeUserObject) userObject;
+                    DirectoryTreeNodeUserObject dtnuo = (DirectoryTreeNodeUserObject) userObject;
                     tableModel.setSelectedDirectory(dtnuo.getFile());
                     return;
                 }
@@ -235,8 +238,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
             FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
-            File file = fileInfo.getDiskFile(
-                    getController().getFolderRepository());
+            File file = fileInfo.getDiskFile(getController()
+                .getFolderRepository());
             if (file != null && file.exists()) {
                 try {
                     FileUtils.openFile(file);
@@ -257,7 +260,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             final FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
 
             SwingWorker worker = new ActivityVisualizationWorker(
-                    getController().getUIController().getMainFrame().getUIComponent()) {
+                getController().getUIController().getMainFrame()
+                    .getUIComponent())
+            {
 
                 @Override
                 protected String getTitle() {
@@ -266,7 +271,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 @Override
                 protected String getWorkingText() {
-                    return Translation.getTranslation("restore.busy.description");
+                    return Translation
+                        .getTranslation("restore.busy.description");
                 }
 
                 public Object construct() {
@@ -294,9 +300,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         boolean singleRowSelected = rows.length == 1;
         final FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
         if (singleRowSelected) {
-            SwingWorker worker = new ActivityVisualizationWorker(getUIController()) {
+            SwingWorker worker = new ActivityVisualizationWorker(
+                getUIController())
+            {
                 public Object construct() {
-                    FolderRepository repo = getController().getFolderRepository();
+                    FolderRepository repo = getController()
+                        .getFolderRepository();
                     Folder folder = fileInfo.getFolder(repo);
                     folder.removeFilesLocal(fileInfo);
                     return null;
@@ -307,7 +316,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
 
                 protected String getWorkingText() {
-                    return Translation.getTranslation("delete.busy.description");
+                    return Translation
+                        .getTranslation("delete.busy.description");
                 }
             };
             worker.start();
@@ -358,11 +368,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     // Default to open if possible, else try download.
                     if (openFileAction.isEnabled()) {
                         ActionEvent ae = new ActionEvent(this, 0,
-                                openFileAction.getName());
+                            openFileAction.getName());
                         openFileAction.actionPerformed(ae);
                     } else if (downloadFileAction.isEnabled()) {
                         ActionEvent ae = new ActionEvent(this, 0,
-                                openFileAction.getName());
+                            openFileAction.getName());
                         downloadFileAction.actionPerformed(ae);
                     }
                 }
@@ -371,9 +381,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     private JPanel createDetailsPanel() {
-        FormLayout layout = new FormLayout("fill:pref:grow",
-                "pref, 3dlu, pref");
-        //       spacer,     tabs
+        FormLayout layout = new FormLayout("fill:pref:grow", "pref, 3dlu, pref");
+        // spacer, tabs
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -383,39 +392,41 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         JTabbedPane tabbedPane = new JTabbedPane();
         builder.add(tabbedPane, cc.xy(1, 3));
 
-        tabbedPane.add(fileDetailsPanel.getPanel(), Translation.getTranslation(
-                "files_table_panel.file_details_tab.text"));
-        tabbedPane.setToolTipTextAt(0, Translation.getTranslation(
-                "files_table_panel.file_details_tab.tip"));
+        tabbedPane.add(fileDetailsPanel.getPanel(), Translation
+            .getTranslation("files_table_panel.file_details_tab.text"));
+        tabbedPane.setToolTipTextAt(0, Translation
+            .getTranslation("files_table_panel.file_details_tab.tip"));
         tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
 
-        tabbedPane.add(fileVersionsPanel.getPanel(), Translation.getTranslation(
-                "files_table_panel.file_versions_tab.text"));
-        tabbedPane.setToolTipTextAt(1, Translation.getTranslation(
-                "files_table_panel.file_versions_tab.tip"));
+        tabbedPane.add(fileVersionsPanel.getPanel(), Translation
+            .getTranslation("files_table_panel.file_versions_tab.text"));
+        tabbedPane.setToolTipTextAt(1, Translation
+            .getTranslation("files_table_panel.file_versions_tab.tip"));
         tabbedPane.setIconAt(1, Icons.getIconById(Icons.FILE_VERSION));
 
         return builder.getPanel();
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class DownloadFileAction extends BaseAction {
         DownloadFileAction() {
-            super("action_download_file",
-                    FilesTablePanel.this.getController());
+            super("action_download_file", FilesTablePanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
-            SwingWorker worker = new ActivityVisualizationWorker(getUIController()) {
+            SwingWorker worker = new ActivityVisualizationWorker(
+                getUIController())
+            {
 
                 @Override
                 public Object construct() {
                     FileInfo fileInfo = getSelectedRow();
                     if (fileInfo != null) {
-                        FolderRepository repo = getController().getFolderRepository();
+                        FolderRepository repo = getController()
+                            .getFolderRepository();
                         Folder folder = fileInfo.getFolder(repo);
                         if (folder == null) {
                             return null;
@@ -423,7 +434,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         if (fileInfo.isDownloading(getController())) {
                             return null;
                         }
-                        getController().getTransferManager().downloadNewestVersion(fileInfo);
+                        getController().getTransferManager()
+                            .downloadNewestVersion(fileInfo);
                     }
                     return null;
                 }
@@ -435,7 +447,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 @Override
                 protected String getWorkingText() {
-                    return Translation.getTranslation("download.busy.description");
+                    return Translation
+                        .getTranslation("download.busy.description");
                 }
 
             };
@@ -446,8 +459,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private class DeleteFileAction extends BaseAction {
         DeleteFileAction() {
-            super("action_delete_file",
-                    FilesTablePanel.this.getController());
+            super("action_delete_file", FilesTablePanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -457,8 +469,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private class RestoreFileAction extends BaseAction {
         RestoreFileAction() {
-            super("action_restore_file",
-                    FilesTablePanel.this.getController());
+            super("action_restore_file", FilesTablePanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -468,8 +479,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
     private class OpenFileAction extends BaseAction {
         OpenFileAction() {
-            super("action_open_file",
-                    FilesTablePanel.this.getController());
+            super("action_open_file", FilesTablePanel.this.getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -490,15 +500,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
 
                 // Enable download action if file is download-able.
-                FolderRepository repo = getController()
-                        .getFolderRepository();
+                FolderRepository repo = getController().getFolderRepository();
                 boolean state = true;
                 if (fileInfo.diskFileExists(getController())
-                        && !fileInfo.isNewerAvailable(repo)) {
+                    && !fileInfo.isNewerAvailable(repo))
+                {
                     state = false;
-                } else if (!(fileInfo.isDeleted()
-                        || fileInfo.isExpected(repo)
-                        || fileInfo.isNewerAvailable(repo))) {
+                } else if (!(fileInfo.isDeleted() || fileInfo.isExpected(repo) || fileInfo
+                    .isNewerAvailable(repo)))
+                {
                     state = false;
                 } else {
                     if (tm.getActiveDownload(fileInfo) != null) {
@@ -508,17 +518,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 downloadFileAction.setEnabled(state);
 
                 // Enable restore / (!delete) action if file is restore-able.
-                state = fileInfo.isDeleted() && getController()
-                        .getRecycleBin().isInRecycleBin(fileInfo);
+                state = fileInfo.isDeleted()
+                    && getController().getRecycleBin().isInRecycleBin(fileInfo);
                 restoreFileAction.setEnabled(state);
                 deleteFileAction.setEnabled(!state);
 
                 DownloadManager dl = getController().getTransferManager()
-                        .getActiveDownload(fileInfo);
+                    .getActiveDownload(fileInfo);
                 abortDownloadAction.setEnabled(dl != null);
 
-                boolean retained = tableModel.getFolder()
-                        .getDiskItemFilter().isRetained(fileInfo);
+                boolean retained = tableModel.getFolder().getDiskItemFilter()
+                    .isRetained(fileInfo);
                 addIgnoreAction.setEnabled(retained);
                 removeIgnoreAction.setEnabled(!retained);
 
@@ -580,7 +590,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void actionPerformed(ActionEvent e) {
             FileInfo fileInfo = getSelectedRow();
             if (fileInfo != null) {
-                TransferManager tm =  getController().getTransferManager();
+                TransferManager tm = getController().getTransferManager();
                 DownloadManager dl = tm.getActiveDownload(fileInfo);
                 if (dl != null) {
                     dl.abort();
@@ -599,7 +609,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             FileInfo fileInfo = getSelectedRow();
             if (fileInfo != null) {
                 tableModel.getFolder().getDiskItemFilter().addPattern(
-                        fileInfo.getName());
+                    fileInfo.getName());
             }
         }
     }
@@ -614,7 +624,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             FileInfo fileInfo = getSelectedRow();
             if (fileInfo != null) {
                 tableModel.getFolder().getDiskItemFilter().removePattern(
-                        fileInfo.getName());
+                    fileInfo.getName());
             }
         }
     }
@@ -629,7 +639,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             FileInfo fileInfo = getSelectedRow();
             if (fileInfo != null) {
                 TransferManager transferManager = getController()
-                        .getTransferManager();
+                    .getTransferManager();
                 if (transferManager.isCompletedDownload(fileInfo)) {
                     transferManager.clearCompletedDownload(fileInfo);
                 }
@@ -653,8 +663,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void actionPerformed(ActionEvent e) {
             FileInfo fileInfo = getSelectedRow();
             if (fileInfo != null) {
-                getUIController().transferSingleFile(fileInfo.getDiskFile(
-                        getController().getFolderRepository()), null);
+                getUIController()
+                    .transferSingleFile(
+                        fileInfo.getDiskFile(getController()
+                            .getFolderRepository()), null);
             }
         }
     }

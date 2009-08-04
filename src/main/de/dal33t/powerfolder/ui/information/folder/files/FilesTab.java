@@ -19,32 +19,34 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.uif_lite.component.UIFSplitPane;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
-import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-
-import sun.org.mozilla.javascript.internal.debug.DebugFrame;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.uif_lite.component.UIFSplitPane;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
+import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * UI component for the folder files tab
