@@ -75,7 +75,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private String[] columnHeaders = {
         Translation.getTranslation("folder_member_table_model.icon"), // 0
         Translation.getTranslation("folder_member_table_model.name"), // 1
-        Translation.getTranslation("folder_member_table_model.username"), // 2
+        Translation.getTranslation("folder_member_table_model.account"), // 2
         Translation.getTranslation("folder_member_table_model.sync_status"), // 3
         Translation.getTranslation("folder_member_table_model.local_size")}; // 4
 
