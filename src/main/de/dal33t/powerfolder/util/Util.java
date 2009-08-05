@@ -244,6 +244,27 @@ public class Util {
     }
 
     /**
+     * @param email
+     *            the email string to check.
+     * @return true if the input is a valid email address.
+     */
+    public static boolean isValidEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        int etIndex = email.indexOf('@');
+        boolean orderOk = etIndex > 0 && email.lastIndexOf('.') > etIndex;
+        if (!orderOk) {
+            return false;
+        }
+        if (email.trim().contains(" ")) {
+            // Whitespaces not allowed
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @param c
      * @param otherIsOnLAN
      * @return true, if this client may request parts from multiple sources
@@ -477,7 +498,7 @@ public class Util {
                 b.append((char) (aBin & 0xff));
             } else {
                 b.append('%').append(DIGITS[aBin >> 4]).append(
-                        DIGITS[aBin & 0xf]);
+                    DIGITS[aBin & 0xf]);
             }
         }
         return b.toString();
