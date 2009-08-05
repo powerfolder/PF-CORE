@@ -1016,7 +1016,7 @@ public class NodeManager extends PFComponent {
                 int connectionTries = member.markConnecting();
                 if (connectionTries >= 2) {
                     logWarning("Multiple connection tries detected ("
-                        + connectionTries + ")");
+                        + connectionTries + ") to " + member);
                 }
                 if (member.setPeer(handler).isFailure()) {
                     throw new ConnectionException("Unable to connect to node "
