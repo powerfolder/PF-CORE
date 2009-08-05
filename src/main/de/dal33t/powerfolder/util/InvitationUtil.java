@@ -19,19 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileFilter;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +32,19 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.task.SendMessageTask;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+
 /**
  * methods for loading and saving powerfolder invitations
  * 
@@ -52,7 +52,8 @@ import java.util.logging.Logger;
  */
 public class InvitationUtil {
 
-    private static final Logger log = Logger.getLogger(InvitationUtil.class.getName());
+    private static final Logger log = Logger.getLogger(InvitationUtil.class
+        .getName());
 
     // No instances
     private InvitationUtil() {
@@ -118,14 +119,11 @@ public class InvitationUtil {
 
             return invitation;
         } catch (ClassCastException e) {
-            log.log(Level.SEVERE,
-                    "Unable to read invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to read invitation file stream", e);
         } catch (IOException e) {
-            log.log(Level.SEVERE,
-                    "Unable to read invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to read invitation file stream", e);
         } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE,
-                    "Unable to read invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to read invitation file stream", e);
         }
         return null;
     }
@@ -144,8 +142,7 @@ public class InvitationUtil {
             return save(invitation, new BufferedOutputStream(
                 new FileOutputStream(file)));
         } catch (FileNotFoundException e) {
-            log.log(Level.SEVERE,
-                    "Unable to write invitation file stream", e);
+            log.log(Level.SEVERE, "Unable to write invitation file stream", e);
             return false;
         }
     }
@@ -226,76 +223,6 @@ public class InvitationUtil {
 
         controller.getOSClient().getFolderService().sendInvitationEmail(
             new SendInvitationEmail(invitation, to, ccMe));
-    }
-
-    /**
-     * Handles the invitation to mail option
-     * 
-     * @param controller
-     *            the controller
-     * @param invitation
-     *            the invitation
-     * @param to
-     *            the destination email address, if null the user is asked for.
-     * @return true if the email was sent
-     */
-    public static boolean invitationToMail(Controller controller,
-        Invitation invitation, String to)
-    {
-        Reject.ifNull(controller, "Controller is null");
-        Reject.ifNull(invitation, "Invitation is null");
-
-        JFrame parent = controller.getUIController().getMainFrame()
-            .getUIComponent();
-
-        if (to == null) {
-            to = (String) JOptionPane.showInputDialog(parent, Translation
-                .getTranslation("send_invitation.ask_emailaddres.message"),
-                Translation
-                    .getTranslation("send_invitation.ask_emailaddres.title"),
-                JOptionPane.QUESTION_MESSAGE, null, null, Translation
-                    .getTranslation("send_invitation.example_email_address"));
-        }
-
-        // null if canceled
-        if (to == null) {
-            return false;
-        }
-
-        String filename = invitation.folder.name;
-        // SendTo app needs simple chars as filename
-        if (containsNoneAscii(filename)) {
-            filename = "powerfolder";
-        }
-        filename = FileUtils.removeInvalidFilenameChars(filename);
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        File file;
-        if (tmpDir != null && tmpDir.length() > 0) {
-            // create in tmp dir if available
-            file = new File(tmpDir, filename + ".invitation");
-        } else {
-            // else create in working directory
-            file = new File(filename + ".invitation");
-        }
-        if (!save(invitation, file)) {
-            log.severe("sendmail failed");
-            return false;
-        }
-        file.deleteOnExit();
-
-        String invitationName = invitation.folder.name;
-        String subject = Translation.getTranslation("send_invitation.subject",
-            invitationName);
-        String body = Translation.getTranslation("send_invitation.body", to,
-            controller.getMySelf().getNick(), invitationName);
-        if (!MailUtil.sendMail(to, subject, body, file)) {
-            log.severe("sendmail failed");
-            file.delete();
-            return false;
-        }
-
-        file.delete();
-        return true;
     }
 
     /**
