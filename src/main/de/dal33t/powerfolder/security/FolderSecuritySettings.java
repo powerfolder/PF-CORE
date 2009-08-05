@@ -28,8 +28,6 @@ import de.dal33t.powerfolder.util.Reject;
  * Security settings per folder. Contains general security header data.
  * <P>
  * TRAC #1046
- * <P>
- * TODO Seal this message with server key.
  * 
  * @author sprajc
  */
@@ -47,10 +45,10 @@ public class FolderSecuritySettings implements Serializable {
      */
     private FolderPermission defaultPermission;
 
-    public FolderSecuritySettings(FolderInfo folder)
-    {
+    public FolderSecuritySettings(FolderInfo folder) {
         this(folder, null);
     }
+
     public FolderSecuritySettings(FolderInfo folder,
         FolderPermission defaultPermission)
     {
