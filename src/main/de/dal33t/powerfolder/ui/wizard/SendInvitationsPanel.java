@@ -67,6 +67,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -102,13 +103,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
             return false;
         }
         boolean theResult = false;
-        Collection<Member> members = getController().getNodeManager()
-            .getNodesAsCollection();
+        Member[] friends = getController().getNodeManager().getFriends();
 
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
-            boolean sent = false;
-            for (Member member : members) {
+            for (Member member : friends) {
                 if (invitee.equalsIgnoreCase(member.getNick())) {
                     InvitationUtil.invitationToNode(getController(),
                         invitation, member);
@@ -117,16 +116,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
                             invitation, member.getAccountInfo().getUsername(),
                             false);
                     }
-                    sent = true;
                     break;
                 }
             }
-            if (!sent) {
-                if (invitee.contains("@")) {
-                    InvitationUtil.invitationByServer(getController(),
-                        invitation, invitee, false);
-                }
+            if (Util.isValidEmail(invitee)) {
+                InvitationUtil.invitationByServer(getController(), invitation,
+                    invitee, false);
             }
+
             theResult = true;
         }
 
