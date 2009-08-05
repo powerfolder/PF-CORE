@@ -24,6 +24,7 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
 
 /**
  * Comparator for members of a folder.
@@ -39,6 +40,12 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
         public int compare(FolderMember o1, FolderMember o2) {
             Member member1 = o1.getMember();
             Member member2 = o2.getMember();
+            if (member1 == null) {
+                return member2 == null ? 0 : 1;
+            }
+            if (member2 == null) {
+                return -1;
+            }
             // Sort by type.
             boolean m1f = member1.isFriend();
             boolean m2f = member2.isFriend();
@@ -54,11 +61,19 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
         }
     },
 
-    BY_NICK() {
+    BY_COMPUTER_NAME() {
         @Override
         public int compare(FolderMember o1, FolderMember o2) {
+            Member member1 = o1.getMember();
+            Member member2 = o2.getMember();
+            if (member1 == null) {
+                return member2 == null ? 0 : 1;
+            }
+            if (member2 == null) {
+                return -1;
+            }
             // Sort by nick name
-            return o1.getMember().getNick().compareTo(o2.getMember().getNick());
+            return member1.getNick().compareTo(member2.getNick());
         }
     },
 
@@ -69,6 +84,12 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
                 o1.getMember());
             Double size2 = o2.getFolder().getStatistic().getSyncPercentage(
                 o2.getMember());
+            if (size1 == null) {
+                return size2 == null ? 0 : 1;
+            }
+            if (size2 == null) {
+                return -1;
+            }
             return size1.compareTo(size2);
         }
     },
@@ -80,6 +101,12 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
                 o1.getMember());
             Long size2 = o2.getFolder().getStatistic().getSizeInSync(
                 o2.getMember());
+            if (size1 == null) {
+                return size2 == null ? 0 : 1;
+            }
+            if (size2 == null) {
+                return -1;
+            }
             return size1.compareTo(size2);
         }
     },
@@ -87,8 +114,8 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
     BY_USERNAME() {
         @Override
         public int compare(FolderMember o1, FolderMember o2) {
-            AccountInfo a1 = o1.getMember().getAccountInfo();
-            AccountInfo a2 = o2.getMember().getAccountInfo();
+            AccountInfo a1 = o1.getAccountInfo();
+            AccountInfo a2 = o2.getAccountInfo();
             if (a1 == null) {
                 return a2 == null ? 0 : 1;
             }
@@ -96,6 +123,21 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
                 return -1;
             }
             return a1.getUsername().compareTo(a2.getUsername());
+        }
+    },
+
+    BY_PERMISSION() {
+        @Override
+        public int compare(FolderMember o1, FolderMember o2) {
+            FolderPermission fp1 = o1.getPermission();
+            FolderPermission fp2 = o2.getPermission();
+            if (fp1 == null) {
+                return fp2 == null ? 0 : 1;
+            }
+            if (fp2 == null) {
+                return -1;
+            }
+            return fp1.getName().compareTo(fp2.getName());
         }
     }
 

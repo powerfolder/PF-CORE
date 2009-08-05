@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.information.folder.members;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 
 /**
@@ -10,17 +11,22 @@ import de.dal33t.powerfolder.security.FolderPermission;
  * @author sprajc
  */
 public class FolderMember {
+
     private Folder folder;
     private Member member;
+    private AccountInfo accountInfo;
     private FolderPermission permission;
+    private boolean defaultPermission;
 
-    public FolderMember(Folder folder, Member member,
-        FolderPermission permission)
+    public FolderMember(Folder folder, Member member, AccountInfo accountInfo,
+        FolderPermission permission, boolean defaultPermission)
     {
         super();
         this.folder = folder;
         this.member = member;
+        this.accountInfo = accountInfo;
         this.permission = permission;
+        this.defaultPermission = defaultPermission;
     }
 
     public Folder getFolder() {
@@ -31,16 +37,15 @@ public class FolderMember {
         return member;
     }
 
-    public void setMember(Member member) {
-        this.member = member;
+    public AccountInfo getAccountInfo() {
+        return accountInfo;
+    }
+
+    public boolean isDefaultPermission() {
+        return defaultPermission;
     }
 
     public FolderPermission getPermission() {
         return permission;
     }
-
-    public void setPermission(FolderPermission permission) {
-        this.permission = permission;
-    }
-
 }

@@ -19,11 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 
+import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -34,18 +39,23 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
@@ -57,28 +67,37 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     SortedTableModel
 {
 
-    private static final int COL_TYPE = 0;
-    private static final int COL_NICK = 1;
-    private static final int COL_SYNC_STATUS = 2;
-    private static final int COL_LOCAL_SIZE = 3;
-    private static final int COL_USERNAME = 4;
-    private static final int COL_PERMISSION = 5;
+    public static final int COL_TYPE = 0;
+    public static final int COL_COMPUTER_NAME = 1;
+    public static final int COL_USERNAME = 2;
+    public static final int COL_SYNC_STATUS = 3;
+    public static final int COL_LOCAL_SIZE = 4;
+    public static final int COL_PERMISSION = 5;
 
     private final List<FolderMember> members;
     private final List<TableModelListener> listeners;
-    private Folder folder;
     private final FolderRepository folderRepository;
+    private Folder folder;
 
+    private FolderListener folderListener;
     private int sortColumn = -1;
     private boolean sortAscending = true;
 
     private String[] columnHeaders = {
         Translation.getTranslation("folder_member_table_model.icon"), // 0
         Translation.getTranslation("folder_member_table_model.name"), // 1
-        Translation.getTranslation("folder_member_table_model.sync_status"), // 2
-        Translation.getTranslation("folder_member_table_model.local_size"), // 3
-        Translation.getTranslation("folder_member_table_model.account"), // 4
+        Translation.getTranslation("folder_member_table_model.account"), // 2
+        Translation.getTranslation("folder_member_table_model.sync_status"), // 3
+        Translation.getTranslation("folder_member_table_model.local_size"), // 4
         Translation.getTranslation("folder_member_table_model.permission")}; // 5
+
+    private FolderMemberComparator[] columnComparators = {
+        FolderMemberComparator.BY_TYPE,// 0
+        FolderMemberComparator.BY_COMPUTER_NAME, // 1
+        FolderMemberComparator.BY_USERNAME, // 2
+        FolderMemberComparator.BY_PERMISSION, // 3
+        FolderMemberComparator.BY_SYNC_STATUS, // 4
+        FolderMemberComparator.BY_LOCAL_SIZE}; // 5
 
     /**
      * Constructor
@@ -92,6 +111,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         members = new ArrayList<FolderMember>();
         listeners = new ArrayList<TableModelListener>();
 
+        folderListener = new MyFolderListener();
         // Node changes
         NodeManager nodeManager = controller.getNodeManager();
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
@@ -105,13 +125,19 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
+        if (folder != null) {
+            folder.removeFolderListener(folderListener);
+        }
         folder = folderRepository.getFolder(folderInfo);
+        folder.addFolderListener(folderListener);
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
-            members.add(new FolderMember(folder, member,
-                new FolderAdminPermission(folder.getInfo())));
+            // TODO Default permission?
+            members.add(new FolderMember(folder, member, member
+                .getAccountInfo(), null, true));
         }
         modelChanged(new TableModelEvent(this, 0, members.size() - 1));
+        new ModelRefresher().execute();
     }
 
     /**
@@ -169,42 +195,57 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     public Member getMemberAt(int rowIndex) {
-        return (Member) getValueAt(rowIndex, 0);
+        if (rowIndex > getRowCount() - 1) {
+            return null;
+        }
+        return members.get(rowIndex).getMember();
     }
 
     /**
-     * Gets a value at a specific row / column.
-     * 
      * @param rowIndex
      * @param columnIndex
-     * @return
+     * @return the value at a specific row / column.
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Member member = members.get(rowIndex).getMember();
+        if (rowIndex > getRowCount() - 1) {
+            return null;
+        }
+        FolderMember folderMember = members.get(rowIndex);
+        Member member = folderMember.getMember();
+        AccountInfo aInfo = folderMember.getAccountInfo();
+        FolderPermission foPermission = folderMember.getPermission();
         FolderStatistic stats = folder.getStatistic();
 
         if (columnIndex == COL_TYPE) {
-            return member;
-        } else if (columnIndex == COL_NICK) {
+            return folderMember;
+        } else if (columnIndex == COL_COMPUTER_NAME) {
+            if (member == null) {
+                return new StatusText("not syncing");
+            }
             return member.getNick();
         } else if (columnIndex == COL_USERNAME) {
-            AccountInfo aInfo = member.getAccountInfo();
             if (aInfo == null) {
-                return "";
-            } else {
-                return aInfo.getScrabledUsername();
+                return new StatusText("not logged in");
             }
+            return aInfo.getScrabledUsername();
         } else if (columnIndex == COL_PERMISSION) {
-            FolderPermission permission = members.get(rowIndex).getPermission();
-            if (permission == null) {
+            if (foPermission == null) {
                 return "";
-            } else {
-                return permission.getName();
             }
+            if (folderMember.isDefaultPermission()) {
+                return new StatusText(foPermission.getName());
+            }
+            return foPermission.getName();
         } else if (columnIndex == COL_SYNC_STATUS) {
+            if (member == null) {
+                return "";
+            }
             double sync = stats.getSyncPercentage(member);
             return SyncProfileUtil.renderSyncPercentage(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
+            if (member == null) {
+                return "";
+            }
             int filesRcvd = stats.getFilesCountInSync(member);
             long bytesRcvd = stats.getSizeInSync(member);
             return filesRcvd + " "
@@ -243,47 +284,36 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * 
      * @param e
      */
-    private void handleNodeAdded(NodeManagerEvent e) {
+    private void handleNodeAdded(Member member) {
         try {
-            Member member = e.getNode();
             check(member);
             Collection<Member> folderMembers = folder.getMembersAsCollection();
             if (folderMembers.contains(member) && !members.contains(member)) {
-                members.add(new FolderMember(folder, member,
-                    new FolderAdminPermission(folder.getInfo())));
+                members.add(new FolderMember(folder, member, member
+                    .getAccountInfo(), null, true));
+                modelChanged(new TableModelEvent(this, 0, members.size() - 1));
             }
-            modelChanged(new TableModelEvent(this, 0, members.size() - 1));
         } catch (IllegalStateException ex) {
             logSevere("IllegalStateException", ex);
         }
     }
 
     /**
-     * Handle node add event.
+     * Handle node removed event.
      * 
      * @param e
      */
-    private void handleNodeRemoved(NodeManagerEvent e) {
+    private void handleNodeRemoved(Member member) {
         try {
-            Member member = e.getNode();
             check(member);
             Collection<Member> folderMembers = folder.getMembersAsCollection();
             if (folderMembers.contains(member)) {
                 members.remove(member);
+                modelChanged(new TableModelEvent(this, 0, members.size() - 1));
             }
-            modelChanged(new TableModelEvent(this, 0, members.size() - 1));
         } catch (IllegalStateException ex) {
             logSevere("IllegalStateException", ex);
         }
-    }
-
-    /**
-     * Handle node add event.
-     * 
-     * @param e
-     */
-    private void handleNodeChanged(NodeManagerEvent e) {
-        handleNodeChanged(e.getNode());
     }
 
     /**
@@ -354,44 +384,27 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     public boolean sortBy(int columnIndex) {
         boolean newSortColumn = sortColumn != columnIndex;
         sortColumn = columnIndex;
-        switch (columnIndex) {
-            case COL_TYPE :
-                sortMe(FolderMemberComparator.BY_TYPE, newSortColumn);
-                break;
-            case COL_NICK :
-                sortMe(FolderMemberComparator.BY_NICK, newSortColumn);
-                break;
-            case COL_USERNAME :
-                sortMe(FolderMemberComparator.BY_USERNAME, newSortColumn);
-                break;
-            case COL_SYNC_STATUS :
-                sortMe(FolderMemberComparator.BY_SYNC_STATUS, newSortColumn);
-                break;
-            case COL_LOCAL_SIZE :
-                sortMe(FolderMemberComparator.BY_LOCAL_SIZE, newSortColumn);
-                break;
-            default :
-                logWarning("Unknown sort column: " + columnIndex);
-        }
-        return true;
-    }
-
-    private void sortMe(FolderMemberComparator comparator, boolean newSortColumn)
-    {
-
         if (!newSortColumn) {
             // Reverse list.
             sortAscending = !sortAscending;
         }
+        sortMe0(columnIndex);
+        modelChanged(new TableModelEvent(this, 0, members.size() - 1));
+        return true;
+    }
 
+    private void sortMe0(int columnIndex) {
+        FolderMemberComparator comparator = columnComparators[columnIndex];
+        if (comparator == null) {
+            logWarning("Unknown sort column: " + columnIndex);
+            return;
+        }
         if (sortAscending) {
             Collections.sort(members, comparator);
         } else {
             Collections.sort(members, new ReverseComparator<FolderMember>(
                 comparator));
         }
-
-        modelChanged(new TableModelEvent(this, 0, members.size() - 1));
     }
 
     /**
@@ -404,31 +417,29 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            handleNodeAdded(e);
+            handleNodeChanged(e.getNode());
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            handleNodeRemoved(e);
+            handleNodeChanged(e.getNode());
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            handleNodeAdded(e);
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            handleNodeChanged(e);
+            handleNodeChanged(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            handleNodeChanged(e);
+            handleNodeChanged(e.getNode());
         }
 
         public void nodeRemoved(NodeManagerEvent e) {
-            handleNodeRemoved(e);
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            handleNodeChanged(e);
+            handleNodeChanged(e.getNode());
         }
 
         public void startStop(NodeManagerEvent e) {
@@ -436,15 +447,150 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
     }
 
-    private class MySecurityManagerListener implements SecurityManagerListener {
+    private class MyFolderListener implements FolderListener,
+        FolderMembershipListener
+    {
 
-        public void nodeAccountStateChanged(SecurityManagerEvent event) {
-            handleNodeChanged(event.getNode());
+        public void memberJoined(FolderMembershipEvent event) {
+            // handleNodeAdded(folderEvent.getMember());
+            if (folder.getMembersAsCollection().contains(event.getMember())) {
+                new ModelRefresher().execute();
+            }
+        }
+
+        public void memberLeft(FolderMembershipEvent event) {
+            // handleNodeRemoved(folderEvent.getMember());
+            if (folder.getMembersAsCollection().contains(event.getMember())) {
+                new ModelRefresher().execute();
+            }
+        }
+
+        public void fileChanged(FolderEvent folderEvent) {
+        }
+
+        public void filesDeleted(FolderEvent folderEvent) {
+        }
+
+        public void remoteContentsChanged(FolderEvent folderEvent) {
+        }
+
+        public void scanResultCommited(FolderEvent folderEvent) {
+        }
+
+        public void statisticsCalculated(FolderEvent folderEvent) {
+            modelChanged(new TableModelEvent(MembersTableModel.this, 0, members
+                .size() - 1));
+        }
+
+        public void syncProfileChanged(FolderEvent folderEvent) {
         }
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
 
+    }
+
+    private class MySecurityManagerListener implements SecurityManagerListener {
+
+        public void nodeAccountStateChanged(SecurityManagerEvent event) {
+            // handleNodeChanged(event.getNode());
+            if (folder.getMembersAsCollection().contains(event.getNode())) {
+                new ModelRefresher().execute();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class RefreshAction extends BaseAction {
+
+        protected RefreshAction(Controller controller) {
+            super("folder_member_table_model.refresh", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            new ModelRefresher().execute();
+        }
+    }
+
+    private void rebuild(Map<AccountInfo, FolderPermission> permInfo,
+        FolderPermission defaultPermission)
+    {
+        // Step 1) All computers.
+        members.clear();
+        for (Member member : folder.getMembersAsCollection()) {
+            AccountInfo aInfo = member.getAccountInfo();
+            FolderPermission folderPermission = null;
+            boolean defPerm = false;
+            if (aInfo != null) {
+                folderPermission = permInfo.remove(aInfo);
+            }
+            if (folderPermission == null) {
+                folderPermission = defaultPermission;
+                defPerm = true;
+            }
+            FolderMember folderMember = new FolderMember(folder, member, aInfo,
+                folderPermission, defPerm);
+            members.add(folderMember);
+        }
+
+        // Step 2) All other users not joined with any computer.
+        if (!permInfo.isEmpty()) {
+            for (Entry<AccountInfo, FolderPermission> permissionInfo : permInfo
+                .entrySet())
+            {
+                FolderMember folderMember = new FolderMember(folder, null,
+                    permissionInfo.getKey(), permissionInfo.getValue(), false);
+                members.add(folderMember);
+            }
+        }
+
+        // Fresh sort
+        sortMe0(sortColumn);
+
+        modelChanged(new TableModelEvent(this, 0, getRowCount(),
+            TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
+    }
+
+    private class ModelRefresher extends
+        SwingWorker<Map<AccountInfo, FolderPermission>, Void>
+    {
+        private Folder refreshFor;
+        private FolderPermission defaultPermission;
+
+        @Override
+        protected Map<AccountInfo, FolderPermission> doInBackground()
+            throws Exception
+        {
+            refreshFor = folder;
+            defaultPermission = getController().getSecurityManager()
+                .getDefaultPermission(refreshFor.getInfo());
+            return getController().getOSClient().getSecurityService()
+                .getFolderPermission(refreshFor.getInfo());
+        }
+
+        @Override
+        protected void done() {
+            try {
+                Map<AccountInfo, FolderPermission> res = get();
+                if (!refreshFor.equals(folder)) {
+                    // Folder has changed. discard result.
+                    return;
+                }
+                if (res.isEmpty()) {
+                    return;
+                }
+
+                rebuild(res, defaultPermission);
+            } catch (InterruptedException e) {
+                logWarning(e);
+            } catch (ExecutionException e) {
+                logWarning(e);
+            }
+        }
     }
 }

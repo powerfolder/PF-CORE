@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountStateChanged;
 
 /**
@@ -85,6 +86,15 @@ public interface SecurityManager {
      * @return if the member has the given permission on the folder.
      */
     boolean hasFolderPermission(Member member, FolderPermission permission);
+
+    /**
+     * Retrieves the default folder permission for the given folder. uses local
+     * fallback value if no connection to server is possible.
+     * 
+     * @param foInfo
+     * @return the default permission on this folder.
+     */
+    FolderPermission getDefaultPermission(FolderInfo foInfo);
 
     // Event handling *********************************************************
 

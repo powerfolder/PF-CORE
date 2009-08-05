@@ -19,16 +19,30 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -38,15 +52,6 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 /**
  * UI component for the members information tab
@@ -70,8 +75,6 @@ public class MembersTab extends PFUIComponent {
      */
     public MembersTab(Controller controller) {
         super(controller);
-        controller.getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
         model = new MembersTableModel(getController());
     }
 
@@ -163,12 +166,11 @@ public class MembersTab extends PFUIComponent {
      */
     private void enableOnSelection() {
         int selectedRow = membersTable.getSelectedRow();
-        if (selectedRow >= 0) {
-            selectedMember = (Member) model.getValueAt(membersTable
-                .getSelectedRow(), 0);
+        selectedMember = selectedRow >= 0 ? model.getMemberAt(membersTable
+            .getSelectedRow()) : null;
 
+        if (selectedMember != null) {
             if (selectedMember.equals(getController().getMySelf())) {
-                selectedMember = null;
                 openChatAction.setEnabled(false);
                 addRemoveFriendAction.setEnabled(false);
                 reconnectAction.setEnabled(false);
@@ -176,38 +178,13 @@ public class MembersTab extends PFUIComponent {
                 openChatAction.setEnabled(true);
                 reconnectAction.setEnabled(true);
                 addRemoveFriendAction.setEnabled(true);
-                if (selectedMember.isFriend()) {
-                    addRemoveFriendAction.setAdd(false);
-                } else {
-                    addRemoveFriendAction.setAdd(true);
-                }
+                addRemoveFriendAction.setAdd(!selectedMember.isFriend());
             }
         } else {
             selectedMember = null;
             openChatAction.setEnabled(false);
             addRemoveFriendAction.setEnabled(false);
             reconnectAction.setEnabled(false);
-        }
-    }
-
-    /**
-     * Method to redisplay the table if one of our members.
-     */
-    private void redisplay(Member node) {
-        boolean found = false;
-        if (node != null) {
-            for (int i = 0; i < model.getRowCount(); i++) {
-                Member member = model.getMemberAt(i);
-                if (member.equals(node)) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (found) {
-            // One of our folder members - redisplay.
-            TableModelEvent event = new TableModelEvent(model);
-            membersTable.tableChanged(event);
         }
     }
 
@@ -375,45 +352,6 @@ public class MembersTab extends PFUIComponent {
             // Start connect in anonymous thread
             new Thread(connector, "Reconnector to " + selectedMember.getNick())
                 .start();
-        }
-    }
-
-    private class MyNodeManagerListener implements NodeManagerListener {
-
-        public void nodeRemoved(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void friendAdded(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public void startStop(NodeManagerEvent e) {
-            redisplay(e.getNode());
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
         }
     }
 }

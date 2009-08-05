@@ -44,15 +44,6 @@ public abstract class AbstractSecurityManager extends PFComponent implements
             .createListenerSupport(SecurityManagerListener.class);
     }
 
-    /**
-     * Retrieves the default folder permission from security settings.
-     * 
-     * @param foInfo
-     * @return
-     */
-    protected abstract FolderPermission retrieveDefaultPermission(
-        FolderInfo foInfo);
-
     public final boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
@@ -84,7 +75,7 @@ public abstract class AbstractSecurityManager extends PFComponent implements
         }
 
         if (useDefaultPermission) {
-            FolderPermission defaultPermission = retrieveDefaultPermission(foInfo);
+            FolderPermission defaultPermission = getDefaultPermission(foInfo);
             if (defaultPermission != null) {
                 hasPermission = defaultPermission.equals(permission)
                     || defaultPermission.implies(permission);

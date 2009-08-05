@@ -170,8 +170,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
-    @Override
-    protected FolderPermission retrieveDefaultPermission(FolderInfo foInfo) {
+    public FolderPermission getDefaultPermission(FolderInfo foInfo) {
+        // TODO Cache
         Reject.ifNull(foInfo, "FolderInfo is null");
         try {
             return getController().getOSClient().getSecurityService()
