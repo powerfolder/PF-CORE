@@ -55,6 +55,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
@@ -111,14 +112,19 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 if (invitee.equalsIgnoreCase(member.getNick())) {
                     InvitationUtil.invitationToNode(getController(),
                         invitation, member);
+                    if (member.getAccountInfo() != null) {
+                        InvitationUtil.invitationByServer(getController(),
+                            invitation, member.getAccountInfo().getUsername(),
+                            false);
+                    }
                     sent = true;
                     break;
                 }
             }
             if (!sent) {
                 if (invitee.contains("@")) {
-                    InvitationUtil.invitationToMail(getController(),
-                        invitation, invitee);
+                    InvitationUtil.invitationByServer(getController(),
+                        invitation, invitee, false);
                 }
             }
             theResult = true;
@@ -255,6 +261,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
         List<String> friendNicks = new ArrayList<String>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             friendNicks.add(friend.getNick());
+            AccountInfo aInfo = friend.getAccountInfo();
+            if (aInfo != null) {
+                // FIXME Shows email unscrabled!
+                friendNicks.add(aInfo.getUsername());
+            }
         }
         viaPowerFolderText.setDataList(friendNicks);
         advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
