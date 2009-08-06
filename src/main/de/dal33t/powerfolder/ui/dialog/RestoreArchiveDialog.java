@@ -25,9 +25,9 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.disk.FileVersionInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 
@@ -46,7 +46,7 @@ public class RestoreArchiveDialog extends BaseDialog {
     private JButton okButton;
     private JPanel uiComponent;
 
-    private FileVersionInfo fileVersionInfo;
+    private FileInfo fileInfo;
     private JRadioButton restoreRB;
     private JRadioButton saveRB;
     private JLabel fileLocationLabel;
@@ -57,13 +57,13 @@ public class RestoreArchiveDialog extends BaseDialog {
      * Constructor
      *
      * @param controller
-     * @param fileVersionInfo
+     * @param fileInfo
      *                 the info of the file version to restore
      */
     public RestoreArchiveDialog(Controller controller,
-                                FileVersionInfo fileVersionInfo) {
+                                FileInfo fileInfo) {
         super(controller, true);
-        this.fileVersionInfo = fileVersionInfo;
+        this.fileInfo = fileInfo;
     }
 
     protected Component getContent() {

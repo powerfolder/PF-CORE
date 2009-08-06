@@ -22,9 +22,8 @@ package de.dal33t.powerfolder.util.compare;
 import java.util.Comparator;
 
 import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -45,6 +44,7 @@ public class DiskItemComparator extends Loggable implements
     public static final int BY_MEMBER = 4;
     public static final int BY_MODIFIED_DATE = 5;
     public static final int BY_FOLDER = 6;
+    public static final int BY_VERSION = 7;
 
     private static final int BEFORE = -1;
     private static final int AFTER = 1;
@@ -54,7 +54,7 @@ public class DiskItemComparator extends Loggable implements
     private static final DiskItemComparator[] comparators;
 
     static {
-        comparators = new DiskItemComparator[7];
+        comparators = new DiskItemComparator[8];
         comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
         comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
         comparators[BY_FULL_NAME] = new DiskItemComparator(BY_FULL_NAME);
@@ -62,6 +62,7 @@ public class DiskItemComparator extends Loggable implements
         comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
         comparators[BY_MODIFIED_DATE] = new DiskItemComparator(BY_MODIFIED_DATE);
         comparators[BY_FOLDER] = new DiskItemComparator(BY_FOLDER);
+        comparators[BY_VERSION] = new DiskItemComparator(BY_VERSION);
     }
 
     public DiskItemComparator(int sortBy) {
@@ -155,6 +156,24 @@ public class DiskItemComparator extends Loggable implements
                     return sortByFileName(o1, o2, false);
                 }
                 return x;
+            case BY_VERSION :
+                if (o1.getFolderInfo() == null && o2.getFolderInfo() == null) {
+                    return sortByFileName(o1, o2, false);
+                } else if (o1.getFolderInfo() == null) {
+                    return BEFORE;
+                } else if (o2.getFolderInfo() == null) {
+                    return AFTER;
+                } else if (o1 instanceof FileInfo && o2 instanceof FileInfo) {
+                    FileInfo fi1 = (FileInfo) o1;
+                    FileInfo fi2 = (FileInfo) o2;
+                    x = fi1.getVersion() - fi2.getVersion();
+                    if (x == 0) {
+                        return sortByFileName(o1, o2, false);
+                    }
+                    return x;
+                } else {
+                    return 0;
+                }
         }
         return 0;
     }

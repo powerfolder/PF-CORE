@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
-import de.dal33t.powerfolder.disk.FileVersionInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
@@ -34,7 +33,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Set;
+import java.util.List;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -170,7 +169,7 @@ public class FileVersionsPanel extends PFUIComponent {
      */
     private void restoreFile() {
         if (fileInfo != null) {
-            FileVersionInfo selectedInfo = fileVersionsTable.getSelectedInfo();
+            FileInfo selectedInfo = fileVersionsTable.getSelectedInfo();
             RestoreArchiveDialog dialog = new RestoreArchiveDialog(
                     getController(), selectedInfo);
             dialog.open();
@@ -195,13 +194,13 @@ public class FileVersionsPanel extends PFUIComponent {
                     Folder folder = fileInfo.getFolder(getController()
                             .getFolderRepository());
                     FileArchiver fileArchiver = folder.getFileArchiver();
-                    Set<FileVersionInfo> archivedFilesVersions =
-                            fileArchiver.getArchivedFilesVersions(fileInfo);
-                    if (archivedFilesVersions.isEmpty()) {
+                    List<FileInfo> archiveFileInfos =
+                            fileArchiver.getArchivedFilesInfos(fileInfo);
+                    if (archiveFileInfos.isEmpty()) {
                         setState(STATE_EMPTY);
                     } else {
                         setState(STATE_RESULTS);
-                        fileVersionsTableModel.setVersionInfos(archivedFilesVersions);
+                        fileVersionsTableModel.setVersionInfos(archiveFileInfos);
                     }
                 } else {
                     setState(STATE_EMPTY);

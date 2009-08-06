@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.Set;
+import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -41,7 +42,7 @@ public class NullFileArchiver implements FileArchiver {
         return ArchiveMode.NO_BACKUP;
     }
 
-    public Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         return EMPTY_VERSIONS_SET;
     }
 }

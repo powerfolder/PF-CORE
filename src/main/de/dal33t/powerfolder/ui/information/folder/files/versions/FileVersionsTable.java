@@ -30,10 +30,10 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import de.dal33t.powerfolder.disk.FileVersionInfo;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Table to display file versions of a file.
@@ -55,7 +55,7 @@ public class FileVersionsTable extends JTable {
 
         setupColumns();
 
-        setDefaultRenderer(FileVersionInfo.class, new MyDefaultTreeCellRenderer());
+        setDefaultRenderer(FileInfo.class, new MyDefaultTreeCellRenderer());
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
@@ -81,11 +81,11 @@ public class FileVersionsTable extends JTable {
         column.setPreferredWidth(40);
     }
 
-    public FileVersionInfo getSelectedInfo() {
+    public FileInfo getSelectedInfo() {
         int row = getSelectedRow();
         if (row >= 0) {
             FileVersionsTableModel model = (FileVersionsTableModel) getModel();
-            return (FileVersionInfo) model.getValueAt(row, 0);
+            return (FileInfo) model.getValueAt(row, 0);
         }
         return null;
     }
@@ -120,7 +120,7 @@ public class FileVersionsTable extends JTable {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-            FileVersionInfo info = (FileVersionInfo) value;
+            FileInfo info = (FileInfo) value;
             String myValue = "";
             switch (column) {
                 case 0:  // version
@@ -132,7 +132,7 @@ public class FileVersionsTable extends JTable {
                     setHorizontalAlignment(RIGHT);
                     break;
                 case 2:  // date
-                    myValue = Format.formatDate(info.getCreated());
+                    myValue = Format.formatDate(info.getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }

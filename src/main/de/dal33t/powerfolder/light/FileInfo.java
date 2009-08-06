@@ -118,14 +118,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     protected FileInfo(FolderInfo folder, String name) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(name, "name is null!");
-        this.fileName = name;
-        this.folderInfo = folder;
+        fileName = name;
+        folderInfo = folder;
 
-        this.size = null;
-        this.modifiedBy = null;
-        this.lastModifiedDate = null;
-        this.version = 0;
-        this.deleted = false;
+        size = null;
+        modifiedBy = null;
+        lastModifiedDate = null;
+        version = 0;
+        deleted = false;
+    }
+
+    public FileInfo(String fileName, int version, long size, Date lastModifiedDate) {
+        this.fileName = fileName;
+        this.version = version;
+        this.size = size;
+        this.lastModifiedDate = lastModifiedDate;
+        modifiedBy = null;
+        deleted = false;
+        folderInfo = null;
     }
 
     /**
@@ -150,7 +160,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
 
         // Check if files match
-        if (!diskFile.getName().equals(this.getFilenameOnly())) {
+        if (!diskFile.getName().equals(getFilenameOnly())) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo: " + this + ", diskfile: "
                     + diskFile);
@@ -595,9 +605,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             return false;
         }
 
-        return this.version == otherFile.version
+        return version == otherFile.version
             && Util.equals(size, otherFile.size)
-            && this.lastModifiedDate.equals(otherFile.lastModifiedDate);
+            && lastModifiedDate.equals(otherFile.lastModifiedDate);
     }
 
     /**
@@ -626,14 +636,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             return false;
         }
 
-        boolean identical = this.getVersion() == otherFile.getVersion()
-            && this.getModifiedDate().equals(otherFile.getModifiedDate())
-            && this.getModifiedBy().equals(otherFile.getModifiedBy());
+        boolean identical = getVersion() == otherFile.getVersion()
+            && getModifiedDate().equals(otherFile.getModifiedDate())
+            && getModifiedBy().equals(otherFile.getModifiedBy());
 
-        if (this.getVersion() != 0
-            && this.getVersion() == otherFile.getVersion()
-            && this.getModifiedDate().equals(otherFile.getModifiedDate())
-            && !this.getModifiedBy().equals(otherFile.getModifiedBy()))
+        if (getVersion() != 0
+            && getVersion() == otherFile.getVersion()
+            && getModifiedDate().equals(otherFile.getModifiedDate())
+            && !getModifiedBy().equals(otherFile.getModifiedBy()))
         {
             log.severe("Found identical files, but diffrent modifier:"
                 + toDetailString() + " other: " + otherFile.toDetailString());
@@ -656,8 +666,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
             return otherInfo.isFile()
-                && Util.equals(this.fileName, otherInfo.fileName)
-                && Util.equals(this.folderInfo, otherInfo.folderInfo);
+                && Util.equals(fileName, otherInfo.fileName)
+                && Util.equals(folderInfo, otherInfo.folderInfo);
         }
 
         return false;

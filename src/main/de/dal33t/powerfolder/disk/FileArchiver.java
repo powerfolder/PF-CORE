@@ -34,9 +34,9 @@ import de.dal33t.powerfolder.util.ArchiveMode;
  */
 public interface FileArchiver {
 
-    /** Convenience empty Set of FileVersionInfos */
-    Set<FileVersionInfo> EMPTY_VERSIONS_SET = Collections.unmodifiableSet(
-            new TreeSet<FileVersionInfo>());
+    /** Convenience empty Set of FileInfos */
+    List<FileInfo> EMPTY_VERSIONS_SET = Collections.unmodifiableList(
+            new ArrayList<FileInfo>());
 
     /**
      * Archives the given file under the given FileInfo. On return the file will
@@ -59,12 +59,12 @@ public interface FileArchiver {
     ArchiveMode getArchiveMode();
 
     /**
-     * Retrieves a Set of existing FileVersionInfos for an archived file.
+     * Retrieves a Set of existing FileInfos for an archived file.
      *
      * @param fileInfo
      *            fileInfo of the file to get archived versions for.
      * @return
      *            archive Set.
      */
-    Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo);
+    List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
 }

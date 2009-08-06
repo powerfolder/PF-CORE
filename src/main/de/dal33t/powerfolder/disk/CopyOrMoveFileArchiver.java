@@ -257,7 +257,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * @param fileInfo
      * @return
      */
-    public Set<FileVersionInfo> getArchivedFilesVersions(FileInfo fileInfo) {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
 
         // Find archive subdirectory.
         File subdirectory = new File(archiveDirectory,
@@ -266,7 +266,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             return EMPTY_VERSIONS_SET;
         }
 
-        Set<FileVersionInfo> set = new TreeSet<FileVersionInfo>();
+        List<FileInfo> list = new ArrayList<FileInfo>();
 
         // Iterate files in the archive and find versions.
         for (File file : subdirectory.listFiles()) {
@@ -278,14 +278,14 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
             // Archive for this file?
             if (belongsTo(file.getName(), fileInfo.getFilenameOnly())) {
-                FileVersionInfo fileVersionInfo = new FileVersionInfo(fileInfo,
+                FileInfo info = new FileInfo(file.getName(),
                         getVersionNumber(file), file.length(),
                         new Date(file.lastModified()));
-                set.add(fileVersionInfo);
+                list.add(info);
             }
         }
 
-        return set;
+        return list;
     }
 
     /**
