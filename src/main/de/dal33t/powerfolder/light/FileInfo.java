@@ -40,7 +40,8 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
 /**
- * File information of a local or remote file
+ * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
+ * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
@@ -128,28 +129,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         deleted = false;
     }
 
-    public FileInfo(String fileName, int version, long size, Date lastModifiedDate) {
-        this.fileName = fileName;
-        this.version = version;
-        this.size = size;
-        this.lastModifiedDate = lastModifiedDate;
-        modifiedBy = null;
-        deleted = false;
-        folderInfo = null;
-    }
-
-    public FileInfo(FolderInfo folderInfo, String fileName, int version,
-                    long size, Date lastModifiedDate) {
-        this.folderInfo = folderInfo;
-        this.fileName = fileName;
-        this.version = version;
-        this.size = size;
-        this.lastModifiedDate = lastModifiedDate;
-        modifiedBy = null;
-        deleted = false;
-        folderInfo = null;
-    }
-
     /**
      * Syncs fileinfo with diskfile. If diskfile has other lastmodified date
      * that this. Assume that file has changed on disk and update its modified
@@ -218,8 +197,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         Reject.ifNull(diskFile, "Diskfile is null");
         boolean diskFileDeleted = !diskFile.exists();
-        boolean existanceSync = diskFileDeleted && deleted
-            || !diskFileDeleted && !deleted;
+        boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
+            && !deleted;
         if (ignoreSizeAndModDate) {
             return existanceSync;
         }
@@ -453,7 +432,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
             // Directly detected by last modified
-            return Util.isNewerFileDateCrossPlattform(lastModifiedDate, ofInfo.lastModifiedDate);
+            return Util.isNewerFileDateCrossPlattform(lastModifiedDate,
+                ofInfo.lastModifiedDate);
         }
         if (version == ofInfo.version) {
             // /if (logEnabled) {
@@ -465,7 +445,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // return Convert
             // .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
             // .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
-            return Util.isNewerFileDateCrossPlattform(lastModifiedDate, ofInfo.lastModifiedDate);
+            return Util.isNewerFileDateCrossPlattform(lastModifiedDate,
+                ofInfo.lastModifiedDate);
         }
         return version > ofInfo.version;
     }
@@ -507,7 +488,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             }
         }
         return folder.getDAO().findNewestVersion(this,
-                domains.toArray(new String[domains.size()]));
+            domains.toArray(new String[domains.size()]));
     }
 
     /**
@@ -651,8 +632,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             && lastModifiedDate.equals(otherFile.lastModifiedDate)
             && modifiedBy.equals(otherFile.modifiedBy);
 
-        if (version != 0
-            && version == otherFile.version
+        if (version != 0 && version == otherFile.version
             && lastModifiedDate.equals(otherFile.lastModifiedDate)
             && !modifiedBy.equals(otherFile.modifiedBy))
         {

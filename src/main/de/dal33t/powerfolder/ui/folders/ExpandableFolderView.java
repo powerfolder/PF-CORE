@@ -85,7 +85,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
     private JLabel totalSizeLabel;
-    private JLabel recycleLabel;
     private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JLabel jLabel;
@@ -234,6 +233,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
+        // TODO: Cleanup up this mess, use ROW variable
         if (getController().isBackupOnly()) {
             // Skip computers stuff
             lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
@@ -257,7 +257,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
 
-        lowerBuilder.add(recycleLabel, cc.xy(2, 13));
+       // lowerBuilder.add(recycleLabel, cc.xy(2, 13));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
 
@@ -354,7 +354,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         syncDateLabel = new ActionLabel(getController(), mostRecentChangesAction);
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
-        recycleLabel = new JLabel();
         membersLabel = new ActionLabel(getController(),
                 openMembersInformationAction);
         filesAvailableLabel = new ActionLabel(getController(),
@@ -538,17 +537,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 long totalSize = statistic.getTotalSize();
                 totalSizeString = Format.formatBytesShort(totalSize);
 
-                if (folder.isUseRecycleBin()) {
-                    RecycleBin recycleBin = getController().getRecycleBin();
-                    int recycledCount = recycleBin.countRecycledFiles(folderInfo);
-                    long recycledSize = recycleBin.recycledFilesSize(folderInfo);
-                    String recycledSizeString = Format.formatBytesShort(recycledSize);
-                    recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
-                            recycledCount, recycledSizeString);
-                } else {
-                    recycleLabelText = Translation.getTranslation("exp_folder_view.no_recycled");
-                }
-
                 int count = statistic.getIncomingFilesCount();
                 if (count == 0) {
                     filesAvailableLabelText = "";
@@ -566,7 +554,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 localSizeString));
         totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total",
                 totalSizeString));
-        recycleLabel.setText(recycleLabelText);
         filesAvailableLabel.setText(filesAvailableLabelText);
         if (filesAvailableLabelText.length() == 0) {
             filesAvailableLabel.setToolTipText(null);

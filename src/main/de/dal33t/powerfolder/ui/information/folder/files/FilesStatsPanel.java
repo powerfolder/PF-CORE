@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FilesStatsPanel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FilesStatsPanel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -36,14 +36,15 @@ public class FilesStatsPanel extends PFUIComponent {
     private JLabel localLabel;
     private JLabel incomingLabel;
     private JLabel deletedLabel;
-    private JLabel recycledLabel;
 
     public FilesStatsPanel(Controller controller) {
         super(controller);
-        localLabel = new JLabel(Translation.getTranslation("files_stats_panel.local_label", ""));
-        incomingLabel = new JLabel(Translation.getTranslation("files_stats_panel.incoming_label", ""));
-        deletedLabel = new JLabel(Translation.getTranslation("files_stats_panel.deleted_label", ""));
-        recycledLabel = new JLabel(Translation.getTranslation("files_stats_panel.recycled_label", ""));
+        localLabel = new JLabel(Translation.getTranslation(
+            "files_stats_panel.local_label", ""));
+        incomingLabel = new JLabel(Translation.getTranslation(
+            "files_stats_panel.incoming_label", ""));
+        deletedLabel = new JLabel(Translation.getTranslation(
+            "files_stats_panel.deleted_label", ""));
     }
 
     public JPanel getUiComponent() {
@@ -53,20 +54,18 @@ public class FilesStatsPanel extends PFUIComponent {
         return uiComponent;
     }
 
-    public void setStats(long local, long incoming, long deleted, long recycled) {
+    public void setStats(long local, long incoming, long deleted) {
         localLabel.setText(Translation.getTranslation(
-                "files_stats_panel.local_label", String.valueOf(local)));
+            "files_stats_panel.local_label", String.valueOf(local)));
         incomingLabel.setText(Translation.getTranslation(
-                "files_stats_panel.incoming_label", String.valueOf(incoming)));
+            "files_stats_panel.incoming_label", String.valueOf(incoming)));
         deletedLabel.setText(Translation.getTranslation(
-                "files_stats_panel.deleted_label", String.valueOf(deleted)));
-        recycledLabel.setText(Translation.getTranslation(
-                "files_stats_panel.recycled_label", String.valueOf(recycled)));
+            "files_stats_panel.deleted_label", String.valueOf(deleted)));
     }
 
     private void buildUiComponent() {
         FormLayout layout = new FormLayout(
-            "fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            "fill:pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -85,9 +84,7 @@ public class FilesStatsPanel extends PFUIComponent {
         builder.add(incomingLabel, cc.xy(6, 1));
         builder.add(sep2, cc.xy(8, 1));
         builder.add(deletedLabel, cc.xy(10, 1));
-        builder.add(sep3, cc.xy(12, 1));
-        builder.add(recycledLabel, cc.xy(14, 1));
 
-        uiComponent = builder.getPanel();        
+        uiComponent = builder.getPanel();
     }
 }

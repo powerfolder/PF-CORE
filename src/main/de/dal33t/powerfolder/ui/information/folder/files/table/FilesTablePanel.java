@@ -19,39 +19,55 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.RecycleBin;
-import de.dal33t.powerfolder.disk.Directory;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.*;
-import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
+import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
+import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
+import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
+import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     TreeSelectionListener, DirectoryFilterListener
@@ -65,7 +81,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private FilesTable table;
     private OpenFileAction openFileAction;
     private DeleteFileAction deleteFileAction;
-    private RestoreFileAction restoreFileAction;
     private DownloadFileAction downloadFileAction;
     private AbortDownloadAction abortDownloadAction;
     private AddIgnoreAction addIgnoreAction;
@@ -147,8 +162,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         openFileAction.setEnabled(false);
         downloadFileAction = new DownloadFileAction();
         downloadFileAction.setEnabled(false);
-        restoreFileAction = new RestoreFileAction();
-        restoreFileAction.setEnabled(false);
         abortDownloadAction = new AbortDownloadAction(getController());
         abortDownloadAction.setEnabled(false);
         deleteFileAction = new DeleteFileAction();
@@ -174,7 +187,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(downloadFileAction);
         fileMenu.add(abortDownloadAction);
         fileMenu.add(deleteFileAction);
-        fileMenu.add(restoreFileAction);
         fileMenu.add(addIgnoreAction);
         fileMenu.add(removeIgnoreAction);
         fileMenu.add(unmarkAction);
@@ -247,48 +259,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     logSevere(ex);
                 }
             }
-        }
-    }
-
-    private void restoreSelectedFile() {
-        if (table == null || tableModel == null) {
-            return;
-        }
-        int[] rows = table.getSelectedRows();
-        boolean singleRowSelected = rows.length == 1;
-        if (singleRowSelected) {
-            final FileInfo fileInfo = tableModel.getFileInfoAtRow(rows[0]);
-
-            SwingWorker worker = new ActivityVisualizationWorker(
-                getController().getUIController().getMainFrame()
-                    .getUIComponent())
-            {
-
-                @Override
-                protected String getTitle() {
-                    return Translation.getTranslation("restore.busy.title");
-                }
-
-                @Override
-                protected String getWorkingText() {
-                    return Translation
-                        .getTranslation("restore.busy.description");
-                }
-
-                public Object construct() {
-                    boolean succes = true;
-                    RecycleBin recycleBin = getController().getRecycleBin();
-                    if (recycleBin.isInRecycleBin(fileInfo)) {
-                        if (!recycleBin.restoreFromRecycleBin(fileInfo)) {
-                            succes = false;
-                        }
-                    }
-                    return succes;
-                }
-            };
-
-            // do in different thread
-            worker.start();
         }
     }
 
@@ -467,16 +437,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
     }
 
-    private class RestoreFileAction extends BaseAction {
-        RestoreFileAction() {
-            super("action_restore_file", FilesTablePanel.this.getController());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            restoreSelectedFile();
-        }
-    }
-
     private class OpenFileAction extends BaseAction {
         OpenFileAction() {
             super("action_open_file", FilesTablePanel.this.getController());
@@ -518,9 +478,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 downloadFileAction.setEnabled(state);
 
                 // Enable restore / (!delete) action if file is restore-able.
-                state = fileInfo.isDeleted()
-                    && getController().getRecycleBin().isInRecycleBin(fileInfo);
-                restoreFileAction.setEnabled(state);
                 deleteFileAction.setEnabled(!state);
 
                 DownloadManager dl = getController().getTransferManager()
@@ -541,7 +498,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
             fileDetailsPanel.setFileInfo(null);
             fileVersionsPanel.setFileInfo(null);
-            restoreFileAction.setEnabled(false);
             deleteFileAction.setEnabled(false);
             abortDownloadAction.setEnabled(false);
             addIgnoreAction.setEnabled(false);

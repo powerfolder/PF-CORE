@@ -21,16 +21,20 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
-import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class RecycleTest extends ControllerTestCase {
+
+    private FileArchiver archiver;
 
     public void setUp() throws Exception {
         // Remove directries
@@ -51,51 +55,50 @@ public class RecycleTest extends ControllerTestCase {
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         writer.close();
         scanFolder(getFolder());
+        archiver = getFolder().getFileArchiver();
     }
 
-    public void testRecycleBin() {
-        FileInfo[] files = getFolder().getKnowFilesAsArray();
-        FileInfo fileInfo = files[0];
+    public void testRecycleBin() throws IOException {
+        FileInfo fileInfo = getFolder().getKnownFiles().iterator().next();
+        FileInfo origFile = fileInfo;
         Date lastModified = fileInfo.getModifiedDate();
         File file = getFolder().getDiskFile(fileInfo);
-        RecycleBin bin = getController().getRecycleBin();
 
-        TestHelper.waitMilliSeconds(1000);
-        getFolder().removeFilesLocal(files);
-        fileInfo = getFolder().getKnowFilesAsArray()[0];
+        TestHelper.waitMilliSeconds(2000);
+        getFolder().removeFilesLocal(fileInfo);
+        fileInfo = getFolder().getKnownFiles().iterator().next();
         assertFalse(file.exists());
         assertEquals(fileInfo.getModifiedBy(), getController().getMySelf()
             .getInfo());
         assertTrue(fileInfo.toDetailString(), fileInfo.getModifiedDate().after(
             lastModified));
 
-        assertTrue(bin.restoreFromRecycleBin(fileInfo));
-        fileInfo = getFolder().getKnowFilesAsArray()[0];
+        archiver.restore(origFile, file);
+        getFolder().scanRestoredFile(origFile);
+        fileInfo = getFolder().getKnownFiles().iterator().next();
 
         assertTrue(file.exists());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
-        assertTrue(
-            fileInfo.toDetailString() + ": was modified " + lastModified,
-            fileInfo.getModifiedDate().equals(lastModified));
+        assertEquals(fileInfo.toDetailString() + ": was modified "
+            + lastModified, lastModified, fileInfo.getModifiedDate());
         assertEquals(fileInfo.toDetailString(), 2, fileInfo.getVersion());
         assertEquals(fileInfo.getModifiedDate(), getFolder().getKnownFiles()
             .iterator().next().getModifiedDate());
-        getFolder().removeFilesLocal(files);
+        getFolder().removeFilesLocal(fileInfo);
         assertFalse(file.exists());
-        bin.delete(fileInfo);
+        archiver.archive(fileInfo, file, false);
         assertFalse(file.exists());
     }
 
     public void testEmptyRecycleBin() {
-        FileInfo[] files = getFolder().getKnowFilesAsArray();
-        FileInfo testfile = files[0];
+        FileInfo testfile = getFolder().getKnownFiles().iterator().next();
         File file = getFolder().getDiskFile(testfile);
-        RecycleBin bin = getController().getRecycleBin();
 
-        getFolder().removeFilesLocal(files);
+        getFolder().removeFilesLocal(testfile);
         assertFalse(file.exists());
-        bin.emptyRecycleBin(null);
-        File recycleBinDir = new File(getFolder().getSystemSubDir(), ".recycle");
+        ((CopyOrMoveFileArchiver) archiver).setVersionsPerFile(0);
+        ((CopyOrMoveFileArchiver) archiver).maintain();
+        File recycleBinDir = new File(getFolder().getSystemSubDir(), "archive");
         assertTrue(recycleBinDir.exists());
         assertTrue(Arrays.asList(recycleBinDir.list()).toString(),
             recycleBinDir.list().length == 0);

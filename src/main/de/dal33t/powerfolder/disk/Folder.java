@@ -217,14 +217,10 @@ public class Folder extends PFComponent {
     private final FolderStatistic statistic;
 
     private volatile ArchiveMode archiveMode;
-    private volatile FileArchiver fileArchiver;
+    private volatile FileArchiver archiver;
 
     private final FolderListener folderListenerSupport;
     private final FolderMembershipListener folderMembershipListenerSupport;
-
-    /** Whether to move deleted items to the recycle bin */
-    private boolean useRecycleBin;
-
     /**
      * If the folder is only preview then the files do not actually download and
      * the folder displays in the Available Folders group.
@@ -291,7 +287,6 @@ public class Folder extends PFComponent {
 
         localBase = folderSettings.getLocalBaseDir();
         syncProfile = folderSettings.getSyncProfile();
-        useRecycleBin = folderSettings.isUseRecycleBin();
         whitelist = folderSettings.isWhitelist();
         downloadScript = folderSettings.getDownloadScript();
 
@@ -338,7 +333,7 @@ public class Folder extends PFComponent {
 
         // put myself in membership
         join0(controller.getMySelf());
-        
+
         // Now calc.
         statistic = new FolderStatistic(this);
 
@@ -468,7 +463,7 @@ public class Folder extends PFComponent {
      */
     public void setArchiveMode(ArchiveMode mode) {
         this.archiveMode = mode;
-        this.fileArchiver = mode.getInstance(this);
+        this.archiver = mode.getInstance(this);
     }
 
     /**
@@ -482,7 +477,7 @@ public class Folder extends PFComponent {
      * @return the FileArchiver used
      */
     public FileArchiver getFileArchiver() {
-        return fileArchiver;
+        return archiver;
     }
 
     /**
@@ -792,7 +787,7 @@ public class Folder extends PFComponent {
             if (targetFile.exists()) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
-                FileArchiver arch = fileArchiver;
+                FileArchiver arch = archiver;
                 if (arch != null) {
                     try {
                         arch.archive(fInfo.getLocalFileInfo(getController()
@@ -804,8 +799,8 @@ public class Folder extends PFComponent {
                         return false;
                     }
                 }
-                if (targetFile.exists() && !deleteFile(fInfo, targetFile)) {
-                    logWarning("Unable to scan downloaded file. Was not able to move old file to recycle bin "
+                if (targetFile.exists() && !targetFile.delete()) {
+                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
                         + targetFile.getAbsolutePath()
                         + ". "
                         + fInfo.toDetailString());
@@ -1403,7 +1398,7 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (diskFile != null && diskFile.exists()) {
                 if (!deleteFile(fInfo, diskFile)) {
-                    logWarning("Unable to remove local file. Was not able to move old file to recycle bin "
+                    logWarning("Unable to remove local file. Was not able to move old file to file archive "
                         + diskFile.getAbsolutePath()
                         + ". "
                         + fInfo.toDetailString());
@@ -1754,8 +1749,6 @@ public class Folder extends PFComponent {
      * deleted long ago do not stay in DB for ever.
      */
     private void maintainFolderDB() {
-        RecycleBin recycleBin = getController().getRecycleBin();
-
         long removeBeforeDate = System.currentTimeMillis()
             - 1000L
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
@@ -1772,10 +1765,7 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().getTime() < removeBeforeDate) {
-                if (recycleBin.isInRecycleBin(file)) {
-                    // Skip candidate
-                    continue;
-                }
+                // FIXME: Check if file is in ARCHIVE?
                 expired++;
                 // Remove
                 dao.delete(null, file);
@@ -2864,31 +2854,25 @@ public class Folder extends PFComponent {
      */
     private boolean deleteFile(FileInfo newFileInfo, File file) {
         FileInfo fileInfo = getFile(newFileInfo);
-        if (useRecycleBin) {
-            if (isFine()) {
-                logFine("Deleting file " + fileInfo.toDetailString()
-                    + " moving to recycle bin");
-            }
-            RecycleBin recycleBin = getController().getRecycleBin();
-            if (!recycleBin.moveToRecycleBin(fileInfo, file)) {
-                logSevere("Unable to move file to recycle bin" + file);
-                if (!file.delete()) {
-                    logSevere("Unable to delete file " + file);
-                }
-                return false;
-            }
-            return true;
-        } else {
-            if (isFine()) {
-                logFine("Deleting file " + file
-                    + " NOT moving to recycle bin (disabled)");
-            }
-            if (!file.delete()) {
-                logSevere("Unable to delete file " + file);
-                return false;
-            }
-            return true;
+        if (isFine()) {
+            logFine("Deleting file " + fileInfo.toDetailString()
+                + " moving to archive");
         }
+        try {
+            archiver.archive(fileInfo, file, false);
+        } catch (IOException e) {
+            logSevere("Unable to move file to recycle bin" + file + ". " + e, e);
+        }
+        if (isFine()) {
+            logFine("Deleting file " + file
+                + " NOT moving to recycle bin (disabled)");
+        }
+        if (file.exists() && !file.delete()) {
+            logSevere("Unable to delete file " + file);
+            return false;
+        }
+        return true;
+
     }
 
     /**
@@ -3274,25 +3258,6 @@ public class Folder extends PFComponent {
             lastSyncDate = new Date();
             dirty = true;
         }
-    }
-
-    /**
-     * Whether this folder moves deleted files to the recycle bin.
-     * 
-     * @return true if the recycle bin is used.
-     */
-    public boolean isUseRecycleBin() {
-        return useRecycleBin;
-    }
-
-    /**
-     * Sets whether to use the recycle bin.
-     * 
-     * @param useRecycleBin
-     *            true if recycle bin is to be used.
-     */
-    public void setUseRecycleBin(boolean useRecycleBin) {
-        this.useRecycleBin = useRecycleBin;
     }
 
     // *************** Event support

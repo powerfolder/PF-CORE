@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FileDetailsPanel.java 5457 2009-07-31 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FileDetailsPanel.java 5457 2009-07-31 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.PFUIComponent;
@@ -43,7 +43,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 
 /**
  * A Panel to display version history about a file
- *
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 4.0 $
  */
@@ -74,11 +74,10 @@ public class FileVersionsPanel extends PFUIComponent {
 
             scrollPane = new JScrollPane(fileVersionsTable);
 
-            FormLayout layout = new FormLayout(
-                    "pref:grow", "pref, 3dlu, pref, 3dlu, fill:0:grow");
+            FormLayout layout = new FormLayout("pref:grow",
+                "pref, 3dlu, pref, 3dlu, fill:0:grow");
             DefaultFormBuilder builder = new DefaultFormBuilder(layout);
             CellConstraints cc = new CellConstraints();
-
 
             builder.add(createButtonPanel(), cc.xy(1, 1));
             builder.addSeparator(null, cc.xy(1, 3));
@@ -97,8 +96,7 @@ public class FileVersionsPanel extends PFUIComponent {
     }
 
     private Component createButtonPanel() {
-        FormLayout layout = new FormLayout(
-                "pref, fill:0:grow", "pref");
+        FormLayout layout = new FormLayout("pref, fill:0:grow", "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -119,15 +117,16 @@ public class FileVersionsPanel extends PFUIComponent {
         fileVersionsTableModel = new FileVersionsTableModel(getController());
         fileVersionsTable = new FileVersionsTable(fileVersionsTableModel);
         fileVersionsTable.getSelectionModel().addListSelectionListener(
-                new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        enableRestoreAction();
-                    }
-                });
+            new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e) {
+                    enableRestoreAction();
+                }
+            });
         fileVersionsTable.addMouseListener(new TableMouseListener());
 
-        emptyLabel = new JLabel(Translation.getTranslation(
-                "file_version_tab.no_versions_available"), SwingConstants.CENTER);
+        emptyLabel = new JLabel(Translation
+            .getTranslation("file_version_tab.no_versions_available"),
+            SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
         restoreAction = new RestoreAction(getController());
@@ -152,7 +151,7 @@ public class FileVersionsPanel extends PFUIComponent {
 
     /**
      * Display empty text or the actual results.
-     *
+     * 
      * @param state
      */
     private void setState(int state) {
@@ -166,16 +165,16 @@ public class FileVersionsPanel extends PFUIComponent {
         if (state == STATE_LOADING) {
             emptyLabel.setText("");
         } else if (state == STATE_EMPTY) {
-            emptyLabel.setText(Translation.getTranslation(
-                    "file_version_tab.no_versions_available"));
+            emptyLabel.setText(Translation
+                .getTranslation("file_version_tab.no_versions_available"));
         }
 
         enableRestoreAction();
     }
 
     private void enableRestoreAction() {
-        restoreAction.setEnabled(scrollPane.isVisible() &&
-                fileVersionsTable.getSelectedRow() > -1);
+        restoreAction.setEnabled(scrollPane.isVisible()
+            && fileVersionsTable.getSelectedRow() > -1);
     }
 
     /**
@@ -185,14 +184,14 @@ public class FileVersionsPanel extends PFUIComponent {
         if (fileInfo != null) {
             FileInfo selectedInfo = fileVersionsTable.getSelectedInfo();
             RestoreArchiveDialog dialog = new RestoreArchiveDialog(
-                    getController(), fileInfo, selectedInfo);
+                getController(), fileInfo, selectedInfo);
             dialog.open();
         }
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
      * Swing worker to load the versions in the background.
@@ -206,15 +205,16 @@ public class FileVersionsPanel extends PFUIComponent {
             try {
                 if (fileInfo != null) {
                     Folder folder = fileInfo.getFolder(getController()
-                            .getFolderRepository());
+                        .getFolderRepository());
                     FileArchiver fileArchiver = folder.getFileArchiver();
-                    List<FileInfo> archiveFileInfos =
-                            fileArchiver.getArchivedFilesInfos(fileInfo);
+                    List<FileInfo> archiveFileInfos = fileArchiver
+                        .getArchivedFilesInfos(fileInfo);
                     if (archiveFileInfos.isEmpty()) {
                         setState(STATE_EMPTY);
                     } else {
                         setState(STATE_RESULTS);
-                        fileVersionsTableModel.setVersionInfos(archiveFileInfos);
+                        fileVersionsTableModel
+                            .setVersionInfos(archiveFileInfos);
                     }
                 } else {
                     setState(STATE_EMPTY);

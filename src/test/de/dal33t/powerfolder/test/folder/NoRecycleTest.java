@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.io.FileWriter;
 
-import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -40,7 +39,8 @@ public class NoRecycleTest extends ControllerTestCase {
 
         super.setUp();
 
-        setupTestFolder(SyncProfile.HOST_FILES, false, ArchiveMode.NO_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP);
+        getFolder().setArchiveMode(ArchiveMode.NO_BACKUP);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");
         if (testFile.exists()) {
@@ -57,19 +57,17 @@ public class NoRecycleTest extends ControllerTestCase {
     }
 
     public void testRecycleBin() {
-        System.out.println("testRecycleBin");
-        FileInfo[] files = getFolder().getKnowFilesAsArray();
-        FileInfo testfile = files[0];
+        FileInfo testfile = getFolder().getKnownFiles().iterator().next();
         File file = getFolder().getDiskFile(testfile);
-        RecycleBin bin = getController().getRecycleBin();
 
-        getFolder().removeFilesLocal(files);
+        getFolder().removeFilesLocal(testfile);
 
         // Expecting the local copy to be removed.
         assertFalse(file.exists());
 
         // Not expecting the bin to have the removed copy.
-        assertTrue(bin.countAllRecycledFiles() == 0);
+        assertEquals(0, getFolder().getFileArchiver().getArchivedFilesInfos(
+            testfile).size());
     }
 
 }

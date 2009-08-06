@@ -62,7 +62,7 @@ public final class FileInfoFactory {
     }
 
     public static FileInfo lookupInstance(Folder folder, File file) {
-        String fn = buildFileName(folder, file);
+        String fn = buildFileName(folder.getLocalBase(), file);
         return lookupInstance(folder.getInfo(), fn, file.isDirectory());
     }
 
@@ -92,12 +92,14 @@ public final class FileInfoFactory {
         MemberInfo creator)
     {
         if (localFile.isFile()) {
-            return new FileInfo(buildFileName(folder, localFile), localFile
-                .length(), creator, new Date(localFile.lastModified()), 0,
+            return new FileInfo(
+                buildFileName(folder.getLocalBase(), localFile), localFile
+                    .length(), creator, new Date(localFile.lastModified()), 0,
                 false, folder.getInfo());
         } else if (localFile.isDirectory()) {
-            return new DirectoryInfo(buildFileName(folder, localFile), creator,
-                new Date(localFile.lastModified()), 0, false, folder.getInfo());
+            return new DirectoryInfo(buildFileName(folder.getLocalBase(),
+                localFile), creator, new Date(localFile.lastModified()), 0,
+                false, folder.getInfo());
         } else {
             throw new IllegalArgumentException("File not Directory nor File: "
                 + localFile);
@@ -144,7 +146,8 @@ public final class FileInfoFactory {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject
             .ifTrue(original.isTemplate(), "Cannot modify template FileInfo!");
-        String fn = buildFileName(original.getFolder(rep), localFile);
+        String fn = buildFileName(original.getFolder(rep).getLocalBase(),
+            localFile);
         if (original.fileName.equals(fn)) {
             fn = original.fileName;
         }
@@ -181,6 +184,12 @@ public final class FileInfoFactory {
         }
     }
 
+    public static FileInfo archivedFile(FolderInfo foInfo, String name,
+        long size, MemberInfo modby, Date modDate, int version)
+    {
+        return new FileInfo(name, size, modby, modDate, version, false, foInfo);
+    }
+
     @Deprecated
     public static FileInfo updatedVersion(FileInfo original, int newVersion) {
         Reject.ifNull(original, "Original FileInfo is null");
@@ -194,12 +203,11 @@ public final class FileInfoFactory {
             original.deleted, original.folderInfo);
     }
 
-    protected static String buildFileName(Folder folder, File file) {
+    protected static String buildFileName(File baseDirectory, File file) {
         String fn = file.getName();
         File parent = file.getParentFile();
-        File folderBase = folder.getLocalBase();
 
-        while (!folderBase.equals(parent)) {
+        while (!baseDirectory.equals(parent)) {
             if (parent == null) {
                 throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");

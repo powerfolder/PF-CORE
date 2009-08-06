@@ -37,7 +37,7 @@ public class FolderExpireTest extends ControllerTestCase {
         super.setUp();
 
         // Setup a test folder.
-        setupTestFolder(SyncProfile.HOST_FILES, true, ArchiveMode.NO_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP);
 
         File localBase = getFolder().getLocalBase();
 

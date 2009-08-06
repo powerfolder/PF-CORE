@@ -108,8 +108,7 @@ public class PreviewToJoinPanel extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 FolderSettings newFolderSettings = new FolderSettings(new File(
                     (String) locationModel.getValue()),
-                    syncProfileSelectorPanel.getSyncProfile(), false,
-                    existingFoldersSettings.isUseRecycleBin(),
+                    syncProfileSelectorPanel.getSyncProfile(), false, false,
                     existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.isWhitelist(),
                     existingFoldersSettings.getDownloadScript());
@@ -194,8 +193,9 @@ public class PreviewToJoinPanel extends BaseDialog {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButtonMini locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("folder_join.location.tip"));
+        JButtonMini locationButton = new JButtonMini(Icons
+            .getIconById(Icons.DIRECTORY), Translation
+            .getTranslation("folder_join.location.tip"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();

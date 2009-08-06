@@ -95,10 +95,9 @@ public class FolderPreviewHelper {
         FolderSettings savedFolderSettings = new FolderSettings(
             initialFolderSettings.getLocalBaseDir(), initialFolderSettings
                 .getSyncProfile(), initialFolderSettings
-                .isCreateInvitationFile(), initialFolderSettings
-                .isUseRecycleBin(), initialFolderSettings.getArchiveMode(),
-            true, initialFolderSettings.isWhitelist(), initialFolderSettings
-                .getDownloadScript());
+                .isCreateInvitationFile(), false, initialFolderSettings
+                .getArchiveMode(), true, initialFolderSettings.isWhitelist(),
+            initialFolderSettings.getDownloadScript());
 
         folderRepository.removeFolder(folder, false);
         folderRepository.createPreviewFolder(folderInfo, previewFolderSettings);

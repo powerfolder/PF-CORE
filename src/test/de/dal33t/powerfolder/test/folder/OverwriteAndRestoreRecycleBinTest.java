@@ -20,11 +20,10 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.IOException;
 
-import de.dal33t.powerfolder.disk.RecycleBin;
+import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.RecycleBinConfirmEvent;
-import de.dal33t.powerfolder.event.RecycleBinConfirmationHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -47,8 +46,10 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
     /**
      * Test the overwrite of file (due to sync) results in copy of old one in
      * RecycleBin. After that the file is restored.
+     * 
+     * @throws IOException
      */
-    public void testOverwriteToRecycleAndRestore() {
+    public void testOverwriteToRecycleAndRestore() throws IOException {
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
 
@@ -75,8 +76,6 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             testFileBart.getName(), new byte[]{6, 5, 6, 7});
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(500);
-
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles()
@@ -101,25 +100,17 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         assertEquals(4, getFolderAtBart().getKnownFiles().iterator().next()
             .getSize());
 
-        RecycleBin binAtLisa = getContollerLisa().getRecycleBin();
-        assertTrue(binAtLisa.isInRecycleBin(fInfoLisa));
-        assertEquals(1, binAtLisa.countAllRecycledFiles());
+        FileArchiver archiveAtLisa = getFolderAtLisa().getFileArchiver();
+        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
+        FileInfo infoAtLisa = archiveAtLisa.getArchivedFilesInfos(fInfoLisa)
+            .get(0);
 
-        FileInfo infoAtLisa = binAtLisa.getAllRecycledFiles().get(0);
-
-        // add NO reply to overwrite question on restore
-        binAtLisa
-            .setRecycleBinConfirmationHandler(new RecycleBinConfirmationHandlerNo());
-        assertFalse(binAtLisa.restoreFromRecycleBin(infoAtLisa));
-        // file should still be in recycle bin
-        assertEquals(1, binAtLisa.countAllRecycledFiles());
-
-        // add Yes reply to overwrite question on restore
-        binAtLisa
-            .setRecycleBinConfirmationHandler(new RecycleBinConfirmationHandlerYes());
-        assertTrue(binAtLisa.restoreFromRecycleBin(infoAtLisa));
-        assertEquals(0, binAtLisa.countAllRecycledFiles());
-        TestHelper.waitMilliSeconds(500);
+        // Restore
+        archiveAtLisa.restore(infoAtLisa, infoAtLisa
+            .getDiskFile(getContollerLisa().getFolderRepository()));
+        scanFolder(getFolderAtLisa());
+        // File should be still in archive
+        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
@@ -140,25 +131,5 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
                     + ", Lisa's file: " + fInfoLisa.toDetailString();
             }
         });
-    }
-
-    class RecycleBinConfirmationHandlerNo implements
-        RecycleBinConfirmationHandler
-    {
-        public boolean confirmOverwriteOnRestore(
-            RecycleBinConfirmEvent recycleBinConfirmEvent)
-        {
-            return false;
-        }
-    }
-
-    class RecycleBinConfirmationHandlerYes implements
-        RecycleBinConfirmationHandler
-    {
-        public boolean confirmOverwriteOnRestore(
-            RecycleBinConfirmEvent recycleBinConfirmEvent)
-        {
-            return true;
-        }
     }
 }

@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -33,10 +33,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
  * @author Dennis Waldherr
  */
 public interface FileArchiver {
-
-    /** Convenience empty Set of FileInfos */
-    List<FileInfo> EMPTY_VERSIONS_SET = Collections.unmodifiableList(
-            new ArrayList<FileInfo>());
 
     /**
      * Archives the given file under the given FileInfo. On return the file will
@@ -59,42 +55,26 @@ public interface FileArchiver {
     ArchiveMode getArchiveMode();
 
     /**
-     * Retrieves a Set of existing FileInfos for an archived file.
-     *
+     * Retrieves a List of existing FileInfos for an archived file.
+     * 
      * @param fileInfo
      *            fileInfo of the file to get archived versions for.
-     * @return
-     *            archive Set.
+     * @return list of archived {@link FileInfo}.
      */
     List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
 
     /**
-     * Restore an archived file to its original location.
-     *
-     * @param repo
+     * Restores/Copies a file version from the archive to the target location.
+     * Does NOT deleted the file in the archive. Does NOT scan the related
+     * folder!
+     * <p>
+     * TODO Handle existing target file!
+     * 
      * @param versionInfo
-     *                 the FileInfo of the archived file.
-     * @param fileInfo
-     *                 the FileInfo of the base file.
+     *            the FileInfo of the archived file.
+     * @param target
      * @throws IOException
-     *                 problem restoring the file.
+     *             problem restoring the file.
      */
-    void resoreArchivedFile(FolderRepository repo, FileInfo versionInfo, FileInfo fileInfo)
-            throws IOException;
-
-    /**
-     * Save the restored version of an archived file to a specified directory.
-     *
-     * @param repo
-     * @param versionInfo
-     *                 the FileInfo of the archived file.
-     * @param targetDirectory
-     *                 the directory that the restored file is to go to.
-     * @param fileInfo
-     *                 the FileInfo of the base file.
-     * @throws IOException
-     *                 problem saving the restored file.
-     */
-    void saveArchivedFile(FolderRepository repo, FileInfo versionInfo,
-                          File targetDirectory, FileInfo fileInfo) throws IOException;
+    void restore(FileInfo versionInfo, File target) throws IOException;
 }

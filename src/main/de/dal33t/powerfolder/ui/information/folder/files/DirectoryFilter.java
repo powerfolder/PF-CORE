@@ -1,36 +1,37 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DirectoryFilter.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DirectoryFilter.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -38,7 +39,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.util.StringUtils;
-import com.jgoodies.binding.value.ValueModel;
 
 /**
  * Class to filter a directory.
@@ -62,7 +62,6 @@ public class DirectoryFilter extends FilterModel {
     private final AtomicBoolean pending;
 
     private final TransferManager transferManager;
-    private final RecycleBin recycleBin;
 
     private final List<DirectoryFilterListener> listeners;
 
@@ -73,11 +72,12 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Filter of a folder directory.
-     *
+     * 
      * @param controller
      */
     public DirectoryFilter(Controller controller, ValueModel searchFieldVM,
-                           ValueModel searchModeVM) {
+        ValueModel searchModeVM)
+    {
         super(controller, searchFieldVM);
         this.searchModeVM = searchModeVM;
         searchModeVM.addValueChangeListener(new PropertyChangeListener() {
@@ -89,13 +89,12 @@ public class DirectoryFilter extends FilterModel {
         running = new AtomicBoolean();
         pending = new AtomicBoolean();
         transferManager = getController().getTransferManager();
-        recycleBin = getController().getRecycleBin();
         listeners = new CopyOnWriteArrayList<DirectoryFilterListener>();
     }
 
     /**
      * Add a DirectoryFilterListener to list of listeners.
-     *
+     * 
      * @param listener
      */
     public void addListener(DirectoryFilterListener listener) {
@@ -104,7 +103,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Remove a DirectoryFilterListener from list of listeners.
-     *
+     * 
      * @param listener
      */
     public void removeListener(DirectoryFilterListener listener) {
@@ -117,7 +116,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Sets the folder to filter the directory for.
-     *
+     * 
      * @param folder
      */
     public void setFolder(Folder folder) {
@@ -132,7 +131,7 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Sets the mode of the filter. See the MODE constants.
-     *
+     * 
      * @param fileFilterMode
      */
     public void setFileFilterMode(int fileFilterMode) {
@@ -164,8 +163,7 @@ public class DirectoryFilter extends FilterModel {
     }
 
     /**
-     * Runs a filter process.
-     * Only one can run at a time, to avoid multiple,
+     * Runs a filter process. Only one can run at a time, to avoid multiple,
      * similar filtering on the same directory.
      */
     private void fireFilterEvent() {
@@ -173,7 +171,7 @@ public class DirectoryFilter extends FilterModel {
         running.set(true);
         getController().getThreadPool().submit(new Runnable() {
             public void run() {
-                while(true) {
+                while (true) {
                     doFilter();
                     if (!pending.get()) {
                         break;
@@ -188,8 +186,8 @@ public class DirectoryFilter extends FilterModel {
     }
 
     /**
-     * Actually does the filtering.
-     * Call via fireFilterEvent() to avoid multiple concurrent runs.
+     * Actually does the filtering. Call via fireFilterEvent() to avoid multiple
+     * concurrent runs.
      */
     private void doFilter() {
 
@@ -213,47 +211,43 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong filteredFileCount = new AtomicLong();
         AtomicLong originalFileCount = new AtomicLong();
         AtomicLong deletedCount = new AtomicLong();
-        AtomicLong recycledCount = new AtomicLong();
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
-        FilteredDirectoryModel filteredDirectoryModel
-                = new FilteredDirectoryModel(null, folder, folder.getName(),
-                originalDirectory.getFile());
+        FilteredDirectoryModel filteredDirectoryModel = new FilteredDirectoryModel(
+            null, folder, folder.getName(), originalDirectory.getFile());
 
         FilteredDirectoryModel flatFilteredDirectoryModel = null;
 
         if (isFlatMode()) {
             flatFilteredDirectoryModel = new FilteredDirectoryModel(null,
-                    folder, folder.getName(), originalDirectory.getFile());
+                folder, folder.getName(), originalDirectory.getFile());
         }
 
         // Recursive filter.
         filterDirectory(originalDirectory, filteredDirectoryModel,
-                flatFilteredDirectoryModel, keywords,
-                originalFileCount, filteredFileCount, deletedCount,
-                recycledCount, incomingCount, localCount);
+            flatFilteredDirectoryModel, keywords, originalFileCount,
+            filteredFileCount, deletedCount, incomingCount, localCount);
 
         long deletedFiles = deletedCount.get();
-        long recycledFiles = recycledCount.get();
         long incomingFiles = incomingCount.get();
         long localFiles = localCount.get();
 
         boolean changed = folderChanged.getAndSet(false);
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(deletedFiles,
-                incomingFiles, localFiles, filteredDirectoryModel,
-                flatFilteredDirectoryModel, recycledFiles, changed);
+            incomingFiles, localFiles, filteredDirectoryModel,
+            flatFilteredDirectoryModel, changed);
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }
 
-        logFine("Filtered directory " + originalDirectory.getName() +
-                ", original count " + originalFileCount.get() +
-                ", filtered count " + filteredFileCount.get());
+        logFine("Filtered directory " + originalDirectory.getName()
+            + ", original count " + originalFileCount.get()
+            + ", filtered count " + filteredFileCount.get());
     }
 
     /**
      * Recursive filter call.
-     *
+     * 
      * @param directory
      * @param filteredDirectoryModel
      * @param flatFilteredDirectoryModel
@@ -266,15 +260,11 @@ public class DirectoryFilter extends FilterModel {
      * @param localCount
      */
     private void filterDirectory(Directory directory,
-                                 FilteredDirectoryModel filteredDirectoryModel,
-                                 FilteredDirectoryModel flatFilteredDirectoryModel,
-                                 String[] keywords,
-                                 AtomicLong originalCount,
-                                 AtomicLong filteredCount,
-                                 AtomicLong deletedCount,
-                                 AtomicLong recycledCount,
-                                 AtomicLong incomingCount,
-                                 AtomicLong localCount) {
+        FilteredDirectoryModel filteredDirectoryModel,
+        FilteredDirectoryModel flatFilteredDirectoryModel, String[] keywords,
+        AtomicLong originalCount, AtomicLong filteredCount,
+        AtomicLong deletedCount, AtomicLong incomingCount, AtomicLong localCount)
+    {
 
         for (FileInfo fileInfo : directory.getFiles()) {
 
@@ -292,33 +282,33 @@ public class DirectoryFilter extends FilterModel {
 
             boolean isDeleted = fileInfo.isDeleted();
             FileInfo newestVersion = null;
-            if (fileInfo.getFolder(getController().getFolderRepository())
-                    != null) {
-                newestVersion = fileInfo.getNewestNotDeletedVersion(
-                        getController().getFolderRepository());
+            if (fileInfo.getFolder(getController().getFolderRepository()) != null)
+            {
+                newestVersion = fileInfo
+                    .getNewestNotDeletedVersion(getController()
+                        .getFolderRepository());
             }
             boolean isIncoming = fileInfo.isDownloading(getController())
                 || fileInfo.isExpected(getController().getFolderRepository())
-                || newestVersion != null
-                && newestVersion.isNewerThan(fileInfo);
+                || newestVersion != null && newestVersion.isNewerThan(fileInfo);
 
             if (showFile) {
                 boolean isNew = transferManager.isCompletedDownload(fileInfo);
 
                 switch (fileFilterMode) {
-                    case FILE_FILTER_MODE_LOCAL_ONLY:
+                    case FILE_FILTER_MODE_LOCAL_ONLY :
                         showFile = !isIncoming && !isDeleted;
                         break;
-                    case FILE_FILTER_MODE_INCOMING_ONLY:
+                    case FILE_FILTER_MODE_INCOMING_ONLY :
                         showFile = isIncoming;
                         break;
-                    case FILE_FILTER_MODE_NEW_ONLY:
+                    case FILE_FILTER_MODE_NEW_ONLY :
                         showFile = isNew;
                         break;
-                    case FILE_FILTER_MODE_DELETED_PREVIOUS:
+                    case FILE_FILTER_MODE_DELETED_PREVIOUS :
                         showFile = isDeleted;
                         break;
-                    case FILE_FILTER_MODE_LOCAL_AND_INCOMING:
+                    case FILE_FILTER_MODE_LOCAL_AND_INCOMING :
                     default :
                         showFile = !isDeleted;
                         break;
@@ -341,9 +331,6 @@ public class DirectoryFilter extends FilterModel {
 
             if (isDeleted) {
                 deletedCount.incrementAndGet();
-                if (recycleBin.isInRecycleBin(fileInfo)) {
-                    recycledCount.incrementAndGet();
-                }
             } else if (isIncoming) {
                 incomingCount.incrementAndGet();
             } else {
@@ -354,24 +341,24 @@ public class DirectoryFilter extends FilterModel {
         for (Directory subDirectory : directory.getSubDirectoriesAsCollection())
         {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
-                    directory, folder, subDirectory.getFile().getName(),
-                    subDirectory.getFile());
+                directory, folder, subDirectory.getFile().getName(),
+                subDirectory.getFile());
 
             FilteredDirectoryModel flatSubModel = null;
             if (isFlatMode()) {
-                flatSubModel = new FilteredDirectoryModel(
-                        directory, folder, subDirectory.getFile().getName(),
-                        subDirectory.getFile());
+                flatSubModel = new FilteredDirectoryModel(directory, folder,
+                    subDirectory.getFile().getName(), subDirectory.getFile());
             }
             filterDirectory(subDirectory, subModel, flatSubModel, keywords,
-                    originalCount, filteredCount,  deletedCount, recycledCount,
-                    incomingCount, localCount);
+                originalCount, filteredCount, deletedCount, incomingCount,
+                localCount);
 
             // Add FileInfos from subdirs to flat model.
             if (flatFilteredDirectoryModel != null) {
                 for (FileInfo fileInfo : subModel.getFilesRecursive()) {
                     if (!flatFilteredDirectoryModel.getFiles().contains(
-                            fileInfo)) {
+                        fileInfo))
+                    {
                         flatFilteredDirectoryModel.getFiles().add(fileInfo);
                     }
                 }
@@ -379,11 +366,12 @@ public class DirectoryFilter extends FilterModel {
 
             // Only keep if files lower in tree.
             if (!subModel.getFiles().isEmpty()
-                    || !subModel.getSubdirectories().isEmpty()) {
+                || !subModel.getSubdirectories().isEmpty())
+            {
                 filteredDirectoryModel.getSubdirectories().add(subModel);
                 if (flatFilteredDirectoryModel != null) {
                     flatFilteredDirectoryModel.getSubdirectories().add(
-                            flatSubModel);
+                        flatSubModel);
                 }
             }
         }
@@ -392,15 +380,15 @@ public class DirectoryFilter extends FilterModel {
     /**
      * Answers if the file matches the searching keywords. Keywords have to be
      * in lowercase. A file must match all keywords. (AND)
-     *
+     * 
      * @param fileInfo
      *            the file
      * @param keywords
      *            the keyword array, all lowercase
      * @return the file matches the keywords
      */
-    private boolean matches(FileInfo fileInfo, String[] keywords,
-                                   int searchMode) {
+    private boolean matches(FileInfo fileInfo, String[] keywords, int searchMode)
+    {
         if (keywords == null || keywords.length == 0) {
             return true;
         }
@@ -445,7 +433,9 @@ public class DirectoryFilter extends FilterModel {
         return true;
     }
 
-    private boolean matchFileInfo(FileInfo fileInfo, String keyword, int searchMode) {
+    private boolean matchFileInfo(FileInfo fileInfo, String keyword,
+        int searchMode)
+    {
         if (searchMode == SEARCH_MODE_FILE_NAME_DIRECTORY_NAME) {
             String filename = fileInfo.getLowerCaseName();
             if (filename.contains(keyword)) {
@@ -469,7 +459,6 @@ public class DirectoryFilter extends FilterModel {
         }
         return false;
     }
-
 
     /**
      * Listener to respond to folder events. Queue filter event if our folder.

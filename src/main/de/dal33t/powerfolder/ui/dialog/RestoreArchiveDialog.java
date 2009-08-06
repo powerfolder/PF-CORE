@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -63,15 +63,16 @@ public class RestoreArchiveDialog extends BaseDialog {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param fileInfo
-     *                 the original file
+     *            the original file
      * @param versionInfo
-     *                 the info of the file version to restore
+     *            the info of the file version to restore
      */
     public RestoreArchiveDialog(Controller controller, FileInfo fileInfo,
-                                FileInfo versionInfo) {
+        FileInfo versionInfo)
+    {
         super(controller, true);
         this.versionInfo = versionInfo;
         this.fileInfo = fileInfo;
@@ -80,28 +81,30 @@ public class RestoreArchiveDialog extends BaseDialog {
     protected Component getContent() {
         if (uiComponent == null) {
 
-            restoreRB = new JRadioButton(Translation.getTranslation(
-                    "dialog.restore_archive.restore"));
-            saveRB = new JRadioButton(Translation.getTranslation(
-                    "dialog.restore_archive.save"));
+            restoreRB = new JRadioButton(Translation
+                .getTranslation("dialog.restore_archive.restore"));
+            saveRB = new JRadioButton(Translation
+                .getTranslation("dialog.restore_archive.save"));
             ButtonGroup bg = new ButtonGroup();
             bg.add(restoreRB);
             bg.add(saveRB);
 
             // Layout
             FormLayout layout = new FormLayout(
-                    "pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
-                    "pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
+                "pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+            builder.setBorder(Borders
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
-            fileLocationLabel = new JLabel(Translation.getTranslation(
-                    "dialog.restore_archive.file_location"));
+            fileLocationLabel = new JLabel(Translation
+                .getTranslation("dialog.restore_archive.file_location"));
             fileLocationField = new JTextField();
             fileLocationField.setEnabled(false);
-            fileLocationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                    Translation.getTranslation("dialog.restore_archive.file_location.tip"));
+            fileLocationButton = new JButtonMini(Icons
+                .getIconById(Icons.DIRECTORY), Translation
+                .getTranslation("dialog.restore_archive.file_location.tip"));
             fileLocationButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     showFileDialog();
@@ -135,7 +138,7 @@ public class RestoreArchiveDialog extends BaseDialog {
 
     private void showFileDialog() {
         String dir = DialogFactory.chooseDirectory(getController(),
-                fileLocationField.getText());
+            fileLocationField.getText());
         fileLocationField.setText(dir);
         enableComponents();
     }
@@ -174,22 +177,21 @@ public class RestoreArchiveDialog extends BaseDialog {
         FileArchiver fileArchiver = folder.getFileArchiver();
 
         try {
+            File restoreTo;
             if (restoreRB.isSelected()) {
-                fileArchiver.resoreArchivedFile(repo, versionInfo, fileInfo);
+                restoreTo = versionInfo.getDiskFile(getController()
+                    .getFolderRepository());
             } else {
-                fileArchiver.saveArchivedFile(repo, versionInfo,
-                        new File(fileLocationField.getText()), fileInfo);
+                restoreTo = new File(fileLocationField.getText());
             }
+            fileArchiver.restore(versionInfo, restoreTo);
             close();
         } catch (IOException e) {
             logSevere(e);
-            DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation(
-                            "dialog.restore_archive.title"),
-                    Translation.getTranslation(
-                            "dialog.restore_archive.save_error",
-                            e.getMessage()),
-                    GenericDialogType.ERROR);
+            DialogFactory.genericDialog(getController(), Translation
+                .getTranslation("dialog.restore_archive.title"), Translation
+                .getTranslation("dialog.restore_archive.save_error", e
+                    .getMessage()), GenericDialogType.ERROR);
         }
     }
 
@@ -203,7 +205,7 @@ public class RestoreArchiveDialog extends BaseDialog {
         fileLocationButton.setEnabled(enabled);
         if (okButton != null) {
             okButton.setEnabled(restoreRB.isSelected()
-                    || fileLocationField.getText().length() > 0);
+                || fileLocationField.getText().length() > 0);
         }
     }
 }

@@ -292,17 +292,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                 Folder folder = getController().getFolderRepository()
                     .createFolder(folderInfoFolderSettingsEntry.getKey(), folderSettings);
                 folder.addDefaultExcludes();
-
-                // Make sure recycle bin was made.
-                if (folderSettings.isUseRecycleBin()) {
-                    File recycleBinFolder = getController().getRecycleBin()
-                        .makeRecycleBinDirectory(folderInfoFolderSettingsEntry.getKey());
-                    if (recycleBinFolder == null) {
-                        addProblem(Translation
-                            .getTranslation("folder_create.recycle_error.text",
-                                folderInfoFolderSettingsEntry.getKey().name));
-                    }
-                }
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
                 }

@@ -217,7 +217,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     public void adviseOfChange(FilteredDirectoryEvent event) {
         statsPanel.setStats(event.getLocalFiles(), event.getIncomingFiles(),
-            event.getDeletedFiles(), event.getRecycledFiles());
+            event.getDeletedFiles());
     }
 
     /**

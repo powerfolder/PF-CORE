@@ -29,6 +29,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -38,22 +40,19 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * An implementation of {@link FileArchiver} that tries to move a file to an
  * archive first, and falls back to copying otherwise, or if forced to.
  * <i>Note:</i> No support for removal of old files (yet) - special care of
- * directories might be required
- *
- * Archives are stored in an archives directory, with suffix '_K_nnn', where
- * 'nnn' is the version number. So 'data/info.txt' archive version 6 would be
- * 'archive/data/info.txt_K_6'.
+ * directories might be required Archives are stored in an archives directory,
+ * with suffix '_K_nnn', where 'nnn' is the version number. So 'data/info.txt'
+ * archive version 6 would be 'archive/data/info.txt_K_6'.
  * 
  * @author dante
  */
 public class CopyOrMoveFileArchiver implements FileArchiver {
 
-    private static final Logger log = Logger.getLogger(
-            CopyOrMoveFileArchiver.class.getName());
-    private static final VersionComparator VERSION_COMPARATOR =
-            new VersionComparator();
-    private static final Pattern BASE_NAME_PATTERN = Pattern.compile(
-            "(.*)_K_\\d+");
+    private static final Logger log = Logger
+        .getLogger(CopyOrMoveFileArchiver.class.getName());
+    private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
+    private static final Pattern BASE_NAME_PATTERN = Pattern
+        .compile("(.*)_K_\\d+");
 
     private final File archiveDirectory;
     private volatile int versionsPerFile;
@@ -69,6 +68,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.ifFalse(archiveDirectory.isDirectory(),
             "archiveDirectory not a directory!");
         this.archiveDirectory = archiveDirectory;
+        // Default: Store unlimited # of files
+        this.versionsPerFile = -1;
     }
 
     /**
@@ -106,8 +107,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 target.setLastModified(lastModified);
             }
             // Success, now check if we have to remove a file
-            File[] list = getArchivedFiles(target.getParentFile(),
-                fileInfo.getName());
+            File[] list = getArchivedFiles(target.getParentFile(), fileInfo
+                .getFilenameOnly());
             checkArchivedFile(list);
         } else {
             throw new IOException("Failed to create directory: "
@@ -117,7 +118,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     private void checkArchivedFile(File[] versions) throws IOException {
         assert versions != null;
-        if (versions.length <= versionsPerFile || versionsPerFile == 0) {
+        if (versions.length <= versionsPerFile || versionsPerFile < 0) {
             return;
         }
 
@@ -136,7 +137,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     /**
-     * Set the number of versions to keep per file. Setting 0 will keep all
+     * Set the number of versions to keep per file. Setting -1 will keep all
      * versions. Setting a lesser number as the current one will have no
      * immediate effect on the archive. To perform maintenance, a call to
      * maintain() is required.
@@ -144,8 +145,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * @param versionsPerFile
      */
     public void setVersionsPerFile(int versionsPerFile) {
-        Reject.ifTrue(versionsPerFile < 0, "versionsPerFile was "
-            + versionsPerFile);
         this.versionsPerFile = versionsPerFile;
     }
 
@@ -209,14 +208,36 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             + fileInfo.getVersion());
     }
 
+    private String getFileInfoName(File fileInArchive) {
+        return buildFileName(archiveDirectory, fileInArchive);
+    }
+
+    private static String buildFileName(File baseDirectory, File file) {
+        String fn = file.getName();
+        int i = fn.lastIndexOf("_K_");
+        if (i >= 0) {
+            fn = fn.substring(0, i);
+        }
+        File parent = file.getParentFile();
+
+        while (!baseDirectory.equals(parent)) {
+            if (parent == null) {
+                throw new IllegalArgumentException(
+                    "Local file seems not to be in a subdir of the local powerfolder copy");
+            }
+            fn = parent.getName() + "/" + fn;
+            parent = parent.getParentFile();
+        }
+        return fn;
+    }
+
     /**
      * Parse the file name for the last '_' and extract the following version
      * number. Like 'file.txt_K_45' returns 45.
-     *
+     * 
      * @param file
-     *          file to parse name.
-     * @return
-     *          the version.
+     *            file to parse name.
+     * @return the version.
      */
     private static int getVersionNumber(File file) {
         String tmp = file.getName();
@@ -227,6 +248,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     private static File[] getArchivedFiles(File dir, final String baseName) {
         return dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
+
                 return belongsTo(name, baseName);
             }
         });
@@ -246,41 +268,31 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
-    /**
-     * Find arcive directory and return a list of file versions found for a
-     * FileInfo.
-     *
-     * @param fileInfo
-     * @return
-     */
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
-
+        Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
-        File subdirectory = new File(archiveDirectory,
-                fileInfo.getLocationInFolder());
+        File subdirectory = new File(archiveDirectory, fileInfo
+            .getLocationInFolder());
         if (!subdirectory.exists()) {
-            return EMPTY_VERSIONS_SET;
+            return Collections.emptyList();
         }
 
+        File target = getArchiveTarget(fileInfo);
+        File[] archivedFiles = getArchivedFiles(target.getParentFile(),
+            fileInfo.getFilenameOnly());
+        if (archivedFiles == null || archivedFiles.length == 0) {
+            return Collections.emptyList();
+        }
         List<FileInfo> list = new ArrayList<FileInfo>();
-
-        // Iterate files in the archive and find versions.
-        for (File file : subdirectory.listFiles()) {
-
-            // Not archiving directories :->
-            if (file.isDirectory()) {
-                continue;
-            }
-
-            // Archive for this file?
-            if (belongsTo(file.getName(), fileInfo.getFilenameOnly())) {
-                FileInfo info = new FileInfo(fileInfo.getFolderInfo(),
-                        file.getAbsolutePath(), getVersionNumber(file),
-                        file.length(), new Date(file.lastModified()));
-                list.add(info);
-            }
+        FolderInfo foInfo = fileInfo.getFolderInfo();
+        for (File file : archivedFiles) {
+            int version = getVersionNumber(file);
+            Date modDate = new Date(file.lastModified());
+            String name = getFileInfoName(file);
+            FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo, name,
+                file.length(), null, modDate, version);
+            list.add(archiveFile);
         }
-
         return list;
     }
 
@@ -293,45 +305,56 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         }
     }
 
-    /**
-     * Restore file and scan it.
-     *
-     * @param repo
-     * @param versionInfo
-     *                 the FileInfo of the archived file
-     * @param fileInfo
-     *                 the FileInfo of the base file
-     * @throws IOException
-     */
-    public void resoreArchivedFile(FolderRepository repo, FileInfo versionInfo,
-                                   FileInfo fileInfo) throws IOException {
-        File target = fileInfo.getDiskFile(repo);
-        log.info("Copying " + versionInfo.getName() + " to " 
-                + target.getAbsolutePath());
-        FileUtils.copyFile(new File(versionInfo.getName()), target);
-        repo.getFolder(fileInfo.getFolderInfo()).scanLocalFiles();
-    }
+    // /**
+    // * Restore file and scan it.
+    // *
+    // * @param versionInfo
+    // * the FileInfo of the archived file
+    // * @param fileInfo
+    // * the FileInfo of the base file
+    // * @throws IOException
+    // */
+    // public void resoreArchivedFile(FileInfo versionInfo, FileInfo fileInfo)
+    // throws IOException
+    // {
+    // File target = versionInfo.getDiskFile(getClass());
+    // log.info("Copying " + versionInfo.getName() + " to "
+    // + target.getAbsolutePath());
+    // FileUtils.copyFile(new File(versionInfo.getName()), target);
+    // repo.getFolder(fileInfo.getFolderInfo()).scanLocalFiles();
+    // }
+    //
+    // /**
+    // * Save a retored version of a file to a location.
+    // *
+    // * @param repo
+    // * @param versionInfo
+    // * the FileInfo of the archived file.
+    // * @param targetDirectory
+    // * the directory that the restored file is to go to.
+    // * @param fileInfo
+    // * the FileInfo of the base file
+    // * @throws IOException
+    // */
+    // public void saveArchivedFile(FileInfo versionInfo, File targetDirectory,
+    // FileInfo fileInfo) throws IOException
+    // {
+    // File targetFile = new File(targetDirectory, fileInfo.getFilenameOnly());
+    // log.info("Copying " + versionInfo.getName() + " to "
+    // + targetFile.getAbsolutePath());
+    // FileUtils.copyFile(new File(versionInfo.getName()), targetFile);
+    // }
 
-    /**
-     * Save a retored version of a file to a location.
-     *
-     * @param repo
-     * @param versionInfo
-     *                 the FileInfo of the archived file.
-     * @param targetDirectory
-     *                 the directory that the restored file is to go to.
-     * @param fileInfo
-     *                 the FileInfo of the base file
-     * @throws IOException
-     */
-    public void saveArchivedFile(FolderRepository repo, FileInfo versionInfo,
-                                 File targetDirectory, FileInfo fileInfo)
-            throws IOException {
-
-        File targetFile = new File(targetDirectory, fileInfo.getFilenameOnly());
+    public void restore(FileInfo versionInfo, File target) throws IOException {
         log.info("Copying " + versionInfo.getName() + " to "
-                + targetFile.getAbsolutePath());
-        FileUtils.copyFile(new File(versionInfo.getName()),
-                targetFile);
+            + target.getAbsolutePath());
+        File archiveFile = getArchiveTarget(versionInfo);
+        if (!archiveFile.exists()) {
+            throw new IOException("Unable to restore file. Not in archive: "
+                + versionInfo.toDetailString() + ". Should be at "
+                + archiveFile);
+        }
+        FileUtils.copyFile(archiveFile, target);
+        target.setLastModified(versionInfo.getModifiedDate().getTime());
     }
 }

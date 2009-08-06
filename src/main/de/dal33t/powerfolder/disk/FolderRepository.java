@@ -28,7 +28,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
@@ -560,12 +559,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
-
-        String recycleSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_RECYCLE);
-        boolean useRecycleBin = recycleSetting == null
-            && "true".equalsIgnoreCase(recycleSetting);
-
         String archiveSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_ARCHIVE);
         ArchiveMode archiveMode;
@@ -597,7 +590,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, archiveMode, preview, whitelist, dlScript);
+            false, archiveMode, preview, whitelist, dlScript);
     }
 
     /**
@@ -868,9 +861,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
             .getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_RECYCLE, String.valueOf(folderSettings
-            .isUseRecycleBin()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
@@ -1136,7 +1126,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /*
-     * General ****************************************************************
+     * General
      */
 
     @Override

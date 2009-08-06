@@ -41,7 +41,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_WHITELIST = ".whitelist";
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
-    public static final String FOLDER_SETTINGS_RECYCLE = ".recycle"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
 
     /**
@@ -59,11 +58,6 @@ public class FolderSettings {
      * constructed.
      */
     private final boolean createInvitationFile;
-
-    /**
-     * Whether the folder move deleted items to the recycle bin.
-     */
-    private final boolean useRecycleBin;
 
     /**
      * How to archive local files
@@ -108,7 +102,8 @@ public class FolderSettings {
         this.localBaseDir = localBaseDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
-        this.useRecycleBin = useRecycleBin;
+        // TODO Remove Constructor parameter
+        // this.useRecycleBin = useRecycleBin;
         this.archiveMode = archiveMode;
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
@@ -146,10 +141,6 @@ public class FolderSettings {
 
     public boolean isCreateInvitationFile() {
         return createInvitationFile;
-    }
-
-    public boolean isUseRecycleBin() {
-        return useRecycleBin;
     }
 
     public ArchiveMode getArchiveMode() {

@@ -61,7 +61,6 @@ import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.RecycleBin;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderClient;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
@@ -258,10 +257,6 @@ public class Controller extends PFComponent {
 
     /** holds all installed plugins */
     private PluginManager pluginManager;
-
-    /** Handles the movement of files from and to the powerfolder recycle bin */
-    private RecycleBin recycleBin;
-
     /**
      * The security manager, handles access etc.
      */
@@ -485,10 +480,6 @@ public class Controller extends PFComponent {
         // init of folders takes rather long so a big difference with
         // last number to get smooth bar... ;-)
         setLoadingCompletion(60, 65);
-
-        // load recycle bin needs to be done after folder repo init
-        // and before repo start
-        recycleBin = new RecycleBin(this);
 
         // start repo maintainance Thread
         folderRepository.start();
@@ -1598,15 +1589,6 @@ public class Controller extends PFComponent {
      */
     public IOProvider getIOProvider() {
         return ioProvider;
-    }
-
-    /**
-     * Retruns the internal powerfolder recycle bin
-     * 
-     * @return the RecycleBin
-     */
-    public RecycleBin getRecycleBin() {
-        return recycleBin;
     }
 
     /**

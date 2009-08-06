@@ -35,7 +35,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -380,13 +379,14 @@ public class Account extends Model implements Serializable {
                 if (f == null) {
                     continue;
                 }
-                for (FileInfo fInfo : controller.getRecycleBin()
-                    .getAllRecycledFiles())
-                {
-                    if (fInfo.getFolderInfo().equals(f.getInfo())) {
-                        recycleSize += fInfo.getSize();
-                    }
-                }
+                // TODO Calculate Archive size
+                // for (FileInfo fInfo : controller.getRecycleBin()
+                // .getAllRecycledFiles())
+                // {
+                // if (fInfo.getFolderInfo().equals(f.getInfo())) {
+                // recycleSize += fInfo.getSize();
+                // }
+                // }
             }
         }
         return recycleSize;
