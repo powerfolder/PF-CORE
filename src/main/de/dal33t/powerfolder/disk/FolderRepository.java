@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DONT_RECYCLE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
@@ -420,13 +419,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
 
-        // Inverse logic for backward compatability.
-        String dontRecycleSetting = config
-            .getProperty(FOLDER_SETTINGS_PREFIX_V3 + folderName
-                + FOLDER_SETTINGS_DONT_RECYCLE);
-        boolean useRecycleBin = dontRecycleSetting == null
-            || !"true".equalsIgnoreCase(dontRecycleSetting);
-
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
@@ -440,7 +432,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            useRecycleBin, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
+            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
     }
 
     /**

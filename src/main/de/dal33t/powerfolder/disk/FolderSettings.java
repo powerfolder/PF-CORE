@@ -34,7 +34,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_PREFIX_V4 = "f.";
     public static final String FOLDER_SETTINGS_ID = ".id";
     public static final String FOLDER_SETTINGS_PREVIEW = ".preview";
-    public static final String FOLDER_SETTINGS_DONT_RECYCLE = ".dontuserecyclebin";
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
