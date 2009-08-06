@@ -185,6 +185,7 @@ public class RestoreArchiveDialog extends BaseDialog {
                 restoreTo = new File(fileLocationField.getText());
             }
             fileArchiver.restore(versionInfo, restoreTo);
+            folder.scanRestoredFile(versionInfo);
             close();
         } catch (IOException e) {
             logSevere(e);
