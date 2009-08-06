@@ -41,4 +41,5 @@ public interface WikiLinks {
     String PROBLEM_NO_CONFLICT_DETECTION_POSSIBLE = "Version_Conflict_With_Old_Client";
     String SCRIPT_EXECUTION = "Script_execution";
     String DEFAULT_FOLDER = "Default_Folder";
+    String INVITATIONS = "Invitations";
 }
