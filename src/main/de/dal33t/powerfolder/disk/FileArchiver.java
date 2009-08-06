@@ -67,4 +67,34 @@ public interface FileArchiver {
      *            archive Set.
      */
     List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
+
+    /**
+     * Restore an archived file to its original location.
+     *
+     * @param repo
+     * @param versionInfo
+     *                 the FileInfo of the archived file.
+     * @param fileInfo
+     *                 the FileInfo of the base file.
+     * @throws IOException
+     *                 problem restoring the file.
+     */
+    void resoreArchivedFile(FolderRepository repo, FileInfo versionInfo, FileInfo fileInfo)
+            throws IOException;
+
+    /**
+     * Save the restored version of an archived file to a specified directory.
+     *
+     * @param repo
+     * @param versionInfo
+     *                 the FileInfo of the archived file.
+     * @param targetDirectory
+     *                 the directory that the restored file is to go to.
+     * @param fileInfo
+     *                 the FileInfo of the base file.
+     * @throws IOException
+     *                 problem saving the restored file.
+     */
+    void saveArchivedFile(FolderRepository repo, FileInfo versionInfo,
+                          File targetDirectory, FileInfo fileInfo) throws IOException;
 }

@@ -25,12 +25,16 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Dialog for restoring a selected file archive.
@@ -48,6 +54,7 @@ public class RestoreArchiveDialog extends BaseDialog {
     private JPanel uiComponent;
 
     private FileInfo fileInfo;
+    private FileInfo versionInfo;
     private JRadioButton restoreRB;
     private JRadioButton saveRB;
     private JLabel fileLocationLabel;
@@ -59,11 +66,14 @@ public class RestoreArchiveDialog extends BaseDialog {
      *
      * @param controller
      * @param fileInfo
+     *                 the original file
+     * @param versionInfo
      *                 the info of the file version to restore
      */
-    public RestoreArchiveDialog(Controller controller,
-                                FileInfo fileInfo) {
+    public RestoreArchiveDialog(Controller controller, FileInfo fileInfo,
+                                FileInfo versionInfo) {
         super(controller, true);
+        this.versionInfo = versionInfo;
         this.fileInfo = fileInfo;
     }
 
@@ -80,8 +90,8 @@ public class RestoreArchiveDialog extends BaseDialog {
 
             // Layout
             FormLayout layout = new FormLayout(
-                "pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref");
+                    "pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
+                    "pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
@@ -125,7 +135,7 @@ public class RestoreArchiveDialog extends BaseDialog {
 
     private void showFileDialog() {
         String dir = DialogFactory.chooseDirectory(getController(),
-                    fileLocationField.getText());
+                fileLocationField.getText());
         fileLocationField.setText(dir);
         enableComponents();
     }
@@ -154,11 +164,32 @@ public class RestoreArchiveDialog extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
 
+    /**
+     * Save / restore the archived file.
+     */
     private void restore() {
-        if (restoreRB.isSelected()) {
 
-        } else {
-            
+        FolderRepository repo = getController().getFolderRepository();
+        Folder folder = repo.getFolder(versionInfo.getFolderInfo());
+        FileArchiver fileArchiver = folder.getFileArchiver();
+
+        try {
+            if (restoreRB.isSelected()) {
+                fileArchiver.resoreArchivedFile(repo, versionInfo, fileInfo);
+            } else {
+                fileArchiver.saveArchivedFile(repo, versionInfo,
+                        new File(fileLocationField.getText()), fileInfo);
+            }
+            close();
+        } catch (IOException e) {
+            logSevere(e);
+            DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation(
+                            "dialog.restore_archive.title"),
+                    Translation.getTranslation(
+                            "dialog.restore_archive.save_error",
+                            e.getMessage()),
+                    GenericDialogType.ERROR);
         }
     }
 

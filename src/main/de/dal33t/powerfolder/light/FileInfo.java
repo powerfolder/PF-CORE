@@ -106,7 +106,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         FolderInfo folderInfo)
     {
         this.fileName = fileName;
-        this.size = Long.valueOf(size);
+        this.size = size;
         this.modifiedBy = modifiedBy;
         this.lastModifiedDate = lastModifiedDate;
         this.version = version;
@@ -129,6 +129,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     public FileInfo(String fileName, int version, long size, Date lastModifiedDate) {
+        this.fileName = fileName;
+        this.version = version;
+        this.size = size;
+        this.lastModifiedDate = lastModifiedDate;
+        modifiedBy = null;
+        deleted = false;
+        folderInfo = null;
+    }
+
+    public FileInfo(FolderInfo folderInfo, String fileName, int version,
+                    long size, Date lastModifiedDate) {
+        this.folderInfo = folderInfo;
         this.fileName = fileName;
         this.version = version;
         this.size = size;
@@ -197,7 +209,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @param diskFile
      *            the file on disk.
-     * @param ignoreSize
+     * @param ignoreSizeAndModDate
      *            ignore the reported size of the diskfile/dir.
      * @return true if the fileinfo is in sync with the file on disk.
      */
@@ -206,14 +218,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         Reject.ifNull(diskFile, "Diskfile is null");
         boolean diskFileDeleted = !diskFile.exists();
-        boolean existanceSync = diskFileDeleted && isDeleted()
-            || !diskFileDeleted && !isDeleted();
+        boolean existanceSync = diskFileDeleted && deleted
+            || !diskFileDeleted && !deleted;
         if (ignoreSizeAndModDate) {
             return existanceSync;
         }
         boolean lastModificationSync = Util.equalsFileDateCrossPlattform(
             diskFile.lastModified(), lastModifiedDate.getTime());
-        boolean sizeSync = size.longValue() == diskFile.length();
+        boolean sizeSync = size == diskFile.length();
         return existanceSync && lastModificationSync && sizeSync;
     }
 
@@ -253,9 +265,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      */
     public String getExtension() {
         String tmpFileName = getFilenameOnly();
-        int index = tmpFileName.lastIndexOf(".");
-        if (index == -1)
+        int index = tmpFileName.lastIndexOf('.');
+        if (index == -1) {
             return null;
+        }
         return tmpFileName.substring(index + 1, tmpFileName.length())
             .toUpperCase();
     }
@@ -326,7 +339,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return if this file is expeced
      */
     public boolean isExpected(FolderRepository repo) {
-        if (isDeleted()) {
+        if (deleted) {
             return false;
         }
         Folder folder = repo.getFolder(folderInfo);
@@ -344,7 +357,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (controller == null) {
             throw new NullPointerException("Controller is null");
         }
-        return getModifiedBy() != null && getModifiedBy().isFriend(controller);
+        return modifiedBy != null && modifiedBy.isFriend(controller);
     }
 
     /**
@@ -376,7 +389,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return the size of the file.
      */
     public long getSize() {
-        return size.longValue();
+        return size;
     }
 
     /**
@@ -440,10 +453,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
             // Directly detected by last modified
-            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
-                .getModifiedDate());
+            return Util.isNewerFileDateCrossPlattform(lastModifiedDate, ofInfo.lastModifiedDate);
         }
-        if (getVersion() == ofInfo.getVersion()) {
+        if (version == ofInfo.version) {
             // /if (logEnabled) {
             // log()
             // .verbose(
@@ -453,10 +465,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // return Convert
             // .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
             // .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
-            return Util.isNewerFileDateCrossPlattform(getModifiedDate(), ofInfo
-                .getModifiedDate());
+            return Util.isNewerFileDateCrossPlattform(lastModifiedDate, ofInfo.lastModifiedDate);
         }
-        return getVersion() > ofInfo.getVersion();
+        return version > ofInfo.version;
     }
 
     /**
@@ -485,7 +496,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (folder == null) {
             throw new IllegalStateException(
                 "Unable to determine newest version. Folder not joined "
-                    + getFolderInfo());
+                    + folderInfo);
         }
         ArrayList<String> domains = new ArrayList<String>();
         for (Member member : folder.getMembersAsCollection()) {
@@ -496,7 +507,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             }
         }
         return folder.getDAO().findNewestVersion(this,
-            domains.toArray(new String[0]));
+                domains.toArray(new String[domains.size()]));
     }
 
     /**
@@ -512,7 +523,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (folder == null) {
             log
                 .warning("Unable to determine newest version. Folder not joined "
-                    + getFolderInfo());
+                    + folderInfo);
             return null;
         }
         FileInfo newestVersion = null;
@@ -520,7 +531,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             if (member.isCompleteyConnected() || member.isMySelf()) {
                 // Get remote file
                 FileInfo remoteFile = member.getFile(this);
-                if (remoteFile == null || remoteFile.isDeleted()) {
+                if (remoteFile == null || remoteFile.deleted) {
                     continue;
                 }
                 // Check if remote file is newer
@@ -636,14 +647,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             return false;
         }
 
-        boolean identical = getVersion() == otherFile.getVersion()
-            && getModifiedDate().equals(otherFile.getModifiedDate())
-            && getModifiedBy().equals(otherFile.getModifiedBy());
+        boolean identical = version == otherFile.version
+            && lastModifiedDate.equals(otherFile.lastModifiedDate)
+            && modifiedBy.equals(otherFile.modifiedBy);
 
-        if (getVersion() != 0
-            && getVersion() == otherFile.getVersion()
-            && getModifiedDate().equals(otherFile.getModifiedDate())
-            && !getModifiedBy().equals(otherFile.getModifiedBy()))
+        if (version != 0
+            && version == otherFile.version
+            && lastModifiedDate.equals(otherFile.lastModifiedDate)
+            && !modifiedBy.equals(otherFile.modifiedBy))
         {
             log.severe("Found identical files, but diffrent modifier:"
                 + toDetailString() + " other: " + otherFile.toDetailString());
@@ -675,7 +686,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Override
     public String toString() {
-        return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
+        return '[' + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
             + fileName;
     }
 
@@ -690,7 +701,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         str.append(", size: ");
         str.append(size);
         str.append(" bytes, version: ");
-        str.append(getVersion());
+        str.append(version);
         str.append(", modified: ");
         str.append(lastModifiedDate);
         str.append(" (");
@@ -705,7 +716,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         } else {
             str.append(modifiedBy.nick);
         }
-        str.append("'");
+        str.append('\'');
     }
 
     public String toDetailString() {

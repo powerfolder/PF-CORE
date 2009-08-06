@@ -33,6 +33,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import com.jgoodies.forms.layout.FormLayout;
@@ -58,6 +60,7 @@ public class FileVersionsPanel extends PFUIComponent {
     private FileVersionsTable fileVersionsTable;
     private volatile FileInfo fileInfo;
     private RestoreAction restoreAction;
+    private JPopupMenu popupMenu;
 
     public FileVersionsPanel(Controller controller) {
         super(controller);
@@ -86,6 +89,8 @@ public class FileVersionsPanel extends PFUIComponent {
 
             panel = builder.getPanel();
 
+            buildPopupMenus();
+
             setState(STATE_EMPTY);
         }
         return panel;
@@ -101,6 +106,14 @@ public class FileVersionsPanel extends PFUIComponent {
         return builder.getPanel();
     }
 
+    /**
+     * Builds the popup menus
+     */
+    private void buildPopupMenus() {
+        popupMenu = new JPopupMenu();
+        popupMenu.add(restoreAction);
+    }
+
     private void initComponents() {
 
         fileVersionsTableModel = new FileVersionsTableModel(getController());
@@ -111,6 +124,7 @@ public class FileVersionsPanel extends PFUIComponent {
                         enableRestoreAction();
                     }
                 });
+        fileVersionsTable.addMouseListener(new TableMouseListener());
 
         emptyLabel = new JLabel(Translation.getTranslation(
                 "file_version_tab.no_versions_available"), SwingConstants.CENTER);
@@ -171,7 +185,7 @@ public class FileVersionsPanel extends PFUIComponent {
         if (fileInfo != null) {
             FileInfo selectedInfo = fileVersionsTable.getSelectedInfo();
             RestoreArchiveDialog dialog = new RestoreArchiveDialog(
-                    getController(), selectedInfo);
+                    getController(), fileInfo, selectedInfo);
             dialog.open();
         }
     }
@@ -225,4 +239,21 @@ public class FileVersionsPanel extends PFUIComponent {
         }
     }
 
+    private class TableMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
 }

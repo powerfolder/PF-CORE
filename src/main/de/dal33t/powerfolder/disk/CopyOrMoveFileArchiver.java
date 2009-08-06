@@ -107,7 +107,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             }
             // Success, now check if we have to remove a file
             File[] list = getArchivedFiles(target.getParentFile(),
-                getBaseName(fileInfo));
+                fileInfo.getName());
             checkArchivedFile(list);
         } else {
             throw new IOException("Failed to create directory: "
@@ -195,10 +195,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return allSuccessful;
     }
 
-    protected static String getBaseName(FileInfo fileInfo) {
-        return fileInfo.getName();
-    }
-
     private static String getBaseName(File file) {
         Matcher m = BASE_NAME_PATTERN.matcher(file.getName());
         if (m.matches()) {
@@ -209,7 +205,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private File getArchiveTarget(FileInfo fileInfo) {
-        return new File(archiveDirectory, getBaseName(fileInfo) + "_K_"
+        return new File(archiveDirectory, fileInfo.getName() + "_K_"
             + fileInfo.getVersion());
     }
 
@@ -278,9 +274,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
             // Archive for this file?
             if (belongsTo(file.getName(), fileInfo.getFilenameOnly())) {
-                FileInfo info = new FileInfo(file.getName(),
-                        getVersionNumber(file), file.length(),
-                        new Date(file.lastModified()));
+                FileInfo info = new FileInfo(fileInfo.getFolderInfo(),
+                        file.getAbsolutePath(), getVersionNumber(file),
+                        file.length(), new Date(file.lastModified()));
                 list.add(info);
             }
         }
@@ -295,5 +291,47 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         public int compare(File o1, File o2) {
             return getVersionNumber(o1) - getVersionNumber(o2);
         }
+    }
+
+    /**
+     * Restore file and scan it.
+     *
+     * @param repo
+     * @param versionInfo
+     *                 the FileInfo of the archived file
+     * @param fileInfo
+     *                 the FileInfo of the base file
+     * @throws IOException
+     */
+    public void resoreArchivedFile(FolderRepository repo, FileInfo versionInfo,
+                                   FileInfo fileInfo) throws IOException {
+        File target = fileInfo.getDiskFile(repo);
+        log.info("Copying " + versionInfo.getName() + " to " 
+                + target.getAbsolutePath());
+        FileUtils.copyFile(new File(versionInfo.getName()), target);
+        repo.getFolder(fileInfo.getFolderInfo()).scanLocalFiles();
+    }
+
+    /**
+     * Save a retored version of a file to a location.
+     *
+     * @param repo
+     * @param versionInfo
+     *                 the FileInfo of the archived file.
+     * @param targetDirectory
+     *                 the directory that the restored file is to go to.
+     * @param fileInfo
+     *                 the FileInfo of the base file
+     * @throws IOException
+     */
+    public void saveArchivedFile(FolderRepository repo, FileInfo versionInfo,
+                                 File targetDirectory, FileInfo fileInfo)
+            throws IOException {
+
+        File targetFile = new File(targetDirectory, fileInfo.getFilenameOnly());
+        log.info("Copying " + versionInfo.getName() + " to "
+                + targetFile.getAbsolutePath());
+        FileUtils.copyFile(new File(versionInfo.getName()),
+                targetFile);
     }
 }

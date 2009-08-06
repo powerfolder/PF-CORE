@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.util.Set;
+import java.io.IOException;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -44,5 +44,17 @@ public class NullFileArchiver implements FileArchiver {
 
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         return EMPTY_VERSIONS_SET;
+    }
+
+    public void resoreArchivedFile(FolderRepository repo, FileInfo versionInfo,
+                                   FileInfo fileInfo)
+            throws IOException {
+        throw new IllegalStateException("resoreArchivedFile() is not implemented.");
+    }
+
+    public void saveArchivedFile(FolderRepository repo, FileInfo versionInfo,
+                                 File targetDirectory, FileInfo fileInfo)
+            throws IOException {
+        throw new IllegalStateException("saveArchivedFile() is not implemented.");
     }
 }
