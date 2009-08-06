@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,6 +92,11 @@ public class RestoreArchiveDialog extends BaseDialog {
             fileLocationField.setEnabled(false);
             fileLocationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
                     Translation.getTranslation("dialog.restore_archive.file_location.tip"));
+            fileLocationButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    showFileDialog();
+                }
+            });
 
             // Add components
             builder.add(restoreRB, cc.xyw(1, 1, 6));
@@ -101,20 +107,27 @@ public class RestoreArchiveDialog extends BaseDialog {
 
             restoreRB.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
-                    enableFileLocationComponents();
+                    enableComponents();
                 }
             });
             saveRB.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
-                    enableFileLocationComponents();
+                    enableComponents();
                 }
             });
 
             restoreRB.setSelected(true);
-            enableFileLocationComponents();
+            enableComponents();
             uiComponent = builder.getPanel();
         }
         return uiComponent;
+    }
+
+    private void showFileDialog() {
+        String dir = DialogFactory.chooseDirectory(getController(),
+                    fileLocationField.getText());
+        fileLocationField.setText(dir);
+        enableComponents();
     }
 
     protected Icon getIcon() {
@@ -128,9 +141,10 @@ public class RestoreArchiveDialog extends BaseDialog {
     protected Component getButtonBar() {
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                close();
+                restore();
             }
         });
+        enableComponents();
         JButton cancelButton = createCancelButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
@@ -140,13 +154,25 @@ public class RestoreArchiveDialog extends BaseDialog {
         return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
     }
 
+    private void restore() {
+        if (restoreRB.isSelected()) {
+
+        } else {
+            
+        }
+    }
+
     protected JButton getDefaultButton() {
         return okButton;
     }
 
-    private void enableFileLocationComponents() {
+    private void enableComponents() {
         boolean enabled = saveRB.isSelected();
         fileLocationLabel.setEnabled(enabled);
         fileLocationButton.setEnabled(enabled);
+        if (okButton != null) {
+            okButton.setEnabled(restoreRB.isSelected()
+                    || fileLocationField.getText().length() > 0);
+        }
     }
 }
