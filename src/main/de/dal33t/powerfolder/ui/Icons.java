@@ -54,19 +54,15 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
-
 /**
- * Contains all icons for the powerfolder application.
- *
- * Icons should be got by calling something like
- * <code>Icons.getIconById(Icon.EXAMPLE)</code>. This will dereference via
- * Icons.properties and will return the Icon as well as caching it, so that
- * subsequent calls will return the same object. The advantage of this aproach
- * is that Icons are only greated as required, saving time and memory.
- *
- * Similarly, Images should be got by calling something like
- * <code>Icons.getImageById(Icon.EXAMPLE)</code>.  
- *
+ * Contains all icons for the powerfolder application. Icons should be got by
+ * calling something like <code>Icons.getIconById(Icon.EXAMPLE)</code>. This
+ * will dereference via Icons.properties and will return the Icon as well as
+ * caching it, so that subsequent calls will return the same object. The
+ * advantage of this aproach is that Icons are only greated as required, saving
+ * time and memory. Similarly, Images should be got by calling something like
+ * <code>Icons.getImageById(Icon.EXAMPLE)</code>.
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.74 $
  */
@@ -83,7 +79,6 @@ public class Icons {
     public static final String DEBUG = "bug.icon";
     public static final String UPDATES = "updates.icon";
     public static final String SYSTEM_MONITOR = "system_monitor.icon";
-    public static final String DIALOG = "dialog.icon";
     public static final String STOP = "stop.icon";
     public static final String RUN = "play.icon";
     public static final String SUSPEND = "suspend.icon";
@@ -105,7 +100,6 @@ public class Icons {
     public static final String CHAT_PENDING = "chat_pending.icon";
     public static final String SETTINGS = "settings.icon";
     public static final String PROBLEMS = "problems.icon";
-    public static final String ADVANCED = "advanced.icon";
     public static final String INFORMATION = "information.icon";
     public static final String COMPUTER = "computer.icon";
 
@@ -120,7 +114,6 @@ public class Icons {
     public static final String SYNC_FOLDER_48 = "sync_48.icon";
     public static final String REMOVE_FOLDER_48 = "leave_folder_48.icon";
 
-    public static final String PREFERENCES = "preferences.icon";
     public static final String PREFERENCES_PICTO = "preferences_picto.icon";
     public static final String SYNC = "sync.icon";
     public static final String QUESTION = "question.icon";
@@ -128,7 +121,6 @@ public class Icons {
     public static final String SORT_UP = "sort_up.icon";
     public static final String SORT_DOWN = "sort_down.icon";
     public static final String SORT_BLANK = "sort_blank.icon";
-    public static final String DYN_DNS = "dyn_dns.icon";
 
     public static final String FILE_DETAILS = "file_details.icon";
     public static final String FILE_VERSION = "file_version.icon";
@@ -171,7 +163,6 @@ public class Icons {
     public static final String FOLDER_SYNC_2 = "folder_sync_2.icon";
     public static final String FOLDER_SYNC_3 = "folder_sync_3.icon";
 
-    public static final String MAC = "mac.icon";
     public static final String CHECKED = "checked.icon";
 
     // Online state icons
@@ -180,8 +171,6 @@ public class Icons {
     public static final String CONNECTION_MEDIUM = "connection_medium.icon";
     public static final String CONNECTION_POOR = "connection_poor.icon";
     public static final String DISCONNECTED = "connected_not.icon";
-
-    public static final String ONLINE_STORAGE = "web_service.icon";
 
     // Wizard pico icons
     public static final String SYNC_PCS_PICTO = "sync_pc_picto.icon";
@@ -252,10 +241,10 @@ public class Icons {
     }
 
     /**
-     * Configure PowerFolder to use a different properties file / icons.
-     * If PF can not find the icon in the override set, it will default to
-     * internal icons, so users do not need to define a full set of icons.
-     *
+     * Configure PowerFolder to use a different properties file / icons. If PF
+     * can not find the icon in the override set, it will default to internal
+     * icons, so users do not need to define a full set of icons.
+     * 
      * @param iconSetFile
      */
     public static void loadOverrideFile(String iconSetFile) {
@@ -351,12 +340,15 @@ public class Icons {
     }
 
     /**
-     * Get the icon id from the properties for an id.
-     * So if there is a line
-     * <pre>stop.icon=icons/Abort.gif</pre>
-     * then id of 'stop.icon' would return 'icons/Abort.gif'.
-     * Tries override properties first, then the normal PowerFolder ones.
-     *
+     * Get the icon id from the properties for an id. So if there is a line
+     * 
+     * <pre>
+     * stop.icon = icons / Abort.gif
+     * </pre>
+     * 
+     * then id of 'stop.icon' would return 'icons/Abort.gif'. Tries override
+     * properties first, then the normal PowerFolder ones.
+     * 
      * @param id
      * @return
      */
@@ -376,7 +368,7 @@ public class Icons {
     /**
      * @param node
      * @return a simplified version of the node icon. Does not reflect the
-     * online- and supernode-state
+     *         online- and supernode-state
      */
     public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
@@ -437,11 +429,10 @@ public class Icons {
      * 
      * @param fileInfo
      *            the fileinfo to return a icon for
-     * @param controller 
+     * @param controller
      * @return the icon
      */
-    public static Icon getIconFor(FileInfo fileInfo, Controller controller)
-    {
+    public static Icon getIconFor(FileInfo fileInfo, Controller controller) {
         String extension = fileInfo.getExtension();
         if (extension == null) { // no file extension
             return getUnknownIcon(fileInfo, controller);
@@ -462,8 +453,8 @@ public class Icons {
                     EXTENSION_ICON_MAP.put(extension, icon);// put in cache
                     Icon disabled = getGrayIcon(icon);
                     // put in cache
-                    EXTENSION_ICON_MAP.put(extension + DISABLED_EXTENSION_ADDITION,
-                        disabled);
+                    EXTENSION_ICON_MAP.put(extension
+                        + DISABLED_EXTENSION_ADDITION, disabled);
                 }
             } else { // local file doesnot exists
                 if (hasUniqueIcon(extension)) {// if *.exe or *.ico we don't
@@ -500,7 +491,7 @@ public class Icons {
      * 
      * @param fileInfo
      *            the fileinfo to return a icon for
-     * @param controller 
+     * @param controller
      * @return the icon
      */
     public static Icon getEnabledIconFor(FileInfo fileInfo,
@@ -581,18 +572,19 @@ public class Icons {
      * @param disabled
      * @return a icon from cache.
      */
-    private static Icon getCachedIcon(String extension, boolean disabled)
-    {
+    private static Icon getCachedIcon(String extension, boolean disabled) {
         if (disabled) {
-            if (EXTENSION_ICON_MAP.containsKey(extension)) { // getIcon from cache
+            if (EXTENSION_ICON_MAP.containsKey(extension)) { // getIcon from
+                                                             // cache
                 return EXTENSION_ICON_MAP.get(extension);
             }
         } else {// file does not exist try to get Disabled icon
-            if (EXTENSION_ICON_MAP
-                .containsKey(extension + DISABLED_EXTENSION_ADDITION))
+            if (EXTENSION_ICON_MAP.containsKey(extension
+                + DISABLED_EXTENSION_ADDITION))
             {
                 // get disabled Icon from cache
-                return EXTENSION_ICON_MAP.get(extension + DISABLED_EXTENSION_ADDITION);
+                return EXTENSION_ICON_MAP.get(extension
+                    + DISABLED_EXTENSION_ADDITION);
             }
         }
         return null;
@@ -603,8 +595,7 @@ public class Icons {
      * @param controller
      * @return the unknown icon, normal grey or red based on state of fileinfo
      */
-    private static Icon getUnknownIcon(FileInfo fileInfo,
-        Controller controller)
+    private static Icon getUnknownIcon(FileInfo fileInfo, Controller controller)
     {
         if (fileInfo.diskFileExists(controller)) {
             return getIconById(UNKNOWN_FILE);
@@ -614,7 +605,7 @@ public class Icons {
         }
         return getIconById(UNKNOWN_FILE_GRAY);
     }
-    
+
     /**
      * Creates a tmp file and get image.
      * FileSystemView.getFileSystemView().getSystemIcon(file) needs a existing
@@ -627,7 +618,8 @@ public class Icons {
     public static Image getImageExtension(String extension) {
         Icon icon = getIconExtension(extension);
         if (icon == null) {
-            log.severe("Image Icon not found for extension '" + extension + '\'');
+            log.severe("Image Icon not found for extension '" + extension
+                + '\'');
             return null;
         }
         return getImageFromIcon(icon);
@@ -669,9 +661,12 @@ public class Icons {
         return null;
     }
 
-    /** converts Icon to red, note: first convert to gray * 
-     * @param icon 
-     * @return the red icon */
+    /**
+     * converts Icon to red, note: first convert to gray *
+     * 
+     * @param icon
+     * @return the red icon
+     */
     private static ImageIcon convertToRed(Icon icon) {
         Image image = getImageFromIcon(icon);
         BufferedImage src = toBufferedImage(image);
@@ -725,7 +720,7 @@ public class Icons {
      * Extracts the image from an Icon. If the icon is not an ImageIcon but
      * wrapped into an IconUIResource, this method tries to get the image via
      * reflection.
-     *
+     * 
      * @param icon
      *            The icon to get the image from.
      * @return The image or null on failure
@@ -754,7 +749,8 @@ public class Icons {
                 Icon inner = (Icon) delegateField.get(iconUIResource);
                 return getImageFromIcon(inner);
             } catch (Exception e) {
-                log.log(Level.SEVERE, "Could not get icon from IconUIResource", e);
+                log.log(Level.SEVERE, "Could not get icon from IconUIResource",
+                    e);
             }
         }
 
@@ -773,7 +769,7 @@ public class Icons {
     }
 
     /**
-     * This method returns a buffered image with the contents of an image. 
+     * This method returns a buffered image with the contents of an image.
      * "Converting" by drawing on image, but there seems to be no other way.
      * <P>
      * ATTENTION: Needs to be public. Used by PowerFolder Pro code.
@@ -865,7 +861,8 @@ public class Icons {
                 .getResourceAsStream(DEFAULT_ICON_PROPERTIES_FILENAME);
             if (in == null) {
                 throw new IllegalArgumentException(
-                    "Icon properties file not found: " + DEFAULT_ICON_PROPERTIES_FILENAME);
+                    "Icon properties file not found: "
+                        + DEFAULT_ICON_PROPERTIES_FILENAME);
             }
 
             BufferedInputStream buffered = null;
@@ -873,7 +870,8 @@ public class Icons {
                 buffered = new BufferedInputStream(in);
                 iconProperties.load(buffered);
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Cannot read: " + DEFAULT_ICON_PROPERTIES_FILENAME, ioe);
+                log.log(Level.SEVERE, "Cannot read: "
+                    + DEFAULT_ICON_PROPERTIES_FILENAME, ioe);
             } finally {
                 if (buffered != null) {
                     try {
@@ -888,27 +886,29 @@ public class Icons {
     }
 
     /**
-     * This gets icon mappings from an override set. Referenced icons must be
-     * in the classpath. On Windows environments, file separators in the
-     * properties file need to be \\
-     *
-     * e.g. play.icon=myIcons\\Play.gif
-     *
+     * This gets icon mappings from an override set. Referenced icons must be in
+     * the classpath. On Windows environments, file separators in the properties
+     * file need to be \\ e.g. play.icon=myIcons\\Play.gif
+     * 
      * @return
      */
     private static synchronized Properties getOverrideIconProperties() {
 
-        if (overridePropertiesFilename != null && overrideIconProperties == null) {
+        if (overridePropertiesFilename != null
+            && overrideIconProperties == null)
+        {
             overrideIconProperties = new Properties();
 
             BufferedInputStream buf = null;
             try {
-                InputStream inputStream = Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream(overridePropertiesFilename);
+                InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader().getResourceAsStream(
+                        overridePropertiesFilename);
                 buf = new BufferedInputStream(inputStream);
                 overrideIconProperties.load(buf);
             } catch (IOException ioe) {
-                log.log(Level.INFO, "Cannot read: " + overridePropertiesFilename, ioe);
+                log.log(Level.INFO, "Cannot read: "
+                    + overridePropertiesFilename, ioe);
             } finally {
                 if (buf != null) {
                     try {

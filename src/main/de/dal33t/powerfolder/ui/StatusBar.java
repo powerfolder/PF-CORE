@@ -106,17 +106,20 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
 
-            FormLayout leftLayout = new FormLayout("pref, fill:pref:grow", "pref, 3dlu, pref");
+            FormLayout leftLayout = new FormLayout("pref, fill:pref:grow",
+                "pref, 3dlu, pref");
             DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
             leftBuilder.add(sleepButton, cc.xy(1, 1));
-            leftBuilder.add(pendingMessagesButton,cc.xy(1, 3));
+            leftBuilder.add(pendingMessagesButton, cc.xy(1, 3));
 
             upperPanel.add(leftBuilder.getPanel());
-            
-           // upperPanel.add(syncButtonComponent.getUIComponent());
 
-            FormLayout rightLayout = new FormLayout("fill:pref:grow, pref", "pref, 3dlu, pref");
-            DefaultFormBuilder rightBuilder = new DefaultFormBuilder(rightLayout);
+            // upperPanel.add(syncButtonComponent.getUIComponent());
+
+            FormLayout rightLayout = new FormLayout("fill:pref:grow, pref",
+                "pref, 3dlu, pref");
+            DefaultFormBuilder rightBuilder = new DefaultFormBuilder(
+                rightLayout);
             rightBuilder.add(openPreferencesButton, cc.xy(2, 1));
             rightBuilder.add(openAboutBoxButton, cc.xy(2, 3));
 
@@ -135,11 +138,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout lowerLayout = new FormLayout(
-             // debug            online      con qual    limit                     port & sep      down        sep         up
-                showDebugArea + "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, " + showPortArea + "pref, 3dlu, pref, 3dlu, pref",
-                "pref");
+            // debug online con qual limit port & sep down sep up
+                showDebugArea
+                    + "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, "
+                    + showPortArea + "pref, 3dlu, pref, 3dlu, pref", "pref");
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
-                    lowerLayout);
+                lowerLayout);
 
             int col = 1;
 
@@ -213,20 +217,19 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-
         sleepButton = new JButtonMini(Icons.getIconById(Icons.SLEEP),
-                Translation
-            .getTranslation("status_bar.sleep.tips"));
+            Translation.getTranslation("status_bar.sleep.tips"));
         MyActionListener listener = new MyActionListener();
         sleepButton.addActionListener(listener);
 
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
 
-        upStats = createTransferCounterLabel(getController(), Icons.getIconById(Icons.UPLOAD),
-            Translation.getTranslation("status.upload"), getController()
-                .getTransferManager().getUploadCounter(), Translation
-                .getTranslation("status.upload.text"));
+        upStats = createTransferCounterLabel(getController(), Icons
+            .getIconById(Icons.UPLOAD), Translation
+            .getTranslation("status.upload"), getController()
+            .getTransferManager().getUploadCounter(), Translation
+            .getTranslation("status.upload.text"));
         upStats.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -234,11 +237,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-        downStats = createTransferCounterLabel(
-            getController(), Icons.getIconById(Icons.DOWNLOAD), Translation
-                .getTranslation("status.download"), getController()
-                .getTransferManager().getDownloadCounter(), Translation
-                .getTranslation("status.download.text"));
+        downStats = createTransferCounterLabel(getController(), Icons
+            .getIconById(Icons.DOWNLOAD), Translation
+            .getTranslation("status.download"), getController()
+            .getTransferManager().getDownloadCounter(), Translation
+            .getTranslation("status.download.text"));
         downStats.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -276,9 +279,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
-        portLabel = new JLabel(String.valueOf(getController()
-            .getConnectionListener().getPort()));
-        portLabel.setIcon(Icons.getIconById(Icons.MAC));
+        // TODO i18n
+        portLabel = new JLabel("Port: "
+            + String.valueOf(getController().getConnectionListener().getPort()));
         portLabel
             .setToolTipText(Translation.getTranslation("status.port.text"));
 
@@ -286,15 +289,15 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenAboutBoxAction());
-        openDebugButton = new JButtonMini(getApplicationModel().getActionModel()
-            .getOpenDebugInformationAction());
+        openDebugButton = new JButtonMini(getApplicationModel()
+            .getActionModel().getOpenDebugInformationAction());
 
         pendingMessagesButton = new JButtonMini(new MyPendingMessageAction(
-                getController()));
+            getController()));
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
 
-      // syncButtonComponent = new SyncButtonComponent(getController());
+        // syncButtonComponent = new SyncButtonComponent(getController());
     }
 
     private void configureConnectionLabels() {
@@ -356,25 +359,26 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         Icon icon = null;
         String text = null;
         if (ioProvider != null) {
-            ConnectionHandlerFactory factory = ioProvider.getConnectionHandlerFactory();
+            ConnectionHandlerFactory factory = ioProvider
+                .getConnectionHandlerFactory();
             if (factory != null) {
                 ConnectionQuality quality = factory.getConnectionQuality();
                 if (quality != null) {
                     switch (quality) {
-                        case GOOD:
+                        case GOOD :
                             icon = Icons.getIconById(Icons.CONNECTION_GOOD);
-                            text = Translation.getTranslation(
-                                    "connection_quality_good.text");
+                            text = Translation
+                                .getTranslation("connection_quality_good.text");
                             break;
-                        case MEDIUM:
+                        case MEDIUM :
                             icon = Icons.getIconById(Icons.CONNECTION_MEDIUM);
-                            text = Translation.getTranslation(
-                                    "connection_quality_medium.text");
+                            text = Translation
+                                .getTranslation("connection_quality_medium.text");
                             break;
-                        case POOR:
+                        case POOR :
                             icon = Icons.getIconById(Icons.CONNECTION_POOR);
-                            text = Translation.getTranslation(
-                                    "connection_quality_poor.text");
+                            text = Translation
+                                .getTranslation("connection_quality_poor.text");
 
                             // Only show warning once!
                             if (!shownQualityWarningToday) {
@@ -392,7 +396,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         connectionQualityInfo.setIcon(icon);
         connectionQualityInfo.setToolTipText(text);
 
-
         // Get connected node count
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
 
@@ -408,8 +411,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
-            } else if (controller.getNetworkingMode() ==
-                    NetworkingMode.SERVERONLYMODE)
+            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
                     + Translation.getTranslation("general.server_only") + ')';
@@ -422,8 +424,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
-            } else if (controller.getNetworkingMode() ==
-                    NetworkingMode.SERVERONLYMODE)
+            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
                     + Translation.getTranslation("general.server_only") + ')';
@@ -451,12 +452,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.disabled");
                     getUIController().notifyMessage(title, notificationText,
-                            false);
+                        false);
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.connected");
                     getUIController().notifyMessage(title, notificationText,
-                            false);
+                        false);
                 } else {
                     // Disconnected
                 }
@@ -466,37 +467,38 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private static void showQualityWarning(final Controller controller) {
-        Boolean warn = PreferencesEntry.WARN_POOR_QUALITY.getValueBoolean(
-                        controller);
+        Boolean warn = PreferencesEntry.WARN_POOR_QUALITY
+            .getValueBoolean(controller);
         if (warn) {
             // Advise user of quality issue.
             Runnable runnable = new Runnable() {
                 public void run() {
-                    NeverAskAgainResponse response =
-                            DialogFactory.genericDialog(controller,
-                                    Translation.getTranslation(
-                                            "status_bar.poor_quality_warning.title"),
-                                    Translation.getTranslation(
-                                            "status_bar.poor_quality_warning.text"),
-                                    new String[]{Translation.getTranslation(
-                                            "general.ok")}, 0,
-                                    GenericDialogType.INFO, Translation.
-                                            getTranslation(
-                                            "general.neverAskAgain"));
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(
+                            controller,
+                            Translation
+                                .getTranslation("status_bar.poor_quality_warning.title"),
+                            Translation
+                                .getTranslation("status_bar.poor_quality_warning.text"),
+                            new String[]{Translation
+                                .getTranslation("general.ok")}, 0,
+                            GenericDialogType.INFO, Translation
+                                .getTranslation("general.neverAskAgain"));
                     if (response.isNeverAskAgain()) {
-                        PreferencesEntry.WARN_POOR_QUALITY.setValue(controller, false);
+                        PreferencesEntry.WARN_POOR_QUALITY.setValue(controller,
+                            false);
                     }
                 }
             };
             WarningEvent warningEvent = new WarningEvent(runnable);
             controller.getUIController().getApplicationModel()
-                    .getWarningsModel().pushWarning(warningEvent);
+                .getWarningsModel().pushWarning(warningEvent);
         }
     }
 
-    public static JLabel createTransferCounterLabel(
-        Controller controller, final Icon icon, final String format,
-        final TransferCounter tc, final String toolTip)
+    public static JLabel createTransferCounterLabel(Controller controller,
+        final Icon icon, final String format, final TransferCounter tc,
+        final String toolTip)
     {
         final JLabel label = new JLabel();
         // Create task which updates the counter each second
