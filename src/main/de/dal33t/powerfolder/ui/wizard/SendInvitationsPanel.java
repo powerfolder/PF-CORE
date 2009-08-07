@@ -99,25 +99,14 @@ public class SendInvitationsPanel extends PFWizardPanel {
         boolean theResult = false;
         Member[] friends = getController().getNodeManager().getFriends();
 
+        // Send invite from text or list.
+        if (viaPowerFolderText.getText().length() > 0) {
+            sendInvite(friends, viaPowerFolderText.getText());
+            theResult = true;
+        }
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
-            for (Member member : friends) {
-                if (invitee.equalsIgnoreCase(member.getNick())) {
-                    InvitationUtil.invitationToNode(getController(),
-                        invitation, member);
-                    if (member.getAccountInfo() != null) {
-                        InvitationUtil.invitationByServer(getController(),
-                            invitation, member.getAccountInfo().getUsername(),
-                            false);
-                    }
-                    break;
-                }
-            }
-            if (Util.isValidEmail(invitee)) {
-                InvitationUtil.invitationByServer(getController(), invitation,
-                    invitee, false);
-            }
-
+            sendInvite(friends, invitee);
             theResult = true;
         }
 
@@ -131,9 +120,37 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return theResult;
     }
 
+    /**
+     * Send an invite to a friend. The invitee must be in the list of friends
+     * or be a valid email.
+     *
+     * @param friends
+     * @param invitee
+     */
+    private void sendInvite(Member[] friends, String invitee) {
+        for (Member member : friends) {
+            if (invitee.equalsIgnoreCase(member.getNick())) {
+                InvitationUtil.invitationToNode(getController(),
+                    invitation, member);
+                if (member.getAccountInfo() != null) {
+                    InvitationUtil.invitationByServer(getController(),
+                        invitation, member.getAccountInfo().getUsername(),
+                        false);
+                }
+                break;
+            }
+        }
+        if (Util.isValidEmail(invitee)) {
+            InvitationUtil.invitationByServer(getController(), invitation,
+                invitee, false);
+        }
+    }
+
     public boolean hasNext() {
-        return !inviteesListModel.isEmpty() || locationModel.getValue() != null
-            && ((String) locationModel.getValue()).length() > 0;
+        return !inviteesListModel.isEmpty()
+                || viaPowerFolderText.getText().length() > 0
+                || locationModel.getValue() != null
+                   && ((String) locationModel.getValue()).length() > 0;
     }
 
     public boolean validateNext() {
@@ -386,9 +403,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
 
         public void keyReleased(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                processInvitee();
-            }
+            updateButtons();
             enableAddButton();
         }
     }
