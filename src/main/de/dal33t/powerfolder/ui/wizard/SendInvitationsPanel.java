@@ -386,6 +386,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
 
         public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                processInvitee();
+            }
             enableAddButton();
         }
     }
