@@ -219,7 +219,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(problemButton, cc.xy(8, 1));
 
         // syncFolderButton and joinOnlineStorageButton share same slot.
-        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
+      //  upperBuilder.add(syncFolderButton, cc.xy(9, 1));
         upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();

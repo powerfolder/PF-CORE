@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.preferences;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -101,8 +101,7 @@ public class PreferencesDialog extends BaseDialog {
         tabbedPane.setSelectedIndex(index);
     }
 
-    private void showTab(boolean enable, PreferenceTab tab, int tabindex,
-                         Icon icon) {
+    private void showTab(boolean enable, PreferenceTab tab, int tabindex) {
         Reject.ifNull(tab, "Unable to show/hide tab. Tab is null");
         Reject.ifTrue(tabindex < 0, "Unable to show/hide tab. Invalid index: "
             + tabindex);
@@ -113,7 +112,7 @@ public class PreferencesDialog extends BaseDialog {
             // calculate a valid insert index before inserting
             int currentNumberOfTabs = tabbedPane.getTabCount();
             int newTabindex = Math.min(tabindex, currentNumberOfTabs);
-            tabbedPane.insertTab(tab.getTabName(), icon, tab.getUIPanel(),
+            tabbedPane.insertTab(tab.getTabName(), null, tab.getUIPanel(),
                 null, newTabindex);
         } else {
             preferenceTabs.remove(tab);
@@ -123,8 +122,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     /**
-     * Advanced tab is after DYN DNS.
-     * DYN DNS tab shown if not backup only.
+     * Advanced tab is after DYN DNS. DYN DNS tab shown if not backup only.
      * 
      * @return
      */
@@ -133,8 +131,7 @@ public class PreferencesDialog extends BaseDialog {
     }
 
     private void showAdvancedTab(boolean enable) {
-        showTab(enable, advancedSettingsTab, getAdvancedTabIndex(),
-                Icons.getIconById(Icons.ADVANCED));
+        showTab(enable, advancedSettingsTab, getAdvancedTabIndex());
     }
 
     public Component getContent() {
@@ -160,44 +157,38 @@ public class PreferencesDialog extends BaseDialog {
 
         generalSettingsTab = new GeneralSettingsTab(getController());
         preferenceTabs.add(generalSettingsTab);
-        tabbedPane.addTab(generalSettingsTab.getTabName(),
-            Icons.getIconById(Icons.PREFERENCES),
-                generalSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab(generalSettingsTab.getTabName(), generalSettingsTab
+            .getUIPanel());
 
-        uiSettingsTab = new UISettingsTab(
-            getController());
+        uiSettingsTab = new UISettingsTab(getController());
         preferenceTabs.add(uiSettingsTab);
-        tabbedPane.addTab(uiSettingsTab.getTabName(),
-            Icons.getIconById(Icons.MAC), uiSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab(uiSettingsTab.getTabName(), uiSettingsTab
+            .getUIPanel());
 
-        networkSettingsTab = new NetworkSettingsTab(
-            getController());
+        networkSettingsTab = new NetworkSettingsTab(getController());
         preferenceTabs.add(networkSettingsTab);
-        tabbedPane.addTab(networkSettingsTab.getTabName(),
-                Icons.getIconById(Icons.ONLINE_STORAGE),
-            networkSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab(networkSettingsTab.getTabName(), networkSettingsTab
+            .getUIPanel());
 
         // Do not show DYN DNS if in backup only mode.
         if (!getController().isBackupOnly()) {
             dynDnsSettingsTab = new DynDnsSettingsTab(getController(),
                 mydnsndsModel);
             preferenceTabs.add(dynDnsSettingsTab);
-            tabbedPane.addTab(dynDnsSettingsTab.getTabName(),
-                    Icons.getIconById(Icons.DYN_DNS),
-                dynDnsSettingsTab.getUIPanel(), null);
+            tabbedPane.addTab(dynDnsSettingsTab.getTabName(), dynDnsSettingsTab
+                .getUIPanel());
         }
 
-        dialogsSettingsTab = new DialogsSettingsTab(
-            getController());
+        dialogsSettingsTab = new DialogsSettingsTab(getController());
         preferenceTabs.add(dialogsSettingsTab);
-        tabbedPane.addTab(dialogsSettingsTab.getTabName(), Icons.getIconById(
-                Icons.DIALOG), dialogsSettingsTab.getUIPanel(), null);
+        tabbedPane.addTab(dialogsSettingsTab.getTabName(), dialogsSettingsTab
+            .getUIPanel());
 
         if (getController().getPluginManager().countPlugins() > 0) {
             pluginSettingsTab = new PluginSettingsTab(getController(), this);
             preferenceTabs.add(pluginSettingsTab);
-            tabbedPane.addTab(pluginSettingsTab.getTabName(), null,
-                pluginSettingsTab.getUIPanel(), null);
+            tabbedPane.addTab(pluginSettingsTab.getTabName(), pluginSettingsTab
+                .getUIPanel());
         }
         tabbedPane.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -219,8 +210,7 @@ public class PreferencesDialog extends BaseDialog {
         {
             preferenceTabs.add(advancedSettingsTab);
             tabbedPane.addTab(advancedSettingsTab.getTabName(),
-                    Icons.getIconById(Icons.ADVANCED),
-                advancedSettingsTab.getUIPanel(), null);
+                advancedSettingsTab.getUIPanel());
         }
 
         // Behavior for advanced settings panel
@@ -327,7 +317,7 @@ public class PreferencesDialog extends BaseDialog {
 
     protected Component getButtonBar() {
         return ButtonBarFactory.buildCenteredBar(helpButton, okButton,
-                cancelButton);
+            cancelButton);
     }
 
     protected JButton getDefaultButton() {
@@ -373,39 +363,46 @@ public class PreferencesDialog extends BaseDialog {
         return false;
     }
 
-        public void helpAction() {
-            Component component = tabbedPane.getSelectedComponent();
-            String article = "";
-            if (generalSettingsTab != null && component
-                    == generalSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_GENERAL;
-            } else if (uiSettingsTab != null && component
-                    == uiSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_UI;
-            } else if (networkSettingsTab != null && component
-                    == networkSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_NETWORK;
-            } else if (dialogsSettingsTab != null && component
-                    == dialogsSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_DIALOG;
-            } else if (dynDnsSettingsTab != null && component
-                    == dynDnsSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_DYN_DNS;
-            } else if (advancedSettingsTab != null && component
-                    == advancedSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_ADVANCED;
-            } else if (pluginSettingsTab != null && component
-                    == pluginSettingsTab.getUIPanel()) {
-                article = WikiLinks.SETTINGS_PLUGIN;
-            }
+    public void helpAction() {
+        Component component = tabbedPane.getSelectedComponent();
+        String article = "";
+        if (generalSettingsTab != null
+            && component == generalSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_GENERAL;
+        } else if (uiSettingsTab != null
+            && component == uiSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_UI;
+        } else if (networkSettingsTab != null
+            && component == networkSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_NETWORK;
+        } else if (dialogsSettingsTab != null
+            && component == dialogsSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_DIALOG;
+        } else if (dynDnsSettingsTab != null
+            && component == dynDnsSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_DYN_DNS;
+        } else if (advancedSettingsTab != null
+            && component == advancedSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_ADVANCED;
+        } else if (pluginSettingsTab != null
+            && component == pluginSettingsTab.getUIPanel())
+        {
+            article = WikiLinks.SETTINGS_PLUGIN;
+        }
 
-            String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                    article);
-            try {
-                BrowserLauncher.openURL(wikiArticleURL);
-            } catch (IOException e1) {
-                logSevere("IOException", e1);
-            }
+        String wikiArticleURL = Help
+            .getWikiArticleURL(getController(), article);
+        try {
+            BrowserLauncher.openURL(wikiArticleURL);
+        } catch (IOException e1) {
+            logSevere("IOException", e1);
+        }
 
     }
 }

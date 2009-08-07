@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: ChatPanel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: ChatPanel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.chat;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -69,17 +69,17 @@ public class ChatPanel extends PFUIComponent {
     private ChatModel chatModel;
 
     /**
-     * Constructor
-     *
-     * NOTE: This panel is NOT responsible for receiving messages. That is
-     * handled by the ChatFrame.
-     *
+     * Constructor NOTE: This panel is NOT responsible for receiving messages.
+     * That is handled by the ChatFrame.
+     * 
      * @param controller
      */
     public ChatPanel(Controller controller, ChatFrame chatFrame,
-                     Member chatPartner) {
+        Member chatPartner)
+    {
         super(controller);
-        chatModel = controller.getUIController().getApplicationModel().getChatModel();
+        chatModel = controller.getUIController().getApplicationModel()
+            .getChatModel();
         this.chatPartner = chatPartner;
         this.chatFrame = chatFrame;
         controller.getNodeManager().addNodeManagerListener(
@@ -88,7 +88,7 @@ public class ChatPanel extends PFUIComponent {
 
     /**
      * Create the ui if required and return.
-     *
+     * 
      * @return
      */
     public JPanel getUiComponent() {
@@ -106,7 +106,7 @@ public class ChatPanel extends PFUIComponent {
 
         FormLayout layout = new FormLayout("3dlu, fill:0:grow, 3dlu",
             "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow, 3dlu, pref, 3dlu, pref, 3dlu");
-        //         tools       sep         me                 sep         you
+        // tools sep me sep you
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -135,36 +135,35 @@ public class ChatPanel extends PFUIComponent {
 
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        // ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
         configureAddRemoveAction();
 
-        bar.addGridded(new JButton(addRemoveFriendAction));
-        bar.addRelatedGap();
-        bar.addGridded(new JButton(new MyReconnectAction(getController())));
+        // bar.addGridded(new JButton(addRemoveFriendAction));
+        // bar.addRelatedGap();
+        // bar.addGridded(new JButton(new MyReconnectAction(getController())));
 
-        bar.getPanel();
+        // bar.getPanel();
 
-        JButton closeButton = new JButton3Icons(
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+        JButton closeButton = new JButton3Icons(Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         closeButton.setToolTipText(Translation.getTranslation(
-                "chat_panel.close_button.tool_tip", chatPartner.getNick()));
+            "chat_panel.close_button.tool_tip", chatPartner.getNick()));
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 closeSession();
             }
         });
 
-        FormLayout layout = new FormLayout("fill:0:grow, pref",
-            "pref");
+        FormLayout layout = new FormLayout("fill:0:grow, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(bar.getPanel(), cc.xy(1, 1));
+      //  builder.add(bar.getPanel(), cc.xy(1, 1));
         builder.add(closeButton, cc.xy(2, 1));
-        toolBar = builder.getPanel(); 
+        toolBar = builder.getPanel();
     }
 
     /**
@@ -235,7 +234,7 @@ public class ChatPanel extends PFUIComponent {
             for (ChatLine line : lines) {
                 if (line.isStatus()) {
                     doc.insertString(doc.getLength(), "* " + line.getText(),
-                            doc.getStyle(BOLD_GREEN));
+                        doc.getStyle(BOLD_GREEN));
 
                 } else {
                     Member otherMember = line.getFromMember();
@@ -262,8 +261,9 @@ public class ChatPanel extends PFUIComponent {
                 chatOutput.setStyledDocument(doc);
 
                 // Make sure first text is at bottom
-                while (chatOutput.getPreferredSize().height <
-                        chatOutput.getSize().height) {
+                while (chatOutput.getPreferredSize().height < chatOutput
+                    .getSize().height)
+                {
                     try {
                         doc.insertString(0, "\n", null);
                     } catch (BadLocationException ble) {
@@ -272,7 +272,7 @@ public class ChatPanel extends PFUIComponent {
                 }
 
                 Rectangle r = new Rectangle(1,
-                        chatOutput.getPreferredSize().height, 1, 1);
+                    chatOutput.getPreferredSize().height, 1, 1);
 
                 // Make sure the last line of text is visible
                 outputScrollPane.getViewport().scrollRectToVisible(r);
@@ -288,7 +288,7 @@ public class ChatPanel extends PFUIComponent {
 
     /**
      * Creates the document styles.
-     *
+     * 
      * @param doc
      */
     private static void createStyles(StyledDocument doc) {
@@ -320,31 +320,31 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
-    ///////////////////
+    // /////////////////
     // INNER CLASSES //
-    ///////////////////
+    // /////////////////
 
     /**
      * Key listener to send messages on entere key.
      */
-    private class MyKeyListener  extends KeyAdapter {
+    private class MyKeyListener extends KeyAdapter {
         public void keyTyped(KeyEvent e) {
             char keyTyped = e.getKeyChar();
             if (keyTyped == '\n') { // enter key = send message
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (chatPartner.isCompleteyConnected()) {
-                        chatModel.addChatLine(
-                                chatPartner, getController().getMySelf(), message);
+                        chatModel.addChatLine(chatPartner, getController()
+                            .getMySelf(), message);
                         chatInput.setText("");
                         MemberChatMessage chatMessage = new MemberChatMessage(
                             message);
                         chatPartner.sendMessageAsynchron(chatMessage,
-                                "chat line not sent");
+                            "chat line not sent");
                     } else {
-                        chatModel.addStatusChatLine(chatPartner,
-                            Translation.getTranslation("chat_panel.cannot_deliver",
-                                    chatPartner.getNick()));
+                        chatModel.addStatusChatLine(chatPartner, Translation
+                            .getTranslation("chat_panel.cannot_deliver",
+                                chatPartner.getNick()));
                     }
 
                 } else { // Enter key without text - clear.
@@ -361,7 +361,7 @@ public class ChatPanel extends PFUIComponent {
     /**
      * Listener to NodeManager. Listens on changes in the online state and
      * update the ui components according to that
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
      */
     private class MyNodeManagerListener implements NodeManagerListener {
@@ -418,7 +418,8 @@ public class ChatPanel extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
 
             // Build new connect dialog
-            final ConnectDialog connectDialog = new ConnectDialog(getController());
+            final ConnectDialog connectDialog = new ConnectDialog(
+                getController());
 
             Runnable connector = new Runnable() {
                 public void run() {
@@ -432,13 +433,16 @@ public class ChatPanel extends PFUIComponent {
                     // Now execute the connect
                     try {
                         if (chatPartner.reconnect().isFailure()) {
-                            throw new ConnectionException(Translation.getTranslation(
+                            throw new ConnectionException(Translation
+                                .getTranslation(
                                     "dialog.unable_to_connect_to_member",
-                                chatPartner.getNick()));
+                                    chatPartner.getNick()));
                         }
                     } catch (ConnectionException ex) {
                         connectDialog.close();
-                        if (!connectDialog.isCanceled() && !chatPartner.isConnected()) {
+                        if (!connectDialog.isCanceled()
+                            && !chatPartner.isConnected())
+                        {
                             // Show if user didn't cancel
                             ex.show(getController());
                         }
@@ -450,7 +454,8 @@ public class ChatPanel extends PFUIComponent {
             };
 
             // Start connect in anonymous thread
-            new Thread(connector, "Reconnector to " + chatPartner.getNick()).start();
+            new Thread(connector, "Reconnector to " + chatPartner.getNick())
+                .start();
         }
     }
 
@@ -473,21 +478,22 @@ public class ChatPanel extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             if (add) {
-                boolean askForFriendshipMessage = PreferencesEntry.
-                        ASK_FOR_FRIENDSHIP_MESSAGE.getValueBoolean(getController());
+                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
+                    .getValueBoolean(getController());
                 if (askForFriendshipMessage) {
 
                     // Prompt for personal message.
                     String[] options = {
-                            Translation.getTranslation("general.ok"),
-                            Translation.getTranslation("general.cancel")};
+                        Translation.getTranslation("general.ok"),
+                        Translation.getTranslation("general.cancel")};
 
-                    FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref, pref");
+                    FormLayout layout = new FormLayout("pref",
+                        "pref, 3dlu, pref, pref");
                     PanelBuilder builder = new PanelBuilder(layout);
                     CellConstraints cc = new CellConstraints();
                     String nick = chatPartner.getNick();
                     String text = Translation.getTranslation(
-                            "friend.search.personal.message.text2", nick);
+                        "friend.search.personal.message.text2", nick);
                     builder.add(new JLabel(text), cc.xy(1, 1));
                     JTextArea textArea = new JTextArea();
                     JScrollPane scrollPane = new JScrollPane(textArea);
@@ -495,9 +501,11 @@ public class ChatPanel extends PFUIComponent {
                     builder.add(scrollPane, cc.xy(1, 3));
                     JPanel innerPanel = builder.getPanel();
 
-                    NeverAskAgainResponse response = DialogFactory.genericDialog(
+                    NeverAskAgainResponse response = DialogFactory
+                        .genericDialog(
                             getController(),
-                            Translation.getTranslation("friend.search.personal.message.title"),
+                            Translation
+                                .getTranslation("friend.search.personal.message.title"),
                             innerPanel, options, 0, GenericDialogType.INFO,
                             Translation.getTranslation("general.neverAskAgain"));
                     if (response.getButtonIndex() == 0) { // == OK
@@ -507,7 +515,7 @@ public class ChatPanel extends PFUIComponent {
                     if (response.isNeverAskAgain()) {
                         // don't ask me again
                         PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                                getController(), false);
+                            getController(), false);
                     }
                 } else {
                     // Send with no personal messages

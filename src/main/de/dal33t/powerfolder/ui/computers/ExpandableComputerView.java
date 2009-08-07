@@ -89,7 +89,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
     private JLabel connectionQualityLabel;
-    private JButtonMini chatButton;
+    private MyOpenChatAction chatAction;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private MyReconnectAction reconnectAction;
@@ -163,7 +163,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         upperBuilder.add(pictoLabel, cc.xy(1, 1));
         upperBuilder.add(infoLabel, cc.xy(3, 1));
-        upperBuilder.add(chatButton, cc.xy(6, 1));
+        // upperBuilder.add(chatButton, cc.xy(6, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -236,8 +236,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         reconnectButton = new JButtonMini(reconnectAction, true);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
-        chatButton = new JButtonMini(new MyOpenChatAction(getController()),
-            true);
+        chatAction = new MyOpenChatAction(getController());
         pictoLabel = new JLabel();
         updateDetails();
         configureAddRemoveButton();
@@ -435,6 +434,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
             contextMenu = new JPopupMenu();
+            contextMenu.add(chatAction);
             contextMenu.add(addRemoveFriendAction);
             contextMenu.add(reconnectAction);
         }
@@ -505,11 +505,18 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                if (expanded.get()) {
-                    collapse();
+
+                if (e.getClickCount() == 1) {
+                    if (expanded.get()) {
+                        collapse();
+                    } else {
+                        expand();
+                    }
                 } else {
-                    expand();
+                    getController().getUIController().openChat(
+                        getNode().getInfo());
                 }
+
             }
         }
     }
