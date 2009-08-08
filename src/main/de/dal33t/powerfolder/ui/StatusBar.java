@@ -70,7 +70,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private Component comp;
     private final JLabel onlineStateInfo = new JLabel();
-    private final JLabel connectionQualityInfo = new JLabel();
     private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
     private JLabel upStats;
@@ -136,9 +135,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout lowerLayout = new FormLayout(
-            // debug online con qual limit port & sep down sep up
+            // debug online limit port & sep down sep up
                 showDebugArea
-                    + "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow, "
+                    + "pref, 3dlu, pref, fill:pref:grow, "
                     + showPortArea + "pref, 3dlu, pref, 3dlu, pref", "pref");
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
                 lowerLayout);
@@ -148,13 +147,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
                 lowerBuilder.add(openDebugButton, cc.xy(col, 1));
                 col += 2;
-
             }
 
             lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
-            col += 2;
-
-            lowerBuilder.add(connectionQualityInfo, cc.xy(col, 1));
             col += 2;
 
             lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
@@ -351,8 +346,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private void updateConnectionLabels() {
         Controller controller = getController();
         IOProvider ioProvider = controller.getIOProvider();
-        Icon icon = null;
-        String text = null;
+        Icon connectionQualityIcon = null;
+        String connectionQualityText = null;
         if (ioProvider != null) {
             ConnectionHandlerFactory factory = ioProvider
                 .getConnectionHandlerFactory();
@@ -361,18 +356,18 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (quality != null) {
                     switch (quality) {
                         case GOOD :
-                            icon = Icons.getIconById(Icons.CONNECTION_GOOD);
-                            text = Translation
+                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_GOOD);
+                            connectionQualityText = Translation
                                 .getTranslation("connection_quality_good.text");
                             break;
                         case MEDIUM :
-                            icon = Icons.getIconById(Icons.CONNECTION_MEDIUM);
-                            text = Translation
+                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_MEDIUM);
+                            connectionQualityText = Translation
                                 .getTranslation("connection_quality_medium.text");
                             break;
                         case POOR :
-                            icon = Icons.getIconById(Icons.CONNECTION_POOR);
-                            text = Translation
+                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_POOR);
+                            connectionQualityText = Translation
                                 .getTranslation("connection_quality_poor.text");
 
                             // Only show warning once!
@@ -385,11 +380,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             }
         }
-        if (icon == null) {
-            icon = Icons.getIconById(Icons.BLANK);
+        if (connectionQualityIcon == null) {
+            connectionQualityIcon = Icons.getIconById(Icons.BLANK);
         }
-        connectionQualityInfo.setIcon(icon);
-        connectionQualityInfo.setToolTipText(text);
 
         // Get connected node count
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
@@ -397,25 +390,33 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         int newState;
 
         if (!controller.getNodeManager().isStarted()) {
+            // Disabled
             onlineStateInfo.setToolTipText(Translation
                 .getTranslation("online_label.disabled"));
             onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
             newState = DISABLED;
         } else if (nOnlineUser > 0) {
-            text = Translation.getTranslation("online_label.online");
-            if (controller.isLanOnly()) {
-                text += " (" + Translation.getTranslation("general.lan_only")
-                    + ')';
-            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
-            {
-                text += " ("
-                    + Translation.getTranslation("general.server_only") + ')';
+            if (connectionQualityText == null) {
+                // No connection quality indication yet - just show connected.
+                String text = Translation.getTranslation("online_label.online");
+                if (controller.isLanOnly()) {
+                    text += " (" + Translation.getTranslation("general.lan_only")
+                        + ')';
+                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
+                {
+                    text += " ("
+                        + Translation.getTranslation("general.server_only") + ')';
+                }
+                onlineStateInfo.setToolTipText(text);
+                onlineStateInfo.setIcon(Icons.getIconById(Icons.CONNECTED));
+            } else {
+                onlineStateInfo.setIcon(connectionQualityIcon);
+                onlineStateInfo.setToolTipText(connectionQualityText);
             }
-            onlineStateInfo.setToolTipText(text);
-            onlineStateInfo.setIcon(Icons.getIconById(Icons.CONNECTED));
             newState = CONNECTED;
         } else {
-            text = Translation.getTranslation("online_label.connecting");
+            // Connecting
+            String text = Translation.getTranslation("online_label.connecting");
             if (controller.isLanOnly()) {
                 text += " (" + Translation.getTranslation("general.lan_only")
                     + ')';
