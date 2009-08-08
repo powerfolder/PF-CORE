@@ -85,13 +85,12 @@ public class FolderSettings {
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
-     * @param useRecycleBin
      * @param previewOnly
      * @param whitelist
      * @param downloadScript
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, boolean useRecycleBin,
+        boolean createInvitationFile,
         ArchiveMode archiveMode, boolean previewOnly, boolean whitelist,
         String downloadScript)
     {
@@ -101,8 +100,6 @@ public class FolderSettings {
         this.localBaseDir = localBaseDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
-        // TODO Remove Constructor parameter
-        // this.useRecycleBin = useRecycleBin;
         this.archiveMode = archiveMode;
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
@@ -116,13 +113,12 @@ public class FolderSettings {
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
-     * @param useRecycleBin
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile, boolean useRecycleBin,
+        boolean createInvitationFile,
         ArchiveMode archiveMode)
     {
-        this(localBaseDir, syncProfile, createInvitationFile, useRecycleBin,
+        this(localBaseDir, syncProfile, createInvitationFile,
             archiveMode, false, false, null);
     }
 

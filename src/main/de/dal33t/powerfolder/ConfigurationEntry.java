@@ -402,11 +402,6 @@ public enum ConfigurationEntry {
     WEBSERVICE_PASSWORD("webservice.password"),
 
     /**
-     * Whether to use the recycle bin by default.
-     */
-    USE_RECYCLE_BIN("use.recycle.bin", Boolean.TRUE.toString()),
-
-    /**
      * Whether to use the PowerFolder icon in Windows Explorer folders.
      */
     USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),

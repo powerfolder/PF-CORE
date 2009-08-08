@@ -68,11 +68,6 @@ public interface WizardContextAttributes {
      */
     String MAKE_FRIEND_AFTER = "make.friend.after";
 
-    /**
-     * Whether to use recycle bin.
-     */
-    String USE_RECYCLE_BIN = "use.recycle.bin";
-
     String ARCHIVE_MODE = "archive.mode";
 
     /**

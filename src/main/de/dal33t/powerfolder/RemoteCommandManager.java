@@ -422,10 +422,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (syncProfile == null) {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
-            boolean recycleBin = ConfigurationEntry.USE_RECYCLE_BIN
-                .getValueBoolean(getController());
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, recycleBin, ArchiveMode.NO_BACKUP, false,
+                createInvitationFile, ArchiveMode.NO_BACKUP, false,
                 false, dlScript);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);

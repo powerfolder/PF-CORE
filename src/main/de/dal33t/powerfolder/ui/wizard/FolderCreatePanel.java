@@ -49,7 +49,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -156,16 +155,6 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
 
-        boolean useRecycleBin;
-        Object attribute = getWizardContext().getAttribute(
-            WizardContextAttributes.USE_RECYCLE_BIN);
-        if (attribute == null) {
-            useRecycleBin = ConfigurationEntry.USE_RECYCLE_BIN
-                .getValueBoolean(getController());
-        } else {
-            useRecycleBin = (Boolean) attribute;
-        }
-
         ArchiveMode archiveMode = (ArchiveMode) getWizardContext()
             .getAttribute(WizardContextAttributes.ARCHIVE_MODE);
 
@@ -202,7 +191,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     folderInfo = createFolderInfo(localBase);
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, useRecycleBin, archiveMode,
+                    syncProfile, saveLocalInvite, archiveMode,
                     previewFolder, false, null);
                 configurations.put(folderInfo, folderSettings);
             }
@@ -225,7 +214,7 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, useRecycleBin, archiveMode,
+                syncProfile, saveLocalInvite, archiveMode,
                 previewFolder, false, null);
             configurations.put(folderInfo, folderSettings);
         }
@@ -381,14 +370,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w
-                    .write("This is the default synchronized folder of PowerFolder.\r\n");
-                w
-                    .write("Simply place files into this directory to sync them\r\n");
+                w.write("This is the default synchronized folder of PowerFolder.\r\n");
+                w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w
-                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.

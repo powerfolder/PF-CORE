@@ -70,8 +70,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
-    private JCheckBox useRecycleBinBox;
-
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
 
@@ -149,12 +147,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         backupOnlyClientBox = BasicComponentFactory.createCheckBox(
                 backupOnlyClientModel, Translation
                 .getTranslation("preferences.dialog.backup_only_clinet"));
-
-        ValueModel urbModel = new ValueHolder(
-            ConfigurationEntry.USE_RECYCLE_BIN.getValueBoolean(getController()));
-        useRecycleBinBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(urbModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.use_recycle_bin"));
 
         ValueModel massDeleteModel = new ValueHolder(
                 PreferencesEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
@@ -235,7 +227,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -252,9 +244,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
             builder.add(locationField, cc.xy(3, row));
-
-            row += 2;
-            builder.add(useRecycleBinBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
@@ -380,10 +369,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
         ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
             String.valueOf(backupOnlyClientBox.isSelected()));
-
-        // UseRecycleBin
-        ConfigurationEntry.USE_RECYCLE_BIN.setValue(getController(), Boolean
-            .toString(useRecycleBinBox.isSelected()));
 
         if (usePowerFolderIconBox != null) {
             // PowerFolder icon

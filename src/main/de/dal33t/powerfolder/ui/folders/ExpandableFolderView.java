@@ -456,7 +456,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         String syncDateText;
         String localSizeString;
         String totalSizeString;
-        String recycleLabelText;
         String filesAvailableLabelText;
         if (folder == null) {
 
@@ -466,8 +465,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
-            recycleLabelText = Translation.getTranslation("exp_folder_view.recycled",
-                    "?", "?");
             filesAvailableLabelText = "";
         } else {
 
@@ -489,8 +486,6 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                         "exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
                 totalSizeString = "?";
-                recycleLabelText = Translation.getTranslation(
-                        "exp_folder_view.recycled", "?", "?");
                 filesAvailableLabelText = "";
             } else {
                 FolderStatistic statistic = folder.getStatistic();

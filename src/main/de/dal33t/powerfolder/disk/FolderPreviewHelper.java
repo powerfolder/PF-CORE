@@ -52,7 +52,7 @@ public class FolderPreviewHelper {
     public static FolderSettings createPreviewFolderSettings(String folderName)
     {
         File localBase = makePreviewBaseDir(folderName);
-        return new FolderSettings(localBase, SyncProfile.NO_SYNC, false, false,
+        return new FolderSettings(localBase, SyncProfile.NO_SYNC, false,
             ArchiveMode.NO_BACKUP, true, false, null);
     }
 
@@ -95,7 +95,7 @@ public class FolderPreviewHelper {
         FolderSettings savedFolderSettings = new FolderSettings(
             initialFolderSettings.getLocalBaseDir(), initialFolderSettings
                 .getSyncProfile(), initialFolderSettings
-                .isCreateInvitationFile(), false, initialFolderSettings
+                .isCreateInvitationFile(), initialFolderSettings
                 .getArchiveMode(), true, initialFolderSettings.isWhitelist(),
             initialFolderSettings.getDownloadScript());
 

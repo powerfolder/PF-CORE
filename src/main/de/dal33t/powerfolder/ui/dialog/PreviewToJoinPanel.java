@@ -69,7 +69,7 @@ public class PreviewToJoinPanel extends BaseDialog {
      * Contructor when used on choosen folder
      * 
      * @param controller
-     * @param foInfo
+     * @param folder
      */
     public PreviewToJoinPanel(Controller controller, Folder folder) {
         super(controller, true);
@@ -108,7 +108,7 @@ public class PreviewToJoinPanel extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 FolderSettings newFolderSettings = new FolderSettings(new File(
                     (String) locationModel.getValue()),
-                    syncProfileSelectorPanel.getSyncProfile(), false, false,
+                    syncProfileSelectorPanel.getSyncProfile(), false,
                     existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.isWhitelist(),
                     existingFoldersSettings.getDownloadScript());

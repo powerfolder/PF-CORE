@@ -186,7 +186,6 @@ public class Icons {
     public static final String DOWNLOAD_PICTO = "download_picto.icon";
     public static final String MYFOLDERS_PICTO = "my_folders_picto.icon";
     public static final String FOLDER_PICTO = "folder_picto.icon";
-    public static final String RECYCLE_BIN_PICTO = "recycle_bin_picto.icon";
     public static final String WEBSERVICE_QUICK_INFO_PICTO = "web_service_quick_info.icon";
     public static final String PRO_LOGO = "pro_logo.icon";
     public static final String SMALL_LOGO = "powerfolder_32.icon";

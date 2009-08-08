@@ -431,7 +431,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
-        return new FolderSettings(new File(folderDir), syncProfile, false,
+        return new FolderSettings(new File(folderDir), syncProfile,
             false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
     }
 
@@ -581,7 +581,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
-        return new FolderSettings(new File(folderDir), syncProfile, false,
+        return new FolderSettings(new File(folderDir), syncProfile,
             false, archiveMode, preview, whitelist, dlScript);
     }
 

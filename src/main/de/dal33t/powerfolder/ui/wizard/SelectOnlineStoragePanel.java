@@ -42,7 +42,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -61,7 +60,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     private final Map<FolderInfo, Boolean> folderMap;
 
     private JCheckBox createDesktopShortcutBox;
-    private JCheckBox useRecycleBinBox;
     private JComboBox archiveMode;
 
     public SelectOnlineStoragePanel(Controller controller,
@@ -92,10 +90,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
             createDesktopShortcutBox.isSelected());
 
-        getWizardContext().setAttribute(
-            WizardContextAttributes.USE_RECYCLE_BIN,
-            useRecycleBinBox.isSelected());
-
         getWizardContext().setAttribute(WizardContextAttributes.ARCHIVE_MODE,
             archiveMode.getSelectedItem());
 
@@ -116,7 +110,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("max(pref;140dlu), pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -133,10 +127,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         builder.add(scrollPane, cc.xy(1, row, CellConstraints.DEFAULT,
             CellConstraints.TOP));
-
-        row += 2;
-
-        builder.add(useRecycleBinBox, cc.xyw(1, row, 2));
 
         row += 2;
 
@@ -192,10 +182,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
      */
     @Override
     protected void initComponents() {
-        useRecycleBinBox = new JCheckBox(Translation
-            .getTranslation("wizard.select_online_storage.recycle_bin.text"));
-        useRecycleBinBox.setSelected(ConfigurationEntry.USE_RECYCLE_BIN
-            .getValueBoolean(getController()));
         createDesktopShortcutBox = new JCheckBox(
             Translation
                 .getTranslation("wizard.select_online_storage.desktop_shortcut.text"));
