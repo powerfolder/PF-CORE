@@ -61,7 +61,6 @@ import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -74,6 +73,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JButtonMini removeButton;
     private AutoTextField viaPowerFolderText;
     private JList inviteesList;
+    private JScrollPane inviteesListScrollPane;
     private ActionLabel advancedLink;
     private ActionLabel addMessageLink;
     private ValueModel locationModel;
@@ -82,6 +82,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private DefaultListModel inviteesListModel;
     private Invitation invitation;
     private ValueModel messageModel;
+    private JPanel removeButtonPanel;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -202,20 +203,21 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         row += 2;
 
-        JScrollPane scrollPane = new JScrollPane(inviteesList);
-        UIUtil.removeBorder(scrollPane);
-        scrollPane
+        inviteesListScrollPane = new JScrollPane(inviteesList);
+        inviteesListScrollPane
             .setPreferredSize(new Dimension(getPreferredSize().width, 50));
-        builder.add(new JScrollPane(scrollPane), cc.xy(1, row));
+        builder.add(inviteesListScrollPane, cc.xy(1, row));
+        inviteesListScrollPane.setVisible(false);
 
         row += 1;
 
         FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
         PanelBuilder builder3 = new PanelBuilder(layout3);
         builder3.add(removeButton, cc.xy(1, 1));
-        JPanel panel3 = builder3.getPanel();
-        panel3.setOpaque(false);
-        builder.add(panel3, cc.xy(1, row));
+        removeButtonPanel = builder3.getPanel();
+        removeButtonPanel.setOpaque(false);
+        builder.add(removeButtonPanel, cc.xy(1, row));
+        removeButtonPanel.setVisible(false);
 
         row += 2;
 
@@ -323,6 +325,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         String text = viaPowerFolderText.getText();
         if (text.length() > 0) {
             inviteesListModel.addElement(text);
+            inviteesListScrollPane.setVisible(true);
+            removeButtonPanel.setVisible(true);
             viaPowerFolderText.clear();
             updateButtons();
             enableAddButton();
@@ -373,6 +377,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 }
                 if (!got) {
                     inviteesListModel.addElement(selectedMember.getNick());
+                    inviteesListScrollPane.setVisible(true);
+                    removeButtonPanel.setVisible(true);
                 }
             }
             updateButtons();
@@ -389,6 +395,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
             int index = inviteesList.getSelectedIndex();
             if (index >= 0) {
                 inviteesListModel.remove(index);
+                inviteesListScrollPane.setVisible(!inviteesListModel.isEmpty());
+                removeButtonPanel.setVisible(!inviteesListModel.isEmpty());
                 enableRemoveButton();
             }
         }
