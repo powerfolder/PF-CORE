@@ -92,7 +92,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
                 .getValueBoolean(getController())
-                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
+                && getController().getConnectionListener().getPort()
+                    != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
             CellConstraints cc = new CellConstraints();
@@ -104,8 +105,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 showPortArea = "pref, 3dlu, pref, 3dlu, ";
             }
 
-            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, " + showPortArea + " pref, 3dlu, pref",
-                "pref");
+            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, "
+                    + showPortArea + " pref, 3dlu, pref", "pref");
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
             int col = 1;
             upperBuilder.add(sleepButton, cc.xy(col, 1));
