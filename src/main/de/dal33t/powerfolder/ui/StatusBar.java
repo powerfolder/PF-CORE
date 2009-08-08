@@ -67,7 +67,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private static final int DISCONNECTED = 2;
 
     private Component comp;
-    private final JLabel onlineStateInfo = new JLabel();
+    private JButton onlineStateInfo;
     private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
     private JLabel upStats;
@@ -180,6 +180,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void initComponents() {
+
+        onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
         configureConnectionLabels();
 
