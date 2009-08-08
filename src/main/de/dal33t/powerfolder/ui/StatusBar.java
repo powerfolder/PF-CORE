@@ -50,7 +50,6 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -81,7 +80,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton openPreferencesButton;
     private JButton openDebugButton;
     private JButton pendingMessagesButton;
-    private SyncButtonComponent syncButtonComponent;
     private boolean shownQualityWarningToday;
 
     /** Connection state */
@@ -279,11 +277,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
-        // TODO i18n
-        portLabel = new JLabel("Port: "
-            + String.valueOf(getController().getConnectionListener().getPort()));
+        portLabel = new JLabel(Translation.getTranslation("status.port.text",
+                getController().getConnectionListener().getPort()));
         portLabel
-            .setToolTipText(Translation.getTranslation("status.port.text"));
+            .setToolTipText(Translation.getTranslation("status.port.tip"));
 
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
@@ -292,12 +289,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         openDebugButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenDebugInformationAction());
 
-        pendingMessagesButton = new JButtonMini(new MyPendingMessageAction(
-            getController()));
+        pendingMessagesButton = new JButtonMini(Icons.getIconById(Icons.CHAT_PENDING),
+                Translation.getTranslation("status.chat_pending"));
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
-
-        // syncButtonComponent = new SyncButtonComponent(getController());
     }
 
     private void configureConnectionLabels() {
@@ -545,16 +540,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
             });
-        }
-    }
-
-    private class MyPendingMessageAction extends BaseAction {
-
-        private MyPendingMessageAction(Controller controller) {
-            super("action_pending_messages", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
         }
     }
 }
