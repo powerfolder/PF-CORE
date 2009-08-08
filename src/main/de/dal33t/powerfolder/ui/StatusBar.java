@@ -101,26 +101,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             // Upper section
 
-            JPanel upperPanel = new JPanel(new GridLayout(1, 3, 3, 3));
-
-            FormLayout leftLayout = new FormLayout("pref, fill:pref:grow",
-                "pref, 3dlu, pref");
-            DefaultFormBuilder leftBuilder = new DefaultFormBuilder(leftLayout);
-            leftBuilder.add(sleepButton, cc.xy(1, 1));
-            leftBuilder.add(pendingMessagesButton, cc.xy(1, 3));
-
-            upperPanel.add(leftBuilder.getPanel());
-
-            // upperPanel.add(syncButtonComponent.getUIComponent());
-
-            FormLayout rightLayout = new FormLayout("fill:pref:grow, pref",
-                "pref, 3dlu, pref");
-            DefaultFormBuilder rightBuilder = new DefaultFormBuilder(
-                rightLayout);
-            rightBuilder.add(openPreferencesButton, cc.xy(2, 1));
-            rightBuilder.add(openAboutBoxButton, cc.xy(2, 3));
-
-            upperPanel.add(rightBuilder.getPanel());
+            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref",
+                "pref");
+            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
+            upperBuilder.add(sleepButton, cc.xy(1, 1));
+            upperBuilder.add(pendingMessagesButton, cc.xy(3, 1));
+            upperBuilder.add(openPreferencesButton, cc.xy(5, 1));
+            upperBuilder.add(openAboutBoxButton, cc.xy(7, 1));
 
             // Lower section
 
@@ -181,7 +168,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             FormLayout mainLayout = new FormLayout(
                 "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
-            mainBuilder.add(upperPanel, cc.xy(2, 1));
+            mainBuilder.add(upperBuilder.getPanel(), cc.xy(2, 1));
             mainBuilder.add(lowerBuilder.getPanel(), cc.xy(2, 3));
             comp = mainBuilder.getPanel();
         }
