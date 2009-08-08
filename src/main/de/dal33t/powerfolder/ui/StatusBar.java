@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -101,13 +99,33 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             // Upper section
 
-            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref",
+            String showPortArea = "";
+            if (showPort) {
+                showPortArea = "pref, 3dlu, pref, 3dlu, ";
+            }
+
+            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, " + showPortArea + " pref, 3dlu, pref",
                 "pref");
             DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
-            upperBuilder.add(sleepButton, cc.xy(1, 1));
-            upperBuilder.add(pendingMessagesButton, cc.xy(3, 1));
-            upperBuilder.add(openPreferencesButton, cc.xy(5, 1));
-            upperBuilder.add(openAboutBoxButton, cc.xy(7, 1));
+            int col = 1;
+            upperBuilder.add(sleepButton, cc.xy(col, 1));
+            col +=2;
+            upperBuilder.add(pendingMessagesButton, cc.xy(col, 1));
+            col +=2;
+            if (showPort) {
+                upperBuilder.add(portLabel, cc.xy(col, 1));
+                col += 2;
+
+                JSeparator sep0 = new JSeparator(SwingConstants.VERTICAL);
+                sep0.setPreferredSize(new Dimension(2, 12));
+
+                upperBuilder.add(sep0, cc.xy(col, 1));
+                col += 2;
+            }
+
+            upperBuilder.add(openPreferencesButton, cc.xy(col, 1));
+            col += 2;
+            upperBuilder.add(openAboutBoxButton, cc.xy(col, 1));
 
             // Lower section
 
@@ -116,20 +134,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 showDebugArea = "pref, 3dlu, ";
             }
 
-            String showPortArea = "";
-            if (showPort) {
-                showPortArea = "pref, 3dlu, pref, 3dlu, ";
-            }
-
             FormLayout lowerLayout = new FormLayout(
-            // debug online limit port & sep down sep up
+            // debug online limit sep down sep up
                 showDebugArea
-                    + "pref, 3dlu, pref, fill:pref:grow, "
-                    + showPortArea + "pref, 3dlu, pref, 3dlu, pref", "pref");
+                    + "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
                 lowerLayout);
 
-            int col = 1;
+            col = 1;
 
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
                 lowerBuilder.add(openDebugButton, cc.xy(col, 1));
@@ -141,18 +153,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
             col += 2;
-
-            if (showPort) {
-                lowerBuilder.add(portLabel, cc.xy(col, 1));
-                col += 2;
-
-                JSeparator sep0 = new JSeparator(SwingConstants.VERTICAL);
-                sep0.setPreferredSize(new Dimension(2, 12));
-
-                lowerBuilder.add(sep0, cc.xy(col, 1));
-                col += 2;
-
-            }
 
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
