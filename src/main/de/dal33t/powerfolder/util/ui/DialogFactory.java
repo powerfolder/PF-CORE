@@ -20,15 +20,12 @@
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 
 /**
@@ -40,38 +37,6 @@ import java.io.File;
  * @version $Revision: 1.3 $
  */
 public class DialogFactory {
-
-    /**
-     * Shows an OK / CANCEL dialog with a long text in a JTextArea.
-     *
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
-     * @param title the dialog title
-     * @param message the dialog message
-     * @param longText long (scrollable) text
-     * @return the index of the selected option button, -1 if dialog cancelled
-     */
-    public static int showScrollableOkCancelDialog(Controller controller,
-        String title, String message,
-        String longText)
-    {
-
-        JTextArea textArea = new JTextArea(longText, 10, 30);
-        textArea.setBackground(Color.WHITE);
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-
-        FormLayout layout = new FormLayout("pref", "pref, 3dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-
-        CellConstraints cc = new CellConstraints();
-        builder.add(LinkedTextBuilder.build(controller, message).getPanel(), cc.xy(1, 1));
-        builder.add(scrollPane, cc.xy(1, 3));
-
-        return genericDialog(controller, title, builder.getPanel(),
-                new String[]{Translation.getTranslation("general.ok"),
-                Translation.getTranslation("general.cancel")},
-                0, GenericDialogType.QUESTION);
-    }
 
     /**
      * Opens a DirectoryChooser with the current file and returns the new
@@ -119,7 +84,7 @@ public class DialogFactory {
     /**
      * Generic dialog with message and OK button.
      * 
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param type a {@link GenericDialogType}
@@ -136,7 +101,7 @@ public class DialogFactory {
      * Generic dialog with message and throwable and OK button. The throwable is
      * only shown in verbose mode.
      * 
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param verbose whether the full stack trace should be displayed if in verbose mode
@@ -160,7 +125,7 @@ public class DialogFactory {
     /**
      * Generic dialog with message.
      *
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param options array of strings that will be displayed on a sequential bar of buttons
@@ -178,7 +143,7 @@ public class DialogFactory {
     /**
      * Generic dialog with message.
      *
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param options array of strings that will be displayed on a sequential bar of buttons
@@ -200,7 +165,7 @@ public class DialogFactory {
     /**
      * Generic dialog with custom panel.
      *
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
      * @param options array of strings that will be displayed on a sequential bar of buttons
@@ -218,7 +183,7 @@ public class DialogFactory {
     /**
      * Generic dialog with custom panel.
      *
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
      * @param options array of strings that will be displayed on a sequential bar of buttons
@@ -242,7 +207,7 @@ public class DialogFactory {
     /**
      * Generic dialog with 'never ask again' checkbox.
      * 
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param message the message to display in the dialog
      * @param options array of strings that will be displayed on a sequential bar of buttons
@@ -264,7 +229,7 @@ public class DialogFactory {
     /**
      * Generic dialog with custom panle and 'never ask again' checkbox.
      * 
-     * @param parent the parent frame. May safely be null if necessary, but prefer object to be modal on.
+     * @param controller
      * @param title the title for the dialog
      * @param panel a panel that will be the displayed section of the dialog right of icon and above buttons
      * @param options array of strings that will be displayed on a sequential bar of buttons

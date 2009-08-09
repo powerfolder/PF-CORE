@@ -69,7 +69,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             "archiveDirectory not a directory!");
         this.archiveDirectory = archiveDirectory;
         // Default: Store unlimited # of files
-        this.versionsPerFile = -1;
+        versionsPerFile = -1;
     }
 
     /**
@@ -225,7 +225,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
-            fn = parent.getName() + "/" + fn;
+            fn = parent.getName() + '/' + fn;
             parent = parent.getParentFile();
         }
         return fn;
@@ -245,10 +245,9 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return Integer.parseInt(tmp);
     }
 
-    private static File[] getArchivedFiles(File dir, final String baseName) {
-        return dir.listFiles(new FilenameFilter() {
+    private static File[] getArchivedFiles(File directory, final String baseName) {
+        return directory.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-
                 return belongsTo(name, baseName);
             }
         });
@@ -304,46 +303,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             return getVersionNumber(o1) - getVersionNumber(o2);
         }
     }
-
-    // /**
-    // * Restore file and scan it.
-    // *
-    // * @param versionInfo
-    // * the FileInfo of the archived file
-    // * @param fileInfo
-    // * the FileInfo of the base file
-    // * @throws IOException
-    // */
-    // public void resoreArchivedFile(FileInfo versionInfo, FileInfo fileInfo)
-    // throws IOException
-    // {
-    // File target = versionInfo.getDiskFile(getClass());
-    // log.info("Copying " + versionInfo.getName() + " to "
-    // + target.getAbsolutePath());
-    // FileUtils.copyFile(new File(versionInfo.getName()), target);
-    // repo.getFolder(fileInfo.getFolderInfo()).scanLocalFiles();
-    // }
-    //
-    // /**
-    // * Save a retored version of a file to a location.
-    // *
-    // * @param repo
-    // * @param versionInfo
-    // * the FileInfo of the archived file.
-    // * @param targetDirectory
-    // * the directory that the restored file is to go to.
-    // * @param fileInfo
-    // * the FileInfo of the base file
-    // * @throws IOException
-    // */
-    // public void saveArchivedFile(FileInfo versionInfo, File targetDirectory,
-    // FileInfo fileInfo) throws IOException
-    // {
-    // File targetFile = new File(targetDirectory, fileInfo.getFilenameOnly());
-    // log.info("Copying " + versionInfo.getName() + " to "
-    // + targetFile.getAbsolutePath());
-    // FileUtils.copyFile(new File(versionInfo.getName()), targetFile);
-    // }
 
     public void restore(FileInfo versionInfo, File target) throws IOException {
         log.info("Copying " + versionInfo.getName() + " to "

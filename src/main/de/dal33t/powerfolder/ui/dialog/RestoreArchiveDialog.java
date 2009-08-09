@@ -182,11 +182,28 @@ public class RestoreArchiveDialog extends BaseDialog {
                 restoreTo = versionInfo.getDiskFile(getController()
                     .getFolderRepository());
             } else {
-                restoreTo = new File(fileLocationField.getText());
+                restoreTo = new File(fileLocationField.getText(),
+                        fileInfo.getFilenameOnly());
             }
-            fileArchiver.restore(versionInfo, restoreTo);
-            folder.scanRestoredFile(versionInfo);
-            close();
+            boolean restore = true;
+            if (restoreTo.exists()) {
+                // Check user is okay with overwriting the file.
+                int result = DialogFactory.genericDialog(getController(),
+                        Translation.getTranslation("dialog.restore_archive.overwrite_title"),
+                        Translation.getTranslation("dialog.restore_archive.overwrite_message"),
+                        new String[] {
+                                Translation.getTranslation("dialog.restore_archive.overwrite"),
+                                Translation.getTranslation("general.cancel")
+                        }, 0, GenericDialogType.QUESTION);
+                if (result != 0) {
+                    restore = false;
+                }
+            }
+            if (restore) {
+                fileArchiver.restore(versionInfo, restoreTo);
+                folder.scanRestoredFile(versionInfo);
+                close();
+            }
         } catch (IOException e) {
             logSevere(e);
             DialogFactory.genericDialog(getController(), Translation
