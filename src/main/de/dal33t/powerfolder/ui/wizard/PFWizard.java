@@ -116,7 +116,8 @@ public class PFWizard extends PFUIComponent {
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.send_invitations.send_success"),
             Translation
-                .getTranslation("wizard.send_invitations.send_success_info"));
+                .getTranslation("wizard.send_invitations.send_success_info"),
+            true);
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SendInvitationsPanel(controller));
@@ -124,7 +125,7 @@ public class PFWizard extends PFUIComponent {
 
     /**
      * Opens the send-invitation wizard.
-     *
+     * 
      * @param controller
      *            the controller.
      * @param foInfo
@@ -140,7 +141,8 @@ public class PFWizard extends PFUIComponent {
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.send_invitations.send_success"),
             Translation
-                .getTranslation("wizard.send_invitations.send_success_info"));
+                .getTranslation("wizard.send_invitations.send_success_info"),
+            true);
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SelectInvitationPanel(controller, member,
@@ -148,12 +150,13 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openSingletonOnlineStorageJoinWizard(
-            Controller controller, List<FolderInfo> folderInfoList) {
+        Controller controller, List<FolderInfo> folderInfoList)
+    {
 
         PFWizard wizard = new PFWizard(controller);
 
         wizard.getWizardContext().setAttribute(
-                WizardContextAttributes.FOLDER_INFOS, folderInfoList);
+            WizardContextAttributes.FOLDER_INFOS, folderInfoList);
 
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT, false);
@@ -165,15 +168,14 @@ public class PFWizard extends PFUIComponent {
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"), Translation
                 .getTranslation("wizard.success_join"));
-        wizard.getWizardContext().setAttribute(SUCCESS_PANEL,
-                successPanel);
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new MultiOnlineStorageSetupPanel(controller));
     }
 
     /**
      * Handles/Accepts and invitation that has been received.
-     *
+     * 
      * @param controller
      * @param invitation
      */
@@ -187,8 +189,9 @@ public class PFWizard extends PFUIComponent {
     }
 
     public static void openLoginWebServiceWizard(Controller controller,
-        ServerClient client) {
-       openLoginWebServiceWizard(controller, client, null); 
+        ServerClient client)
+    {
+        openLoginWebServiceWizard(controller, client, null);
     }
 
     /**
@@ -211,11 +214,12 @@ public class PFWizard extends PFUIComponent {
             Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         WizardPanel nextFinishPanel;
         if (folderToSetup != null) {
-            nextFinishPanel = new FolderOnlineStoragePanel(controller, folderToSetup);
+            nextFinishPanel = new FolderOnlineStoragePanel(controller,
+                folderToSetup);
         } else {
-            nextFinishPanel = new TextPanelPanel(controller,
-                    Translation.getTranslation("wizard.finish.os_login_title"),
-                    Translation.getTranslation("wizard.finish.os_login_text"));
+            nextFinishPanel = new TextPanelPanel(controller, Translation
+                .getTranslation("wizard.finish.os_login_title"), Translation
+                .getTranslation("wizard.finish.os_login_text"), true);
         }
         wizard.open(new LoginOnlineStoragePanel(controller, client,
             nextFinishPanel, true));
@@ -229,17 +233,19 @@ public class PFWizard extends PFUIComponent {
      *            folder to configure for O/S
      */
     public static void openMirrorFolderWizard(Controller controller,
-                                              Folder folderToSetup) {
+        Folder folderToSetup)
+    {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup));
     }
 
-    public static void openExistingDirectoryWizard(Controller controller, 
-                                                   File directory) {
+    public static void openExistingDirectoryWizard(Controller controller,
+        File directory)
+    {
         Reject.ifTrue(directory == null || !directory.exists(),
-                "No directory supplied");
+            "No directory supplied");
         PFWizard wizard = new PFWizard(controller);
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
     }
@@ -322,12 +328,13 @@ public class PFWizard extends PFUIComponent {
 
         dialog.getContentPane().add(wizard);
         dialog.pack();
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth()
-                - dialog.getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()
-                - dialog.getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
+            .getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
+            .getHeight()) / 2;
         dialog.setLocation(x, y);
-        wizard.getContext().setAttribute(Wizard.DIALOG_ATTRIBUTE, dialog);
+        wizard.getContext().setAttribute(
+            WizardContextAttributes.DIALOG_ATTRIBUTE, dialog);
         getUIController().setWizardDialogReference(dialog);
         getUIController().setActiveFrame(UIController.WIZARD_DIALOG_ID);
     }
