@@ -20,12 +20,10 @@
 package de.dal33t.powerfolder.util;
 
 /**
- * Class representing a Java version. It follows the java.runtime.version
- * format of
- * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;,
- * eg 1.6.2_10-b12
- * It implements Comparable&lt;JavaVersion&gt; by traversing the version
- * values.
+ * Class representing a Java version. It follows the java.runtime.version format
+ * of &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;,
+ * eg 1.6.2_10-b12 It implements Comparable&lt;JavaVersion&gt; by traversing the
+ * version values.
  */
 public class JavaVersion implements Comparable<JavaVersion> {
 
@@ -39,15 +37,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor
-     *
+     * 
      * @param major
      * @param minor
      * @param point
      * @param update
      * @param build
      */
-    public JavaVersion(int major, int minor, int point, int update, int build)
-    {
+    public JavaVersion(int major, int minor, int point, int update, int build) {
         this.major = major;
         this.minor = minor;
         this.point = point;
@@ -57,7 +54,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting build to zero.
-     *
+     * 
      * @param major
      * @param minor
      * @param point
@@ -69,7 +66,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting update and build to zero.
-     *
+     * 
      * @param major
      * @param minor
      * @param point
@@ -80,7 +77,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Constructor, defaulting point, update and build to zero.
-     *
+     * 
      * @param major
      * @param minor
      */
@@ -90,7 +87,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the build value of the version.
-     *
+     * 
      * @return
      */
     public int getBuild() {
@@ -99,7 +96,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the major value of the version.
-     *
+     * 
      * @return
      */
     public int getMajor() {
@@ -108,7 +105,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the minor value of the version.
-     *
+     * 
      * @return
      */
     public int getMinor() {
@@ -117,7 +114,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the point value of the version.
-     *
+     * 
      * @return
      */
     public int getPoint() {
@@ -126,7 +123,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Returns the update value of the version.
-     *
+     * 
      * @return
      */
     public int getUpdate() {
@@ -134,9 +131,9 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
 
     /**
-     * Tests for equality with another object. If object is a JavaVersion,
-     * tests all version values.
-     *
+     * Tests for equality with another object. If object is a JavaVersion, tests
+     * all version values.
+     * 
      * @param obj
      * @return
      */
@@ -171,7 +168,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Hash of the version values.
-     *
+     * 
      * @return
      */
     public int hashCode() {
@@ -186,7 +183,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     /**
      * Compare to another JavaVersion, progressing down major, minor, point,
      * update and finally build.
-     *
+     * 
      * @param o
      * @return
      */
@@ -197,19 +194,19 @@ public class JavaVersion implements Comparable<JavaVersion> {
                     if (update == o.update) {
                         if (build == o.build) {
                             return 0;
-                        } else  {
+                        } else {
                             return build - o.build;
                         }
-                    } else  {
+                    } else {
                         return update - o.update;
                     }
-                } else  {
+                } else {
                     return point - o.point;
                 }
-            } else  {
+            } else {
                 return minor - o.minor;
             }
-        } else  {
+        } else {
             return major - o.major;
         }
     }
@@ -218,7 +215,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
      * Displays as
      * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;
      * It skips 'build' and 'update' values if not available (zero).
-     *
+     * 
      * @return
      */
     public String toString() {
@@ -226,11 +223,11 @@ public class JavaVersion implements Comparable<JavaVersion> {
             if (build > 0) {
                 if (build <= 10) {
                     // build like '-b0x'
-                    return major + "." + minor + '.' + point + '_' + update +
-                            "-b0" + build;
+                    return major + "." + minor + '.' + point + '_' + update
+                        + "-b0" + build;
                 } else {
-                    return major + "." + minor + '.' + point + '_' + update +
-                            "-b" + build;
+                    return major + "." + minor + '.' + point + '_' + update
+                        + "-b" + build;
                 }
             } else {
                 return major + "." + minor + '.' + point + '_' + update;
@@ -241,10 +238,9 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
 
     /**
-     * Gets the system version of Java. First tries 'java.runtime.version',
-     * then 'java.version', then 'java.specification.version', otherwise
-     * it folds.
-     *
+     * Gets the system version of Java. First tries 'java.runtime.version', then
+     * 'java.version', then 'java.specification.version', otherwise it folds.
+     * 
      * @return
      */
     public static JavaVersion systemVersion() {
@@ -257,10 +253,18 @@ public class JavaVersion implements Comparable<JavaVersion> {
                 versionText = System.getProperty("java.specification.version");
             }
             if (versionText == null) {
-                throw new IllegalStateException(
-                        "Could not retrieve the system version of Java.");
+                // Unknown
+                systemVersion = new JavaVersion(0, 0);
+                return systemVersion;
+                // throw new IllegalStateException(
+                // "Could not retrieve the system version of Java.");
             }
-            systemVersion = parse(versionText);
+            try {
+                systemVersion = parse(versionText);
+            } catch (Exception e) {
+                systemVersion = new JavaVersion(0, 0);
+            }
+
         }
 
         return systemVersion;
@@ -269,7 +273,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     /**
      * Parse a string version into a Java Version. Expects something in between
      * '1.6' and '1.6.2_10-b12' format.
-     *
+     * 
      * @param version
      * @return
      */
@@ -277,7 +281,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
         String[] strings = version.split("\\.");
         if (strings.length < 2) {
             throw new IllegalStateException(
-                    "Could not parse system version of Java: " + version);
+                "Could not parse system version of Java: " + version);
         }
         String majorString = strings[0];
         String minorString = strings[1];
@@ -309,8 +313,8 @@ public class JavaVersion implements Comparable<JavaVersion> {
             pointString = pointString.split("-")[0];
         }
 
-        return new JavaVersion(Integer.parseInt(majorString),
-                Integer.parseInt(minorString), Integer.parseInt(pointString),
-                Integer.parseInt(updateString), Integer.parseInt(buildString));
+        return new JavaVersion(Integer.parseInt(majorString), Integer
+            .parseInt(minorString), Integer.parseInt(pointString), Integer
+            .parseInt(updateString), Integer.parseInt(buildString));
     }
 }
