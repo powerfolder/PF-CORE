@@ -14,6 +14,7 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 
 /**
  * This class controls a wizard.
@@ -27,8 +28,6 @@ import de.dal33t.powerfolder.ui.Icons;
  * @author Christopher Brind
  */
 public class Wizard extends JPanel implements ActionListener {
-    public static final String WIZARD_ATTRIBUTE = "wizard";
-    public static final String DIALOG_ATTRIBUTE = "dialog";
 
     public static final String BACK_I18N = "BACK_I18N";
     public static final String NEXT_I18N = "NEXT_I18N";
@@ -173,7 +172,7 @@ public class Wizard extends JPanel implements ActionListener {
         if (resetContext) {
             ctx = new WizardContext();
         }
-        ctx.setAttribute(WIZARD_ATTRIBUTE, this);
+        ctx.setAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE, this);
         wp.setWizardContext(ctx);
         setPanel(wp);
         updateButtons();

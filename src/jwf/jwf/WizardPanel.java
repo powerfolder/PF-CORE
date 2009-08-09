@@ -2,6 +2,8 @@ package jwf;
 
 import javax.swing.JPanel;
 
+import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+
 /**
  * The base class used for implementing a panel that is displayed in a Wizard.
  * 
@@ -41,7 +43,7 @@ public abstract class WizardPanel extends JPanel {
 
     /**
      * Can this panel finish the wizard?
-     *
+     * 
      * @return true if this panel can finish the wizard.
      */
     public abstract boolean canFinish();
@@ -49,6 +51,7 @@ public abstract class WizardPanel extends JPanel {
     /**
      * Whether a wizard can go back to this panel. Some flows may not allow this
      * like where folders have been created.
+     * 
      * @return
      */
     public boolean canGoBackTo() {
@@ -56,9 +59,9 @@ public abstract class WizardPanel extends JPanel {
     }
 
     /**
-     * Can this panel cancel the wizard? Terminating panels, where Finish is
-     * the only logical option, should set this to false.
-     *
+     * Can this panel cancel the wizard? Terminating panels, where Finish is the
+     * only logical option, should set this to false.
+     * 
      * @return true if this panel can cancel the wizard.
      */
     public abstract boolean canCancel();
@@ -105,10 +108,11 @@ public abstract class WizardPanel extends JPanel {
         if (wizardContext == null) {
             return;
         }
-        if (wizardContext.getAttribute(Wizard.WIZARD_ATTRIBUTE) instanceof Wizard)
+        if (wizardContext
+            .getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE) instanceof Wizard)
         {
             Wizard wizard = (Wizard) wizardContext
-                .getAttribute(Wizard.WIZARD_ATTRIBUTE);
+                .getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE);
             wizard.updateButtons();
         }
     }
