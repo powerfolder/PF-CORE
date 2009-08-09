@@ -70,21 +70,9 @@ public class MainTabbedPane extends PFUIComponent {
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.home.name"),
                 homeTab.getUIComponent());
-        String key = Translation.getTranslation("main_tabbed_pane.home.key");
-        uiComponent.setMnemonicAt(HOME_INDEX,
-                (int) Character.toUpperCase(key.charAt(0)));
-        uiComponent.setToolTipTextAt(HOME_INDEX,
-                Translation.getTranslation("main_tabbed_pane.home.description"));
-        uiComponent.setIconAt(HOME_INDEX, Icons.getIconById(Icons.HOME));
 
         uiComponent.add(Translation.getTranslation("main_tabbed_pane.folders.name"),
                 foldersTab.getUIComponent());
-        key = Translation.getTranslation("main_tabbed_pane.folders.key");
-        uiComponent.setMnemonicAt(FOLDERS_INDEX,
-                (int) Character.toUpperCase(key.charAt(0)));
-        uiComponent.setToolTipTextAt(FOLDERS_INDEX,
-                Translation.getTranslation("main_tabbed_pane.folders.description"));
-        uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
 
         if (getController().isBackupOnly()) {
             // Do not display computers tab in backup only mode, BUT
@@ -93,6 +81,23 @@ public class MainTabbedPane extends PFUIComponent {
         } else {
             uiComponent.add(Translation.getTranslation("main_tabbed_pane.computers.name"),
                     computersTab.getUIComponent());
+        }
+
+        String key = Translation.getTranslation("main_tabbed_pane.home.key");
+        uiComponent.setMnemonicAt(HOME_INDEX,
+                (int) Character.toUpperCase(key.charAt(0)));
+        uiComponent.setToolTipTextAt(HOME_INDEX,
+                Translation.getTranslation("main_tabbed_pane.home.description"));
+        uiComponent.setIconAt(HOME_INDEX, Icons.getIconById(Icons.HOME));
+
+        key = Translation.getTranslation("main_tabbed_pane.folders.key");
+        uiComponent.setMnemonicAt(FOLDERS_INDEX,
+                (int) Character.toUpperCase(key.charAt(0)));
+        uiComponent.setToolTipTextAt(FOLDERS_INDEX,
+                Translation.getTranslation("main_tabbed_pane.folders.description"));
+        uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
+
+        if (!getController().isBackupOnly()) {
             key = Translation.getTranslation("main_tabbed_pane.computers.key");
             uiComponent.setMnemonicAt(COMPUTERS_INDEX,
                     (int) Character.toUpperCase(key.charAt(0)));
@@ -157,7 +162,7 @@ public class MainTabbedPane extends PFUIComponent {
     /**
      * Set the folders tab icon.
      *
-     * @param homeIcon
+     * @param foldersIcon
      */
     public void setFoldersIcon(Icon foldersIcon) {
         uiComponent.setIconAt(FOLDERS_INDEX, foldersIcon);
@@ -166,7 +171,7 @@ public class MainTabbedPane extends PFUIComponent {
     /**
      * Set the computers tab icon.
      *
-     * @param homeIcon
+     * @param computersIcon
      */
     public void setComputersIcon(Icon computersIcon) {
         if (!getController().isBackupOnly()) {
