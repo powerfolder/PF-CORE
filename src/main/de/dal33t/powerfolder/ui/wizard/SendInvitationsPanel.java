@@ -34,11 +34,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -53,14 +59,19 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 import de.dal33t.powerfolder.ui.dialog.AttachPersonalizedMessageDialog;
+import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -168,10 +179,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "140dlu, pref:grow",
+        FormLayout layout = new FormLayout("140dlu, pref:grow",
             "pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref, 6dlu, pref");
-          // inv         join     text  inv         fdl         hint1       hint2 auto list remove adv
+        // inv join text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -249,10 +259,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
         searchButton = new JButtonMini(new MySearchAction(getController()));
 
-        inviteInfoLabel = new ActionLabel(getController(), new AbstractAction() {
+        inviteInfoLabel = new ActionLabel(getController(), new AbstractAction()
+        {
             public void actionPerformed(ActionEvent e) {
                 String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                        WikiLinks.INVITATIONS);
+                    WikiLinks.INVITATIONS);
                 try {
                     BrowserLauncher.openURL(wikiArticleURL);
                 } catch (IOException e1) {
@@ -261,8 +272,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
             }
         });
 
-        inviteInfoLabel.setText(Translation.getTranslation(
-                "wizard.send_invitations.information"));
+        inviteInfoLabel.setText(Translation
+            .getTranslation("wizard.send_invitations.information"));
 
         viaPowerFolderText = new AutoTextField();
         viaPowerFolderText.addKeyListener(new MyKeyListener());
@@ -287,11 +298,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
         advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
             getController()));
 
-        addMessageLink = new ActionLabel(getController(), new MyAttachMessageAction());
-        addMessageLink.setText(Translation.getTranslation(
-                "wizard.send_invitations.add_message.text"));
-        addMessageLink.setToolTipText(Translation.getTranslation(
-                "wizard.send_invitations.add_message.tip"));
+        addMessageLink = new ActionLabel(getController(),
+            new MyAttachMessageAction());
+        addMessageLink.setText(Translation
+            .getTranslation("wizard.send_invitations.add_message.text"));
+        addMessageLink.setToolTipText(Translation
+            .getTranslation("wizard.send_invitations.add_message.tip"));
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
@@ -364,7 +376,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             Collection<Member> selectedMembers = new ArrayList<Member>();
             NodesSelectDialog2 nsd2 = new NodesSelectDialog2(getController(),
                 (Dialog) getWizardContext().getAttribute(
-                    Wizard.DIALOG_ATTRIBUTE), selectedMembers);
+                    WizardContextAttributes.DIALOG_ATTRIBUTE), selectedMembers);
             nsd2.open();
             for (Member selectedMember : selectedMembers) {
                 boolean got = false;
@@ -442,7 +454,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             AttachPersonalizedMessageDialog d = new AttachPersonalizedMessageDialog(
-                    getController(), messageModel);
+                getController(), messageModel);
             d.open();
         }
     }

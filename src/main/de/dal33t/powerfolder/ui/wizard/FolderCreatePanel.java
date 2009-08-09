@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -410,7 +410,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
 
                 Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                    Wizard.WIZARD_ATTRIBUTE);
+                    WizardContextAttributes.WIZARD_ATTRIBUTE);
                 wiz.next();
             }
         }

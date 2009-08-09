@@ -19,16 +19,22 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 
-import jwf.WizardPanel;
 import jwf.Wizard;
+import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -43,14 +49,14 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -316,7 +322,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             PreferencesEntry.BACKUP_OS.setValue(getController(), false);
 
             Wizard wizard = (Wizard) getWizardContext().getAttribute(
-                Wizard.WIZARD_ATTRIBUTE);
+                WizardContextAttributes.WIZARD_ATTRIBUTE);
             wizard.next();
         }
     }
