@@ -140,7 +140,7 @@ public class FolderMoveTest extends ControllerTestCase {
 
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
-                getFolder().getSyncProfile(), false, false, getFolder()
+                getFolder().getSyncProfile(), false, getFolder()
                     .getArchiveMode());
 
             // Move the folder
