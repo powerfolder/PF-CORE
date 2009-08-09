@@ -135,15 +135,15 @@ public class ChatPanel extends PFUIComponent {
 
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
 
-        // ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
         configureAddRemoveAction();
 
-        // bar.addGridded(new JButton(addRemoveFriendAction));
-        // bar.addRelatedGap();
-        // bar.addGridded(new JButton(new MyReconnectAction(getController())));
+        bar.addGridded(new JButton(addRemoveFriendAction));
+        bar.addRelatedGap();
+        bar.addGridded(new JButton(new MyReconnectAction(getController())));
 
-        // bar.getPanel();
+        bar.getPanel();
 
         JButton closeButton = new JButton3Icons(Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
@@ -161,7 +161,7 @@ public class ChatPanel extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-      //  builder.add(bar.getPanel(), cc.xy(1, 1));
+        builder.add(bar.getPanel(), cc.xy(1, 1));
         builder.add(closeButton, cc.xy(2, 1));
         toolBar = builder.getPanel();
     }
@@ -413,6 +413,7 @@ public class ChatPanel extends PFUIComponent {
 
         MyReconnectAction(Controller controller) {
             super("action_reconnect", controller);
+            setIcon(null);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -465,6 +466,7 @@ public class ChatPanel extends PFUIComponent {
 
         private MyAddRemoveFriendAction(Controller controller) {
             super("action_add_friend", controller);
+            setIcon(null);
         }
 
         public void setAdd(boolean add) {
@@ -474,6 +476,7 @@ public class ChatPanel extends PFUIComponent {
             } else {
                 configureFromActionId("action_remove_friend");
             }
+            setIcon(null);
         }
 
         public void actionPerformed(ActionEvent e) {
