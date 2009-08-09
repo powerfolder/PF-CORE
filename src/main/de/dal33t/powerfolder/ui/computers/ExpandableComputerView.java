@@ -275,7 +275,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     /**
      * Updates the displayed details if for this member.
      * 
-     * @param e
+     * @param  eventNode
      */
     private void updateDetailsIfRequired(Member eventNode) {
         if (node == null) {
@@ -290,7 +290,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     /**
      * Updates the displayed info if for this member.
      * 
-     * @param e
+     * @param  eventNode
      */
     private void updateInfoIfRequired(Member eventNode) {
         if (node == null) {
@@ -441,8 +441,8 @@ public class ExpandableComputerView extends PFUIComponent implements
         return contextMenu;
     }
 
-    private String renderInfo(Member node, AccountInfo aInfo) {
-        String text = node.getNick();
+    private static String renderInfo(Member member, AccountInfo aInfo) {
+        String text = member.getNick();
         if (aInfo != null) {
             text += " (";
             text += aInfo.getScrabledUsername();

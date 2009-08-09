@@ -522,7 +522,7 @@ public class AboutDialog extends PFUIComponent {
         }
     }
 
-    class MyFocusTraversalPolicy extends FocusTraversalPolicy {
+    private class MyFocusTraversalPolicy extends FocusTraversalPolicy {
         public Component getComponentAfter(Container focusCycleRoot,
             Component aComponent)
         {
