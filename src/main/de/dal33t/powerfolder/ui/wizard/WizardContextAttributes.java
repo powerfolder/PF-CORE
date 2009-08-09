@@ -23,6 +23,12 @@ package de.dal33t.powerfolder.ui.wizard;
  * Names of attributes passed in a Wizard Context.
  */
 public interface WizardContextAttributes {
+    /** The wizard object */
+    public static final String WIZARD_ATTRIBUTE = "wizard";
+
+    /** The dialog the wizard is displayed in */
+    public static final String DIALOG_ATTRIBUTE = "dialog";
+
     /** The attribute in wizard context, which will be displayed */
     String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompt_text";
 
@@ -63,8 +69,8 @@ public interface WizardContextAttributes {
     String SAVE_INVITE_LOCALLY = "save.invitation.locally";
 
     /**
-     * Whether to make the Member a friend on creation of a folder. This is 
-     * done when creating a folder from an invitation.
+     * Whether to make the Member a friend on creation of a folder. This is done
+     * when creating a folder from an invitation.
      */
     String MAKE_FRIEND_AFTER = "make.friend.after";
 
