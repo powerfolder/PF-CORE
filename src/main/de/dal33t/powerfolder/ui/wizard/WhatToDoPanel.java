@@ -19,34 +19,46 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import jwf.Wizard;
+import jwf.WizardPanel;
+
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import jwf.Wizard;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.ArrayList;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -435,7 +447,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             model.setValue(option);
             Wizard wizard = (Wizard) getWizardContext().getAttribute(
-                Wizard.WIZARD_ATTRIBUTE);
+                WizardContextAttributes.WIZARD_ATTRIBUTE);
             wizard.next();
         }
     }
