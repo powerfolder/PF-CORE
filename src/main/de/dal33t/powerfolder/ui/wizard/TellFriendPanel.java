@@ -125,7 +125,7 @@ public class TellFriendPanel extends PFWizardPanel {
 
         return new TextPanelPanel(getController(), Translation
             .getTranslation("wizard.tell_friend.title"), Translation
-            .getTranslation("wizard.tell_friend.success"));
+            .getTranslation("wizard.tell_friend.success"), true);
     }
 
     public boolean validateNext() {
