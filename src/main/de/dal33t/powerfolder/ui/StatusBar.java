@@ -70,8 +70,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton onlineStateInfo;
     private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
-    private JLabel upStats;
-    private JLabel downStats;
     private JLabel portLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
@@ -136,9 +134,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout lowerLayout = new FormLayout(
-            // debug online limit sep down sep up
+            // debug online limit
                 showDebugArea
-                    + "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
+                    + "pref, 3dlu, pref, fill:pref:grow", "pref");
             DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
                 lowerLayout);
 
@@ -157,12 +155,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
             sep1.setPreferredSize(new Dimension(2, 12));
-
-            lowerBuilder.add(downStats, cc.xy(col, 1));
-            col += 2;
-            lowerBuilder.add(sep1, cc.xy(col, 1));
-            col += 2;
-            lowerBuilder.add(upStats, cc.xy(col, 1));
 
             // Main section
 
@@ -207,30 +199,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
-
-        upStats = createTransferCounterLabel(getController(), Icons
-            .getIconById(Icons.UPLOAD), Translation
-            .getTranslation("status.upload"), getController()
-            .getTransferManager().getUploadCounter(), Translation
-            .getTranslation("status.upload.text"));
-        upStats.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                getUIController().openUploadsInformation();
-            }
-        });
-
-        downStats = createTransferCounterLabel(getController(), Icons
-            .getIconById(Icons.DOWNLOAD), Translation
-            .getTranslation("status.download"), getController()
-            .getTransferManager().getDownloadCounter(), Translation
-            .getTranslation("status.download.text"));
-        downStats.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                getUIController().openDownloadsInformation();
-            }
-        });
 
         limitedConnectivityLabel = new JLabel();
         limitedConnectivityLabel.addMouseListener(new MouseAdapter() {

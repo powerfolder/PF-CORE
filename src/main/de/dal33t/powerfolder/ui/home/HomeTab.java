@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -49,6 +50,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -71,6 +73,7 @@ import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -242,6 +245,10 @@ public class HomeTab extends PFUIComponent {
         updateNewSingleFileOffersText();
         initialSyncStats();
         registerListeners();
+
+        // Start monitoring the up/download rate
+        getController().scheduleAndRepeat(new MyTimerTask(), 1000, 1000);
+
     }
 
     private void initialSyncStats() {
@@ -393,6 +400,7 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateTransferText() {
         downloadsLine.setValue((Integer) downloadsCountVM.getValue());
+        TransferCounter transferCounter = getController().getTransferManager().getUploadCounter();
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
@@ -839,6 +847,42 @@ public class HomeTab extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+
+    /**
+     * Class to update the up/download rates.
+     */
+    private class MyTimerTask extends TimerTask {
+
+        private final TransferCounter uploadCounter;
+        private final TransferCounter downloadCounter;
+
+        private MyTimerTask() {
+            TransferManager transferManager = getController().getTransferManager();
+            uploadCounter = transferManager.getUploadCounter();
+            downloadCounter = transferManager.getDownloadCounter();
+        }
+
+        public void run() {
+            double d = uploadCounter.calculateAverageKBS();
+            if (Double.compare(d, 0) == 0) {
+                uploadsLine.setNormalLabelText(Translation.getTranslation(
+                        "home_tab.files_uploaded"));
+            } else {
+                String s = Format.formatNumber(d);
+                uploadsLine.setNormalLabelText(Translation.getTranslation(
+                        "home_tab.files_uploaded_active", s));
+            }
+            d = downloadCounter.calculateAverageKBS();
+            if (Double.compare(d, 0) == 0) {
+                downloadsLine.setNormalLabelText(Translation.getTranslation(
+                        "home_tab.files_downloaded"));
+            } else {
+                String s = Format.formatNumber(d);
+                downloadsLine.setNormalLabelText(Translation.getTranslation(
+                        "home_tab.files_downloaded_active", s));
+            }
         }
     }
 }
