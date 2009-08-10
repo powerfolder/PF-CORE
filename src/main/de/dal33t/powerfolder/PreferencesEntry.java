@@ -120,7 +120,7 @@ public enum PreferencesEntry {
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
 
     /** Skin name. */
-    SKIN_NAME("skin.name", ""),
+    SKIN_NAME("skin.name", "PowerFolder Skin 1"),
 
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
