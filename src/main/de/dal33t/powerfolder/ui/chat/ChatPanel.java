@@ -139,8 +139,8 @@ public class ChatPanel extends PFUIComponent {
 
         configureAddRemoveAction();
 
-        bar.addGridded(new JButton(addRemoveFriendAction));
-        bar.addRelatedGap();
+        // bar.addGridded(new JButton(addRemoveFriendAction));
+        // bar.addRelatedGap();
         bar.addGridded(new JButton(new MyReconnectAction(getController())));
 
         bar.getPanel();
