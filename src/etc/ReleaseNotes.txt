@@ -1,18 +1,8 @@
-PowerFolder Version 3.1.9 - http://www.powerfolder.com
-
-New features and improvements:
- * Added option to automatically update system service when a new version of
-   PowerFolder is available.
- * PowerFolder can now be configured by command line / script. Optimal when
-   deploying a large number of clients. Documentation:
-   http://www.powerfolder.com/wiki/Script_configuration
- * Added the possibility to remotely monitor up- and downloads of a client.
-   Preferences/Pro Settings/Remote monitoring. Documentation:
-   http://www.powerfolder.com/wiki/Transfer_monitoring
+PowerFolder Version 3.1.10 - http://www.powerfolder.com
 
 Bugfixes:
- * Delta-sync hashing does not longer timeout after three minutes.
- 
+ * Removed security warning caused by Online Storage certificate change.
+
 
 Please give us feedback and request improvements at our forum:
 http://forums.powerfolder.com
@@ -44,6 +34,23 @@ External libraries used:
 
 
 History:
+
+Version 3.1.9
+-------------
+
+New features and improvements:
+ * Added option to automatically update system service when a new version of
+   PowerFolder is available.
+ * PowerFolder can now be configured by command line / script. Optimal when
+   deploying a large number of clients. Documentation:
+   http://www.powerfolder.com/wiki/Script_configuration
+ * Added the possibility to remotely monitor up- and downloads of a client.
+   Preferences/Pro Settings/Remote monitoring. Documentation:
+   http://www.powerfolder.com/wiki/Transfer_monitoring
+
+Bugfixes:
+ * Delta-sync hashing does not longer timeout after three minutes.
+
 
 Version 3.1.8
 -------------
