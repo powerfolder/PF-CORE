@@ -184,6 +184,12 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
+    public void invalidateCache(Collection<Member> nodes) {
+        for (Member member : nodes) {
+            permissionsCache.remove(member);
+        }
+    }
+
     public void fetchAccountInfos(Collection<Member> nodes, boolean forceRefresh)
     {
         Reject.ifNull(nodes, "Nodes is null");

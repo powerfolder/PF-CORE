@@ -86,6 +86,7 @@ import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.security.FolderSecuritySettings;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -241,6 +242,11 @@ public class Folder extends PFComponent {
     private final ProblemListener problemListenerSupport;
 
     private final CopyOnWriteArrayList<Problem> problems;
+
+    /**
+     * #1046 The local security setting.
+     */
+    private FolderSecuritySettings localSecuritySettings;
 
     /**
      * Constructor for folder.
@@ -478,6 +484,29 @@ public class Folder extends PFComponent {
      */
     public FileArchiver getFileArchiver() {
         return archiver;
+    }
+
+    /**
+     * @return the local security settings. null if not yet set.
+     */
+    public FolderSecuritySettings getLocalSecuritySettings() {
+        return localSecuritySettings;
+    }
+
+    /**
+     * Sets the local security settings.
+     * 
+     * @param securitySettings
+     */
+    public void setLocalSecuritySettings(FolderSecuritySettings securitySettings)
+    {
+        boolean changed = Util.equals(this.localSecuritySettings,
+            securitySettings);
+        securitySettings.touch();
+        this.localSecuritySettings = securitySettings;
+        if (changed) {
+            setDBDirty();
+        }
     }
 
     /**
@@ -845,6 +874,11 @@ public class Folder extends PFComponent {
                     // Update database
                     // dbFile.copyFrom(fInfo);
                     dao.store(null, fInfo);
+                    // update directory
+                    if (rootDirectory != null) {
+                        rootDirectory.removeFileInfo(fInfo);
+                        rootDirectory.add(getController().getMySelf(), fInfo);
+                    }
                     fileChanged(dbFile);
                 } else {
                     // File new, scan
@@ -1567,6 +1601,19 @@ public class Folder extends PFComponent {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
 
+                try {
+                    Object object = in.readObject();
+                    localSecuritySettings = (FolderSecuritySettings) object;
+                    if (isWarning()) {
+                        logWarning("security settings " + localSecuritySettings);
+                    }
+                } catch (EOFException e) {
+                    // ignore nothing available for ignore
+                    logFine("ignore nothing for " + this);
+                } catch (Exception e) {
+                    logSevere("read ignore error: " + this + e.getMessage(), e);
+                }
+
                 in.close();
                 fIn.close();
 
@@ -1698,6 +1745,11 @@ public class Folder extends PFComponent {
                 logFiner("write lastSyncDate: " + lastSyncDate);
             }
             oOut.writeObject(lastSyncDate);
+
+            if (isWarning()) {
+                logWarning("write security settings: " + localSecuritySettings);
+            }
+            oOut.writeObject(localSecuritySettings);
 
             oOut.close();
             fOut.close();

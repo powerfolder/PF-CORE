@@ -975,7 +975,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * work is done in background thread. Former synchronization processed the
      * canceled.
      */
-    private void triggerSynchronizeAllFolderMemberships() {
+    public void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
             logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }

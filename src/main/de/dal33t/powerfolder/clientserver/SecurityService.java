@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderSecuritySettings;
 import de.dal33t.powerfolder.security.Permission;
 
 /**
@@ -91,6 +92,12 @@ public interface SecurityService {
 
     /**
      * @param foInfo
+     * @return the global security setting for the folder.
+     */
+    FolderSecuritySettings getSecuritySettings(FolderInfo foInfo);
+
+    /**
+     * @param foInfo
      * @param nodeInfos
      * @return the permissions of the nodes on the given folder.
      */
@@ -104,21 +111,20 @@ public interface SecurityService {
      */
     void setDefaultPermission(FolderInfo foInfo, FolderPermission permission);
 
-    // /**
-    // * Grants the currently logged in user access to folder. the folder is NOT
-    // * setup on the remote server.
-    // *
-    // * @param foInfos
-    // * @see #createFolder(FolderInfo, SyncProfile)
-    // */
-    // void grantAdmin(FolderInfo... foInfos);
+    /**
+     * Grants the given user/account the permissions.
+     * 
+     * @param aInfo
+     * @param permissions
+     */
+    void grant(AccountInfo aInfo, Permission... permissions);
 
     /**
-     * Revokes the currently logged in user access to folder. the folder is NOT
-     * setup on the remote server.
+     * Revokes the permission from the given account.
      * 
-     * @param foInfos
+     * @param aInfo
+     * @param permissions
      */
-    void revokeAdmin(FolderInfo... foInfos);
+    void revoke(AccountInfo aInfo, Permission... permissions);
 
 }

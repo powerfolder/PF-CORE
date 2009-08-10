@@ -20,18 +20,24 @@
 package de.dal33t.powerfolder.ui.information.folder.members;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 
+import javax.swing.Action;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+
+import com.jgoodies.binding.list.SelectionInList;
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -48,14 +54,20 @@ import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderReadPermission;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.security.FolderSecuritySettings;
+import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.FolderComparator;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
@@ -67,12 +79,28 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     SortedTableModel
 {
 
-    public static final int COL_TYPE = 0;
-    public static final int COL_COMPUTER_NAME = 1;
-    public static final int COL_USERNAME = 2;
-    public static final int COL_SYNC_STATUS = 3;
-    public static final int COL_LOCAL_SIZE = 4;
-    public static final int COL_PERMISSION = 5;
+    static final int COL_TYPE = 0;
+    static final int COL_COMPUTER_NAME = 1;
+    static final int COL_USERNAME = 2;
+    static final int COL_SYNC_STATUS = 3;
+    static final int COL_LOCAL_SIZE = 4;
+    static final int COL_PERMISSION = 5;
+
+    private static final String[] columnHeaders = {
+        Translation.getTranslation("folder_member_table_model.icon"), // 0
+        Translation.getTranslation("folder_member_table_model.name"), // 1
+        Translation.getTranslation("folder_member_table_model.account"), // 2
+        Translation.getTranslation("folder_member_table_model.sync_status"), // 3
+        Translation.getTranslation("folder_member_table_model.local_size"), // 4
+        Translation.getTranslation("folder_member_table_model.permission")}; // 5
+
+    private static final FolderMemberComparator[] columnComparators = {
+        FolderMemberComparator.BY_TYPE,// 0
+        FolderMemberComparator.BY_COMPUTER_NAME, // 1
+        FolderMemberComparator.BY_USERNAME, // 2
+        FolderMemberComparator.BY_PERMISSION, // 3
+        FolderMemberComparator.BY_SYNC_STATUS, // 4
+        FolderMemberComparator.BY_LOCAL_SIZE}; // 5
 
     private final List<FolderMember> members;
     private final List<TableModelListener> listeners;
@@ -83,21 +111,23 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private int sortColumn = -1;
     private boolean sortAscending = true;
 
-    private String[] columnHeaders = {
-        Translation.getTranslation("folder_member_table_model.icon"), // 0
-        Translation.getTranslation("folder_member_table_model.name"), // 1
-        Translation.getTranslation("folder_member_table_model.account"), // 2
-        Translation.getTranslation("folder_member_table_model.sync_status"), // 3
-        Translation.getTranslation("folder_member_table_model.local_size"), // 4
-        Translation.getTranslation("folder_member_table_model.permission")}; // 5
+    private ValueModel refreshingModel;
+    private ValueModel permissionModel;
+    private SelectionInList<FolderPermission> permissionsListModel;
 
-    private FolderMemberComparator[] columnComparators = {
-        FolderMemberComparator.BY_TYPE,// 0
-        FolderMemberComparator.BY_COMPUTER_NAME, // 1
-        FolderMemberComparator.BY_USERNAME, // 2
-        FolderMemberComparator.BY_PERMISSION, // 3
-        FolderMemberComparator.BY_SYNC_STATUS, // 4
-        FolderMemberComparator.BY_LOCAL_SIZE}; // 5
+    // TODO Move into model. FolderModel?
+    private volatile boolean updatingDefaultPermissionModel;
+    private ValueModel defaultPermissionModel;
+    private SelectionInList<FolderPermission> defaultPermissionsListModel;
+
+    private Action refreshAction;
+
+    public Action getRefreshAction() {
+        if (refreshAction == null) {
+            refreshAction = new RefreshAction();
+        }
+        return refreshAction;
+    }
 
     /**
      * Constructor
@@ -110,6 +140,26 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         folderRepository = controller.getFolderRepository();
         members = new ArrayList<FolderMember>();
         listeners = new ArrayList<TableModelListener>();
+        refreshingModel = new ValueHolder(Boolean.FALSE, false);
+        permissionModel = new ValueHolder(null, true);
+        permissionsListModel = new SelectionInList<FolderPermission>();
+        permissionsListModel.setSelectionHolder(permissionModel);
+        defaultPermissionModel = new ValueHolder(null, true);
+        defaultPermissionsListModel = new SelectionInList<FolderPermission>();
+        defaultPermissionsListModel.setSelectionHolder(defaultPermissionModel);
+        defaultPermissionModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (updatingDefaultPermissionModel) {
+                        // Ignore non-user change
+                        return;
+                    }
+                    FolderPermission newDefaultPermission = (FolderPermission) evt
+                        .getNewValue();
+                    new DefaultPermissionSetter(folder.getInfo(),
+                        newDefaultPermission).execute();
+                }
+            });
 
         folderListener = new MyFolderListener();
         // Node changes
@@ -117,6 +167,26 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         getController().getSecurityManager().addListener(
             new MySecurityManagerListener());
+    }
+
+    SelectionInList<FolderPermission> getPermissionsListModel() {
+        return permissionsListModel;
+    }
+
+    SelectionInList<FolderPermission> getDefaultPermissionsListModel() {
+        return defaultPermissionsListModel;
+    }
+
+    FolderPermission getDefaultPermission() {
+        return (FolderPermission) defaultPermissionModel.getValue();
+    }
+
+    public ValueModel getRefreshingModel() {
+        return refreshingModel;
+    }
+
+    public FolderInfo getFolderInfo() {
+        return folder.getInfo();
     }
 
     /**
@@ -130,14 +200,25 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
         folder = folderRepository.getFolder(folderInfo);
         folder.addFolderListener(folderListener);
+
+        // members
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
             // TODO Default permission?
             members.add(new FolderMember(folder, member, member
-                .getAccountInfo(), null, true));
+                .getAccountInfo(), null));
         }
+        // Fresh sort
+        sortMe0(sortColumn);
+
+        // Possible permissions
+        permissionsListModel.clearSelection();
+        permissionsListModel.getList().clear();
+        defaultPermissionsListModel.clearSelection();
+        defaultPermissionsListModel.getList().clear();
+
         modelChanged(new TableModelEvent(this, 0, members.size() - 1));
-        new ModelRefresher().execute();
+        refreshModel();
     }
 
     /**
@@ -156,20 +237,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      */
     public void removeTableModelListener(TableModelListener l) {
         listeners.remove(l);
-    }
-
-    /**
-     * @param columnIndex
-     * @return the column class.
-     */
-    public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 0 :
-                return Member.class;
-            default :
-                return String.class;
-
-        }
     }
 
     /**
@@ -201,6 +268,29 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         return members.get(rowIndex).getMember();
     }
 
+    public FolderMember getFolderMemberAt(int rowIndex) {
+        if (rowIndex > getRowCount() - 1) {
+            return null;
+        }
+        return members.get(rowIndex);
+    }
+
+    /**
+     * @param columnIndex
+     * @return the column class.
+     */
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case COL_TYPE :
+                return FolderMember.class;
+            case COL_PERMISSION :
+                return FolderPermission.class;
+            default :
+                return String.class;
+
+        }
+    }
+
     /**
      * @param rowIndex
      * @param columnIndex
@@ -213,29 +303,16 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         FolderMember folderMember = members.get(rowIndex);
         Member member = folderMember.getMember();
         AccountInfo aInfo = folderMember.getAccountInfo();
-        FolderPermission foPermission = folderMember.getPermission();
         FolderStatistic stats = folder.getStatistic();
 
         if (columnIndex == COL_TYPE) {
             return folderMember;
         } else if (columnIndex == COL_COMPUTER_NAME) {
-            if (member == null) {
-                return new StatusText("not syncing");
-            }
-            return member.getNick();
+            return member;
         } else if (columnIndex == COL_USERNAME) {
-            if (aInfo == null) {
-                return new StatusText("not logged in");
-            }
-            return aInfo.getScrabledUsername();
+            return aInfo;
         } else if (columnIndex == COL_PERMISSION) {
-            if (foPermission == null) {
-                return "";
-            }
-            if (folderMember.isDefaultPermission()) {
-                return new StatusText(foPermission.getName());
-            }
-            return foPermission.getName();
+            return folderMember.getPermission();
         } else if (columnIndex == COL_SYNC_STATUS) {
             if (member == null) {
                 return "";
@@ -257,14 +334,15 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     /**
-     * Answers if cell is editable - no, it is not!
+     * Answers if cell is editable - only permissions
      * 
      * @param rowIndex
      * @param columnIndex
      * @return
      */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return false;
+        return columnIndex == COL_PERMISSION
+            && getFolderMemberAt(rowIndex).getAccountInfo() != null;
     }
 
     /**
@@ -275,46 +353,43 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @param columnIndex
      */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        throw new IllegalStateException(
+        Reject.ifFalse(columnIndex == COL_PERMISSION,
             "Unable to set value in MembersTableModel; not editable");
-    }
-
-    /**
-     * Handle node add event.
-     * 
-     * @param e
-     */
-    private void handleNodeAdded(Member member) {
-        try {
-            check(member);
-            Collection<Member> folderMembers = folder.getMembersAsCollection();
-            if (folderMembers.contains(member) && !members.contains(member)) {
-                members.add(new FolderMember(folder, member, member
-                    .getAccountInfo(), null, true));
-                modelChanged(new TableModelEvent(this, 0, members.size() - 1));
-            }
-        } catch (IllegalStateException ex) {
-            logSevere("IllegalStateException", ex);
+        FolderMember folderMember = getFolderMemberAt(rowIndex);
+        if (folderMember == null) {
+            return;
+        }
+        if (folderMember.getAccountInfo() == null) {
+            logSevere("Unable to set permission. No account for "
+                + folderMember.getMember());
+            return;
+        }
+        FolderPermission newPermission = (FolderPermission) aValue;
+        if (!Util.equals(newPermission, folderMember.getPermission())) {
+            new PermissionSetter(folderMember, newPermission).execute();
         }
     }
 
     /**
-     * Handle node removed event.
-     * 
-     * @param e
+     * @return the sorting column.
      */
-    private void handleNodeRemoved(Member member) {
-        try {
-            check(member);
-            Collection<Member> folderMembers = folder.getMembersAsCollection();
-            if (folderMembers.contains(member)) {
-                members.remove(member);
-                modelChanged(new TableModelEvent(this, 0, members.size() - 1));
-            }
-        } catch (IllegalStateException ex) {
-            logSevere("IllegalStateException", ex);
-        }
+    public int getSortColumn() {
+        return sortColumn;
     }
+
+    /**
+     * @return if sorting ascending.
+     */
+    public boolean isSortAscending() {
+        return sortAscending;
+    }
+
+    void refreshModel() {
+        refreshingModel.setValue(Boolean.TRUE);
+        new ModelRefresher().execute();
+    }
+
+    // Helpers ****************************************************************
 
     /**
      * Handle node add event.
@@ -362,24 +437,10 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     /**
-     * @return the sorting column.
-     */
-    public int getSortColumn() {
-        return sortColumn;
-    }
-
-    /**
-     * @return if sorting ascending.
-     */
-    public boolean isSortAscending() {
-        return sortAscending;
-    }
-
-    /**
      * Sorts by this column.
      * 
      * @param columnIndex
-     * @return
+     * @return always tru.
      */
     public boolean sortBy(int columnIndex) {
         boolean newSortColumn = sortColumn != columnIndex;
@@ -429,6 +490,9 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
+            if (getController().getOSClient().isServer(e.getNode())) {
+                refreshModel();
+            }
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
@@ -454,15 +518,13 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         public void memberJoined(FolderMembershipEvent event) {
             // handleNodeAdded(folderEvent.getMember());
             if (folder.getMembersAsCollection().contains(event.getMember())) {
-                new ModelRefresher().execute();
+                refreshModel();
             }
         }
 
         public void memberLeft(FolderMembershipEvent event) {
             // handleNodeRemoved(folderEvent.getMember());
-            if (folder.getMembersAsCollection().contains(event.getMember())) {
-                new ModelRefresher().execute();
-            }
+            refreshModel();
         }
 
         public void fileChanged(FolderEvent folderEvent) {
@@ -496,7 +558,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         public void nodeAccountStateChanged(SecurityManagerEvent event) {
             // handleNodeChanged(event.getNode());
             if (folder.getMembersAsCollection().contains(event.getNode())) {
-                new ModelRefresher().execute();
+                refreshModel();
             }
         }
 
@@ -508,33 +570,35 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
     private class RefreshAction extends BaseAction {
 
-        protected RefreshAction(Controller controller) {
-            super("folder_member_table_model.refresh", controller);
+        protected RefreshAction() {
+            super("action_members_refresh", MembersTableModel.this
+                .getController());
+            refreshingModel.addValueChangeListener(new PropertyChangeListener()
+            {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    setEnabled(!(Boolean) evt.getNewValue());
+                }
+            });
         }
 
         public void actionPerformed(ActionEvent e) {
-            new ModelRefresher().execute();
+            refreshModel();
         }
     }
 
     private void rebuild(Map<AccountInfo, FolderPermission> permInfo,
-        FolderPermission defaultPermission)
+        FolderSecuritySettings securitySettingsGlobal)
     {
         // Step 1) All computers.
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
             AccountInfo aInfo = member.getAccountInfo();
             FolderPermission folderPermission = null;
-            boolean defPerm = false;
             if (aInfo != null) {
                 folderPermission = permInfo.remove(aInfo);
             }
-            if (folderPermission == null) {
-                folderPermission = defaultPermission;
-                defPerm = true;
-            }
             FolderMember folderMember = new FolderMember(folder, member, aInfo,
-                folderPermission, defPerm);
+                folderPermission);
             members.add(folderMember);
         }
 
@@ -544,10 +608,46 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 .entrySet())
             {
                 FolderMember folderMember = new FolderMember(folder, null,
-                    permissionInfo.getKey(), permissionInfo.getValue(), false);
+                    permissionInfo.getKey(), permissionInfo.getValue());
                 members.add(folderMember);
             }
         }
+
+        // Step 3) Possible permissions
+        permissionsListModel.clearSelection();
+        permissionsListModel.getList().clear();
+        // Use default
+        permissionsListModel.getList().add(null);
+        permissionsListModel.getList().add(
+            new FolderReadPermission(folder.getInfo()));
+        permissionsListModel.getList().add(
+            new FolderReadWritePermission(folder.getInfo()));
+        permissionsListModel.getList().add(
+            new FolderAdminPermission(folder.getInfo()));
+        updatingDefaultPermissionModel = true;
+        defaultPermissionsListModel.clearSelection();
+        defaultPermissionsListModel.getList().clear();
+        // No access
+        defaultPermissionsListModel.getList().add(null);
+        defaultPermissionsListModel.getList().add(
+            new FolderReadPermission(folder.getInfo()));
+        defaultPermissionsListModel.getList().add(
+            new FolderReadWritePermission(folder.getInfo()));
+        defaultPermissionsListModel.getList().add(
+            new FolderAdminPermission(folder.getInfo()));
+        if (folder.getLocalSecuritySettings() != null) {
+            defaultPermissionModel.setValue(folder.getLocalSecuritySettings()
+                .getDefaultPermission());
+        }
+        if (securitySettingsGlobal != null) {
+            defaultPermissionModel.setValue(securitySettingsGlobal
+                .getDefaultPermission());
+        } else {
+            // Default default permission: ADMIN
+            defaultPermissionModel.setValue(new FolderAdminPermission(folder
+                .getInfo()));
+        }
+        updatingDefaultPermissionModel = false;
 
         // Fresh sort
         sortMe0(sortColumn);
@@ -556,19 +656,86 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     }
 
+    private class PermissionSetter extends SwingWorker<Void, Void> {
+        private FolderMember folderMember;
+        private FolderPermission newPermission;
+
+        public PermissionSetter(FolderMember folderMember,
+            FolderPermission newPermission)
+        {
+            super();
+            Reject.ifNull(folderMember, "FolderMember is null");
+            Reject.ifNull(folderMember.getAccountInfo(),
+                "FolderMember Account is null");
+            this.folderMember = folderMember;
+            this.newPermission = newPermission;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            getController().getOSClient().getSecurityService().revoke(
+                folderMember.getAccountInfo(), folderMember.getPermission());
+            if (newPermission != null) {
+                getController().getOSClient().getSecurityService().grant(
+                    folderMember.getAccountInfo(), newPermission);
+            }
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            refreshModel();
+        }
+    }
+
+    private class DefaultPermissionSetter extends SwingWorker<Void, Void> {
+        private FolderInfo folderInfo;
+        private FolderPermission newPermission;
+
+        public DefaultPermissionSetter(FolderInfo foInfo,
+            FolderPermission newPermission)
+        {
+            super();
+            Reject.ifNull(foInfo, "Folder info is null");
+            this.folderInfo = foInfo;
+            this.newPermission = newPermission;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            logWarning("New def perm: " + newPermission);
+            getController().getOSClient().getSecurityService()
+                .setDefaultPermission(folderInfo, newPermission);
+
+            // TODO Ugly hack. Remove after #1653
+            SecurityManagerClient secMan = (SecurityManagerClient) getController()
+                .getSecurityManager();
+            secMan.invalidateCache(folder.getMembersAsCollection());
+            getController().getFolderRepository()
+                .triggerSynchronizeAllFolderMemberships();
+
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            refreshModel();
+        }
+    }
+
     private class ModelRefresher extends
         SwingWorker<Map<AccountInfo, FolderPermission>, Void>
     {
         private Folder refreshFor;
-        private FolderPermission defaultPermission;
+        private FolderSecuritySettings securitySettings;
 
         @Override
         protected Map<AccountInfo, FolderPermission> doInBackground()
             throws Exception
         {
             refreshFor = folder;
-            defaultPermission = getController().getSecurityManager()
-                .getDefaultPermission(refreshFor.getInfo());
+            securitySettings = getController().getOSClient()
+                .getSecurityService().getSecuritySettings(folder.getInfo());
             return getController().getOSClient().getSecurityService()
                 .getFolderPermission(refreshFor.getInfo());
         }
@@ -581,15 +748,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     // Folder has changed. discard result.
                     return;
                 }
-                if (res.isEmpty()) {
-                    return;
-                }
-
-                rebuild(res, defaultPermission);
-            } catch (InterruptedException e) {
+                rebuild(res, securitySettings);
+            } catch (Exception e) {
                 logWarning(e);
-            } catch (ExecutionException e) {
-                logWarning(e);
+                rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+            } finally {
+                refreshingModel.setValue(Boolean.FALSE);
             }
         }
     }

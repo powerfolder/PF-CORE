@@ -19,21 +19,28 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.list.SelectionInList;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -42,15 +49,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -61,12 +66,16 @@ public class MembersTab extends PFUIComponent {
     private JPanel uiComponent;
     private MembersTableModel model;
     private JScrollPane scrollPane;
-    private MyOpenChatAction openChatAction;
-    private MyAddRemoveFriendAction addRemoveFriendAction;
-    private MyReconnectAction reconnectAction;
+    private Action inviteAction;
+    private Action openChatAction;
+    private Action reconnectAction;
+    private Action refreshAction;
+    private JButton refreshButton;
     private MembersTable membersTable;
     private Member selectedMember;
     private JPopupMenu fileMenu;
+    private JProgressBar refreshBar;
+    private JComboBox defaultPermissionBox;
 
     /**
      * Constructor
@@ -101,9 +110,19 @@ public class MembersTab extends PFUIComponent {
     }
 
     public void initialize() {
-        openChatAction = new MyOpenChatAction(getController());
-        addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
-        reconnectAction = new MyReconnectAction(getController());
+        inviteAction = new MyInviteAction();
+        openChatAction = new MyOpenChatAction();
+        reconnectAction = new MyReconnectAction();
+        refreshAction = model.getRefreshAction();
+        refreshButton = new JButton(refreshAction);
+
+        refreshBar = new JProgressBar();
+        refreshBar.setIndeterminate(true);
+        refreshBar.setVisible(false);
+
+        defaultPermissionBox = createdEditComboBox(model
+            .getDefaultPermissionsListModel());
+
         membersTable = new MembersTable(model);
         membersTable.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
@@ -118,6 +137,16 @@ public class MembersTab extends PFUIComponent {
         UIUtil.setZeroHeight(scrollPane);
 
         enableOnSelection();
+
+        model.getRefreshingModel().addValueChangeListener(
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    boolean refreshing = (Boolean) evt.getNewValue();
+                    refreshBar.setVisible(refreshing);
+                    refreshButton.setVisible(!refreshing);
+                    defaultPermissionBox.setEnabled(!refreshing);
+                }
+            });
     }
 
     /**
@@ -126,7 +155,6 @@ public class MembersTab extends PFUIComponent {
     private void buildPopupMenus() {
         fileMenu = new JPopupMenu();
         fileMenu.add(openChatAction);
-        fileMenu.add(addRemoveFriendAction);
     }
 
     /**
@@ -149,16 +177,43 @@ public class MembersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
+        JButton inviteButton = new JButton(inviteAction);
+        JButton openChatButton = new JButton(openChatAction);
+        JButton reconnectButton = new JButton(reconnectAction);
+
+        FormLayout layout = new FormLayout("0:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(refreshButton, cc.xy(1, 1));
+        builder.add(refreshBar, cc.xy(1, 1));
 
         enableOnSelection();
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(openChatAction));
+        bar.addGridded(inviteButton);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(addRemoveFriendAction));
+        bar.addGridded(openChatButton);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(reconnectAction));
-        return bar.getPanel();
+        bar.addGridded(reconnectButton);
+        bar.addRelatedGap();
+        bar.addGridded(builder.getPanel());
+        JPanel buttonBarPanel = bar.getPanel();
+
+        refreshButton.setMinimumSize(openChatButton.getMinimumSize());
+        refreshButton.setMaximumSize(openChatButton.getMaximumSize());
+        refreshButton.setPreferredSize(openChatButton.getPreferredSize());
+        refreshBar.setMinimumSize(openChatButton.getMinimumSize());
+        refreshBar.setMaximumSize(openChatButton.getMaximumSize());
+        refreshBar.setPreferredSize(openChatButton.getPreferredSize());
+
+        layout = new FormLayout("pref, 0:grow, pref, 3dlu, pref", "pref");
+        builder = new PanelBuilder(layout);
+        cc = new CellConstraints();
+        builder.add(buttonBarPanel, cc.xy(1, 1));
+        builder.addLabel("Default permission:", cc.xy(3, 1));
+        builder.add(defaultPermissionBox, cc.xy(5, 1));
+
+        return builder.getPanel();
     }
 
     /**
@@ -172,20 +227,38 @@ public class MembersTab extends PFUIComponent {
         if (selectedMember != null) {
             if (selectedMember.equals(getController().getMySelf())) {
                 openChatAction.setEnabled(false);
-                addRemoveFriendAction.setEnabled(false);
                 reconnectAction.setEnabled(false);
             } else {
                 openChatAction.setEnabled(true);
                 reconnectAction.setEnabled(true);
-                addRemoveFriendAction.setEnabled(true);
-                addRemoveFriendAction.setAdd(!selectedMember.isFriend());
             }
         } else {
             selectedMember = null;
             openChatAction.setEnabled(false);
-            addRemoveFriendAction.setEnabled(false);
             reconnectAction.setEnabled(false);
         }
+    }
+
+    private JComboBox createdEditComboBox(
+        final SelectionInList<FolderPermission> model)
+    {
+        return BasicComponentFactory.createComboBox(model,
+            new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus)
+                {
+                    Component comp = super.getListCellRendererComponent(list,
+                        value, index, isSelected, cellHasFocus);
+                    if (value instanceof FolderPermission) {
+                        setText(((FolderPermission) value).getName());
+                    } else {
+                        setText("No access");
+                    }
+                    return comp;
+                }
+            });
     }
 
     // /////////////////
@@ -194,8 +267,9 @@ public class MembersTab extends PFUIComponent {
 
     private class MyOpenChatAction extends BaseAction {
 
-        private MyOpenChatAction(Controller controller) {
-            super("action_open_chat", controller);
+        private MyOpenChatAction() {
+            super("action_open_chat", MembersTab.this.getController());
+            setIcon(null);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -233,78 +307,26 @@ public class MembersTab extends PFUIComponent {
 
     }
 
-    private class MyAddRemoveFriendAction extends BaseAction {
+    // Action to invite friend.
+    private class MyInviteAction extends BaseAction {
 
-        private boolean add = true;
-
-        private MyAddRemoveFriendAction(Controller controller) {
-            super("action_add_friend", controller);
-        }
-
-        public void setAdd(boolean add) {
-            this.add = add;
-            if (add) {
-                configureFromActionId("action_add_friend");
-            } else {
-                configureFromActionId("action_remove_friend");
-            }
+        private MyInviteAction() {
+            super("action_invite_friend", MembersTab.this.getController());
+            setIcon(null);
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (add) {
-                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
-                    .getValueBoolean(getController());
-                if (askForFriendshipMessage) {
-
-                    // Prompt for personal message.
-                    String[] options = {
-                        Translation.getTranslation("general.ok"),
-                        Translation.getTranslation("general.cancel")};
-
-                    FormLayout layout = new FormLayout("pref",
-                        "pref, 3dlu, pref, pref");
-                    PanelBuilder builder = new PanelBuilder(layout);
-                    CellConstraints cc = new CellConstraints();
-                    String nick = selectedMember.getNick();
-                    String text = Translation.getTranslation(
-                        "friend.search.personal.message.text2", nick);
-                    builder.add(new JLabel(text), cc.xy(1, 1));
-                    JTextArea textArea = new JTextArea();
-                    JScrollPane scrollPane = new JScrollPane(textArea);
-                    scrollPane.setPreferredSize(new Dimension(400, 200));
-                    builder.add(scrollPane, cc.xy(1, 3));
-                    JPanel innerPanel = builder.getPanel();
-
-                    NeverAskAgainResponse response = DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("friend.search.personal.message.title"),
-                            innerPanel, options, 0, GenericDialogType.INFO,
-                            Translation.getTranslation("general.neverAskAgain"));
-                    if (response.getButtonIndex() == 0) { // == OK
-                        String personalMessage = textArea.getText();
-                        selectedMember.setFriend(true, personalMessage);
-                    }
-                    if (response.isNeverAskAgain()) {
-                        // don't ask me again
-                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-                            getController(), false);
-                    }
-                } else {
-                    // Send with no personal messages
-                    selectedMember.setFriend(true, null);
-                }
-            } else {
-                selectedMember.setFriend(false, null);
-            }
+            PFWizard.openSendInvitationWizard(getController(), model
+                .getFolderInfo());
+            model.refreshModel();
         }
     }
 
     private class MyReconnectAction extends BaseAction {
 
-        MyReconnectAction(Controller controller) {
-            super("action_reconnect", controller);
+        MyReconnectAction() {
+            super("action_reconnect", MembersTab.this.getController());
+            setIcon(null);
         }
 
         public void actionPerformed(ActionEvent e) {

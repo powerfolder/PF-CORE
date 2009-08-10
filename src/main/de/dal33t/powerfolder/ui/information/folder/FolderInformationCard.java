@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: InformationFilesCard.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: InformationFilesCard.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder;
 
 import de.dal33t.powerfolder.Controller;
@@ -52,7 +52,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public FolderInformationCard(Controller controller) {
@@ -71,7 +71,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Sets the folder in the tabs.
-     *
+     * 
      * @param folderInfo
      * @param directoryFilterMode
      */
@@ -89,7 +89,7 @@ public class FolderInformationCard extends InformationCard {
     /**
      * Sets the folder in the tabs with local and incoming set and sort date
      * descending.
-     *
+     * 
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -106,8 +106,8 @@ public class FolderInformationCard extends InformationCard {
     private void detachProblemListener() {
 
         if (folderInfo != null) {
-            Folder folder = getController().getFolderRepository()
-                    .getFolder(folderInfo);
+            Folder folder = getController().getFolderRepository().getFolder(
+                folderInfo);
             if (folder != null) {
                 folder.removeProblemListener(problemListener);
             }
@@ -116,20 +116,20 @@ public class FolderInformationCard extends InformationCard {
 
     private void atachProblemListener() {
         getController().getFolderRepository().getFolder(folderInfo)
-                .addProblemListener(problemListener);
+            .addProblemListener(problemListener);
     }
 
     /**
-     * Control the folder's problems from here so that the tab can be removed
-     * if there are no poblems.
+     * Control the folder's problems from here so that the tab can be removed if
+     * there are no poblems.
      */
     private void updateProblems() {
         if (folderInfo == null) {
-            //  No fi, no show.
+            // No fi, no show.
             removeProblemsTab();
         } else {
             List<Problem> problemList = getController().getFolderRepository()
-                    .getFolder(folderInfo).getProblems();
+                .getFolder(folderInfo).getProblems();
             if (problemList.isEmpty()) {
                 removeProblemsTab();
             } else {
@@ -143,12 +143,13 @@ public class FolderInformationCard extends InformationCard {
      * Add the problems tab to the pane.
      */
     private void addProblemsTab() {
-        tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.problems.title"),
-                problemsTab.getUIComponent());
-        tabbedPane.setIconAt(getProblemsTabIndex(), Icons.getIconById(Icons.PROBLEMS));
-        tabbedPane.setToolTipTextAt(getProblemsTabIndex(), Translation.getTranslation(
-                "folder_information_card.problems.tips"));
+        tabbedPane.addTab(Translation
+            .getTranslation("folder_information_card.problems.title"),
+            problemsTab.getUIComponent());
+        tabbedPane.setIconAt(getProblemsTabIndex(), Icons
+            .getIconById(Icons.PROBLEMS));
+        tabbedPane.setToolTipTextAt(getProblemsTabIndex(), Translation
+            .getTranslation("folder_information_card.problems.tips"));
     }
 
     /**
@@ -162,7 +163,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the image for the card.
-     *
+     * 
      * @return
      */
     public Image getCardImage() {
@@ -171,7 +172,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the title for the card.
-     *
+     * 
      * @return
      */
     public String getCardTitle() {
@@ -180,7 +181,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Gets the ui component after initializing and building if necessary
-     *
+     * 
      * @return
      */
     public JComponent getUIComponent() {
@@ -198,36 +199,35 @@ public class FolderInformationCard extends InformationCard {
      * Build the ui component tab pane.
      */
     private void buildUIComponent() {
-        tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.files.title"),
-                filesTab.getUIComponent());
-        tabbedPane.setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
-        tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation.getTranslation(
-                "folder_information_card.files.tips"));
+        tabbedPane.addTab(Translation
+            .getTranslation("folder_information_card.files.title"), filesTab
+            .getUIComponent());
+        tabbedPane
+            .setIconAt(getFilesTabIndex(), Icons.getIconById(Icons.FILES));
+        tabbedPane.setToolTipTextAt(getFilesTabIndex(), Translation
+            .getTranslation("folder_information_card.files.tips"));
 
         // No computers stuff if backup mode.
         if (getController().isBackupOnly()) {
             // Create component anyways to stop UI exceptions if mode changes.
             membersTab.getUIComponent();
         } else {
-            tabbedPane.addTab(Translation.getTranslation(
-                    "folder_information_card.members.title"),
-                    membersTab.getUIComponent());
-            tabbedPane.setIconAt(getMembersTabIndex(), Icons.getIconById(
-                    Icons.NODE_FRIEND_CONNECTED));
-            tabbedPane.setToolTipTextAt(getMembersTabIndex(),
-                    Translation.getTranslation(
-                    "folder_information_card.members.tips"));
+            tabbedPane.addTab(Translation
+                .getTranslation("folder_information_card.members.title"),
+                membersTab.getUIComponent());
+            tabbedPane.setIconAt(getMembersTabIndex(), Icons
+                .getIconById(Icons.NODE_FRIEND_CONNECTED));
+            tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
+                .getTranslation("folder_information_card.members.tips"));
         }
 
-        tabbedPane.addTab(Translation.getTranslation(
-                "folder_information_card.settings.title"),
-                settingsTab.getUIComponent());
-        tabbedPane.setIconAt(getSettingsTabIndex(),
-                Icons.getIconById(Icons.SETTINGS));
-        tabbedPane.setToolTipTextAt(getSettingsTabIndex(),
-                Translation.getTranslation(
-                "folder_information_card.settings.tips"));
+        tabbedPane.addTab(Translation
+            .getTranslation("folder_information_card.settings.title"),
+            settingsTab.getUIComponent());
+        tabbedPane.setIconAt(getSettingsTabIndex(), Icons
+            .getIconById(Icons.SETTINGS));
+        tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
+            .getTranslation("folder_information_card.settings.tips"));
 
     }
 
@@ -245,7 +245,8 @@ public class FolderInformationCard extends InformationCard {
         if (getController().isBackupOnly()) {
             logSevere("Called showMembers() for a backup only client ?!");
         } else {
-            ((JTabbedPane) getUIComponent()).setSelectedIndex(getMembersTabIndex());
+            ((JTabbedPane) getUIComponent())
+                .setSelectedIndex(getMembersTabIndex());
         }
     }
 
@@ -253,19 +254,21 @@ public class FolderInformationCard extends InformationCard {
      * Display the settings tab.
      */
     public void showSettings() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(getSettingsTabIndex());
+        ((JTabbedPane) getUIComponent())
+            .setSelectedIndex(getSettingsTabIndex());
     }
 
     /**
      * Display the problems tab.
      */
     public void showProblems() {
-        ((JTabbedPane) getUIComponent()).setSelectedIndex(getProblemsTabIndex());
+        ((JTabbedPane) getUIComponent())
+            .setSelectedIndex(getProblemsTabIndex());
     }
 
     /**
      * Files tab is tab index zero.
-     *
+     * 
      * @return
      */
     private static int getFilesTabIndex() {
@@ -283,7 +286,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Settings tab is tab index 2, or 1 if members tab not enabled.
-     *
+     * 
      * @return
      */
     private int getSettingsTabIndex() {
@@ -292,7 +295,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Problems tab is tab index 3, or 2 if members tab not enabled.
-     *
+     * 
      * @return
      */
     private int getProblemsTabIndex() {

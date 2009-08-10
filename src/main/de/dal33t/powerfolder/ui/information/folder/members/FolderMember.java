@@ -16,17 +16,15 @@ public class FolderMember {
     private Member member;
     private AccountInfo accountInfo;
     private FolderPermission permission;
-    private boolean defaultPermission;
 
     public FolderMember(Folder folder, Member member, AccountInfo accountInfo,
-        FolderPermission permission, boolean defaultPermission)
+        FolderPermission permission)
     {
         super();
         this.folder = folder;
         this.member = member;
         this.accountInfo = accountInfo;
         this.permission = permission;
-        this.defaultPermission = defaultPermission;
     }
 
     public Folder getFolder() {
@@ -39,10 +37,6 @@ public class FolderMember {
 
     public AccountInfo getAccountInfo() {
         return accountInfo;
-    }
-
-    public boolean isDefaultPermission() {
-        return defaultPermission;
     }
 
     public FolderPermission getPermission() {

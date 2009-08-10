@@ -116,10 +116,14 @@ import de.dal33t.powerfolder.util.update.Updater;
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
-
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
-
+    
+    /**
+     * program version. include "dev" if its a development version.
+     */
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.19";
+    
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -128,10 +132,6 @@ public class Controller extends PFComponent {
     public static final String PROPERTY_SILENT_MODE = "silentMode";
     public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
 
-    /**
-     * program version. include "dev" if its a development version.
-     */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.15";
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;

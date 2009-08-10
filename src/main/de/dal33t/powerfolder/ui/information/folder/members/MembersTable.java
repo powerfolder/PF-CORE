@@ -19,19 +19,33 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+import com.jgoodies.binding.adapter.BasicComponentFactory;
+
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Table to display members of a folder.
@@ -57,12 +71,16 @@ public class MembersTable extends JTable {
 
         // Setup renderer
         MemberTableCellRenderer memberCellRenderer = new MemberTableCellRenderer();
-        setDefaultRenderer(Member.class, memberCellRenderer);
+        setDefaultRenderer(FolderMember.class, memberCellRenderer);
+        setDefaultRenderer(FolderPermission.class, memberCellRenderer);
         setDefaultRenderer(String.class, memberCellRenderer);
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(model,
             getColumnModel(), MembersTableModel.COL_COMPUTER_NAME);
+
+        setDefaultEditor(FolderPermission.class, new DefaultCellEditor(
+            createdEditComboBox(model)));
     }
 
     /**
@@ -75,9 +93,9 @@ public class MembersTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(MembersTableModel.COL_TYPE));
-        column.setPreferredWidth(20);
-        column.setMinWidth(20);
-        column.setMaxWidth(20);
+        column.setPreferredWidth(28);
+        column.setMinWidth(28);
+        column.setMaxWidth(28);
         column = getColumn(getColumnName(MembersTableModel.COL_COMPUTER_NAME));
         column.setPreferredWidth(100);
         column = getColumn(getColumnName(MembersTableModel.COL_USERNAME));
@@ -115,31 +133,71 @@ public class MembersTable extends JTable {
         }
     }
 
-    private static class MemberTableCellRenderer extends
-        DefaultTableCellRenderer
-    {
+    private class MemberTableCellRenderer extends DefaultTableCellRenderer {
 
         public Component getTableCellRendererComponent(JTable table,
             Object value, boolean isSelected, boolean hasFocus, int row,
             int column)
         {
+            int actualColumn = UIUtil.toModel(table, column);
+            MembersTableModel model = (MembersTableModel) MembersTable.this
+                .getModel();
+            FolderMember folderMember = model.getFolderMemberAt(row);
 
             Component defaultComp = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
 
-            if (value instanceof FolderMember) {
-                FolderMember folderMember = (FolderMember) value;
+            // Reset to defaults
+            setEnabled(true);
+            setIcon(null);
+            setForeground(ColorUtil.getTextForegroundColor());
+
+            if (actualColumn == MembersTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
                 Icon icon = member != null ? Icons.getIconFor(member) : Icons
                     .getIconById(Icons.NODE_FRIEND_DISCONNECTED);
                 setIcon(icon);
-            } else {
-                setIcon(null);
-            }
+            } else if (actualColumn == MembersTableModel.COL_COMPUTER_NAME) {
+                if (folderMember.getMember() != null) {
+                    setText(folderMember.getMember().getNick());
+                } else {
+                    setText("Not syncing");
+                    setForeground(Color.GRAY);
+                }
+            } else if (actualColumn == MembersTableModel.COL_USERNAME) {
+                if (folderMember.getAccountInfo() != null) {
+                    setText(folderMember.getAccountInfo().getScrabledUsername());
+                } else {
+                    setText("Not logged in");
+                    setForeground(Color.GRAY);
+                }
+            } else if (actualColumn == MembersTableModel.COL_PERMISSION) {
+                boolean editable = model.isCellEditable(row, column);
+                if (!editable) {
+                    setForeground(Color.GRAY);
+                }
 
-            boolean status = value instanceof StatusText;
-            setForeground(status ? Color.GRAY : ColorUtil
-                .getTextForegroundColor());
+                if (folderMember.getPermission() != null) {
+                    setText(folderMember.getPermission().getName());
+                } else {
+                    FolderPermission defPerm = model.getDefaultPermission();
+                    if (defPerm != null) {
+                        setText(defPerm.getName() + " (default)");
+                    } else {
+                        if (folderMember.getMember() != null
+                            && model.getController().getOSClient().isServer(
+                                folderMember.getMember()))
+                        {
+                            // Server has read/write by default
+                            setText(Translation
+                                .getTranslation("permissions.folder.read_write"));
+                        } else {
+                            setText("No access");
+                        }
+                    }
+                }
+
+            }
 
             if (!isSelected) {
                 setBackground(row % 2 == 0
@@ -150,4 +208,35 @@ public class MembersTable extends JTable {
             return defaultComp;
         }
     }
+
+    private JComboBox createdEditComboBox(final MembersTableModel model) {
+        return BasicComponentFactory.createComboBox(model
+            .getPermissionsListModel(), new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus)
+            {
+                Component comp = super.getListCellRendererComponent(list,
+                    value, index, isSelected, cellHasFocus);
+                if (value instanceof FolderPermission) {
+                    setText(((FolderPermission) value).getName());
+                } else {
+                    int selectedRow = getSelectedRow();
+                    FolderMember selectedMember = selectedRow >= 0 ? model
+                        .getFolderMemberAt(selectedRow) : null;
+                    if (selectedMember != null
+                        && selectedMember.getMember() == null)
+                    {
+                        setText("No access");
+                    } else {
+                        setText("Use default");
+                    }
+
+                }
+                return comp;
+            }
+        });
+    }
+
 }

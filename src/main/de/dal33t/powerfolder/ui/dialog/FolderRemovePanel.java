@@ -221,8 +221,8 @@ public class FolderRemovePanel extends BaseDialog {
                 client.getFolderService().removeFolder(
                     folder.getInfo(), true);
             } else {
-                client.getSecurityService().revokeAdmin(
-                    folder.getInfo());
+//                client.getSecurityService().revokeAdmin(
+//                    folder.getInfo());
             }
 
             if (!removeLocal) {

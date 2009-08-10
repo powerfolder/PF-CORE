@@ -41,10 +41,10 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
             Member member1 = o1.getMember();
             Member member2 = o2.getMember();
             if (member1 == null) {
-                return member2 == null ? 0 : 1;
+                return member2 == null ? 0 : -1;
             }
             if (member2 == null) {
-                return -1;
+                return 1;
             }
             // Sort by type.
             boolean m1f = member1.isFriend();
@@ -85,10 +85,10 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
             Double size2 = o2.getFolder().getStatistic().getSyncPercentage(
                 o2.getMember());
             if (size1 == null) {
-                return size2 == null ? 0 : 1;
+                return size2 == null ? 0 : -1;
             }
             if (size2 == null) {
-                return -1;
+                return 1;
             }
             return size1.compareTo(size2);
         }
@@ -132,10 +132,10 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
             FolderPermission fp1 = o1.getPermission();
             FolderPermission fp2 = o2.getPermission();
             if (fp1 == null) {
-                return fp2 == null ? 0 : 1;
+                return fp2 == null ? 0 : -1;
             }
             if (fp2 == null) {
-                return -1;
+                return 1;
             }
             return fp1.getName().compareTo(fp2.getName());
         }

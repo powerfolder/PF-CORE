@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -36,6 +37,11 @@ public class FolderSecuritySettings implements Serializable {
     public static final String PROPERTYNAME_DEFAULT_PERMISSION = "defaultPermission";
 
     private static final long serialVersionUID = 100L;
+
+    /**
+     * The date of the last modification.
+     */
+    private Date modifiedDate;
 
     private final FolderInfo folder;
 
@@ -56,6 +62,7 @@ public class FolderSecuritySettings implements Serializable {
         Reject.ifNull(folder, "Folder is null");
         this.folder = folder;
         this.defaultPermission = defaultPermission;
+        touch();
     }
 
     public FolderInfo getFolder() {
@@ -68,6 +75,18 @@ public class FolderSecuritySettings implements Serializable {
 
     public void setDefaultPermission(FolderPermission defaultPermission) {
         this.defaultPermission = defaultPermission;
+        touch();
+    }
+    
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    /**
+     * Sets the last modified date to now.
+     */
+    public void touch() {
+        this.modifiedDate = new Date();
     }
 
     // General ****************************************************************
