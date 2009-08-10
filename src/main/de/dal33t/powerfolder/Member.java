@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1683,7 +1682,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
             } else if (message instanceof AccountStateChanged) {
                 AccountStateChanged asc = (AccountStateChanged) message;
-                logSevere("Received: " + asc);
+                logFine("Received: " + asc);
                 Member node = asc.getNode().getNode(getController(), false);
                 if (node != null) {
                     getController().getSecurityManager()
