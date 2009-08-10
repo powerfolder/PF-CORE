@@ -1,5 +1,9 @@
 PowerFolder Version 3.1.10 - http://www.powerfolder.com
 
+Improvements:
+ * Added several forward compatibilities for upcoming 4.0 version.
+ * Updated to Java Runtime Environment (JRE) 6 Update 15
+ 
 Bugfixes:
  * Removed security warning caused by Online Storage certificate change.
 
