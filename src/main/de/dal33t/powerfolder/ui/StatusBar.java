@@ -94,75 +94,45 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
-            CellConstraints cc = new CellConstraints();
-
-            // Upper section
-
-            String showPortArea = "";
-            if (showPort) {
-                showPortArea = "pref, 3dlu, pref, 3dlu, ";
-            }
-
-            FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, fill:pref:grow, "
-                    + showPortArea + " pref, 3dlu, pref", "pref");
-            DefaultFormBuilder upperBuilder = new DefaultFormBuilder(upperLayout);
-            int col = 1;
-            upperBuilder.add(sleepButton, cc.xy(col, 1));
-            col +=2;
-            upperBuilder.add(pendingMessagesButton, cc.xy(col, 1));
-            col +=2;
-            if (showPort) {
-                upperBuilder.add(portLabel, cc.xy(col, 1));
-                col += 2;
-
-                JSeparator sep0 = new JSeparator(SwingConstants.VERTICAL);
-                sep0.setPreferredSize(new Dimension(2, 12));
-
-                upperBuilder.add(sep0, cc.xy(col, 1));
-                col += 2;
-            }
-
-            upperBuilder.add(openPreferencesButton, cc.xy(col, 1));
-            col += 2;
-            upperBuilder.add(openAboutBoxButton, cc.xy(col, 1));
-
-            // Lower section
-
-            String showDebugArea = "";
+            String debugArea = "";
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                showDebugArea = "pref, 3dlu, ";
+                debugArea = "pref, 3dlu, ";
             }
 
-            FormLayout lowerLayout = new FormLayout(
-            // debug online limit
-                showDebugArea
-                    + "pref, 3dlu, pref, fill:pref:grow", "pref");
-            DefaultFormBuilder lowerBuilder = new DefaultFormBuilder(
-                lowerLayout);
-
-            col = 1;
-
-            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                lowerBuilder.add(openDebugButton, cc.xy(col, 1));
-                col += 2;
+            String portArea = "";
+            if (showPort) {
+                portArea = "pref, 3dlu, ";
             }
-
-            lowerBuilder.add(onlineStateInfo, cc.xy(col, 1));
-            col += 2;
-
-            lowerBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
-            col += 2;
-
-            JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
-            sep1.setPreferredSize(new Dimension(2, 12));
-
-            // Main section
 
             FormLayout mainLayout = new FormLayout(
-                "1dlu, fill:pref:grow, 1dlu", "pref, 3dlu, pref, 1dlu");
+                "1dlu, " + debugArea +
+                        "pref, 3dlu, pref,  3dlu, pref, fill:pref:grow, pref, 3dlu, " +
+                        portArea + " pref, 3dlu, pref, 1dlu", "pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
-            mainBuilder.add(upperBuilder.getPanel(), cc.xy(2, 1));
-            mainBuilder.add(lowerBuilder.getPanel(), cc.xy(2, 3));
+            CellConstraints cc = new CellConstraints();
+
+            int col = 2;
+
+            if (debugArea.length() > 0) {
+                mainBuilder.add(openDebugButton, cc.xy(col, 1));
+                col += 2;
+            }
+            mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
+            col +=2;
+            mainBuilder.add(sleepButton, cc.xy(col, 1));
+            col +=2;
+            mainBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
+            col += 2; // Central fill area
+            mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
+            col += 2;
+            if (portArea.length() > 0) {
+                mainBuilder.add(portLabel, cc.xy(col, 1));
+                col += 2;
+            }
+            mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
+            col += 2;
+            mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
+
             comp = mainBuilder.getPanel();
         }
         return comp;
