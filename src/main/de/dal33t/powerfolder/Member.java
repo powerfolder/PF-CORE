@@ -278,6 +278,20 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
+     * #1646
+     * 
+     * @return true if this computer is one of mine computers (same login).
+     */
+    public boolean isMyComputer() {
+        AccountInfo aInfo = getAccountInfo();
+        if (aInfo == null) {
+            return false;
+        }
+        return aInfo.equals(getController().getOSClient().getAccount()
+            .createInfo());
+    }
+
+    /**
      * Answers if this member is a friend, also true if isMySelf()
      * 
      * @return true if this user is a friend or myself.
@@ -1535,7 +1549,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     logFine("Problem received: Node reject our connection, "
                         + "we should not longer try to connect");
                     // Not connected to public network
-                    isConnectedToNetwork = true;
+                    setConnectedToNetwork(true);
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
                 {
                     logWarning("Problem received: Node thinks we have a dupe connection to him");
