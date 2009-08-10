@@ -266,6 +266,14 @@ public class NodeManagerModel extends PFUIComponent {
             updateNode(e.getNode());
         }
 
+        public void nodeOffline(NodeManagerEvent e) {
+            updateNode(e.getNode());
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+            updateNode(e.getNode());
+        }
+
         public void nodeRemoved(NodeManagerEvent e) {
             updateNode(e.getNode());
         }

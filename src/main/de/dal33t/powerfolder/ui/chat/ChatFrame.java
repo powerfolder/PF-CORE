@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: ChatFrame.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: ChatFrame.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.chat;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -58,7 +58,7 @@ public class ChatFrame extends MagneticFrame {
 
     /**
      * Constructor.
-     *
+     * 
      * @param controller
      */
     public ChatFrame(Controller controller) {
@@ -77,7 +77,7 @@ public class ChatFrame extends MagneticFrame {
 
     /**
      * Returns the ui component.
-     *
+     * 
      * @return
      */
     public JFrame getUIComponent() {
@@ -95,7 +95,7 @@ public class ChatFrame extends MagneticFrame {
     private void buildUIComponent() {
         Preferences prefs = getController().getPreferences();
         uiComponent.setLocation(prefs.getInt("chatframe4.x", 50), prefs.getInt(
-                "chatframe4.y", 50));
+            "chatframe4.y", 50));
 
         // Pack elements
         uiComponent.pack();
@@ -130,13 +130,15 @@ public class ChatFrame extends MagneticFrame {
             public void windowGainedFocus(WindowEvent e) {
                 getUIController().setActiveFrame(UIController.CHAT_FRAME_ID);
             }
+
             public void windowLostFocus(WindowEvent e) {
-                //Ignore.
+                // Ignore.
             }
         });
         uiComponent.setIconImage(Icons.getImageById(Icons.CHAT));
         uiComponent.setTitle(Translation.getTranslation("chat_frame.title"));
-        uiComponent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        uiComponent
+            .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         uiComponent.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 uiComponent.setVisible(false);
@@ -144,7 +146,7 @@ public class ChatFrame extends MagneticFrame {
         });
 
         FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
-                "3dlu, fill:pref:grow, 3dlu");
+            "3dlu, fill:pref:grow, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -162,8 +164,8 @@ public class ChatFrame extends MagneticFrame {
         if (uiComponent == null) {
             return;
         }
-        if ((uiComponent.getExtendedState() &
-                Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
+        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
+        {
             prefs.putBoolean("chatframe4.maximized", true);
         } else {
             prefs.putInt("chatframe4.x", uiComponent.getX());
@@ -180,7 +182,7 @@ public class ChatFrame extends MagneticFrame {
 
     /**
      * Display a chat session, creats new one if needed.
-     *
+     * 
      * @param memberInfo
      * @param autoSelect
      * @return
@@ -202,9 +204,9 @@ public class ChatFrame extends MagneticFrame {
         Member member = getController().getNodeManager().getNode(memberInfo);
         ChatPanel chatPanel = new ChatPanel(getController(), this, member);
         memberPanels.put(memberInfo, chatPanel);
-        tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member),
-                chatPanel.getUiComponent(), Translation.getTranslation(
-                "chat_frame.tool_tip", member.getNick()));
+        tabbedPane.addTab(memberInfo.nick, Icons.getIconFor(member), chatPanel
+            .getUiComponent(), Translation.getTranslation(
+            "chat_frame.tool_tip", member.getNick()));
         if (autoSelect) {
             tabbedPane.setSelectedIndex(tabbedPane.getComponentCount() - 1);
         }
@@ -215,10 +217,13 @@ public class ChatFrame extends MagneticFrame {
 
     /**
      * Update the icons on the tabs as members come and go.
-     *
+     * 
      * @param member
      */
     private void updateTabIcons(Member member) {
+        if (!memberPanels.containsKey(member.getInfo())) {
+            return;
+        }
         for (MemberInfo memberInfo : memberPanels.keySet()) {
             if (member.getInfo().equals(memberInfo)) {
                 Icon icon;
@@ -227,7 +232,8 @@ public class ChatFrame extends MagneticFrame {
                 } else {
                     icon = Icons.getIconFor(member);
                 }
-                Component component = memberPanels.get(memberInfo).getUiComponent();
+                Component component = memberPanels.get(memberInfo)
+                    .getUiComponent();
                 int count = tabbedPane.getComponentCount();
                 for (int i = 0; i < count; i++) {
                     if (tabbedPane.getComponentAt(i).equals(component)) {
@@ -244,10 +250,13 @@ public class ChatFrame extends MagneticFrame {
      * @param chatPartner
      */
     public void closeSession(Member chatPartner) {
-        for (Iterator<MemberInfo> iter = memberPanels.keySet().iterator(); iter.hasNext();) {
+        for (Iterator<MemberInfo> iter = memberPanels.keySet().iterator(); iter
+            .hasNext();)
+        {
             MemberInfo memberInfo = iter.next();
             if (memberInfo.equals(chatPartner.getInfo())) {
-                Component component = memberPanels.get(memberInfo).getUiComponent();
+                Component component = memberPanels.get(memberInfo)
+                    .getUiComponent();
                 int count = tabbedPane.getComponentCount();
                 for (int i = 0; i < count; i++) {
                     if (tabbedPane.getComponentAt(i).equals(component)) {
@@ -330,16 +339,16 @@ public class ChatFrame extends MagneticFrame {
             ChatPanel panel = memberPanels.get(memberInfo);
             if (panel.getUiComponent() == component) {
                 newMessages.remove(memberInfo);
-                Member member = getController().getNodeManager()
-                        .getNode(memberInfo);
+                Member member = getController().getNodeManager().getNode(
+                    memberInfo);
                 updateTabIcons(member);
             }
         }
     }
 
-    ///////////////////
+    // /////////////////
     // INNER CLASSES //
-    ///////////////////
+    // /////////////////
 
     /**
      * Listens on changes in the online state and update the ui components
@@ -362,6 +371,14 @@ public class ChatFrame extends MagneticFrame {
             updateTabIcons(e.getNode());
         }
 
+        public void nodeOffline(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+            updateTabIcons(e.getNode());
+        }
+
         public void friendAdded(NodeManagerEvent e) {
             updateTabIcons(e.getNode());
         }
@@ -380,8 +397,8 @@ public class ChatFrame extends MagneticFrame {
         public boolean fireInEventDispatchThread() {
             return true;
         }
-    }
 
+    }
 
     private class MyChatModelListener implements ChatModelListener {
         public void chatChanged(ChatModelEvent event) {

@@ -787,18 +787,15 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (connectResult.isSuccess()) {
-            isConnectedToNetwork = true;
+            setConnectedToNetwork(true);
             connectionRetries = 0;
         } else {
             if (connectionRetries >= 15 && isConnectedToNetwork) {
                 logWarning("Unable to connect directly");
                 // FIXME: Find a better ways
-                // unableToConnect = true;
-                isConnectedToNetwork = false;
+                setConnectedToNetwork(false);
             }
         }
-
-        // logWarning("Reconnect over, now connected: " + successful);
 
         return connectResult;
     }
@@ -979,7 +976,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         if (wasHandshaked != handshaked) {
             // Inform nodemanger about it
-            getController().getNodeManager().onlineStateChanged(this);
+            getController().getNodeManager().connectStateChanged(this);
 
             // Inform security manager to update account state.
             getController().getSecurityManager().nodeAccountStateChanged(this);
@@ -1170,7 +1167,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getSecurityManager().nodeAccountStateChanged(this);
 
             // Inform nodemanger about it
-            getController().getNodeManager().onlineStateChanged(this);
+            getController().getNodeManager().connectStateChanged(this);
 
             if (isInfo()) {
                 logInfo("Disconnected ("
@@ -2134,7 +2131,12 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            flag indicating if this member is connected
      */
     public void setConnectedToNetwork(boolean connected) {
+        boolean changed = isConnectedToNetwork != connected;
         isConnectedToNetwork = connected;
+        if (changed) {
+            getController().getNodeManager()
+                .networkConnectionStateChanged(this);
+        }
     }
 
     /**

@@ -59,7 +59,9 @@ public class RequestExecutor extends PFComponent {
         this.messageListener = new ResponseMessageListener();
     }
 
-    public synchronized Response execute(Request request) throws ConnectionException {
+    public synchronized Response execute(Request request)
+        throws ConnectionException
+    {
         if (!node.isCompleteyConnected()) {
             throw new ConnectionException("Not connected to " + node.getNick());
         }
@@ -147,6 +149,10 @@ public class RequestExecutor extends PFComponent {
             }
             // Break request
             notifyAndcleanup();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
         }
     }
 

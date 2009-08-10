@@ -23,7 +23,6 @@ import java.lang.Thread.State;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 import de.dal33t.powerfolder.Constants;
@@ -32,7 +31,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
@@ -207,6 +205,12 @@ public class NodeSearcher extends PFComponent {
         }
 
         public void startStop(NodeManagerEvent e) {
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {

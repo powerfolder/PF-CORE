@@ -275,7 +275,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     /**
      * Updates the displayed details if for this member.
      * 
-     * @param  eventNode
+     * @param eventNode
      */
     private void updateDetailsIfRequired(Member eventNode) {
         if (node == null) {
@@ -290,7 +290,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     /**
      * Updates the displayed info if for this member.
      * 
-     * @param  eventNode
+     * @param eventNode
      */
     private void updateInfoIfRequired(Member eventNode) {
         if (node == null) {
@@ -539,7 +539,6 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
@@ -550,8 +549,15 @@ public class ExpandableComputerView extends PFUIComponent implements
             updateDetailsIfRequired(e.getNode());
         }
 
-        public void nodeRemoved(NodeManagerEvent e) {
+        public void nodeOnline(NodeManagerEvent e) {
             updateDetailsIfRequired(e.getNode());
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
+            updateDetailsIfRequired(e.getNode());
+        }
+
+        public void nodeRemoved(NodeManagerEvent e) {
         }
 
         public void settingsChanged(NodeManagerEvent e) {

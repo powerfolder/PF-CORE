@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -448,11 +449,13 @@ public class FolderStatistic extends PFComponent {
         }
 
         if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
-                .getSyncProfile())) {
+            .getSyncProfile()))
+        {
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         } else if (SyncProfile.HOST_FILES.equals(folder.getSyncProfile())
-                || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())) {
+            || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile()))
+        {
             // In these cases only remote sides matter.
             // Calc maximum sync % of remote sides.
             double maxSync = 0;
@@ -515,7 +518,7 @@ public class FolderStatistic extends PFComponent {
             calculate0();
             calculatorTask = null;
         }
-        
+
         @Override
         public String toString() {
             return "FolderStatistic calculator for '" + folder;
@@ -587,14 +590,7 @@ public class FolderStatistic extends PFComponent {
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
-        public void nodeRemoved(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            calculateIfRequired(e);
-        }
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeConnected(NodeManagerEvent e) {
             calculateIfRequired(e);
@@ -610,14 +606,6 @@ public class FolderStatistic extends PFComponent {
 
         public void friendRemoved(NodeManagerEvent e) {
             calculateIfRequired(e);
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-            // Do nothing
-        }
-
-        public void startStop(NodeManagerEvent e) {
-            // Do nothing
         }
 
         public boolean fireInEventDispatchThread() {
@@ -691,12 +679,11 @@ public class FolderStatistic extends PFComponent {
 
                 // Sync = synchronized file sizes plus any partials divided by
                 // total size.
-                double sync = 100.0 * (size + partialTotal)
-                    / totalSize;
+                double sync = 100.0 * (size + partialTotal) / totalSize;
                 if (isFiner()) {
                     logFiner("Sync for member " + member.getInfo().nick + ", "
-                        + size + " + " + partialTotal
-                        + " / " + totalSize + " = " + sync);
+                        + size + " + " + partialTotal + " / " + totalSize
+                        + " = " + sync);
                 }
 
                 if (Double.compare(sync, 100.0) > 0) {

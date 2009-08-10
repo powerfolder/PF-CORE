@@ -227,7 +227,7 @@ public class ChatModel {
      * Listen to the connected/disconnected events from nodes and add status
      * messages in the chat
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeConnected(NodeManagerEvent e) {
             if (controller.isVerbose()) {

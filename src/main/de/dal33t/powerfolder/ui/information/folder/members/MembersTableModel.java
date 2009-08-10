@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -471,7 +472,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     /**
      * Listener for node events
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public boolean fireInEventDispatchThread() {
             return true;
@@ -485,9 +486,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             handleNodeChanged(e.getNode());
         }
 
-        public void nodeAdded(NodeManagerEvent e) {
-        }
-
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
             if (getController().getOSClient().isServer(e.getNode())) {
@@ -499,15 +497,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             handleNodeChanged(e.getNode());
         }
 
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
         public void settingsChanged(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
-        }
-
-        public void startStop(NodeManagerEvent e) {
-            // Don't care.
         }
     }
 

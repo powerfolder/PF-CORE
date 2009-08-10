@@ -19,8 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import com.jgoodies.binding.list.LinkedListModel;
 import com.jgoodies.binding.list.ObservableList;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -34,16 +46,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * A table model which contains the search result.
@@ -337,9 +339,16 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
             updateNode(e.getNode());
         }
 
+        public void nodeOffline(NodeManagerEvent e) {
+            updateNode(e.getNode());
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+            updateNode(e.getNode());
+        }
+
         public void friendAdded(NodeManagerEvent e) {
             updateNode(e.getNode());
-
         }
 
         public void friendRemoved(NodeManagerEvent e) {
@@ -356,6 +365,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         public boolean fireInEventDispatchThread() {
             return false;
         }
+
     }
 
     private class MySecurityManagerListener implements SecurityManagerListener {

@@ -60,8 +60,10 @@ import java.io.IOException;
 /**
  * Class to render expandable view of a folder.
  */
-public class ExpandableFolderView extends PFUIComponent implements ExpandableView {
-                                       
+public class ExpandableFolderView extends PFUIComponent implements
+    ExpandableView
+{
+
     private final FolderInfo folderInfo;
     private Folder folder;
     private boolean local;
@@ -111,7 +113,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param folderInfo
      */
@@ -128,7 +130,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     /**
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
-     *
+     * 
      * @param folderArg
      */
     public void configure(Folder folderArg, boolean localArg, boolean onlineArg)
@@ -174,8 +176,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     public void expand() {
         expanded.set(true);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_folder_view.collapse"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_folder_view.collapse"));
         lowerOuterPanel.setVisible(true);
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
     }
@@ -185,13 +187,14 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     public void collapse() {
         expanded.set(false);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_folder_view.expand"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_folder_view.expand"));
         lowerOuterPanel.setVisible(false);
     }
 
     /**
      * Gets the ui component, building if required.
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -204,9 +207,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void buildUI() {
 
         // Build ui
-                                             //  icon        name  space            # files     probs sync / join
-        FormLayout upperLayout = new FormLayout("pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref",
-            "pref");
+        // icon name space # files probs sync / join
+        FormLayout upperLayout = new FormLayout(
+            "pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         jLabel = new JLabel();
@@ -219,13 +222,13 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         upperBuilder.add(problemButton, cc.xy(8, 1));
 
         // syncFolderButton and joinOnlineStorageButton share same slot.
-      //  upperBuilder.add(syncFolderButton, cc.xy(9, 1));
+        // upperBuilder.add(syncFolderButton, cc.xy(9, 1));
         upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
-        upperPanel.setToolTipText(
-                Translation.getTranslation("exp_folder_view.expand"));
+        upperPanel.setToolTipText(Translation
+            .getTranslation("exp_folder_view.expand"));
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
@@ -236,10 +239,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         // TODO: Cleanup up this mess, use ROW variable
         if (getController().isBackupOnly()) {
             // Skip computers stuff
-            lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+            lowerLayout = new FormLayout(
+                "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         } else {
-            lowerLayout = new FormLayout("3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
+            lowerLayout = new FormLayout(
+                "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         }
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
@@ -257,7 +262,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
 
-       // lowerBuilder.add(recycleLabel, cc.xy(2, 13));
+        // lowerBuilder.add(recycleLabel, cc.xy(2, 13));
 
         lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
 
@@ -266,7 +271,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
 
-            lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 18, 4, 1));
+            lowerBuilder
+                .add(osComponent.getUIComponent(), cc.xywh(2, 18, 4, 1));
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 17));
             lowerBuilder.add(inviteButton, cc.xy(5, 17));
@@ -276,15 +282,15 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             lowerBuilder.add(transferModeLabel, cc.xy(2, 21));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 21));
 
-            lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
+            lowerBuilder
+                .add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
         }
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
 
         // Build spacer then lower outer with lower panel
-        FormLayout lowerOuterLayout = new FormLayout("pref:grow",
-            "3dlu, pref");
+        FormLayout lowerOuterLayout = new FormLayout("pref:grow", "3dlu, pref");
         PanelBuilder lowerOuterBuilder = new PanelBuilder(lowerOuterLayout);
         lowerOuterPanel = lowerOuterBuilder.getPanel();
         lowerOuterPanel.setVisible(false);
@@ -317,47 +323,48 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
      */
     private void initComponent() {
 
-        openFilesInformationAction =
-                new MyOpenFilesInformationAction(getController());
+        openFilesInformationAction = new MyOpenFilesInformationAction(
+            getController());
         inviteAction = new MyInviteAction(getController());
-        openSettingsInformationAction =
-                new MyOpenSettingsInformationAction(getController());
-        openMembersInformationAction =
-                new MyOpenMembersInformationAction(getController());
+        openSettingsInformationAction = new MyOpenSettingsInformationAction(
+            getController());
+        openMembersInformationAction = new MyOpenMembersInformationAction(
+            getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
 
-        MyProblemAction myProblemAction =
-                new MyProblemAction(getController());
-        MySyncFolderAction mySyncFolderAction =
-                new MySyncFolderAction(getController());
-        MyJoinOnlineStorageAction myJoinOnlineStorageAction =
-                new MyJoinOnlineStorageAction(getController());
+        MyProblemAction myProblemAction = new MyProblemAction(getController());
+        MySyncFolderAction mySyncFolderAction = new MySyncFolderAction(
+            getController());
+        MyJoinOnlineStorageAction myJoinOnlineStorageAction = new MyJoinOnlineStorageAction(
+            getController());
 
         expanded = new AtomicBoolean();
 
         osComponent = new OnlineStorageComponent(getController());
 
         openSettingsInformationButton = new JButtonMini(
-                openSettingsInformationAction, true);
+            openSettingsInformationAction, true);
 
-        openFilesInformationButton = new JButtonMini(openFilesInformationAction,
-                true);
+        openFilesInformationButton = new JButtonMini(
+            openFilesInformationAction, true);
 
         inviteButton = new JButtonMini(inviteAction, true);
         problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
-        joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction, true);
+        joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction,
+            true);
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
-        syncDateLabel = new ActionLabel(getController(), mostRecentChangesAction);
+        syncDateLabel = new ActionLabel(getController(),
+            mostRecentChangesAction);
         localSizeLabel = new JLabel();
         totalSizeLabel = new JLabel();
         membersLabel = new ActionLabel(getController(),
-                openMembersInformationAction);
+            openMembersInformationAction);
         filesAvailableLabel = new ActionLabel(getController(),
-                new MyFilesAvailableAction());
+            new MyFilesAvailableAction());
 
         updateNumberOfFiles();
         updateStatsDetails();
@@ -365,7 +372,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         updateTransferMode();
         updateButtons();
         updateProblems();
-        
+
         myServerClientListener = new MyServerClientListener();
         getController().getOSClient().addListener(myServerClientListener);
     }
@@ -394,7 +401,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     }
 
     /**
-     * Call if this object is being discarded, so that listeners are not orphaned.
+     * Call if this object is being discarded, so that listeners are not
+     * orphaned.
      */
     public void unregisterListeners() {
         if (myServerClientListener != null) {
@@ -414,7 +422,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             myFolderMembershipListener = new MyFolderMembershipListener();
             folder.addMembershipListener(myFolderMembershipListener);
             myNodeManagerListener = new MyNodeManagerListener();
-            getController().getNodeManager().addNodeManagerListener(myNodeManagerListener);
+            getController().getNodeManager().addNodeManagerListener(
+                myNodeManagerListener);
         }
     }
 
@@ -432,7 +441,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 myFolderMembershipListener = null;
             }
             if (myNodeManagerListener != null) {
-                getController().getNodeManager().removeNodeManagerListener(myNodeManagerListener);
+                getController().getNodeManager().removeNodeManagerListener(
+                    myNodeManagerListener);
                 myNodeManagerListener = null;
             }
         }
@@ -440,6 +450,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
     /**
      * Gets the name of the associated folder.
+     * 
      * @return
      */
     public FolderInfo getFolderInfo() {
@@ -460,9 +471,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         if (folder == null) {
 
             syncPercentText = Translation.getTranslation(
-                    "exp_folder_view.synchronized", "?");
+                "exp_folder_view.synchronized", "?");
             syncDateText = Translation.getTranslation(
-                    "exp_folder_view.last_synchronized", "?");
+                "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
             filesAvailableLabelText = "";
@@ -471,19 +482,18 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             Date lastSyncDate = folder.getLastSyncDate();
 
             if (lastSyncDate == null) {
-                syncDateText = Translation.getTranslation(
-                        "exp_folder_view.never_synchronized");
+                syncDateText = Translation
+                    .getTranslation("exp_folder_view.never_synchronized");
             } else {
                 String formattedDate = Format.formatDate(lastSyncDate);
                 syncDateText = Translation.getTranslation(
-                        "exp_folder_view.last_synchronized",
-                        formattedDate);
+                    "exp_folder_view.last_synchronized", formattedDate);
             }
 
             ScanResult.ResultState state = folder.getLastScanResultState();
             if (state == null) {
-                syncPercentText = Translation.getTranslation(
-                        "exp_folder_view.not_yet_scanned");
+                syncPercentText = Translation
+                    .getTranslation("exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
                 totalSizeString = "?";
                 filesAvailableLabelText = "";
@@ -498,31 +508,34 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                 }
 
                 // Sync in progress? Rewrite date as estimate.
-                if (Double.compare(sync, 100.0) < 0  && Double.compare(sync,
-                        UNKNOWN_SYNC_STATUS) > 0)  {
+                if (Double.compare(sync, 100.0) < 0
+                    && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0)
+                {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         String formattedDate = Format.formatDate(date);
                         syncDateText = Translation.getTranslation(
-                                "exp_folder_view.estimated_synchronized",
-                                formattedDate);
+                            "exp_folder_view.estimated_synchronized",
+                            formattedDate);
                     }
                 }
 
-                if (lastSyncDate == null && (Double.compare(sync, 100.0) == 0
-                        || Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0)) {
+                if (lastSyncDate == null
+                    && (Double.compare(sync, 100.0) == 0 || Double.compare(
+                        sync, UNKNOWN_SYNC_STATUS) == 0))
+                {
                     // Never synced with others.
-                    syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.unsynchronized");
+                    syncPercentText = Translation
+                        .getTranslation("exp_folder_view.unsynchronized");
                 } else {
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
-                        syncPercentText = Translation.getTranslation(
-                                "exp_folder_view.unsynchronized");
-                        syncPercentTip = Translation.getTranslation(
-                                "exp_folder_view.unsynchronized.tip");
+                        syncPercentText = Translation
+                            .getTranslation("exp_folder_view.unsynchronized");
+                        syncPercentTip = Translation
+                            .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                                "exp_folder_view.synchronized", sync);
+                            "exp_folder_view.synchronized", sync);
                     }
                 }
 
@@ -537,7 +550,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                            "exp_folder_view.files_available", count);
+                        "exp_folder_view.files_available", count);
                 }
             }
         }
@@ -545,16 +558,16 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         syncPercentLabel.setText(syncPercentText);
         syncPercentLabel.setToolTipText(syncPercentTip);
         syncDateLabel.setText(syncDateText);
-        localSizeLabel.setText(Translation.getTranslation("exp_folder_view.local",
-                localSizeString));
-        totalSizeLabel.setText(Translation.getTranslation("exp_folder_view.total",
-                totalSizeString));
+        localSizeLabel.setText(Translation.getTranslation(
+            "exp_folder_view.local", localSizeString));
+        totalSizeLabel.setText(Translation.getTranslation(
+            "exp_folder_view.total", totalSizeString));
         filesAvailableLabel.setText(filesAvailableLabelText);
         if (filesAvailableLabelText.length() == 0) {
             filesAvailableLabel.setToolTipText(null);
         } else {
-            filesAvailableLabel.setToolTipText(
-                    Translation.getTranslation("exp_folder_view.files_available_tip"));
+            filesAvailableLabel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.files_available_tip"));
         }
     }
 
@@ -564,11 +577,11 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void updateNumberOfFiles() {
         String filesText;
         if (folder == null) {
-            filesText = Translation.getTranslation("exp_folder_view.files",
-                    "?");
+            filesText = Translation
+                .getTranslation("exp_folder_view.files", "?");
         } else {
             filesText = Translation.getTranslation("exp_folder_view.files",
-                    folder.getKnownFilesCount());
+                folder.getKnownFilesCount());
         }
         filesLabel.setText(filesText);
     }
@@ -579,11 +592,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     private void updateTransferMode() {
         String transferMode;
         if (folder == null) {
-            transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
-                    "?");
+            transferMode = Translation.getTranslation(
+                "exp_folder_view.transfer_mode", "?");
         } else {
-            transferMode = Translation.getTranslation("exp_folder_view.transfer_mode",
-                    folder.getSyncProfile().getName());
+            transferMode = Translation.getTranslation(
+                "exp_folder_view.transfer_mode", folder.getSyncProfile()
+                    .getName());
         }
         transferModeLabel.setText(transferMode);
     }
@@ -599,40 +613,43 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             connectedCountText = "?";
         } else {
             countText = String.valueOf(folder.getMembersCount());
-            connectedCountText = String.valueOf(folder.getConnectedMembersCount());
+            connectedCountText = String.valueOf(folder
+                .getConnectedMembersCount());
         }
         membersLabel.setText(Translation.getTranslation(
-                "exp_folder_view.members", countText, connectedCountText));
+            "exp_folder_view.members", countText, connectedCountText));
     }
 
     private void updateIconAndOS() {
 
         if (folder == null) {
             jLabel.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
-            jLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.folder_online_text"));
+            jLabel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(false);
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
                 jLabel.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.folder_preview_text"));
+                jLabel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_preview_text"));
                 osComponent.getUIComponent().setVisible(false);
             } else if (online) {
-                jLabel.setIcon(Icons.getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.folder_local_online_text"));
+                jLabel
+                    .setIcon(Icons.getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+                jLabel
+                    .setToolTipText(Translation
+                        .getTranslation("exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(true);
                 Member server = serverClient.getServer();
                 double sync = folder.getStatistic().getSyncPercentage(server);
                 boolean warned = serverClient.getAccountDetails().getAccount()
-                        .getOSSubscription().isWarnedUsage();
+                    .getOSSubscription().isWarnedUsage();
                 osComponent.setSyncPercentage(sync, warned);
             } else {
                 jLabel.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
-                jLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.folder_local_text"));
+                jLabel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_local_text"));
                 osComponent.getUIComponent().setVisible(false);
             }
         }
@@ -693,18 +710,16 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         problemButton.setVisible(folder != null && folder.countProblems() > 0);
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class MyNodeManagerListener implements NodeManagerListener {
 
         public void nodeRemoved(NodeManagerEvent e) {
-            updateFolderMembershipDetails();
         }
 
         public void nodeAdded(NodeManagerEvent e) {
-            updateFolderMembershipDetails();
         }
 
         public void nodeConnected(NodeManagerEvent e) {
@@ -713,6 +728,12 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void nodeDisconnected(NodeManagerEvent e) {
             updateFolderMembershipDetails();
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
         }
 
         public void friendAdded(NodeManagerEvent e) {
@@ -778,7 +799,9 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
     /**
      * Class to respond to folder membership events.
      */
-    private class MyFolderMembershipListener implements FolderMembershipListener {
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
+    {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
             updateFolderMembershipDetails();
@@ -810,6 +833,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
                             if (mouseOver) {
                                 if (!expanded.get()) {
                                     expand();
+                                    PreferencesEntry.AUTO_EXPAND.setValue(
+                                        getController(), Boolean.FALSE);
                                 }
                             }
                         }
@@ -837,10 +862,10 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         private void showContextMenu(MouseEvent evt) {
             if (expanded.get()) {
                 createExpandedPopupMenu().show(evt.getComponent(), evt.getX(),
-                        evt.getY());
+                    evt.getY());
             } else {
                 createCollapsedPopupMenu().show(evt.getComponent(), evt.getX(),
-                        evt.getY());
+                    evt.getY());
             }
         }
 
@@ -873,7 +898,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openSettingsInformation(folderInfo);
+            getController().getUIController().openSettingsInformation(
+                folderInfo);
         }
     }
 
@@ -895,7 +921,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openMembersInformation(folderInfo);
+            getController().getUIController()
+                .openMembersInformation(folderInfo);
         }
     }
 
@@ -950,7 +977,8 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openProblemsInformation(folderInfo);
+            getController().getUIController().openProblemsInformation(
+                folderInfo);
         }
     }
 
@@ -964,7 +992,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
             List<FolderInfo> folderInfoList = new ArrayList<FolderInfo>();
             folderInfoList.add(folderInfo);
             PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
-                    folderInfoList);
+                folderInfoList);
         }
     }
 
@@ -976,7 +1004,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformationLatest(
-                        folderInfo);
+                folderInfo);
         }
     }
 
@@ -984,7 +1012,7 @@ public class ExpandableFolderView extends PFUIComponent implements ExpandableVie
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformation(folderInfo,
-                    DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+                DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
         }
     }
 

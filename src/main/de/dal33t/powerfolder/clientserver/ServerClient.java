@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -920,7 +921,7 @@ public class ServerClient extends PFComponent {
      * <p>
      * http://dev.powerfolder.com/projects/powerfolder/wiki/GeneralDevelopRules
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             // logWarning("Is server " + e.getNode() + "? " +
             // isServer(e.getNode()));
@@ -956,30 +957,6 @@ public class ServerClient extends PFComponent {
                 listenerSupport.serverDisconnected(new ServerClientEvent(
                     ServerClient.this, e.getNode()));
             }
-        }
-
-        public void friendAdded(NodeManagerEvent e) {
-            // NOP
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-            // NOP
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            // NOP
-        }
-
-        public void nodeRemoved(NodeManagerEvent e) {
-            // NOP
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-            // NOP
-        }
-
-        public void startStop(NodeManagerEvent e) {
-            // NOP
         }
 
         public boolean fireInEventDispatchThread() {

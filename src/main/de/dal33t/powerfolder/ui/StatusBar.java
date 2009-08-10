@@ -40,6 +40,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.WarningEvent;
@@ -87,8 +88,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
                 .getValueBoolean(getController())
-                && getController().getConnectionListener().getPort()
-                    != ConnectionListener.DEFAULT_PORT;
+                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
             String debugArea = "";
@@ -101,10 +101,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 portArea = "pref, 3dlu, ";
             }
 
-            FormLayout mainLayout = new FormLayout(
-                "1dlu, " + debugArea +
-                        "pref, 3dlu, pref,  3dlu, pref, fill:pref:grow, pref, 3dlu, " +
-                        portArea + " pref, 3dlu, pref, 1dlu", "pref, 1dlu");
+            FormLayout mainLayout = new FormLayout("1dlu, " + debugArea
+                + "pref, 3dlu, pref,  3dlu, pref, fill:pref:grow, pref, 3dlu, "
+                + portArea + " pref, 3dlu, pref, 1dlu", "pref, 1dlu");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             CellConstraints cc = new CellConstraints();
 
@@ -115,9 +114,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 col += 2;
             }
             mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
-            col +=2;
+            col += 2;
             mainBuilder.add(sleepButton, cc.xy(col, 1));
-            col +=2;
+            col += 2;
             mainBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
             col += 2; // Central fill area
             mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
@@ -198,9 +197,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             });
 
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
-                getController().getConnectionListener().getPort()));
-        portLabel
-            .setToolTipText(Translation.getTranslation("status.port.tip"));
+            getController().getConnectionListener().getPort()));
+        portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
 
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
@@ -209,37 +207,21 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         openDebugButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenDebugInformationAction());
 
-        pendingMessagesButton = new JButtonMini(Icons.getIconById(Icons.CHAT_PENDING),
-                Translation.getTranslation("status.chat_pending"));
+        pendingMessagesButton = new JButtonMini(Icons
+            .getIconById(Icons.CHAT_PENDING), Translation
+            .getTranslation("status.chat_pending"));
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
     }
 
     private void configureConnectionLabels() {
-        NodeManagerListener nodeListener = new NodeManagerListener() {
-            public void friendAdded(NodeManagerEvent e) {
-            }
-
-            public void friendRemoved(NodeManagerEvent e) {
-            }
-
-            public void nodeAdded(NodeManagerEvent e) {
-                updateConnectionLabels();
-            }
-
+        NodeManagerListener nodeListener = new NodeManagerAdapter() {
             public void nodeConnected(NodeManagerEvent e) {
                 updateConnectionLabels();
             }
 
             public void nodeDisconnected(NodeManagerEvent e) {
                 updateConnectionLabels();
-            }
-
-            public void nodeRemoved(NodeManagerEvent e) {
-                updateConnectionLabels();
-            }
-
-            public void settingsChanged(NodeManagerEvent e) {
             }
 
             public void startStop(NodeManagerEvent e) {
@@ -281,17 +263,20 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (quality != null) {
                     switch (quality) {
                         case GOOD :
-                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_GOOD);
+                            connectionQualityIcon = Icons
+                                .getIconById(Icons.CONNECTION_GOOD);
                             connectionQualityText = Translation
                                 .getTranslation("connection_quality_good.text");
                             break;
                         case MEDIUM :
-                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_MEDIUM);
+                            connectionQualityIcon = Icons
+                                .getIconById(Icons.CONNECTION_MEDIUM);
                             connectionQualityText = Translation
                                 .getTranslation("connection_quality_medium.text");
                             break;
                         case POOR :
-                            connectionQualityIcon = Icons.getIconById(Icons.CONNECTION_POOR);
+                            connectionQualityIcon = Icons
+                                .getIconById(Icons.CONNECTION_POOR);
                             connectionQualityText = Translation
                                 .getTranslation("connection_quality_poor.text");
 
@@ -325,12 +310,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 // No connection quality indication yet - just show connected.
                 String text = Translation.getTranslation("online_label.online");
                 if (controller.isLanOnly()) {
-                    text += " (" + Translation.getTranslation("general.lan_only")
-                        + ')';
+                    text += " ("
+                        + Translation.getTranslation("general.lan_only") + ')';
                 } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
                 {
                     text += " ("
-                        + Translation.getTranslation("general.server_only") + ')';
+                        + Translation.getTranslation("general.server_only")
+                        + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
                 onlineStateInfo.setIcon(Icons.getIconById(Icons.CONNECTED));

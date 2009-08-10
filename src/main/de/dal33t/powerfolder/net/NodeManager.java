@@ -632,12 +632,27 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Callback method to inform that this node connected or disconnected from
+     * the public network.
+     * 
+     * @param node
+     */
+    public void networkConnectionStateChanged(Member node) {
+        Reject.ifNull(node, "Node");
+        if (node.isConnectedToNetwork()) {
+            fireNodeOnline(node);
+        } else {
+            fireNodeOffline(node);
+        }
+    }
+
+    /**
      * Callback method from node to inform nodemanager about an online state
      * change
      * 
      * @param node
      */
-    public void onlineStateChanged(Member node) {
+    public void connectStateChanged(Member node) {
         boolean nodeConnected = node.isCompleteyConnected();
         if (nodeConnected) {
             // Add to online nodes
@@ -1541,7 +1556,6 @@ public class NodeManager extends PFComponent {
 
     private void fireNodeRemoved(Member node) {
         listenerSupport.nodeRemoved(new NodeManagerEvent(this, node));
-
     }
 
     private void fireNodeAdded(final Member node) {
@@ -1554,6 +1568,14 @@ public class NodeManager extends PFComponent {
 
     private void fireNodeDisconnected(final Member node) {
         listenerSupport.nodeDisconnected(new NodeManagerEvent(this, node));
+    }
+
+    private void fireNodeOnline(final Member node) {
+        listenerSupport.nodeOnline(new NodeManagerEvent(this, node));
+    }
+
+    private void fireNodeOffline(final Member node) {
+        listenerSupport.nodeOffline(new NodeManagerEvent(this, node));
     }
 
     private void fireFriendAdded(final Member node) {

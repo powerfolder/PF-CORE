@@ -382,6 +382,14 @@ public class ChatPanel extends PFUIComponent {
             updateOnNodeChange(e);
         }
 
+        public void nodeOnline(NodeManagerEvent e) {
+            updateOnNodeChange(e);
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
+            updateOnNodeChange(e);
+        }
+
         public void friendAdded(NodeManagerEvent e) {
             updateOnNodeChange(e);
         }

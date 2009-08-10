@@ -1,28 +1,38 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -30,18 +40,12 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIPanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Collection;
 
 /**
  * Displays some network statistics and file statistics.
@@ -123,26 +127,29 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
         int row = 1;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.connected_computers")), cc.xy(
-            1, row));
+            .getTranslation("network_statistics_panel.connected_computers")),
+            cc.xy(1, row));
         builder.add(connectedUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.online_computers")), cc.xy(1,
-            row));
+            .getTranslation("network_statistics_panel.online_computers")), cc
+            .xy(1, row));
         builder.add(onlineUsers, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.known_computers")), cc.xy(1,
-            row));
+            .getTranslation("network_statistics_panel.known_computers")), cc
+            .xy(1, row));
         builder.add(knownUsers, cc.xy(3, row));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.reconnection_queue_size")),
-            cc.xy(1, row));
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("network_statistics_panel.reconnection_queue_size")),
+                cc.xy(1, row));
         builder.add(reconnectionQueueSize, cc.xy(3, row));
 
         row += 2;
@@ -165,20 +172,23 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.public_folder_count")), cc
-            .xy(1, row));
+            .getTranslation("network_statistics_panel.public_folder_count")),
+            cc.xy(1, row));
         builder.add(publicFolderCount, cc.xy(3, row));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.number_of_public_files")),
-            cc.xy(1, row));
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("network_statistics_panel.number_of_public_files")),
+                cc.xy(1, row));
         builder.add(numberOfPublicFiles, cc.xy(3, row));
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("network_statistics_panel.public_folders_size")), cc
-            .xy(1, row));
+            .getTranslation("network_statistics_panel.public_folders_size")),
+            cc.xy(1, row));
         builder.add(publicFoldersSize, cc.xy(3, row));
 
         row += 2;
@@ -246,13 +256,7 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
         localFolderCount.setText(localFolders + "");
     }
 
-    private class MyNodeManagerListener implements NodeManagerListener {
-
-        public void friendAdded(NodeManagerEvent e) {
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-        }
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeAdded(NodeManagerEvent e) {
             update();
@@ -268,12 +272,6 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
 
         public void nodeRemoved(NodeManagerEvent e) {
             update();
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {
