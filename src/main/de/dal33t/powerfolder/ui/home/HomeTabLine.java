@@ -148,6 +148,10 @@ public class HomeTabLine extends PFUIComponent {
      * @param normalLabelText
      */
     public void setNormalLabelText(String normalLabelText) {
+
+        // Check that component is built.
+        getUIComponent();
+
         if (normalAction == null) {
             normalLabel.setText(normalLabelText);
         } else {
