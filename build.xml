@@ -153,6 +153,11 @@ For creation of the installer:
 			<fileset dir="${etc.dir}" />
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
+		<copy todir="${build.dir}">
+			<fileset dir="${skins.src.dir}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="dist-misc">
