@@ -569,7 +569,9 @@ public class ServerClient extends PFComponent {
             setAnonAccount();
             fireLogin(accountDetails);
         }
-        logWarning("Refreshed " + accountDetails);
+        if (isFine()) {
+            logFine("Refreshed " + accountDetails);
+        }
         return accountDetails;
     }
 
