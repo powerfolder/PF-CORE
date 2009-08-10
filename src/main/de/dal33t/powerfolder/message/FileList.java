@@ -90,6 +90,18 @@ public class FileList extends FolderRelatedMessage {
     }
 
     /**
+     * Just to inform that we won't or can't send any information about the
+     * files.
+     * 
+     * @param foInfo
+     * @return a list that contains null information about the files in a
+     *         folder.
+     */
+    public static FileList createNullListForPre4Client(FolderInfo foInfo) {
+        return new FileList(foInfo, new FileInfo[0], 0);
+    }
+
+    /**
      * Creates the message for the filelist. Filelist gets splitted into smaller
      * ones if required.
      * 

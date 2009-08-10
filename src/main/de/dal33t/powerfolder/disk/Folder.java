@@ -2055,7 +2055,13 @@ public class Folder extends PFComponent {
     public boolean join(Member member) {
         if (!hasReadPermission(member)) {
             logWarning("No read permisson. Not joining member " + member);
-            member.sendMessagesAsynchron(FileList.createNullList(currentInfo));
+            if (member.isPre4Client()) {
+                member.sendMessagesAsynchron(FileList
+                    .createNullListForPre4Client(currentInfo));
+            } else {
+                member.sendMessagesAsynchron(FileList
+                    .createNullList(currentInfo));
+            }
             return false;
         }
         join0(member);
