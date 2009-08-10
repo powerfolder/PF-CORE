@@ -117,7 +117,7 @@ public class Translation {
      */
     public static void saveLocalSetting(Locale locale) {
         if (locale != null) {
-            if (locale.getCountry().equals("")) {
+            if (locale.getCountry().length() == 0) {
                 Preferences.userNodeForPackage(Translation.class).put("locale",
                     locale.getLanguage());
             } else {
@@ -239,19 +239,6 @@ public class Translation {
      * @return
      */
     private static String formatParam(Object param) {
-        if (param instanceof Integer) {
-            Integer i = (Integer) param;
-            return Format.formatLong(i.longValue());
-        } else if (param instanceof Long) {
-            Long l = (Long) param;
-            return Format.formatLong(l);
-        } else if (param instanceof Double) {
-            Double d = (Double) param;
-            return Format.formatNumber(d);
-        } else if (param instanceof Float) {
-            Float f = (Float) param;
-            return Format.formatNumber(f.doubleValue());
-        }
         return param.toString();
     }
 }
