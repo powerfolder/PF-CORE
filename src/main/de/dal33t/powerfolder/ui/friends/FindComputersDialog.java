@@ -56,7 +56,7 @@ public class FindComputersDialog extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.FRIENDS);
+        return null;
     }
 
     protected Component getContent() {
