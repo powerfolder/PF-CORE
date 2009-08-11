@@ -85,6 +85,7 @@ public class MembersTab extends PFUIComponent {
     public MembersTab(Controller controller) {
         super(controller);
         model = new MembersTableModel(getController());
+        model.sortBy(MembersTableModel.COL_TYPE);
     }
 
     /**

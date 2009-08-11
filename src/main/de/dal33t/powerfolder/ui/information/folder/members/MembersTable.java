@@ -77,7 +77,7 @@ public class MembersTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(model,
-            getColumnModel(), MembersTableModel.COL_COMPUTER_NAME);
+            getColumnModel(), MembersTableModel.COL_TYPE);
 
         setDefaultEditor(FolderPermission.class, new DefaultCellEditor(
             createdEditComboBox(model)));
