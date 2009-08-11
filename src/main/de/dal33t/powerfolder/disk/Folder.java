@@ -1604,8 +1604,8 @@ public class Folder extends PFComponent {
                 try {
                     Object object = in.readObject();
                     localSecuritySettings = (FolderSecuritySettings) object;
-                    if (isWarning()) {
-                        logWarning("security settings " + localSecuritySettings);
+                    if (isFiner()) {
+                        logFiner("security settings " + localSecuritySettings);
                     }
                 } catch (EOFException e) {
                     // ignore nothing available for ignore
@@ -1746,8 +1746,8 @@ public class Folder extends PFComponent {
             }
             oOut.writeObject(lastSyncDate);
 
-            if (isWarning()) {
-                logWarning("write security settings: " + localSecuritySettings);
+            if (isFiner()) {
+                logFiner("write security settings: " + localSecuritySettings);
             }
             oOut.writeObject(localSecuritySettings);
 
