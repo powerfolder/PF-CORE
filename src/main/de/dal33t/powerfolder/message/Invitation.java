@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -58,6 +59,7 @@ public class Invitation extends FolderRelatedMessage {
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
     private int relative;
+    private FolderPermission permission;
 
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
@@ -180,6 +182,14 @@ public class Invitation extends FolderRelatedMessage {
 
     public int getRelative() {
         return relative;
+    }
+
+    public FolderPermission getPermission() {
+        return permission;
+    }
+
+    public void setPermission(FolderPermission permission) {
+        this.permission = permission;
     }
 
     public SyncProfile getSuggestedSyncProfile() {

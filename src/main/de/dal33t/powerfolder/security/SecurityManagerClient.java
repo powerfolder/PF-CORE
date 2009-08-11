@@ -280,16 +280,16 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
 
         public void run() {
-            clearNodeCache(node);
-
-            // This is required because of probably changed access
-            // permissions to folder.
-            node.synchronizeFolderMemberships();
             if (client.isServer(node) && node.isCompleteyConnected()) {
                 prefetchAccountInfos();
             }
 
+            clearNodeCache(node);
             refresh(node);
+
+            // This is required because of probably changed access
+            // permissions to folder.
+            node.synchronizeFolderMemberships();
         }
     }
 
@@ -301,12 +301,11 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
 
         public void run() {
-            clearNodeCache(node);
             client.refreshAccountDetails();
-
-            node.synchronizeFolderMemberships();
-
+            clearNodeCache(node);
             refresh(node);
+            getController().getFolderRepository()
+                .triggerSynchronizeAllFolderMemberships();
         }
     }
 
