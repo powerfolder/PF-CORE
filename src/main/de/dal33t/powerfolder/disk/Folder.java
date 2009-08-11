@@ -2054,7 +2054,7 @@ public class Folder extends PFComponent {
      */
     public boolean join(Member member) {
         if (!hasReadPermission(member)) {
-            logWarning("No read permisson. Not joining member " + member);
+            logWarning("Not joining member. No read permisson for " + member);
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
                     .createNullListForPre4Client(currentInfo));
@@ -2190,7 +2190,8 @@ public class Folder extends PFComponent {
                     continue;
                 }
                 if (!hasWritePermission(member)) {
-                    logSevere("No write permission for " + member);
+                    logWarning("Not syncing deletions. No write permission for "
+                        + member);
                     continue;
                 }
 
@@ -2634,7 +2635,8 @@ public class Folder extends PFComponent {
                 + remoteFileInfos.size() + " files from " + remotePeer);
         }
         if (!hasWritePermission(remotePeer)) {
-            logWarning("Skipping " + remotePeer + " no write permission");
+            logWarning("Not searching same files. " + remotePeer
+                + " no write permission");
             return;
         }
 
@@ -2974,7 +2976,8 @@ public class Folder extends PFComponent {
             }
             if (!hasWritePermission(member)) {
                 if (isWarning()) {
-                    logWarning("Skipping " + member + " no write permission");
+                    logWarning("Not downloading files. " + member
+                        + " no write permission");
                 }
                 continue;
             }

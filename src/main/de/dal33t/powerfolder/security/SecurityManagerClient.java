@@ -95,9 +95,10 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             } else {
                 cacheHit = true;
             }
-            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + node + " has "
-                + (hasPermission ? "" : "NOT ") + permission);
-
+            if (isFine()) {
+                logFine((cacheHit ? "(cachd) " : "(retvd) ") + node + " has "
+                    + (hasPermission ? "" : "NOT ") + permission);
+            }
             return hasPermission;
         } catch (RemoteCallException e) {
             logWarning("Unable to check permission for " + node + ". " + e);
