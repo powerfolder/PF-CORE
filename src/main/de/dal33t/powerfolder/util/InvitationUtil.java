@@ -304,7 +304,6 @@ public class InvitationUtil {
             node.markForImmediateConnect();
             return false;
         }
-        // node.sendMessageAsynchron(invitation, null);
         return true;
     }
 
