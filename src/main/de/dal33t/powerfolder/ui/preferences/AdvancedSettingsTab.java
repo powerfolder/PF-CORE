@@ -28,12 +28,11 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -44,16 +43,23 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.ui.LANList;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -72,7 +78,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
 
-    boolean needsRestart;
+    private JTextField locationTF;
+    private ValueModel locationModel;
+    private JComponent locationField;
+
+    private boolean needsRestart;
 
     public AdvancedSettingsTab(Controller controller) {
         super(controller);
@@ -108,6 +118,19 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         };
         advPort.setToolTipText(Translation
             .getTranslation("preferences.dialog.advPort.tooltip"));
+
+        // Local base selection
+        locationModel = new ValueHolder(getController().getFolderRepository()
+            .getFoldersBasedir());
+
+        // Behavior
+        locationModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateLocationComponents();
+            }
+        });
+
+        locationField = createLocationField();
 
         String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
             .getValue(getController());
@@ -228,13 +251,46 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     /**
+     * Called when the location model changes value. Sets the location text
+     * field value and enables the location button.
+     */
+    private void updateLocationComponents() {
+        String value = (String) locationModel.getValue();
+        locationTF.setText(value);
+    }
+
+    /**
+     * Creates a pair of location text field and button.
+     *
+     * @param folderInfo
+     * @return
+     */
+    private JComponent createLocationField() {
+        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        locationTF = new JTextField();
+        locationTF.setEditable(false);
+        locationTF.setText((String) locationModel.getValue());
+        builder.add(locationTF, cc.xy(1, 1));
+
+        JButton locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
+                Translation.getTranslation("folder_create.dialog.select_directory.text"));
+        locationButton.addActionListener(new MyActionListener());
+        builder.add(locationButton, cc.xy(3, 1));
+        return builder.getPanel();
+    }
+
+    /**
      * Creates the JPanel for advanced settings
      * 
      * @return the created panel
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
+            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
                 + "3dlu, pref, 3dlu, pref, 3dlu";
             if (FirewallUtil.isFirewallAccessible()) {
@@ -263,6 +319,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 row += 2;
                 builder.add(openport, cc.xyw(3, row, 2));
             }
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
+            builder.add(locationField, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(
@@ -374,6 +435,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 needsRestart = true;
             }
         }
+
+        // Set folder base
+        String folderbase = (String) locationModel.getValue();
+        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
@@ -506,6 +571,36 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 }
             }
             super.insertString(offs, b.toString(), a);
+        }
+    }
+
+
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) locationModel.getValue();
+            String newLocationName = DialogFactory.chooseDirectory(getController(),
+                initial);
+            File newLocation = new File(newLocationName);
+
+            // Make sure that the user is not setting this to the base dir of
+            // an existing folder.
+            for (Folder folder : getController().getFolderRepository().getFolders()) {
+                if (folder.getLocalBase().equals(newLocation)) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation(
+                                    "preferences.dialog.duplicate_localbase.title"),
+                            Translation.getTranslation(
+                                    "preferences.dialog.duplicate_localbase.message",
+                                    folder.getName()),
+                            GenericDialogType.ERROR);
+                    return;
+                }
+            }
+            locationModel.setValue(newLocationName);
         }
     }
 

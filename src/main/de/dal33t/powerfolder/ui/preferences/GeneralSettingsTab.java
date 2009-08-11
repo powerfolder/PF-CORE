@@ -63,9 +63,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox startWithWindowsBox;
 
-    private JTextField locationTF;
-    private ValueModel locationModel;
-    private JComponent locationField;
 
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
@@ -126,19 +123,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
-
-        // Local base selection
-        locationModel = new ValueHolder(getController().getFolderRepository()
-            .getFoldersBasedir());
-
-        // Behavior
-        locationModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateLocationComponents();
-            }
-        });
-
-        locationField = createLocationField();
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
@@ -227,7 +211,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -239,11 +223,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.nickname")), cc.xy(1, row));
             builder.add(nickField, cc.xy(3, row));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
-            builder.add(locationField, cc.xy(3, row));
 
             row += 2;
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
@@ -306,39 +285,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     /**
-     * Called when the location model changes value. Sets the location text
-     * field value and enables the location button.
-     */
-    private void updateLocationComponents() {
-        String value = (String) locationModel.getValue();
-        locationTF.setText(value);
-    }
-
-    /**
-     * Creates a pair of location text field and button.
-     *
-     * @param folderInfo
-     * @return
-     */
-    private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        locationTF = new JTextField();
-        locationTF.setEditable(false);
-        locationTF.setText((String) locationModel.getValue());
-        builder.add(locationTF, cc.xy(1, 1));
-
-        JButton locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("folder_create.dialog.select_directory.text"));
-        locationButton.addActionListener(new MyActionListener());
-        builder.add(locationButton, cc.xy(3, 1));
-        return builder.getPanel();
-    }
-
-    /**
      * Enable the mass delete slider if the box is selected.
      */
     private void enableMassDeleteSlider() {
@@ -348,10 +294,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     public void save() {
         // Write properties into core
         writeTrigger.triggerCommit();
-
-        // Set folder base
-        String folderbase = (String) locationModel.getValue();
-        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
         // Nickname
         if (!StringUtils.isBlank(nickField.getText())) {
@@ -401,36 +343,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             logSevere(e);
         }
     }
-
-    /**
-     * Action listener for the location button. Opens a choose dir dialog and
-     * sets the location model with the result.
-     */
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            String initial = (String) locationModel.getValue();
-            String newLocationName = DialogFactory.chooseDirectory(getController(),
-                initial);
-            File newLocation = new File(newLocationName);
-
-            // Make sure that the user is not setting this to the base dir of
-            // an existing folder.
-            for (Folder folder : getController().getFolderRepository().getFolders()) {
-                if (folder.getLocalBase().equals(newLocation)) {
-                    DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation(
-                                    "preferences.dialog.duplicate_localbase.title"),
-                            Translation.getTranslation(
-                                    "preferences.dialog.duplicate_localbase.message", 
-                                    folder.getName()),
-                            GenericDialogType.ERROR);
-                    return;
-                }
-            }
-            locationModel.setValue(newLocationName);
-        }
-    }
-
     private class MassDeleteItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             enableMassDeleteSlider();
