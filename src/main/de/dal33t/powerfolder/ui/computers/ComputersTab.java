@@ -24,7 +24,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -40,7 +39,7 @@ public class ComputersTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private ComputersList computersList;
-    private JComboBox computerTypeList;
+    private JCheckBox showOfflineCB;
     private JScrollPane scrollPane;
     private JLabel emptyLabel;
 
@@ -58,19 +57,9 @@ public class ComputersTab extends PFUIComponent {
 
         computersList = new ComputersList(getController(), this);
 
-        computerTypeList = new JComboBox();
-        computerTypeList.setToolTipText(Translation.getTranslation(
-                "computers_tab.computer_type_list.text"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.all_friends_online_lan"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.online_friends"));
-        computerTypeList.addItem(Translation.getTranslation(
-                "computers_tab.online_friends_online_lan"));
-        computerTypeList.addActionListener(new MyActionListener());
-        Integer initialSelection = PreferencesEntry.COMPUTER_TYPE_SELECTION
-                .getValueInt(getController());
-        computerTypeList.setSelectedIndex(initialSelection);
+        showOfflineCB = new JCheckBox();
+        showOfflineCB.addActionListener(new MyActionListener());
+        showOfflineCB.setSelected(true);
         configureNodeManagerModel();
     }
 
@@ -128,13 +117,14 @@ public class ComputersTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel()
                 .getActionModel().getFindComputersAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(searchComputerButton, cc.xy(2, 1));
-        builder.add(computerTypeList, cc.xy(4, 1));
+        builder.add(new JLabel(Translation.getTranslation("computers_tab.show_offline")), cc.xy(4, 1));
+        builder.add(showOfflineCB, cc.xy(6, 1));
 
         return builder.getPanel();
     }
@@ -145,21 +135,8 @@ public class ComputersTab extends PFUIComponent {
     private void configureNodeManagerModel() {
         NodeManagerModel nodeManagerModel = getUIController()
                 .getApplicationModel().getNodeManagerModel();
-        int index = computerTypeList.getSelectedIndex();
-        PreferencesEntry.COMPUTER_TYPE_SELECTION.setValue(
-                getController(), index);
-        if (index == 0) { // All friends / online lan
-            nodeManagerModel.getHideOfflineFriendsModel().setValue(false);
-            nodeManagerModel.getIncludeOnlineLanModel().setValue(true);
-        } else if (index == 1) { // Online friends
-            nodeManagerModel.getHideOfflineFriendsModel().setValue(true);
-            nodeManagerModel.getIncludeOnlineLanModel().setValue(false);
-        } else if (index == 2) { // Online friends / online lan
-            nodeManagerModel.getHideOfflineFriendsModel().setValue(true);
-            nodeManagerModel.getIncludeOnlineLanModel().setValue(true);
-        } else {
-            logSevere("Bad computerTypeList index " + index);
-        }
+            nodeManagerModel.getShowOfflineModel().setValue(
+                    showOfflineCB.isSelected());
     }
 
     /**
@@ -178,7 +155,7 @@ public class ComputersTab extends PFUIComponent {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource().equals(computerTypeList)) {
+            if (e.getSource().equals(showOfflineCB)) {
                 configureNodeManagerModel();
             }
         }

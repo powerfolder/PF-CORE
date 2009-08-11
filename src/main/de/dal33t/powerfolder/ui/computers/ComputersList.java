@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Iterator;
@@ -104,64 +103,6 @@ public class ComputersList extends PFUIComponent {
     }
 
     /**
-     * Add a view to the list
-     * 
-     * @param node
-     */
-    private void addViewForNode(Member node) {
-
-        // Do nothing until populate command is called.
-        if (!populated) {
-            return;
-        }
-
-        ExpandableComputerView view = new ExpandableComputerView(
-            getController(), node);
-        synchronized (viewList) {
-            computerListPanel.add(view.getUIComponent());
-            viewList.add(view);
-            view.addExpansionListener(expansionListener);
-            computersTab.updateEmptyLabel();
-        }
-    }
-
-    /**
-     * Remove a view from the list.
-     * 
-     * @param node
-     */
-    private void removeViewForNode(Member node) {
-
-        // Do nothing until populate command is called.
-        if (!populated) {
-            return;
-        }
-
-        synchronized (viewList) {
-            ExpandableComputerView viewToRemove = null;
-            outerLoop : for (ExpandableComputerView existingView : viewList) {
-                if (existingView.getNode().equals(node)) {
-                    viewToRemove = existingView;
-                    int count = computerListPanel.getComponentCount();
-                    JPanel existingComponent = existingView.getUIComponent();
-                    for (int i = 0; i < count; i++) {
-                        Component component = computerListPanel.getComponent(i);
-                        if (component.equals(existingComponent)) {
-                            computerListPanel.remove(component);
-                            break outerLoop;
-                        }
-                    }
-                }
-            }
-            if (viewToRemove != null) {
-                viewList.remove(viewToRemove);
-                viewToRemove.removeExpansionListener(expansionListener);
-                computersTab.updateEmptyLabel();
-            }
-        }
-    }
-
-    /**
      * Rebuild the whole list.
      */
     private void rebuild() {
@@ -171,7 +112,30 @@ public class ComputersList extends PFUIComponent {
             return;
         }
 
+        // Create a working copy of the node manager's nodes.
+        Set<Member> nodes = new TreeSet<Member>();
+        nodes.addAll(nodeManagerModel.getNodes());
+
         synchronized (viewList) {
+
+            // Are the nodes same as current views?
+            boolean different = false;
+            if (viewList.size() == nodes.size()) {
+                for (ExpandableComputerView view : viewList) {
+                    if (!nodes.contains(view.getNode())) {
+                        different = true;
+                        break;
+                    }
+                }
+            } else {
+                different = true;
+            }
+
+            if (!different) {
+                return;
+            }
+
+            // Clear view listeners
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
                 view.removeCoreListeners();
@@ -183,12 +147,8 @@ public class ComputersList extends PFUIComponent {
             // Split the members up by //
             // 1) My Computers,        //
             // 2) Friends and          //
-            // 3) LAN                  //
+            // 3) connected LAN        //
             /////////////////////////////
-
-            // Create a working copy of the node manager's nodes.
-            Set<Member> nodes = new TreeSet<Member>();
-            nodes.addAll(nodeManagerModel.getNodes());
 
             // First find my computers.
             boolean firstMyComputer = true;
@@ -218,18 +178,16 @@ public class ComputersList extends PFUIComponent {
                 }
             }
 
-            // Then LAN.
+            // Then others (connected on LAN).
             boolean firstOther = true;
             for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
                 Member node = iter.next();
-                if (node.isOnLAN()) {
-                    if (firstOther) {
-                        firstOther = false;
-                        addSeparator(Translation.getTranslation("computer_list.lan"));
-                    }
-                    addView(node);
-                    iter.remove();
+                if (firstOther) {
+                    firstOther = false;
+                    addSeparator(Translation.getTranslation("computer_list.lan"));
                 }
+                addView(node);
+                iter.remove();
             }
 
             computersTab.updateEmptyLabel();
@@ -281,13 +239,11 @@ public class ComputersList extends PFUIComponent {
     {
 
         public void nodeRemoved(NodeManagerModelEvent e) {
-            Member node = e.getNode();
-            removeViewForNode(node);
+            rebuild();
         }
 
         public void nodeAdded(NodeManagerModelEvent e) {
-            Member node = e.getNode();
-            addViewForNode(node);
+            rebuild();
         }
 
         public void rebuilt(NodeManagerModelEvent e) {

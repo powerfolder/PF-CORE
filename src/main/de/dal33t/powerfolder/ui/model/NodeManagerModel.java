@@ -55,8 +55,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class NodeManagerModel extends PFUIComponent {
 
-    private ValueModel hideOfflineFriendsModel;
-    private ValueModel includeOnlineLanModel;
+    private ValueModel showOfflineModel;
     private ArrayListModel<Member> friendsListModel;
     private final Set<Member> nodes;
     private final NodeManager nodeManager;
@@ -108,13 +107,9 @@ public class NodeManagerModel extends PFUIComponent {
 
         friendsListModel = new ArrayListModel<Member>();
 
-        hideOfflineFriendsModel = PreferencesEntry.NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS
+        showOfflineModel = PreferencesEntry.NODE_MANAGER_MODEL_SHOW_OFFLINE
             .getModel(getController());
-        hideOfflineFriendsModel.addValueChangeListener(propertyChangeListener);
-
-        includeOnlineLanModel = PreferencesEntry.NODE_MANAGER_MODEL_INCLUDE_ONLINE_LAN_USERS
-            .getModel(getController());
-        includeOnlineLanModel.addValueChangeListener(propertyChangeListener);
+        showOfflineModel.addValueChangeListener(propertyChangeListener);
 
         rebuildSet();
 
@@ -147,38 +142,36 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Answers if the node is required based on value models.
+     * This only returns nodes that are my computer, friend or connected lan.
+     * Also filters online based on showOfflineModel 
      * 
      * @param node
      * @return
      */
     private boolean required(Member node) {
 
-        boolean hideOfflineFriends = (Boolean) hideOfflineFriendsModel
+        boolean showOffline = (Boolean) showOfflineModel
             .getValue();
-        boolean includeOnlineLan = (Boolean) includeOnlineLanModel.getValue();
         boolean connected = node.isCompleteyConnected();
         boolean online = connected || node.isConnectedToNetwork();
 
         if (node.isMySelf()) {
-            // Never add ourself
+            // Never add self
             return false;
         }
 
-        if (node.isFriend()) {
-            if (hideOfflineFriends) {
-                if (online) {
-                    return true;
-                }
-            } else {
-                return true;
-            }
+        // Only care for
+        // 1) my computers,
+        // 2) friends, and 
+        // 3) connected lan
+        if (node.isMyComputer() || node.isFriend() ||
+                node.isOnLAN() && node.isCompleteyConnected()) {
+            // Wanted, now check online.
+            return showOffline || online;
+        } else {
+            return false;
         }
 
-        if (includeOnlineLan && node.isOnLAN() && connected) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -193,15 +186,8 @@ public class NodeManagerModel extends PFUIComponent {
     /**
      * @return if offline friends should be shown.
      */
-    public ValueModel getHideOfflineFriendsModel() {
-        return hideOfflineFriendsModel;
-    }
-
-    /**
-     * @return if online lan users should be shown.
-     */
-    public ValueModel getIncludeOnlineLanModel() {
-        return includeOnlineLanModel;
+    public ValueModel getShowOfflineModel() {
+        return showOfflineModel;
     }
 
     /**

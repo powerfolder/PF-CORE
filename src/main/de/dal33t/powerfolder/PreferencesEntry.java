@@ -34,16 +34,10 @@ import java.util.logging.Level;
  */
 public enum PreferencesEntry {
     /**
-     * Hide offline friends
+     * Show offline members
      */
-    NODE_MANAGER_MODEL_HIDE_OFFLINE_FRIENDS("NodeManagerModel_HideOfflineFriends",
-        false),
-    /**
-     * Include all LAN users
-     */
-    NODE_MANAGER_MODEL_INCLUDE_ONLINE_LAN_USERS("NodeManagerModel_IncludeLanUsers",
+    NODE_MANAGER_MODEL_SHOW_OFFLINE("node_manager_model_show_offline",
         true),
-
     /** find offline users */
     FRIEND_SEARCH_HIDE_OFFLINE("FriendsSearch_HideOfflineUsers", false),
 
@@ -84,8 +78,6 @@ public enum PreferencesEntry {
      * If the last password of login should be reminded.
      */
     SERVER_REMEMBER_PASSWORD("server_remind_password", true),
-
-    COMPUTER_TYPE_SELECTION("computer_type_selection", 0),
 
     FOLDER_TYPE_SELECTION("folder_type_selection", 0),
 
