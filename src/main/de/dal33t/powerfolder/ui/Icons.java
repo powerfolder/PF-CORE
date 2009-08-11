@@ -108,7 +108,6 @@ public class Icons {
     public static final String ARROW_RIGHT = "arrow_right.icon";
 
     // Toolbar
-    public static final String FRIENDS = "friends.icon";
     public static final String NEW_FOLDER_48 = "new_folder_48.icon";
     public static final String JOIN_FOLDER_48 = "join_folder_48.icon";
     public static final String SYNC_FOLDER_48 = "sync_48.icon";
