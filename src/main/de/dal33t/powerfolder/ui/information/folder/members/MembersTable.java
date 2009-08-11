@@ -175,7 +175,7 @@ public class MembersTable extends JTable {
                     setText("Not connected to server");
                     setForeground(Color.GRAY);
                 } else if (isServer) {
-                    setText("Online Storage");
+                    setText("Server");
                     setForeground(Color.GRAY);
                 } else {
                     setText("Not logged in");
