@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.ExpansionListener;
@@ -34,6 +35,8 @@ import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ComputersList extends PFUIComponent {
@@ -175,15 +178,81 @@ public class ComputersList extends PFUIComponent {
             }
             viewList.clear();
             computerListPanel.removeAll();
-            for (Member node : nodeManagerModel.getNodes()) {
-                ExpandableComputerView view = new ExpandableComputerView(
-                    getController(), node);
-                computerListPanel.add(view.getUIComponent());
-                viewList.add(view);
-                view.addExpansionListener(expansionListener);
+
+            /////////////////////////////
+            // Split the members up by //
+            // 1) My Computers,        //
+            // 2) Friends and          //
+            // 3) LAN                  //
+            /////////////////////////////
+
+            // Create a working copy of the node manager's nodes.
+            Set<Member> nodes = new TreeSet<Member>();
+            nodes.addAll(nodeManagerModel.getNodes());
+
+            // First find my computers.
+            boolean firstMyComputer = true;
+            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
+                Member node = iter.next();
+                if (node.isMyComputer()) {
+                    if (firstMyComputer) {
+                        firstMyComputer = false;
+                        addSeparator(Translation.getTranslation("computer_list.my_computers"));
+                    }
+                    addView(node);
+                    iter.remove();
+                }
             }
+
+            // Then find friends.
+            boolean firstFriend = true;
+            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
+                Member node = iter.next();
+                if (node.isFriend()) {
+                    if (firstFriend) {
+                        firstFriend = false;
+                        addSeparator(Translation.getTranslation("computer_list.friends"));
+                    }
+                    addView(node);
+                    iter.remove();
+                }
+            }
+
+            // Then LAN.
+            boolean firstOther = true;
+            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
+                Member node = iter.next();
+                if (node.isOnLAN()) {
+                    if (firstOther) {
+                        firstOther = false;
+                        addSeparator(Translation.getTranslation("computer_list.lan"));
+                    }
+                    addView(node);
+                    iter.remove();
+                }
+            }
+
             computersTab.updateEmptyLabel();
         }
+    }
+
+    private void addSeparator(String label) {
+        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.addSeparator(label, cc.xy(2, 1));
+        JPanel panel = builder.getPanel();
+        panel.setOpaque(false);
+        computerListPanel.add(panel);
+    }
+
+    private void addView(Member node) {
+        ExpandableComputerView view = new ExpandableComputerView(
+            getController(), node);
+        computerListPanel.add(view.getUIComponent());
+        viewList.add(view);
+        view.addExpansionListener(expansionListener);
     }
 
     public boolean isEmpty() {
@@ -201,7 +270,7 @@ public class ComputersList extends PFUIComponent {
     }
 
     // ////////////////
-    // Inner Classes//
+    // Inner Classes //
     // ////////////////
 
     /**
