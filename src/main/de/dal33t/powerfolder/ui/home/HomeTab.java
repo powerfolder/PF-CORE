@@ -44,6 +44,7 @@ import javax.swing.TransferHandler;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -288,6 +289,8 @@ public class HomeTab extends PFUIComponent {
 
         }
         PanelBuilder builder = new PanelBuilder(layout);
+        // Bottom border
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
@@ -341,7 +344,6 @@ public class HomeTab extends PFUIComponent {
         row++;
 
         if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
-    
             builder.addSeparator(null, cc.xywh(2, row, 2, 1));
             row += 2;
 

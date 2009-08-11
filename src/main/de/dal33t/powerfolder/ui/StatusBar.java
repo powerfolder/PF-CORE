@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -86,9 +87,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         if (comp == null) {
 
-            boolean showPort = ConfigurationEntry.NET_BIND_RANDOM_PORT
-                .getValueBoolean(getController())
-                && getController().getConnectionListener().getPort() != ConnectionListener.DEFAULT_PORT;
+            boolean showPort = getController().getConnectionListener()
+                .getPort() != ConnectionListener.DEFAULT_PORT;
             initComponents();
 
             String debugArea = "";
@@ -103,8 +103,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             FormLayout mainLayout = new FormLayout("1dlu, " + debugArea
                 + "pref, 3dlu, pref,  3dlu, pref, fill:pref:grow, pref, 3dlu, "
-                + portArea + " pref, 3dlu, pref, 1dlu", "pref, 1dlu");
+                + portArea + " pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
+            mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
             CellConstraints cc = new CellConstraints();
 
             int col = 2;
