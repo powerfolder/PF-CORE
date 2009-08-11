@@ -19,6 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.information.downloads;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TimerTask;
+
+import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -31,26 +45,19 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.compare.DownloadManagerComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
-import de.dal33t.powerfolder.util.compare.DownloadManagerComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 
 /**
  * A Tablemodel adapter which acts upon a transfermanager.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11.2.1 $
  */
-public class DownloadManagersTableModel extends PFComponent implements TableModel,
-    SortedTableModel
+public class DownloadManagersTableModel extends PFComponent implements
+    TableModel, SortedTableModel
 {
     private static final int COLTYPE = 0;
     private static final int COLFILE = 1;
@@ -73,7 +80,8 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
         Reject.ifNull(model, "Model is null");
         listeners = Collections
             .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloadManagers = Collections.synchronizedList(new ArrayList<DownloadManager>());
+        downloadManagers = Collections
+            .synchronizedList(new ArrayList<DownloadManager>());
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
@@ -83,7 +91,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
     /**
      * Initalizes the model upon a transfer manager
-     *
+     * 
      * @param tm
      */
     public void initialize() {
@@ -135,7 +143,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     *
+     * 
      * @param newComparator
      * @return if the table was freshly sorted
      */
@@ -155,7 +163,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
     /**
      * Add all if there is not an identical download.
-     *
+     * 
      * @param dls
      */
     private void addAll(Collection<Download> dls) {
@@ -163,7 +171,8 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
             boolean insert = true;
             for (DownloadManager downloadManager : downloadManagers) {
                 for (Download download : downloadManager.getSources()) {
-                    if (dl.getFile().isCompletelyIdentical(download.getFile())) {
+                    if (dl.getFile().isCompletelyIdentical(download.getFile()))
+                    {
                         insert = false;
                         break;
                     }
@@ -183,7 +192,8 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
             if (sortAscending) {
                 Collections.sort(downloadManagers, comparator);
             } else {
-                Collections.sort(downloadManagers, new ReverseComparator(comparator));
+                Collections.sort(downloadManagers, new ReverseComparator(
+                    comparator));
             }
             return true;
         }
@@ -244,12 +254,16 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (rowIndex >= downloadManagers.size()) {
-            logSevere(
-                "Illegal rowIndex requested. rowIndex " + rowIndex
-                    + ", downloadManagers " + downloadManagers.size());
+            logSevere("Illegal rowIndex requested. rowIndex " + rowIndex
+                + ", downloadManagers " + downloadManagers.size());
             return null;
         }
         DownloadManager downloadManager = downloadManagers.get(rowIndex);
+        if (downloadManager == null) {
+            logSevere("Illegal rowIndex requested. rowIndex " + rowIndex
+                + ", downloadManagers " + downloadManagers.size());
+            return null;
+        }
         switch (columnIndex) {
             case COLTYPE :
             case COLFILE :
@@ -339,7 +353,7 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
      * Only some types of problem are relevant for display.
      * <p>
      * TODO COPIED to TransferTableCellRenderer
-     *
+     * 
      * @param problem
      *            the transfer problem
      * @return true if it should be displayed.
@@ -387,11 +401,11 @@ public class DownloadManagersTableModel extends PFComponent implements TableMode
 
     // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
      * Listener on Transfer manager with new event system
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class MyTransferManagerListener extends TransferAdapter {
