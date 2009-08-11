@@ -108,15 +108,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             CellConstraints cc = new CellConstraints();
 
             int col = 2;
-
-            if (debugArea.length() > 0) {
-                mainBuilder.add(openDebugButton, cc.xy(col, 1));
-                col += 2;
-            }
             mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(sleepButton, cc.xy(col, 1));
             col += 2;
+            if (debugArea.length() > 0) {
+                mainBuilder.add(openDebugButton, cc.xy(col, 1));
+                col += 2;
+            }
             mainBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
             col += 2; // Central fill area
             mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
