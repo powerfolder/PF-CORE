@@ -51,7 +51,6 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
@@ -108,7 +107,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private final FolderRepository folderRepository;
     private Folder folder;
 
-    private FolderListener folderListener;
+    private MyFolderListener folderListener;
     private int sortColumn = -1;
     private boolean sortAscending = true;
 
@@ -117,7 +116,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     private SelectionInList<FolderPermission> permissionsListModel;
 
     // TODO Move into model. FolderModel?
-    private volatile boolean updatingDefaultPermissionModel;
+    private boolean permissionsRetrieved;
+    private boolean updatingDefaultPermissionModel;
     private ValueModel defaultPermissionModel;
     private SelectionInList<FolderPermission> defaultPermissionsListModel;
 
@@ -182,6 +182,10 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         return (FolderPermission) defaultPermissionModel.getValue();
     }
 
+    boolean isPermissionsRetrieved() {
+        return permissionsRetrieved;
+    }
+
     public ValueModel getRefreshingModel() {
         return refreshingModel;
     }
@@ -198,9 +202,11 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     public void setFolderInfo(FolderInfo folderInfo) {
         if (folder != null) {
             folder.removeFolderListener(folderListener);
+            folder.removeMembershipListener(folderListener);
         }
         folder = folderRepository.getFolder(folderInfo);
         folder.addFolderListener(folderListener);
+        folder.addMembershipListener(folderListener);
 
         // members
         members.clear();
@@ -342,7 +348,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
      * @return
      */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == COL_PERMISSION
+        return columnIndex == COL_PERMISSION && permissionsRetrieved
             && getFolderMemberAt(rowIndex).getAccountInfo() != null;
     }
 
@@ -508,9 +514,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         public void memberJoined(FolderMembershipEvent event) {
             // handleNodeAdded(folderEvent.getMember());
-            if (folder.getMembersAsCollection().contains(event.getMember())) {
-                refreshModel();
-            }
+            refreshModel();
         }
 
         public void memberLeft(FolderMembershipEvent event) {
@@ -607,36 +611,41 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         // Step 3) Possible permissions
         permissionsListModel.clearSelection();
         permissionsListModel.getList().clear();
-        // Use default
-        permissionsListModel.getList().add(null);
-        permissionsListModel.getList().add(
-            new FolderReadPermission(folder.getInfo()));
-        permissionsListModel.getList().add(
-            new FolderReadWritePermission(folder.getInfo()));
-        permissionsListModel.getList().add(
-            new FolderAdminPermission(folder.getInfo()));
+        if (permissionsRetrieved) {
+            // Use default
+            permissionsListModel.getList().add(null);
+            permissionsListModel.getList().add(
+                new FolderReadPermission(folder.getInfo()));
+            permissionsListModel.getList().add(
+                new FolderReadWritePermission(folder.getInfo()));
+            permissionsListModel.getList().add(
+                new FolderAdminPermission(folder.getInfo()));
+        }
+
         updatingDefaultPermissionModel = true;
         defaultPermissionsListModel.clearSelection();
         defaultPermissionsListModel.getList().clear();
-        // No access
-        defaultPermissionsListModel.getList().add(null);
-        defaultPermissionsListModel.getList().add(
-            new FolderReadPermission(folder.getInfo()));
-        defaultPermissionsListModel.getList().add(
-            new FolderReadWritePermission(folder.getInfo()));
-        defaultPermissionsListModel.getList().add(
-            new FolderAdminPermission(folder.getInfo()));
-        if (folder.getLocalSecuritySettings() != null) {
-            defaultPermissionModel.setValue(folder.getLocalSecuritySettings()
-                .getDefaultPermission());
-        }
-        if (securitySettingsGlobal != null) {
-            defaultPermissionModel.setValue(securitySettingsGlobal
-                .getDefaultPermission());
-        } else {
-            // Default default permission: ADMIN
-            defaultPermissionModel.setValue(new FolderAdminPermission(folder
-                .getInfo()));
+        if (permissionsRetrieved) {
+            // No access
+            defaultPermissionsListModel.getList().add(null);
+            defaultPermissionsListModel.getList().add(
+                new FolderReadPermission(folder.getInfo()));
+            defaultPermissionsListModel.getList().add(
+                new FolderReadWritePermission(folder.getInfo()));
+            defaultPermissionsListModel.getList().add(
+                new FolderAdminPermission(folder.getInfo()));
+            if (folder.getLocalSecuritySettings() != null) {
+                defaultPermissionModel.setValue(folder
+                    .getLocalSecuritySettings().getDefaultPermission());
+            }
+            if (securitySettingsGlobal != null) {
+                defaultPermissionModel.setValue(securitySettingsGlobal
+                    .getDefaultPermission());
+            } else {
+                // Default default permission: ADMIN
+                defaultPermissionModel.setValue(new FolderAdminPermission(
+                    folder.getInfo()));
+            }
         }
         updatingDefaultPermissionModel = false;
 
@@ -739,9 +748,11 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     // Folder has changed. discard result.
                     return;
                 }
+                permissionsRetrieved = true;
                 rebuild(res, securitySettings);
             } catch (Exception e) {
                 logWarning(e);
+                permissionsRetrieved = false;
                 rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
             } finally {
                 refreshingModel.setValue(Boolean.FALSE);

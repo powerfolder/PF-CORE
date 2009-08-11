@@ -142,9 +142,12 @@ public class MembersTab extends PFUIComponent {
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     boolean refreshing = (Boolean) evt.getNewValue();
+                    boolean permissionsRetrieved = model
+                        .isPermissionsRetrieved();
                     refreshBar.setVisible(refreshing);
                     refreshButton.setVisible(!refreshing);
-                    defaultPermissionBox.setEnabled(!refreshing);
+                    defaultPermissionBox.setEnabled(!refreshing
+                        && permissionsRetrieved);
                 }
             });
     }
@@ -206,7 +209,8 @@ public class MembersTab extends PFUIComponent {
         refreshBar.setMaximumSize(openChatButton.getMaximumSize());
         refreshBar.setPreferredSize(openChatButton.getPreferredSize());
 
-        layout = new FormLayout("pref, 0:grow, pref, 3dlu, pref", "pref");
+        layout = new FormLayout("pref, 0:grow, pref, 3dlu, max(60dlu;pref)",
+            "pref");
         builder = new PanelBuilder(layout);
         cc = new CellConstraints();
         builder.add(buttonBarPanel, cc.xy(1, 1));

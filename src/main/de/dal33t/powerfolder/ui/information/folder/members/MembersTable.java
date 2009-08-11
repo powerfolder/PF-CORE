@@ -105,7 +105,7 @@ public class MembersTable extends JTable {
         column.setPreferredWidth(20);
 
         column = getColumn(getColumnName(MembersTableModel.COL_PERMISSION));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(100);
 
         column = getColumn(getColumnName(MembersTableModel.COL_LOCAL_SIZE));
         column.setPreferredWidth(100);
@@ -152,6 +152,10 @@ public class MembersTable extends JTable {
             setIcon(null);
             setForeground(ColorUtil.getTextForegroundColor());
 
+            boolean isServer = folderMember.getMember() != null
+                && model.getController().getOSClient().isServer(
+                    folderMember.getMember());
+
             if (actualColumn == MembersTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
                 Icon icon = member != null ? Icons.getIconFor(member) : Icons
@@ -167,6 +171,12 @@ public class MembersTable extends JTable {
             } else if (actualColumn == MembersTableModel.COL_USERNAME) {
                 if (folderMember.getAccountInfo() != null) {
                     setText(folderMember.getAccountInfo().getScrabledUsername());
+                } else if (!model.getController().getOSClient().isConnected()) {
+                    setText("Not connected to server");
+                    setForeground(Color.GRAY);
+                } else if (isServer) {
+                    setText("Online Storage");
+                    setForeground(Color.GRAY);
                 } else {
                     setText("Not logged in");
                     setForeground(Color.GRAY);
@@ -176,27 +186,22 @@ public class MembersTable extends JTable {
                 if (!editable) {
                     setForeground(Color.GRAY);
                 }
-
-                if (folderMember.getPermission() != null) {
+                if (!model.isPermissionsRetrieved()) {
+                    setText("");
+                } else if (folderMember.getPermission() != null) {
                     setText(folderMember.getPermission().getName());
+                } else if (isServer) {
+                    // Server has read/write by default
+                    setText(Translation
+                        .getTranslation("permissions.folder.read_write"));
                 } else {
                     FolderPermission defPerm = model.getDefaultPermission();
                     if (defPerm != null) {
                         setText(defPerm.getName() + " (default)");
                     } else {
-                        if (folderMember.getMember() != null
-                            && model.getController().getOSClient().isServer(
-                                folderMember.getMember()))
-                        {
-                            // Server has read/write by default
-                            setText(Translation
-                                .getTranslation("permissions.folder.read_write"));
-                        } else {
-                            setText("No access");
-                        }
+                        setText("No access");
                     }
                 }
-
             }
 
             if (!isSelected) {
@@ -219,6 +224,7 @@ public class MembersTable extends JTable {
             {
                 Component comp = super.getListCellRendererComponent(list,
                     value, index, isSelected, cellHasFocus);
+
                 if (value instanceof FolderPermission) {
                     setText(((FolderPermission) value).getName());
                 } else {
@@ -230,7 +236,12 @@ public class MembersTable extends JTable {
                     {
                         setText("No access");
                     } else {
-                        setText("Use default");
+                        FolderPermission defPerm = model.getDefaultPermission();
+                        if (defPerm != null) {
+                            setText(defPerm.getName() + " (default)");
+                        } else {
+                            setText("No access (default)");
+                        }
                     }
 
                 }

@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
@@ -58,6 +60,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -78,6 +82,8 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.12 $
  */
 public class SendInvitationsPanel extends PFWizardPanel {
+    private static final Logger LOG = Logger
+        .getLogger(SendInvitationsAdvancedPanel.class.getName());
 
     private JButtonMini addButton;
     private JButtonMini searchButton;
@@ -104,10 +110,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * 
      * @return true if send otherwise false
      */
-    private boolean sendInvitationToNodes() {
+    private boolean sendInvitation() {
         if (invitation == null) {
             return false;
         }
+        invitation
+            .setPermission((FolderPermission) permissionsModel.getValue());
         boolean theResult = false;
         Member[] friends = getController().getNodeManager().getFriends();
 
@@ -133,43 +141,55 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     /**
-     * Send an invite to a friend. The invitee must be in the list of friends
-     * or be a valid email.
-     *
+     * Send an invite to a friend. The invitee must be in the list of friends or
+     * be a valid email.
+     * 
      * @param friends
      * @param invitee
      */
     private void sendInvite(Member[] friends, String invitee) {
         for (Member member : friends) {
             if (invitee.equalsIgnoreCase(member.getNick())) {
-                InvitationUtil.invitationToNode(getController(),
-                    invitation, member);
+                InvitationUtil.invitationToNode(getController(), invitation,
+                    member);
                 if (member.getAccountInfo() != null) {
-                    InvitationUtil.invitationByServer(getController(),
-                        invitation, member.getAccountInfo().getUsername(),
-                        false);
+                    try {
+                        InvitationUtil.invitationByServer(getController(),
+                            invitation, member.getAccountInfo().getUsername(),
+                            false);
+                    } catch (Exception e) {
+                        LOG.log(Level.SEVERE, "Unable to send invitation to "
+                            + member + " / " + member.getAccountInfo() + ". "
+                            + e, e);
+                    }
+
                 }
                 break;
             }
         }
         if (Util.isValidEmail(invitee)) {
-            InvitationUtil.invitationByServer(getController(), invitation,
-                invitee, false);
+            try {
+                InvitationUtil.invitationByServer(getController(), invitation,
+                    invitee, false);
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
+                    + ". " + e, e);
+            }
         }
     }
 
     public boolean hasNext() {
         return !inviteesListModel.isEmpty()
-                || viaPowerFolderText.getText().length() > 0
-                || locationModel.getValue() != null
-                   && ((String) locationModel.getValue()).length() > 0;
+            || viaPowerFolderText.getText().length() > 0
+            || locationModel.getValue() != null
+            && ((String) locationModel.getValue()).length() > 0;
     }
 
     public boolean validateNext() {
         if (messageModel.getValue() != null) {
             invitation.setInvitationText((String) messageModel.getValue());
         }
-        return sendInvitationToNodes();
+        return sendInvitation();
     }
 
     public WizardPanel next() {
@@ -214,8 +234,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         row += 2;
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
-        inviteesListScrollPane
-            .setPreferredSize(new Dimension(getPreferredSize().width, 50));
+        inviteesListScrollPane.setPreferredSize(new Dimension(
+            getPreferredSize().width, 50));
         builder.add(inviteesListScrollPane, cc.xy(1, row));
         inviteesListScrollPane.setVisible(false);
 
@@ -308,8 +328,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
 
-        permissionsModel = new ValueHolder(
-            new FolderReadWritePermission(folder), true);
+        permissionsModel = new ValueHolder(new FolderReadPermission(folder),
+            true);
 
         enableAddButton();
         enableRemoveButton();
