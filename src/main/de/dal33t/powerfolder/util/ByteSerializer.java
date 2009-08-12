@@ -268,8 +268,8 @@ public class ByteSerializer extends Loggable {
             LOG
                 .warning("Stream was not as expected ("
                     + (expectCompression
-                        ? "compression was expected, but data arrived uncompressed"
-                        : "no compression was expected, but data arrived compressed")
+                        ? "compression was expected, but received uncompressed data"
+                        : "no compression was expected, but received compressed data")
                     + ") on " + result);
         }
         return result;
