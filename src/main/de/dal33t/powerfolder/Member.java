@@ -1260,17 +1260,21 @@ public class Member extends PFComponent implements Comparable<Member> {
         int expectedTime = -1;
         try {
             // related folder is filled if message is a folder related message
-            FolderInfo targetedFolderInfo = null;
-            Folder targetFolder = null;
+            final FolderInfo targetedFolderInfo;
+            final Folder targetFolder;
             if (message instanceof FolderRelatedMessage) {
                 targetedFolderInfo = ((FolderRelatedMessage) message).folder;
                 if (targetedFolderInfo != null) {
                     targetFolder = getController().getFolderRepository()
                         .getFolder(targetedFolderInfo);
                 } else {
+                    targetFolder = null;
                     logSevere("Got folder message without FolderInfo: "
                         + message);
                 }
+            } else {
+                targetedFolderInfo = null;
+                targetFolder = null;
             }
 
             // do all the message processing
@@ -1445,7 +1449,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof FileList) {
-                FileList remoteFileList = (FileList) message;
+                final FileList remoteFileList = (FileList) message;
 
                 if (isFine()) {
                     logFine("Received new filelist. Expecting "
@@ -1463,12 +1467,17 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // file list?.
                 if (targetFolder != null) {
                     // Inform folder
-                    targetFolder.fileListChanged(this, remoteFileList);
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            targetFolder.fileListChanged(Member.this,
+                                remoteFileList);
+                        }
+                    });
                 }
                 expectedTime = 250;
 
             } else if (message instanceof FolderFilesChanged) {
-                FolderFilesChanged changes = (FolderFilesChanged) message;
+                final FolderFilesChanged changes = (FolderFilesChanged) message;
                 Convert.cleanFileList(getController(), changes.added);
                 Convert.cleanFileList(getController(), changes.removed);
                 Integer nExpected = expectedListMessages.get(changes.folder);
@@ -1522,7 +1531,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 if (targetFolder != null) {
                     // Inform folder
-                    targetFolder.fileListChanged(this, changes);
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            targetFolder.fileListChanged(Member.this, changes);
+                        }
+                    });
                 }
                 expectedTime = 250;
 
@@ -1563,7 +1576,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof SearchNodeRequest) {
                 // Send nodelist that matches the search.
                 final SearchNodeRequest request = (SearchNodeRequest) message;
-                getController().getNodeManager().receivedSearchNodeRequest(request,this);
+                getController().getNodeManager().receivedSearchNodeRequest(
+                    request, this);
                 expectedTime = 50;
 
             } else if (message instanceof AddFriendNotification) {

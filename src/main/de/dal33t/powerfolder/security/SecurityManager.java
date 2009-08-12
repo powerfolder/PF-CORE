@@ -87,15 +87,6 @@ public interface SecurityManager {
      */
     boolean hasFolderPermission(Member member, FolderPermission permission);
 
-    /**
-     * Retrieves the default folder permission for the given folder. uses local
-     * fallback value if no connection to server is possible.
-     * 
-     * @param foInfo
-     * @return the default permission on this folder.
-     */
-    FolderPermission getDefaultPermission(FolderInfo foInfo);
-
     // Event handling *********************************************************
 
     void addListener(SecurityManagerListener listner);

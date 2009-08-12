@@ -391,8 +391,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     void refreshModel() {
-        refreshingModel.setValue(Boolean.TRUE);
-        new ModelRefresher().execute();
+        if (getController().getOSClient().isConnected()) {
+            refreshingModel.setValue(Boolean.TRUE);
+            new ModelRefresher().execute();
+        } else {
+            rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+        }
     }
 
     // Helpers ****************************************************************
@@ -633,17 +637,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 new FolderReadWritePermission(folder.getInfo()));
             defaultPermissionsListModel.getList().add(
                 new FolderAdminPermission(folder.getInfo()));
-            if (folder.getLocalDefaultPermission() != null) {
-                defaultPermissionModel.setValue(folder
-                    .getLocalDefaultPermission());
-            }
-            if (defaultPermission != null) {
-                defaultPermissionModel.setValue(defaultPermission);
-            } else {
-                // Default default permission: ADMIN
-                defaultPermissionModel.setValue(new FolderAdminPermission(
-                    folder.getInfo()));
-            }
+            defaultPermissionModel.setValue(defaultPermission);
         }
         updatingDefaultPermissionModel = false;
 

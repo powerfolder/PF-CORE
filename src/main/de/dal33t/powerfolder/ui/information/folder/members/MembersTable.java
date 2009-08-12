@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -188,19 +189,25 @@ public class MembersTable extends JTable {
                 }
                 if (!model.isPermissionsRetrieved()) {
                     setText("");
-                } else if (folderMember.getPermission() != null) {
-                    setText(folderMember.getPermission().getName());
                 } else if (isServer) {
                     // Server has read/write by default
                     setText(Translation
                         .getTranslation("permissions.folder.read_write"));
                 } else {
+                    String name;
                     FolderPermission defPerm = model.getDefaultPermission();
-                    if (defPerm != null) {
-                        setText(defPerm.getName() + " (default)");
+                    if (folderMember.getPermission() != null) {
+                        name = folderMember.getPermission().getName();
+                    } else if (defPerm != null) {
+                        name = defPerm.getName();
+                        name += " (default)";
                     } else {
-                        setText("No access");
+                        name = "No access";
+                        if (defPerm == null) {
+                            name += " (default)";
+                        }
                     }
+                    setText(name);
                 }
             }
 

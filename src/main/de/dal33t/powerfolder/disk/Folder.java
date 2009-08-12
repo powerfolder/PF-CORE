@@ -2483,7 +2483,8 @@ public class Folder extends PFComponent {
             // only
             // FIXME: Is called too often, should be called after finish of
             // filelist sending only.
-            triggerSyncRemoteDeletedFiles(false);
+            syncRemoteDeletedFiles(false);
+            // triggerSyncRemoteDeletedFiles(false);
         }
 
         fireRemoteContentsChanged(newList);
@@ -2602,7 +2603,8 @@ public class Folder extends PFComponent {
             // only
             // FIXME: Is called too often, should be called after finish of
             // filelist sending only.
-            triggerSyncRemoteDeletedFiles(false);
+            syncRemoteDeletedFiles(false);
+            // triggerSyncRemoteDeletedFiles(false);
         }
 
         // Fire event
