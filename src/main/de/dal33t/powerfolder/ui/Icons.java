@@ -291,14 +291,14 @@ public class Icons {
 
         String iconId = getIconId(id);
         if (iconId == null) {
-            log.severe("Icon not found ID: '" + id + '\'');
+            log.fine("Icon not found ID: '" + id + '\'');
             return null;
         }
 
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(iconId);
         if (iconURL == null) {
-            log.severe("Icon not found '" + id + '\'');
+            log.fine("Icon not found '" + id + '\'');
             return null;
         }
 
@@ -573,7 +573,7 @@ public class Icons {
     private static Icon getCachedIcon(String extension, boolean disabled) {
         if (disabled) {
             if (EXTENSION_ICON_MAP.containsKey(extension)) { // getIcon from
-                                                             // cache
+                // cache
                 return EXTENSION_ICON_MAP.get(extension);
             }
         } else {// file does not exist try to get Disabled icon
