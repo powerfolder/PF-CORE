@@ -204,7 +204,7 @@ public class SplashScreen extends JWindow {
                         g.setColor(FREE_TEXT_COLOR);
                     }
                     String version = Controller.PROGRAM_VERSION;
-                    g.drawString(version, 510, 98);
+                    g.drawString(version, getWidth() - 95, 146);
                     g.drawString(tipOfTheDay, 30, 146);
                 }
             });
