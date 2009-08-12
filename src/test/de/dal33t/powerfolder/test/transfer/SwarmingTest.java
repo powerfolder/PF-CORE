@@ -50,7 +50,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
-    public void xtestKillerSwarm() throws IOException {
+    public void testKillerSwarm() throws IOException {
         nSetupControllers(20);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
@@ -81,15 +81,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void xtestFiveSwarmMulti() throws Exception {
+    public void testFiveSwarmMulti() throws Exception {
         for (int i = 0; i < 5; i++) {
-            xtestFiveSwarmDownload();
+            testFiveSwarmDownload();
             tearDown();
             setUp();
         }
     }
 
-    public void xtestFiveSwarmDownload() throws IOException {
+    public void testFiveSwarmDownload() throws IOException {
         final long fsize = 10000000;
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
@@ -269,7 +269,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void xtestFileAlterations() throws IOException {
+    public void testFileAlterations() throws IOException {
         nSetupControllers(6);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
@@ -346,15 +346,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void xtestMultiFileAlterations() throws Exception {
+    public void testMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
-            xtestFileAlterations();
+            testFileAlterations();
             tearDown();
             setUp();
         }
     }
 
-    public void xtestMultifileSwarmingWithHeavyModifications()
+    public void testMultifileSwarmingWithHeavyModifications()
         throws IOException
     {
         Random prng = new Random();
@@ -526,7 +526,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.cleanTestDir();
     }
 
-    public void xtestConcurrentModificationsLargeSwarmDeltaSync()
+    public void testConcurrentModificationsLargeSwarmDeltaSync()
         throws IOException
     {
         Random prng = new Random();
