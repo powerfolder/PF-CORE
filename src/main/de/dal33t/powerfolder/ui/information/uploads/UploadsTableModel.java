@@ -54,12 +54,12 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     public static final int UPDATE_TIME = 1000;
 
-    private static final int COLTYPE = 0;
-    private static final int COLFILE = 1;
+    public static final int COLTYPE = 0;
+    public static final int COLFILE = 1;
     public static final int COLPROGRESS = 2;
-    private static final int COLSIZE = 3;
-    private static final int COLFOLDER = 4;
-    private static final int COLTO = 5;
+    public static final int COLSIZE = 3;
+    public static final int COLFOLDER = 4;
+    public static final int COLTO = 5;
 
     private Collection<TableModelListener> listeners;
     private List<Upload> uploads;
