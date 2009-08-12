@@ -197,7 +197,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             });
 
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
-            getController().getConnectionListener().getPort()));
+            String.valueOf(getController().getConnectionListener().getPort())));
         portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
 
         openPreferencesButton = new JButtonMini(getApplicationModel()

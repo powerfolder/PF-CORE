@@ -136,7 +136,7 @@ public class Format {
         long days = dt / 1000 / 60 / 60 / 24;
         long hours = dt / 1000 / 60 / 60;
         if (days > 1) { // Two days or more
-            f.format(Translation.getTranslation("general.days", days) + ", ");
+            f.format(Translation.getTranslation("general.days", String.valueOf(days)) + ", ");
             hours %= 24;
         }
         long minutes = (dt / 1000 / 60) % 60;

@@ -35,7 +35,7 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
     public ReservedWordFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
         description = Translation.getTranslation("filename_problem.reserved_filename",
-                fileInfo);
+                fileInfo.getFilenameOnly());
     }
 
     public FileInfo getFileInfo() {

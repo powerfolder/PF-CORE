@@ -55,12 +55,12 @@ public class TrialInfoSection extends PFUIComponent {
      */
     public void setTrialPeriod(int days) {
         trialLabel.setText(Translation.getTranslation(
-                "home_tab.online_storage.remaining", days));
+                "home_tab.online_storage.remaining", String.valueOf(days)));
         trialLabel.setToolTipText(Translation.getTranslation(
-                "home_tab.online_storage.remaining.tips", days));
+                "home_tab.online_storage.remaining.tips", String.valueOf(days)));
         trialPB.setValue(100 * days / 30);
         trialPB.setToolTipText(Translation.getTranslation(
-                "home_tab.online_storage.remaining.tips", days));
+                "home_tab.online_storage.remaining.tips", String.valueOf(days)));
     }
 
     /**

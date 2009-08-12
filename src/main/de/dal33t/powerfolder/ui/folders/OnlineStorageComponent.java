@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 import javax.swing.*;
@@ -59,7 +60,7 @@ public class OnlineStorageComponent extends PFUIComponent {
 
     private void initialize() {
         syncLabel = new JLabel(Translation.getTranslation(
-                "online_storage_component.online_storage_text", 0));
+                "online_storage_component.online_storage_text", "0"));
         webButton = new JButtonMini(new MyOnlineStorageAction(getController()), true);
     }
 
@@ -77,7 +78,7 @@ public class OnlineStorageComponent extends PFUIComponent {
 
     public void setSyncPercentage(double serverSync, boolean warned) {
         syncLabel.setText(Translation.getTranslation(
-                "online_storage_component.online_storage_text", serverSync));
+                "online_storage_component.online_storage_text", Format.formatNumber(serverSync)));
         syncLabel.setForeground(warned ? Color.red :
                 ColorUtil.getTextForegroundColor());
         syncLabel.setToolTipText(warned ? Translation.getTranslation(

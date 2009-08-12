@@ -1148,7 +1148,7 @@ public class UIController extends PFComponent {
 
                 else {
                     text1 = Translation.getTranslation("check_status.syncing",
-                        synchronizingFolders);
+                        String.valueOf(synchronizingFolders));
                     if (!synchronizing.get()) {
                         changed = true;
                         synchronizing.set(true);
@@ -1163,7 +1163,7 @@ public class UIController extends PFComponent {
             {
                 String text2 = Translation.getTranslation(
                     "check_status.powerfolders", Format
-                        .formatBytes(nTotalBytes), folders.size());
+                        .formatBytes(nTotalBytes), String.valueOf(folders.size()));
 
                 notifyMessage(Translation.getTranslation("check_status.title"),
                     text1 + "\n\n" + text2, false);
@@ -1297,7 +1297,7 @@ public class UIController extends PFComponent {
                     .getTranslation("uicontroller.remote_mass_delete.warning_title"),
                 Translation.getTranslation(
                     "uicontroller.remote_mass_delete.warning_message", event
-                        .getMemberInfo().nick, event.getDeletePercentage(),
+                        .getMemberInfo().nick, String.valueOf(event.getDeletePercentage()),
                     event.getFolderInfo().name,
                     event.getOldProfile().getName(), event.getNewProfile()
                         .getName()));

@@ -535,7 +535,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                             .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", sync);
+                            "exp_folder_view.synchronized", Format.formatNumber(sync));
                     }
                 }
 
@@ -550,7 +550,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available", count);
+                        "exp_folder_view.files_available", String.valueOf(count));
                 }
             }
         }
@@ -581,7 +581,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 .getTranslation("exp_folder_view.files", "?");
         } else {
             filesText = Translation.getTranslation("exp_folder_view.files",
-                folder.getKnownFilesCount());
+                String.valueOf(folder.getKnownFilesCount()));
         }
         filesLabel.setText(filesText);
     }

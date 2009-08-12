@@ -210,7 +210,7 @@ public class DownloadsInformationCard extends InformationCard
         } else {
             cleanupLabel.setText(Translation.getTranslation(
                     "downloads_information_card.auto_cleanup.days",
-                    cleanupSlider.getValue()));
+                    String.valueOf(cleanupSlider.getValue())));
         }
     }
 

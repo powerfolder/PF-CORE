@@ -196,7 +196,7 @@ public class UploadsInformationCard extends InformationCard
         } else {
             cleanupLabel.setText(Translation.getTranslation(
                     "uploads_information_card.auto_cleanup.days",
-                    cleanupSlider.getValue()));
+                    String.valueOf(cleanupSlider.getValue())));
         }
     }
 

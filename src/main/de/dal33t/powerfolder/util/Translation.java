@@ -217,28 +217,17 @@ public class Translation {
      *            the parameters to be included.
      * @return a paramterized translation for this id.
      */
-    public static String getTranslation(String id, Object... params) {
+    public static String getTranslation(String id, String... params) {
         String translation = getTranslation(id);
         int paramCount = 0;
-        for (Object param : params) {
+        for (String param : params) {
             int i;
-            String formattedParam = formatParam(param);
             String paramSymbol = "{" + paramCount++ + '}';
             while ((i = translation.indexOf(paramSymbol)) >= 0) {
-                translation = translation.substring(0, i) + formattedParam
+                translation = translation.substring(0, i) + param
                     + translation.substring(i + 3, translation.length());
             }
         }
         return translation;
-    }
-
-    /**
-     * Convert some primitive types into nice formatted strings.
-     *
-     * @param param
-     * @return
-     */
-    private static String formatParam(Object param) {
-        return param.toString();
     }
 }

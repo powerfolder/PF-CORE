@@ -172,7 +172,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                     String nickText = primaryDownload.getPartner().getNick();
                     setText(nickText);
                 } else {
-                    setText(Translation.getTranslation("transfers.swarm", sources.size()));
+                    setText(Translation.getTranslation("transfers.swarm", String.valueOf(sources.size())));
                 }
                 setIcon(Icons.getSimpleIconFor(primaryDownload.getPartner()));
                 setHorizontalAlignment(LEFT);

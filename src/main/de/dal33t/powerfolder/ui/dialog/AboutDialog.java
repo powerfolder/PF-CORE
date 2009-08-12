@@ -207,10 +207,10 @@ public class AboutDialog extends PFUIComponent {
                 "about_dialog.power_folder.build_time", buildTime)
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.max",
-                Runtime.getRuntime().maxMemory() / 1024 / 1024)
+                String.valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.used",
-                Runtime.getRuntime().totalMemory() / 1024 / 1024)
+                String.valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.distribution", getController()
@@ -226,7 +226,7 @@ public class AboutDialog extends PFUIComponent {
                 .getProperty("os.name"))
             + '\n'
             + Translation.getTranslation("about_dialog.your_system.screen",
-                dim.width, dim.height));
+                String.valueOf(dim.width), String.valueOf(dim.height)));
 
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
