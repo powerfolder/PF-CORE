@@ -118,12 +118,12 @@ import de.dal33t.powerfolder.util.update.Updater;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
-    
+
     /**
-     * program version. include "dev" if its a development version. 1.0.2.22
+     * program version. include "dev" if its a development version. 1.0.2.27
      */
-    public static final String PROGRAM_VERSION = "4.0.0 beta 1.1";
-    
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.31";
+
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -131,7 +131,6 @@ public class Controller extends PFComponent {
     public static final String PROPERTY_NETWORKING_MODE = "networkingMode";
     public static final String PROPERTY_SILENT_MODE = "silentMode";
     public static final String PROPERTY_LIMITED_CONNECTIVITY = "limitedConnectivity";
-
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -156,7 +155,7 @@ public class Controller extends PFComponent {
      * The preferences
      */
     private Preferences preferences;
-    
+
     /**
      * The distribution running.
      */
@@ -274,7 +273,7 @@ public class Controller extends PFComponent {
     private Socket currentConnectingSocket;
 
     /** global Threadpool */
-    private ScheduledExecutorService threadPool;   
+    private ScheduledExecutorService threadPool;
 
     /** Remembers if a port on the local firewall was opened */
     private boolean portWasOpened = false;
@@ -397,7 +396,7 @@ public class Controller extends PFComponent {
             preferences = Preferences.userNodeForPackage(PowerFolder.class)
                 .node(getConfigName());
         }
-        
+
         // initialize logger
         initLogger();
         logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
@@ -560,7 +559,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add ask for friend listener.
-     *
+     * 
      * @param l
      */
     public void addAskForFriendshipListener(AskForFriendshipListener l) {
@@ -569,7 +568,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove ask for friend listener.
-     *
+     * 
      * @param l
      */
     public void removeAskForFriendshipListener(AskForFriendshipListener l) {
@@ -578,7 +577,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add invitation listener.
-     *
+     * 
      * @param l
      */
     public void addInvitationHandler(InvitationHandler l) {
@@ -587,7 +586,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove invitation listener.
-     *
+     * 
      * @param l
      */
     public void removeInvitationHandler(InvitationHandler l) {
@@ -596,7 +595,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add mass delete listener.
-     *
+     * 
      * @param l
      */
     public void addMassDeletionHandler(MassDeletionHandler l) {
@@ -605,7 +604,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove mass delete listener.
-     *
+     * 
      * @param l
      */
     public void removeMassDeletionHandler(MassDeletionHandler l) {
@@ -614,7 +613,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add single file offer listener.
-     *
+     * 
      * @param l
      */
     public void addSingleFileOfferHandler(SingleFileOfferHandler l) {
@@ -623,7 +622,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add single file offer listener.
-     *
+     * 
      * @param l
      */
     public void addWarningHandler(WarningHandler l) {
@@ -632,7 +631,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove single file offer listener.
-     *
+     * 
      * @param l
      */
     public void removeSingleFileOfferHandler(SingleFileOfferHandler l) {
@@ -758,12 +757,13 @@ public class Controller extends PFComponent {
      * This backs up version 3 config, because version 4 config is very
      * different and once converted, there is no going back.
      */
+    @SuppressWarnings("unchecked")
     private void backupConfigIfV3() {
 
         boolean v3 = false;
         for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();) {
-
+            .propertyNames(); en.hasMoreElements();)
+        {
             // Look for a v3 'folder.' entry.
             String propName = en.nextElement();
             if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V3)) {
@@ -781,14 +781,15 @@ public class Controller extends PFComponent {
             if (!backupFile.exists()) {
                 try {
                     logInfo("Backing up version 3 config file to "
-                            + backupFile.getAbsolutePath());
+                        + backupFile.getAbsolutePath());
                     PropertiesUtil.saveConfig(backupFile, config,
                         "PowerFolder config file (v3 backup)");
                 } catch (IOException e) {
                     logSevere("Unable to save v3 backup config", e);
                 } catch (Exception e) {
                     // major problem , setting code is wrong
-                    System.out.println("major problem , v3 setting code is wrong");
+                    System.out
+                        .println("major problem , v3 setting code is wrong");
                     e.printStackTrace();
                     logSevere("major problem , v3 setting code is wrong", e);
                 }
@@ -1024,18 +1025,24 @@ public class Controller extends PFComponent {
 
         // Must use JOptionPane here because there is no Controller yet for
         // DialogFactory!
-        int response = JOptionPane.showOptionDialog(null, Translation
-                .getTranslation("dialog.bind_error.option.text"), Translation
-                .getTranslation("dialog.bind_error.option.title"),
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
-                null, new String[]{
-                Translation.getTranslation("dialog.bind_error.option.ignore"),
-                Translation.getTranslation("dialog.bind_error.option.exit")}, 0);
+        int response = JOptionPane
+            .showOptionDialog(
+                null,
+                Translation.getTranslation("dialog.bind_error.option.text"),
+                Translation.getTranslation("dialog.bind_error.option.title"),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                null,
+                new String[]{
+                    Translation
+                        .getTranslation("dialog.bind_error.option.ignore"),
+                    Translation.getTranslation("dialog.bind_error.option.exit")},
+                0);
         switch (response) {
             case 1 :
                 exit(0);
                 break;
-            default:
+            default :
                 bindRandomPort();
                 break;
         }
@@ -1067,14 +1074,14 @@ public class Controller extends PFComponent {
             } catch (ConnectionException e) {
                 logSevere("Problems starting listener " + connectionListener, e);
             }
-            for (ConnectionListener additionalConnectionListener :
-                    additionalConnectionListeners) {
+            for (ConnectionListener additionalConnectionListener : additionalConnectionListeners)
+            {
                 try {
                     ConnectionListener addListener = additionalConnectionListener;
                     addListener.start();
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener "
-                            + connectionListener, e);
+                        + connectionListener, e);
                 }
             }
         }
@@ -1189,7 +1196,7 @@ public class Controller extends PFComponent {
 
     /**
      * returns the enum with the current networkin mode.
-     *
+     * 
      * @return The Networking mode either NetworkingMode.PUBLICMODE,
      *         NetworkingMode.PRIVATEMODE or NetworkingMode.LANONLYMODE
      */
@@ -1206,7 +1213,7 @@ public class Controller extends PFComponent {
                 networkingMode = NetworkingMode.valueOf(value);
             } catch (Exception e) {
                 logSevere(
-                        "Unable to read networking mode, reverting to PRIVATEMODE: "
+                    "Unable to read networking mode, reverting to PRIVATEMODE: "
                         + e.toString(), e);
                 networkingMode = NetworkingMode.PRIVATEMODE;
             }
@@ -1214,12 +1221,12 @@ public class Controller extends PFComponent {
         return networkingMode;
     }
 
-    public void setNetworkingMode(NetworkingMode newMode) {
+    public void setNetworkingMode(NetworkingMode newModeParam) {
+        NetworkingMode newMode = newModeParam;
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
             newMode = NetworkingMode.SERVERONLYMODE;
-            logWarning(
-                    "Backup only client. Only supports server only networking mode");
+            logWarning("Backup only client. Only supports server only networking mode");
         }
         logFine("setNetworkingMode: " + newMode);
         NetworkingMode oldValue = getNetworkingMode();
@@ -1401,8 +1408,7 @@ public class Controller extends PFComponent {
         if (connectionListener != null) {
             connectionListener.shutdown();
         }
-        for (ConnectionListener addListener :
-                additionalConnectionListeners) {
+        for (ConnectionListener addListener : additionalConnectionListeners) {
             addListener.shutdown();
         }
         additionalConnectionListeners.clear();
@@ -1533,7 +1539,7 @@ public class Controller extends PFComponent {
     public Preferences getPreferences() {
         return preferences;
     }
-    
+
     /**
      * @return the distribution of this client.
      */
@@ -1945,10 +1951,10 @@ public class Controller extends PFComponent {
     public static File getMiscFilesLocation() {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
-                + "/.PowerFolder");
+            + "/.PowerFolder");
         if (OSUtil.isWindowsSystem()) {
             File windowsConfigDir = new File(System.getenv("APPDATA")
-                    + "/PowerFolder");
+                + "/PowerFolder");
             base = migrateWindowsMiscLocation(unixConfigDir, windowsConfigDir);
         } else {
             base = unixConfigDir;
@@ -1970,16 +1976,16 @@ public class Controller extends PFComponent {
      * Pre Version 4, the config was in 'user.home'/.PowerFolder.
      * 'APPDATA'/PowerFolder is a more normal Windows location for application
      * data.
-     *
+     * 
      * @param unixBaseDir
-     *              the old user.home based config directory.
+     *            the old user.home based config directory.
      * @param windowsBaseDir
-     *              the preferred APPDATA based config directory.
-     * @return
-     *              windowsBaseDir, with the migrated config file.
+     *            the preferred APPDATA based config directory.
+     * @return windowsBaseDir, with the migrated config file.
      */
     private static File migrateWindowsMiscLocation(File unixBaseDir,
-                                                   File windowsBaseDir) {
+        File windowsBaseDir)
+    {
         if (windowsBaseDir.exists()) {
             return windowsBaseDir;
         }
@@ -2023,8 +2029,8 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
         }
-        if (!isStartMinimized() && isUIEnabled()
-                && !commandLine.hasOption('z')) {
+        if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
+        {
             Object[] options = {
                 Translation
                     .getTranslation("dialog.already_running.start_button"),
@@ -2068,8 +2074,9 @@ public class Controller extends PFComponent {
                 .load(Distribution.class);
             for (Distribution br : brandingLoader) {
                 if (distribution != null) {
-                    logSevere("Found multiple distribution classes: " + br.getName()
-                        + ", got already " + distribution.getName());
+                    logSevere("Found multiple distribution classes: "
+                        + br.getName() + ", got already "
+                        + distribution.getName());
                 }
                 distribution = br;
             }
@@ -2094,7 +2101,7 @@ public class Controller extends PFComponent {
             }
         }
     }
-    
+
     /**
      * Answers the waittime for threads time differst a bit to avoid
      * concurrencies
@@ -2111,7 +2118,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute ask for friendship events.
-     *
+     * 
      * @param event
      */
     public void addAskForFriendship(AskForFriendshipEvent event) {
@@ -2122,11 +2129,12 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute invitations.
-     *
+     * 
      * @param invitation
      * @param sendIfJoined
      */
-    public void invitationReceived(Invitation invitation, boolean sendIfJoined) {
+    public void invitationReceived(Invitation invitation, boolean sendIfJoined)
+    {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation, sendIfJoined);
         }
@@ -2134,7 +2142,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute local mass deletion notifications.
-     *
+     * 
      * @param event
      */
     public void localMassDeletionDetected(LocalMassDeletionEvent event) {
@@ -2145,7 +2153,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute remote mass deletion notifications.
-     *
+     * 
      * @param event
      */
     public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
@@ -2174,7 +2182,7 @@ public class Controller extends PFComponent {
 
     /**
      * Adds a warning event to the app model.
-     *
+     * 
      * @param event
      */
     public void pushWarningEvent(WarningEvent event) {
@@ -2226,6 +2234,7 @@ public class Controller extends PFComponent {
     /**
      * Load anything that was not handled last time.
      */
+    @SuppressWarnings("unchecked")
     private void loadPersistentObjects() {
 
         if (isUIEnabled()) {
@@ -2244,7 +2253,8 @@ public class Controller extends PFComponent {
                     inputStream.close();
                     for (Invitation invitation : invitations) {
                         uiController.getApplicationModel()
-                            .getReceivedInvitationsModel().gotInvitation(invitation,  false);
+                            .getReceivedInvitationsModel().gotInvitation(
+                                invitation, false);
                     }
                     logInfo("Loaded " + invitations.size() + " invitations.");
                 } catch (FileNotFoundException e) {
@@ -2280,12 +2290,11 @@ public class Controller extends PFComponent {
      * 2) If the client can add friends
      * <p>
      * 3) The client can connect to others except the server.
-     *
+     * 
      * @return true if running as backup only client.
      */
     public boolean isBackupOnly() {
         return ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(this);
     }
-
 
 }
