@@ -390,7 +390,7 @@ public class FileUtils {
 
     /**
      * A recursive move of one directory to another.
-     *
+     * 
      * @param sourceFile
      * @param targetFile
      * @throws IOException
@@ -441,10 +441,9 @@ public class FileUtils {
         }
     }
 
-
     /**
      * A recursive copy of one directory to another.
-     *
+     * 
      * @param sourceFile
      * @param targetFile
      * @throws IOException
@@ -525,7 +524,7 @@ public class FileUtils {
                 String herePath = hereFile.getAbsolutePath();
                 File powerFolderFile = new File(herePath, "PowerFolder.exe");
                 if (!powerFolderFile.exists()) {
-                    log.warning("Could not find PowerFolder.exe at "
+                    log.fine("Could not find PowerFolder.exe at "
                         + powerFolderFile.getAbsolutePath());
                     return;
                 }
@@ -788,7 +787,7 @@ public class FileUtils {
 
     /**
      * See if 'child' is a subdirectory of 'parent', recursively.
-     *
+     * 
      * @param parent
      * @param targetChild
      * @return
