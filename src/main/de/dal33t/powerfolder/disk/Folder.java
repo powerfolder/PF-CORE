@@ -86,7 +86,6 @@ import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.security.FolderSecuritySettings;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -246,7 +245,7 @@ public class Folder extends PFComponent {
     /**
      * #1046 The local security setting.
      */
-    private FolderSecuritySettings localSecuritySettings;
+    private FolderPermission localDefaultPermission;
 
     /**
      * Constructor for folder.
@@ -487,10 +486,10 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return the local security settings. null if not yet set.
+     * @return the local default permission. null if not yet set.
      */
-    public FolderSecuritySettings getLocalSecuritySettings() {
-        return localSecuritySettings;
+    public FolderPermission getLocalDefaultPermission() {
+        return localDefaultPermission;
     }
 
     /**
@@ -498,12 +497,11 @@ public class Folder extends PFComponent {
      * 
      * @param securitySettings
      */
-    public void setLocalSecuritySettings(FolderSecuritySettings securitySettings)
+    public void setLocalFolderPermission(FolderPermission localDefaultPermission)
     {
-        boolean changed = Util.equals(this.localSecuritySettings,
-            securitySettings);
-        securitySettings.touch();
-        this.localSecuritySettings = securitySettings;
+        boolean changed = Util.equals(this.localDefaultPermission,
+            localDefaultPermission);
+        this.localDefaultPermission = localDefaultPermission;
         if (changed) {
             setDBDirty();
         }
@@ -1603,9 +1601,10 @@ public class Folder extends PFComponent {
 
                 try {
                     Object object = in.readObject();
-                    localSecuritySettings = (FolderSecuritySettings) object;
+                    localDefaultPermission = (FolderPermission) object;
                     if (isFiner()) {
-                        logFiner("security settings " + localSecuritySettings);
+                        logFiner("local default permission "
+                            + localDefaultPermission);
                     }
                 } catch (EOFException e) {
                     // ignore nothing available for ignore
@@ -1747,9 +1746,10 @@ public class Folder extends PFComponent {
             oOut.writeObject(lastSyncDate);
 
             if (isFiner()) {
-                logFiner("write security settings: " + localSecuritySettings);
+                logFiner("write local default permission: "
+                    + localDefaultPermission);
             }
-            oOut.writeObject(localSecuritySettings);
+            oOut.writeObject(localDefaultPermission);
 
             oOut.close();
             fOut.close();

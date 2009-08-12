@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.security.FolderSecuritySettings;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
@@ -582,7 +581,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     private void rebuild(Map<AccountInfo, FolderPermission> permInfo,
-        FolderSecuritySettings securitySettingsGlobal)
+        FolderPermission defaultPermission)
     {
         // Step 1) All computers.
         members.clear();
@@ -634,13 +633,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 new FolderReadWritePermission(folder.getInfo()));
             defaultPermissionsListModel.getList().add(
                 new FolderAdminPermission(folder.getInfo()));
-            if (folder.getLocalSecuritySettings() != null) {
+            if (folder.getLocalDefaultPermission() != null) {
                 defaultPermissionModel.setValue(folder
-                    .getLocalSecuritySettings().getDefaultPermission());
+                    .getLocalDefaultPermission());
             }
-            if (securitySettingsGlobal != null) {
-                defaultPermissionModel.setValue(securitySettingsGlobal
-                    .getDefaultPermission());
+            if (defaultPermission != null) {
+                defaultPermissionModel.setValue(defaultPermission);
             } else {
                 // Default default permission: ADMIN
                 defaultPermissionModel.setValue(new FolderAdminPermission(
@@ -727,17 +725,17 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         SwingWorker<Map<AccountInfo, FolderPermission>, Void>
     {
         private Folder refreshFor;
-        private FolderSecuritySettings securitySettings;
+        private FolderPermission defaultPermission;
 
         @Override
         protected Map<AccountInfo, FolderPermission> doInBackground()
             throws Exception
         {
             refreshFor = folder;
-            securitySettings = getController().getOSClient()
-                .getSecurityService().getSecuritySettings(folder.getInfo());
+            defaultPermission = getController().getOSClient()
+                .getSecurityService().getDefaultPermission(folder.getInfo());
             return getController().getOSClient().getSecurityService()
-                .getFolderPermission(refreshFor.getInfo());
+                .getFolderPermissions(refreshFor.getInfo());
         }
 
         @Override
@@ -749,7 +747,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     return;
                 }
                 permissionsRetrieved = true;
-                rebuild(res, securitySettings);
+                rebuild(res, defaultPermission);
             } catch (Exception e) {
                 logWarning(e);
                 permissionsRetrieved = false;

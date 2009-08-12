@@ -80,7 +80,8 @@ public abstract class AbstractSecurityManager extends PFComponent implements
                 hasPermission = defaultPermission.equals(permission)
                     || defaultPermission.implies(permission);
                 logWarning("Using default permission(" + defaultPermission
-                    + ") for " + member);;
+                    + ") for " + member + ". Has "
+                    + (hasPermission ? "" : "NOT ") + permission);
             } else {
                 // TODO CHECK AGAINST DEFAULT DEFAULT PERMISSION
             }

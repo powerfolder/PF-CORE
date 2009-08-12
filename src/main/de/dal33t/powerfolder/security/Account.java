@@ -50,7 +50,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class Account extends Model implements Serializable {
 
-    private static final Logger log = Logger.getLogger(Account.class.getName());
+    private static final Logger LOG = Logger.getLogger(Account.class.getName());
     private static final long serialVersionUID = 100L;
 
     // Properties
@@ -124,7 +124,7 @@ public class Account extends Model implements Serializable {
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        log.fine("Granted permission to " + this + ": "
+        LOG.fine("Granted permission to " + this + ": "
             + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
@@ -138,7 +138,7 @@ public class Account extends Model implements Serializable {
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        log.fine("Revoked permission from " + this + ": "
+        LOG.fine("Revoked permission from " + this + ": "
             + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
             permissions.remove(p);
@@ -154,12 +154,12 @@ public class Account extends Model implements Serializable {
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
         if (permissions == null) {
-            log.severe("Illegal account " + username + ", permissions is null");
+            LOG.severe("Illegal account " + username + ", permissions is null");
             return false;
         }
         for (Permission p : permissions) {
             if (p == null) {
-                log.severe("Got null permission on " + this);
+                LOG.severe("Got null permission on " + this);
                 continue;
             }
             if (p.equals(permission)) {
@@ -482,8 +482,8 @@ public class Account extends Model implements Serializable {
             if (folder == null) {
                 continue;
             }
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Disable download of new files for folder: " + folder
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("Disable download of new files for folder: " + folder
                     + " for " + getUsername());
             }
             if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
@@ -492,7 +492,7 @@ public class Account extends Model implements Serializable {
             }
         }
         if (nNewDisabled > 0) {
-            log.info("Disabled " + nNewDisabled + " folder for "
+            LOG.info("Disabled " + nNewDisabled + " folder for "
                 + getUsername());
         }
         return nNewDisabled;

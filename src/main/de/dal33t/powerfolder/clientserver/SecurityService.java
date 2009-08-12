@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderSecuritySettings;
 import de.dal33t.powerfolder.security.Permission;
 
 /**
@@ -92,16 +91,10 @@ public interface SecurityService {
 
     /**
      * @param foInfo
-     * @return the global security setting for the folder.
-     */
-    FolderSecuritySettings getSecuritySettings(FolderInfo foInfo);
-
-    /**
-     * @param foInfo
      * @param nodeInfos
      * @return the permissions of the nodes on the given folder.
      */
-    Map<AccountInfo, FolderPermission> getFolderPermission(FolderInfo foInfo);
+    Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);
 
     /**
      * Sets the default permission for the given folder.

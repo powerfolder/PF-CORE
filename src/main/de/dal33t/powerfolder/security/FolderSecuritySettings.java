@@ -77,7 +77,7 @@ public class FolderSecuritySettings implements Serializable {
         this.defaultPermission = defaultPermission;
         touch();
     }
-    
+
     public Date getModifiedDate() {
         return modifiedDate;
     }
@@ -87,6 +87,17 @@ public class FolderSecuritySettings implements Serializable {
      */
     public void touch() {
         this.modifiedDate = new Date();
+    }
+
+    public boolean isBroken() {
+        if (folder == null) {
+            return true;
+        }
+        if (defaultPermission == null) {
+            // Cannot check
+            return false;
+        }
+        return !defaultPermission.getFolder().equals(folder);
     }
 
     // General ****************************************************************
