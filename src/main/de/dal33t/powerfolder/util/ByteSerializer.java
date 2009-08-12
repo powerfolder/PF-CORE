@@ -97,7 +97,7 @@ public class ByteSerializer extends Loggable {
             byteOut = outBufferRef.get();
             byteOut.reset();
         } else {
-            //logFiner("Creating send buffer (512bytes)");
+            // logFiner("Creating send buffer (512bytes)");
             // Create new bytearray output, 512b buffer
             byteOut = new ByteArrayOutputStream(512);
             if (CACHE_OUT_BUFFER) {
@@ -175,9 +175,9 @@ public class ByteSerializer extends Loggable {
 
         // Dont cache buffer
         if (expectedSize > MAX_CACHE_BUFFER_SIZE) {
-            //if (isFiner()) {
-            //    logFiner("Uncached buffer: " + expectedSize);
-            //}
+            // if (isFiner()) {
+            // logFiner("Uncached buffer: " + expectedSize);
+            // }
             byteIn = new byte[expectedSize];
             // Read into receivebuffer
             StreamUtils.read(in, byteIn, 0, expectedSize);
@@ -265,8 +265,12 @@ public class ByteSerializer extends Loggable {
             // try the other way, if that also fails
             // we should forget it
             result = deserialize0(base, !expectCompression);
-            LOG.warning("Stream was not as expected (compression: "
-                + expectCompression + ") on " + result);
+            LOG
+                .warning("Stream was not as expected ("
+                    + (expectCompression
+                        ? "compression was expected, but data arrived uncompressed"
+                        : "no compression was expected, but data arrived compressed")
+                    + ") on " + result);
         }
         return result;
     }
