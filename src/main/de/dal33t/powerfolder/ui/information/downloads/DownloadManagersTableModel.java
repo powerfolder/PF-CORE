@@ -59,12 +59,12 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class DownloadManagersTableModel extends PFComponent implements
     TableModel, SortedTableModel
 {
-    private static final int COLTYPE = 0;
-    private static final int COLFILE = 1;
+    public static final int COLTYPE = 0;
+    public static final int COLFILE = 1;
     public static final int COLPROGRESS = 2;
-    private static final int COLSIZE = 3;
-    private static final int COLFOLDER = 4;
-    private static final int COLFROM = 5;
+    public static final int COLSIZE = 3;
+    public static final int COLFOLDER = 4;
+    public static final int COLFROM = 5;
 
     private static final int UPDATE_TIME = 1000;
     private final Collection<TableModelListener> listeners;
