@@ -77,11 +77,11 @@ public interface SecurityService {
     // Security / Permission stuff ********************************************
 
     /**
-     * @param node
+     * @param accountInfo
      * @param permission
-     * @return true if the account with the given node has that permission.
+     * @return true if the account with has that permission.
      */
-    boolean hasPermission(MemberInfo node, Permission permission);
+    boolean hasPermission(AccountInfo accountInfo, Permission permission);
 
     /**
      * @param foInfo
@@ -90,19 +90,19 @@ public interface SecurityService {
     FolderPermission getDefaultPermission(FolderInfo foInfo);
 
     /**
-     * @param foInfo
-     * @param nodeInfos
-     * @return the permissions of the nodes on the given folder.
-     */
-    Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);
-
-    /**
      * Sets the default permission for the given folder.
      * 
      * @param foInfo
      * @param permission
      */
     void setDefaultPermission(FolderInfo foInfo, FolderPermission permission);
+
+    /**
+     * @param foInfo
+     * @param nodeInfos
+     * @return the permissions of the nodes on the given folder.
+     */
+    Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);
 
     /**
      * Grants the given user/account the permissions.

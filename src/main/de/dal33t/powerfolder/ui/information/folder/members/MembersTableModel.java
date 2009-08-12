@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -156,6 +155,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     }
                     FolderPermission newDefaultPermission = (FolderPermission) evt
                         .getNewValue();
+                    refreshingModel.setValue(Boolean.TRUE);
                     new DefaultPermissionSetter(folder.getInfo(),
                         newDefaultPermission).execute();
                 }
@@ -396,6 +396,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             new ModelRefresher().execute();
         } else {
             rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
+            refreshingModel.setValue(Boolean.FALSE);
         }
     }
 
@@ -700,12 +701,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 .setDefaultPermission(folderInfo, newPermission);
 
             // TODO Ugly hack. Remove after #1653
-            SecurityManagerClient secMan = (SecurityManagerClient) getController()
-                .getSecurityManager();
-            secMan.invalidateCache(folder.getMembersAsCollection());
+            // SecurityManagerClient secMan = (SecurityManagerClient)
+            // getController()
+            // .getSecurityManager();
+            // secMan.invalidateCache(folder.getMembersAsCollection());
             getController().getFolderRepository()
                 .triggerSynchronizeAllFolderMemberships();
-
             return null;
         }
 

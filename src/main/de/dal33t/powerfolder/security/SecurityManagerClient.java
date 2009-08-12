@@ -46,10 +46,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.5 $
  */
 public class SecurityManagerClient extends AbstractSecurityManager {
+    private static final AccountInfo NULL_ACCOUNT = new AccountInfo(null, null);
+
     private ServerClient client;
     private Map<Member, Session> sessions;
-    private Map<Member, PermissionsCacheSegment> permissionsCache;
-    private Map<FolderInfo, FolderPermission> defaultPermissionsCache;
+    private Map<AccountInfo, PermissionsCacheSegment> permissionsCacheAccounts;
 
     private static final boolean CACHE_ENABLED = true;
 
@@ -58,30 +59,29 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         Reject.ifNull(client, "Client is null");
         this.client = client;
         this.sessions = new ConcurrentHashMap<Member, Session>();
-        this.permissionsCache = new ConcurrentHashMap<Member, PermissionsCacheSegment>();
-        this.defaultPermissionsCache = new ConcurrentHashMap<FolderInfo, FolderPermission>();
+        this.permissionsCacheAccounts = new ConcurrentHashMap<AccountInfo, PermissionsCacheSegment>();
     }
 
     public Account authenticate(String username, String password) {
         return client.login(username, password);
     }
 
-    public boolean hasPermission(Member node, Permission permission) {
-        Reject.ifNull(node, "Node is null");
-        Reject.ifNull(permission, "Permission info is null");
+    public boolean hasPermission(AccountInfo accountInfo, Permission permission)
+    {
         if (!Feature.SECURITY_CHECKS.isEnabled()) {
             return true;
         }
         try {
             Boolean hasPermission;
-            PermissionsCacheSegment cache = permissionsCache.get(node);
+            PermissionsCacheSegment cache = permissionsCacheAccounts
+                .get(nullSafeGet(accountInfo));
             if (cache != null) {
                 hasPermission = cache.hasPermission(permission);
             } else {
                 // Create cache
                 hasPermission = null;
                 cache = new PermissionsCacheSegment();
-                permissionsCache.put(node, cache);
+                permissionsCacheAccounts.put(nullSafeGet(accountInfo), cache);
             }
             boolean cacheHit;
             if (!CACHE_ENABLED) {
@@ -90,7 +90,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             if (hasPermission == null) {
                 if (client.isConnected()) {
                     hasPermission = Boolean.valueOf(client.getSecurityService()
-                        .hasPermission(node.getInfo(), permission));
+                        .hasPermission(accountInfo, permission));
                     cache.set(permission, hasPermission);
                 } else {
                     hasPermission = false;
@@ -99,13 +99,14 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             } else {
                 cacheHit = true;
             }
-            if (isFine()) {
-                logFine((cacheHit ? "(cachd) " : "(retvd) ") + node + " has "
-                    + (hasPermission ? "" : "NOT ") + permission);
-            }
+            // if (isFine()) {
+            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + accountInfo
+                + " has " + (hasPermission ? "" : "NOT ") + permission);
+            // }
             return hasPermission;
         } catch (RemoteCallException e) {
-            logWarning("Unable to check permission for " + node + ". " + e);
+            logWarning("Unable to check permission for " + accountInfo + ". "
+                + e);
             logFiner(e);
             return false;
         }
@@ -122,14 +123,6 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         // Cache hit
         if (session != null && CACHE_ENABLED) {
             return session.getAccountInfo();
-        }
-        // Own info.
-        if (node.isMySelf()) {
-            Account myAccount = client.getAccount();
-            if (myAccount == null || !myAccount.isValid()) {
-                return null;
-            }
-            return myAccount.createInfo();
         }
         // Smells like hack
         if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
@@ -148,8 +141,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(Collections.singleton(node.getInfo()));
             aInfo = res.get(node.getInfo());
-            if (isFine()) {
-                logFine("Retrieved account " + aInfo + " for " + node);
+            if (isWarning()) {
+                logWarning("Retrieved account " + aInfo + " for " + node);
             }
             if (CACHE_ENABLED) {
                 sessions.put(node, new Session(aInfo));
@@ -177,33 +170,13 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
-    protected FolderPermission getDefaultPermission(FolderInfo foInfo) {
-        // TODO Cache
-        Reject.ifNull(foInfo, "FolderInfo is null");
-        if (!client.isConnected()) {
-            // TODO Return local default.
-            return new FolderAdminPermission(foInfo);
-        }
-        try {
-            return client.getSecurityService().getDefaultPermission(foInfo);
-        } catch (Exception e) {
-            logWarning("Unable to retrieve default permission from server. Using admin as fallback. "
-                + e);
-            logFiner(e);
-            return new FolderAdminPermission(foInfo);
-        }
-    }
-
-    public void invalidateCache(Collection<Member> nodes) {
-        for (Member member : nodes) {
-            permissionsCache.remove(member);
-        }
-    }
-
     public void fetchAccountInfos(Collection<Member> nodes, boolean forceRefresh)
     {
         Reject.ifNull(nodes, "Nodes is null");
         try {
+            if (!client.isConnected()) {
+                return;
+            }
             Collection<MemberInfo> reqNodes = new ArrayList<MemberInfo>(nodes
                 .size());
             for (Member node : nodes) {
@@ -214,13 +187,10 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             if (reqNodes.isEmpty()) {
                 return;
             }
-            if (!client.isConnected()) {
-                return;
-            }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
-            if (isFine()) {
-                logFine("Retrieved " + res.size() + " AccountInfos for "
+            if (isWarning()) {
+                logWarning("Retrieved " + res.size() + " AccountInfos for "
                     + reqNodes.size() + " requested of " + nodes.size()
                     + " nodes: " + res);
             }
@@ -246,9 +216,18 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
     // Internal helper ********************************************************
 
+    private AccountInfo nullSafeGet(AccountInfo aInfo) {
+        if (aInfo == null) {
+            return NULL_ACCOUNT;
+        }
+        return aInfo;
+    }
+
     private void clearNodeCache(Member node) {
-        permissionsCache.remove(node);
-        sessions.remove(node);
+        Session s = sessions.remove(node);
+        logWarning("Clearing permissions cache on " + node + ": " + s);
+        permissionsCacheAccounts.remove(nullSafeGet(s != null ? s
+            .getAccountInfo() : null));
     }
 
     /**
@@ -280,6 +259,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     }
 
     private boolean shouldAutoRefresh(Member node) {
+        if (node.isMySelf()) {
+            return true;
+        }
         return node.isCompleteyConnected()
             && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
     }

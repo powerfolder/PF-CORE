@@ -304,6 +304,10 @@ public class NodeSearcher extends PFComponent {
             fetchAccountInfos(searchResultListModel);
         }
 
+        /**
+         * Gives the cache a hit.
+         * @param nodes
+         */
         private void fetchAccountInfos(Collection<Member> nodes) {
             SecurityManager secMan = getController().getSecurityManager();
             if (secMan instanceof SecurityManagerClient) {

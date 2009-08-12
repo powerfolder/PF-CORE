@@ -2054,7 +2054,7 @@ public class Folder extends PFComponent {
      */
     public boolean join(Member member) {
         if (!hasReadPermission(member)) {
-            logWarning("Not joining member. No read permisson for " + member);
+            logWarning("Not joining " + member + ". No read permisson");
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
                     .createNullListForPre4Client(currentInfo));
@@ -3269,8 +3269,11 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
-        return getController().getSecurityManager().hasFolderPermission(member,
-            permission);
+        return getController().getSecurityManager().hasPermission(
+            member.getAccountInfo(), permission);
+        // return
+        // getController().getSecurityManager().hasFolderPermission(member,
+        // permission);
     }
 
     // General stuff **********************************************************

@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountStateChanged;
 
 /**
@@ -70,22 +69,17 @@ public interface SecurityManager {
     AccountInfo getAccountInfo(Member node);
 
     /**
-     * @param node
-     *            the node to check the permission.
-     * @param permission
-     * @return true if this account has the given permission.
-     */
-    boolean hasPermission(Member node, Permission permission);
-
-    /**
-     * Takes also {@link FolderSecuritySettings} and default permission into
-     * consideration when checking the permission.
+     * Central method to check if a given account has the permission.
+     * <p>
+     * This takes default permissions for folders into consideration. Also
+     * accepts null {@link AccountInfo} as parameter - then applies default
+     * permission of folder only.
      * 
-     * @param member
+     * @param accountInfo
      * @param permission
-     * @return if the member has the given permission on the folder.
+     * @return true if the account has the permission. false if not
      */
-    boolean hasFolderPermission(Member member, FolderPermission permission);
+    boolean hasPermission(AccountInfo accountInfo, Permission permission);
 
     // Event handling *********************************************************
 

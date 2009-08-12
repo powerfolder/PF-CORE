@@ -73,6 +73,16 @@ public class FolderList extends Message {
         secretFos.toArray(secretFolders);
     }
 
+    public boolean contains(FolderInfo foInfo, String magicId) {
+        String secureId = foInfo.calculateSecureId(magicId);
+        for (FolderInfo folder : secretFolders) {
+            if (folder.id.equals(secureId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String toString() {
         return "FolderList: " + secretFolders.length + " folders";
     }
