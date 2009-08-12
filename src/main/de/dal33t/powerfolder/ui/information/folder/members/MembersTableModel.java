@@ -695,7 +695,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         @Override
         protected Void doInBackground() throws Exception {
-            logWarning("New def perm: " + newPermission);
+            logWarning("Setting new default permission: " + newPermission);
             getController().getOSClient().getSecurityService()
                 .setDefaultPermission(folderInfo, newPermission);
 

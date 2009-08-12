@@ -148,7 +148,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(Collections.singleton(node.getInfo()));
             aInfo = res.get(node.getInfo());
-            logWarning("Retrieved account " + aInfo + " for " + node);
+            if (isFine()) {
+                logFine("Retrieved account " + aInfo + " for " + node);
+            }
             if (CACHE_ENABLED) {
                 sessions.put(node, new Session(aInfo));
             }
@@ -217,9 +219,11 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
-            logWarning("Retrieved " + res.size() + " AccountInfos for "
-                + reqNodes.size() + " requested of " + nodes.size()
-                + " nodes: " + res);
+            if (isFine()) {
+                logFine("Retrieved " + res.size() + " AccountInfos for "
+                    + reqNodes.size() + " requested of " + nodes.size()
+                    + " nodes: " + res);
+            }
             for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
                 Member node = entry.getKey().getNode(getController(), false);
                 if (node == null) {
