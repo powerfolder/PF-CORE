@@ -176,9 +176,8 @@ public class FolderCreatePanel extends PFWizardPanel {
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         // Either we have FOLDER_CREATE_ITEMS ...
-        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>)
-                getWizardContext().getAttribute(WizardContextAttributes
-                        .FOLDER_CREATE_ITEMS);
+        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
+            .getAttribute(WizardContextAttributes.FOLDER_CREATE_ITEMS);
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
@@ -191,8 +190,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     folderInfo = createFolderInfo(localBase);
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, archiveMode,
-                    previewFolder, false, null);
+                    syncProfile, saveLocalInvite, archiveMode, previewFolder,
+                    false, null);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -214,8 +213,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, archiveMode,
-                previewFolder, false, null);
+                syncProfile, saveLocalInvite, archiveMode, previewFolder,
+                false, null);
             configurations.put(folderInfo, folderSettings);
         }
 
@@ -275,11 +274,14 @@ public class FolderCreatePanel extends PFWizardPanel {
         @Override
         public Object construct() {
             ServerClient client = getController().getOSClient();
-            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry
-                    : configurations.entrySet()) {
-                FolderSettings folderSettings = folderInfoFolderSettingsEntry.getValue();
+            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry : configurations
+                .entrySet())
+            {
+                FolderSettings folderSettings = folderInfoFolderSettingsEntry
+                    .getValue();
                 Folder folder = getController().getFolderRepository()
-                    .createFolder(folderInfoFolderSettingsEntry.getKey(), folderSettings);
+                    .createFolder(folderInfoFolderSettingsEntry.getKey(),
+                        folderSettings);
                 folder.addDefaultExcludes();
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
@@ -294,15 +296,14 @@ public class FolderCreatePanel extends PFWizardPanel {
                 // Is there a member to make a friend?
                 // Invitation invitors are automatically made friends.
                 Object attribute = getWizardContext().getAttribute(
-                        MAKE_FRIEND_AFTER);
+                    MAKE_FRIEND_AFTER);
                 if (attribute != null && attribute instanceof MemberInfo) {
                     MemberInfo memberInfo = (MemberInfo) attribute;
                     Member member = getController().getNodeManager().getNode(
-                            memberInfo);
+                        memberInfo);
                     if (member != null) {
-                        if (!getController().getNodeManager().isFriend(member)) {
-                            getController().getNodeManager().friendStateChanged(
-                                    member, true, null);
+                        if (!member.isFriend()) {
+                            member.setFriend(true, null);
                         }
                     }
                 }
@@ -317,7 +318,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                             continue;
                         }
 
-                        client.getFolderService().createFolder(folderInfoFolderSettingsEntry.getKey(),
+                        client.getFolderService().createFolder(
+                            folderInfoFolderSettingsEntry.getKey(),
                             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
                         // Set as default synced folder?
@@ -328,7 +330,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                             // with
                             // folder? Which is placed on WizardContext.
                             client.getFolderService()
-                                .setDefaultSynchronizedFolder(folderInfoFolderSettingsEntry.getKey());
+                                .setDefaultSynchronizedFolder(
+                                    folderInfoFolderSettingsEntry.getKey());
                             createDefaultFolderHelpFile(folder);
                             folder.recommendScanOnNextMaintenance();
                             try {
@@ -370,11 +373,14 @@ public class FolderCreatePanel extends PFWizardPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w.write("This is the default synchronized folder of PowerFolder.\r\n");
-                w.write("Simply place files into this directory to sync them\r\n");
+                w
+                    .write("This is the default synchronized folder of PowerFolder.\r\n");
+                w
+                    .write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w
+                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
