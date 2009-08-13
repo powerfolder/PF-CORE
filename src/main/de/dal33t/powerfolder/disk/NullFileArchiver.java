@@ -52,4 +52,12 @@ public class NullFileArchiver implements FileArchiver {
         throw new IOException("No archive. Unable to restore file "
             + versionInfo.toDetailString());
     }
+
+    public void setConfig(String config) {
+        // Nothing special here :-)
+    }
+
+    public String getConfig() {
+        return "";
+    }
 }

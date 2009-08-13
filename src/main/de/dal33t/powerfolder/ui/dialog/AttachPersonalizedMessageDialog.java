@@ -90,7 +90,7 @@ public class AttachPersonalizedMessageDialog extends BaseDialog {
         return null;
     }
 
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow",

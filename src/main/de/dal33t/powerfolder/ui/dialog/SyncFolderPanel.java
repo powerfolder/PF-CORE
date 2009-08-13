@@ -85,7 +85,7 @@ public class SyncFolderPanel extends BaseDialog {
         return null;
     }
 
-    protected Component getContent() {
+    protected JComponent getContent() {
         // Init
         initComponents();
 

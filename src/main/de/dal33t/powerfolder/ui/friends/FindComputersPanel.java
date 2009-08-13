@@ -100,7 +100,7 @@ public class FindComputersPanel extends PFUIPanel {
     /**
      * returns this ui component, creates it if not available
      */
-    public Component getUIComponent() {
+    public JComponent getUIComponent() {
         if (panel == null) {
             initComponents();
             panel = createContentPanel();

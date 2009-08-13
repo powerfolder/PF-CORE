@@ -77,4 +77,18 @@ public interface FileArchiver {
      *             problem restoring the file.
      */
     void restore(FileInfo versionInfo, File target) throws IOException;
+
+    /**
+     * Implements any specialized config for the FileArchiver instance.
+     *
+     * @param config
+     */
+    void setConfig(String config);
+
+    /**
+     * Get any specialized config for the FileArchiver instance.
+     *
+     * @return
+     */
+    String getConfig();
 }

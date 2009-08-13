@@ -61,10 +61,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderPreviewHelper;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -73,6 +70,7 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
+import de.dal33t.powerfolder.ui.dialog.CopyOrMoveFileArchiverEditDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -743,9 +741,12 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private void editArchiveConfig() {
-        ArchiveMode archiveMode = folder.getArchiveMode();
-        if (archiveMode == ArchiveMode.FULL_BACKUP) {
-            // @todo harry to implement
+        FileArchiver fileArchiver = folder.getFileArchiver();
+        if (fileArchiver instanceof CopyOrMoveFileArchiver) {
+            CopyOrMoveFileArchiver comfa = (CopyOrMoveFileArchiver) fileArchiver;
+            CopyOrMoveFileArchiverEditDialog comfaed
+                    = new CopyOrMoveFileArchiverEditDialog(getController(), comfa);
+            comfaed.open();
         }
     }
 
@@ -754,7 +755,7 @@ public class SettingsTab extends PFUIComponent {
     ///////////////////
 
     /**
-     * Local class to handel action events.
+     * Local class to handle action events.
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {

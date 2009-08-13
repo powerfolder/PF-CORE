@@ -106,7 +106,7 @@ public class SingleFileTransferDialog extends BaseDialog {
      *
      * @return
      */
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, pref",

@@ -57,7 +57,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
      * 
      * @param action
      * @param controller
-     * @param foInfo
+     * @param folder
      */
     public PreviewFolderRemovePanel(PreviewFolderRemoveAction action,
         Controller controller, Folder folder)
@@ -119,7 +119,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
         return okButton;
     }
 
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow", "pref, 6dlu, pref");

@@ -118,14 +118,13 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
      * 
      * @return
      */
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, pref",
             "pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 30dlu, 0"));
 
         // Profile name
         builder.add(new JLabel(Translation

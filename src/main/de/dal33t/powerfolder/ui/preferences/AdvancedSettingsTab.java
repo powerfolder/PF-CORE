@@ -262,7 +262,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     /**
      * Creates a pair of location text field and button.
      *
-     * @param folderInfo
      * @return
      */
     private JComponent createLocationField() {
@@ -445,7 +444,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 getController());
         if (current != useZipOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
-                useZipOnLanCheckBox.isSelected() + "");
+                    String.valueOf(useZipOnLanCheckBox.isSelected()));
         }
 
         // delta on lan?
@@ -453,7 +452,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 getController());
         if (current != useDeltaSyncOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getController(),
-                useDeltaSyncOnLanCheckBox.isSelected() + "");
+                    String.valueOf(useDeltaSyncOnLanCheckBox.isSelected()));
             needsRestart = true;
         }
 
@@ -470,7 +469,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             getController());
         if (current != useSwarmingOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_LAN.setValue(getController(),
-                useSwarmingOnLanCheckBox.isSelected() + "");
+                    String.valueOf(useSwarmingOnLanCheckBox.isSelected()));
             needsRestart = true;
         }
     
@@ -485,7 +484,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 getController());
         if (current != randomPort.isSelected()) {
             ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
-                randomPort.isSelected() + "");
+                    String.valueOf(randomPort.isSelected()));
             needsRestart = true;
         }
 
@@ -494,7 +493,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 .getValueBoolean(getController());
             if (current != openport.isSelected()) {
                 ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(
-                    getController(), openport.isSelected() + "");
+                    getController(), String.valueOf(openport.isSelected()));
                 needsRestart = true;
             }
         }
@@ -514,12 +513,12 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         needsRestart |= lanList.save();
     }
 
-    private class InterfaceChoice {
+    private static class InterfaceChoice {
         private NetworkInterface netInterface;
         private InetAddress address;
         private String showString;
 
-        public InterfaceChoice(NetworkInterface netInterface,
+        private InterfaceChoice(NetworkInterface netInterface,
             InetAddress address)
         {
             this.netInterface = netInterface;

@@ -57,7 +57,7 @@ public class ComputersTab extends PFUIComponent {
 
         computersList = new ComputersList(getController(), this);
 
-        showOfflineCB = new JCheckBox();
+        showOfflineCB = new JCheckBox(Translation.getTranslation("computers_tab.show_offline"));
         showOfflineCB.addActionListener(new MyActionListener());
         showOfflineCB.setSelected(true);
         configureNodeManagerModel();
@@ -117,14 +117,13 @@ public class ComputersTab extends PFUIComponent {
         JButton searchComputerButton = new JButton(getApplicationModel()
                 .getActionModel().getFindComputersAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(searchComputerButton, cc.xy(2, 1));
-        builder.add(new JLabel(Translation.getTranslation("computers_tab.show_offline")), cc.xy(4, 1));
-        builder.add(showOfflineCB, cc.xy(6, 1));
+        builder.add(showOfflineCB, cc.xy(4, 1));
 
         return builder.getPanel();
     }

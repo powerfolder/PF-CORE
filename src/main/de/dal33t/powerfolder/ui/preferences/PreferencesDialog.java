@@ -21,11 +21,7 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -73,7 +69,7 @@ public class PreferencesDialog extends BaseDialog {
     private PluginSettingsTab pluginSettingsTab;
 
     public PreferencesDialog(Controller controller) {
-        super(controller, true, false);
+        super(controller, true);
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
 
@@ -134,16 +130,10 @@ public class PreferencesDialog extends BaseDialog {
         showTab(enable, advancedSettingsTab, getAdvancedTabIndex());
     }
 
-    public Component getContent() {
+    public JComponent getContent() {
         initComponents();
 
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-
-        CellConstraints cc = new CellConstraints();
-        builder.add(tabbedPane, cc.xy(1, 1));
-
-        return builder.getPanel();
+        return tabbedPane;
     }
 
     public void initComponents() {
@@ -224,7 +214,6 @@ public class PreferencesDialog extends BaseDialog {
             .getShowAdvancedSettingsModel().getValue()));
 
         tabbedPane.setSelectedIndex(0);
-        tabbedPane.setBorder(Borders.createEmptyBorder("3dlu,3dlu,3dlu,3dlu"));
 
         // Buttons
         okButton = createOKButton();

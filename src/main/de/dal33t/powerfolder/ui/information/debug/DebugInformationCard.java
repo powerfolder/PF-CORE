@@ -38,7 +38,6 @@ import javax.swing.JToggleButton;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -468,7 +467,6 @@ public class DebugInformationCard extends InformationCard{
 	        bar.addRelatedGap();
 	        bar.addFixed(scrollLockCheckBox);
 	        bar.addRelatedGap();
-	        bar.setBorder(Borders.createEmptyBorder("1dlu, 1dlu, 1dlu, 1dlu"));
 	        return bar.getPanel();
 	    }
 

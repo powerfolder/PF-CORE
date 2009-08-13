@@ -122,7 +122,6 @@ public class NetworkStatisticsPanel extends PFUIComponent implements UIPanel {
             "pref, 3dlu, pref",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;

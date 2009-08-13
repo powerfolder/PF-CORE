@@ -145,7 +145,7 @@ public class FolderRemovePanel extends BaseDialog {
         return Icons.getIconById(Icons.REMOVE_FOLDER_48);
     }
 
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();
 
         FormLayout layout = new FormLayout("pref:grow, 3dlu, pref:grow",

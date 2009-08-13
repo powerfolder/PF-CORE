@@ -69,7 +69,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             "archiveDirectory not a directory!");
         this.archiveDirectory = archiveDirectory;
         // Default: Store unlimited # of files
-        versionsPerFile = -1;
+        versionsPerFile = Integer.MAX_VALUE;
     }
 
     /**
@@ -118,7 +118,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     private void checkArchivedFile(File[] versions) throws IOException {
         assert versions != null;
-        if (versions.length <= versionsPerFile || versionsPerFile < 0) {
+        if (versions.length <= versionsPerFile) {
             return;
         }
 
@@ -134,18 +134,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 throw new IOException("Could not delete old version: " + f);
             }
         }
-    }
-
-    /**
-     * Set the number of versions to keep per file. Setting -1 will keep all
-     * versions. Setting a lesser number as the current one will have no
-     * immediate effect on the archive. To perform maintenance, a call to
-     * maintain() is required.
-     * 
-     * @param versionsPerFile
-     */
-    public void setVersionsPerFile(int versionsPerFile) {
-        this.versionsPerFile = versionsPerFile;
     }
 
     /**
@@ -315,5 +303,26 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         }
         FileUtils.copyFile(archiveFile, target);
         target.setLastModified(versionInfo.getModifiedDate().getTime());
+    }
+
+    public int getVersionsPerFile() {
+        return versionsPerFile;
+    }
+
+    public void setVersionsPerFile(int versionsPerFile) {
+        this.versionsPerFile = versionsPerFile;
+    }
+
+    /**
+     * versionsPerFile is configurable
+     *
+     * @param config
+     */
+    public void setConfig(String config) {
+        versionsPerFile = Integer.parseInt(config);
+    }
+
+    public String getConfig() {
+        return String.valueOf(versionsPerFile);
     }
 }

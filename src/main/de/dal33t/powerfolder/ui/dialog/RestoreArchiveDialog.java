@@ -78,7 +78,7 @@ public class RestoreArchiveDialog extends BaseDialog {
         this.fileInfo = fileInfo;
     }
 
-    protected Component getContent() {
+    protected JComponent getContent() {
         if (uiComponent == null) {
 
             restoreRB = new JRadioButton(Translation
@@ -94,8 +94,6 @@ public class RestoreArchiveDialog extends BaseDialog {
                 "pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
                 "pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             fileLocationLabel = new JLabel(Translation

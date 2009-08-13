@@ -205,7 +205,6 @@ public class ErrorDialog extends PFUIComponent {
 
     protected Component getContent() {
         JPanel topPanel = new JPanel();
-        topPanel.setBorder(BorderFactory.createEmptyBorder());
         topPanel.add(createGeneralPanel());
         return topPanel;
     }

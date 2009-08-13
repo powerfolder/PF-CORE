@@ -19,14 +19,11 @@
 */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.File;
 import java.util.Hashtable;
 import java.util.Dictionary;
 
@@ -44,18 +41,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
-
 
     private JPanel panel;
     private JTextField nickField;
@@ -215,7 +206,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+                    .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
 
             CellConstraints cc = new CellConstraints();
             int row = 1;

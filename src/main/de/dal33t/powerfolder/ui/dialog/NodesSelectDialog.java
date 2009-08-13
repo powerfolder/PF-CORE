@@ -112,7 +112,6 @@ public class NodesSelectDialog extends PFUIComponent {
             "pref:grow",
             "pref, 3dlu, pref, 3dlu, pref, 6dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         // Add components

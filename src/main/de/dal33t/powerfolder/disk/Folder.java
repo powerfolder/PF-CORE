@@ -216,7 +216,6 @@ public class Folder extends PFComponent {
     /** The statistic for this folder */
     private final FolderStatistic statistic;
 
-    private volatile ArchiveMode archiveMode;
     private volatile FileArchiver archiver;
 
     private final FolderListener folderListenerSupport;
@@ -260,6 +259,7 @@ public class Folder extends PFComponent {
     {
         super(controller);
 
+        // @todo these are pointless (HG)
         if (fInfo == null) {
             throw new NullPointerException("FolderInfo is null");
         }
@@ -301,10 +301,10 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(localBase, false);
-            logFine("Opened " + this.toString() + " at '"
+            logFine("Opened " + toString() + " at '"
                 + localBase.getAbsolutePath() + "'");
         } catch (FolderException e) {
-            logWarning("Unable to open " + this.toString() + " at '"
+            logWarning("Unable to open " + toString() + " at '"
                 + localBase.getAbsolutePath()
                 + "'. Local base directory is inaccessable.");
             deviceDisconnected = true;
@@ -467,15 +467,14 @@ public class Folder extends PFComponent {
      *            the ArchiveMode
      */
     public void setArchiveMode(ArchiveMode mode) {
-        this.archiveMode = mode;
-        this.archiver = mode.getInstance(this);
+        archiver = mode.getInstance(this);
     }
 
     /**
      * @return the active ArchiveMode
      */
     public ArchiveMode getArchiveMode() {
-        return archiveMode;
+        return archiver.getArchiveMode();
     }
 
     /**

@@ -26,9 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
@@ -69,7 +67,7 @@ public class AddressEditor extends BaseDialog {
     }
 
     public AddressEditor(Controller controller, String string) {
-        super(controller, true, false);
+        super(controller, true);
         result = EditorResult.CANCEL;
         validationResultModel = new DefaultValidationResultModel();
         
@@ -106,7 +104,7 @@ public class AddressEditor extends BaseDialog {
     }
 
     @Override
-    protected Component getContent()
+    protected JComponent getContent()
     {
         FormLayout layout = new FormLayout("pref", "pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);

@@ -25,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 import javax.swing.*;
 
@@ -53,7 +52,6 @@ import de.dal33t.powerfolder.util.Translation;
 public abstract class BaseDialog extends PFUIComponent {
     private JDialog dialog;
     private boolean modal;
-    private boolean border;
 
     /**
      * Initializes the base dialog.
@@ -64,24 +62,8 @@ public abstract class BaseDialog extends PFUIComponent {
      *            if dialog should be modal
      */
     protected BaseDialog(Controller controller, boolean modal) {
-        // Default = with border
-        this(controller, modal, true);
-    }
-
-    /**
-     * Initializes the base dialog.
-     * 
-     * @param controller
-     *            the controller
-     * @param modal
-     *            if dialog should be modal
-     * @param border
-     *            if a border should be added to the content
-     */
-    protected BaseDialog(Controller controller, boolean modal, boolean border) {
         super(controller);
         this.modal = modal;
-        this.border = border;
     }
 
     // Abstract methods *******************************************************
@@ -107,7 +89,7 @@ public abstract class BaseDialog extends PFUIComponent {
      * 
      * @return component
      */
-    protected abstract Component getContent();
+    protected abstract JComponent getContent();
 
     /**
      * This is the button to make the default button for the dialog.
@@ -263,7 +245,7 @@ public abstract class BaseDialog extends PFUIComponent {
             });
 
             FormLayout layout = new FormLayout("pref, pref:grow",
-                "pref:grow, pref");
+                "pref:grow, 10dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
@@ -275,17 +257,14 @@ public abstract class BaseDialog extends PFUIComponent {
                 builder.add(iconLabel, cc.xywh(1, 1, 1, 1, "right, top"));
             }
 
-            Component content = getContent();
-            if (border) {
-                ((JComponent) content).setBorder(Borders
-                    .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            }
+            JComponent content = getContent();
+            content.setBorder(Borders
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             builder.add(content, cc.xy(2, 1));
-
             Component buttonBar = getButtonBar();
             ((JComponent) buttonBar).setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
-            builder.add(buttonBar, cc.xyw(1, 2, 2));
+            builder.add(buttonBar, cc.xyw(1, 3, 2));
 
             // Add panel to component
             dialog.getContentPane().add(builder.getPanel());

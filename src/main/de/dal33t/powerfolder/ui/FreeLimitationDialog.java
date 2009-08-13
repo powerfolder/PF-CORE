@@ -24,8 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -73,12 +72,11 @@ public class FreeLimitationDialog extends BaseDialog {
     }
 
     @Override
-    protected Component getContent()
+    protected JComponent getContent()
     {
         FormLayout layout = new FormLayout("pref:grow",
             "pref, 2dlu, pref, 14dlu, pref, 3dlu, pref, 3dlu, pref, 14dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 14dlu, 0"));
 
         CellConstraints cc = new CellConstraints();
         int row = 1;

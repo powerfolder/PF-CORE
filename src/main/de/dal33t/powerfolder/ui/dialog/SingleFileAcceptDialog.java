@@ -94,7 +94,7 @@ public class SingleFileAcceptDialog extends BaseDialog {
      *
      * @return
      */
-    protected Component getContent() {
+    protected JComponent getContent() {
         initComponents();                              
         FormLayout layout;
         if (offer.getMessage() != null && offer.getMessage().length() > 0) {
