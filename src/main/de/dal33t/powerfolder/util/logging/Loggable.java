@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.logging;
 
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -285,7 +286,11 @@ public abstract class Loggable {
         }
 
         if (prefix != null) {
-            log.log(level, prefix + " | " + message, t);
+            LogRecord lr = new LogRecord(level, message);
+            lr.setThrown(t);
+            lr.setParameters(new Object[]{prefix});
+            lr.setLoggerName(log.getName());
+            log.log(lr);
         } else {
             log.log(level, message, t);
         }
