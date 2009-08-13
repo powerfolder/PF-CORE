@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.security.SecurityManagerEvent;
+import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
@@ -114,6 +116,8 @@ public class NodeManagerModel extends PFUIComponent {
 
         // Register listener on node manager
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
+        getController().getSecurityManager().addListener(
+            new MySecurityManagerListener());
     }
 
     /**
@@ -140,9 +144,9 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Answers if the node is required based on value models.
-     * This only returns nodes that are my computer, friend or connected lan.
-     * Also filters online based on showOfflineModel 
+     * Answers if the node is required based on value models. This only returns
+     * nodes that are my computer, friend or connected lan. Also filters online
+     * based on showOfflineModel
      * 
      * @param node
      * @return
@@ -157,11 +161,11 @@ public class NodeManagerModel extends PFUIComponent {
         }
 
         // Only care about 1) my computers, 2) friends, and 3) connected lan
-        if (node.isMyComputer() || node.isFriend() ||
-                node.isOnLAN() && connected) {
+        if (node.isMyComputer() || node.isFriend() || node.isOnLAN()
+            && connected)
+        {
             // Wanted, now check online.
-            boolean showOffline = (Boolean) showOfflineModel
-                .getValue();
+            boolean showOffline = (Boolean) showOfflineModel.getValue();
             boolean online = connected || node.isConnectedToNetwork();
             return showOffline || online;
         } else {
@@ -194,8 +198,8 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Update method responding to changes of nodes.
-     * Fire changed if added, removed or in list.
+     * Update method responding to changes of nodes. Fire changed if added,
+     * removed or in list.
      * 
      * @param node
      */
@@ -217,6 +221,7 @@ public class NodeManagerModel extends PFUIComponent {
             changed = true;
         }
         if (changed) {
+            logWarning("Rebuild");
             for (NodeManagerModelListener listener : listeners) {
                 listener.changed();
             }
@@ -276,5 +281,19 @@ public class NodeManagerModel extends PFUIComponent {
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MySecurityManagerListener implements SecurityManagerListener {
+
+        public void nodeAccountStateChanged(SecurityManagerEvent e) {
+            logWarning("Updateing: " + e.getNode() + ": "
+                + e.getNode().getAccountInfo());
+            updateNode(e.getNode());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 }
