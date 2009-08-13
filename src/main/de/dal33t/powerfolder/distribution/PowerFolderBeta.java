@@ -40,9 +40,9 @@ public class PowerFolderBeta extends AbstractDistribution {
         resetProviderURLs(controller);
 
         // Reset primary server if not PowerFolder server
-        if (!isPowerFolderServer(controller)) {
-            resetServer(controller);
-        }
+        // if (!isPowerFolderServer(controller)) {
+        resetServer(controller);
+        // }
     }
 
     public boolean supportsWebRegistration() {
@@ -70,8 +70,7 @@ public class PowerFolderBeta extends AbstractDistribution {
         ConfigurationEntry.SERVER_HOST.setValue(c,
             "relay001.node.powerfolder.com");
         ConfigurationEntry.SERVER_NODEID.setValue(c, "RELAY001");
-        ConfigurationEntry.SERVER_NAME.setValue(c,
-            "PowerFolder Online Storage Testsystem");
+        ConfigurationEntry.SERVER_NAME.setValue(c, "Online Storage Testsystem");
         ConfigurationEntry.SERVER_WEB_URL.setValue(c,
             "https://access.powerfolder.com/node/relay001");
     }
