@@ -119,7 +119,7 @@ public class SettingsTab extends PFUIComponent {
     private final ValueModel scriptModel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
-
+    private JButtonMini editArchiveButton;
     /**
      * Constructor
      * 
@@ -247,10 +247,13 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private JPanel createArchivePanel() {
-        FormLayout layout = new FormLayout("140dlu", "pref");
+        EditArchiveAction a = new EditArchiveAction(getController());
+        editArchiveButton = new JButtonMini(a);
+        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(archivingLocalFiles, cc.xy(1, 1));
+        builder.add(editArchiveButton, cc.xy(3, 1));
         return builder.getPanel();
     }
 
@@ -342,26 +345,6 @@ public class SettingsTab extends PFUIComponent {
     }
 
     /**
-     * Action listener for the location button. Opens a choose dir dialog and
-     * sets the location model with the result.
-     */
-    private class SelectScriptListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            String initial = (String) scriptModel.getValue();
-            JFileChooser chooser = DialogFactory.createFileChooser();
-            chooser.setSelectedFile(new File(initial));
-            int res = chooser.showDialog(getUIController().getMainFrame()
-                .getUIComponent(), Translation
-                .getTranslation("settings_tab.download_script.select"));
-
-            if (res == JFileChooser.APPROVE_OPTION) {
-                String script = chooser.getSelectedFile().getAbsolutePath();
-                scriptModel.setValue(script);
-            }
-        }
-    }
-
-    /**
      * refreshes the UI elements with the current data
      */
     private void update() {
@@ -399,23 +382,6 @@ public class SettingsTab extends PFUIComponent {
         bar.add(removeButton, cc.xy(3, 1));
 
         return bar.getPanel();
-    }
-
-    /**
-     * removes the selected pattern from the blacklist
-     */
-    private class RemoveAction extends BaseAction {
-        private RemoveAction(Controller controller) {
-            super("action_remove_ignore", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            for (Object object : selectionModel.getSelections()) {
-                String selection = (String) object;
-                folder.getDiskItemFilter().removePattern(selection);
-            }
-            patternsList.getSelectionModel().clearSelection();
-        }
     }
 
     /**
@@ -458,50 +424,6 @@ public class SettingsTab extends PFUIComponent {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * opens a popup, input dialog to edit the selected pattern
-     */
-    private class EditAction extends BaseAction {
-        EditAction(Controller controller) {
-            super("action_edit_ignore", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String text = Translation
-                .getTranslation("settings_tab.edit_a_pattern.text");
-            String title = Translation
-                .getTranslation("settings_tab.edit_a_pattern.title");
-
-            String pattern = (String) JOptionPane.showInputDialog(
-                getUIController().getActiveFrame(), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null,
-                // the text to edit:
-                selectionModel.getSelection());
-            if (!StringUtils.isBlank(pattern)) {
-                folder.getDiskItemFilter().removePattern(
-                    (String) selectionModel.getSelection());
-                folder.getDiskItemFilter().addPattern(pattern);
-            }
-            patternsList.getSelectionModel().clearSelection();
-        }
-    }
-
-    /**
-     * Add a pattern to the backlist, opens a input dialog so user can enter
-     * one.
-     */
-    private class AddAction extends BaseAction {
-        private AddAction(Controller controller) {
-            super("action_add_ignore", controller);
-
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            showAddPane(Translation
-                .getTranslation("settings_tab.add_a_pattern.example"));
         }
     }
 
@@ -820,9 +742,16 @@ public class SettingsTab extends PFUIComponent {
         previewFolderActionLabel.setEnabled(enabled);
     }
 
-    // /////////////////
+    private void editArchiveConfig() {
+        ArchiveMode archiveMode = folder.getArchiveMode();
+        if (archiveMode == ArchiveMode.FULL_BACKUP) {
+            // @todo harry to implement
+        }
+    }
+
+    ///////////////////
     // Inner Classes //
-    // /////////////////
+    ///////////////////
 
     /**
      * Local class to handel action events.
@@ -841,6 +770,7 @@ public class SettingsTab extends PFUIComponent {
                 config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
                     + FOLDER_SETTINGS_ARCHIVE, mode.name());
                 getController().saveConfig();
+                editArchiveButton.setEnabled(mode == ArchiveMode.FULL_BACKUP);
             }
         }
     }
@@ -994,4 +924,95 @@ public class SettingsTab extends PFUIComponent {
             return true;
         }
     }
+
+    /**
+     * opens a popup, input dialog to edit the selected pattern
+     */
+    private class EditAction extends BaseAction {
+        EditAction(Controller controller) {
+            super("action_edit_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String text = Translation
+                .getTranslation("settings_tab.edit_a_pattern.text");
+            String title = Translation
+                .getTranslation("settings_tab.edit_a_pattern.title");
+
+            String pattern = (String) JOptionPane.showInputDialog(
+                getUIController().getActiveFrame(), text, title,
+                JOptionPane.PLAIN_MESSAGE, null, null,
+                // the text to edit:
+                selectionModel.getSelection());
+            if (!StringUtils.isBlank(pattern)) {
+                folder.getDiskItemFilter().removePattern(
+                    (String) selectionModel.getSelection());
+                folder.getDiskItemFilter().addPattern(pattern);
+            }
+            patternsList.getSelectionModel().clearSelection();
+        }
+    }
+
+    private class EditArchiveAction extends BaseAction {
+        private EditArchiveAction(Controller controller) {
+            super("action_edit_archive", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            editArchiveConfig();
+        }
+    }
+    /**
+     * Add a pattern to the backlist, opens a input dialog so user can enter
+     * one.
+     */
+    private class AddAction extends BaseAction {
+        private AddAction(Controller controller) {
+            super("action_add_ignore", controller);
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            showAddPane(Translation
+                .getTranslation("settings_tab.add_a_pattern.example"));
+        }
+    }
+
+    /**
+     * Action listener for the location button. Opens a choose dir dialog and
+     * sets the location model with the result.
+     */
+    private class SelectScriptListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String initial = (String) scriptModel.getValue();
+            JFileChooser chooser = DialogFactory.createFileChooser();
+            chooser.setSelectedFile(new File(initial));
+            int res = chooser.showDialog(getUIController().getMainFrame()
+                .getUIComponent(), Translation
+                .getTranslation("settings_tab.download_script.select"));
+
+            if (res == JFileChooser.APPROVE_OPTION) {
+                String script = chooser.getSelectedFile().getAbsolutePath();
+                scriptModel.setValue(script);
+            }
+        }
+    }
+
+    /**
+     * removes the selected pattern from the blacklist
+     */
+    private class RemoveAction extends BaseAction {
+        private RemoveAction(Controller controller) {
+            super("action_remove_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            for (Object object : selectionModel.getSelections()) {
+                String selection = (String) object;
+                folder.getDiskItemFilter().removePattern(selection);
+            }
+            patternsList.getSelectionModel().clearSelection();
+        }
+    }
+
 }
