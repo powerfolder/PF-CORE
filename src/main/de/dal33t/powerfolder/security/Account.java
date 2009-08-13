@@ -147,6 +147,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void revokeAllPermissions() {
+        LOG.fine("Revoking all permission from " + this + ": " + permissions);
         permissions.clear();
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
