@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class SwarmingTest extends MultipleControllerTestCase {
 
-    public void testAlotOfControllers() throws Exception {
+    public void xtestAlotOfControllers() throws Exception {
         joinNTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         for (int i = 0; i < 10; i++) {
@@ -50,7 +50,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
     }
 
-    public void testKillerSwarm() throws IOException {
+    public void xtestKillerSwarm() throws IOException {
         nSetupControllers(20);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
         setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
@@ -81,15 +81,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testFiveSwarmMulti() throws Exception {
+    public void xtestFiveSwarmMulti() throws Exception {
         for (int i = 0; i < 5; i++) {
-            testFiveSwarmDownload();
+            xtestFiveSwarmDownload();
             tearDown();
             setUp();
         }
     }
 
-    public void testFiveSwarmDownload() throws IOException {
+    public void xtestFiveSwarmDownload() throws IOException {
         final long fsize = 10000000;
         nSetupControllers(5);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
@@ -269,7 +269,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testFileAlterations() throws IOException {
+    public void xtestFileAlterations() throws IOException {
         nSetupControllers(6);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
 
@@ -346,15 +346,15 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultiFileAlterations() throws Exception {
+    public void xtestMultiFileAlterations() throws Exception {
         for (int i = 0; i < 20; i++) {
-            testFileAlterations();
+            xtestFileAlterations();
             tearDown();
             setUp();
         }
     }
 
-    public void testMultifileSwarmingWithHeavyModifications()
+    public void xtestMultifileSwarmingWithHeavyModifications()
         throws IOException
     {
         Random prng = new Random();
@@ -526,7 +526,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.cleanTestDir();
     }
 
-    public void testConcurrentModificationsLargeSwarmDeltaSync()
+    public void xtestConcurrentModificationsLargeSwarmDeltaSync()
         throws IOException
     {
         Random prng = new Random();
