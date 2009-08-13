@@ -62,7 +62,7 @@ import org.apache.commons.cli.CommandLine;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
-import de.dal33t.powerfolder.distribution.PowerFolderClient;
+import de.dal33t.powerfolder.distribution.PowerFolderBeta;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -122,7 +122,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version. 1.0.2.27
      */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.31";
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.33";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2081,7 +2081,8 @@ public class Controller extends PFComponent {
                 distribution = br;
             }
             if (distribution == null) {
-                distribution = new PowerFolderClient();
+                // distribution = new PowerFolderClient();
+                distribution = new PowerFolderBeta();
             }
             logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
@@ -2092,7 +2093,8 @@ public class Controller extends PFComponent {
             // Fallback
             try {
                 if (distribution == null) {
-                    distribution = new PowerFolderClient();
+                    // distribution = new PowerFolderClient();
+                    distribution = new PowerFolderBeta();
                 }
                 logInfo("Running distribution: " + distribution.getName());
                 distribution.init(this);
