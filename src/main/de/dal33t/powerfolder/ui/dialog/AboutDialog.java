@@ -210,7 +210,8 @@ public class AboutDialog extends PFUIComponent {
                 String.valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.used",
-                String.valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
+                String
+                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.distribution", getController()
@@ -418,7 +419,6 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about_dialog.system_monitor.tips"));
         systemMonitorButton.setMnemonic(Translation.getTranslation(
             "about_dialog.system_monitor.key").trim().charAt(0));
-        systemMonitorButton.setIcon(Icons.getIconById(Icons.SYSTEM_MONITOR));
         systemMonitorButton.addActionListener(systemMonitorAction);
         systemMonitorButton.setBackground(Color.WHITE);
         return systemMonitorButton;
@@ -435,7 +435,6 @@ public class AboutDialog extends PFUIComponent {
             .getTranslation("about_dialog.check_for_updates.tips"));
         checkForUpdatesButton.setMnemonic(Translation.getTranslation(
             "about_dialog.check_for_updates.key").trim().charAt(0));
-        checkForUpdatesButton.setIcon(Icons.getIconById(Icons.UPDATES));
         checkForUpdatesButton.addActionListener(updateAction);
         checkForUpdatesButton.setBackground(Color.WHITE);
     }
@@ -443,7 +442,6 @@ public class AboutDialog extends PFUIComponent {
     private void createBugReportButton() {
         bugReportButton = new JButton(Translation
             .getTranslation("about_dialog.send_bug_report.text"));
-        bugReportButton.setIcon(Icons.getIconById(Icons.DEBUG));
         bugReportButton.setToolTipText(Translation
             .getTranslation("about_dialog.send_bug_report.tips"));
         bugReportButton.setMnemonic(Translation.getTranslation(
