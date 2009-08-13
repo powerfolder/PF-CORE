@@ -51,7 +51,7 @@ public class PowerFolderClient extends AbstractDistribution {
 
     public boolean allowUserToSelectServer() {
         // Don't allow the user to change the server.
-        return false;
+        return true;
     }
 
     public UpdateSetting createUpdateSettings() {
