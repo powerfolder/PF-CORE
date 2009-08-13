@@ -345,18 +345,21 @@ public abstract class MultipleControllerTestCase extends TestCase {
             new Controller[controllers.values().size()]);
         for (int i = 0; i < entries.length; i++) {
             for (int j = 0; j < i; j++) {
-                entries[j].getNodeManager().getNode(
-                    entries[i].getNodeManager().getMySelf().getId()).shutdown();
+                Member node = entries[j].getNodeManager().getNode(
+                    entries[i].getNodeManager().getMySelf().getId());
+                if (node == null) {
+                    continue;
+                }
+                node.shutdown();
             }
         }
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 for (int i = 0; i < entries.length; i++) {
                     for (int j = 0; j < i; j++) {
-                        if (entries[j].getNodeManager().getNode(
-                            entries[i].getNodeManager().getMySelf().getId())
-                            .isConnected())
-                        {
+                        Member node = entries[j].getNodeManager().getNode(
+                            entries[i].getNodeManager().getMySelf().getId());
+                        if (node != null && node.isConnected()) {
                             return false;
                         }
                     }

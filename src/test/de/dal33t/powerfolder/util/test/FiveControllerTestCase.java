@@ -70,7 +70,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     /**
      * The test folder info.
      */
-    private FolderInfo testFolder;
+    protected FolderInfo testFolder;
 
     @Override
     protected void setUp() throws Exception {
@@ -203,7 +203,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      * @param profile
      *            the profile to use
      */
-    protected void joinTestFolder(SyncProfile profile, boolean checkMemberships)
+    protected FolderInfo joinTestFolder(SyncProfile profile, boolean checkMemberships)
     {
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
         // FIXME Waiting between join only because of race condition making join
@@ -246,6 +246,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
                     + testFolder + " id: " + testFolder.id);
             }
         }
+        return testFolder;
     }
 
     protected void clearCompletedDownloads() {
