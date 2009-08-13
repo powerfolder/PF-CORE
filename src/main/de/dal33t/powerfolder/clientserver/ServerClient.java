@@ -564,6 +564,9 @@ public class ServerClient extends PFComponent {
         AccountDetails newDetails = securityService.getAccountDetails();
         if (newDetails != null) {
             accountDetails = newDetails;
+
+            updateFriendsList(accountDetails.getAccount());
+
             fireAccountUpdates(accountDetails);
         } else {
             setAnonAccount();
@@ -573,6 +576,15 @@ public class ServerClient extends PFComponent {
             logFine("Refreshed " + accountDetails);
         }
         return accountDetails;
+    }
+
+    private void updateFriendsList(Account a) {
+        for (MemberInfo nodeInfo : a.getComputers()) {
+            Member node = nodeInfo.getNode(getController(), true);
+            if (!node.isFriend()) {
+                node.setFriend(true, null);
+            }
+        }
     }
 
     // Services ***************************************************************

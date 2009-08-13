@@ -70,6 +70,7 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.task.RemoveComputerFromAccountTask;
 import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 /**
@@ -590,13 +591,13 @@ public class NodeManager extends PFComponent {
 
     /**
      * Called by member. Not getting this event from event handling because we
-     * have to handle things definitivily before other elements work on that
+     * have to handle things definitivily before other elements work on that.
      * 
      * @param node
      * @param friend
      * @param personalMessage
      */
-    public void friendStateChanged(Member node, boolean friend,
+    public void friendStateChanged(final Member node, boolean friend,
         String personalMessage)
     {
         if (node.isMySelf()) {
@@ -623,6 +624,11 @@ public class NodeManager extends PFComponent {
             friends.remove(node);
             nodesChanged = true;
             fireFriendRemoved(node);
+
+            // Remove computer from the list of my last logged in computers.
+            getController().getTaskManager().scheduleTask(
+                new RemoveComputerFromAccountTask(node.getInfo()));
+
         }
 
         if (nodefileLoaded && nodesChanged) {

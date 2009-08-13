@@ -52,8 +52,7 @@ public class SendMessageTask extends PersistentTask {
     }
 
     @Override
-    public void init(PersistentTaskManager handler) {
-        super.init(handler);
+    public void initialize() {
         if (message == null || targetID == null || expires == null
             || isExpired())
         {

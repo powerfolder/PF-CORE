@@ -53,4 +53,8 @@ public class ServerClientEvent extends EventObject {
     public Member getServerNode() {
         return node;
     }
+    
+    public ServerClient getClient() {
+        return (ServerClient) getSource();
+    }
 }

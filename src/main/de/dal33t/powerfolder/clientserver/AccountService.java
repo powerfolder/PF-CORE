@@ -21,14 +21,11 @@ package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.security.Permission;
 
 /**
  * Contins all methods to modify/alter, create or notify Accounts.
@@ -86,6 +83,13 @@ public interface AccountService {
      *         found.
      */
     List<String> getLicenseKeyContents();
+
+    /**
+     * Removes a computer from the own list of computers.
+     * 
+     * @param node
+     */
+    void removeComputer(MemberInfo node);
 
     // DAO related / admin methods ********************************************
 
