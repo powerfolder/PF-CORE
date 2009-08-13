@@ -2052,6 +2052,18 @@ public class Folder extends PFComponent {
      * @return true if actually joined the folder.
      */
     public boolean join(Member member) {
+        if (!hasReadPermission(getController().getMySelf())) {
+            logWarning("Not joining " + member
+                + ". We don't have read permission");
+            if (member.isPre4Client()) {
+                member.sendMessagesAsynchron(FileList
+                    .createNullListForPre4Client(currentInfo));
+            } else {
+                member.sendMessagesAsynchron(FileList
+                    .createNullList(currentInfo));
+            }
+            return false;
+        }
         if (!hasReadPermission(member)) {
             logWarning("Not joining " + member + ". No read permisson");
             if (member.isPre4Client()) {
@@ -2079,9 +2091,13 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Member joined " + member);
         }
-        // send him our list of files if completely connected. otherwise this
-        // gets sent by Member.completeHandshake();
-        if (!wasMember && member.isCompletelyConnected()) {
+        // send him our list of files if physically connected (so during
+        // handshake) or if he freshly joined the folder.
+        if ((!wasMember || !member.isCompletelyConnected())
+            && member.isConnected())
+        {
+            // FIX for #924
+            waitForScan();
             member.sendMessagesAsynchron(FileList.createFileListMessages(this,
                 !member.isPre4Client()));
         }
@@ -2089,6 +2105,25 @@ public class Folder extends PFComponent {
             // Fire event if this member is new
             fireMemberJoined(member);
         }
+    }
+
+    private boolean waitForScan() {
+        ScanResult.ResultState lastScanResultState = getLastScanResultState();
+        if (!isScanning()) {
+            // folder OK!
+            return true;
+        }
+        logFine("Waiting to complete scan");
+        while (isScanning() && lastScanResultState == getLastScanResultState())
+        {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
+        logFine("Scan completed. Continue with connect.");
+        return true;
     }
 
     /**
@@ -3268,11 +3303,11 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
+        if (getController().getOSClient().isServer(member)) {
+            return true;
+        }
         return getController().getSecurityManager().hasPermission(
             member.getAccountInfo(), permission);
-        // return
-        // getController().getSecurityManager().hasFolderPermission(member,
-        // permission);
     }
 
     // General stuff **********************************************************

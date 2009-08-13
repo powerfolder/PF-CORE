@@ -45,13 +45,19 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @version $Revision: 1.5 $
  */
 public class SecurityManagerClient extends AbstractSecurityManager {
-    private static final AccountInfo NULL_ACCOUNT = new AccountInfo(null, null);
+
+    private static final boolean CACHE_ENABLED = true;
+
+    private static final AccountInfo NULL_ACCOUNT = new AccountInfo(null, null)
+    {
+        public String toString() {
+            return "Anonymous";
+        }
+    };
 
     private ServerClient client;
     private Map<Member, Session> sessions;
     private Map<AccountInfo, PermissionsCacheSegment> permissionsCacheAccounts;
-
-    private static final boolean CACHE_ENABLED = true;
 
     public SecurityManagerClient(Controller controller, ServerClient client) {
         super(controller);
@@ -82,7 +88,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                 cache = new PermissionsCacheSegment();
                 permissionsCacheAccounts.put(nullSafeGet(accountInfo), cache);
             }
-            boolean cacheHit;
+            String source;
             if (!CACHE_ENABLED) {
                 hasPermission = null;
             }
@@ -91,21 +97,22 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                     hasPermission = Boolean.valueOf(client.getSecurityService()
                         .hasPermission(accountInfo, permission));
                     cache.set(permission, hasPermission);
+                    source = "recvd";
                 } else {
                     hasPermission = false;
+                    source = "nocon";
                 }
-                cacheHit = false;
             } else {
-                cacheHit = true;
+                source = "cache";
             }
-            // if (isFine()) {
-            logWarning((cacheHit ? "(cachd) " : "(retvd) ") + accountInfo
-                + " has " + (hasPermission ? "" : "NOT ") + permission);
-            // }
+            if (isFine()) {
+                logFine("(" + source + ") " + nullSafeGet(accountInfo)
+                    + " has " + (hasPermission ? "" : "NOT ") + permission);
+            }
             return hasPermission;
         } catch (RemoteCallException e) {
-            logWarning("Unable to check permission for " + accountInfo + ". "
-                + e);
+            logWarning("Unable to check permission for "
+                + nullSafeGet(accountInfo) + ". " + e);
             logFiner(e);
             return false;
         }
@@ -121,6 +128,10 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         Session session = sessions.get(node);
         // Cache hit
         if (session != null && CACHE_ENABLED) {
+            if (isFiner()) {
+                logFiner("Retured cached account for " + node + " : "
+                    + session.getAccountInfo());
+            }
             return session.getAccountInfo();
         }
         // Smells like hack
@@ -140,8 +151,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(Collections.singleton(node.getInfo()));
             aInfo = res.get(node.getInfo());
-            if (isWarning()) {
-                logWarning("Retrieved account " + aInfo + " for " + node);
+            if (isFiner()) {
+                logFiner("Retrieved account " + aInfo + " for " + node);
             }
             if (CACHE_ENABLED) {
                 sessions.put(node, new Session(aInfo));

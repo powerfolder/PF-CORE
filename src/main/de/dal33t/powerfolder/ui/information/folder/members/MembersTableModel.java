@@ -220,8 +220,6 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         // Possible permissions
         permissionsListModel.clearSelection();
         permissionsListModel.getList().clear();
-        defaultPermissionsListModel.clearSelection();
-        defaultPermissionsListModel.getList().clear();
 
         modelChanged(new TableModelEvent(this, 0, members.size() - 1));
         refreshModel();
@@ -320,13 +318,17 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         } else if (columnIndex == COL_PERMISSION) {
             return folderMember.getPermission();
         } else if (columnIndex == COL_SYNC_STATUS) {
-            if (member == null) {
+            if (member == null
+                || (!member.isCompletelyConnected() && !member.isMySelf()))
+            {
                 return "";
             }
             double sync = stats.getSyncPercentage(member);
             return SyncProfileUtil.renderSyncPercentage(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
-            if (member == null) {
+            if (member == null
+                || (!member.isCompletelyConnected() && !member.isMySelf()))
+            {
                 return "";
             }
             int filesRcvd = stats.getFilesCountInSync(member);

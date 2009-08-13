@@ -31,6 +31,8 @@ import de.dal33t.powerfolder.security.Permission;
 
 /**
  * Service for client authentication and permission checks.
+ * <P>
+ * TODO Traffic optimize
  * 
  * @author sprajc
  */
