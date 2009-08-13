@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -1033,9 +1034,10 @@ public class NodeManager extends PFComponent {
                     logWarning("Multiple connection tries detected ("
                         + connectionTries + ") to " + member);
                 }
-                if (member.setPeer(handler).isFailure()) {
+                ConnectResult res = member.setPeer(handler);
+                if (res.isFailure()) {
                     throw new ConnectionException("Unable to connect to node "
-                        + member);
+                        + member + ". " + res);
                 }
             } finally {
                 member.unmarkConnecting();
