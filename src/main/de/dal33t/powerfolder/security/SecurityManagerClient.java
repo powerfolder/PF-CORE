@@ -99,7 +99,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                     cache.set(permission, hasPermission);
                     source = "recvd";
                 } else {
-                    hasPermission = false;
+                    // TODO How to handle server disconnect?
+                    hasPermission = true;
                     source = "nocon";
                 }
             } else {
