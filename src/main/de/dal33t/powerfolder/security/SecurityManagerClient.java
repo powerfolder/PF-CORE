@@ -236,7 +236,9 @@ public class SecurityManagerClient extends AbstractSecurityManager {
 
     private void clearNodeCache(Member node) {
         Session s = sessions.remove(node);
-        logWarning("Clearing permissions cache on " + node + ": " + s);
+        if (isFiner()) {
+            logFiner("Clearing permissions cache on " + node + ": " + s);
+        }
         permissionsCacheAccounts.remove(nullSafeGet(s != null ? s
             .getAccountInfo() : null));
     }
