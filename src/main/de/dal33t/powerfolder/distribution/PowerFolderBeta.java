@@ -24,10 +24,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
-public class PowerFolderClient extends AbstractDistribution {
+public class PowerFolderBeta extends AbstractDistribution {
 
     public String getName() {
-        return "PowerFolder";
+        return "4.0 Beta";
     }
 
     public void init(Controller controller) {
@@ -51,7 +51,7 @@ public class PowerFolderClient extends AbstractDistribution {
 
     public boolean allowUserToSelectServer() {
         // Don't allow the user to change the server.
-        return false;
+        return true;
     }
 
     public UpdateSetting createUpdateSettings() {
@@ -66,12 +66,14 @@ public class PowerFolderClient extends AbstractDistribution {
     // Internal ***************************************************************
 
     private void resetServer(Controller c) {
-        logInfo("Resetting server connection to "
-            + ConfigurationEntry.SERVER_HOST.getDefaultValue());
-        setDefaultValue(c, ConfigurationEntry.SERVER_NAME);
-        setDefaultValue(c, ConfigurationEntry.SERVER_WEB_URL);
-        setDefaultValue(c, ConfigurationEntry.SERVER_NODEID);
-        setDefaultValue(c, ConfigurationEntry.SERVER_HOST);
+        logInfo("Setting beta server connect");
+        ConfigurationEntry.SERVER_HOST.setValue(c,
+            "relay001.node.powerfolder.com");
+        ConfigurationEntry.SERVER_NODEID.setValue(c, "RELAY001");
+        ConfigurationEntry.SERVER_NAME.setValue(c,
+            "PowerFolder Online Storage Testsystem");
+        ConfigurationEntry.SERVER_WEB_URL.setValue(c,
+            "https://access.powerfolder.com/node/relay001");
     }
 
     private static void resetNetworkID(Controller c) {
