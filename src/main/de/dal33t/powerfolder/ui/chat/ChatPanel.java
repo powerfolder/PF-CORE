@@ -201,7 +201,7 @@ public class ChatPanel extends PFUIComponent {
      * partner
      */
     public void updateInputField() {
-        boolean connected = chatPartner.isCompleteyConnected();
+        boolean connected = chatPartner.isCompletelyConnected();
         if (connected) {
             chatInput.setBackground(Color.WHITE);
         } else {
@@ -333,7 +333,7 @@ public class ChatPanel extends PFUIComponent {
             if (keyTyped == '\n') { // enter key = send message
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
-                    if (chatPartner.isCompleteyConnected()) {
+                    if (chatPartner.isCompletelyConnected()) {
                         chatModel.addChatLine(chatPartner, getController()
                             .getMySelf(), message);
                         chatInput.setText("");

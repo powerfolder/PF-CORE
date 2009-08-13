@@ -450,7 +450,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * a node is completey connected & handshaked see
      * <code>isCompletelyConnected</code>
      * 
-     * @see #isCompleteyConnected()
+     * @see #isCompletelyConnected()
      * @return true if connected
      */
     public boolean isConnected() {
@@ -466,7 +466,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * 
      * @return true if connected & handshaked
      */
-    public boolean isCompleteyConnected() {
+    public boolean isCompletelyConnected() {
         return handshaked && isConnected();
     }
 
@@ -1808,7 +1808,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (isMySelf()) {
             return;
         }
-        if (!isCompleteyConnected()) {
+        if (!isCompletelyConnected()) {
             return;
         }
 
@@ -2135,7 +2135,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this member is connected to the PF network
      */
     public boolean isConnectedToNetwork() {
-        return isCompleteyConnected() || isConnectedToNetwork;
+        return isCompletelyConnected() || isConnectedToNetwork;
     }
 
     /**

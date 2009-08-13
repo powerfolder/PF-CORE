@@ -39,7 +39,6 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -131,7 +130,7 @@ public class NodeManagerModel extends PFUIComponent {
         nodes.clear();
         nodes.addAll(newSet);
         for (NodeManagerModelListener listener : listeners) {
-            listener.rebuilt(new NodeManagerModelEvent(this, null));
+            listener.changed();
         }
 
         Member[] friends = getController().getNodeManager().getFriends();
@@ -150,23 +149,20 @@ public class NodeManagerModel extends PFUIComponent {
      */
     private boolean required(Member node) {
 
-        boolean showOffline = (Boolean) showOfflineModel
-            .getValue();
-        boolean connected = node.isCompleteyConnected();
-        boolean online = connected || node.isConnectedToNetwork();
+        boolean connected = node.isCompletelyConnected();
 
         if (node.isMySelf()) {
             // Never add self
             return false;
         }
 
-        // Only care for
-        // 1) my computers,
-        // 2) friends, and 
-        // 3) connected lan
+        // Only care about 1) my computers, 2) friends, and 3) connected lan
         if (node.isMyComputer() || node.isFriend() ||
-                node.isOnLAN() && node.isCompleteyConnected()) {
+                node.isOnLAN() && connected) {
             // Wanted, now check online.
+            boolean showOffline = (Boolean) showOfflineModel
+                .getValue();
+            boolean online = connected || node.isConnectedToNetwork();
             return showOffline || online;
         } else {
             return false;
@@ -198,25 +194,31 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Update method responding to addition or removal of nodes.
+     * Update method responding to changes of nodes.
+     * Fire changed if added, removed or in list.
      * 
      * @param node
      */
     private void updateNode(Member node) {
+        boolean changed = false;
         boolean wanted = required(node);
         if (wanted) {
             if (!nodes.contains(node)) {
                 nodes.add(node);
-                for (NodeManagerModelListener listener : listeners) {
-                    listener.nodeAdded(new NodeManagerModelEvent(this, node));
-                }
+                changed = true;
             }
         } else {
             if (nodes.contains(node)) {
                 nodes.remove(node);
-                for (NodeManagerModelListener listener : listeners) {
-                    listener.nodeRemoved(new NodeManagerModelEvent(this, node));
-                }
+                changed = true;
+            }
+        }
+        if (nodes.contains(node)) {
+            changed = true;
+        }
+        if (changed) {
+            for (NodeManagerModelListener listener : listeners) {
+                listener.changed();
             }
         }
     }

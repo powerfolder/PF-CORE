@@ -207,7 +207,7 @@ public class NodesSelectTableModel implements TableModel {
 
         private void addNodeIfRequired(Member node) {
             if (node.isFriend()
-                || (node.isOnLAN() && node.isCompleteyConnected()))
+                || (node.isOnLAN() && node.isCompletelyConnected()))
             {
                 if (hideOffline) {
                     if (node.isConnectedToNetwork()) {

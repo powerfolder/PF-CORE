@@ -137,7 +137,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .next();
         assertTrue("" + getFolderAtBart().getFilesAsCollection(lisaAtBart),
             lisaAtBart.hasFile(testfInfoBart));
-        assertTrue(lisaAtBart.isCompleteyConnected());
+        assertTrue(lisaAtBart.isCompletelyConnected());
         List<Member> sources = getContollerBart().getTransferManager()
             .getSourcesFor(testfInfoBart);
         assertNotNull(sources);

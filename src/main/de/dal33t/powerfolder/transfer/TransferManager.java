@@ -594,7 +594,7 @@ public class TransferManager extends PFComponent {
         }
 
         // Tell remote peer if possible
-        if (upload.getPartner().isCompleteyConnected()) {
+        if (upload.getPartner().isCompletelyConnected()) {
             logWarning("Sending abort upload of " + upload);
             upload.getPartner().sendMessagesAsynchron(
                 new AbortUpload(upload.getFile()));
@@ -1848,7 +1848,7 @@ public class TransferManager extends PFComponent {
         List<Member> sources = null;
         for (Member node : folder.getMembersAsCollection()) {
             FileInfo rInfo = node.getFile(fInfo);
-            if (node.isCompleteyConnected() && !node.isMySelf()
+            if (node.isCompletelyConnected() && !node.isMySelf()
                 && fInfo.isVersionDateAndSizeIdentical(rInfo))
             {
                 // node is connected and has file
@@ -1895,7 +1895,7 @@ public class TransferManager extends PFComponent {
         List<Member> sources = null;
         // List<Member> sources = new ArrayList<Member>(nodes.size());
         for (Member node : folder.getMembersAsCollection()) {
-            if (node.isCompleteyConnected() && !node.isMySelf()
+            if (node.isCompletelyConnected() && !node.isMySelf()
                 && node.hasFile(fInfo))
             {
                 if (withUploadCapacityOnly && !hasUploadCapacity(node)) {

@@ -60,7 +60,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
 
         joinTestFolder(SyncProfile.HOST_FILES, false);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
@@ -87,9 +87,9 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerMarge(), "");
         assertTrue(getContollerLisa().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
-            .isCompleteyConnected());
+            .isCompletelyConnected());
         assertTrue(getContollerMarge().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
-            .isCompleteyConnected());
+            .isCompletelyConnected());
 
         ConnectionHandler conHan = getContollerMarge().getIOProvider()
             .getRelayedConnectionManager().initRelayedConnectionHandler(
@@ -100,7 +100,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
 
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),
@@ -132,14 +132,14 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
     }
 
     public void noTestRelayConnectionToOS() throws ConnectionException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         assertTrue(getContollerLisa().connect(TestHelper.INFRASTRUCTURE_CONNECT_STRING)
-            .isCompleteyConnected());
+            .isCompletelyConnected());
 
         Member os = getContollerLisa()
             .connect(TestHelper.ONLINE_STORAGE_ADDRESS);
@@ -153,7 +153,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
 
         os.shutdown();
         conHan.shutdownWithMember();
@@ -166,6 +166,6 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
     }
 }

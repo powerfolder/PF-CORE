@@ -75,7 +75,7 @@ public class SendMessageTask extends PersistentTask {
 
     private boolean execute() {
         Member node = getController().getNodeManager().getNode(targetID);
-        if (node != null && node.isCompleteyConnected()) {
+        if (node != null && node.isCompletelyConnected()) {
             node.sendMessageAsynchron(message, "Failed to send " + message);
             remove();
             return true;

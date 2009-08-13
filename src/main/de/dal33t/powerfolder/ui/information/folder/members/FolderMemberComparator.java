@@ -49,8 +49,8 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
             // Sort by type.
             boolean m1f = member1.isFriend();
             boolean m2f = member2.isFriend();
-            boolean m1cc = member1.isCompleteyConnected() || member1.isMySelf();
-            boolean m2cc = member2.isCompleteyConnected() || member2.isMySelf();
+            boolean m1cc = member1.isCompletelyConnected() || member1.isMySelf();
+            boolean m2cc = member2.isCompletelyConnected() || member2.isMySelf();
             if (m1f != m2f) {
                 return m1f ? 1 : -1;
             }

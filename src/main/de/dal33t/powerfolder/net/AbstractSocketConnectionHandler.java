@@ -913,7 +913,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
                     // Consistency check:
                     // if (getMember() != null
-                    // && getMember().isCompleteyConnected()
+                    // && getMember().isCompletelyConnected()
                     // && getMember().getPeer() !=
                     // AbstractSocketConnectionHandler.this)
                     // {

@@ -104,10 +104,10 @@ public class MemberComparator implements Comparator {
                     result += 1000;
                 }
                 // then connected members
-                if (member1.isCompleteyConnected()) {
+                if (member1.isCompletelyConnected()) {
                     result -= 500;
                 }
-                if (member2.isCompleteyConnected()) {
+                if (member2.isCompletelyConnected()) {
                     result += 500;
                 }
                 // then connected to networked

@@ -481,7 +481,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         ArrayList<String> domains = new ArrayList<String>();
         for (Member member : folder.getMembersAsCollection()) {
-            if (member.isCompleteyConnected()) {
+            if (member.isCompletelyConnected()) {
                 domains.add(member.getId());
             } else if (member.isMySelf()) {
                 domains.add(null);
@@ -509,7 +509,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
-            if (member.isCompleteyConnected() || member.isMySelf()) {
+            if (member.isCompletelyConnected() || member.isMySelf()) {
                 // Get remote file
                 FileInfo remoteFile = member.getFile(this);
                 if (remoteFile == null || remoteFile.deleted) {

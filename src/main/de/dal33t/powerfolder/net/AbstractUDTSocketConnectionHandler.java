@@ -914,7 +914,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
                     // Consistency check:
                     // if (getMember() != null
-                    // && getMember().isCompleteyConnected()
+                    // && getMember().isCompletelyConnected()
                     // && getMember().getPeer() !=
                     // AbstractSocketConnectionHandler.this)
                     // {

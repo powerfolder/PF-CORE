@@ -70,7 +70,7 @@ public class UDTConnectionTest extends FiveControllerTestCase {
 
         assertTrue(conHan.isConnected());
         assertNotNull(conHan.getMember());
-        assertTrue(conHan.getMember().isCompleteyConnected());
+        assertTrue(conHan.getMember().isCompletelyConnected());
 
         joinTestFolder(SyncProfile.HOST_FILES, false);
         TestHelper.createRandomFile(getFolderAtMarge().getLocalBase(),

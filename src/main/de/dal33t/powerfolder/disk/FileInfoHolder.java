@@ -161,7 +161,7 @@ public class FileInfoHolder {
         int newestVersion = newestNotDeleted != null ? newestNotDeleted
             .getVersion() : 0;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!member.isCompleteyConnected() && !member.isMySelf()) {
+            if (!member.isCompletelyConnected() && !member.isMySelf()) {
                 continue;
             }
             FileInfo memberFileInfo = member.getFile(fileInfo);

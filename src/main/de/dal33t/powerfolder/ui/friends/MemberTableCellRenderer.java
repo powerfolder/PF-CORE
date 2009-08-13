@@ -60,7 +60,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     break;
                 }
                 case 2 : {
-                    if (member.isCompleteyConnected()) {
+                    if (member.isCompletelyConnected()) {
                         value = Translation
                             .getTranslation("friends_panel.connected");
                     } else if (member.isConnectedToNetwork()) {

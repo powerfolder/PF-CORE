@@ -384,8 +384,8 @@ public abstract class TwoControllerTestCase extends TestCase {
                         cont1.getMySelf().getId());
                     boolean connected = member2atCon1 != null
                         && member1atCon2 != null
-                        && member2atCon1.isCompleteyConnected()
-                        && member1atCon2.isCompleteyConnected();
+                        && member2atCon1.isCompletelyConnected()
+                        && member1atCon2.isCompletelyConnected();
                     boolean nodeManagersOK = cont1.getNodeManager()
                         .getConnectedNodes().contains(member2atCon1)
                         && cont2.getNodeManager().getConnectedNodes().contains(

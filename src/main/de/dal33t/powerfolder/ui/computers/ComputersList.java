@@ -26,10 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.event.NodeManagerModelEvent;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
-import de.dal33t.powerfolder.event.ExpansionListener;
-import de.dal33t.powerfolder.event.ExpansionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 
 import javax.swing.*;
@@ -48,6 +45,12 @@ public class ComputersList extends PFUIComponent {
     private ComputersTab computersTab;
     private volatile boolean populated;
 
+    // Only access these when synchronized on viewList.
+    private final Set<Member> previousMyComputers;
+    private final Set<Member> previousFriends;
+    private final Set<Member> previousConnectedLans;
+
+
     /**
      * Constructor
      * 
@@ -60,6 +63,10 @@ public class ComputersList extends PFUIComponent {
         nodeManagerModel = getUIController().getApplicationModel()
             .getNodeManagerModel();
         viewList = new CopyOnWriteArraySet<ExpandableComputerView>();
+
+        previousConnectedLans = new TreeSet<Member>();
+        previousFriends = new TreeSet<Member>();
+        previousMyComputers = new TreeSet<Member>();
     }
 
     /**
@@ -103,7 +110,8 @@ public class ComputersList extends PFUIComponent {
     }
 
     /**
-     * Rebuild the whole list.
+     * Rebuild the whole list, if there is a significant change.
+     * This detects things like Ln nodes becoming friends, etc.
      */
     private void rebuild() {
 
@@ -116,15 +124,63 @@ public class ComputersList extends PFUIComponent {
         Set<Member> nodes = new TreeSet<Member>();
         nodes.addAll(nodeManagerModel.getNodes());
 
+        // Split nodes into three groups:
+        // 1) My Computers,
+        // 2) Friends and
+        // 3) Connected LAN
+        Set<Member> myComputers = new TreeSet<Member>();
+        Set<Member> friends = new TreeSet<Member>();
+        Set<Member> connectedLans = new TreeSet<Member>();
+
+        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();) {
+            Member member = iterator.next();
+            if (member.isMyComputer()) {
+                myComputers.add(member);
+                iterator.remove();
+            }
+        }
+
+        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();) {
+            Member member = iterator.next();
+            if (member.isOnLAN() && member.isCompletelyConnected()) {
+                connectedLans.add(member);
+                iterator.remove();
+            }
+        }
+
+        for (Member member : nodes) {
+            if (member.isFriend()) {
+                friends.add(member);
+            }
+        }
+
         synchronized (viewList) {
 
             // Are the nodes same as current views?
             boolean different = false;
-            if (viewList.size() == nodes.size()) {
-                for (ExpandableComputerView view : viewList) {
-                    if (!nodes.contains(view.getNode())) {
+            if (previousConnectedLans.size() == connectedLans.size() &&
+                previousFriends.size() == connectedLans.size() &&
+                previousMyComputers.size() == myComputers.size()) {
+                for (Member member : myComputers) {
+                    if (!previousMyComputers.contains(member)) {
                         different = true;
                         break;
+                    }
+                }
+                if (!different) {
+                    for (Member member : connectedLans) {
+                        if (!previousConnectedLans.contains(member)) {
+                            different = true;
+                            break;
+                        }
+                    }
+                    if (!different) {
+                        for (Member member : friends) {
+                            if (!previousFriends.contains(member)) {
+                                different = true;
+                                break;
+                            }
+                        }
                     }
                 }
             } else {
@@ -135,6 +191,14 @@ public class ComputersList extends PFUIComponent {
                 return;
             }
 
+            // Update for next time.
+            previousConnectedLans.clear();
+            previousFriends.clear();
+            previousMyComputers.clear();
+            previousConnectedLans.addAll(connectedLans);
+            previousMyComputers.addAll(myComputers);
+            previousFriends.addAll(friends);
+
             // Clear view listeners
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
@@ -143,51 +207,39 @@ public class ComputersList extends PFUIComponent {
             viewList.clear();
             computerListPanel.removeAll();
 
-            /////////////////////////////
-            // Split the members up by //
-            // 1) My Computers,        //
-            // 2) Friends and          //
-            // 3) connected LAN        //
-            /////////////////////////////
+            // If there is only one group, do not bother with separators
+            boolean multiGroup = (myComputers.isEmpty() ? 0 : 1) +
+                    (connectedLans.isEmpty() ? 0 : 1) +
+                    (friends.isEmpty() ? 0 : 1) > 1;
 
-            // First find my computers.
+            // First show my computers.
             boolean firstMyComputer = true;
-            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
-                Member node = iter.next();
-                if (node.isMyComputer()) {
-                    if (firstMyComputer) {
-                        firstMyComputer = false;
-                        addSeparator(Translation.getTranslation("computer_list.my_computers"));
-                    }
-                    addView(node);
-                    iter.remove();
+            for (Member node : myComputers) {
+                if (firstMyComputer && multiGroup) {
+                    firstMyComputer = false;
+                    addSeparator(Translation.getTranslation("computer_list.my_computers"));
                 }
+                addView(node);
             }
 
-            // Then find friends.
+            // Then friends.
             boolean firstFriend = true;
-            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
-                Member node = iter.next();
-                if (node.isFriend()) {
-                    if (firstFriend) {
-                        firstFriend = false;
-                        addSeparator(Translation.getTranslation("computer_list.friends"));
-                    }
-                    addView(node);
-                    iter.remove();
+            for (Member node : friends) {
+                if (firstFriend && multiGroup) {
+                    firstFriend = false;
+                    addSeparator(Translation.getTranslation("computer_list.friends"));
                 }
+                addView(node);
             }
 
             // Then others (connected on LAN).
-            boolean firstOther = true;
-            for (Iterator<Member> iter = nodes.iterator(); iter.hasNext();) {
-                Member node = iter.next();
-                if (firstOther) {
-                    firstOther = false;
+            boolean firstLan = true;
+            for (Member node : connectedLans) {
+                if (firstLan && multiGroup) {
+                    firstLan = false;
                     addSeparator(Translation.getTranslation("computer_list.lan"));
                 }
                 addView(node);
-                iter.remove();
             }
 
             computersTab.updateEmptyLabel();
@@ -206,6 +258,7 @@ public class ComputersList extends PFUIComponent {
     }
 
     private void addView(Member node) {
+
         ExpandableComputerView view = new ExpandableComputerView(
             getController(), node);
         computerListPanel.add(view.getUIComponent());
@@ -235,22 +288,12 @@ public class ComputersList extends PFUIComponent {
      * Node Manager Model listener.
      */
     private class MyNodeManagerModelListener implements
-        NodeManagerModelListener
-    {
+        NodeManagerModelListener {
 
-        public void nodeRemoved(NodeManagerModelEvent e) {
-            rebuild();
-        }
-
-        public void nodeAdded(NodeManagerModelEvent e) {
-            rebuild();
-        }
-
-        public void rebuilt(NodeManagerModelEvent e) {
+        public void changed() {
             rebuild();
         }
     }
-
     /**
      * Expansion listener to collapse views.
      */

@@ -2082,7 +2082,7 @@ public class Folder extends PFComponent {
         }
         // send him our list of files if completely connected. otherwise this
         // gets sent by Member.completeHandshake();
-        if (!wasMember && member.isCompleteyConnected()) {
+        if (!wasMember && member.isCompletelyConnected()) {
             member.sendMessagesAsynchron(FileList.createFileListMessages(this,
                 !member.isPre4Client()));
         }
@@ -2185,7 +2185,7 @@ public class Folder extends PFComponent {
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         synchronized (scanLock) {
             for (Member member : getMembersAsCollection()) {
-                if (!member.isCompleteyConnected()) {
+                if (!member.isCompletelyConnected()) {
                     // disconected go to next member
                     continue;
                 }
@@ -2334,7 +2334,7 @@ public class Folder extends PFComponent {
     public void broadcastMessages(Message... message) {
         for (Member member : getMembersAsCollection()) {
             // Connected?
-            if (member.isCompleteyConnected()) {
+            if (member.isCompletelyConnected()) {
                 // sending all nodes my knows nodes
                 member.sendMessagesAsynchron(message);
             }
@@ -2353,7 +2353,7 @@ public class Folder extends PFComponent {
         Message[] msgsPre4 = null;
         for (Member member : getMembersAsCollection()) {
             // Connected?
-            if (member.isCompleteyConnected()) {
+            if (member.isCompletelyConnected()) {
                 if (!member.isPre4Client()) {
                     if (msgs == null) {
                         msgs = msgProvider.getMessages(false);
@@ -2467,7 +2467,7 @@ public class Folder extends PFComponent {
             rootDirectory.addAll(from, newList.files);
         }
 
-        if (syncProfile.isAutodownload() && from.isCompleteyConnected()) {
+        if (syncProfile.isAutodownload() && from.isCompletelyConnected()) {
             // Trigger file requestor
             if (isFiner()) {
                 logFiner("Triggering file requestor because of new remote file list from "
@@ -2569,7 +2569,7 @@ public class Folder extends PFComponent {
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
-            boolean triggerFileRequestor = from.isCompleteyConnected();
+            boolean triggerFileRequestor = from.isCompletelyConnected();
             if (triggerFileRequestor && singleFileAddMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
@@ -2965,7 +2965,7 @@ public class Folder extends PFComponent {
             new DiskItemComparator(DiskItemComparator.BY_FULL_NAME));
         // add expeced files
         for (Member member : getMembersAsCollection()) {
-            if (!member.isCompleteyConnected()) {
+            if (!member.isCompletelyConnected()) {
                 // disconnected or myself (=skip)
                 continue;
             }
@@ -3110,7 +3110,7 @@ public class Folder extends PFComponent {
     public int getConnectedMembersCount() {
         int nConnected = 0;
         for (Member member : members.values()) {
-            if (member.isCompleteyConnected()) {
+            if (member.isCompletelyConnected()) {
                 nConnected++;
             }
         }
@@ -3120,7 +3120,7 @@ public class Folder extends PFComponent {
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
         for (Member member : getMembersAsCollection()) {
-            if (member.isCompleteyConnected()) {
+            if (member.isCompletelyConnected()) {
                 if (member.isMySelf()) {
                     continue;
                 }

@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
@@ -159,7 +158,7 @@ public class FolderStatistic extends PFComponent {
 
         // Calc member stats.
         for (Member member : members) {
-            if (member.isCompleteyConnected() || member.isMySelf()) {
+            if (member.isCompletelyConnected() || member.isMySelf()) {
                 if (calculateMemberStats(member, membersCalulated)) {
                     membersCalulated.add(member);
                 }

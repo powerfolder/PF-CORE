@@ -322,7 +322,7 @@ public abstract class Transfer extends Loggable implements Serializable {
             logFine("Break cause: partner is null.");
             return true;
         }
-        if (!getPartner().isCompleteyConnected()) {
+        if (!getPartner().isCompletelyConnected()) {
             logFine(
                 "Break cause: " + getPartner().getNick() + " not connected.");
             return true;

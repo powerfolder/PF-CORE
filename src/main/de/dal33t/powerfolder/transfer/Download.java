@@ -291,7 +291,7 @@ public class Download extends Transfer {
      */
     void abort(boolean informRemote) {
         shutdown();
-        if (getPartner() != null && getPartner().isCompleteyConnected()
+        if (getPartner() != null && getPartner().isCompletelyConnected()
             && informRemote)
         {
             getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
@@ -351,7 +351,7 @@ public class Download extends Transfer {
             markedBroken = true;
         }
         Member p = getPartner();
-        if (p != null && p.isCompleteyConnected()) {
+        if (p != null && p.isCompletelyConnected()) {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
         }
         shutdown();

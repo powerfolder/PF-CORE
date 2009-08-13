@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -294,7 +293,7 @@ public class ServerClient extends PFComponent {
      * @return if the server is connected
      */
     public boolean isConnected() {
-        return server.isMySelf() || server.isCompleteyConnected();
+        return server.isMySelf() || server.isCompletelyConnected();
     }
 
     /**

@@ -138,7 +138,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         super(controller);
         Reject.ifNull(remote, "Remote is null");
         Reject.ifNull(relay, "Relay is null");
-        Reject.ifFalse(relay.isCompleteyConnected(), "Relay is not connected: "
+        Reject.ifFalse(relay.isCompletelyConnected(), "Relay is not connected: "
             + relay);
         this.remote = remote;
         this.relay = relay;
@@ -211,7 +211,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      * @throws ConnectionException
      */
     public void init() throws ConnectionException {
-        if (!relay.isCompleteyConnected()) {
+        if (!relay.isCompletelyConnected()) {
             throw new ConnectionException("Connection to peer is closed")
                 .with(this);
         }
@@ -667,7 +667,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
             // Consistency check:
             // if (getMember() != null
-            // && getMember().isCompleteyConnected()
+            // && getMember().isCompletelyConnected()
             // && getMember().getPeer() !=
             // AbstractSocketConnectionHandler.this)
             // {

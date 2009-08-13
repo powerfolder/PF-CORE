@@ -27,25 +27,5 @@ package de.dal33t.powerfolder.event;
  */
 public interface NodeManagerModelListener {
 
-    /**
-     * Node removed from known nodes.
-     *
-     * @param e
-     */
-    void nodeRemoved(NodeManagerModelEvent e);
-
-    /**
-     * Node added to known nodes.
-     *
-     * @param e
-     */
-    void nodeAdded(NodeManagerModelEvent e);
-
-    /**
-     * Major structure change of the known nodes.
-     * e.getNode() == null
-     *
-     * @param e
-     */
-    void rebuilt(NodeManagerModelEvent e);
+    void changed();
 }

@@ -653,7 +653,7 @@ public class NodeManager extends PFComponent {
      * @param node
      */
     public void connectStateChanged(Member node) {
-        boolean nodeConnected = node.isCompleteyConnected();
+        boolean nodeConnected = node.isCompletelyConnected();
         if (nodeConnected) {
             // Add to online nodes
             connectedNodes.add(node);
@@ -1114,7 +1114,7 @@ public class NodeManager extends PFComponent {
         Runnable broadcaster = new Runnable() {
             public void run() {
                 for (Member node : knownNodes.values()) {
-                    if (node.isCompleteyConnected()) {
+                    if (node.isCompletelyConnected()) {
                         // Only broadcast after completely connected
                         node.sendMessageAsynchron(message, null);
                         try {
@@ -1153,7 +1153,7 @@ public class NodeManager extends PFComponent {
         int nNodes = 0;
         List<Member> supernodes = new LinkedList<Member>();
         for (Member node : knownNodes.values()) {
-            if (node.isCompleteyConnected() && node.isSupernode()) {
+            if (node.isCompletelyConnected() && node.isSupernode()) {
                 // Only broadcast after completely connected
                 supernodes.add(node);
             }
@@ -1200,7 +1200,7 @@ public class NodeManager extends PFComponent {
         int nNodes = 0;
         List<Member> lanNodes = new LinkedList<Member>();
         for (Member node : knownNodes.values()) {
-            if (node.isCompleteyConnected() && node.isOnLAN()) {
+            if (node.isCompletelyConnected() && node.isOnLAN()) {
                 // Only broadcast after completely connected
                 lanNodes.add(node);
             }

@@ -146,13 +146,13 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         final Member lisaAtHomer = getContollerHomer().getNodeManager()
             .getNode(getContollerLisa().getMySelf().getInfo());
-        assertTrue(lisaAtHomer.isCompleteyConnected());
+        assertTrue(lisaAtHomer.isCompletelyConnected());
         lisaAtHomer.shutdown();
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
         TestHelper.waitMilliSeconds(10000);
-        assertFalse(lisaAtHomer.isCompleteyConnected());
+        assertFalse(lisaAtHomer.isCompletelyConnected());
 
         // Make friend
         lisaAtHomer.setFriend(true, "");
@@ -165,7 +165,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return lisaAtHomer.isCompleteyConnected();
+                return lisaAtHomer.isCompletelyConnected();
             }
         });
 
@@ -182,7 +182,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return lisaAtHomer.isCompleteyConnected();
+                return lisaAtHomer.isCompletelyConnected();
             }
         });
     }
@@ -208,7 +208,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerLisa(), true);
-        assertFalse(margeAtLisa.isCompleteyConnected());
+        assertFalse(margeAtLisa.isCompletelyConnected());
 
         // Make friend
         margeAtLisa.setFriend(true, "");
@@ -221,7 +221,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return margeAtLisa.isCompleteyConnected();
+                return margeAtLisa.isCompletelyConnected();
             }
         });
         
@@ -240,7 +240,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Should connect, because friendship message is pending.
         margeAtLisa.shutdown();
         assertTrue(margeAtLisa.reconnect().isSuccess());
-        assertTrue(margeAtLisa.isCompleteyConnected());
+        assertTrue(margeAtLisa.isCompletelyConnected());
         margeAtLisa.shutdown();
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
@@ -257,7 +257,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return margeAtLisa.isCompleteyConnected();
+                return margeAtLisa.isCompletelyConnected();
             }
         });
     }
@@ -294,7 +294,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerLisa(), true);
-        assertFalse(margeAtLisa.isCompleteyConnected());
+        assertFalse(margeAtLisa.isCompletelyConnected());
 
         // Join testfolder.
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);
@@ -310,7 +310,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
 
             public boolean reached() {
-                return margeAtLisa.isCompleteyConnected();
+                return margeAtLisa.isCompletelyConnected();
             }
         });
 
@@ -329,7 +329,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // }
         //
         // public boolean reached() {
-        // return margeAtLisa.isCompleteyConnected();
+        // return margeAtLisa.isCompletelyConnected();
         // }
         // });
     }
@@ -367,10 +367,10 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                     }
 
                     public boolean reached() {
-                        return battlestar.isCompleteyConnected();
+                        return battlestar.isCompletelyConnected();
                     }
                 });
-                assertTrue(battlestar.isCompleteyConnected());
+                assertTrue(battlestar.isCompletelyConnected());
                 battlestar.shutdown();
 
                 final Member onlineStorage = getContollerBart().connect(
@@ -381,10 +381,10 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                     }
 
                     public boolean reached() {
-                        return onlineStorage.isCompleteyConnected();
+                        return onlineStorage.isCompletelyConnected();
                     }
                 });
-                assertTrue(onlineStorage.isCompleteyConnected());
+                assertTrue(onlineStorage.isCompletelyConnected());
                 onlineStorage.shutdown();
             } catch (ConnectionException e) {
                 e.printStackTrace();

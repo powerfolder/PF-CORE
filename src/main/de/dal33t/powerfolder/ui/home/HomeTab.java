@@ -693,15 +693,7 @@ public class HomeTab extends PFUIComponent {
 
     private class MyNodeManagerModelListener implements NodeManagerModelListener {
 
-        public void nodeRemoved(NodeManagerModelEvent e) {
-            updateComputers();
-        }
-
-        public void nodeAdded(NodeManagerModelEvent e) {
-            updateComputers();
-        }
-
-        public void rebuilt(NodeManagerModelEvent e) {
+        public void changed() {
             updateComputers();
         }
     }

@@ -300,7 +300,7 @@ public class InvitationUtil {
         controller.getTaskManager().scheduleTask(
             new SendMessageTask(invitation, node.getId()));
 
-        if (!node.isCompleteyConnected()) {
+        if (!node.isCompletelyConnected()) {
             node.markForImmediateConnect();
             return false;
         }

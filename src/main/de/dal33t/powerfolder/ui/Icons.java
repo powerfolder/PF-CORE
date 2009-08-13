@@ -401,7 +401,7 @@ public class Icons {
         }
         Icon icon;
 
-        boolean connected = node.isCompleteyConnected() || node.isMySelf();
+        boolean connected = node.isCompletelyConnected() || node.isMySelf();
         if (connected) {
             if (node.isFriend()) {
                 icon = getIconById(NODE_FRIEND_CONNECTED);

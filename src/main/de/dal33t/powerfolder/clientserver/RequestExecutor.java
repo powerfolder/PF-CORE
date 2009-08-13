@@ -62,7 +62,7 @@ public class RequestExecutor extends PFComponent {
     public synchronized Response execute(Request request)
         throws ConnectionException
     {
-        if (!node.isCompleteyConnected()) {
+        if (!node.isCompletelyConnected()) {
             throw new ConnectionException("Not connected to " + node.getNick());
         }
 
@@ -84,7 +84,7 @@ public class RequestExecutor extends PFComponent {
             waitForResponse(60);
 
             if (response == null) {
-                if (!node.isCompleteyConnected()) {
+                if (!node.isCompletelyConnected()) {
                     throw new ConnectionException(node.getNick()
                         + " disconnected");
                 }

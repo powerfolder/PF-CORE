@@ -158,7 +158,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         Runnable refresher = null;
         if (node.isMySelf()) {
             refresher = new MySelfRefrehser(node);
-        } else if (!node.isCompleteyConnected()) {
+        } else if (!node.isCompletelyConnected()) {
             refresher = new DisconnectRefresher(node);
         } else {
             refresher = new DefaultRefresher(node);
@@ -261,7 +261,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         if (node.isMySelf()) {
             return true;
         }
-        return node.isCompleteyConnected()
+        return node.isCompletelyConnected()
             && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
     }
 
@@ -273,7 +273,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
 
         public void run() {
-            if (client.isServer(node) && node.isCompleteyConnected()) {
+            if (client.isServer(node) && node.isCompletelyConnected()) {
                 prefetchAccountInfos();
             }
 

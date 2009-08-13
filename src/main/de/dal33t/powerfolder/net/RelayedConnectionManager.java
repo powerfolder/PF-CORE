@@ -217,7 +217,7 @@ public class RelayedConnectionManager extends PFComponent {
     {
         Member destinationMember = message.getDestination().getNode(
             getController(), true);
-        if (!destinationMember.isCompleteyConnected()) {
+        if (!destinationMember.isCompletelyConnected()) {
             Type type = message.getType().equals(Type.SYN)
                 ? Type.NACK
                 : Type.EOF;
@@ -337,7 +337,7 @@ public class RelayedConnectionManager extends PFComponent {
                 + message);
         }
 
-        // if (!sourceMember.isCompleteyConnected()) {
+        // if (!sourceMember.isCompletelyConnected()) {
         // log()
         // .warn("Relayed connection was shutdown to " + sourceMember);
         // RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
