@@ -160,7 +160,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         getController().getPreferences().putBoolean("openwizard2", false);
         getController().getPreferences().putBoolean("openwizard_os2", false);
 
-        if (getController().getOSClient().isLastLoginOK()
+        if (getController().getOSClient().isLoggedIn()
             || getController().isLanOnly())
         {
             // Setup default folder and go to what to do panel
