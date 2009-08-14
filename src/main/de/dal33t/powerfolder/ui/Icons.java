@@ -79,8 +79,8 @@ public class Icons {
     public static final String DEBUG = "bug.icon";
     public static final String SYSTEM_MONITOR = "system_monitor.icon";
     public static final String STOP = "stop.icon";
-    public static final String RUN = "play.icon";
-    public static final String SUSPEND = "suspend.icon";
+    public static final String RUN = "run.icon";
+    public static final String PAUSE = "sleep.icon";
     public static final String HOME = "home.icon";
 
     public static final String ADD = "add.icon";

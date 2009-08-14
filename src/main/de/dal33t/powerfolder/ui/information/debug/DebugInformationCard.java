@@ -193,7 +193,7 @@ public class DebugInformationCard extends InformationCard{
 	        startTransferManagerButton.setToolTipText("Start TransferManager");
 
 	        suspendEventsTransferManagerToggleButton = new JToggleButton();
-	        suspendEventsTransferManagerToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
+	        suspendEventsTransferManagerToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
 	        suspendEventsTransferManagerToggleButton
 	                .setToolTipText("Suspend TransferManagerListeners");
 
@@ -207,7 +207,7 @@ public class DebugInformationCard extends InformationCard{
 	        startNodeManagerButton.setToolTipText("Start NodeManager");
 
 	        suspendEventsNodeManagerToggleButton = new JToggleButton();
-	        suspendEventsNodeManagerToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
+	        suspendEventsNodeManagerToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
 	        suspendEventsNodeManagerToggleButton
 	                .setToolTipText("Suspend NodeManagerListeners");
 
@@ -221,7 +221,7 @@ public class DebugInformationCard extends InformationCard{
 	        startFolderRepository.setToolTipText("Start FolderRepository");
 
 	        suspendEventsFolderRepositoryToggleButton = new JToggleButton();
-	        suspendEventsFolderRepositoryToggleButton.setIcon(Icons.getIconById(Icons.SUSPEND));
+	        suspendEventsFolderRepositoryToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
 	        suspendEventsFolderRepositoryToggleButton
 	                .setToolTipText("Suspend FolderRepositoryListeners");
 

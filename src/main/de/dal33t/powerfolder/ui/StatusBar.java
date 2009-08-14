@@ -158,7 +158,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         });
 
-        sleepButton = new JButtonMini(Icons.getIconById(Icons.SUSPEND),
+        sleepButton = new JButtonMini(Icons.getIconById(Icons.PAUSE),
             Translation.getTranslation("status_bar.sleep.tips"));
         MyActionListener listener = new MyActionListener();
         sleepButton.addActionListener(listener);
@@ -446,7 +446,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         sleepButton.setToolTipText(Translation
                             .getTranslation("status_bar.no_sleep.tips"));
                     } else {
-                        sleepButton.setIcon(Icons.getIconById(Icons.SUSPEND));
+                        sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
                         sleepButton.setToolTipText(Translation
                             .getTranslation("status_bar.sleep.tips"));
                     }
