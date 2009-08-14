@@ -19,21 +19,26 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.ExpansionEvent;
+import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
-
-import javax.swing.*;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArraySet;
+import de.dal33t.powerfolder.util.Translation;
 
 public class ComputersList extends PFUIComponent {
 
@@ -49,7 +54,6 @@ public class ComputersList extends PFUIComponent {
     private final Set<Member> previousMyComputers;
     private final Set<Member> previousFriends;
     private final Set<Member> previousConnectedLans;
-
 
     /**
      * Constructor
@@ -110,8 +114,8 @@ public class ComputersList extends PFUIComponent {
     }
 
     /**
-     * Rebuild the whole list, if there is a significant change.
-     * This detects things like Ln nodes becoming friends, etc.
+     * Rebuild the whole list, if there is a significant change. This detects
+     * things like Ln nodes becoming friends, etc.
      */
     private void rebuild() {
 
@@ -132,7 +136,8 @@ public class ComputersList extends PFUIComponent {
         Set<Member> friends = new TreeSet<Member>();
         Set<Member> connectedLans = new TreeSet<Member>();
 
-        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();) {
+        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
+        {
             Member member = iterator.next();
             if (member.isMyComputer()) {
                 myComputers.add(member);
@@ -140,7 +145,8 @@ public class ComputersList extends PFUIComponent {
             }
         }
 
-        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();) {
+        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
+        {
             Member member = iterator.next();
             if (member.isOnLAN() && member.isCompletelyConnected()) {
                 connectedLans.add(member);
@@ -158,9 +164,10 @@ public class ComputersList extends PFUIComponent {
 
             // Are the nodes same as current views?
             boolean different = false;
-            if (previousConnectedLans.size() == connectedLans.size() &&
-                previousFriends.size() == connectedLans.size() &&
-                previousMyComputers.size() == myComputers.size()) {
+            if (previousConnectedLans.size() == connectedLans.size()
+                && previousFriends.size() == connectedLans.size()
+                && previousMyComputers.size() == myComputers.size())
+            {
                 for (Member member : myComputers) {
                     if (!previousMyComputers.contains(member)) {
                         different = true;
@@ -199,6 +206,10 @@ public class ComputersList extends PFUIComponent {
             previousMyComputers.addAll(myComputers);
             previousFriends.addAll(friends);
 
+            logWarning(myComputers.toString());
+            logWarning(friends.toString());
+            logWarning(connectedLans.toString());
+
             // Clear view listeners
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
@@ -208,16 +219,17 @@ public class ComputersList extends PFUIComponent {
             computerListPanel.removeAll();
 
             // If there is only one group, do not bother with separators
-            boolean multiGroup = (myComputers.isEmpty() ? 0 : 1) +
-                    (connectedLans.isEmpty() ? 0 : 1) +
-                    (friends.isEmpty() ? 0 : 1) > 1;
+            boolean multiGroup = (myComputers.isEmpty() ? 0 : 1)
+                + (connectedLans.isEmpty() ? 0 : 1)
+                + (friends.isEmpty() ? 0 : 1) > 1;
 
             // First show my computers.
             boolean firstMyComputer = true;
             for (Member node : myComputers) {
                 if (firstMyComputer && multiGroup) {
                     firstMyComputer = false;
-                    addSeparator(Translation.getTranslation("computer_list.my_computers"));
+                    addSeparator(Translation
+                        .getTranslation("computer_list.my_computers"));
                 }
                 addView(node);
             }
@@ -227,7 +239,8 @@ public class ComputersList extends PFUIComponent {
             for (Member node : friends) {
                 if (firstFriend && multiGroup) {
                     firstFriend = false;
-                    addSeparator(Translation.getTranslation("computer_list.friends"));
+                    addSeparator(Translation
+                        .getTranslation("computer_list.friends"));
                 }
                 addView(node);
             }
@@ -237,18 +250,20 @@ public class ComputersList extends PFUIComponent {
             for (Member node : connectedLans) {
                 if (firstLan && multiGroup) {
                     firstLan = false;
-                    addSeparator(Translation.getTranslation("computer_list.lan"));
+                    addSeparator(Translation
+                        .getTranslation("computer_list.lan"));
                 }
                 addView(node);
             }
 
             computersTab.updateEmptyLabel();
+            getUIComponent().revalidate();
         }
     }
 
     private void addSeparator(String label) {
         FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
-            "pref");
+            "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.addSeparator(label, cc.xy(2, 1));
@@ -288,12 +303,14 @@ public class ComputersList extends PFUIComponent {
      * Node Manager Model listener.
      */
     private class MyNodeManagerModelListener implements
-        NodeManagerModelListener {
+        NodeManagerModelListener
+    {
 
         public void changed() {
             rebuild();
         }
     }
+
     /**
      * Expansion listener to collapse views.
      */
