@@ -143,7 +143,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                     getController());
             if (buos == null) {
                 // .. or default to if last os client login ok.
-                buos = getController().getOSClient().isLastLoginOK();
+                buos = getController().getOSClient().isLoggedIn();
             }
             backupByOnlineStorageBox.setSelected(buos);
         }
