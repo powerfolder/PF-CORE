@@ -162,6 +162,7 @@ public class MembersTable extends JTable {
                 Icon icon = member != null ? Icons.getIconFor(member) : Icons
                     .getIconById(Icons.NODE_FRIEND_DISCONNECTED);
                 setIcon(icon);
+                setText("");
             } else if (actualColumn == MembersTableModel.COL_COMPUTER_NAME) {
                 if (folderMember.getMember() != null) {
                     setText(folderMember.getMember().getNick());
