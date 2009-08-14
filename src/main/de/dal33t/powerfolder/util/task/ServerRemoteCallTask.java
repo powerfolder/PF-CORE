@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.security.Account;
 
 /**
  * Task that get executed when the server is connected.
@@ -57,32 +56,42 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
         }
     }
 
-    public abstract boolean shouldExecute(Account account);
-
     /**
+     * Execute a remote call to the service. When this method is called it is
+     * guranteed that the server is connected
+     * 
      * @param client
+     * @return true if this call was gracefully executed. false if task could
+     *         not perform. Try later / keep task
+     * @throws Exception
+     *             if something went wrong. Task will be KEPT for later
+     *             execution re-try.
      */
-    public abstract void executeRemoteCall(ServerClient client);
+    public abstract boolean executeRemoteCall(ServerClient client)
+        throws Exception;
 
     // Internal ***************************************************************
 
     private boolean checkAndExecute(ServerClient client) {
-        if (client.isConnected() && shouldExecute(client.getAccount())) {
+        boolean finishedGracefully;
+        if (client.isConnected()) {
             try {
-                executeRemoteCall(client);
+                finishedGracefully = executeRemoteCall(client);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Exception while executing remote call. "
                     + e, e);
-            } finally {
+                finishedGracefully = false;
+            }
+            if (finishedGracefully) {
                 if (listener != null) {
                     client.removeListener(listener);
                 }
                 remove();
             }
-            // Was executed
-            return true;
+        } else {
+            finishedGracefully = false;
         }
-        return false;
+        return finishedGracefully;
     }
 
     private class MyServerClientListener implements ServerClientListener {

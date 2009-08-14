@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -44,14 +43,13 @@ public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {
     }
 
     @Override
-    public boolean shouldExecute(Account account) {
-        return account.isValid();
-    }
-
-    @Override
-    public void executeRemoteCall(ServerClient client) {
+    public boolean executeRemoteCall(ServerClient client) {
+        if (!client.getAccount().isValid()) {
+            return false;
+        }
         LOG.warning("Removing computer from account: " + node);
         client.getAccountService().removeComputer(node);
+        return true;
     }
 
 }
