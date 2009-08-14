@@ -302,7 +302,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(localBase, false);
             logFine("Opened " + toString() + " at '"
-                + localBase.getAbsolutePath() + "'");
+                + localBase.getAbsolutePath() + '\'');
         } catch (FolderException e) {
             logWarning("Unable to open " + toString() + " at '"
                 + localBase.getAbsolutePath()
@@ -380,15 +380,15 @@ public class Folder extends PFComponent {
 
         previewOnly = folderSettings.isPreviewOnly();
 
-        // Initialized lazyliy
+        // Initialized lazily
         rootDirectory = null;
 
         problems = new CopyOnWriteArrayList<Problem>();
 
         problemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
-
         setArchiveMode(folderSettings.getArchiveMode());
+        setArchiveConfig(folderSettings.getArchiveConfig());
 
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
@@ -468,6 +468,13 @@ public class Folder extends PFComponent {
      */
     public void setArchiveMode(ArchiveMode mode) {
         archiver = mode.getInstance(this);
+        System.out.println("hghg 44444 " + archiver.hashCode());
+    }
+
+    public void setArchiveConfig(String config) {
+        if (archiver != null) {
+            archiver.setConfig(config);
+        }
     }
 
     /**
@@ -494,7 +501,7 @@ public class Folder extends PFComponent {
     /**
      * Sets the local security settings.
      * 
-     * @param securitySettings
+     * @param localDefaultPermission
      */
     public void setLocalFolderPermission(FolderPermission localDefaultPermission)
     {
@@ -907,7 +914,7 @@ public class Folder extends PFComponent {
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
      * 
-     * @param ignoreLocalMassDeletions
+     * @param ignoreLocalMassDeletion
      *            bypass the local mass delete checks.
      * @return if the local files where scanned
      */
@@ -1937,7 +1944,7 @@ public class Folder extends PFComponent {
             + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
         String confVal = downloadScript != null ? downloadScript : "";
         getController().getConfig().put(confKey, downloadScript);
-        logInfo("Download script set to '" + confVal + "'");
+        logInfo("Download script set to '" + confVal + '\'');
         getController().saveConfig();
     }
 
@@ -2945,7 +2952,7 @@ public class Folder extends PFComponent {
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
      * 
-     * @param fileInfo
+     * @param newFileInfo
      * @param file
      */
     private boolean deleteFile(FileInfo newFileInfo, File file) {

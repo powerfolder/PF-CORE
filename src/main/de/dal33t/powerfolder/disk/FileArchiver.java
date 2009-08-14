@@ -80,6 +80,7 @@ public interface FileArchiver {
 
     /**
      * Implements any specialized config for the FileArchiver instance.
+     * If the config is null or "", defaults should be assumed.
      *
      * @param config
      */

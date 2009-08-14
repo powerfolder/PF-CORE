@@ -51,7 +51,7 @@ public class FolderMoveTest extends ControllerTestCase {
 
         // Setup a test folder; delete previous tests.
         getController().setSilentMode(true);
-        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP);
+        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP, "");
         folder = getFolder();
         File localBase = folder.getLocalBase();
 
@@ -77,7 +77,7 @@ public class FolderMoveTest extends ControllerTestCase {
         emptySub.mkdir();
         assertTrue(emptySub.exists());
 
-        // Wrtie a test files.
+        // Write a test files.
         FileWriter writer = new FileWriter(testFile);
         writer
             .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
@@ -141,7 +141,7 @@ public class FolderMoveTest extends ControllerTestCase {
             // Create new folder
             FolderSettings folderSettings = new FolderSettings(testFolder2,
                 getFolder().getSyncProfile(), false, getFolder()
-                    .getArchiveMode());
+                    .getArchiveMode(), getFolder().getFileArchiver().getConfig());
 
             // Move the folder
             folder = repository.createFolder(folder.getInfo(), folderSettings);

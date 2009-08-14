@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE_CONFIG;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
@@ -432,7 +433,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile,
-            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
+            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript, "");
     }
 
     /**
@@ -568,6 +569,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             log.log(Level.FINE, e.toString(), e);
             archiveMode = ArchiveMode.NO_BACKUP;
         }
+        String archiveConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_ARCHIVE_CONFIG);
+        if (archiveConfig == null) {
+            archiveConfig = "";
+        }
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
@@ -582,7 +588,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile,
-            false, archiveMode, preview, whitelist, dlScript);
+            false, archiveMode, preview, whitelist, dlScript, archiveConfig);
     }
 
     /**
@@ -854,6 +860,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_ARCHIVE_CONFIG, folderSettings.getArchiveConfig());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));

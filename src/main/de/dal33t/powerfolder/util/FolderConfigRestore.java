@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.util;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE_CONFIG;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
@@ -60,7 +61,7 @@ public class FolderConfigRestore {
         }
         FolderSettings foSettings = new FolderSettings(baseDir,
             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT, false,
-            ArchiveMode.FULL_BACKUP);
+            ArchiveMode.FULL_BACKUP, "");
         saveFolderConfig(foInfo, foSettings, config);
     }
 
@@ -102,6 +103,8 @@ public class FolderConfigRestore {
             .getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_ARCHIVE_CONFIG, folderSettings.getArchiveConfig());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));

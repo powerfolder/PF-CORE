@@ -130,7 +130,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         ServerSocket testSocket = null;
         try {
             // Only bind to localhost
-            testSocket = new ServerSocket(Integer.valueOf(port), 0, InetAddress
+            testSocket = new ServerSocket(port, 0, InetAddress
                 .getByName("127.0.0.1"));
 
             // Server socket can be opend, no instance of PowerFolder running
@@ -352,7 +352,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             int equal = keyValuePair.indexOf('=');
             if (equal <= 0) {
                 logSevere("Unable to parse make folder command: '"
-                    + folderConfig + "'");
+                    + folderConfig + '\'');
                 continue;
             }
             String key = keyValuePair.substring(0, equal);
@@ -383,7 +383,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String id = config.get("id");
         boolean createInvitationFile = false;
         if (StringUtils.isEmpty(id)) {
-            id = "[" + IdGenerator.makeId() + "]";
+            id = '[' + IdGenerator.makeId() + ']';
             createInvitationFile = true;
         }
 
@@ -424,7 +424,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
                 createInvitationFile, ArchiveMode.NO_BACKUP, false,
-                false, dlScript);
+                false, dlScript, "");
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {

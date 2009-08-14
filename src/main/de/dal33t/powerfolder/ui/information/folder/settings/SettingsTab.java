@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE_CONFIG;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.awt.Dimension;
@@ -99,6 +100,8 @@ public class SettingsTab extends PFUIComponent {
     private JPanel uiComponent;
     private Folder folder;
     private final SyncProfileSelectorPanel transferModeSelectorPanel;
+    private boolean adjusting;
+
     /**
      * Folders with this setting will backup files before replacing them with
      * newer downloaded ones.
@@ -155,14 +158,24 @@ public class SettingsTab extends PFUIComponent {
         if (folder != null) {
             folder.getDiskItemFilter().removeListener(patternChangeListener);
         }
-        folder = getController().getFolderRepository().getFolder(folderInfo);
-        folder.getDiskItemFilter().addListener(patternChangeListener);
-        transferModeSelectorPanel.setUpdateableFolder(folder);
-        scriptModel.setValue(folder.getDownloadScript());
-        archivingLocalFiles.setSelectedItem(folder.getArchiveMode());
-        update();
-        enableConfigOSAction();
-        enablePreviewFolderAction();
+        adjusting = true;
+        try {
+            folder = getController().getFolderRepository().getFolder(folderInfo);
+            folder.getDiskItemFilter().addListener(patternChangeListener);
+            transferModeSelectorPanel.setUpdateableFolder(folder);
+            scriptModel.setValue(folder.getDownloadScript());
+            archivingLocalFiles.setSelectedItem(folder.getArchiveMode());
+            update();
+            enableConfigOSAction();
+            enablePreviewFolderAction();
+            enableEditArchiveButton();
+        } finally {
+            adjusting = false;
+        }
+    }
+
+    private void enableEditArchiveButton() {
+        editArchiveButton.setEnabled(folder.getArchiveMode() == ArchiveMode.FULL_BACKUP);
     }
 
     /**
@@ -659,7 +672,7 @@ public class SettingsTab extends PFUIComponent {
             FolderSettings fs = new FolderSettings(newDirectory, folder
                 .getSyncProfile(), false, folder.getArchiveMode(),
                 folder.isPreviewOnly(), folder.isWhitelist(), folder
-                    .getDownloadScript());
+                    .getDownloadScript(), folder.getFileArchiver().getConfig());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -742,11 +755,20 @@ public class SettingsTab extends PFUIComponent {
 
     private void editArchiveConfig() {
         FileArchiver fileArchiver = folder.getFileArchiver();
+        System.out.println("hghg editing config, archiver is " + fileArchiver.hashCode());
         if (fileArchiver instanceof CopyOrMoveFileArchiver) {
             CopyOrMoveFileArchiver comfa = (CopyOrMoveFileArchiver) fileArchiver;
             CopyOrMoveFileArchiverEditDialog comfaed
                     = new CopyOrMoveFileArchiverEditDialog(getController(), comfa);
             comfaed.open();
+            Properties config = getController().getConfig();
+            String md5 = new String(Util.encodeHex(Util.md5(folder
+                .getInfo().id.getBytes())));
+            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+                + FOLDER_SETTINGS_ARCHIVE_CONFIG, String.valueOf(
+                    comfa.getVersionsPerFile()));
+            getController().saveConfig();
+
         }
     }
 
@@ -762,16 +784,21 @@ public class SettingsTab extends PFUIComponent {
             if (e.getSource().equals(localFolderButton)) {
                 moveLocalFolder();
             } else if (e.getSource() == archivingLocalFiles) {
-                ArchiveMode mode = (ArchiveMode) archivingLocalFiles
-                    .getSelectedItem();
-                folder.setArchiveMode(mode);
-                Properties config = getController().getConfig();
-                String md5 = new String(Util.encodeHex(Util.md5(folder
-                    .getInfo().id.getBytes())));
-                config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                    + FOLDER_SETTINGS_ARCHIVE, mode.name());
-                getController().saveConfig();
-                editArchiveButton.setEnabled(mode == ArchiveMode.FULL_BACKUP);
+                if (!adjusting) {
+                    ArchiveMode mode = (ArchiveMode) archivingLocalFiles
+                        .getSelectedItem();
+                    folder.setArchiveMode(mode);
+                    Properties config = getController().getConfig();
+                    String md5 = new String(Util.encodeHex(Util.md5(folder
+                        .getInfo().id.getBytes())));
+                    config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+                        + FOLDER_SETTINGS_ARCHIVE, mode.name());
+                    config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+                        + FOLDER_SETTINGS_ARCHIVE_CONFIG,
+                            folder.getFileArchiver().getConfig());
+                    getController().saveConfig();
+                    enableEditArchiveButton();
+                }
             }
         }
     }

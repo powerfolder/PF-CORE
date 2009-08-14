@@ -139,12 +139,12 @@ public abstract class ControllerTestCase extends TestCase {
      *            whether to folder supports the recycle bin.
      */
     protected void setupTestFolder(SyncProfile syncprofile,
-        ArchiveMode archiveMode)
+        ArchiveMode archiveMode, String archiveConfig)
     {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile,
-            archiveMode);
+            archiveMode, archiveConfig);
         System.out.println(folder.getLocalBase());
     }
 
@@ -155,7 +155,7 @@ public abstract class ControllerTestCase extends TestCase {
      * @see #getFolder()
      */
     protected void setupTestFolder(SyncProfile syncprofile) {
-        setupTestFolder(syncprofile, ArchiveMode.FULL_BACKUP);
+        setupTestFolder(syncprofile, ArchiveMode.FULL_BACKUP, "");
     }
 
     /**
@@ -170,10 +170,10 @@ public abstract class ControllerTestCase extends TestCase {
      * @return the folder joined
      */
     protected Folder joinFolder(FolderInfo foInfo, File baseDir,
-        SyncProfile profile, ArchiveMode archiveMode)
+        SyncProfile profile, ArchiveMode archiveMode, String archiveConfig)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, archiveMode);
+            false, archiveMode, archiveConfig);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

@@ -282,7 +282,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller, SyncProfile profile)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, ArchiveMode.FULL_BACKUP);
+            false, ArchiveMode.FULL_BACKUP, "");
         return controller.getFolderRepository().createFolder(foInfo,
             folderSettings);
     }
