@@ -120,6 +120,9 @@ public enum PreferencesEntry {
     /** Warn user if connection is poor. */
     WARN_POOR_QUALITY("warn.poor.quality", true),
 
+    /** The 'Show offline' checkbox on the ComputersTab. */
+    SHOW_OFFLINE("show.offline", true),
+
     FILE_SEARCH_MODE("file.search.mode", DirectoryFilter
             .SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
 

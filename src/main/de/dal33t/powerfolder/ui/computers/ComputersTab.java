@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -57,9 +58,11 @@ public class ComputersTab extends PFUIComponent {
 
         computersList = new ComputersList(getController(), this);
 
-        showOfflineCB = new JCheckBox(Translation.getTranslation("computers_tab.show_offline"));
+        showOfflineCB = new JCheckBox(Translation.getTranslation(
+                "computers_tab.show_offline"));
         showOfflineCB.addActionListener(new MyActionListener());
-        showOfflineCB.setSelected(true);
+        showOfflineCB.setSelected(PreferencesEntry.SHOW_OFFLINE.getValueBoolean(
+                getController()));
         configureNodeManagerModel();
     }
 
@@ -136,6 +139,8 @@ public class ComputersTab extends PFUIComponent {
                 .getApplicationModel().getNodeManagerModel();
             nodeManagerModel.getShowOfflineModel().setValue(
                     showOfflineCB.isSelected());
+        PreferencesEntry.SHOW_OFFLINE.setValue(getController(),
+                showOfflineCB.isSelected());
     }
 
     /**

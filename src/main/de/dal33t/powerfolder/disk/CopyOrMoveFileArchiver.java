@@ -306,7 +306,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     public int getVersionsPerFile() {
-        System.out.println("hghg get " + versionsPerFile + " @ " + hashCode());
         return versionsPerFile;
     }
 
@@ -320,14 +319,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * @param config
      */
     public void setConfig(String config) {
-        System.out.println("hghg 555555555555 " + config + " @ " + hashCode());
         if (config == null || config.length() == 0) {
             // Unlimited
             versionsPerFile = Integer.MAX_VALUE;
         } else {
             versionsPerFile = Integer.parseInt(config);
         }
-        System.out.println("hghg configged " + versionsPerFile + " @ " + hashCode());
     }
 
     public String getConfig() {

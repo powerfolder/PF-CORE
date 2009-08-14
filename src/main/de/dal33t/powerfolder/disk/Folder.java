@@ -468,7 +468,6 @@ public class Folder extends PFComponent {
      */
     public void setArchiveMode(ArchiveMode mode) {
         archiver = mode.getInstance(this);
-        System.out.println("hghg 44444 " + archiver.hashCode());
     }
 
     public void setArchiveConfig(String config) {

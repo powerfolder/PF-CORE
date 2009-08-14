@@ -755,7 +755,6 @@ public class SettingsTab extends PFUIComponent {
 
     private void editArchiveConfig() {
         FileArchiver fileArchiver = folder.getFileArchiver();
-        System.out.println("hghg editing config, archiver is " + fileArchiver.hashCode());
         if (fileArchiver instanceof CopyOrMoveFileArchiver) {
             CopyOrMoveFileArchiver comfa = (CopyOrMoveFileArchiver) fileArchiver;
             CopyOrMoveFileArchiverEditDialog comfaed
