@@ -37,6 +37,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
@@ -118,6 +120,7 @@ public class NodeManagerModel extends PFUIComponent {
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         getController().getSecurityManager().addListener(
             new MySecurityManagerListener());
+        getController().getOSClient().addListener(new MyServerClientListener());
     }
 
     /**
@@ -286,9 +289,29 @@ public class NodeManagerModel extends PFUIComponent {
     private class MySecurityManagerListener implements SecurityManagerListener {
 
         public void nodeAccountStateChanged(SecurityManagerEvent e) {
-            logWarning("Updateing: " + e.getNode() + ": "
-                + e.getNode().getAccountInfo());
             updateNode(e.getNode());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateNode(getController().getMySelf());
+        }
+
+        public void login(ServerClientEvent event) {
+            updateNode(getController().getMySelf());
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
         }
 
         public boolean fireInEventDispatchThread() {
