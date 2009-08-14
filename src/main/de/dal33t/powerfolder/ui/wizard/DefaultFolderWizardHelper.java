@@ -118,7 +118,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
         client.removeListener(listener);
 
         // Create default
-        if (setupDefault && client.isLastLoginOK()) {
+        if (setupDefault && client.isLoggedIn()) {
             Account account = client.getAccount();
 
             // If there is already a default folder for this account, use that
@@ -160,7 +160,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
         }
         // Only show if not already setup
         panel.setVisible(!defaultSynchronizedFolder.exists()
-            && client.isLastLoginOK());
+            && client.isLoggedIn());
     }
 
     private class MyServerClientListener implements ServerClientListener {
