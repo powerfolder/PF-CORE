@@ -490,7 +490,7 @@ public class HomeTab extends PFUIComponent {
             onlineStorageAccountLabel.setToolTipText(Translation
                 .getTranslation("home_tab.online_storage.no_password.tips"));
         } else if (client.isConnected()) {
-            if (!client.isLastLoginOK()) {
+            if (!client.isLoggedIn()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_not_logged_in", client
                         .getUsername()));
