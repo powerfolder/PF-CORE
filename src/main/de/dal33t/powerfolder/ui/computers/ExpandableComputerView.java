@@ -85,6 +85,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
     private JLabel infoLabel;
+    private JButtonMini chatButton;
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
@@ -177,7 +178,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         // Build lower detials with line border.
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
-            "3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, 3dlu",
+            "3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
             "pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
@@ -186,8 +187,9 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
         lowerBuilder.add(connectionQualityLabel, cc.xy(4, 3));
-        lowerBuilder.add(addRemoveButton, cc.xy(7, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(8, 3));
+        lowerBuilder.add(chatButton, cc.xy(7, 3));
+        lowerBuilder.add(addRemoveButton, cc.xy(8, 3));
+        lowerBuilder.add(reconnectButton, cc.xy(9, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -237,6 +239,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
         addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
         chatAction = new MyOpenChatAction(getController());
+        chatButton = new JButtonMini(chatAction, true);
         pictoLabel = new JLabel();
         updateDetails();
         configureAddRemoveButton();
