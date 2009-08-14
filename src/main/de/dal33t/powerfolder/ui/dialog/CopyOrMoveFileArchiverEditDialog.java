@@ -41,14 +41,20 @@ import java.awt.event.*;
  */
 public class CopyOrMoveFileArchiverEditDialog extends BaseDialog {
 
+    private static final int MIN_KEEP_VALUE = 0;
+    private static final int MAX_KEEP_VALUE = 999;
     private final CopyOrMoveFileArchiver archiver;
     private JButton okButton;
+    private JCheckBox unlimitedCB;
+    private JLabel spinnerLabel;
+    private SpinnerNumberModel spinnerModel;
+    private JSpinner spinner;
 
     /**
      * Constructor.
      *
      * @param controller
-     * @param syncProfileSelectorPanel
+     * @param archiver
      */
     public CopyOrMoveFileArchiverEditDialog(Controller controller,
         CopyOrMoveFileArchiver archiver) {
@@ -78,10 +84,18 @@ public class CopyOrMoveFileArchiverEditDialog extends BaseDialog {
     protected JComponent getContent() {
         initComponents();
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, pref",
-            "pref");
+            "right:pref, 3dlu, pref, pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
+
+        builder.addLabel(Translation.getTranslation(
+                "dialog.copy_or_move_file_archiver_edit.info"), cc.xyw(1, 1, 4));
+
+        builder.add(unlimitedCB, cc.xyw(3, 3, 2));
+
+        builder.add(spinnerLabel, cc.xy(1, 5));
+        builder.add(spinner, cc.xy(3, 5));
 
         return builder.getPanel();
     }
@@ -90,6 +104,33 @@ public class CopyOrMoveFileArchiverEditDialog extends BaseDialog {
      * Initialize the dialog components.
      */
     private void initComponents() {
+        int versionsPerFile = archiver.getVersionsPerFile();
+        unlimitedCB = new JCheckBox(Translation.getTranslation(
+                "dialog.copy_or_move_file_archiver_edit.unlimited"));
+        spinnerLabel = new JLabel(Translation.getTranslation(
+                "dialog.copy_or_move_file_archiver_edit.versions"));
+        if (versionsPerFile < MIN_KEEP_VALUE || versionsPerFile > MAX_KEEP_VALUE)
+        {
+            spinnerModel = new SpinnerNumberModel(0, MIN_KEEP_VALUE,
+                    MAX_KEEP_VALUE, 1);
+            unlimitedCB.setSelected(true);
+        } else {
+            spinnerModel = new SpinnerNumberModel(versionsPerFile, MIN_KEEP_VALUE,
+                    MAX_KEEP_VALUE, 1);
+        }
+        spinner = new JSpinner(spinnerModel);
+
+        unlimitedCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                enableSpinner();
+            }
+        });
+        enableSpinner();
+    }
+
+    private void enableSpinner() {
+        spinnerLabel.setEnabled(!unlimitedCB.isSelected());
+        spinner.setEnabled(!unlimitedCB.isSelected());
     }
 
     /**
@@ -119,6 +160,11 @@ public class CopyOrMoveFileArchiverEditDialog extends BaseDialog {
     }
 
     private void okPressed() {
+        if (unlimitedCB.isSelected()) {
+            archiver.setVersionsPerFile(Integer.MAX_VALUE);
+        } else {
+            archiver.setVersionsPerFile((Integer) spinnerModel.getNumber());
+        }
         close();
     }
 

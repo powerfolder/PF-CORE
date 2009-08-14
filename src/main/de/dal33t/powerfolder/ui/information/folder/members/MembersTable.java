@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -55,7 +54,7 @@ public class MembersTable extends JTable {
 
     /**
      * Constructor
-     * 
+     *
      * @param model
      */
     public MembersTable(MembersTableModel model) {
@@ -114,7 +113,7 @@ public class MembersTable extends JTable {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {
@@ -141,8 +140,7 @@ public class MembersTable extends JTable {
             int column)
         {
             int actualColumn = UIUtil.toModel(table, column);
-            MembersTableModel model = (MembersTableModel) MembersTable.this
-                .getModel();
+            MembersTableModel model = (MembersTableModel) getModel();
             FolderMember folderMember = model.getFolderMemberAt(row);
 
             Component defaultComp = super.getTableCellRendererComponent(table,
@@ -204,9 +202,6 @@ public class MembersTable extends JTable {
                         name += " (default)";
                     } else {
                         name = "No access";
-                        if (defPerm == null) {
-                            name += " (default)";
-                        }
                     }
                     setText(name);
                 }
