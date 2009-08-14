@@ -695,7 +695,7 @@ public class SettingsTab extends PFUIComponent {
 
         boolean enabled = false;
         if (folder != null && serverClient.isConnected()
-            && serverClient.isLastLoginOK())
+            && serverClient.isLoggedIn())
         {
             enabled = true;
 
