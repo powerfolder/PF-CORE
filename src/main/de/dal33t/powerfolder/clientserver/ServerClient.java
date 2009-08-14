@@ -484,7 +484,7 @@ public class ServerClient extends PFComponent {
             AccountDetails newAccountDetails = securityService
                 .getAccountDetails();
             logFine("Login to server " + server.getReconnectAddress()
-                + " (user " + theUsername + ") result: " + accountDetails);
+                + " (user " + theUsername + ") result: " + newAccountDetails);
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
 
@@ -501,6 +501,7 @@ public class ServerClient extends PFComponent {
 
                 // Fire login success
                 fireLogin(accountDetails);
+                updateFriendsList(accountDetails.getAccount());
 
                 // Possible switch to new server
                 ServerInfo targetServer = accountDetails.getAccount()
@@ -525,7 +526,7 @@ public class ServerClient extends PFComponent {
      * @return true if the last attempt to login to the online storage was ok.
      *         false if not or no login tried yet.
      */
-    public boolean isLastLoginOK() {
+    public boolean isLoggedIn() {
         return getAccount() != null && getAccount().isValid();
     }
 
@@ -564,10 +565,8 @@ public class ServerClient extends PFComponent {
         AccountDetails newDetails = securityService.getAccountDetails();
         if (newDetails != null) {
             accountDetails = newDetails;
-
-            updateFriendsList(accountDetails.getAccount());
-
             fireAccountUpdates(accountDetails);
+            updateFriendsList(accountDetails.getAccount());
         } else {
             setAnonAccount();
             fireLogin(accountDetails);
@@ -645,7 +644,7 @@ public class ServerClient extends PFComponent {
      * server.
      */
     public void syncFolderRights() {
-        Reject.ifFalse(isLastLoginOK(), "Last login not ok");
+        Reject.ifFalse(isLoggedIn(), "Last login not ok");
         // FolderInfo[] myFolders = getController().getFolderRepository()
         // .getJoinedFolderInfos();
         //
@@ -683,7 +682,7 @@ public class ServerClient extends PFComponent {
         if (!isConnected()) {
             return;
         }
-        if (!isLastLoginOK()) {
+        if (!isLoggedIn()) {
             return;
         }
         if (isFiner()) {
@@ -963,8 +962,7 @@ public class ServerClient extends PFComponent {
         public void nodeDisconnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
                 // Invalidate account.
-                // TODO: Why no cache until reconnect?
-                // myAccount = null;
+                setAnonAccount();
                 listenerSupport.serverDisconnected(new ServerClientEvent(
                     ServerClient.this, e.getNode()));
             }
