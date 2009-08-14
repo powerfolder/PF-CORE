@@ -91,6 +91,11 @@ public enum Feature {
     DOWNLOAD_SCRIPT(false),
 
     /**
+     * Display Tip Of Day.
+     */
+    TIP_OF_DAY(false),
+
+    /**
      * #1046: If the new security checks should be enabled.
      */
     SECURITY_CHECKS(true);

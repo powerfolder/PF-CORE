@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.Translation;
@@ -205,7 +206,9 @@ public class SplashScreen extends JWindow {
                     }
                     String version = Controller.PROGRAM_VERSION;
                     g.drawString(version, getWidth() - 95, 146);
-                    g.drawString(tipOfTheDay, 30, 146);
+                    if (Feature.TIP_OF_DAY.isEnabled()) {
+                        g.drawString(tipOfTheDay, 30, 146);
+                    }
                 }
             });
         } catch (InterruptedException e) {
