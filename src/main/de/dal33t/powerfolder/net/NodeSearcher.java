@@ -290,7 +290,7 @@ public class NodeSearcher extends PFComponent {
             if (!getController().getOSClient().isConnected()) {
                 return;
             }
-            if (!getController().getOSClient().getAccount().isValid()) {
+            if (!getController().getOSClient().isLoggedIn()) {
                 return;
             }
             Collection<MemberInfo> res = getController().getOSClient()
