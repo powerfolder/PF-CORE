@@ -87,7 +87,7 @@ public class ServerClientModel extends PFUIComponent {
             return;
         }
 
-        if (client.isLastLoginOK()) {
+        if (client.isLoggedIn()) {
             return;
         }
 
