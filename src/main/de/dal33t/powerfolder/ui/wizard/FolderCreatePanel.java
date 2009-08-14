@@ -308,7 +308,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     }
                 }
 
-                if (backupByOS && client.isLastLoginOK()) {
+                if (backupByOS && client.isLoggedIn()) {
                     try {
                         // Try to back this up by online storage.
                         if (client.hasJoined(folder)) {
