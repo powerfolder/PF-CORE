@@ -206,10 +206,6 @@ public class ComputersList extends PFUIComponent {
             previousMyComputers.addAll(myComputers);
             previousFriends.addAll(friends);
 
-            logWarning(myComputers.toString());
-            logWarning(friends.toString());
-            logWarning(connectedLans.toString());
-
             // Clear view listeners
             for (ExpandableComputerView view : viewList) {
                 view.removeExpansionListener(expansionListener);
