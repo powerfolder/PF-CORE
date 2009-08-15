@@ -249,17 +249,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
         return diskItems.get(rowIndex);
     }
 
-    public FileInfo getFileInfoAtRow(int row) {
+    public DiskItem getDiskItemAtRow(int row) {
         Object at = getValueAt(row, COL_NAME);
         if (at instanceof FileInfo) {
             return (FileInfo) at;
-        }
-        return null;
-    }
-
-    public Directory getDirectoryAtRow(int row) {
-        Object at = getValueAt(row, COL_NAME);
-        if (at instanceof Directory) {
+        } else if (at instanceof Directory) {
             return (Directory) at;
         }
         return null;
