@@ -672,7 +672,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         return expanded.get();
     }
 
-    public JPopupMenu createCollapsedPopupMenu() {
+    public JPopupMenu createPopupMenu() {
         if (collapsedContextMenu == null) {
             collapsedContextMenu = new JPopupMenu();
             collapsedContextMenu.add(openExplorerAction);
@@ -692,14 +692,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         } catch (IOException ioe) {
             logSevere("IOException", ioe);
         }
-    }
-
-    public JPopupMenu createExpandedPopupMenu() {
-        if (expandedContextMenu == null) {
-            expandedContextMenu = new JPopupMenu();
-            expandedContextMenu.add(openExplorerAction);
-        }
-        return expandedContextMenu;
     }
 
     /**
@@ -860,13 +852,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-            if (expanded.get()) {
-                createExpandedPopupMenu().show(evt.getComponent(), evt.getX(),
+                createPopupMenu().show(evt.getComponent(), evt.getX(),
                     evt.getY());
-            } else {
-                createCollapsedPopupMenu().show(evt.getComponent(), evt.getX(),
-                    evt.getY());
-            }
         }
 
         public void mouseClicked(MouseEvent e) {

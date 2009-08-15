@@ -493,10 +493,8 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-            if (!expanded.get()) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(),
-                    evt.getY());
-            }
+            createPopupMenu().show(evt.getComponent(), evt.getX(),
+                evt.getY());
         }
 
         public void mouseClicked(MouseEvent e) {
