@@ -133,6 +133,8 @@ public class Icons {
     public static final String NODE_FRIEND_DISCONNECTED = "node_friend_disconnected.icon";
     public static final String NODE_NON_FRIEND_CONNECTED = "node_non_friend_connected.icon";
     public static final String NODE_NON_FRIEND_DISCONNECTED = "node_non_friend_disconnected.icon";
+    public static final String NODE_FRIEND_POOR = "node_friend_poor.icon";
+    public static final String NODE_FRIEND_MEDIUM = "node_friend_medium.icon";
 
     public static final String FOLDER = "folder.icon";
     public static final String FILES = "files.icon";

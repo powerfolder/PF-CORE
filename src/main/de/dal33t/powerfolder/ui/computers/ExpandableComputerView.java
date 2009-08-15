@@ -89,7 +89,6 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
     private JLabel pictoLabel;
-    private JLabel connectionQualityLabel;
     private MyOpenChatAction chatAction;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
@@ -182,18 +181,17 @@ public class ExpandableComputerView extends PFUIComponent implements
         // Build lower detials with line border.
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
-            "3dlu, pref, 3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
+            "3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
             "pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xyw(1, 1, 9));
+        lowerBuilder.addSeparator(null, cc.xyw(1, 1, 8));
 
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(connectionQualityLabel, cc.xy(4, 3));
-        lowerBuilder.add(chatButton, cc.xy(7, 3));
-        lowerBuilder.add(addRemoveButton, cc.xy(8, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(9, 3));
+        lowerBuilder.add(chatButton, cc.xy(5, 3));
+        lowerBuilder.add(addRemoveButton, cc.xy(6, 3));
+        lowerBuilder.add(reconnectButton, cc.xy(7, 3));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -236,7 +234,6 @@ public class ExpandableComputerView extends PFUIComponent implements
     private void initComponent() {
         expanded = new AtomicBoolean();
         infoLabel = new JLabel(renderInfo(node, node.getAccountInfo()));
-        connectionQualityLabel = new JLabel();
         lastSeenLabel = new JLabel();
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction, true);
@@ -329,33 +326,6 @@ public class ExpandableComputerView extends PFUIComponent implements
      * Updates the displayed details of the member.
      */
     private void updateDetails() {
-        String iconName = Icons.BLANK;
-        String text = null;
-        ConnectionHandler peer = node.getPeer();
-        if (peer != null) {
-            ConnectionQuality quality = peer.getConnectionQuality();
-            if (quality != null) {
-                switch (quality) {
-                    case GOOD :
-                        iconName = Icons.CONNECTION_GOOD;
-                        text = Translation
-                            .getTranslation("connection_quality_good.text");
-                        break;
-                    case MEDIUM :
-                        iconName = Icons.CONNECTION_MEDIUM;
-                        text = Translation
-                            .getTranslation("connection_quality_medium.text");
-                        break;
-                    case POOR :
-                        iconName = Icons.CONNECTION_POOR;
-                        text = Translation
-                            .getTranslation("connection_quality_poor.text");
-                        break;
-                }
-            }
-        }
-        connectionQualityLabel.setToolTipText(text);
-        connectionQualityLabel.setIcon(Icons.getIconById(iconName));
 
         Date time = node.getLastConnectTime();
         String lastConnectedTime;
@@ -367,36 +337,55 @@ public class ExpandableComputerView extends PFUIComponent implements
         lastSeenLabel.setText(Translation.getTranslation(
             "exp_computer_view.last_seen_text", lastConnectedTime));
 
+        String iconName;
+        String text;
         if (node.isCompletelyConnected()) {
+            ConnectionHandler peer = node.getPeer();
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons
-                    .getIconById(Icons.NODE_FRIEND_CONNECTED));
-                pictoLabel
-                    .setToolTipText(Translation
-                        .getTranslation("exp_computer_view.node_friend_connected_text"));
+                iconName = Icons.NODE_FRIEND_CONNECTED;
+                text = Translation
+                        .getTranslation("exp_computer_view.node_friend_connected_text");
             } else {
-                pictoLabel.setIcon(Icons
-                    .getIconById(Icons.NODE_NON_FRIEND_CONNECTED));
-                pictoLabel
-                    .setToolTipText(Translation
-                        .getTranslation("exp_computer_view.node_non_friend_connected_text"));
+                iconName = Icons.NODE_NON_FRIEND_CONNECTED;
+                text = Translation
+                        .getTranslation("exp_computer_view.node_non_friend_connected_text");
+            }
+
+            if (peer != null) {
+                ConnectionQuality quality = peer.getConnectionQuality();
+                if (quality != null) {
+                    switch (quality) {
+                        case GOOD:
+                            iconName = Icons.NODE_FRIEND_CONNECTED;
+                            text = Translation
+                                    .getTranslation("connection_quality_good.text");
+                            break;
+                        case MEDIUM:
+                            iconName = Icons.NODE_FRIEND_MEDIUM;
+                            text = Translation
+                                    .getTranslation("connection_quality_medium.text");
+                            break;
+                        case POOR:
+                            iconName = Icons.NODE_FRIEND_POOR;
+                            text = Translation
+                                    .getTranslation("connection_quality_poor.text");
+                            break;
+                    }
+                }
             }
         } else {
             if (node.isFriend()) {
-                pictoLabel.setIcon(Icons
-                    .getIconById(Icons.NODE_FRIEND_DISCONNECTED));
-                pictoLabel
-                    .setToolTipText(Translation
-                        .getTranslation("exp_computer_view.node_friend_disconnected_text"));
+                iconName = Icons.NODE_FRIEND_DISCONNECTED;
+                text = Translation
+                        .getTranslation("exp_computer_view.node_friend_disconnected_text");
             } else {
-                pictoLabel.setIcon(Icons
-                    .getIconById(Icons.NODE_NON_FRIEND_DISCONNECTED));
-                pictoLabel
-                    .setToolTipText(Translation
-                        .getTranslation("exp_computer_view.node_non_friend_disconnected_text"));
+                iconName = Icons.NODE_NON_FRIEND_DISCONNECTED;
+                text = Translation
+                        .getTranslation("exp_computer_view.node_non_friend_disconnected_text");
             }
         }
-
+        pictoLabel.setIcon(Icons.getIconById(iconName));
+        pictoLabel.setToolTipText(text);
     }
 
     public boolean equals(Object obj) {
