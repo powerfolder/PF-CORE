@@ -207,7 +207,11 @@ public class ComputersList extends PFUIComponent {
             previousFriends.addAll(friends);
 
             // Clear view listeners
+            Member expandedNode = null;
             for (ExpandableComputerView view : viewList) {
+                if (view.isExpanded()) {
+                    expandedNode = view.getNode();
+                }
                 view.removeExpansionListener(expansionListener);
                 view.removeCoreListeners();
             }
@@ -227,7 +231,7 @@ public class ComputersList extends PFUIComponent {
                     addSeparator(Translation
                         .getTranslation("computer_list.my_computers"));
                 }
-                addView(node);
+                addView(node, expandedNode);
             }
 
             // Then friends.
@@ -238,7 +242,7 @@ public class ComputersList extends PFUIComponent {
                     addSeparator(Translation
                         .getTranslation("computer_list.friends"));
                 }
-                addView(node);
+                addView(node, expandedNode);
             }
 
             // Then others (connected on LAN).
@@ -249,7 +253,7 @@ public class ComputersList extends PFUIComponent {
                     addSeparator(Translation
                         .getTranslation("computer_list.lan"));
                 }
-                addView(node);
+                addView(node, expandedNode);
             }
 
             computersTab.updateEmptyLabel();
@@ -268,12 +272,16 @@ public class ComputersList extends PFUIComponent {
         computerListPanel.add(panel);
     }
 
-    private void addView(Member node) {
+    private void addView(Member node, Member expandedNode) {
 
         ExpandableComputerView view = new ExpandableComputerView(
             getController(), node);
         computerListPanel.add(view.getUIComponent());
         viewList.add(view);
+        if (expandedNode != null && node.equals(expandedNode)) {
+            // Maintain expanded state of view on rebuild.
+            view.expand();
+        }
         view.addExpansionListener(expansionListener);
     }
 

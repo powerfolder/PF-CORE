@@ -148,6 +148,10 @@ public class ExpandableComputerView extends PFUIComponent implements
         return uiComponent;
     }
 
+    public boolean isExpanded() {
+        return expanded.get();
+    }
+
     /**
      * Builds the ui component.
      */
