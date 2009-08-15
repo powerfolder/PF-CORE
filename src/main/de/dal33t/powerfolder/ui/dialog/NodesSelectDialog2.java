@@ -20,16 +20,15 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.friends.FindComputersDialog;
 import de.dal33t.powerfolder.ui.model.NodesSelectTableModel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.BaseDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,67 +39,34 @@ import java.util.*;
 /**
  * Dialog for selecting a number of users.
  */
-public class NodesSelectDialog2 extends PFUIComponent {
+public class NodesSelectDialog2 extends BaseDialog {
 
-    private JDialog uiComponent;
     private NodesSelectTable nodesSelectTable;
     private NodesSelectTableModel nodesSelectTableModel;
     private JCheckBox hideOffline;
-    private final Dialog owner;
     private final Collection<Member> selectedMembers;
+    private JButton okButton;
 
     /**
      * Initialize
      *
      * @param controller
      */
-    public NodesSelectDialog2(Controller controller, Dialog owner,
+    public NodesSelectDialog2(Controller controller,
                               Collection<Member> selectedMembers) {
-        super(controller);
-        this.owner = owner;
+        super(controller, true);
         this.selectedMembers = selectedMembers;
     }
 
-    /**
-     * Initalizes / builds all ui elements
-     */
-    public void initComponents() {
+    public String getTitle() {
+        return Translation.getTranslation("dialog.node_select.title");
+    }
 
-        // General dialog initalization
-        uiComponent = new JDialog(owner, Translation.getTranslation(
-                "dialog.node_select.title"), true);
+    protected Icon getIcon() {
+        return null;
+    }
 
-        uiComponent.setResizable(false);
-        uiComponent.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-        JButton okButton = new JButton(Translation.getTranslation("general.ok"));
-        okButton.setMnemonic(Translation.getTranslation("general.ok.key")
-            .charAt(0));
-        JButton cancelButton = new JButton(Translation
-            .getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation(
-            "general.cancel.key").charAt(0));
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
-        JButton findFriendsButton = new JButton(Translation
-            .getTranslation("general.search"));
-        findFriendsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                FindComputersDialog dialog = new FindComputersDialog(getController(),
-                    true);
-                dialog.open();
-            }
-        });
-        JComponent buttonBar = ButtonBarFactory.buildCenteredBar(okButton,
-            findFriendsButton, cancelButton);
-
-        // OK is the default
-        uiComponent.getRootPane().setDefaultButton(okButton);
-        okButton.addActionListener(new MyOkListener());
-
+    protected JComponent getContent() {
         // Layout
         FormLayout layout = new FormLayout(
             "pref:grow",
@@ -131,21 +97,44 @@ public class NodesSelectDialog2 extends PFUIComponent {
         pane.setPreferredSize(new Dimension(400, 200));
 
         builder.add(pane, cc.xy(1, 5));
+        return builder.getPanel();
+    }
 
-        builder.add(buttonBar, cc.xy(1, 7));
+    protected JButton getDefaultButton() {
+        return okButton;
+    }
 
-        uiComponent.getContentPane().add(builder.getPanel());
-        uiComponent.pack();
+    protected Component getButtonBar() {
+        okButton = createOKButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateMembers();
+                close();
+            }
+        });
 
-        // Orientation
-        Component parent = uiComponent.getOwner();
-        if (parent != null) {
-            int x = parent.getX()
-                + (parent.getWidth() - uiComponent.getWidth()) / 2;
-            int y = parent.getY()
-                + (parent.getHeight() - uiComponent.getHeight()) / 2;
-            uiComponent.setLocation(x, y);
-        }
+        JButton cancelButton = createCancelButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }
+        });
+
+        JButton findFriendsButton = new JButton(Translation
+                .getTranslation("general.search"));
+        findFriendsButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FindComputersDialog dialog = new FindComputersDialog(getController(),
+                    true);
+                dialog.open();
+            }
+        });
+        return ButtonBarFactory.buildCenteredBar(okButton, findFriendsButton,
+                cancelButton);
+    }
+
+    private void updateMembers() {
+        Collection<Member> selections = nodesSelectTable.getSelectedMembers();
+        selectedMembers.clear();
+        selectedMembers.addAll(selections);
     }
 
     /**
@@ -153,55 +142,5 @@ public class NodesSelectDialog2 extends PFUIComponent {
      */
     private void doHide() {
         nodesSelectTableModel.setHideOffline(hideOffline.isSelected());
-    }
-
-    /**
-     * Returns the ui component (dialog)
-     *
-     * @return
-     */
-    private JDialog getUIComponent() {
-        if (uiComponent == null) {
-            initComponents();
-        }
-        return uiComponent;
-    }
-
-    /**
-     * Opens the dialog
-     *
-     * @return not used
-     */
-    public boolean open() {
-        logWarning("Opening download dialog");
-        getUIComponent().setVisible(true);
-        return true;
-    }
-
-    /**
-     * Closes the dialog
-     */
-    public void close() {
-        if (uiComponent != null) {
-            uiComponent.dispose();
-        }
-    }
-
-    /**
-     * Confirmation button action.
-     */
-    private class MyOkListener implements ActionListener {
-
-        /**
-         * Set the value model and user collection in the underlying wizard.
-         *
-         * @param e
-         */
-        public void actionPerformed(ActionEvent e) {
-            Collection<Member> selections = nodesSelectTable.getSelectedMembers();
-            selectedMembers.clear();
-            selectedMembers.addAll(selections);
-            close();
-        }
     }
 }

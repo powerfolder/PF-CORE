@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -62,7 +61,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
-import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.AttachPersonalizedMessageDialog;
@@ -395,8 +393,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
             Collection<Member> selectedMembers = new ArrayList<Member>();
             NodesSelectDialog2 nsd2 = new NodesSelectDialog2(getController(),
-                (Dialog) getWizardContext().getAttribute(
-                    WizardContextAttributes.DIALOG_ATTRIBUTE), selectedMembers);
+                selectedMembers);
             nsd2.open();
             for (Member selectedMember : selectedMembers) {
                 boolean got = false;
