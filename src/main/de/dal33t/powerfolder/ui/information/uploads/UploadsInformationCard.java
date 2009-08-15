@@ -31,12 +31,14 @@ import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.TimerTask;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.
@@ -52,6 +54,8 @@ public class UploadsInformationCard extends InformationCard
     private Action clearCompletedUploadsAction;
     private JSlider cleanupSlider;
     private JLabel cleanupLabel;
+    private JPanel statsPanel;
+    private JLabel uploadCounterLabel;
 
     /**
      * Constructor
@@ -103,7 +107,20 @@ public class UploadsInformationCard extends InformationCard
         detailsPanel = new FileDetailsPanel(getController(), true);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
+        buildStatsPanel();
         update();
+    }
+
+    private void buildStatsPanel() {
+        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu",
+                "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        uploadCounterLabel = new JLabel();
+        builder.add(uploadCounterLabel, cc.xy(3, 1));
+
+        statsPanel = builder.getPanel();
     }
 
     /**
@@ -153,8 +170,8 @@ public class UploadsInformationCard extends InformationCard
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref");
-                //     tools       sep         table                 details
+                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref, pref");
+                //     tools       sep         table                 dets  sep   stats
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -163,8 +180,15 @@ public class UploadsInformationCard extends InformationCard
         builder.addSeparator(null, cc.xyw(1, 4, 5));
         builder.add(tablePanel.getUIComponent(), cc.xyw(2, 6, 3));
         builder.add(detailsPanel.getPanel(), cc.xyw(2, 8, 3));
+        builder.addSeparator(null, cc.xyw(1, 9, 5));
+        builder.add(statsPanel, cc.xyw(2, 10, 3));
         uiComponent = builder.getPanel();
         enableCleanupComponents();
+        initStatsTimer();
+    }
+
+    private void initStatsTimer() {
+        getController().scheduleAndRepeat(new MyStatsTask(), 100, 1000);
     }
 
     /**
@@ -278,4 +302,13 @@ public class UploadsInformationCard extends InformationCard
             }
     }
 
+    private class MyStatsTask extends TimerTask {
+
+        public void run() {
+            double v = getController().getTransferManager().getUploadCounter()
+                    .calculateCurrentKBS();
+            uploadCounterLabel.setText(Translation.getTranslation(
+                    "status.upload", Format.formatNumber(v)));
+        }
+    }
 }

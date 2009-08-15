@@ -31,12 +31,14 @@ import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.TimerTask;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.
@@ -54,6 +56,8 @@ public class DownloadsInformationCard extends InformationCard
     private Action clearCompletedDownloadsAction;
     private JSlider cleanupSlider;
     private JLabel cleanupLabel;
+    private JPanel statsPanel;
+    private JLabel downloadCounterLabel;
 
     /**
      * Constructor
@@ -107,7 +111,20 @@ public class DownloadsInformationCard extends InformationCard
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         detailsPanel = new FileDetailsPanel(getController(), true);
+        buildStatsPanel();
         update();
+    }
+
+    private void buildStatsPanel() {
+        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu",
+                "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        downloadCounterLabel = new JLabel();
+        builder.add(downloadCounterLabel, cc.xy(3, 1));
+
+        statsPanel = builder.getPanel();
     }
 
     /**
@@ -163,8 +180,8 @@ public class DownloadsInformationCard extends InformationCard
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref");
-                //     tools       sep         table                 details
+                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref, pref");
+                //     tools       sep         table                 dets  sep   stats
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -173,8 +190,15 @@ public class DownloadsInformationCard extends InformationCard
         builder.addSeparator(null, cc.xyw(1, 4, 5));
         builder.add(tablePanel.getUIComponent(), cc.xyw(2, 6, 3));
         builder.add(detailsPanel.getPanel(), cc.xyw(2, 8, 3));
+        builder.addSeparator(null, cc.xyw(1, 9, 5));
+        builder.add(statsPanel, cc.xyw(2, 10, 3));
         uiComponent = builder.getPanel();
         enableCleanupComponents();
+        initStatsTimer();
+    }
+
+    private void initStatsTimer() {
+        getController().scheduleAndRepeat(new MyStatsTask(), 100, 1000);
     }
 
     /**
@@ -307,15 +331,25 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     private class MyActionListener implements ActionListener {
-            public void actionPerformed(ActionEvent e) {
-                getUIController().getTransferManagerModel()
-                        .getDownloadsAutoCleanupModel().setValue(
-                    autoCleanupCB.isSelected());
-                ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                    .setValue(getController(), String.valueOf(autoCleanupCB
-                        .isSelected()));
-                getController().saveConfig();
-                enableCleanupComponents();
-            }
+        public void actionPerformed(ActionEvent e) {
+            getUIController().getTransferManagerModel()
+                    .getDownloadsAutoCleanupModel().setValue(
+                autoCleanupCB.isSelected());
+            ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+                .setValue(getController(), String.valueOf(autoCleanupCB
+                    .isSelected()));
+            getController().saveConfig();
+            enableCleanupComponents();
+        }
+    }
+
+    private class MyStatsTask extends TimerTask {
+
+        public void run() {
+            double v = getController().getTransferManager().getDownloadCounter()
+                    .calculateCurrentKBS();
+            downloadCounterLabel.setText(Translation.getTranslation(
+                    "status.download", Format.formatNumber(v)));
+        }
     }
 }
