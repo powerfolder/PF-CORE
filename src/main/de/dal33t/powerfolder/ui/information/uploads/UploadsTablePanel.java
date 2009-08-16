@@ -193,6 +193,28 @@ public class UploadsTablePanel extends PFUIComponent {
         return null;
     }
 
+    public int countActiveUploadCount() {
+        int count = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Upload ul = tableModel.getUploadAtRow(i);
+            if (ul.isStarted() && !ul.isCompleted()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int countCompletedUploadCount() {
+        int count = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            Upload ul = tableModel.getUploadAtRow(i);
+            if (ul.isCompleted()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * Listener on table header, takes care about the sorting of table
      *

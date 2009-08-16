@@ -331,6 +331,28 @@ public class DownloadsTablePanel extends PFUIComponent {
         return null;
     }
 
+    public int countActiveDownloadCount() {
+        int count = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(i);
+            if (downloadManager.isStarted() && !downloadManager.isCompleted()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int countCompletedDownloadCount() {
+        int count = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(i);
+            if (downloadManager.isCompleted()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////

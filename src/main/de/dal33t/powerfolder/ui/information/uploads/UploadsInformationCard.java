@@ -56,6 +56,8 @@ public class UploadsInformationCard extends InformationCard
     private JLabel cleanupLabel;
     private JPanel statsPanel;
     private JLabel uploadCounterLabel;
+    private JLabel activeUploadCountLabel;
+    private JLabel completedUploadCountLabel;
 
     /**
      * Constructor
@@ -112,13 +114,23 @@ public class UploadsInformationCard extends InformationCard
     }
 
     private void buildStatsPanel() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                 "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        activeUploadCountLabel = new JLabel();
+        builder.add(activeUploadCountLabel, cc.xy(3, 1));
+        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
+                    sep1.setPreferredSize(new Dimension(2, 12));
+        builder.add(sep1, cc.xy(5, 1));
+        completedUploadCountLabel = new JLabel();
+        builder.add(completedUploadCountLabel, cc.xy(7, 1));
+        JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
+                    sep2.setPreferredSize(new Dimension(2, 12));
+        builder.add(sep2, cc.xy(9, 1));
         uploadCounterLabel = new JLabel();
-        builder.add(uploadCounterLabel, cc.xy(3, 1));
+        builder.add(uploadCounterLabel, cc.xy(11, 1));
 
         statsPanel = builder.getPanel();
     }
@@ -229,6 +241,24 @@ public class UploadsInformationCard extends InformationCard
         cleanupLabel.setEnabled(autoCleanupCB.isSelected());
     }
 
+    private void displayStats() {
+
+        int activeUploadCount = tablePanel.countActiveUploadCount();
+        activeUploadCountLabel.setText(Translation.getTranslation(
+                "status.active_upload_count", String.valueOf(
+                        activeUploadCount)));
+
+        int completedUploadCount = tablePanel.countCompletedUploadCount();
+        completedUploadCountLabel.setText(Translation.getTranslation(
+                "status.completed_upload_count", String.valueOf(
+                        completedUploadCount)));
+
+        double kbs = getController().getTransferManager().getUploadCounter()
+                .calculateCurrentKBS();
+        uploadCounterLabel.setText(Translation.getTranslation(
+                "status.upload", Format.formatNumber(kbs)));
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -305,10 +335,7 @@ public class UploadsInformationCard extends InformationCard
     private class MyStatsTask extends TimerTask {
 
         public void run() {
-            double v = getController().getTransferManager().getUploadCounter()
-                    .calculateCurrentKBS();
-            uploadCounterLabel.setText(Translation.getTranslation(
-                    "status.upload", Format.formatNumber(v)));
+            displayStats();
         }
     }
 }

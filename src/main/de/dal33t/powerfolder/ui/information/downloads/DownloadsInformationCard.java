@@ -58,6 +58,8 @@ public class DownloadsInformationCard extends InformationCard
     private JLabel cleanupLabel;
     private JPanel statsPanel;
     private JLabel downloadCounterLabel;
+    private JLabel activeDownloadCountLabel;
+    private JLabel completedDownloadCountLabel;
 
     /**
      * Constructor
@@ -116,13 +118,23 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     private void buildStatsPanel() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu",
-                "pref");
+        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+                "pref");                          //         active      sep1        comp        sep2        count
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
+        activeDownloadCountLabel = new JLabel();
+        builder.add(activeDownloadCountLabel, cc.xy(3, 1));
+        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
+                    sep1.setPreferredSize(new Dimension(2, 12));
+        builder.add(sep1, cc.xy(5, 1));
+        completedDownloadCountLabel = new JLabel();
+        builder.add(completedDownloadCountLabel, cc.xy(7, 1));
+        JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
+                    sep2.setPreferredSize(new Dimension(2, 12));
+        builder.add(sep2, cc.xy(9, 1));
         downloadCounterLabel = new JLabel();
-        builder.add(downloadCounterLabel, cc.xy(3, 1));
+        builder.add(downloadCounterLabel, cc.xy(11, 1));
 
         statsPanel = builder.getPanel();
     }
@@ -243,6 +255,24 @@ public class DownloadsInformationCard extends InformationCard
         cleanupLabel.setEnabled(autoCleanupCB.isSelected());
     }
 
+    private void displayStats() {
+
+        int activeDownloadCount = tablePanel.countActiveDownloadCount();
+        activeDownloadCountLabel.setText(Translation.getTranslation(
+                "status.active_download_count", String.valueOf(
+                        activeDownloadCount)));
+
+        int completedDownloadCount = tablePanel.countCompletedDownloadCount();
+        completedDownloadCountLabel.setText(Translation.getTranslation(
+                "status.completed_download_count", String.valueOf(
+                        completedDownloadCount)));
+
+        double kbs = getController().getTransferManager().getDownloadCounter()
+                .calculateCurrentKBS();
+        downloadCounterLabel.setText(Translation.getTranslation(
+                "status.download", Format.formatNumber(kbs)));
+    }
+
     ///////////////////
     // Inner Classes //
     ///////////////////
@@ -346,10 +376,7 @@ public class DownloadsInformationCard extends InformationCard
     private class MyStatsTask extends TimerTask {
 
         public void run() {
-            double v = getController().getTransferManager().getDownloadCounter()
-                    .calculateCurrentKBS();
-            downloadCounterLabel.setText(Translation.getTranslation(
-                    "status.download", Format.formatNumber(v)));
+            displayStats();
         }
     }
 }
