@@ -87,7 +87,8 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             TransferCounter counter = downloadManager.getCounter();
 
             // Show bar
-            bar.setValue((int) (Math.max(0, downloadManager.getState().getProgress()) * 100));
+            bar.setValue((int) (Math.max(0,
+                    downloadManager.getState().getProgress()) * 100));
             bar.setBackground(defaultComp.getBackground());
 
             Transfer.State state = downloadManager.getState();
@@ -97,8 +98,12 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             }
 
             switch (state.getState()) {
-                case MATCHING:
                 case VERIFYING:
+                    bar.setString(Translation.getTranslation(state.getState()
+                            .getTranslationId()));
+                    bar.setValue(100);
+                    break;
+                case MATCHING:
                 case FILERECORD_REQUEST:
                 case COPYING:
                     bar.setString(Translation.getTranslation(state.getState()
@@ -119,6 +124,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
 
                 default:
                     if (downloadManager.isCompleted()) {
+                        bar.setValue(100);
                         bar.setString(Translation
                                 .getTranslation("transfers.completed"));
                     } else if (downloadManager.isStarted()) {
@@ -172,7 +178,8 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                     String nickText = primaryDownload.getPartner().getNick();
                     setText(nickText);
                 } else {
-                    setText(Translation.getTranslation("transfers.swarm", String.valueOf(sources.size())));
+                    setText(Translation.getTranslation("transfers.swarm",
+                            String.valueOf(sources.size())));
                 }
                 setIcon(Icons.getSimpleIconFor(primaryDownload.getPartner()));
                 setHorizontalAlignment(LEFT);
