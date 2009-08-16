@@ -47,7 +47,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.FULL_BACKUP, "");
+        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
 
         Folder fl = getFolderAtLisa();
         File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
@@ -74,7 +74,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
     public void testLimitedVersions() {
         final Folder fb = getFolderAtBart();
-        fb.setArchiveMode(ArchiveMode.FULL_BACKUP, "");
+        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
         ((CopyOrMoveFileArchiver) fb.getFileArchiver()).setVersionsPerFile(3);
 
         Folder fl = getFolderAtLisa();
