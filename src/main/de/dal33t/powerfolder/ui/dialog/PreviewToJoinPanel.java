@@ -106,6 +106,10 @@ public class PreviewToJoinPanel extends BaseDialog {
         joinButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
+
+                // Dispose before parent is closed.
+                close();
+
                 FolderSettings newFolderSettings = new FolderSettings(new File(
                     (String) locationModel.getValue()),
                     syncProfileSelectorPanel.getSyncProfile(), false,
@@ -116,9 +120,6 @@ public class PreviewToJoinPanel extends BaseDialog {
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                     folder, newFolderSettings, false);
-
-                // Dispose before parent is closed.
-                close();
             }
         });
 
