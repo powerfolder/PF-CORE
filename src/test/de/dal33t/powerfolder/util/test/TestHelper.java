@@ -556,7 +556,8 @@ public class TestHelper {
         // Scan // Ignore mass deletion
         if (!folder.scanLocalFiles(true)) {
             throw new RuntimeException("Unable to scan " + folder
-                + ". Last scan result: " + folder.getLastScanResultState());
+                + ". Last scan result: " + folder.getLastScanResultState()
+                + ". Device disconnected? " + folder.isDeviceDisconnected());
         }
         folder.getController().setSilentMode(silentModeBefore);
     }
