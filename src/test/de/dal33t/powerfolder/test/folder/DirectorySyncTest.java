@@ -115,6 +115,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
                 FileUtils.recursiveDelete(file);
             }
         }
+        // Leave 1 file to omitt disconnect detection under Linux
+        TestHelper.createRandomFile(getFolderAtHomer().getLocalBase());
         scanFolder(getFolderAtHomer());
         assertFilesAndDirs(getFolderAtHomer(), createdDirs,
             createdFiles.size(), 0);
