@@ -109,7 +109,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyOpenExplorerAction openExplorerAction;
 
     private JPopupMenu collapsedContextMenu;
-    private JPopupMenu expandedContextMenu;
 
     /**
      * Constructor
@@ -236,55 +235,74 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
-        // TODO: Cleanup up this mess, use ROW variable
         if (getController().isBackupOnly()) {
             // Skip computers stuff
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         } else {
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         }
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
-        lowerBuilder.addSeparator(null, cc.xywh(1, 1, 6, 1));
+        int row = 1;
 
-        lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, 3));
-        lowerBuilder.add(openFilesInformationButton, cc.xy(5, 3));
+        lowerBuilder.addSeparator(null, cc.xywh(1, row, 6, 1));
 
-        lowerBuilder.add(syncPercentLabel, cc.xy(2, 5));
+        row += 2;
 
-        lowerBuilder.add(filesLabel, cc.xy(2, 7));
+        lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, row));
+        lowerBuilder.add(openFilesInformationButton, cc.xy(5, row));
 
-        lowerBuilder.add(localSizeLabel, cc.xy(2, 9));
+        row += 2;
 
-        lowerBuilder.add(totalSizeLabel, cc.xy(2, 11));
+        lowerBuilder.add(syncPercentLabel, cc.xy(2, row));
 
-        // lowerBuilder.add(recycleLabel, cc.xy(2, 13));
+        row += 2;
 
-        lowerBuilder.addSeparator(null, cc.xywh(2, 15, 4, 1));
+        lowerBuilder.add(filesLabel, cc.xy(2, row));
+
+        row += 2;
+
+        lowerBuilder.add(localSizeLabel, cc.xy(2, row));
+
+        row += 2;
+
+        lowerBuilder.add(totalSizeLabel, cc.xy(2, row));
+
+        row += 2;
+
+        lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
+
+        row += 2;
 
         // No computers stuff if backup mode.
         if (getController().isBackupOnly()) {
-            lowerBuilder.add(transferModeLabel, cc.xy(2, 17));
-            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 17));
+            lowerBuilder.add(transferModeLabel, cc.xy(2, row));
+            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
 
-            lowerBuilder
-                .add(osComponent.getUIComponent(), cc.xywh(2, 18, 4, 1));
         } else {
-            lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, 17));
-            lowerBuilder.add(inviteButton, cc.xy(5, 17));
+            lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
+            lowerBuilder.add(inviteButton, cc.xy(5, row));
 
-            lowerBuilder.addSeparator(null, cc.xywh(2, 19, 4, 1));
+            row += 2;
 
-            lowerBuilder.add(transferModeLabel, cc.xy(2, 21));
-            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, 21));
+            lowerBuilder.addSeparator(null, cc.xywh(2, row, 4, 1));
 
-            lowerBuilder
-                .add(osComponent.getUIComponent(), cc.xywh(2, 22, 4, 1));
+            row += 2;
+
+            lowerBuilder.add(transferModeLabel, cc.xy(2, row));
+            lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
         }
+
+        row++; // Just add one.
+
+        lowerBuilder
+            .add(osComponent.getUIComponent(), cc.xywh(2, row, 4, 1));
+
+        System.out.println("hghg " + row);
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
