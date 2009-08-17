@@ -34,9 +34,9 @@ For creation of the installer:
 	<target name="loadproperties0">
 		<!-- Load build-local.properties -->
 		<available property="build.local.properties.ok" file="build-local.properties" type="file" />
-		<fail unless="build.local.properties.ok">
+		<!--<fail unless="build.local.properties.ok">
 					File 'build-local.properties' not found. Please create one. Copy the sample file 'build-local.properties.sample' and adapt values to your system configuration
-		</fail>
+		</fail>-->
 		<property file="build-local.properties" />
 		<condition property="outputdirset">
 			<isset property="output.dir" />
