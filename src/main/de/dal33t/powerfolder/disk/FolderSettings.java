@@ -104,7 +104,6 @@ public class FolderSettings {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
-        Reject.ifNull(archiveConfig, "Archive config required");
         this.localBaseDir = localBaseDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
@@ -112,7 +111,7 @@ public class FolderSettings {
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
         this.downloadScript = downloadScript;
-        this.archiveConfig = archiveConfig;
+        this.archiveConfig = archiveConfig == null ? "" : archiveConfig;
     }
 
     /**
