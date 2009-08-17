@@ -535,14 +535,8 @@ public class SyncProfile implements Serializable {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-
         SyncProfile that = (SyncProfile) obj;
-
-        if (!configuration.equals(that.configuration)) {
-            return false;
-        }
-
-        return true;
+        return configuration.equals(that.configuration);
     }
 
     /**
