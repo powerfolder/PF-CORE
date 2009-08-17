@@ -23,12 +23,13 @@ import java.io.File;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Tests the correct response to mass deletions.
- *
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry</a>
  * @version $Revision: 4.0 $
  */
@@ -43,7 +44,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         // Check with no protection
         massDeletion(false);
-        
+
         tearDown();
         setUp();
 
@@ -55,8 +56,10 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa().getController(), 80);
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa().getController(), protection);
+        PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa()
+            .getController(), 80);
+        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
+            .getController(), protection);
 
         for (int i = 0; i < 100; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
@@ -98,26 +101,56 @@ public class MassDeletionTest extends TwoControllerTestCase {
             // Files should survive and profile switch to HOST_FILE.
             TestHelper.waitForCondition(20, new Condition() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length
-                            == 101; // The files + .PowerFolder dir
+                    return getFolderAtLisa().getLocalBase().listFiles().length == 101; // The
+                    // files
+                    // +
+                    // .PowerFolder
+                    // dir
                 }
             });
             System.out.println("Protection: " + protection);
-            System.out.println("Lisa's sync profile: " + getFolderAtLisa().getSyncProfile().getName());
-            System.out.println("Required sync profile: " + SyncProfile.HOST_FILES.getName());
-            assertEquals(getFolderAtLisa().getSyncProfile(), SyncProfile.HOST_FILES);
+            System.out.println("Lisa's sync profile: "
+                + getFolderAtLisa().getSyncProfile().getName());
+            System.out.println("Required sync profile: "
+                + SyncProfile.HOST_FILES.getName());
+            TestHelper.waitForCondition(20, new ConditionWithMessage() {
+                public boolean reached() {
+                    return getFolderAtLisa().getSyncProfile().equals(
+                        SyncProfile.HOST_FILES);
+                }
+
+                public String message() {
+                    return "Sync profile was not auto-switched to Host files";
+                }
+            });
+            assertEquals(getFolderAtLisa().getSyncProfile(),
+                SyncProfile.HOST_FILES);
         } else {
             // Files should have been deleted and profile remains same.
             TestHelper.waitForCondition(20, new Condition() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length
-                            == 1; // The .PowerFolder dir
+                    return getFolderAtLisa().getLocalBase().listFiles().length == 1; // The
+                    // .PowerFolder
+                    // dir
                 }
             });
             System.out.println("Protection: " + protection);
-            System.out.println("Lisa's sync profile: " + getFolderAtLisa().getSyncProfile().getName());
-            System.out.println("Required sync profile: " + SyncProfile.AUTOMATIC_SYNCHRONIZATION.getName());
-            assertEquals(getFolderAtLisa().getSyncProfile(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            System.out.println("Lisa's sync profile: "
+                + getFolderAtLisa().getSyncProfile().getName());
+            System.out.println("Required sync profile: "
+                + SyncProfile.AUTOMATIC_SYNCHRONIZATION.getName());
+            TestHelper.waitForCondition(20, new ConditionWithMessage() {
+                public boolean reached() {
+                    return getFolderAtLisa().getSyncProfile().equals(
+                        SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                }
+
+                public String message() {
+                    return "Sync profile was auto-switched from auto sync";
+                }
+            });
+            assertEquals(getFolderAtLisa().getSyncProfile(),
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
 
     }
