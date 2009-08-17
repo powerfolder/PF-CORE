@@ -224,7 +224,6 @@ public class NodeManagerModel extends PFUIComponent {
             changed = true;
         }
         if (changed) {
-            logWarning("Rebuild");
             for (NodeManagerModelListener listener : listeners) {
                 listener.changed();
             }
