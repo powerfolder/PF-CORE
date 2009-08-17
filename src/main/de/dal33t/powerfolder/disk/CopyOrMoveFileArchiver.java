@@ -168,6 +168,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                         files = new LinkedList<File>();
                         fileMap.put(baseName, files);
                     }
+                    files.add(f);
                 }
             }
         }
@@ -233,7 +234,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return Integer.parseInt(tmp);
     }
 
-    private static File[] getArchivedFiles(File directory, final String baseName) {
+    private static File[] getArchivedFiles(File directory, final String baseName)
+    {
         return directory.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return belongsTo(name, baseName);
@@ -315,7 +317,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     /**
      * versionsPerFile is configurable
-     *
+     * 
      * @param config
      */
     public void setConfig(String config) {
