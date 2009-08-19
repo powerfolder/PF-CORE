@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -56,7 +54,6 @@ import de.dal33t.powerfolder.util.Reject;
  */
 public class FileRequestor extends PFComponent {
     private Thread myThread;
-    private ExecutorService conflictChecker;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
@@ -73,7 +70,6 @@ public class FileRequestor extends PFComponent {
         myThread = new Thread(new Worker(), "FileRequestor");
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();
-        conflictChecker = Executors.newSingleThreadExecutor();
 
         logFine("Started");
 
@@ -133,9 +129,6 @@ public class FileRequestor extends PFComponent {
     public void shutdown() {
         if (myThread != null) {
             myThread.interrupt();
-        }
-        if (conflictChecker != null) {
-            conflictChecker.shutdown();
         }
         synchronized (folderQueue) {
             folderQueue.notifyAll();
@@ -351,7 +344,7 @@ public class FileRequestor extends PFComponent {
                 + fhReply.getRequestFileInfo());
             return;
         }
-        conflictChecker.execute(new Runnable() {
+        getController().getIOProvider().startIO(new Runnable() {
             public void run() {
                 checkForConflict(fhReply);
             }
@@ -362,9 +355,9 @@ public class FileRequestor extends PFComponent {
         FileInfo fi = fhRepl.getRequestFileInfo();
         FileHistory fh = fhRepl.getFileHistory();
         if (fh == null) {
-            logWarning("Remote client claims not to have a history for " + fi
+            logFine("Remote client claims not to have a history for " + fi
                 + ", not downloading!");
-            logSevere("That was a lie, since there are no FileHistories I'll download it anyways!");
+            logFine("That was a lie, since there are no FileHistories I'll download it anyways!");
             // FIXME But it should not download the file and
             // abort instead if FileHistories come available!
             getController().getTransferManager()
