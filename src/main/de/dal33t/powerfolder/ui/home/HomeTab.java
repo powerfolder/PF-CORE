@@ -51,7 +51,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -60,7 +59,6 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerModelEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
@@ -68,13 +66,14 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -290,7 +289,7 @@ public class HomeTab extends PFUIComponent {
         }
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
+        builder.setBorder(Borders.createEmptyBorder("0, 0, 2dlu, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
