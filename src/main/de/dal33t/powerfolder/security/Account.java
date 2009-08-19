@@ -292,6 +292,10 @@ public class Account extends Model implements Serializable {
         this.lastLoginFrom = lastLoginFrom;
         firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue,
             this.lastLoginFrom);
+
+        // Set login date
+        touchLogin();
+
         // Ensure initialization
         getComputers();
         if (lastLoginFrom != null && !computers.contains(lastLoginFrom)) {
