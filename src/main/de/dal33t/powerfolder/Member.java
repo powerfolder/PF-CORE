@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -312,13 +311,26 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this client is a pre 4.0 client.
      */
     public boolean isPre4Client() {
-        Identity id = getIdentity();
+        return isPre4Client(peer);
+    }
+
+    /**
+     * TODO Remove after major distribution of 4.0
+     * 
+     * @param conHan
+     * @return true if this client is a pre 4.0 client.
+     */
+    public boolean isPre4Client(ConnectionHandler conHan) {
+        if (conHan == null) {
+            return false;
+        }
+        Identity id = conHan.getIdentity();
         if (id != null) {
             // Not "4.0.0", because version "4.0.0 - 1.0.1" is before "4.0.0"
             return Util.compareVersions("3.9.9", id.getProgramVersion());
         } else {
             logSevere("Unable to determin if client is pre 4.0. Identity: "
-                + id + ". Peer: " + peer);
+                + id + ". Peer: " + conHan, new RuntimeException("here"));
         }
         return false;
     }
@@ -893,6 +905,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + joinedFolders);
         }
 
+        // FIXME: Send NULL filelists for non-joined folders.
+        for (Folder folder : joinedFolders) {
+            // FIX for #924
+            folder.waitForScan();
+            // Send filelist of joined folders
+            sendMessagesAsynchron(FileList.createFileListMessages(folder,
+                !isPre4Client()));
+        }
+
         boolean ok = waitForFileLists(joinedFolders);
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
@@ -1248,26 +1269,19 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        folderJoinLock.lock();
-                        try {
-                            lastFolderList = fList;
-                            // Send filelist only during handshake
-                            joinToLocalFolders(fList, fromPeer);
-                        } finally {
-                            folderJoinLock.unlock();
-                        }
-                        // Notify waiting ppl
-                        synchronized (folderListWaiter) {
-                            folderListWaiter.notifyAll();
-                        }
-                    }
-
-                };
-                getController().getIOProvider().startIO(runner);
+                folderJoinLock.lock();
+                try {
+                    lastFolderList = fList;
+                    // Send filelist only during handshake
+                    joinToLocalFolders(fList, fromPeer);
+                } finally {
+                    folderJoinLock.unlock();
+                }
+                // Notify waiting ppl
+                synchronized (folderListWaiter) {
+                    folderListWaiter.notifyAll();
+                }
                 expectedTime = 300;
-
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
                     && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
@@ -1781,7 +1795,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logSevere("Unable to synchronize memberships, "
                     + "did not received folderlist from remote");
             }
-
             FolderList myFolderList = new FolderList(joinedFolders,
                 remoteMagicId);
             sendMessageAsynchron(myFolderList, null);

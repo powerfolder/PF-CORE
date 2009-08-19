@@ -2058,19 +2058,9 @@ public class Folder extends PFComponent {
      * @return true if actually joined the folder.
      */
     public boolean join(Member member) {
-        if (!hasReadPermission(getController().getMySelf())) {
-            logWarning("Not joining " + member
-                + ". We don't have read permission");
-            if (member.isPre4Client()) {
-                member.sendMessagesAsynchron(FileList
-                    .createNullListForPre4Client(currentInfo));
-            } else {
-                member.sendMessagesAsynchron(FileList
-                    .createNullList(currentInfo));
-            }
-            return false;
-        }
-        if (!hasReadPermission(member)) {
+        if (!hasReadPermission(member)
+            || !hasReadPermission(getController().getMySelf()))
+        {
             logWarning("Not joining " + member + ". No read permisson");
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
@@ -2086,7 +2076,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Joins a member to the folder. Does not fire the event
+     * Joins a member to the folder. Does fire the event
      * 
      * @param member
      */
@@ -2097,11 +2087,7 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Member joined " + member);
         }
-        // send him our list of files if physically connected (so during
-        // handshake) or if he freshly joined the folder.
-        if ((!wasMember || !member.isCompletelyConnected())
-            && member.isConnected())
-        {
+        if (!wasMember && member.isCompletelyConnected()) {
             // FIX for #924
             waitForScan();
             member.sendMessagesAsynchron(FileList.createFileListMessages(this,
@@ -2113,13 +2099,13 @@ public class Folder extends PFComponent {
         }
     }
 
-    private boolean waitForScan() {
-        ScanResult.ResultState lastScanResultState = getLastScanResultState();
+    public boolean waitForScan() {
         if (!isScanning()) {
             // folder OK!
             return true;
         }
         logFine("Waiting to complete scan");
+        ScanResult.ResultState lastScanResultState = getLastScanResultState();
         while (isScanning() && lastScanResultState == getLastScanResultState())
         {
             try {
