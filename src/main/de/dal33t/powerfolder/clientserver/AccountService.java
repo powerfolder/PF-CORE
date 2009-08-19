@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 
 /**
- * Contins all methods to modify/alter, create or notify Accounts.
+ * Contains all methods to modify/alter, create or notify Accounts.
  * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
