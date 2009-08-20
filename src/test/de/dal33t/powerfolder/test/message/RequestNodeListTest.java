@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.message;
 
 import java.net.InetSocketAddress;
@@ -106,7 +106,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
         // +1 = lisa and Online Storage
         for (Member member : getContollerBart().getNodeManager()
-                .getNodesAsCollection()) {
+            .getNodesAsCollection())
+        {
         }
         assertEquals(N_TOTAL_NODES + 2, getContollerBart().getNodeManager()
             .getNodesAsCollection().size());
@@ -151,9 +152,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
             .countSupernodes());
 
         // And all other online nodes (with bart and online storage)
-        assertEquals(
-            N_CON_SUPERNODES + 2, getContollerLisa().getNodeManager()
-                .getNodesAsCollection().size());
+        assertEquals(N_CON_SUPERNODES + 2, getContollerLisa().getNodeManager()
+            .getNodesAsCollection().size());
     }
 
     /**
@@ -175,7 +175,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
                 break;
             }
         }
-        
+
         getContollerLisa().getNodeManager().addNodeFilter(new NodeFilter() {
             public boolean shouldAddNode(MemberInfo nodeInfo) {
                 return Convert.asMemberInfos(testNodes).contains(nodeInfo);
@@ -185,7 +185,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         bartAtLisa.sendMessage(RequestNodeList.createRequest(testNodes,
             RequestNodeList.NodesCriteria.NONE,
             RequestNodeList.NodesCriteria.NONE));
-      
+
         // Wait for answer
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
@@ -212,7 +212,8 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         {
             if (!testNodes.contains(nodeAtLisa)
                 && !nodeAtLisa.getNick().equals("Bart")
-                && !nodeAtLisa.getNick().equals("Online Storage"))
+                && !nodeAtLisa.getNick().equals(
+                    getContollerBart().getOSClient().getServer().getNick()))
             {
                 fail("Not requested: " + nodeAtLisa);
             }
