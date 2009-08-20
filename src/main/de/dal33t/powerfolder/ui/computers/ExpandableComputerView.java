@@ -351,7 +351,10 @@ public class ExpandableComputerView extends PFUIComponent implements
                     .getTranslation("exp_computer_view.node_non_friend_connected_text");
             }
 
-            if (peer != null) {
+            if (node.isOnLAN()) {
+                iconName = Icons.NODE_FRIEND_LAN;
+                text = Translation.getTranslation("connection_lan.text");
+            } else if (peer != null) {
                 ConnectionQuality quality = peer.getConnectionQuality();
                 if (quality != null) {
                     switch (quality) {
