@@ -39,7 +39,7 @@ public class NoRecycleTest extends ControllerTestCase {
 
         super.setUp();
 
-        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP, "");
+        setupTestFolder(SyncProfile.HOST_FILES, ArchiveMode.NO_BACKUP);
         getFolder().setArchiveMode(ArchiveMode.NO_BACKUP);
         File localbase = getFolder().getLocalBase();
         File testFile = new File(localbase, "test.txt");

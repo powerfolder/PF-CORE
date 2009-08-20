@@ -78,18 +78,7 @@ public interface FileArchiver {
      */
     void restore(FileInfo versionInfo, File target) throws IOException;
 
-    /**
-     * Implements any specialized config for the FileArchiver instance.
-     * If the config is null or "", defaults should be assumed.
-     *
-     * @param config
-     */
-    void setConfig(String config);
+    void setVersionsPerFile(int versionsPerFile);
 
-    /**
-     * Get any specialized config for the FileArchiver instance.
-     *
-     * @return
-     */
-    String getConfig();
+    int getVersionsPerFile();
 }

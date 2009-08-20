@@ -424,7 +424,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
                 createInvitationFile, ArchiveMode.NO_BACKUP, false,
-                false, dlScript, "");
+                false, dlScript);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {

@@ -115,8 +115,7 @@ public class PreviewToJoinPanel extends BaseDialog {
                     syncProfileSelectorPanel.getSyncProfile(), false,
                     existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.isWhitelist(),
-                    existingFoldersSettings.getDownloadScript(),
-                        existingFoldersSettings.getArchiveConfig());
+                    existingFoldersSettings.getDownloadScript());
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                     folder, newFolderSettings, false);

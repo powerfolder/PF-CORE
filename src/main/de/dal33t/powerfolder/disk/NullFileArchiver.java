@@ -53,11 +53,10 @@ public class NullFileArchiver implements FileArchiver {
             + versionInfo.toDetailString());
     }
 
-    public void setConfig(String config) {
-        // Nothing special here :-)
+    public void setVersionsPerFile(int versionsPerFile) {
     }
 
-    public String getConfig() {
-        return "";
+    public int getVersionsPerFile() {
+        return 0;
     }
 }

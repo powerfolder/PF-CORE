@@ -388,7 +388,6 @@ public class Folder extends PFComponent {
         problemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
         setArchiveMode(folderSettings.getArchiveMode());
-        setArchiveConfig(folderSettings.getArchiveConfig());
 
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
@@ -468,12 +467,6 @@ public class Folder extends PFComponent {
      */
     public void setArchiveMode(ArchiveMode mode) {
         archiver = mode.getInstance(this);
-    }
-
-    public void setArchiveConfig(String config) {
-        if (archiver != null) {
-            archiver.setConfig(config);
-        }
     }
 
     /**

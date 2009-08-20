@@ -53,7 +53,7 @@ public class FolderPreviewHelper {
     {
         File localBase = makePreviewBaseDir(folderName);
         return new FolderSettings(localBase, SyncProfile.NO_SYNC, false,
-            ArchiveMode.NO_BACKUP, true, false, null, "");
+            ArchiveMode.NO_BACKUP, true, false, null);
     }
 
     // Creates a preview folder directory for a folderName.
@@ -97,8 +97,7 @@ public class FolderPreviewHelper {
                 .getSyncProfile(), initialFolderSettings
                 .isCreateInvitationFile(), initialFolderSettings
                 .getArchiveMode(), true, initialFolderSettings.isWhitelist(),
-            initialFolderSettings.getDownloadScript(),
-                initialFolderSettings.getArchiveConfig());
+            initialFolderSettings.getDownloadScript());
 
         folderRepository.removeFolder(folder, false);
         folderRepository.createPreviewFolder(folderInfo, previewFolderSettings);

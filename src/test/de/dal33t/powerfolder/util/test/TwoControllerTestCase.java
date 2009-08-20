@@ -443,12 +443,12 @@ public abstract class TwoControllerTestCase extends TestCase {
         final Folder folder1;
         final Folder folder2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
-            false, ArchiveMode.FULL_BACKUP, "");
+            false, ArchiveMode.FULL_BACKUP);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
-            false, ArchiveMode.FULL_BACKUP, null);
+            false, ArchiveMode.FULL_BACKUP);
         folder2 = getContollerLisa().getFolderRepository().createFolder(foInfo,
             folderSettings2);
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {

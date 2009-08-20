@@ -41,7 +41,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
-    public static final String FOLDER_SETTINGS_ARCHIVE_CONFIG = ".archconf"; // V4 only
 
     /**
      * Base location of files in the folder.
@@ -81,11 +80,6 @@ public class FolderSettings {
     private final String downloadScript;
 
     /**
-     * Config for the archive mode
-     */
-    private String archiveConfig;
-
-    /**
      * Constructor. Creates a new FolderSettings object.
      * 
      * @param localBaseDir
@@ -94,12 +88,11 @@ public class FolderSettings {
      * @param previewOnly
      * @param whitelist
      * @param downloadScript
-     * @param archiveConfig
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
         ArchiveMode archiveMode, boolean previewOnly, boolean whitelist,
-        String downloadScript, String archiveConfig)
+        String downloadScript)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
@@ -111,7 +104,6 @@ public class FolderSettings {
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
         this.downloadScript = downloadScript;
-        this.archiveConfig = archiveConfig == null ? "" : archiveConfig;
     }
 
     /**
@@ -121,14 +113,13 @@ public class FolderSettings {
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
-     * @param archiveConfig
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
-        ArchiveMode archiveMode, String archiveConfig)
+        ArchiveMode archiveMode)
     {
         this(localBaseDir, syncProfile, createInvitationFile,
-            archiveMode, false, false, null, archiveConfig);
+            archiveMode, false, false, null);
     }
 
     // /////////////
@@ -161,9 +152,5 @@ public class FolderSettings {
 
     public String getDownloadScript() {
         return downloadScript;
-    }
-
-    public String getArchiveConfig() {
-        return archiveConfig;
     }
 }

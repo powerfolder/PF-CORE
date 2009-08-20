@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE_CONFIG;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.awt.Dimension;
@@ -672,7 +671,7 @@ public class SettingsTab extends PFUIComponent {
             FolderSettings fs = new FolderSettings(newDirectory, folder
                 .getSyncProfile(), false, folder.getArchiveMode(),
                 folder.isPreviewOnly(), folder.isWhitelist(), folder
-                    .getDownloadScript(), folder.getFileArchiver().getConfig());
+                    .getDownloadScript());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -763,9 +762,7 @@ public class SettingsTab extends PFUIComponent {
             Properties config = getController().getConfig();
             String md5 = new String(Util.encodeHex(Util.md5(folder
                 .getInfo().id.getBytes())));
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                + FOLDER_SETTINGS_ARCHIVE_CONFIG, String.valueOf(
-                    comfa.getVersionsPerFile()));
+            // @todo harry real implementation
             getController().saveConfig();
 
         }
@@ -792,9 +789,6 @@ public class SettingsTab extends PFUIComponent {
                         .getInfo().id.getBytes())));
                     config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
                         + FOLDER_SETTINGS_ARCHIVE, mode.name());
-                    config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                        + FOLDER_SETTINGS_ARCHIVE_CONFIG,
-                            folder.getFileArchiver().getConfig());
                     getController().saveConfig();
                     enableEditArchiveButton();
                 }

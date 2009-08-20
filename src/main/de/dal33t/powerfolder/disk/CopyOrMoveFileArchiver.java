@@ -315,21 +315,5 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         this.versionsPerFile = versionsPerFile;
     }
 
-    /**
-     * versionsPerFile is configurable
-     * 
-     * @param config
-     */
-    public void setConfig(String config) {
-        if (config == null || config.length() == 0) {
-            // Unlimited
-            versionsPerFile = Integer.MAX_VALUE;
-        } else {
-            versionsPerFile = Integer.parseInt(config);
-        }
-    }
 
-    public String getConfig() {
-        return String.valueOf(versionsPerFile);
-    }
 }
