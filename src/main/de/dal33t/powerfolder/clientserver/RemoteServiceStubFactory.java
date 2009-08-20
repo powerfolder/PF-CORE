@@ -92,10 +92,10 @@ public class RemoteServiceStubFactory {
             for (StackTraceElement stackTraceElement : te) {
                 if (stackTraceElement.getMethodName().contains("handleMessage"))
                 {
-                    // throw new RemoteCallException(
-                    // "Illegal to call remote service method (" + serviceId
-                    // + " " + method + ") in message handling code ("
-                    // + stackTraceElement + ").", rte);
+                    throw new RemoteCallException(
+                        "Illegal to call remote service method (" + serviceId
+                            + " " + method + ") in message handling code ("
+                            + stackTraceElement + ").", rte);
                 }
             }
             if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
