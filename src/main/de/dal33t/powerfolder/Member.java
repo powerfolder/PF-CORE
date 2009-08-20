@@ -1269,6 +1269,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
+                // Runnable runner = new Runnable() {
+                // public void run() {
                 folderJoinLock.lock();
                 try {
                     lastFolderList = fList;
@@ -1281,6 +1283,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 synchronized (folderListWaiter) {
                     folderListWaiter.notifyAll();
                 }
+                // }
+                // };
+                // getController().getIOProvider().startIO(runner);
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
@@ -1430,12 +1435,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // file list?.
                 if (targetFolder != null) {
                     // Inform folder
-                    getController().getIOProvider().startIO(new Runnable() {
-                        public void run() {
-                            targetFolder.fileListChanged(Member.this,
-                                remoteFileList);
-                        }
-                    });
+                    // getController().getIOProvider().startIO(new Runnable() {
+                    // public void run() {
+                    targetFolder.fileListChanged(Member.this, remoteFileList);
+                    // }
+                    // });
                 }
                 expectedTime = 250;
 
@@ -1494,11 +1498,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 if (targetFolder != null) {
                     // Inform folder
-                    getController().getIOProvider().startIO(new Runnable() {
-                        public void run() {
-                            targetFolder.fileListChanged(Member.this, changes);
-                        }
-                    });
+                    // getController().getIOProvider().startIO(new Runnable() {
+                    // public void run() {
+                    targetFolder.fileListChanged(Member.this, changes);
+                    // }
+                    // });
                 }
                 expectedTime = 250;
 
