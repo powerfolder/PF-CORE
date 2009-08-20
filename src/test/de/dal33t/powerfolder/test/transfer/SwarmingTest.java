@@ -49,6 +49,10 @@ public class SwarmingTest extends MultipleControllerTestCase {
             setUp();
         }
     }
+    
+    public void testNothing() {
+        
+    }
 
     public void xtestKillerSwarm() throws IOException {
         nSetupControllers(20);
