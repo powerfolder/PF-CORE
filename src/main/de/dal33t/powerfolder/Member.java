@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -896,31 +897,36 @@ public class Member extends PFComponent implements Comparable<Member> {
             return ConnectResult.failure(message);
         }
 
-        List<Folder> joinedFolders = getJoinedFolders();
-        if (isFine() && !joinedFolders.isEmpty()) {
-            logFine("Joined " + joinedFolders.size() + " folders: "
-                + joinedFolders);
+        List<Folder> foldersJoined = getJoinedFolders();
+        List<Folder> foldersCommon = getFoldersInCommon();
+        if (isFine() && !foldersJoined.isEmpty()) {
+            logFine("Joined " + foldersJoined.size() + " folders: "
+                + foldersJoined);
         } else if (isFiner()) {
-            logFiner("Joined " + joinedFolders.size() + " folders: "
-                + joinedFolders);
+            logFiner("Joined " + foldersJoined.size() + " folders: "
+                + foldersJoined);
         }
 
         // FIXME: Send NULL filelists for non-joined folders.
-        for (Folder folder : joinedFolders) {
+        for (Folder folder : foldersJoined) {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
             sendMessagesAsynchron(FileList.createFileListMessages(folder,
                 !isPre4Client()));
+            foldersCommon.remove(folder);
+        }
+        if (!foldersCommon.isEmpty()) {
+            logSevere("NOT JOINED: " + foldersCommon);
         }
 
-        boolean ok = waitForFileLists(joinedFolders);
+        boolean ok = waitForFileLists(foldersJoined);
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
-                + joinedFolders.size() + " folders";
+                + foldersJoined.size() + " folders";
             logWarning(reason);
             if (isFine()) {
-                for (Folder folder : joinedFolders) {
+                for (Folder folder : foldersJoined) {
                     logFine("Got filelist for " + folder.getName() + " ? "
                         + hasCompleteFileListFor(folder.getInfo()));
                 }
@@ -983,7 +989,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // Request files
-        for (Folder folder : joinedFolders) {
+        for (Folder folder : foldersJoined) {
             // Trigger filerequesting. we may want re-request files on a
             // folder he joined.
             getController().getFolderRepository().getFileRequestor()
@@ -1269,23 +1275,23 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
-                // Runnable runner = new Runnable() {
-                // public void run() {
-                folderJoinLock.lock();
-                try {
-                    lastFolderList = fList;
-                    // Send filelist only during handshake
-                    joinToLocalFolders(fList, fromPeer);
-                } finally {
-                    folderJoinLock.unlock();
-                }
-                // Notify waiting ppl
-                synchronized (folderListWaiter) {
-                    folderListWaiter.notifyAll();
-                }
-                // }
-                // };
-                // getController().getIOProvider().startIO(runner);
+                Runnable runner = new Runnable() {
+                    public void run() {
+                        folderJoinLock.lock();
+                        try {
+                            lastFolderList = fList;
+                            // Send filelist only during handshake
+                            joinToLocalFolders(fList, fromPeer);
+                        } finally {
+                            folderJoinLock.unlock();
+                        }
+                        // Notify waiting ppl
+                        synchronized (folderListWaiter) {
+                            folderListWaiter.notifyAll();
+                        }
+                    }
+                };
+                getController().getIOProvider().startIO(runner);
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
@@ -1435,11 +1441,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // file list?.
                 if (targetFolder != null) {
                     // Inform folder
-                    // getController().getIOProvider().startIO(new Runnable() {
-                    // public void run() {
-                    targetFolder.fileListChanged(Member.this, remoteFileList);
-                    // }
-                    // });
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            targetFolder.fileListChanged(Member.this,
+                                remoteFileList);
+                        }
+                    });
                 }
                 expectedTime = 250;
 
@@ -1498,11 +1505,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 if (targetFolder != null) {
                     // Inform folder
-                    // getController().getIOProvider().startIO(new Runnable() {
-                    // public void run() {
-                    targetFolder.fileListChanged(Member.this, changes);
-                    // }
-                    // });
+                    getController().getIOProvider().startIO(new Runnable() {
+                        public void run() {
+                            targetFolder.fileListChanged(Member.this, changes);
+                        }
+                    });
                 }
                 expectedTime = 250;
 
@@ -1953,6 +1960,25 @@ public class Member extends PFComponent implements Comparable<Member> {
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (folder.hasMember(this)) {
+                joinedFolders.add(folder);
+            }
+        }
+        return joinedFolders;
+    }
+
+    /**
+     * @return the list folders in common.
+     */
+    public List<Folder> getFoldersInCommon() {
+        String magicId = getPeer().getMyMagicId();
+        FolderList fList = getLastFolderList();
+        if (fList == null) {
+            return Collections.emptyList();
+        }
+        List<Folder> joinedFolders = new ArrayList<Folder>();
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            if (fList.contains(folder.getInfo(), magicId)) {
                 joinedFolders.add(folder);
             }
         }
