@@ -344,31 +344,31 @@ public class ExpandableComputerView extends PFUIComponent implements
             if (node.isFriend()) {
                 iconName = Icons.NODE_FRIEND_CONNECTED;
                 text = Translation
-                        .getTranslation("exp_computer_view.node_friend_connected_text");
+                    .getTranslation("exp_computer_view.node_friend_connected_text");
             } else {
                 iconName = Icons.NODE_NON_FRIEND_CONNECTED;
                 text = Translation
-                        .getTranslation("exp_computer_view.node_non_friend_connected_text");
+                    .getTranslation("exp_computer_view.node_non_friend_connected_text");
             }
 
             if (peer != null) {
                 ConnectionQuality quality = peer.getConnectionQuality();
                 if (quality != null) {
                     switch (quality) {
-                        case GOOD:
+                        case GOOD :
                             iconName = Icons.NODE_FRIEND_CONNECTED;
                             text = Translation
-                                    .getTranslation("connection_quality_good.text");
+                                .getTranslation("connection_quality_good.text");
                             break;
-                        case MEDIUM:
+                        case MEDIUM :
                             iconName = Icons.NODE_FRIEND_MEDIUM;
                             text = Translation
-                                    .getTranslation("connection_quality_medium.text");
+                                .getTranslation("connection_quality_medium.text");
                             break;
-                        case POOR:
+                        case POOR :
                             iconName = Icons.NODE_FRIEND_POOR;
                             text = Translation
-                                    .getTranslation("connection_quality_poor.text");
+                                .getTranslation("connection_quality_poor.text");
                             break;
                     }
                 }
@@ -377,11 +377,11 @@ public class ExpandableComputerView extends PFUIComponent implements
             if (node.isFriend()) {
                 iconName = Icons.NODE_FRIEND_DISCONNECTED;
                 text = Translation
-                        .getTranslation("exp_computer_view.node_friend_disconnected_text");
+                    .getTranslation("exp_computer_view.node_friend_disconnected_text");
             } else {
                 iconName = Icons.NODE_NON_FRIEND_DISCONNECTED;
                 text = Translation
-                        .getTranslation("exp_computer_view.node_non_friend_disconnected_text");
+                    .getTranslation("exp_computer_view.node_non_friend_disconnected_text");
             }
         }
         pictoLabel.setIcon(Icons.getIconById(iconName));
@@ -493,8 +493,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-            createPopupMenu().show(evt.getComponent(), evt.getX(),
-                evt.getY());
+            createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
         }
 
         public void mouseClicked(MouseEvent e) {
