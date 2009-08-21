@@ -41,6 +41,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
+    public static final String FOLDER_SETTINGS_VERSIONS = ".versions"; // V4 only
 
     /**
      * Base location of files in the folder.
@@ -62,6 +63,11 @@ public class FolderSettings {
      * How to archive local files
      */
     private final ArchiveMode archiveMode;
+
+    /**
+     * The number of archive versions to keep
+     */
+    private final int versions;
 
     /**
      * Whether this sould only be a preview of the folder.
@@ -88,11 +94,12 @@ public class FolderSettings {
      * @param previewOnly
      * @param whitelist
      * @param downloadScript
+     * @param versions
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
         ArchiveMode archiveMode, boolean previewOnly, boolean whitelist,
-        String downloadScript)
+        String downloadScript, int versions)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
@@ -104,6 +111,7 @@ public class FolderSettings {
         this.previewOnly = previewOnly;
         this.whitelist = whitelist;
         this.downloadScript = downloadScript;
+        this.versions = versions;
     }
 
     /**
@@ -113,13 +121,13 @@ public class FolderSettings {
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
+     * @param versions
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile,
-        ArchiveMode archiveMode)
+        boolean createInvitationFile, ArchiveMode archiveMode, int versions)
     {
         this(localBaseDir, syncProfile, createInvitationFile,
-            archiveMode, false, false, null);
+            archiveMode, false, false, null, versions);
     }
 
     // /////////////
@@ -140,6 +148,10 @@ public class FolderSettings {
 
     public ArchiveMode getArchiveMode() {
         return archiveMode;
+    }
+
+    public int getVersions() {
+        return versions;
     }
 
     public boolean isPreviewOnly() {

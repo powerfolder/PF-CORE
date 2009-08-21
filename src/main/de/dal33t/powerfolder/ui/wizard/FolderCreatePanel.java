@@ -191,7 +191,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                    false, null);
+                    false, null, 0);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -214,7 +214,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
             FolderSettings folderSettings = new FolderSettings(localBase,
                 syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                false, null);
+                false, null, 0);
             configurations.put(folderInfo, folderSettings);
         }
 

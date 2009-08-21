@@ -173,7 +173,7 @@ public abstract class ControllerTestCase extends TestCase {
         SyncProfile profile, ArchiveMode archiveMode)
     {
         FolderSettings folderSettings = new FolderSettings(baseDir, profile,
-            false, archiveMode);
+            false, archiveMode, 0);
         return getController().getFolderRepository().createFolder(foInfo,
             folderSettings);
     }

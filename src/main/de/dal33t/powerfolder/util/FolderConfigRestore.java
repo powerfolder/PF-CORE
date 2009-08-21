@@ -60,7 +60,7 @@ public class FolderConfigRestore {
         }
         FolderSettings foSettings = new FolderSettings(baseDir,
             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT, false,
-            ArchiveMode.FULL_BACKUP);
+            ArchiveMode.FULL_BACKUP, 0);
         saveFolderConfig(foInfo, foSettings, config);
     }
 

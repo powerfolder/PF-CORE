@@ -29,6 +29,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
 
 import java.io.File;
 import java.io.IOException;
@@ -432,7 +433,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile,
-            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript);
+            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript, 0);
     }
 
     /**
@@ -568,6 +569,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             log.log(Level.FINE, e.toString(), e);
             archiveMode = ArchiveMode.NO_BACKUP;
         }
+        
+        String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_VERSIONS);
+        int versions = 0;
+        if (ver != null && ver.length() > 0) {
+            versions = Integer.valueOf(ver);
+        }
+
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
@@ -582,7 +591,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile,
-            false, archiveMode, preview, whitelist, dlScript);
+            false, archiveMode, preview, whitelist, dlScript, versions);
     }
 
     /**

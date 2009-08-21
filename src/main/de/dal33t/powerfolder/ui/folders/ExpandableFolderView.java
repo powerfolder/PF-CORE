@@ -302,8 +302,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         lowerBuilder
             .add(osComponent.getUIComponent(), cc.xywh(2, row, 4, 1));
 
-        System.out.println("hghg " + row);
-
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
 

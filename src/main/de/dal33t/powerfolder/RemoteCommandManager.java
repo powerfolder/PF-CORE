@@ -424,7 +424,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
                 createInvitationFile, ArchiveMode.NO_BACKUP, false,
-                false, dlScript);
+                false, dlScript, 0);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {
@@ -449,7 +449,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      *            The file to load from
      * @return array of MemberInfo, null if failed
      */
-    private MemberInfo[] loadNodesFile(File file) {
+    private static MemberInfo[] loadNodesFile(File file) {
         try {
             InputStream fIn = new BufferedInputStream(new FileInputStream(file));
             ObjectInputStream oIn = new ObjectInputStream(fIn);

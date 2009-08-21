@@ -388,6 +388,7 @@ public class Folder extends PFComponent {
         problemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
         setArchiveMode(folderSettings.getArchiveMode());
+        archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
@@ -614,8 +615,6 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("commitScanResult DONE");
         }
-
-        return;
     }
 
     // Disabled, causing bug #293
@@ -2392,7 +2391,7 @@ public class Folder extends PFComponent {
         }
     }
 
-    private static interface MessageProvider {
+    private interface MessageProvider {
         Message[] getMessages(boolean pre4Client);
     }
 

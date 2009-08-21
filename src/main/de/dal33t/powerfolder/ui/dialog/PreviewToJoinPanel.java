@@ -115,7 +115,8 @@ public class PreviewToJoinPanel extends BaseDialog {
                     syncProfileSelectorPanel.getSyncProfile(), false,
                     existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.isWhitelist(),
-                    existingFoldersSettings.getDownloadScript());
+                    existingFoldersSettings.getDownloadScript(),
+                    existingFoldersSettings.getVersions());
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                     folder, newFolderSettings, false);
@@ -180,7 +181,6 @@ public class PreviewToJoinPanel extends BaseDialog {
     /**
      * Creates a pair of location text field and button.
      * 
-     * @param folderInfo
      * @return
      */
     private JComponent createLocationField() {
