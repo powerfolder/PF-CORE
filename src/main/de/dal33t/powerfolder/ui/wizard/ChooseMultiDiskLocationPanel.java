@@ -29,13 +29,11 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -50,6 +48,7 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -106,6 +105,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private WizardPanel next;
     private Map<String, File> userDirectories;
+    private JLabel folderSizeLabel;
 
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
@@ -123,7 +123,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      * automatically generated, folder will be secret
      *
      * @param controller
-     * @param initialLocation
      * @param next
      *            the next panel after selecting the directory.
      */
@@ -210,8 +209,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "pref, 3dlu, 40dlu, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
-
+            + "pref, 3dlu, 40dlu, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+            // info        custom       add         size
         // Fixed (60dlu) sizing used so that other components display okay if
         // there is only 1 or two (or even zero) check boxes displayed.
         FormLayout layout = new FormLayout(
@@ -252,6 +251,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         row +=2;
 
         builder.add(createAddRemoveLine(), cc.xyw(1, row, 6));
+
+        row += 2;
+        builder.add(folderSizeLabel, cc.xyw(1, row, 6));
 
         if (!getController().isLanOnly()
                 && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
@@ -301,6 +303,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         initialDirectory = System.getProperty("user.home");
 
         findUserDirectories();
+
+        folderSizeLabel = new JLabel();
+        startFolderSizeCalculator();
 
         boxes = new ArrayList<JCheckBox>();
 
@@ -454,6 +459,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
+    private void startFolderSizeCalculator() {
+        SwingWorker worker = new MySwingWorker();
+        worker.start();
+    }
+
     /**
      * Adds a generic user directory if if exists for this os.
      *
@@ -542,6 +552,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 if (!customDirectoryListModel.contains(dir)) {
                     customDirectoryListModel.addElement(dir);
                     updateButtons();
+                    startFolderSizeCalculator();
                 }
             }
         }
@@ -558,6 +569,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 customDirectoryList.getSelectionModel().getMinSelectionIndex(),
                 customDirectoryList.getSelectionModel().getMaxSelectionIndex());
             updateButtons();
+            startFolderSizeCalculator();
         }
     }
 
@@ -570,6 +582,55 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             updateButtons();
+            startFolderSizeCalculator();
         }
     }
+
+    private class MySwingWorker extends SwingWorker {
+
+        private long totalDirectorySize = 0;
+
+        protected void beforeConstruct() {
+            folderSizeLabel
+                .setText(Translation
+                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
+            folderSizeLabel.setForeground(SystemColor.textText);
+        }
+
+        public Object construct() {
+            try {
+                totalDirectorySize = 0;
+                for (String boxName : userDirectories.keySet()) {
+                    for (JCheckBox box : boxes) {
+                        if (box.getText().equals(boxName)) {
+                            if (box.isSelected()) {
+                                File file = userDirectories.get(boxName);
+                                totalDirectorySize += FileUtils.calculateDirectorySize(file, 0);
+                            }
+                        }
+                    }
+                }
+                for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
+                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    File file = new File(dir);
+                    totalDirectorySize += FileUtils.calculateDirectorySize(file, 0);
+                }
+            } catch (Exception e) {
+                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+            }
+            return null;
+        }
+
+        public void finished() {
+            try {
+                folderSizeLabel.setText(Translation.getTranslation(
+                        "wizard.choose_disk_location.total_directory_size", Format
+                        .formatBytes(totalDirectorySize)));
+            } catch (Exception e) {
+                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+            }
+        }
+    }
+
+
 }
