@@ -98,7 +98,12 @@ public enum Feature {
     /**
      * #1046: If the new security checks should be enabled.
      */
-    SECURITY_CHECKS(true);
+    SECURITY_CHECKS(true),
+    
+    /**
+     * True if running in beta mode. Basically to identify differences.
+     */
+    BETA(true);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
