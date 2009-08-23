@@ -293,9 +293,9 @@ public class UIController extends PFComponent {
         }
 
         // Open wizard on first start. PRO version has activation wizard first
-        if (!Util.isRunningProVersion()
-            && getController().getPreferences().getBoolean("openwizard2", true))
-        {
+        // !Util.isRunningProVersion() &&
+        // DURING BETA
+        if (getController().getPreferences().getBoolean("openwizard2", true)) {
             UIUtil.invokeLaterInEDT(new Runnable() {
 
                 // Don't block start!
@@ -1163,7 +1163,8 @@ public class UIController extends PFComponent {
             {
                 String text2 = Translation.getTranslation(
                     "check_status.powerfolders", Format
-                        .formatBytes(nTotalBytes), String.valueOf(folders.size()));
+                        .formatBytes(nTotalBytes), String.valueOf(folders
+                        .size()));
 
                 notifyMessage(Translation.getTranslation("check_status.title"),
                     text1 + "\n\n" + text2, false);
@@ -1297,8 +1298,8 @@ public class UIController extends PFComponent {
                     .getTranslation("uicontroller.remote_mass_delete.warning_title"),
                 Translation.getTranslation(
                     "uicontroller.remote_mass_delete.warning_message", event
-                        .getMemberInfo().nick, String.valueOf(event.getDeletePercentage()),
-                    event.getFolderInfo().name,
+                        .getMemberInfo().nick, String.valueOf(event
+                        .getDeletePercentage()), event.getFolderInfo().name,
                     event.getOldProfile().getName(), event.getNewProfile()
                         .getName()));
             applicationModel.getWarningsModel().pushWarning(warningEvent);
