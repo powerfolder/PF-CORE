@@ -906,9 +906,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             logFiner("Joined " + foldersJoined.size() + " folders: "
                 + foldersJoined);
         }
-
-        // FIXME: Send NULL filelists for non-joined folders.
-        for (Folder folder : foldersJoined) {
+        
+	    for (Folder folder : foldersJoined) {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
@@ -918,6 +917,16 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         if (!foldersCommon.isEmpty()) {
             logSevere("NOT JOINED: " + foldersCommon);
+            logSevere("JOINED: " + foldersJoined);
+            for (Folder folder : foldersCommon) {
+                if (isPre4Client()) {
+                    sendMessagesAsynchron(FileList
+                        .createNullListForPre4Client(folder.getInfo()));
+                } else {
+                    sendMessagesAsynchron(FileList.createNullList(folder
+                        .getInfo()));
+                }
+            }
         }
 
         boolean ok = waitForFileLists(foldersJoined);
