@@ -18,6 +18,8 @@
  * $Id$
  */
 package de.dal33t.powerfolder.task;
+
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -47,7 +49,8 @@ import de.dal33t.powerfolder.PFComponent;
  */
 public class PersistentTaskManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(PersistentTaskManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(PersistentTaskManager.class.getName());
     private List<PersistentTask> tasks;
     /**
      * Pending tasks that await initialization.
@@ -74,7 +77,6 @@ public class PersistentTaskManager extends PFComponent {
     /**
      * Starts this manager.
      */
-    @SuppressWarnings("unchecked")
     public synchronized void start() {
         shuttingDown = false;
         pendingTasks = new Vector<PersistentTask>();
@@ -84,15 +86,31 @@ public class PersistentTaskManager extends PFComponent {
             ObjectInputStream oin = null;
             try {
                 oin = new ObjectInputStream(new FileInputStream(taskfile));
-                tasks = (List<PersistentTask>) oin.readObject();
+                tasks = new LinkedList<PersistentTask>();
+                PersistentTask task = null;
+                while (true) {
+                    try {
+                        task = (PersistentTask) oin.readObject();
+                    } catch (ClassNotFoundException e) {
+                        logSevere("ClassNotFoundException", e);
+                        continue;
+                    } catch (ClassCastException e) {
+                        logSevere("ClassCastException", e);
+                        continue;
+                    }
+                    if (task == null) {
+                        break;
+                    }
+                    tasks.add(task);
+                }
                 oin.close();
                 logInfo("Loaded " + tasks.size() + " tasks.");
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
+            } catch (EOFException e) {
+                // End of File. OK!
             } catch (IOException e) {
                 logSevere("IOException", e);
-            } catch (ClassNotFoundException e) {
-                logSevere("ClassNotFoundException", e);
             } catch (ClassCastException e) {
                 logSevere("ClassCastException", e);
             } finally {
@@ -111,7 +129,8 @@ public class PersistentTaskManager extends PFComponent {
         if (tasks == null) {
             tasks = new LinkedList<PersistentTask>();
         }
-        for (PersistentTask t : tasks.toArray(new PersistentTask[tasks.size()])) {
+        for (PersistentTask t : tasks.toArray(new PersistentTask[tasks.size()]))
+        {
             try {
                 t.init(this);
             } catch (RuntimeException e) {
@@ -145,7 +164,9 @@ public class PersistentTaskManager extends PFComponent {
         try {
             logInfo("There are " + tasks.size() + " tasks not completed yet.");
             oout = new ObjectOutputStream(new FileOutputStream(taskFile));
-            oout.writeUnshared(tasks);
+            for (PersistentTask task : tasks) {
+                oout.writeUnshared(task);
+            }
         } catch (FileNotFoundException e) {
             logSevere("FileNotFoundException", e);
         } catch (IOException e) {
@@ -161,7 +182,7 @@ public class PersistentTaskManager extends PFComponent {
             tasks = null;
         }
     }
-    
+
     public boolean isStarted() {
         return tasks != null;
     }
