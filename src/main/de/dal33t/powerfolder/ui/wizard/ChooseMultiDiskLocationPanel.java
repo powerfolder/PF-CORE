@@ -589,6 +589,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private class MySwingWorker extends SwingWorker {
 
         private long totalDirectorySize = 0;
+        private boolean valid;
 
         protected void beforeConstruct() {
             folderSizeLabel
@@ -600,12 +601,13 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public Object construct() {
             try {
                 totalDirectorySize = 0;
+                List<File> originalList = new ArrayList<File>();
                 for (String boxName : userDirectories.keySet()) {
                     for (JCheckBox box : boxes) {
                         if (box.getText().equals(boxName)) {
                             if (box.isSelected()) {
                                 File file = userDirectories.get(boxName);
-                                totalDirectorySize += FileUtils.calculateDirectorySize(file, 0);
+                                originalList.add(file);
                             }
                         }
                     }
@@ -613,8 +615,37 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
                     String dir = (String) customDirectoryListModel.elementAt(i);
                     File file = new File(dir);
+                    originalList.add(file);
+                }
+
+                for (File file : originalList) {
                     totalDirectorySize += FileUtils.calculateDirectorySize(file, 0);
                 }
+
+                List<File> finalList = new ArrayList<File>();
+                for (String boxName : userDirectories.keySet()) {
+                    for (JCheckBox box : boxes) {
+                        if (box.getText().equals(boxName)) {
+                            if (box.isSelected()) {
+                                File file = userDirectories.get(boxName);
+                                finalList.add(file);
+                            }
+                        }
+                    }
+                }
+                for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
+                    String dir = (String) customDirectoryListModel.elementAt(i);
+                    File file = new File(dir);
+                    finalList.add(file);
+                }
+
+                // Any selection changes during size calculations?
+                if (originalList.size() == finalList.size()) {
+                    if (originalList.containsAll(finalList)) {
+                        valid = true;
+                    }
+                }
+
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
             }
@@ -622,12 +653,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void finished() {
-            try {
-                folderSizeLabel.setText(Translation.getTranslation(
-                        "wizard.choose_disk_location.total_directory_size", Format
-                        .formatBytes(totalDirectorySize)));
-            } catch (Exception e) {
-                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+            if (valid) {
+                try {
+                    folderSizeLabel.setText(Translation.getTranslation(
+                            "wizard.choose_disk_location.total_directory_size", Format
+                            .formatBytes(totalDirectorySize)));
+                } catch (Exception e) {
+                    Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+                }
             }
         }
     }
