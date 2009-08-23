@@ -120,9 +120,9 @@ public class Controller extends PFComponent {
         .getName());
 
     /**
-     * program version. include "dev" if its a development version. 1.0.2.35
+     * program version. include "dev" if its a development version. 1.0.2.49
      */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.2.47";
+    public static final String PROGRAM_VERSION = "4.0.0 - beta 2.0";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -459,7 +459,6 @@ public class Controller extends PFComponent {
             // Disable silent mode
             silentMode = false;
         }
-        taskManager.start();
 
         setLoadingCompletion(30, 35);
 
@@ -500,9 +499,13 @@ public class Controller extends PFComponent {
         // open broadcast listener
         openBroadcastManager();
         setLoadingCompletion(85, 90);
+        
         // Controller now started
         started = true;
         startTime = new Date();
+        
+        // Now taskmanager
+        taskManager.start();
 
         logInfo("Controller started");
 
