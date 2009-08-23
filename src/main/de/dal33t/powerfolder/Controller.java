@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBeta;
+import de.dal33t.powerfolder.distribution.PowerFolderClient;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -499,11 +500,11 @@ public class Controller extends PFComponent {
         // open broadcast listener
         openBroadcastManager();
         setLoadingCompletion(85, 90);
-        
+
         // Controller now started
         started = true;
         startTime = new Date();
-        
+
         // Now taskmanager
         taskManager.start();
 
@@ -2084,8 +2085,11 @@ public class Controller extends PFComponent {
                 distribution = br;
             }
             if (distribution == null) {
-                // distribution = new PowerFolderClient();
-                distribution = new PowerFolderBeta();
+                if (Feature.BETA.isEnabled()) {
+                    distribution = new PowerFolderBeta();
+                } else {
+                    distribution = new PowerFolderClient();
+                }
             }
             logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
