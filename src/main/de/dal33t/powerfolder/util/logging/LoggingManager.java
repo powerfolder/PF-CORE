@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
 public class LoggingManager {
 
     /** Default debug directory */
-    private static final String DEBUG_DIR = "log";
+    private static final String DEBUG_DIR = "logs";
 
     /** File Logging file prefix */
     private static String prefix = "PowerFolder";
