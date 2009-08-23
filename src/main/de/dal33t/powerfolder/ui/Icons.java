@@ -340,10 +340,10 @@ public class Icons {
      * Get the icon id from the properties for an id. So if there is a line
      * 
      * <pre>
-     * stop.icon = icons / Abort.gif
+     * stop.icon = icons / Abort.png
      * </pre>
      * 
-     * then id of 'stop.icon' would return 'icons/Abort.gif'. Tries override
+     * then id of 'stop.icon' would return 'icons/Abort.png'. Tries override
      * properties first, then the normal PowerFolder ones.
      * 
      * @param id
