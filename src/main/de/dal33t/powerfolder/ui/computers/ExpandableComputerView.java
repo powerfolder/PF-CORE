@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
@@ -440,12 +441,19 @@ public class ExpandableComputerView extends PFUIComponent implements
         return contextMenu;
     }
 
-    private static String renderInfo(Member member, AccountInfo aInfo) {
+    private String renderInfo(Member member, AccountInfo aInfo) {
         String text = member.getNick();
         if (aInfo != null) {
             text += " (";
             text += aInfo.getScrabledUsername();
             text += ')';
+        }
+        if (getController().isVerbose()) {
+            Identity id = member.getIdentity();
+            if (id != null) {
+                text += " / ";
+                text += id.getProgramVersion();
+            }
         }
         return text;
     }
