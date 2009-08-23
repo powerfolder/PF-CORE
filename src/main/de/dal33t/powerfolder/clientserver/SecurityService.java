@@ -107,6 +107,16 @@ public interface SecurityService {
     Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);
 
     /**
+     * Tries to obtain a permission on the given folder for the logged in
+     * account.
+     * 
+     * @param foInfo
+     * @return the permission that was granted to the logged in account. null if
+     *         not possible.
+     */
+    FolderPermission obtainFolderPermission(FolderInfo foInfo);
+
+    /**
      * Grants the given user/account the permissions.
      * 
      * @param aInfo
