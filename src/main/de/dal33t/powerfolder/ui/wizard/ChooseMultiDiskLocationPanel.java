@@ -24,6 +24,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
@@ -106,6 +108,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private WizardPanel next;
     private Map<String, File> userDirectories;
     private JLabel folderSizeLabel;
+    private JLabel osWarningLabel;
 
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
@@ -209,8 +212,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "pref, 3dlu, 40dlu, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
-            // info        custom       add         size
+            + "pref, 3dlu, 40dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+            // info        custom       add         size        os w
         // Fixed (60dlu) sizing used so that other components display okay if
         // there is only 1 or two (or even zero) check boxes displayed.
         FormLayout layout = new FormLayout(
@@ -254,6 +257,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         row += 2;
         builder.add(folderSizeLabel, cc.xyw(1, row, 6));
+
+        row += 2;
+        builder.add(osWarningLabel, cc.xyw(1, row, 6));
 
         if (!getController().isLanOnly()
                 && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
@@ -305,6 +311,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         findUserDirectories();
 
         folderSizeLabel = new JLabel();
+        osWarningLabel = new JLabel();
         startFolderSizeCalculator();
 
         boxes = new ArrayList<JCheckBox>();
@@ -589,7 +596,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private class MySwingWorker extends SwingWorker {
 
         private long totalDirectorySize = 0;
-        private boolean valid;
+        private boolean valid = true;
 
         protected void beforeConstruct() {
             folderSizeLabel
@@ -640,10 +647,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 // Any selection changes during size calculations?
-                if (originalList.size() == finalList.size()) {
-                    if (originalList.containsAll(finalList)) {
-                        valid = true;
-                    }
+                if (originalList.size() != finalList.size()
+                        || !originalList.containsAll(finalList)) {
+                    valid = false;
                 }
 
             } catch (Exception e) {
@@ -658,6 +664,21 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     folderSizeLabel.setText(Translation.getTranslation(
                             "wizard.choose_disk_location.total_directory_size", Format
                             .formatBytes(totalDirectorySize)));
+                    osWarningLabel.setText("");
+                    if (backupByOnlineStorageBox.isSelected()) {
+                        ServerClient client = getController().getOSClient();
+                        OnlineStorageSubscription storageSubscription = client
+                                .getAccount().getOSSubscription();
+                        if (client.isConnected()) {
+                            long totalStorage = storageSubscription.getStorageSize();
+                            long spaceUsed = client.getAccountDetails().getSpaceUsed();
+                            if (spaceUsed + totalDirectorySize > totalStorage) {
+                                osWarningLabel.setText(Translation.getTranslation(
+                                        "wizard.choose_disk_location.os_over_size"));
+                            }
+                        }
+                    }
+
                 } catch (Exception e) {
                     Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
                 }
