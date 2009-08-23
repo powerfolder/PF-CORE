@@ -734,7 +734,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
-        return createFolder0(folderInfo, folderSettings, true);
+        Folder folder = createFolder0(folderInfo, folderSettings, true);
+
+        // Obtain permission. Don't do this on startup (createFolder0)
+        getController().getTaskManager().scheduleTask(
+            new FolderObtainPermissionTask(folder.getInfo()));
+
+        return folder;
     }
 
     /**
@@ -823,10 +829,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Trigger server connect
         getController().getOSClient().connectHostingServers();
-
-        // Obtain permission
-        getController().getTaskManager().scheduleTask(
-            new FolderObtainPermissionTask(folder.getInfo()));
 
         // Fire event
         fireFolderCreated(folder);
