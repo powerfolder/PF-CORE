@@ -114,7 +114,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
         int row = 1;
 
         builder.add(new JLabel(Translation
@@ -127,16 +126,13 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         builder.add(scrollPane, cc.xy(1, row, CellConstraints.DEFAULT,
             CellConstraints.TOP));
-
         row += 2;
 
         builder.add(new JLabel(Translation
             .getTranslation("settings_tab.archive_mode")), cc.xyw(1, row, 2));
-
         row += 2;
 
-        builder.add(archiveMode, cc.xyw(2, row, 2));
-
+        builder.add(archiveMode, cc.xy(2, row));
         row += 2;
 
         if (OSUtil.isWindowsSystem()) {
