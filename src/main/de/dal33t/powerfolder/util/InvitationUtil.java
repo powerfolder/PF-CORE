@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
+import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
