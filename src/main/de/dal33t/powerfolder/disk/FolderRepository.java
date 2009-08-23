@@ -28,8 +28,8 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +65,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -432,8 +433,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
-        return new FolderSettings(new File(folderDir), syncProfile,
-            false, ArchiveMode.NO_BACKUP, preview, whitelist, dlScript, 0);
+        return new FolderSettings(new File(folderDir), syncProfile, false,
+            ArchiveMode.NO_BACKUP, preview, whitelist, dlScript, 0);
     }
 
     /**
@@ -569,9 +570,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             log.log(Level.FINE, e.toString(), e);
             archiveMode = ArchiveMode.NO_BACKUP;
         }
-        
-        String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_VERSIONS);
+
+        String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
+            + FOLDER_SETTINGS_VERSIONS);
         int versions = 0;
         if (ver != null && ver.length() > 0) {
             versions = Integer.valueOf(ver);
@@ -590,8 +591,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
-        return new FolderSettings(new File(folderDir), syncProfile,
-            false, archiveMode, preview, whitelist, dlScript, versions);
+        return new FolderSettings(new File(folderDir), syncProfile, false,
+            archiveMode, preview, whitelist, dlScript, versions);
     }
 
     /**
@@ -822,6 +823,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Trigger server connect
         getController().getOSClient().connectHostingServers();
+
+        // Obtain permission
+        getController().getTaskManager().scheduleTask(
+            new FolderObtainPermissionTask(folder.getInfo()));
 
         // Fire event
         fireFolderCreated(folder);
