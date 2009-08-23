@@ -65,6 +65,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -293,9 +294,9 @@ public class UIController extends PFComponent {
         }
 
         // Open wizard on first start. PRO version has activation wizard first
-        // !Util.isRunningProVersion() &&
-        // DURING BETA
-        if (getController().getPreferences().getBoolean("openwizard2", true)) {
+        if (getController().getPreferences().getBoolean("openwizard2", true)
+            && (!Util.isRunningProVersion() || Feature.BETA.isEnabled()))
+        {
             UIUtil.invokeLaterInEDT(new Runnable() {
 
                 // Don't block start!
