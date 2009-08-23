@@ -63,6 +63,8 @@ import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.TransferStatus;
+import de.dal33t.powerfolder.task.RemoveComputerFromAccountTask;
+import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -70,8 +72,6 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-import de.dal33t.powerfolder.util.task.RemoveComputerFromAccountTask;
-import de.dal33t.powerfolder.util.task.SendMessageTask;
 
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
