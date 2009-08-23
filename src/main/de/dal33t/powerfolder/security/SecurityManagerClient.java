@@ -200,8 +200,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
-            if (isWarning()) {
-                logWarning("Retrieved " + res.size() + " AccountInfos for "
+            if (isFine()) {
+                logFine("Retrieved " + res.size() + " AccountInfos for "
                     + reqNodes.size() + " requested of " + nodes.size()
                     + " nodes: " + res);
             }
