@@ -110,35 +110,41 @@ public class HomeTab extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public HomeTab(Controller controller) {
         super(controller);
-        downloadsCountVM = getApplicationModel()
-                .getTransferManagerModel().getCompletedDownloadsCountVM();
-        uploadsCountVM = getApplicationModel()
-                .getTransferManagerModel().getCompletedUploadsCountVM();
+        downloadsCountVM = getApplicationModel().getTransferManagerModel()
+            .getCompletedDownloadsCountVM();
+        uploadsCountVM = getApplicationModel().getTransferManagerModel()
+            .getCompletedUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
         newFriendRequestsCountVM = getUIController().getApplicationModel()
-                .getReceivedAskedForFriendshipModel().getReceivedAskForFriendshipCountVM();
-        newFriendRequestsCountVM.addValueChangeListener(new MyFriendRequestListener());
+            .getReceivedAskedForFriendshipModel()
+            .getReceivedAskForFriendshipCountVM();
+        newFriendRequestsCountVM
+            .addValueChangeListener(new MyFriendRequestListener());
         newInvitationsCountVM = getUIController().getApplicationModel()
-                .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
-        newInvitationsCountVM.addValueChangeListener(new MyInvitationListener());
+            .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
+        newInvitationsCountVM
+            .addValueChangeListener(new MyInvitationListener());
         newSingleFileOffersCountVM = getUIController().getApplicationModel()
-                .getReceivedSingleFileOffersModel().getReceivedSingleFileOfferCountVM();
-        newSingleFileOffersCountVM.addValueChangeListener(new MyOfferPropertyListener());
+            .getReceivedSingleFileOffersModel()
+            .getReceivedSingleFileOfferCountVM();
+        newSingleFileOffersCountVM
+            .addValueChangeListener(new MyOfferPropertyListener());
         newWarningsCountVM = getUIController().getApplicationModel()
-                .getWarningsModel().getWarningsCountVM();
+            .getWarningsModel().getWarningsCountVM();
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
         controller.getFolderRepository().addOverallFolderStatListener(
-                new MyOverallFolderStatListener());
+            new MyOverallFolderStatListener());
     }
 
     /**
      * Returns the UI component after optionally building it.
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -179,60 +185,56 @@ public class HomeTab extends PFUIComponent {
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
-        numberOfFoldersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.folders"),
-                null, false, true);
-        sizeOfFoldersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.total", "KB"),
-                null, true, false);
-        filesAvailableLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.files_available"), null,
-                true, true);
-        newWarningsLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.new_warnings"), null,
-                true, true, getApplicationModel().getActionModel()
-                .getActivateWarningAction());
-        newInvitationsLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.new_invitations"), null,
-                true, true, getApplicationModel().getActionModel()
+        numberOfFoldersLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.folders"), null, false, true);
+        sizeOfFoldersLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.total", "KB"), null, true, false);
+        filesAvailableLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.files_available"), null, true, true);
+        newWarningsLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.new_warnings"), null, true, true,
+            getApplicationModel().getActionModel().getActivateWarningAction());
+        newInvitationsLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.new_invitations"), null, true, true,
+            getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction());
-        newFriendRequestsLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.new_friend_requests"), null,
-                true, true, getApplicationModel().getActionModel()
-                .getAskForFriendshipAction());
-        newSingleFileOffersLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.new_single_file_offers"),
-                null, true, true, getApplicationModel().getActionModel()
+        newFriendRequestsLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.new_friend_requests"), null, true, true,
+            getApplicationModel().getActionModel().getAskForFriendshipAction());
+        newSingleFileOffersLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.new_single_file_offers"), null, true,
+            true, getApplicationModel().getActionModel()
                 .getSingleFileTransferOfferAction());
-        downloadsLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.files_downloaded"), null,
-                false, true, getApplicationModel().getActionModel()
+        downloadsLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.files_downloaded"), null, false, true,
+            getApplicationModel().getActionModel()
                 .getOpenDownloadsInformationAction());
-        uploadsLine = new HomeTabLine(getController(),
-                Translation.getTranslation("home_tab.files_uploaded"), null,
-                false, true, getApplicationModel().getActionModel()
+        uploadsLine = new HomeTabLine(getController(), Translation
+            .getTranslation("home_tab.files_uploaded"), null, false, true,
+            getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction());
         computersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.computers"), Translation
             .getTranslation("home_tab.no_computers"), false, true);
         onlineStorageAccountLabel = new ActionLabel(getController(),
-                new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                PFWizard.openLoginWebServiceWizard(getController(),
-                    getController().getOSClient());
-            }
-        });
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    PFWizard.openLoginWebServiceWizard(getController(),
+                        getController().getOSClient());
+                }
+            });
         onlineStorageSection = new OnlineStorageSection(getController());
-        tellFriendLabel = new ActionLabel(getController(), new AbstractAction() {
+        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
+        {
             public void actionPerformed(ActionEvent e) {
                 PFWizard wizard = new PFWizard(getController());
                 wizard.open(new TellFriendPanel(getController()));
             }
         });
-        tellFriendLabel.setText(Translation.getTranslation(
-                "home_tab.tell_friend.text"));
-        tellFriendLabel.setToolTipText(Translation.getTranslation(
-                "home_tab.tell_friend.tip"));
+        tellFriendLabel.setText(Translation
+            .getTranslation("home_tab.tell_friend.text"));
+        tellFriendLabel.setToolTipText(Translation
+            .getTranslation("home_tab.tell_friend.tip"));
 
         updateTransferText();
         updateFoldersText();
@@ -253,7 +255,8 @@ public class HomeTab extends PFUIComponent {
 
     private void initialSyncStats() {
         boolean synced = getController().getFolderRepository().isSynchronized();
-        Date syncDate = getController().getFolderRepository().getSynchronizationDate();
+        Date syncDate = getController().getFolderRepository()
+            .getSynchronizationDate();
         displaySyncStats(syncDate, synced);
     }
 
@@ -266,25 +269,32 @@ public class HomeTab extends PFUIComponent {
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
         getUIController().getApplicationModel().getNodeManagerModel()
-                .addNodeManagerModelListener(new MyNodeManagerModelListener());
+            .addNodeManagerModelListener(new MyNodeManagerModelListener());
         client.addListener(new MyServerClientListener());
     }
 
     /**
      * Build the main panel with all the detail lines.
+     * 
      * @return
      */
     private JPanel buildMainPanel() {
         FormLayout layout;
-        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
-            layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
+        if (PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()))
+        {
+            layout = new FormLayout(
+                "3dlu, 100dlu, pref:grow, 3dlu",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
-            //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp  sep         os-acc      osSec                  tell friend
+            // sync-stat sync-date sep you-have warn, files invs comps singl
+            // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
         } else {
-            layout = new FormLayout("3dlu, 100dlu, pref:grow, 3dlu",
+            layout = new FormLayout(
+                "3dlu, 100dlu, pref:grow, 3dlu",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, 3dlu, pref:grow, pref");
-            //   sync-stat   sync-date   sep         you-have    warn, files invs  comps singl down  upl   sep         #fol  szfo  comp                   tell friend
+            // sync-stat sync-date sep you-have warn, files invs comps singl
+            // down upl sep #fol szfo comp tell friend
 
         }
         PanelBuilder builder = new PanelBuilder(layout);
@@ -302,7 +312,8 @@ public class HomeTab extends PFUIComponent {
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row += 2;
 
-        JLabel youHaveLabel = new JLabel(Translation.getTranslation("home_tab.you_have"));
+        JLabel youHaveLabel = new JLabel(Translation
+            .getTranslation("home_tab.you_have"));
         Font f = youHaveLabel.getFont();
         youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
         builder.add(youHaveLabel, cc.xywh(2, row, 2, 1));
@@ -317,10 +328,12 @@ public class HomeTab extends PFUIComponent {
         builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.add(newFriendRequestsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newFriendRequestsLine.getUIComponent(), cc.xywh(2, row, 2,
+            1));
         row++;
 
-        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xywh(2, row,
+            2, 1));
         row++;
 
         builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -332,7 +345,8 @@ public class HomeTab extends PFUIComponent {
         builder.addSeparator(null, cc.xywh(2, row, 2, 1));
         row += 2;
 
-        builder.add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder
+            .add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
         builder.add(sizeOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -342,14 +356,18 @@ public class HomeTab extends PFUIComponent {
 
         row++;
 
-        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+        if (PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()))
+        {
             builder.addSeparator(null, cc.xywh(2, row, 2, 1));
             row += 2;
 
-            builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
+            builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2,
+                row, 2, 1));
             row += 2;
 
-            builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row, 2, 1));
+            builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row,
+                2, 1));
             row += 3;
 
         } else {
@@ -373,7 +391,8 @@ public class HomeTab extends PFUIComponent {
      * Updates the text for the number and size of the folders.
      */
     private void updateFoldersText() {
-        Collection<Folder> folders = getController().getFolderRepository().getFolders();
+        Collection<Folder> folders = getController().getFolderRepository()
+            .getFolders();
         int numberOfFolder = folders.size();
         numberOfFoldersLine.setValue(numberOfFolder);
         long totalSize = 0;
@@ -401,7 +420,8 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateTransferText() {
         downloadsLine.setValue((Integer) downloadsCountVM.getValue());
-        TransferCounter transferCounter = getController().getTransferManager().getUploadCounter();
+        TransferCounter transferCounter = getController().getTransferManager()
+            .getUploadCounter();
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
@@ -427,23 +447,23 @@ public class HomeTab extends PFUIComponent {
 
     /**
      * Cretes the toolbar.
-     *
+     * 
      * @return the toolbar
      */
     private JPanel createToolBar() {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
-                .getNewFolderAction());
+        JButton newFolderButton = new JButton(getApplicationModel()
+            .getActionModel().getNewFolderAction());
         bar.addGridded(newFolderButton);
         if (!getController().isBackupOnly()) {
-            JButton searchComputerButton = new JButton(getApplicationModel().getActionModel()
-                    .getFindComputersAction());
+            JButton searchComputerButton = new JButton(getApplicationModel()
+                .getActionModel().getFindComputersAction());
             bar.addRelatedGap();
             bar.addGridded(searchComputerButton);
         }
-        
+
         return bar.getPanel();
     }
 
@@ -451,23 +471,24 @@ public class HomeTab extends PFUIComponent {
      * Sums the number of incoming files in all folders.
      */
     private void recalculateFilesAvailable() {
-        Collection<Folder> folders = getController().getFolderRepository().getFolders();
+        Collection<Folder> folders = getController().getFolderRepository()
+            .getFolders();
         long count = 0;
         for (Folder folder : folders) {
             count += folder.getStatistic().getIncomingFilesCount();
-            logFine("Folder: " + folder.getName() + ", incoming: " +
-                    folder.getStatistic().getIncomingFilesCount());
+            logFine("Folder: " + folder.getName() + ", incoming: "
+                + folder.getStatistic().getIncomingFilesCount());
         }
         filesAvailableLine.setValue(count);
     }
 
     /**
-     * Updates the information about the number of computers.
-     * This is affected by the type selection in the computers tab.
+     * Updates the information about the number of computers. This is affected
+     * by the type selection in the computers tab.
      */
     private void updateComputers() {
         int nodeCount = getUIController().getApplicationModel()
-                .getNodeManagerModel().getNodes().size();
+            .getNodeManagerModel().getNodes().size();
         computersLine.setValue(nodeCount);
     }
 
@@ -477,13 +498,15 @@ public class HomeTab extends PFUIComponent {
     private void updateOnlineStorageDetails() {
         boolean active = false;
         if (client.getUsername() == null
-            || client.getUsername().trim().length() == 0) {
-                onlineStorageAccountLabel.setText(Translation
-                    .getTranslation("home_tab.online_storage.not_setup"));
-                onlineStorageAccountLabel.setToolTipText(Translation
-                    .getTranslation("home_tab.online_storage.not_setup.tips"));
-        } else if (client.getPassword() == null ||
-                client.getPassword().trim().length() == 0) {
+            || client.getUsername().trim().length() == 0)
+        {
+            onlineStorageAccountLabel.setText(Translation
+                .getTranslation("home_tab.online_storage.not_setup"));
+            onlineStorageAccountLabel.setToolTipText(Translation
+                .getTranslation("home_tab.online_storage.not_setup.tips"));
+        } else if (client.getPassword() == null
+            || client.getPassword().trim().length() == 0)
+        {
             onlineStorageAccountLabel.setText(Translation
                 .getTranslation("home_tab.online_storage.no_password"));
             onlineStorageAccountLabel.setToolTipText(Translation
@@ -493,19 +516,21 @@ public class HomeTab extends PFUIComponent {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_not_logged_in", client
                         .getUsername()));
-                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
-                    "home_tab.online_storage.account_not_logged_in.tips"));
+                onlineStorageAccountLabel
+                    .setToolTipText(Translation
+                        .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
             } else if (client.getAccount().getOSSubscription().isDisabled()) {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account_disabled", client
                         .getUsername()));
-                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
-                    "home_tab.online_storage.account_disabled.tips"));
+                onlineStorageAccountLabel
+                    .setToolTipText(Translation
+                        .getTranslation("home_tab.online_storage.account_disabled.tips"));
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account", client.getUsername()));
-                onlineStorageAccountLabel.setToolTipText(Translation.getTranslation(
-                    "home_tab.online_storage.account.tips"));
+                onlineStorageAccountLabel.setToolTipText(Translation
+                    .getTranslation("home_tab.online_storage.account.tips"));
                 active = true;
             }
         } else {
@@ -538,13 +563,15 @@ public class HomeTab extends PFUIComponent {
             String syncStatsText;
             if (getController().getFolderRepository().getFoldersCount() == 0) {
                 // No folders
-                syncStatsText = Translation.getTranslation("home_tab.no_folders");
+                syncStatsText = Translation
+                    .getTranslation("home_tab.no_folders");
             } else if (syncDate == null && synced) { // Never synced
-                syncStatsText = Translation.getTranslation("home_tab.never_synced");
+                syncStatsText = Translation
+                    .getTranslation("home_tab.never_synced");
             } else {
-                syncStatsText = synced
-                        ? Translation.getTranslation("home_tab.in_sync")
-                        : Translation.getTranslation("home_tab.synchronizing");
+                syncStatsText = synced ? Translation
+                    .getTranslation("home_tab.in_sync") : Translation
+                    .getTranslation("home_tab.synchronizing");
             }
             synchronizationStatusLabel.setText(syncStatsText);
         }
@@ -554,9 +581,9 @@ public class HomeTab extends PFUIComponent {
                 synchronizationDateLabel.setVisible(false);
             } else {
                 String date = Format.formatDate(syncDate);
-                String syncDateText = synced
-                        ? Translation.getTranslation("home_tab.last_synced", date)
-                        : Translation.getTranslation("home_tab.sync_eta", date);
+                String syncDateText = synced ? Translation.getTranslation(
+                    "home_tab.last_synced", date) : Translation.getTranslation(
+                    "home_tab.sync_eta", date);
                 synchronizationDateLabel.setVisible(true);
                 synchronizationDateLabel.setText(syncDateText);
             }
@@ -596,8 +623,9 @@ public class HomeTab extends PFUIComponent {
     /**
      * Listener for folder repo events.
      */
-    private class MyFolderRepositoryListener
-            implements FolderRepositoryListener {
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
         public boolean fireInEventDispatchThread() {
             return true;
         }
@@ -690,7 +718,9 @@ public class HomeTab extends PFUIComponent {
 
     }
 
-    private class MyNodeManagerModelListener implements NodeManagerModelListener {
+    private class MyNodeManagerModelListener implements
+        NodeManagerModelListener
+    {
 
         public void changed() {
             updateComputers();
@@ -727,7 +757,7 @@ public class HomeTab extends PFUIComponent {
 
         /**
          * Whether this drop can be imported; must be file list flavor.
-         *
+         * 
          * @param support
          * @return
          */
@@ -737,7 +767,7 @@ public class HomeTab extends PFUIComponent {
 
         /**
          * Import the file. Only import if it is a single directory.
-         *
+         * 
          * @param support
          * @return
          */
@@ -757,11 +787,11 @@ public class HomeTab extends PFUIComponent {
                 public void run() {
                     if (file.isDirectory()) {
                         PFWizard.openExistingDirectoryWizard(getController(),
-                                file);
+                            file);
                     } else if (file.getName().endsWith(".invitation")) {
                         Invitation invitation = InvitationUtil.load(file);
                         PFWizard.openInvitationReceivedWizard(getController(),
-                                invitation);
+                            invitation);
                     }
                 }
             };
@@ -771,18 +801,17 @@ public class HomeTab extends PFUIComponent {
         }
 
         /**
-         * Get the directory to import.
-         * The transfer is a list of files; need to check the list has one
-         * directory, else return null.
-         *
+         * Get the directory to import. The transfer is a list of files; need to
+         * check the list has one directory, else return null.
+         * 
          * @param support
          * @return
          */
         private File getFileList(TransferSupport support) {
             Transferable t = support.getTransferable();
             try {
-                List list = (List) t.getTransferData(
-                        DataFlavor.javaFileListFlavor);
+                List list = (List) t
+                    .getTransferData(DataFlavor.javaFileListFlavor);
                 if (list.size() == 1) {
                     for (Object o : list) {
                         if (o instanceof File) {
@@ -832,7 +861,9 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private class MyOverallFolderStatListener implements OverallFolderStatListener {
+    private class MyOverallFolderStatListener implements
+        OverallFolderStatListener
+    {
 
         public void statCalculated(OverallFolderStatEvent e) {
             displaySyncStats(e.getSyncDate(), e.isAllInSync());
@@ -852,29 +883,30 @@ public class HomeTab extends PFUIComponent {
         private final TransferCounter downloadCounter;
 
         private MyTimerTask() {
-            TransferManager transferManager = getController().getTransferManager();
+            TransferManager transferManager = getController()
+                .getTransferManager();
             uploadCounter = transferManager.getUploadCounter();
             downloadCounter = transferManager.getDownloadCounter();
         }
 
         public void run() {
-            double d = uploadCounter.calculateAverageKBS();
+            double d = uploadCounter.calculateCurrentKBS();
             if (Double.compare(d, 0) == 0) {
-                uploadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_uploaded"));
+                uploadsLine.setNormalLabelText(Translation
+                    .getTranslation("home_tab.files_uploaded"));
             } else {
                 String s = Format.formatNumber(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_uploaded_active", s));
+                    "home_tab.files_uploaded_active", s));
             }
-            d = downloadCounter.calculateAverageKBS();
+            d = downloadCounter.calculateCurrentKBS();
             if (Double.compare(d, 0) == 0) {
-                downloadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_downloaded"));
+                downloadsLine.setNormalLabelText(Translation
+                    .getTranslation("home_tab.files_downloaded"));
             } else {
                 String s = Format.formatNumber(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_downloaded_active", s));
+                    "home_tab.files_downloaded_active", s));
             }
         }
     }
