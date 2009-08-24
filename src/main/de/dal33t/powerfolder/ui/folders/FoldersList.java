@@ -153,7 +153,7 @@ public class FoldersList extends PFUIComponent {
 
         synchronized (views) {
 
-            // Get combined list of repo and client folders.
+            // Get combined list of repo and account folders.
             List<FolderBean> folderBeanList = new ArrayList<FolderBean>();
 
             for (Folder folder : repo.getFolders()) {
@@ -172,18 +172,23 @@ public class FoldersList extends PFUIComponent {
             if (PreferencesEntry.USE_ONLINE_STORAGE
                 .getValueBoolean(getController()))
             {
-                for (FolderInfo folderInfo : client.getOnlineFolders()) {
+                for (FolderInfo folderInfo : client.getAccountFolders()) {
                     FolderBean bean = new FolderBean(folderInfo);
-                    if (folderBeanList.contains(bean)) {
-                        for (FolderBean existingBean : folderBeanList) {
-                            if (existingBean.getFolderInfo().equals(folderInfo))
-                            {
-                                existingBean.setOnline(true);
-                            }
-                        }
-                    } else {
+                    if (!folderBeanList.contains(bean)) {
+                        // Not locally synced, but available on account.
                         bean.setOnline(true);
                         folderBeanList.add(bean);
+                    } else {
+                        // Actually account folder might or might NOT be backed
+                        // up by the Online Storage. So we cannot say if they
+                        // are really online.
+                        //
+                        // for (FolderBean existingBean : folderBeanList) {
+                        // if (existingBean.getFolderInfo().equals(folderInfo))
+                        // {
+                        // existingBean.setOnline(true);
+                        // }
+                        // }
                     }
                 }
             }
