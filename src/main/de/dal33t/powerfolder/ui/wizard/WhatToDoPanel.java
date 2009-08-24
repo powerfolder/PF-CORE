@@ -119,7 +119,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     private List<FolderInfo> findFolderList() {
         List<FolderInfo> folderList = new ArrayList<FolderInfo>();
         ServerClient client = getController().getOSClient();
-        List<FolderInfo> onlineFolderInfos = client.getOnlineFolders();
+        List<FolderInfo> onlineFolderInfos = client.getAccountFolders();
         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
             Folder folder = onlineFolderInfo.getFolder(getController());
             if (folder == null) {
