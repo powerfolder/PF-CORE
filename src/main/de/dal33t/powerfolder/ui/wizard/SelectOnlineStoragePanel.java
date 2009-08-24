@@ -110,7 +110,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("max(pref;140dlu), pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -129,10 +129,9 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         row += 2;
 
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.archive_mode")), cc.xyw(1, row, 2));
-        row += 2;
-
-        builder.add(archiveMode, cc.xy(2, row));
+            .getTranslation("settings_tab.archive_mode")), cc.xy(1, row));
+        builder.add(archiveMode, cc.xy(1, row, CellConstraints.RIGHT,
+            CellConstraints.DEFAULT));
         row += 2;
 
         if (OSUtil.isWindowsSystem()) {
