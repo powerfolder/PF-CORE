@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
@@ -374,7 +375,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
         FolderPermission newPermission = (FolderPermission) aValue;
         if (!Util.equals(newPermission, folderMember.getPermission())) {
-            new PermissionSetter(folderMember, newPermission).execute();
+            new PermissionSetter(folderMember.getAccountInfo(), newPermission)
+                .execute();
         }
     }
 
@@ -626,6 +628,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 new FolderReadWritePermission(folder.getInfo()));
             permissionsListModel.getList().add(
                 new FolderAdminPermission(folder.getInfo()));
+            if (getController().getOSClient().getAccount().hasOwnerPermission(
+                folder.getInfo()))
+            {
+                permissionsListModel.getList().add(
+                    new FolderOwnerPermission(folder.getInfo()));
+            }
         }
 
         updatingDefaultPermissionModel = true;
@@ -652,25 +660,22 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     private class PermissionSetter extends SwingWorker<Void, Void> {
-        private FolderMember folderMember;
+        private AccountInfo aInfo;
         private FolderPermission newPermission;
 
-        public PermissionSetter(FolderMember folderMember,
+        public PermissionSetter(AccountInfo aInfo,
             FolderPermission newPermission)
         {
             super();
-            Reject.ifNull(folderMember, "FolderMember is null");
-            Reject.ifNull(folderMember.getAccountInfo(),
-                "FolderMember Account is null");
-            this.folderMember = folderMember;
+            Reject.ifNull(aInfo, "AccountInfo is null");
+            this.aInfo = aInfo;
             this.newPermission = newPermission;
         }
 
         @Override
         protected Void doInBackground() throws Exception {
             getController().getOSClient().getSecurityService()
-                .setFolderPermission(folderMember.getAccountInfo(),
-                    folder.getInfo(), newPermission);
+                .setFolderPermission(aInfo, folder.getInfo(), newPermission);
             return null;
         }
 
