@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.task;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -35,12 +36,15 @@ public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {
     private static final Logger LOG = Logger
         .getLogger(RemoveComputerFromAccountTask.class.getName());
 
+    private final AccountInfo account;
     private final MemberInfo node;
 
-    public RemoveComputerFromAccountTask(MemberInfo node) {
+    public RemoveComputerFromAccountTask(MemberInfo node, AccountInfo aInfo) {
         super(DEFAULT_DAYS_TO_EXIPRE);
         Reject.ifNull(node, "Node");
+        Reject.ifNull(aInfo, "AccountInfo");
         this.node = node;
+        this.account = aInfo;
     }
 
     @Override
@@ -48,10 +52,12 @@ public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {
         if (!client.getAccount().isValid()) {
             return;
         }
+        if (!account.equals(client.getAccount().createInfo())) {
+            return;
+        }
         LOG.warning("Removing computer from account: " + node);
         client.getAccountService().removeComputer(node);
         // Remove task
         remove();
     }
-
 }
