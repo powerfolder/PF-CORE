@@ -71,6 +71,11 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         return client.login(username, password);
     }
 
+    public boolean hasPermission(Account account, Permission permission) {
+        return hasPermission(account != null ? account.createInfo() : null,
+            permission);
+    }
+
     public boolean hasPermission(AccountInfo accountInfo, Permission permission)
     {
         if (!Feature.SECURITY_CHECKS.isEnabled()) {

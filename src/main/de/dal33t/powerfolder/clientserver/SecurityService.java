@@ -117,6 +117,19 @@ public interface SecurityService {
     FolderPermission obtainFolderPermission(FolderInfo foInfo);
 
     /**
+     * Changes a folder permission of a target account. Removes all existing
+     * FolderPermissions of this account.
+     * 
+     * @param aInfo
+     *            the target account.
+     * @param foInfo
+     *            the folder
+     * @param newPermission
+     */
+    void setFolderPermission(AccountInfo aInfo, FolderInfo foInfo,
+        FolderPermission newPermission);
+
+    /**
      * Grants the given user/account the permissions.
      * 
      * @param aInfo

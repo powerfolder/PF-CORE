@@ -668,12 +668,9 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         @Override
         protected Void doInBackground() throws Exception {
-            getController().getOSClient().getSecurityService().revoke(
-                folderMember.getAccountInfo(), folderMember.getPermission());
-            if (newPermission != null) {
-                getController().getOSClient().getSecurityService().grant(
-                    folderMember.getAccountInfo(), newPermission);
-            }
+            getController().getOSClient().getSecurityService()
+                .setFolderPermission(folderMember.getAccountInfo(),
+                    folder.getInfo(), newPermission);
             return null;
         }
 

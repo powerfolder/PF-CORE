@@ -81,6 +81,19 @@ public interface SecurityManager {
      */
     boolean hasPermission(AccountInfo accountInfo, Permission permission);
 
+    /**
+     * Central method to check if a given account has the permission.
+     * <p>
+     * This takes default permissions for folders into consideration. Also
+     * accepts null {@link AccountInfo} as parameter - then applies default
+     * permission of folder only.
+     * 
+     * @param account
+     * @param permission
+     * @return true if the account has the permission. false if not
+     */
+    boolean hasPermission(Account account, Permission permission);
+
     // Event handling *********************************************************
 
     void addListener(SecurityManagerListener listner);
