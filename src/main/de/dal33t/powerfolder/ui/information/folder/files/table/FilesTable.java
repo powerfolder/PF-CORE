@@ -155,6 +155,7 @@ public class FilesTable extends JTable {
                 Folder folder = controller.getFolderRepository().getFolder(
                         fileInfo.getFolderInfo());
                 setIcon(null);
+                setForeground(NORMAL);
                 switch (column) {
                     case 0:  // file type
                         Icon icon = Icons.getIconFor(fileInfo, controller);
@@ -225,18 +226,15 @@ public class FilesTable extends JTable {
                             setIcon(Icons.getIconById(Icons.BLACK_LIST));
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
-                            setForeground(NORMAL);
                         } else if (!folder.getDiskItemFilter().isExcluded(fileInfo)
                                 && folder.isWhitelist()) {
                             // Whitelist and file not filtered out by whitelist.
                             setIcon(Icons.getIconById(Icons.WHITE_LIST));
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
-                            setForeground(NORMAL);
                         } else
                         if (fileInfo.isExpected(controller.getFolderRepository())) {
                             setForeground(AVAILABLE);
-
                             setIcon(Icons.getIconById(Icons.EXPECTED));
                             statusForTooltip = Translation.getTranslation("file_info.expected");
 
@@ -262,7 +260,6 @@ public class FilesTable extends JTable {
                                         .getTranslation("file_info.new_version_available");
                             }
                         } else {
-                            setForeground(NORMAL);
                             if (recentlyDownloaded(fileInfo)) {
                                 statusForTooltip = Translation
                                         .getTranslation("file_info.recently_downloaded");
