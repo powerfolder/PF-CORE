@@ -166,13 +166,8 @@ public class Folder extends PFComponent {
     /** All members of this folder. Key == Value. Use Map for concurrency. */
     private final Map<Member, Member> members;
 
-    /**
-     * The lock to hold when initializing the root directory.
-     */
-    private final Object rootDirectoryInitLock = new Object();
-
     /** cached Directory object */
-    private Directory rootDirectory;
+    private final Directory rootDirectory;
 
     /**
      * the folder info, contains important information about
@@ -380,8 +375,9 @@ public class Folder extends PFComponent {
 
         previewOnly = folderSettings.isPreviewOnly();
 
-        // Initialized lazily
-        rootDirectory = null;
+        Collection<FileInfo> infoCollection = dao.findAll(null);
+        rootDirectory = Directory.buildDirsRecursive(getController()
+            .getNodeManager().getMySelf(), infoCollection, this);
 
         problems = new CopyOnWriteArrayList<Problem>();
 
@@ -541,15 +537,13 @@ public class Folder extends PFComponent {
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
                     // Add file to folder
                     currentInfo.addFile(newFileInfo);
-                    if (rootDirectory != null) {
-                        if (isFiner()) {
-                            logFiner("Adding "
-                                + scanResult.getNewFiles().size()
-                                + " to directory");
-                        }
-                        rootDirectory.add(getController().getMySelf(),
-                            newFileInfo);
+                    if (isFiner()) {
+                        logFiner("Adding "
+                            + scanResult.getNewFiles().size()
+                            + " to directory");
                     }
+                    rootDirectory.add(getController().getMySelf(),
+                        newFileInfo);
                 }
                 dao.store(null, scanResult.getNewFiles());
 
@@ -870,10 +864,8 @@ public class Folder extends PFComponent {
                     // dbFile.copyFrom(fInfo);
                     dao.store(null, fInfo);
                     // update directory
-                    if (rootDirectory != null) {
-                        rootDirectory.removeFileInfo(fInfo);
-                        rootDirectory.add(getController().getMySelf(), fInfo);
-                    }
+                    rootDirectory.removeFileInfo(fInfo);
+                    rootDirectory.add(getController().getMySelf(), fInfo);
                     fileChanged(dbFile);
                 } else {
                     // File new, scan
@@ -1197,9 +1189,7 @@ public class Folder extends PFComponent {
 
                     // update directory
                     // don't do this in the server version
-                    if (rootDirectory != null) {
-                        rootDirectory.add(getController().getMySelf(), fInfo);
-                    }
+                    rootDirectory.add(getController().getMySelf(), fInfo);
 
                     // get folder icon info and set it
                     if (FileUtils.isDesktopIni(file)) {
@@ -1318,9 +1308,7 @@ public class Folder extends PFComponent {
 
                     // update directory
                     // don't do this in the server version
-                    if (rootDirectory != null) {
-                        rootDirectory.add(getController().getMySelf(), dirInfo);
-                    }
+                    rootDirectory.add(getController().getMySelf(), dirInfo);
 
                     // get folder icon info and set it
                     if (FileUtils.isDesktopIni(dir)) {
@@ -1818,9 +1806,7 @@ public class Folder extends PFComponent {
                 expired++;
                 // Remove
                 dao.delete(null, file);
-                if (rootDirectory != null) {
-                    rootDirectory.removeFileInfo(file);
-                }
+                rootDirectory.removeFileInfo(file);
                 for (Member member : members.values()) {
                     dao.delete(member.getId(), file);
                 }
@@ -2124,9 +2110,7 @@ public class Folder extends PFComponent {
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId());
-        if (rootDirectory != null) {
-            rootDirectory.removeFilesOfMember(member);
-        }
+        rootDirectory.removeFilesOfMember(member);
 
         // Fire event
         fireMemberLeft(member);
@@ -2481,9 +2465,7 @@ public class Folder extends PFComponent {
         findSameFiles(from, Arrays.asList(newList.files));
 
         // don't do this in the server version
-        if (rootDirectory != null) {
-            rootDirectory.addAll(from, newList.files);
-        }
+        rootDirectory.addAll(from, newList.files);
 
         if (syncProfile.isAutodownload() && from.isCompletelyConnected()) {
             // Trigger file requestor
@@ -2572,13 +2554,11 @@ public class Folder extends PFComponent {
         }
 
         // don't do this in the server version
-        if (rootDirectory != null) {
-            if (changes.added != null) {
-                rootDirectory.addAll(from, changes.added);
-            }
-            if (changes.removed != null) {
-                rootDirectory.addAll(from, changes.removed);
-            }
+        if (changes.added != null) {
+            rootDirectory.addAll(from, changes.added);
+        }
+        if (changes.removed != null) {
+            rootDirectory.addAll(from, changes.removed);
         }
 
         // Avoid hammering of sync remote deletion
@@ -2913,15 +2893,6 @@ public class Folder extends PFComponent {
      * @return Directory with all sub dirs and files set
      */
     public Directory getDirectory() {
-        if (rootDirectory != null) {
-            return rootDirectory;
-        }
-        synchronized (rootDirectoryInitLock) {
-            if (rootDirectory == null) {
-                rootDirectory = Directory.buildDirsRecursive(getController()
-                    .getNodeManager().getMySelf(), dao.findAll(null), this);
-            }
-        }
         return rootDirectory;
     }
 
