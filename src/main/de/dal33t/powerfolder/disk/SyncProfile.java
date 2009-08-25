@@ -85,7 +85,14 @@ public class SyncProfile implements Serializable {
      */
     public static final SyncProfile AUTOMATIC_SYNCHRONIZATION = new SyncProfile(
         "automatic_synchronization", false, new SyncProfileConfiguration(true,
-            true, true, true, 5));
+            true, true, true, 1));
+
+    /**
+     * Automatic synchronization preset profile.
+     */
+    public static final SyncProfile AUTOMATIC_SYNCHRONIZATION_10MIN = new SyncProfile(
+        "automatic_synchronization_10min", false, new SyncProfileConfiguration(
+            true, true, true, true, 10));
 
     /**
      * Backup source preset profile.
@@ -110,8 +117,9 @@ public class SyncProfile implements Serializable {
 
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = new SyncProfile[]{
-        AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
-        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        AUTOMATIC_SYNCHRONIZATION, AUTOMATIC_SYNCHRONIZATION_10MIN,
+        MANUAL_SYNCHRONIZATION, BACKUP_SOURCE, BACKUP_TARGET,
+        AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
