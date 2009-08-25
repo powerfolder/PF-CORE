@@ -9,7 +9,6 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * @author sprajc
- *
  */
 public class FolderObtainPermissionTask extends ServerRemoteCallTask {
     private static final long serialVersionUID = 100L;
@@ -27,6 +26,10 @@ public class FolderObtainPermissionTask extends ServerRemoteCallTask {
     @Override
     public void executeRemoteCall(ServerClient client) throws Exception {
         if (!getController().getFolderRepository().hasJoinedFolder(foInfo)) {
+            remove();
+            return;
+        }
+        if (getController().getOSClient().getServer().isMySelf()) {
             remove();
             return;
         }
