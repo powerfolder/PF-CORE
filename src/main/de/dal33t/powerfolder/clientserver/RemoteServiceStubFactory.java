@@ -114,6 +114,16 @@ public class RemoteServiceStubFactory {
                 throw new RemoteCallException(e);
             }
             if (response.isException()) {
+                StackTraceElement[] serverSte = response.getException()
+                    .getStackTrace();
+                StackTraceElement[] clientSte = new RuntimeException()
+                    .getStackTrace();
+                StackTraceElement[] fullSte = new StackTraceElement[serverSte.length
+                    + clientSte.length];
+                System.arraycopy(serverSte, 0, fullSte, 0, serverSte.length);
+                System.arraycopy(clientSte, 0, fullSte, serverSte.length,
+                    clientSte.length);
+                response.getException().setStackTrace(fullSte);
                 boolean exceptionDeclared = Arrays.asList(
                     method.getExceptionTypes()).contains(
                     response.getException().getClass());
