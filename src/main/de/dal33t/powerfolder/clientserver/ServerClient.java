@@ -391,8 +391,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return getController().getPreferences().get(
-            PREFS_PREFIX + '.' + server.getIP() + ".username", null) != null
-            || isDefaultAccountSet();
+            PREFS_PREFIX + '.' + server.getIP() + ".username", null) != null;
     }
 
     /**
@@ -421,10 +420,6 @@ public class ServerClient extends PFComponent {
 
         if (!StringUtils.isBlank(un) && !StringUtils.isBlank(pw)) {
             return login(un, pw);
-        }
-        // Fallback
-        if (isDefaultAccountSet()) {
-            return loginWithDefault();
         }
         // Failed!
         return null;
@@ -831,41 +826,6 @@ public class ServerClient extends PFComponent {
         // Clear plain text password (TRAC #1291)
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info");
-    }
-
-    /**
-     * For backward compatibility
-     * 
-     * @return true if the default account data has been set
-     */
-    private boolean isDefaultAccountSet() {
-        return !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-            .getValue(getController()))
-            && !StringUtils.isEmpty(ConfigurationEntry.WEBSERVICE_USERNAME
-                .getValue(getController()));
-    }
-
-    /**
-     * For backward compatibility
-     * <p>
-     * Logs into the server with the default username and password in config.
-     * <p>
-     * If the server is not connected and invalid account is returned and the
-     * login data saved for auto-login on reconnect.
-     * 
-     * @return the identity with this username or <code>InvalidAccount</code> if
-     *         login failed. NEVER returns <code>null</code>
-     */
-    private Account loginWithDefault() {
-        Account a = login(ConfigurationEntry.WEBSERVICE_USERNAME
-            .getValue(getController()), ConfigurationEntry.WEBSERVICE_PASSWORD
-            .getValue(getController()));
-        // At least the last know has been written. remove username & password
-        // from config.
-        ConfigurationEntry.WEBSERVICE_USERNAME.removeValue(getController());
-        ConfigurationEntry.WEBSERVICE_PASSWORD.removeValue(getController());
-        getController().saveConfig();
-        return a;
     }
 
     private void changeToServer(ServerInfo newServerInfo) {

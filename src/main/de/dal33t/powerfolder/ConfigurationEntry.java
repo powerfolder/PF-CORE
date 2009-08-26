@@ -392,16 +392,6 @@ public enum ConfigurationEntry {
     LANLIST("lanlist", ""),
 
     /**
-     * The username/account of the webservice
-     */
-    WEBSERVICE_USERNAME("webservice.username"),
-
-    /**
-     * The password of the webservice
-     */
-    WEBSERVICE_PASSWORD("webservice.password"),
-
-    /**
      * Whether to use the PowerFolder icon in Windows Explorer folders.
      */
     USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
