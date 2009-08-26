@@ -68,6 +68,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
 /**
@@ -375,9 +377,40 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
         FolderPermission newPermission = (FolderPermission) aValue;
         if (!Util.equals(newPermission, folderMember.getPermission())) {
+            if (newPermission instanceof FolderOwnerPermission) {
+                // Show warning
+                AccountInfo oldOwner = findFolderOwner();
+                String oldOwnerStr = oldOwner != null ? oldOwner
+                    .getScrabledUsername() : "nobody";
+                AccountInfo newOwner = folderMember.getAccountInfo();
+                String newOwnerStr = newOwner != null ? newOwner
+                    .getScrabledUsername() : "nobody";
+                int result = DialogFactory.genericDialog(getController(),
+                    Translation
+                        .getTranslation("folder_member.change_owner.title"),
+                    Translation.getTranslation(
+                        "folder_member.change_owner.message", oldOwnerStr,
+                        newOwnerStr), new String[]{
+                        Translation.getTranslation("general.continue"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.WARN); // Default is
+                // continue
+                if (result != 0) { // Abort
+                    return;
+                }
+            }
             new PermissionSetter(folderMember.getAccountInfo(), newPermission)
                 .execute();
         }
+    }
+
+    private AccountInfo findFolderOwner() {
+        for (FolderMember folderMember : members) {
+            if (folderMember.getPermission() instanceof FolderOwnerPermission) {
+                return folderMember.getAccountInfo();
+            }
+        }
+        return null;
     }
 
     /**
