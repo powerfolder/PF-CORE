@@ -294,8 +294,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
                 Translation.getTranslation("wizard.what_to_do.backp.select"));
 
-        // Prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
+        // Don't prompt for send invitation afterwards
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Select backup by OS
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
