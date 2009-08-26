@@ -202,9 +202,9 @@ public class Constants {
     public static final long CONNECTION_KEEP_ALIVE_TIMOUT = 5 * 60;
 
     /**
-     * The time interval to resize the reconnecor pool in seconds.
+     * The time interval to resize the reconnector pool in seconds.
      */
-    public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 30;
+    public static final long RECONNECTOR_POOL_SIZE_RESIZE_TIME = 120;
 
     // UDT stuff **************************************************************
     /**
