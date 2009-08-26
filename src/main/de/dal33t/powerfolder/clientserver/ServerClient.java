@@ -777,12 +777,13 @@ public class ServerClient extends PFComponent {
     private void setNewServerNode(Member newServerNode) {
         server = newServerNode;
         server.setServer(true);
-        // Put on friendslist
-        if (!isTempServerNode(server)) {
-            if (!server.isFriend()) {
-                server.setFriend(true, null);
-            }
-        }
+        // Why?
+        // // Put on friendslist
+        // if (!isTempServerNode(server)) {
+        // if (!server.isFriend()) {
+        // server.setFriend(true, null);
+        // }
+        // }
         // Re-initalize the service stubs on new server node.
         initializeServiceStubs();
     }
