@@ -906,8 +906,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             logFiner("Joined " + foldersJoined.size() + " folders: "
                 + foldersJoined);
         }
-        
-	    for (Folder folder : foldersJoined) {
+
+        for (Folder folder : foldersJoined) {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
@@ -1894,7 +1894,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (!joinedFolders.isEmpty()) {
                 logInfo(getNick() + " joined " + joinedFolders.size()
                     + " folder(s)");
-                if (!isFriend()) {
+                if (!isFriend() && !isServer()) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
                         getInfo(), joinedFolders);
                     getController().addAskForFriendship(event);
