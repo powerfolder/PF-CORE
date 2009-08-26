@@ -120,6 +120,9 @@ public class RemoteServiceStubFactory {
                 if (exceptionDeclared) {
                     throw response.getException();
                 }
+                if (response.getException() instanceof RuntimeException) {
+                    throw (RuntimeException) response.getException();
+                }
                 throw new RemoteCallException(response.getException());
             }
             return response.getResult();

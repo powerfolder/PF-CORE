@@ -134,6 +134,9 @@ public interface SecurityService {
      * 
      * @param aInfo
      * @param permissions
+     * @deprecated use
+     *             {@link #setFolderPermission(AccountInfo, FolderInfo, FolderPermission)}
+     *             instead
      */
     void grant(AccountInfo aInfo, Permission... permissions);
 
@@ -142,6 +145,9 @@ public interface SecurityService {
      * 
      * @param aInfo
      * @param permissions
+     * @deprecated use
+     *             {@link #setFolderPermission(AccountInfo, FolderInfo, FolderPermission)}
+     *             instead
      */
     void revoke(AccountInfo aInfo, Permission... permissions);
 
