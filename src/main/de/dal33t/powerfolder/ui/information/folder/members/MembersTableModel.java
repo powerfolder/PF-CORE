@@ -395,10 +395,11 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     void refreshModel() {
+        refreshingModel.setValue(Boolean.TRUE);
         if (getController().getOSClient().isConnected()) {
-            refreshingModel.setValue(Boolean.TRUE);
             new ModelRefresher().execute();
         } else {
+            permissionsRetrieved = false;
             rebuild(new HashMap<AccountInfo, FolderPermission>(), null);
             refreshingModel.setValue(Boolean.FALSE);
         }

@@ -59,8 +59,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.AttachPersonalizedMessageDialog;
@@ -112,8 +114,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
         if (invitation == null) {
             return false;
         }
-        invitation
-            .setPermission((FolderPermission) permissionsModel.getValue());
+        FolderPermission fp = (FolderPermission) permissionsModel.getValue();
+        if (fp == null) {
+            fp = new FolderReadWritePermission(invitation.folder);
+        }
+        invitation.setPermission(fp);
         boolean theResult = false;
         Member[] friends = getController().getNodeManager().getFriends();
 
@@ -326,8 +331,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
 
-        permissionsModel = new ValueHolder(new FolderReadPermission(folder),
-            true);
+        permissionsModel = new ValueHolder(
+            new FolderReadWritePermission(folder), true);
 
         enableAddButton();
         enableRemoveButton();

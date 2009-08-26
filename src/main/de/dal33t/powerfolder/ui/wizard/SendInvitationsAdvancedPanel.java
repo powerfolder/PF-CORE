@@ -105,7 +105,10 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         permissionsModel.getList().add(new FolderReadWritePermission(foInfo));
         permissionsModel.getList().add(new FolderAdminPermission(foInfo));
         // permissionsModel.getList().add(new FolderOwnerPermission(foInfo));
+        FolderPermission fp = (FolderPermission) permissionsValueModel
+            .getValue();
         permissionsModel.setSelectionHolder(permissionsValueModel);
+        permissionsModel.setValue(fp);
 
         permissionsCombo = BasicComponentFactory.createComboBox(
             permissionsModel, new DefaultListCellRenderer() {
