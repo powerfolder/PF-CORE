@@ -51,7 +51,7 @@ public enum ConfigurationEntry {
     DISABLE_GUI("disableui", Boolean.FALSE.toString()),
 
     // Node setup *************************************************************
-    
+
     /**
      * The nickname to use.
      */
@@ -63,7 +63,7 @@ public enum ConfigurationEntry {
      * stored in preferences.
      */
     NODE_ID("nodeid"),
-    
+
     /**
      * The network ID (#1373). PowerFolder can separate logical peer-to-peer
      * networks. Nodes with different network IDs won't connect to each other.
@@ -114,7 +114,8 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Pro page
      */
-    PROVIDER_BUY_URL("provider.url.buy",
+    PROVIDER_BUY_URL(
+        "provider.url.buy",
         "http://www.powerfolder.com/buy_business.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
@@ -142,7 +143,7 @@ public enum ConfigurationEntry {
      * The optional name of the sever to connect to.
      */
     SERVER_NAME("server.name", "Online Storage"),
-    
+
     /**
      * The optional url of the server.
      */
@@ -160,7 +161,7 @@ public enum ConfigurationEntry {
      * server.powerfolder.com:1234
      */
     SERVER_HOST("server.host", "access.powerfolder.com:1337"),
-    
+
     // General settings *******************************************************
 
     /**
@@ -220,7 +221,7 @@ public enum ConfigurationEntry {
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
-    
+
     /**
      * The TCP/IP socket buffer size for TCP/UDT connections over Internet.
      */
@@ -274,9 +275,10 @@ public enum ConfigurationEntry {
      * The percentage to throttle the uploadlimits in silentmode.
      */
     UPLOADLIMIT_SILENTMODE_THROTTLE("net.silentmodethrottle"),
-    
+
     /**
-     * The maximum size (in bytes) of an {@link FileChunk} used for file transfers
+     * The maximum size (in bytes) of an {@link FileChunk} used for file
+     * transfers
      */
     TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", String
         .valueOf(32 * 1024)),
@@ -416,12 +418,12 @@ public enum ConfigurationEntry {
      * Whether to log verbose.
      */
     VERBOSE("verbose", Boolean.FALSE.toString()),
-    
+
     /**
      * The loglevel to write to debug file when verbose=true
      */
     LOG_LEVEL_FILE("log.file.level", Level.FINE.getName()),
-    
+
     /**
      * The loglevel to print to console when verbose=true
      */
@@ -451,9 +453,10 @@ public enum ConfigurationEntry {
     AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
 
     /**
-     * The number of seconds to go on idle between connection tries.
+     * The number of seconds to go on idle between connection tries per
+     * Reconnector.
      */
-    CONNECT_WAIT("connect.wait.seconds", "30"),
+    CONNECT_WAIT("connect.wait.seconds", "60"),
 
     /**
      * Enable/Disable relayed connections.
@@ -485,7 +488,7 @@ public enum ConfigurationEntry {
      * Whether to show preview folders in nav / folders panles.
      */
     HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
-    
+
     /**
      * The number of seconds to wait to recalc a {@link FolderStatistic} when a
      * change to the folder happend. Applies to large folders only, that host
@@ -532,8 +535,7 @@ public enum ConfigurationEntry {
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
     /**
-     * Days until auto cleanup of uploads.
-     * Zero = cleanup on completion.
+     * Days until auto cleanup of uploads. Zero = cleanup on completion.
      */
     UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", "5"),
 
@@ -554,7 +556,8 @@ public enum ConfigurationEntry {
      * <p>
      * TODO Make Preferences pre-configurable too.
      */
-    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String.valueOf(Boolean.TRUE)),
+    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String
+        .valueOf(Boolean.TRUE)),
 
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", Boolean.FALSE.toString());
