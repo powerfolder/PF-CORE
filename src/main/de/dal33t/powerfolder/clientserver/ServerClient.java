@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -537,6 +538,15 @@ public class ServerClient extends PFComponent {
      */
     public String getPassword() {
         return password;
+    }
+
+    /**
+     * @return the {@link AccountInfo} for the logged in account. or null if not
+     *         logged in.
+     */
+    public AccountInfo getAccountInfo() {
+        Account a = getAccount();
+        return a != null && a.isValid() ? a.createInfo() : null;
     }
 
     /**

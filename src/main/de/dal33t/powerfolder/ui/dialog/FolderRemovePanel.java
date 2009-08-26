@@ -19,24 +19,32 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.task.FolderSetPermissionTask;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Panel displayed when wanting to remove a folder
@@ -209,7 +217,8 @@ public class FolderRemovePanel extends BaseDialog {
         close();
 
         FolderRepository folderRepository =
-                getController().getFolderRepository();
+                getController()
+            .getFolderRepository();
 
         if (removeLocal) {
             folderRepository.removeFolder(folder, deleteSystemSubFolder);
@@ -218,11 +227,12 @@ public class FolderRemovePanel extends BaseDialog {
         if (removeFromOS) {
             ServerClient client = getController().getOSClient();
             if (client.hasJoined(folder)) {
-                client.getFolderService().removeFolder(
-                    folder.getInfo(), true);
+                client.getFolderService().removeFolder(folder.getInfo(), true);
             } else {
-//                client.getSecurityService().revokeAdmin(
-//                    folder.getInfo());
+                // Remove permission to folder.
+                AccountInfo aInfo = client.getAccountInfo();
+                getController().getTaskManager().scheduleTask(
+                    new FolderSetPermissionTask(aInfo, folder.getInfo(), null));
             }
 
             if (!removeLocal) {

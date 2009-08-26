@@ -19,15 +19,17 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
+import java.awt.event.ActionEvent;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.task.FolderSetPermissionTask;
 import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemovePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
-
-import java.awt.event.ActionEvent;
 
 /**
  * Action which acts on selected preview folder. Removes selected folder from PF
@@ -85,14 +87,15 @@ public class PreviewFolderRemoveAction extends BaseAction {
         getController().getFolderRepository().removeFolder(folder,
             deleteSystemSubFolder);
         if (removeFromOS) {
-            if (getController().getOSClient().hasJoined(folder)) {
-                getController().getOSClient().getFolderService().removeFolder(
-                    folder.getInfo(), true);
+            ServerClient client = getController().getOSClient();
+            if (client.hasJoined(folder)) {
+                client.getFolderService().removeFolder(folder.getInfo(), true);
             } else {
-//                getController().getOSClient().getSecurityService().revokeAdmin(
-//                    folder.getInfo());
+                // Remove permission to folder.
+                AccountInfo aInfo = client.getAccountInfo();
+                getController().getTaskManager().scheduleTask(
+                    new FolderSetPermissionTask(aInfo, folder.getInfo(), null));
             }
-            getController().getOSClient().refreshAccountDetails();
         }
     }
 }

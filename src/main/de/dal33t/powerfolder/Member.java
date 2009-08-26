@@ -268,8 +268,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (aInfo == null) {
             return false;
         }
-        return aInfo.equals(getController().getOSClient().getAccount()
-            .createInfo());
+        return aInfo.equals(getController().getOSClient().getAccountInfo());
     }
 
     /**

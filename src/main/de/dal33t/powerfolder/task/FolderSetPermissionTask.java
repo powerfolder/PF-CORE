@@ -11,17 +11,21 @@ import de.dal33t.powerfolder.util.Reject;
 /**
  * @author sprajc
  */
-public class FolderObtainPermissionTask extends ServerRemoteCallTask {
+public class FolderSetPermissionTask extends ServerRemoteCallTask {
     private static final long serialVersionUID = 100L;
     private static final Logger LOG = Logger
-        .getLogger(FolderObtainPermissionTask.class.getName());
+        .getLogger(FolderSetPermissionTask.class.getName());
 
+    private final FolderPermission permission;
     private FolderInfo foInfo;
 
-    public FolderObtainPermissionTask(AccountInfo aInfo, FolderInfo foInfo) {
+    public FolderSetPermissionTask(AccountInfo aInfo, FolderInfo foInfo,
+        FolderPermission permission)
+    {
         super(aInfo, DEFAULT_DAYS_TO_EXIPRE);
         Reject.ifNull(foInfo, "FolderInfo");
         this.foInfo = foInfo;
+        this.permission = permission;
     }
 
     @Override
@@ -34,9 +38,10 @@ public class FolderObtainPermissionTask extends ServerRemoteCallTask {
             remove();
             return;
         }
-        FolderPermission fp = client.getSecurityService()
-            .obtainFolderPermission(foInfo);
-        LOG.warning("Obtained permission on " + foInfo + ": " + fp);
+        client.getSecurityService().setFolderPermission(getIssuer(), foInfo,
+            permission);
+        LOG.warning("Set permission on " + foInfo + " for " + getIssuer()
+            + " to " + permission);
         remove();
     }
 }

@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Task that get executed when the server is connected.
@@ -39,9 +41,42 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
 
     private static final long serialVersionUID = 100L;
     private transient ServerClientListener listener;
+    /**
+     * The issuer of the remote call.
+     */
+    private final AccountInfo issuer;
 
-    public ServerRemoteCallTask(int daysToExpire) {
+    /**
+     * @param issuer
+     *            the issuer of the task. The same user must be logged in to the
+     *            server for a successful executing. Otherwise task will be
+     *            scheduled until the original issuer re-logs in.
+     * @param daysToExpire
+     *            day to expire/remove if not successfully executed.
+     */
+    protected ServerRemoteCallTask(AccountInfo issuer, int daysToExpire) {
         super(daysToExpire);
+        Reject.ifNull(issuer, "Account issuer");
+        this.issuer = issuer;
+    }
+
+    /**
+     * It does not matter what user/account executes this remote call.
+     * 
+     * @param daysToExpire
+     *            day to expire/remove if not successfully executed.
+     */
+    protected ServerRemoteCallTask(int daysToExpire) {
+        super(daysToExpire);
+        this.issuer = null;
+    }
+
+    /**
+     * @return the issuer of this task. if set task will only execute if the
+     *         client is logged in with the same account at the server.
+     */
+    protected AccountInfo getIssuer() {
+        return issuer;
     }
 
     @Override
@@ -91,6 +126,17 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
     private boolean checkAndExecute(ServerClient client) {
         if (!client.isConnected()) {
             return false;
+        }
+        if (issuer != null) {
+            // Check if issuer matches the currently logged in user.
+            AccountInfo currentLogin = client.getAccountInfo();
+            if (currentLogin == null) {
+                return false;
+            }
+            if (!issuer.equals(currentLogin)) {
+                // Mismatch, don't do it.
+                return false;
+            }
         }
         try {
             executeRemoteCall(client);

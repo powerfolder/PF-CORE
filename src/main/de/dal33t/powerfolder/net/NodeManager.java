@@ -627,11 +627,9 @@ public class NodeManager extends PFComponent {
 
             // Remove computer from the list of my last logged in computers.
             if (getController().getOSClient().getAccount().isValid()) {
-                getController().getTaskManager()
-                    .scheduleTask(
-                        new RemoveComputerFromAccountTask(node.getInfo(),
-                            getController().getOSClient().getAccount()
-                                .createInfo()));
+                getController().getTaskManager().scheduleTask(
+                    new RemoveComputerFromAccountTask(getController()
+                        .getOSClient().getAccountInfo(), node.getInfo()));
             }
         }
 

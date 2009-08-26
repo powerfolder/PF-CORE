@@ -36,25 +36,16 @@ public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {
     private static final Logger LOG = Logger
         .getLogger(RemoveComputerFromAccountTask.class.getName());
 
-    private final AccountInfo account;
     private final MemberInfo node;
 
-    public RemoveComputerFromAccountTask(MemberInfo node, AccountInfo aInfo) {
-        super(DEFAULT_DAYS_TO_EXIPRE);
+    public RemoveComputerFromAccountTask(AccountInfo aInfo, MemberInfo node) {
+        super(aInfo, DEFAULT_DAYS_TO_EXIPRE);
         Reject.ifNull(node, "Node");
-        Reject.ifNull(aInfo, "AccountInfo");
         this.node = node;
-        this.account = aInfo;
     }
 
     @Override
     public void executeRemoteCall(ServerClient client) {
-        if (!client.getAccount().isValid()) {
-            return;
-        }
-        if (!account.equals(client.getAccount().createInfo())) {
-            return;
-        }
         LOG.warning("Removing computer from account: " + node);
         client.getAccountService().removeComputer(node);
         // Remove task
