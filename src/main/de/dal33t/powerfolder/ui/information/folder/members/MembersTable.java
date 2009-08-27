@@ -173,20 +173,23 @@ public class MembersTable extends JTable {
                 if (folderMember.getMember() != null) {
                     setText(folderMember.getMember().getNick());
                 } else {
-                    setText("Not syncing");
+                    setText(Translation
+                        .getTranslation("folder_member.not_syncing"));
                     setForeground(Color.GRAY);
                 }
             } else if (actualColumn == MembersTableModel.COL_USERNAME) {
                 if (folderMember.getAccountInfo() != null) {
                     setText(folderMember.getAccountInfo().getScrabledUsername());
                 } else if (!model.getController().getOSClient().isConnected()) {
-                    setText("Not connected to server");
+                    setText(Translation
+                        .getTranslation("folder_member.not_connected_to_server"));
                     setForeground(Color.GRAY);
                 } else if (isServer) {
-                    setText("Server");
+                    setText(Translation.getTranslation("folder_member.server"));
                     setForeground(Color.GRAY);
                 } else {
-                    setText("Not logged in");
+                    setText(Translation
+                        .getTranslation("folder_member.not_logged_in"));
                     setForeground(Color.GRAY);
                 }
             } else if (actualColumn == MembersTableModel.COL_PERMISSION) {
@@ -207,9 +210,13 @@ public class MembersTable extends JTable {
                         name = folderMember.getPermission().getName();
                     } else if (defPerm != null) {
                         name = defPerm.getName();
-                        name += " (default)";
+                        name += " (";
+                        name += Translation
+                            .getTranslation("permissions.folder.default");
+                        name += ")";
                     } else {
-                        name = "No access";
+                        name = Translation
+                            .getTranslation("permissions.folder.no_access");
                     }
                     setText(name);
                 }
@@ -245,13 +252,23 @@ public class MembersTable extends JTable {
                     if (selectedMember != null
                         && selectedMember.getMember() == null)
                     {
-                        setText("No access");
+                        setText(Translation
+                            .getTranslation("permissions.folder.no_access"));
                     } else {
                         FolderPermission defPerm = model.getDefaultPermission();
                         if (defPerm != null) {
-                            setText(defPerm.getName() + " (default)");
+                            setText(defPerm.getName()
+                                + " ("
+                                + Translation
+                                    .getTranslation("permissions.folder.default")
+                                + ")");
                         } else {
-                            setText("No access (default)");
+                            setText(Translation
+                                .getTranslation("permissions.folder.no_access")
+                                + " ("
+                                + Translation
+                                    .getTranslation("permissions.folder.default")
+                                + ")");
                         }
                     }
 

@@ -217,7 +217,8 @@ public class MembersTab extends PFUIComponent {
         builder = new PanelBuilder(layout);
         cc = new CellConstraints();
         builder.add(buttonBarPanel, cc.xy(1, 1));
-        builder.addLabel("Default permission:", cc.xy(3, 1));
+        builder.addLabel(Translation
+            .getTranslation("folder_member.default_permission"), cc.xy(3, 1));
         builder.add(defaultPermissionBox, cc.xy(5, 1));
 
         return builder.getPanel();
@@ -261,7 +262,8 @@ public class MembersTab extends PFUIComponent {
                     if (value instanceof FolderPermission) {
                         setText(((FolderPermission) value).getName());
                     } else {
-                        setText("No access");
+                        setText(Translation
+                            .getTranslation("permissions.folder.no_access"));
                     }
                     return comp;
                 }

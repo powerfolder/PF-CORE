@@ -384,10 +384,12 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 // Show warning
                 AccountInfo oldOwner = findFolderOwner();
                 String oldOwnerStr = oldOwner != null ? oldOwner
-                    .getScrabledUsername() : "nobody";
+                    .getScrabledUsername() : Translation
+                    .getTranslation("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
                 String newOwnerStr = newOwner != null ? newOwner
-                    .getScrabledUsername() : "nobody";
+                    .getScrabledUsername() : Translation
+                    .getTranslation("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
                         .getTranslation("folder_member.change_owner.title"),
