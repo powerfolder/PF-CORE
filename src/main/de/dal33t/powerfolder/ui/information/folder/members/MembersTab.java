@@ -145,6 +145,8 @@ public class MembersTab extends PFUIComponent {
                     boolean refreshing = (Boolean) evt.getNewValue();
                     boolean permissionsRetrieved = model
                         .isPermissionsRetrieved();
+                    // Cancel edit of current cell
+                    membersTable.cancelCellEditing();
                     refreshBar.setVisible(refreshing);
                     refreshButton.setVisible(!refreshing);
                     defaultPermissionBox.setEnabled(!refreshing

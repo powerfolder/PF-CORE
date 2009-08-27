@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.problem.NoOwnerProblem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -345,15 +346,17 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     /**
-     * Answers if cell is editable - only permissions
-     * 
      * @param rowIndex
      * @param columnIndex
-     * @return
+     * @return if cell is editable - only permissions
      */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == COL_PERMISSION && permissionsRetrieved
-            && getFolderMemberAt(rowIndex).getAccountInfo() != null;
+        if (columnIndex != COL_PERMISSION) {
+            return false;
+        }
+        return permissionsRetrieved
+            && getFolderMemberAt(rowIndex).getAccountInfo() != null
+            && !(getFolderMemberAt(rowIndex).getPermission() instanceof FolderOwnerPermission);
     }
 
     /**
@@ -779,6 +782,16 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                     // Folder has changed. discard result.
                     return;
                 }
+
+                // TODO Find a better place to check this:
+                if (!NoOwnerProblem.hasOwner(res)) {
+                    NoOwnerProblem problem = new NoOwnerProblem(folder
+                        .getInfo());
+                    if (!folder.getProblems().contains(problem)) {
+                        folder.addProblem(new NoOwnerProblem(folder.getInfo()));
+                    }
+                }
+
                 permissionsRetrieved = true;
                 rebuild(res, defaultPermission);
             } catch (Exception e) {

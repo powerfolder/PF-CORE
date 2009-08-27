@@ -52,9 +52,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class MembersTable extends JTable {
 
+    private DefaultCellEditor cellEditor;
+
     /**
      * Constructor
-     *
+     * 
      * @param model
      */
     public MembersTable(MembersTableModel model) {
@@ -79,8 +81,14 @@ public class MembersTable extends JTable {
         SortedTableHeaderRenderer.associateHeaderRenderer(model,
             getColumnModel(), MembersTableModel.COL_TYPE);
 
-        setDefaultEditor(FolderPermission.class, new DefaultCellEditor(
-            createdEditComboBox(model)));
+        cellEditor = new DefaultCellEditor(createdEditComboBox(model));
+        setDefaultEditor(FolderPermission.class, cellEditor);
+    }
+
+    void cancelCellEditing() {
+        if (cellEditor != null) {
+            cellEditor.cancelCellEditing();
+        }
     }
 
     /**
@@ -113,7 +121,7 @@ public class MembersTable extends JTable {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class TableHeaderMouseListener extends MouseAdapter {
