@@ -249,14 +249,21 @@ public class FilesTableModel extends PFComponent implements TableModel,
         return diskItems.get(rowIndex);
     }
 
-    public DiskItem getDiskItemAtRow(int row) {
-        Object at = getValueAt(row, COL_NAME);
-        if (at instanceof FileInfo) {
-            return (FileInfo) at;
-        } else if (at instanceof Directory) {
-            return (Directory) at;
+    public DiskItem[] getDiskItemsAtRows(int[] rows) {
+        DiskItem[] items = new DiskItem[rows.length];
+        int i = 0;
+        for (int row : rows) {
+            Object at = getValueAt(row, COL_NAME);
+            if (at instanceof FileInfo) {
+                items[i] = (FileInfo) at;
+            } else if (at instanceof Directory) {
+                items[i] = (Directory) at;
+            } else {
+                logSevere("Object was a " + at.getClass().getName() + "???");
+            }
+            i++;
         }
-        return null;
+        return items;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -302,7 +309,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      *
-     * @param newComparator
+     * @param newComparatorType
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {

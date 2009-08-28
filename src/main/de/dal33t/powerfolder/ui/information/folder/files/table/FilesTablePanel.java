@@ -248,77 +248,72 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             return;
         }
         int[] rows = table.getSelectedRows();
-        boolean singleRowSelected = rows.length == 1;
-        if (singleRowSelected) {
-            DiskItem diskItem = tableModel.getDiskItemAtRow(rows[0]);
-            if (diskItem != null) {
-                if (diskItem instanceof Directory) {
-                    Directory directory = (Directory) diskItem;
-                    File file = new File(directory.getPath());
-                    if (file.exists()) {
-                        try {
-                            FileUtils.openFile(file);
-                        } catch (IOException ex) {
-                            logSevere(ex);
-                        }
+        DiskItem[] diskItems = tableModel.getDiskItemsAtRows(rows);
+        for (DiskItem diskItem : diskItems) {
+            if (diskItem instanceof Directory) {
+                Directory directory = (Directory) diskItem;
+                File file = new File(directory.getPath());
+                if (file.exists()) {
+                    try {
+                        FileUtils.openFile(file);
+                    } catch (IOException ex) {
+                        logSevere(ex);
                     }
-                } else if (diskItem instanceof FileInfo) {
-                    FileInfo fileInfo = (FileInfo) diskItem;
-                    File file = fileInfo.getDiskFile(getController()
-                            .getFolderRepository());
-                    if (file != null && file.exists()) {
-                        try {
-                            FileUtils.openFile(file);
-                        } catch (IOException ex) {
-                            logSevere(ex);
-                        }
+                }
+            } else if (diskItem instanceof FileInfo) {
+                FileInfo fileInfo = (FileInfo) diskItem;
+                File file = fileInfo.getDiskFile(getController()
+                        .getFolderRepository());
+                if (file != null && file.exists()) {
+                    try {
+                        FileUtils.openFile(file);
+                    } catch (IOException ex) {
+                        logSevere(ex);
                     }
                 }
             }
         }
     }
 
-    private void deleteSelectedFile() {
+    private void deleteSelectedFiles() {
         if (table == null || tableModel == null) {
             return;
         }
         int[] rows = table.getSelectedRows();
-        boolean singleRowSelected = rows.length == 1;
-        final DiskItem diskItem = tableModel.getDiskItemAtRow(rows[0]);
-        if (singleRowSelected && diskItem != null && diskItem instanceof FileInfo) {
-            SwingWorker worker = new ActivityVisualizationWorker(
-                getUIController())
-            {
-                public Object construct() {
-                    FolderRepository repo = getController()
-                        .getFolderRepository();
-                    FileInfo fileInfo = (FileInfo) diskItem;
-                    Folder folder = fileInfo.getFolder(repo);
-                    folder.removeFilesLocal(fileInfo);
-                    return null;
+        final DiskItem[] diskItems = tableModel.getDiskItemsAtRows(rows);
+        SwingWorker worker = new ActivityVisualizationWorker(getUIController())
+        {
+            public Object construct() {
+                FolderRepository repo = getController().getFolderRepository();
+                for (DiskItem diskItem : diskItems) {
+                    try {
+                        if (diskItem instanceof FileInfo) {
+                            FileInfo fileInfo = (FileInfo) diskItem;
+                            Folder folder = fileInfo.getFolder(repo);
+                            folder.removeFilesLocal(fileInfo);
+                        }
+                    } catch (Exception e) {
+                        logSevere(e);
+                    }
                 }
+                return null;
+            }
 
-                protected String getTitle() {
-                    return Translation.getTranslation("delete.busy.title");
-                }
+            protected String getTitle() {
+                return Translation.getTranslation("delete.busy.title");
+            }
 
-                protected String getWorkingText() {
-                    return Translation
-                        .getTranslation("delete.busy.description");
-                }
-            };
-            worker.start();
-        }
+            protected String getWorkingText() {
+                return Translation
+                    .getTranslation("delete.busy.description");
+            }
+        };
+        worker.start();
     }
 
-    private DiskItem getSelectedRow() {
-        int min = table.getSelectionModel().getMinSelectionIndex();
-        int max = table.getSelectionModel().getMaxSelectionIndex();
-        if (min == max && min >= 0) {
-            return tableModel.getDiskItemAtRow(min);
-        }
-
-        return null;
+    private DiskItem[] getSelectedRows() {
+        int[] rows = table.getSelectedRows();
+        return tableModel.getDiskItemsAtRows(rows);
     }
 
     private void updateEmptyLabel() {
@@ -339,12 +334,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
      * When a user double-clicks a row
      */
     private void handleDoubleClick() {
-        int min = table.getSelectionModel().getMinSelectionIndex();
-        int max = table.getSelectionModel().getMaxSelectionIndex();
-        // Single selection?
-        if (min == max) {
             int index = table.getSelectionModel().getLeadSelectionIndex();
-            DiskItem diskItem = tableModel.getDiskItemAtRow(index);
+            DiskItem diskItem = tableModel.getDiskItemsAtRows(new int[]{index})[0];
             if (diskItem != null) {
                 if (diskItem instanceof Directory) {
                     Directory directory = (Directory) diskItem;
@@ -364,7 +355,6 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     }
                 }
             }
-        }
     }
 
     private JPanel createDetailsPanel() {
@@ -410,20 +400,21 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                 @Override
                 public Object construct() {
-                    DiskItem diskItem = getSelectedRow();
-                    if (diskItem != null && diskItem instanceof FileInfo) {
-                        FileInfo fileInfo = (FileInfo) diskItem;
-                        FolderRepository repo = getController()
-                            .getFolderRepository();
-                        Folder folder = fileInfo.getFolder(repo);
-                        if (folder == null) {
-                            return null;
+                    for (DiskItem diskItem : getSelectedRows()) {
+                        if (diskItem instanceof FileInfo) {
+                            FileInfo fileInfo = (FileInfo) diskItem;
+                            FolderRepository repo = getController()
+                                .getFolderRepository();
+                            Folder folder = fileInfo.getFolder(repo);
+                            if (folder == null) {
+                                return null;
+                            }
+                            if (fileInfo.isDownloading(getController())) {
+                                return null;
+                            }
+                            getController().getTransferManager()
+                                .downloadNewestVersion(fileInfo);
                         }
-                        if (fileInfo.isDownloading(getController())) {
-                            return null;
-                        }
-                        getController().getTransferManager()
-                            .downloadNewestVersion(fileInfo);
                     }
                     return null;
                 }
@@ -451,7 +442,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            deleteSelectedFile();
+            deleteSelectedFiles();
         }
     }
 
@@ -468,51 +459,53 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class MyListSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-                openFileAction.setEnabled(diskItem != null);
-            }
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                TransferManager tm = getController().getTransferManager();
-                FileInfo fileInfo = (FileInfo) diskItem;
-                fileDetailsPanel.setFileInfo(fileInfo);
-                fileVersionsPanel.setFileInfo(fileInfo);
-
-                // Enable download action if file is download-able.
-                FolderRepository repo = getController().getFolderRepository();
-                boolean state = true;
-                if (fileInfo.diskFileExists(getController())
-                    && !fileInfo.isNewerAvailable(repo))
-                {
-                    state = false;
-                } else if (!(fileInfo.isDeleted() || fileInfo.isExpected(repo) || fileInfo
-                    .isNewerAvailable(repo)))
-                {
-                    state = false;
-                } else {
-                    if (tm.getActiveDownload(fileInfo) != null) {
-                        return;
-                    }
+            if (getSelectedRows().length > 0) {
+                DiskItem diskItem = getSelectedRows()[0];
+                if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
+                    openFileAction.setEnabled(diskItem != null);
                 }
-                downloadFileAction.setEnabled(state);
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    TransferManager tm = getController().getTransferManager();
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    fileDetailsPanel.setFileInfo(fileInfo);
+                    fileVersionsPanel.setFileInfo(fileInfo);
 
-                // Enable restore / (!delete) action if file is restore-able.
-                deleteFileAction.setEnabled(!state);
+                    // Enable download action if file is download-able.
+                    FolderRepository repo = getController().getFolderRepository();
+                    boolean state = true;
+                    if (fileInfo.diskFileExists(getController())
+                        && !fileInfo.isNewerAvailable(repo))
+                    {
+                        state = false;
+                    } else if (!(fileInfo.isDeleted() || fileInfo.isExpected(repo) || fileInfo
+                        .isNewerAvailable(repo)))
+                    {
+                        state = false;
+                    } else {
+                        if (tm.getActiveDownload(fileInfo) != null) {
+                            return;
+                        }
+                    }
+                    downloadFileAction.setEnabled(state);
 
-                DownloadManager dl = getController().getTransferManager()
-                    .getActiveDownload(fileInfo);
-                abortDownloadAction.setEnabled(dl != null);
+                    // Enable restore / (!delete) action if file is restore-able.
+                    deleteFileAction.setEnabled(!state);
 
-                boolean retained = tableModel.getFolder().getDiskItemFilter()
-                    .isRetained(fileInfo);
-                addIgnoreAction.setEnabled(retained);
-                removeIgnoreAction.setEnabled(!retained);
+                    DownloadManager dl = getController().getTransferManager()
+                        .getActiveDownload(fileInfo);
+                    abortDownloadAction.setEnabled(dl != null);
 
-                unmarkAction.setEnabled(tm.isCompletedDownload(fileInfo));
+                    boolean retained = tableModel.getFolder().getDiskItemFilter()
+                        .isRetained(fileInfo);
+                    addIgnoreAction.setEnabled(retained);
+                    removeIgnoreAction.setEnabled(!retained);
 
-                singleFileTransferAction.setEnabled(true);
+                    unmarkAction.setEnabled(tm.isCompletedDownload(fileInfo));
 
-                return;
+                    singleFileTransferAction.setEnabled(true);
+
+                    return;
+                }
             }
 
             fileDetailsPanel.setFileInfo(null);
@@ -563,13 +556,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                TransferManager tm = getController().getTransferManager();
-                DownloadManager dl = tm.getActiveDownload(fileInfo);
-                if (dl != null) {
-                    dl.abort();
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    TransferManager tm = getController().getTransferManager();
+                    DownloadManager dl = tm.getActiveDownload(fileInfo);
+                    if (dl != null) {
+                        dl.abort();
+                    }
                 }
             }
         }
@@ -582,11 +576,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                tableModel.getFolder().getDiskItemFilter().addPattern(
-                    fileInfo.getName());
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    tableModel.getFolder().getDiskItemFilter().addPattern(
+                        fileInfo.getName());
+                }
             }
         }
     }
@@ -598,11 +593,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                tableModel.getFolder().getDiskItemFilter().removePattern(
-                    fileInfo.getName());
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    tableModel.getFolder().getDiskItemFilter().removePattern(
+                        fileInfo.getName());
+                }
             }
         }
     }
@@ -614,13 +610,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                TransferManager transferManager = getController()
-                    .getTransferManager();
-                if (transferManager.isCompletedDownload(fileInfo)) {
-                    transferManager.clearCompletedDownload(fileInfo);
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    TransferManager transferManager = getController()
+                        .getTransferManager();
+                    if (transferManager.isCompletedDownload(fileInfo)) {
+                        transferManager.clearCompletedDownload(fileInfo);
+                    }
                 }
             }
         }
@@ -640,13 +637,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            DiskItem diskItem = getSelectedRow();
-            if (diskItem != null && diskItem instanceof FileInfo) {
-                FileInfo fileInfo = (FileInfo) diskItem;
-                getUIController()
-                    .transferSingleFile(
-                        fileInfo.getDiskFile(getController()
-                            .getFolderRepository()), null);
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    getUIController()
+                        .transferSingleFile(
+                            fileInfo.getDiskFile(getController()
+                                .getFolderRepository()), null);
+                }
             }
         }
     }
