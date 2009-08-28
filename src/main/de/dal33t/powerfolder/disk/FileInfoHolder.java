@@ -31,11 +31,6 @@ public class FileInfoHolder {
     private FileInfo fileInfo;
     private Folder folder;
     boolean fileInfoIsMyOwn;
-    /**
-     * the availability of this file (number of users that have the highest not
-     * deleted version of this file
-     */
-    private int availability;
 
     /**
      * creates a FileInfoHolder and reads the fileData from the FileInfo.
@@ -48,7 +43,6 @@ public class FileInfoHolder {
         this.fileInfo = fileInfo;
         this.folder = folder;
         fileInfoIsMyOwn = member.isMySelf();
-        availability = 1;
     }
 
     /**
@@ -84,13 +78,11 @@ public class FileInfoHolder {
     public synchronized void put(Member member, FileInfo newFileInfo) {
         // memberHasFileInfoMap.put(member, newFileInfo);
         if (fileInfoIsMyOwn) { // do not overwrite myself
-            calcAvailability();
             return;
         }
         if (member.isMySelf()) { // use myself as info
             this.fileInfo = newFileInfo;
             fileInfoIsMyOwn = true;
-            calcAvailability();
             return;
         }
         if (newFileInfo.isNewerThan(this.fileInfo)) {
@@ -113,65 +105,10 @@ public class FileInfoHolder {
                 }
             }
         }
-        calcAvailability();
-    }
-
-    /**
-     * returns the number of complete files of the latest version in the network
-     * 
-     * @return the # of members this file is available
-     */
-    public int getAvailability() {
-        return availability;
     }
 
     public FileInfo getFileInfo() {
         return fileInfo;
     }
 
-    /**
-     * valid if at least one connected member has a not deleted version or
-     * member with deleted version is myself
-     * 
-     * @return true if the file is valid
-     */
-    public boolean isValid() {
-        for (Member member : folder.getMembersAsCollection()) {
-            if (member.isConnected() || member.isMySelf()) {
-                FileInfo fInfo = member.getFile(fileInfo);
-                if (fInfo == null) {
-                    continue;
-                }
-                if (fInfo.isDeleted()) {
-                    if (member.isMySelf()) {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void calcAvailability() {
-        FileInfo newestNotDeleted = fileInfo.getNewestNotDeletedVersion(folder
-            .getController().getFolderRepository());
-        int tmpAvailability = 0;
-        int newestVersion = newestNotDeleted != null ? newestNotDeleted
-            .getVersion() : 0;
-        for (Member member : folder.getMembersAsCollection()) {
-            if (!member.isCompletelyConnected() && !member.isMySelf()) {
-                continue;
-            }
-            FileInfo memberFileInfo = member.getFile(fileInfo);
-            if (memberFileInfo == null || memberFileInfo.isDeleted()) {
-                continue;
-            }
-            if (memberFileInfo.getVersion() == newestVersion) {
-                tmpAvailability++;
-            }
-        }
-        availability = tmpAvailability;
-    }
 }

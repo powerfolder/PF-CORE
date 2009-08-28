@@ -238,7 +238,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * get the files in this dir (not the files in the subs)
      * 
      * @return the list of files
-     * @see #getFilesRecursive()
      */
     public List<FileInfo> getFiles() {
         List<FileInfo> files = new ArrayList<FileInfo>();
@@ -248,25 +247,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return files;
     }
 
-    /**
-     * returns only valid files. (valid if at least one member has a not deleted
-     * version or member with deleted version is myself)
-     * 
-     * @return the list of fileinfos
-     */
-    public List<FileInfo> getFilesRecursive() {
-        List<FileInfo> files = new ArrayList<FileInfo>();
-        for (FileInfoHolder holder : fileInfoHolderMap.values()) {
-            if (holder.isValid()) {
-                files.add(holder.getFileInfo());
-            }
-        }
-        for (Directory dir : subDirectoriesMap.values()) {
-            files.addAll(dir.getFilesRecursive());
-        }
-        return files;
-    }
-    
     /**
      * @return true if all filesInfos and filesInfos in subdirectories are
      *         deleted
@@ -287,7 +267,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
         return true; // this dir is deleted
     }
-    
+
     /**
      * @return the list of subdirectories in this directory, that are NOT
      *         deleted.
