@@ -131,6 +131,9 @@ public class Account extends Model implements Serializable {
                 // Skip
                 continue;
             }
+            if (p instanceof FolderPermission) {
+                revokeAllFolderPermission(((FolderPermission) p).getFolder());
+            }
             permissions.add(p);
         }
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
@@ -144,6 +147,13 @@ public class Account extends Model implements Serializable {
             permissions.remove(p);
         }
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
+    }
+
+    public void revokeAllFolderPermission(FolderInfo foInfo) {
+        revoke(new FolderReadPermission(foInfo));
+        revoke(new FolderReadWritePermission(foInfo));
+        revoke(new FolderAdminPermission(foInfo));
+        revoke(new FolderOwnerPermission(foInfo));
     }
 
     public void revokeAllPermissions() {
