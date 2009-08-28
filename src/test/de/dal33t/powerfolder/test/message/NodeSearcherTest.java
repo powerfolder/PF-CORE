@@ -180,8 +180,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
-        // baRt, homeR and maRge, ned flendeRs
-        assertEquals(searchResultModel.toString(), 4, searchResultModel.size());
+        // baRt, homeR and maRge, ned flendeRs, Online StoRage
+        assertEquals(searchResultModel.toString(), 5, searchResultModel.size());
 
         // Search for "127.0.0.1"
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
