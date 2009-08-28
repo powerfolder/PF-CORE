@@ -51,6 +51,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
             "false");
         connectBartAndLisa();
+        getContollerBart().setSilentMode(true);
+        getContollerLisa().setSilentMode(true);
         // Note: Don't make friends, SYNC_PC profile should sync even if PCs are
         // not friends.
         joinTestFolder(SyncProfile.HOST_FILES);
