@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -33,11 +32,11 @@ import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
-import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -48,8 +47,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -63,6 +60,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         .getLogger(LoginOnlineStoragePanel.class.getName());
 
     private ServerClient client;
+    private boolean showUseOS;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -71,10 +69,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private JLabel passwordLabel;
     private JProgressBar workingBar;
     private JCheckBox rememberPasswordBox;
+    private JCheckBox useOSBox;
     private WizardPanel nextPanel;
-
-    private boolean entryRequired;
-    private boolean noThanks;
 
     /**
      * Constructs a login panel for login to the default OS.
@@ -82,13 +78,13 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * @param controller
      * @param nextPanel
      *            the next panel to display
-     * @param entryRequired
-     *            if username and password has to be validated.
+     * @param showUseOS
+     *            if the checkbox to use Online Storage should be displayed
      */
     public LoginOnlineStoragePanel(Controller controller,
-        WizardPanel nextPanel, boolean entryRequired)
+        WizardPanel nextPanel, boolean showUseOS)
     {
-        this(controller, controller.getOSClient(), nextPanel, entryRequired);
+        this(controller, controller.getOSClient(), nextPanel, showUseOS);
     }
 
     /**
@@ -97,38 +93,28 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      *            the online storage client to use.
      * @param nextPanel
      *            the next panel to display
-     * @param entryRequired
-     *            if username and password has to be validated.
+     * @param showUseOS
+     *            if the checkbox to use Online Storage should be displayed
      */
     public LoginOnlineStoragePanel(Controller controller, ServerClient client,
-        WizardPanel nextPanel, boolean entryRequired)
+        WizardPanel nextPanel, boolean showUseOS)
     {
         super(controller);
         Reject.ifNull(nextPanel, "Nextpanel is null");
         this.nextPanel = nextPanel;
-        this.entryRequired = entryRequired;
         this.client = client;
+        this.showUseOS = showUseOS;
     }
 
     public boolean hasNext() {
-        if (entryRequired) {
-            return client.isConnected()
-                && !StringUtils.isEmpty(usernameField.getText());
-        } else {
-            return true;
-        }
+        return client.isConnected()
+            && !StringUtils.isEmpty(usernameField.getText());
     }
 
     protected void afterDisplay() {
-        noThanks = false;
     }
 
     public boolean validateNext() {
-        if (noThanks || !entryRequired
-            && StringUtils.isEmpty(usernameField.getText()))
-        {
-            return true;
-        }
         boolean loginOk = false;
         try {
             loginOk = client.login(usernameField.getText(),
@@ -157,42 +143,31 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 10dlu, pref");
+            "right:60dlu, 3dlu, 80dlu, pref:grow",
+            "pref, 6dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 3dlu, pref, 3dlu, pref, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        if (entryRequired) {
-            builder.addLabel(Translation
-                .getTranslation("wizard.webservice.enter_account"), cc.xyw(1,
-                1, 4));
-        } else {
-            builder.addLabel(Translation
-                .getTranslation("wizard.webservice.enter_account_optional"), cc
-                .xyw(1, 1, 4));
-        }
-
-        builder.add(usernameLabel, cc.xy(1, 3));
+        int row = 1;
+        builder.addLabel(Translation
+            .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, row,
+            4));
+        row += 2;
 
         // usernameField and connectingLabel have the same slot.
-        builder.add(usernameField, cc.xy(3, 3));
-        builder.add(connectingLabel, cc.xyw(3, 3, 2));
-
-        builder.add(passwordLabel, cc.xy(1, 5));
+        builder.add(usernameLabel, cc.xy(1, row));
+        builder.add(usernameField, cc.xy(3, row));
+        builder.add(connectingLabel, cc.xyw(1, row, 3));
+        row += 2;
 
         // passwordField and workingBar have the same slot.
-        builder.add(passwordField, cc.xy(3, 5));
-        builder.add(workingBar, cc.xy(3, 5));
+        builder.add(passwordLabel, cc.xy(1, row));
+        builder.add(passwordField, cc.xy(3, row));
+        builder.add(workingBar, cc.xyw(1, row, 3));
+        row += 2;
 
-        builder.add(rememberPasswordBox, cc.xyw(3, 7, 2));
-
-        int row = 9;
-
-        if (!entryRequired) {
-            builder.add(new ActionLabel(getController(), new MySkipLoginAction(
-                getController())).getUIComponent(), cc.xyw(1, row, 4));
-            row += 2;
-        }
+        builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
+        row += 2;
 
         if (client.supportsWebRegistration()) {
             builder.add(new LinkLabel(getController(), Translation
@@ -200,17 +175,21 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 .getRegisterURL()).getUiComponent(), cc.xyw(1, row, 4));
             row += 2;
 
+            builder.add(new LinkLabel(getController(), Translation
+                .getTranslation("wizard.webservice.recover_password"),
+                getController().getOSClient().getWebURL()).getUiComponent(), cc
+                .xyw(1, row, 4));
+            row += 2;
+        }
+
+        if (showUseOS) {
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUiComponent(), cc.xyw(1, row, 4));
             row += 2;
 
-            builder.add(new LinkLabel(getController(), Translation
-                .getTranslation("wizard.webservice.recover_password"),
-                getController().getOSClient().getWebURL()
-                    + "/storage_login.html").getUiComponent(), cc
-                .xyw(1, row, 4));
+            builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
         }
 
@@ -244,6 +223,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
+        useOSBox = BasicComponentFactory.createCheckBox(getController()
+            .getUIController().getApplicationModel().getUseOSModel(),
+            Translation.getTranslation("wizard.login_online_storage.no_os"));
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
         workingBar = new JProgressBar();
@@ -269,6 +251,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(enabled);
         connectingLabel.setVisible(!enabled);
         workingBar.setVisible(!enabled);
+
+        if (enabled) {
+            usernameLabel.requestFocus();
+        }
         updateButtons();
     }
 
@@ -302,28 +288,4 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         }
     }
 
-    private class MySkipLoginAction extends BaseAction {
-
-        private MySkipLoginAction(Controller controller) {
-            super("action_skip_login", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            noThanks = true;
-
-            // Hide the existing Online Storage lines
-            getController().getUIController().hideOSLines();
-
-            // User is not interested in OS. Hide OS stuff in UI.
-            PreferencesEntry.USE_ONLINE_STORAGE
-                .setValue(getController(), false);
-
-            // User will not want to back up to OS.
-            PreferencesEntry.BACKUP_OS.setValue(getController(), false);
-
-            Wizard wizard = (Wizard) getWizardContext().getAttribute(
-                WizardContextAttributes.WIZARD_ATTRIBUTE);
-            wizard.next();
-        }
-    }
 }

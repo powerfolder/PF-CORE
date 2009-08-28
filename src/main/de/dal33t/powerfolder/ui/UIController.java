@@ -903,13 +903,6 @@ public class UIController extends PFComponent {
         wizardDialogReference = new WeakReference<JDialog>(wizardDialog);
     }
 
-    /**
-     * Hide the Online Storage lines in the home tab.
-     */
-    public void hideOSLines() {
-        mainFrame.hideOSLines();
-    }
-
     public boolean chatFrameVisible() {
         return chatFrame.getUIComponent().isVisible();
     }

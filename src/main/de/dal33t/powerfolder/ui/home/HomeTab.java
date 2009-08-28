@@ -50,7 +50,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -66,6 +65,8 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
+import de.dal33t.powerfolder.security.SecurityManagerEvent;
+import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -140,6 +141,8 @@ public class HomeTab extends PFUIComponent {
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
         controller.getFolderRepository().addOverallFolderStatListener(
             new MyOverallFolderStatListener());
+        getApplicationModel().getUseOSModel().addValueChangeListener(
+            new UseOSModelListener());
     }
 
     /**
@@ -279,24 +282,12 @@ public class HomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout;
-        if (PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()))
-        {
-            layout = new FormLayout(
-                "3dlu, 100dlu, pref:grow, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
-            // sync-stat sync-date sep you-have warn, files invs comps singl
-            // down upl sep #fol szfo comp sep os-acc osSec tell friend
+        FormLayout layout = new FormLayout(
+            "3dlu, 100dlu, pref:grow, 3dlu",
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
+        // sync-stat sync-date sep you-have warn, files invs comps singl
+        // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
-        } else {
-            layout = new FormLayout(
-                "3dlu, 100dlu, pref:grow, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, 3dlu, pref:grow, pref");
-            // sync-stat sync-date sep you-have warn, files invs comps singl
-            // down upl sep #fol szfo comp tell friend
-
-        }
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
         builder.setBorder(Borders.createEmptyBorder("0, 0, 2dlu, 0"));
@@ -356,35 +347,20 @@ public class HomeTab extends PFUIComponent {
 
         row++;
 
-        if (PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()))
-        {
-            builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-            row += 2;
+        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
+        row += 2;
 
-            builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2,
-                row, 2, 1));
-            row += 2;
+        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row,
+            2, 1));
+        row += 2;
 
-            builder.add(onlineStorageSection.getUIComponent(), cc.xywh(2, row,
-                2, 1));
-            row += 3;
-
-        } else {
-            row += 2;
-        }
+        builder.add(onlineStorageSection.getUIComponent(), cc
+            .xywh(2, row, 2, 1));
+        row += 3;
 
         builder.add(tellFriendLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
 
         return builder.getPanel();
-    }
-
-    /**
-     * Hide the Online Storage lines in the home tab.
-     */
-    public void hideOSLines() {
-        onlineStorageAccountLabel.getUIComponent().setVisible(false);
-        onlineStorageSection.getUIComponent().setVisible(false);
     }
 
     /**
@@ -830,6 +806,13 @@ public class HomeTab extends PFUIComponent {
                 logSevere(e);
             }
             return null;
+        }
+    }
+
+    private class UseOSModelListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateOnlineStorageDetails();
         }
     }
 

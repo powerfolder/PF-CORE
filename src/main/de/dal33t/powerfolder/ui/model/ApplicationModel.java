@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.model;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
@@ -50,6 +51,7 @@ public class ApplicationModel extends PFUIComponent {
     private WarningModel warningsModel;
     private ValueModel chatNotificationsValueModel;
     private ValueModel systemNotificationsValueModel;
+    private ValueModel useOSModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -68,32 +70,42 @@ public class ApplicationModel extends PFUIComponent {
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
         receivedInvitationsModel = new ReceivedInvitationsModel(getController());
-        receivedAskedForFriendshipModel =
-                new ReceivedAskedForFriendshipModel(getController());
-        receivedSingleFileOffersModel =
-                new ReceivedSingleFileOffersModel(getController());
+        receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel(
+            getController());
+        receivedSingleFileOffersModel = new ReceivedSingleFileOffersModel(
+            getController());
         warningsModel = new WarningModel(getController());
 
         chatNotificationsValueModel = new ValueHolder(
-                ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.getValueBoolean(
-                        controller));
-        chatNotificationsValueModel.addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
+            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS
+                .getValueBoolean(controller));
+        chatNotificationsValueModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
-                controller.saveConfig();
-            }
-        });
+                    controller.saveConfig();
+                }
+            });
         systemNotificationsValueModel = new ValueHolder(
-                ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.getValueBoolean(
-                        controller));
-        systemNotificationsValueModel.addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
+            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                .getValueBoolean(controller));
+        systemNotificationsValueModel
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
-                controller.saveConfig();
+                    controller.saveConfig();
+                }
+            });
+
+        useOSModel = PreferencesEntry.USE_ONLINE_STORAGE
+            .getModel(getController());
+        useOSModel.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // User will not want to back up to OS.
+                PreferencesEntry.BACKUP_OS.setValue(getController(),
+                    (Boolean) evt.getNewValue());
             }
         });
     }
@@ -131,7 +143,8 @@ public class ApplicationModel extends PFUIComponent {
         return receivedInvitationsModel;
     }
 
-    public ReceivedAskedForFriendshipModel getReceivedAskedForFriendshipModel() {
+    public ReceivedAskedForFriendshipModel getReceivedAskedForFriendshipModel()
+    {
         return receivedAskedForFriendshipModel;
     }
 
@@ -149,5 +162,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public ValueModel getSystemNotificationsValueModel() {
         return systemNotificationsValueModel;
+    }
+
+    public ValueModel getUseOSModel() {
+        return useOSModel;
     }
 }

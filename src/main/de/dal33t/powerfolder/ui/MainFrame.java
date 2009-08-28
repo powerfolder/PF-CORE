@@ -405,13 +405,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Hide the Online Storage lines in the home tab.
-     */
-    public void hideOSLines() {
-        mainTabbedPane.hideOSLines();
-    }
-
-    /**
      * Set the Icon for the home tab.
      *
      * @param homeIcon

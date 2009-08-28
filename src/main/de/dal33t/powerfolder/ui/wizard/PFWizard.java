@@ -84,7 +84,7 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller);
         WhatToDoPanel wtdp = new WhatToDoPanel(controller);
         BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
-        wizard.open(new LoginOnlineStoragePanel(controller, basicPanel, false));
+        wizard.open(new LoginOnlineStoragePanel(controller, basicPanel, true));
     }
 
     /**
@@ -222,7 +222,7 @@ public class PFWizard extends PFUIComponent {
                 .getTranslation("wizard.finish.os_login_text"), true);
         }
         wizard.open(new LoginOnlineStoragePanel(controller, client,
-            nextFinishPanel, true));
+            nextFinishPanel, false));
     }
 
     /**

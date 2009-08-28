@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -42,7 +43,7 @@ public class OnlineStorageSection extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public OnlineStorageSection(Controller controller) {
@@ -51,18 +52,20 @@ public class OnlineStorageSection extends PFUIComponent {
 
     /**
      * Sets the trial info details, hiding if necessary.
-     *
+     * 
      * @param totalStorage
      * @param spaceUsed
      * @param trial
      * @param daysLeft
      */
-    public void setInfo(long totalStorage, long spaceUsed, boolean trial, int daysLeft) {
+    public void setInfo(long totalStorage, long spaceUsed, boolean trial,
+        int daysLeft)
+    {
 
         double percentageUsed = 0;
         if (totalStorage > 0) {
-            percentageUsed = 100.0d * (double) spaceUsed /
-                    (double) totalStorage;
+            percentageUsed = 100.0d * (double) spaceUsed
+                / (double) totalStorage;
         }
         if (percentageUsed < 0.0d) {
             percentageUsed = 0.0d;
@@ -79,18 +82,25 @@ public class OnlineStorageSection extends PFUIComponent {
         }
 
         usagePB.setValue((int) percentageUsed);
-        usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / " +
-        Format.formatBytesShort(totalStorage));
+        usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
+            + Format.formatBytesShort(totalStorage));
 
         usageLabel.setText(Translation.getTranslation(
-                "home_tab.online_storage.usage",
-                Format.formatNumber(percentageUsed)));
-        usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / " +
-        Format.formatBytesShort(totalStorage));
+            "home_tab.online_storage.usage", Format
+                .formatNumber(percentageUsed)));
+        usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
+            + Format.formatBytesShort(totalStorage));
+
+        boolean showOS = PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController());
+        // Don't show if not using it
+        usagePB.setVisible(showOS);
+        usageLabel.setVisible(showOS);
     }
 
     /**
      * Gets the ui component, building first if necessary.
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -106,8 +116,8 @@ public class OnlineStorageSection extends PFUIComponent {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("100dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu");
-              // prog        usage       trial
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu");
+        // prog usage trial
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
