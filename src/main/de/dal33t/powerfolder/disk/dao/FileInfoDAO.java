@@ -121,7 +121,7 @@ public interface FileInfoDAO {
      * 
      * @param dir
      * @param recursive
-     * @param domains
+     * @param domain
      * @return the collection of available directories
      */
     Collection<DirectoryInfo> findDirectories(String domain);

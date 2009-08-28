@@ -52,11 +52,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap
-            = new ConcurrentHashMap<FileInfo, FileInfoHolder>(2, 0.75f, 4);
+    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
+        2, 0.75f, 4);
     /** key = dir name, value = Directory* */
-    private final Map<String, Directory> subDirectoriesMap
-            = new ConcurrentHashMap<String, Directory>(2, 0.75f, 4);
+    private final Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
+        2, 0.75f, 4);
     /**
      * the path to this directory (including its name, excluding the localbase
      * (see Folder)
@@ -88,10 +88,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     public boolean isRetained() {
         return rootFolder.getDiskItemFilter().isRetained(this);
-    }
-
-    public boolean isFolderWhitelist() {
-        return rootFolder.isWhitelist();
     }
 
     /** returns a File object to the diretory in the filesystem */

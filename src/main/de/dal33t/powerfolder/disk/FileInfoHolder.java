@@ -51,7 +51,7 @@ public class FileInfoHolder {
      * @param member
      * @return true if empty as result of removal
      */
-    public boolean removeFileOfMember(Member member) {
+    boolean removeFileOfMember(Member member) {
         // memberHasFileInfoMap.remove(member);
         // return memberHasFileInfoMap.isEmpty();
         // TODO Implement
@@ -61,7 +61,7 @@ public class FileInfoHolder {
     /**
      * @return true if any version of this file is still available.
      */
-    public boolean isAnyVersionAvailable() {
+    boolean isAnyVersionAvailable() {
         for (Member member : folder.getMembersAsCollection()) {
             if (member.hasFile(fileInfo)) {
                 return true;
@@ -75,7 +75,7 @@ public class FileInfoHolder {
         this.fileInfo = fileInfo;
     }
 
-    public synchronized void put(Member member, FileInfo newFileInfo) {
+    synchronized void put(Member member, FileInfo newFileInfo) {
         // memberHasFileInfoMap.put(member, newFileInfo);
         if (fileInfoIsMyOwn) { // do not overwrite myself
             return;
@@ -107,7 +107,7 @@ public class FileInfoHolder {
         }
     }
 
-    public FileInfo getFileInfo() {
+    FileInfo getFileInfo() {
         return fileInfo;
     }
 
