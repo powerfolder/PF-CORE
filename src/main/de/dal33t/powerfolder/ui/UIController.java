@@ -863,11 +863,16 @@ public class UIController extends PFComponent {
     }
 
     /**
+     * Attention: If possible use method
+     * {@link UIUtil#getParentWindow(ActionEvent)} to determine the active
+     * window.
+     * <p>
      * This returns most recently active PowerFolder frame. Possibly the
      * InformationFrame, ChatFrame or (default) MainFrame. Used by dialogs, so
      * focus does not always jump to the wrong (Main) frame.
+     * <P>
      * 
-     * @return
+     * @return the active frame.
      */
     public Window getActiveFrame() {
 
