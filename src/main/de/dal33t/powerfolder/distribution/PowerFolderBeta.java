@@ -72,7 +72,7 @@ public class PowerFolderBeta extends AbstractDistribution {
         ConfigurationEntry.SERVER_NODEID.setValue(c, "RELAY001");
         ConfigurationEntry.SERVER_NAME.setValue(c, "Online Storage Beta");
         ConfigurationEntry.SERVER_WEB_URL.setValue(c,
-            "https://access.powerfolder.com/node/relay001");
+            "https://access.powerfolder.com/node/beta");
     }
 
     private static void resetNetworkID(Controller c) {
