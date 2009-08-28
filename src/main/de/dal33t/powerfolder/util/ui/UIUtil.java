@@ -1,37 +1,43 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -42,7 +48,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.util.Reject;
-
 
 /**
  * Offers helper/utility method for UI related stuff.
@@ -159,6 +164,28 @@ public class UIUtil {
     }
 
     /**
+     * @param event
+     * @return the topmost parent element. Useful for dialogs.
+     */
+    public static Component getParentComponent(ActionEvent event) {
+        if (!(event.getSource() instanceof Component)) {
+            return null;
+        }
+        Component comp = (Component) event.getSource();
+        while (comp.getParent() != null) {
+            if (comp instanceof JDialog) {
+                Dialog dialog = (Dialog) comp;
+                if (dialog.isModal()) {
+                    // First modal dialog
+                    return dialog;
+                }
+            }
+            comp = comp.getParent();
+        }
+        return comp;
+    }
+
+    /**
      * Sets the preferred height of a component to zero (0).
      * <p>
      * Useful for <code>JScrollPanes</code>.
@@ -215,7 +242,8 @@ public class UIUtil {
                 if (UIUtil.UIMANAGER_LOOK_N_FEEL_PROPERTY.equals(evt
                     .getPropertyName()))
                 {
-                    log.warning("UIManager changed l&f, executing task: " + task);
+                    log.warning("UIManager changed l&f, executing task: "
+                        + task);
                     task.run();
                 }
             }
@@ -280,19 +308,18 @@ public class UIUtil {
     }
 
     /**
-     * Apply opacity to a window.
-     * Done with reflection to ensure there is no issue pre Java 1.6.0_10,
-     * although the Java version should already have been checked
-     * ({@link de.dal33t.powerfolder.Constants#OPACITY_SUPPORTED}).
-     *
+     * Apply opacity to a window. Done with reflection to ensure there is no
+     * issue pre Java 1.6.0_10, although the Java version should already have
+     * been checked ({@link de.dal33t.powerfolder.Constants#OPACITY_SUPPORTED}).
+     * 
      * @param window
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
         try {
             Class clazz = Class.forName("com.sun.awt.AWTUtilities");
-            Method m = clazz.getMethod("setWindowOpacity",
-                    Window.class, Float.TYPE);
+            Method m = clazz.getMethod("setWindowOpacity", Window.class,
+                Float.TYPE);
             m.invoke(clazz, window, opacity);
         } catch (NoSuchMethodException e) {
             log.warning(e.getMessage());

@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.InetSocketAddress;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -48,8 +49,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.action.ConnectAction;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.ui.widget.FilterTextField;
 import de.dal33t.powerfolder.util.PFUIPanel;
@@ -83,6 +86,8 @@ public class FindComputersPanel extends PFUIPanel {
     private JComponent panel;
     /** add friend */
     private Action addFriendAction;
+    /** to connect */
+    private Action connectAction;
     /** The Thread performing the search */
     private NodeSearcher searcher;
     /**
@@ -91,10 +96,15 @@ public class FindComputersPanel extends PFUIPanel {
      */
     private JCheckBox hideOffline;
 
-    /** create a FriendsPanel */
+    /**
+     * create a FriendsPanel
+     * 
+     * @param controller
+     */
     public FindComputersPanel(Controller controller) {
         super(controller);
         addFriendAction = new AddFriendAction();
+        connectAction = new MyConnectAction(controller);
     }
 
     /**
@@ -176,16 +186,11 @@ public class FindComputersPanel extends PFUIPanel {
             }
         });
 
-        JButton connectButton = new JButton(getApplicationModel()
-            .getActionModel().getConnectAction());
-
-        FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu, pref, fill:pref:grow", "pref");
+        FormLayout layout = new FormLayout("0:grow, pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(connectButton, cc.xy(1, 1));
-        builder.add(searchInput.getUIComponent(), cc.xy(3, 1));
-        builder.add(hideOffline, cc.xy(5, 1));
+        builder.add(hideOffline, cc.xy(2, 1));
+        builder.add(searchInput.getUIComponent(), cc.xy(4, 1));
         return builder.getPanel();
 
     }
@@ -313,6 +318,29 @@ public class FindComputersPanel extends PFUIPanel {
         }
     }
 
+    private final class MyConnectAction extends ConnectAction {
+        private MyConnectAction(Controller controller) {
+            super(controller);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int row = searchResult.getSelectedRow();
+            if (row >= 0) {
+                Member node = (Member) searchNodeTableModel.getValueAt(row, 0);
+                if (node != null) {
+                    InetSocketAddress addr = node.getReconnectAddress();
+                    String conStr = addr.getAddress().getHostAddress();
+                    if (addr.getPort() != ConnectionListener.DEFAULT_PORT) {
+                        conStr += ':' + addr.getPort();
+                    }
+                    setInputConnect(conStr);
+                }
+            }
+            super.actionPerformed(e);
+        }
+    }
+
     /** The hide offline user to perform on click on checkbox */
     private class HideOfflineAction extends BaseAction {
         private HideOfflineAction() {
@@ -365,5 +393,9 @@ public class FindComputersPanel extends PFUIPanel {
 
     public Action getAddFriendAction() {
         return addFriendAction;
+    }
+
+    public Action getConnectAction() {
+        return connectAction;
     }
 }

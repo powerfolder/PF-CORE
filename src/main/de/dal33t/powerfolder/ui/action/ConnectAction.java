@@ -1,24 +1,25 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.action;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +31,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Asks for ip and tries to connect
@@ -39,17 +41,25 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class ConnectAction extends BaseAction {
 
-    private static final Logger log = Logger.getLogger(ConnectAction.class.getName());
+    private static final Logger log = Logger.getLogger(ConnectAction.class
+        .getName());
 
     public ConnectAction(Controller controller) {
         super("action_connect", controller);
     }
 
+    public void setInputConnect(String conStr) {
+        getController().getPreferences().put("input.lastconnect", conStr);
+    }
+
     public void actionPerformed(ActionEvent e) {
-        Object input = JOptionPane.showInputDialog(getUIController()
-            .getMainFrame().getUIComponent(),
-            Translation.getTranslation("connect.dialog.text"),
-            Translation.getTranslation("connect.dialog.title"),
+        Component parent = UIUtil.getParentComponent(e);
+        if (parent == null) {
+            parent = getUIController().getMainFrame().getUIComponent();
+        }
+        Object input = JOptionPane.showInputDialog(parent, Translation
+            .getTranslation("connect.dialog.text"), Translation
+            .getTranslation("connect.dialog.title"),
             JOptionPane.QUESTION_MESSAGE, null, null, getController()
                 .getPreferences().get("input.lastconnect", ""));
         if (StringUtils.isBlank((String) input)) {
@@ -60,7 +70,7 @@ public class ConnectAction extends BaseAction {
         final ConnectDialog connectDialog = new ConnectDialog(getController());
         final String conStr = input.toString();
         getController().getPreferences().put("input.lastconnect", conStr);
-        
+
         Runnable connector = new Runnable() {
             public void run() {
                 // Open connect dialog if ui is open

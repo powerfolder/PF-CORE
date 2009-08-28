@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +35,7 @@ public class FindComputersDialog extends BaseDialog {
     private FindComputersPanel panel;
     private JButton addToFriendsButton;
     private JButton closeButton;
+    private JButton connectButton;
 
     public FindComputersDialog(Controller controller, boolean modal) {
         super(controller, modal);
@@ -43,11 +45,18 @@ public class FindComputersDialog extends BaseDialog {
     private void initComponents() {
         panel = new FindComputersPanel(getController());
         addToFriendsButton = createAddToFriendsButton();
+        addToFriendsButton.setIcon(null);
         closeButton = createCloseButton();
+        connectButton = createConnectButton();
+        connectButton.setIcon(null);
     }
 
     private JButton createAddToFriendsButton() {
         return new JButton(panel.getAddFriendAction());
+    }
+
+    private JButton createConnectButton() {
+        return new JButton(panel.getConnectAction());
     }
 
     public String getTitle() {
@@ -63,8 +72,8 @@ public class FindComputersDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(addToFriendsButton,
-            closeButton);
+        return ButtonBarFactory.buildCenteredBar(connectButton,
+            addToFriendsButton, closeButton);
     }
 
     @Override
