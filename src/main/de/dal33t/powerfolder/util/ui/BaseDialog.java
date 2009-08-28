@@ -245,7 +245,7 @@ public abstract class BaseDialog extends PFUIComponent {
             });
 
             FormLayout layout = new FormLayout("pref, pref:grow",
-                "pref:grow, 10dlu, pref");
+                "fill:pref:grow, 10dlu, fill:pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 

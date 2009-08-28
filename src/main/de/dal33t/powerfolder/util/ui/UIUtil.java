@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -165,24 +166,25 @@ public class UIUtil {
 
     /**
      * @param event
-     * @return the topmost parent element. Useful for dialogs.
+     * @return the first Window in the action chaing. Useful for dialogs.
      */
-    public static Component getParentComponent(ActionEvent event) {
+    public static Window getParentWindow(ActionEvent event) {
         if (!(event.getSource() instanceof Component)) {
             return null;
         }
         Component comp = (Component) event.getSource();
         while (comp.getParent() != null) {
-            if (comp instanceof JDialog) {
-                Dialog dialog = (Dialog) comp;
-                if (dialog.isModal()) {
-                    // First modal dialog
-                    return dialog;
-                }
+            if (comp instanceof Window) {
+                // First frame
+                return (Window) comp;
             }
             comp = comp.getParent();
         }
-        return comp;
+        if (comp instanceof Window) {
+            // First frame
+            return (Window) comp;
+        }
+        return null;
     }
 
     /**
