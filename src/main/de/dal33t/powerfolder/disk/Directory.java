@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
@@ -37,7 +35,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -86,10 +83,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         this.rootFolder = rootFolder;
     }
 
-    public boolean isRetained() {
-        return rootFolder.getDiskItemFilter().isRetained(this);
-    }
-
     /** returns a File object to the diretory in the filesystem */
     public File getFile() {
         return new File(rootFolder.getLocalBase(), path);
@@ -118,56 +111,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     public Directory getParentDirectory() {
         return parent;
-    }
-
-    /**
-     * move a file from this source to this Directory, overwrites target if
-     * exisits!
-     * 
-     * @param file
-     * @return the file has been moved
-     */
-    public boolean moveFileFrom(File file) {
-        Reject.ifNull(file, "file cannot be null");
-        if (!file.exists()) {
-            throw new IllegalStateException("File must exists");
-        }
-
-        File newFile = new File(getFile(), file.getName());
-        try {
-            if (file.getCanonicalPath().equals(newFile.getCanonicalPath())) {
-                throw new IllegalStateException("cannot copy onto itself");
-            }
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
-            return false;
-        }
-        File tmpFile = null;
-        if (newFile.exists()) {
-            // target exists, rename it so we backup
-            tmpFile = new File(newFile + ".tmp");
-            if (!newFile.renameTo(tmpFile)) {
-                log.severe("Couldn't rename " + newFile.getAbsolutePath()
-                    + " to " + tmpFile.getAbsolutePath());
-            }
-        }
-        if (file.renameTo(newFile)) {
-            // success!
-            if (tmpFile != null) {
-                if (!tmpFile.delete()) {
-                    log.severe("Couldn't delete " + tmpFile.getAbsolutePath());
-                }
-            }
-        } else {
-            // rename failed restore if possible
-            if (tmpFile != null) {
-                if (!tmpFile.renameTo(newFile)) {
-                    log.severe("Couldn't rename " + newFile.getAbsolutePath()
-                        + " to " + tmpFile.getAbsolutePath());
-                }
-            }
-        }
-        return newFile.exists() && !file.exists();
     }
 
     /**

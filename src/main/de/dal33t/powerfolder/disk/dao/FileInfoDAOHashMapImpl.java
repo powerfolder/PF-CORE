@@ -1,9 +1,11 @@
 package de.dal33t.powerfolder.disk.dao;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -196,6 +198,19 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Collection<FileInfo> findInDirectory(String path, String domainStr) {
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        Domain domain = getDomain(domainStr);
+        for (FileInfo fInfo : domain.files.values()) {
+            if (isInSubDir(fInfo, path)) {
+                // In subdir, do not consider
+                continue;
+            }
+            files.add(fInfo);
+        }
+        return files;
     }
 
     // public Collection<FileInfo> findInDirectory(String path, String...
