@@ -40,6 +40,7 @@ public class FindComputersDialog extends BaseDialog {
     public FindComputersDialog(Controller controller, boolean modal) {
         super(controller, modal);
         initComponents();
+        getUIComponent().setResizable(true);
     }
 
     private void initComponents() {

@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.friends;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -27,7 +26,6 @@ import java.beans.PropertyChangeListener;
 import java.net.InetSocketAddress;
 
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -151,14 +149,13 @@ public class FindComputersPanel extends PFUIPanel {
     }
 
     private JComponent createContentPanel() {
-        FormLayout layout = new FormLayout("600",
-            "pref, 3dlu, pref, min(pref;300)");
+        FormLayout layout = new FormLayout("fill:600:grow",
+            "pref, 3dlu, fill:300:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createSearchPanel(), cc.xy(1, 1));
-        builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(searchResultScroller, cc.xy(1, 4));
+        builder.add(searchResultScroller, cc.xy(1, 3));
 
         updateActions();
 

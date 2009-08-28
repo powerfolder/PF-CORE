@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class to render expandable view of a folder.
@@ -605,7 +606,7 @@ public class ExpandableComputerView extends PFUIComponent implements
 
             // Build new connect dialog
             final ConnectDialog connectDialog = new ConnectDialog(
-                getController());
+                getController(), UIUtil.getParentWindow(e));
 
             Runnable connector = new Runnable() {
                 public void run() {

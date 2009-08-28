@@ -53,7 +53,7 @@ public class ConnectAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        Component parent = UIUtil.getParentComponent(e);
+        Component parent = UIUtil.getParentWindow(e);
         if (parent == null) {
             parent = getUIController().getMainFrame().getUIComponent();
         }
@@ -67,7 +67,8 @@ public class ConnectAction extends BaseAction {
         }
 
         // Build new connect dialog
-        final ConnectDialog connectDialog = new ConnectDialog(getController());
+        final ConnectDialog connectDialog = new ConnectDialog(getController(),
+            UIUtil.getParentWindow(e));
         final String conStr = input.toString();
         getController().getPreferences().put("input.lastconnect", conStr);
 

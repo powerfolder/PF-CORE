@@ -428,7 +428,7 @@ public class ChatPanel extends PFUIComponent {
 
             // Build new connect dialog
             final ConnectDialog connectDialog = new ConnectDialog(
-                getController());
+                getController(), UIUtil.getParentWindow(e));
 
             Runnable connector = new Runnable() {
                 public void run() {
