@@ -79,8 +79,6 @@ public enum PreferencesEntry {
      */
     SERVER_REMEMBER_PASSWORD("server_remind_password", true),
 
-    FOLDER_TYPE_SELECTION("folder_type_selection", 0),
-
     /**
      * Whether to use magnetic frames by default (i.e. not with ctrl key)
      */

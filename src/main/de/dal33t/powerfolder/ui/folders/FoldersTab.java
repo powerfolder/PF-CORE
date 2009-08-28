@@ -22,31 +22,20 @@ package de.dal33t.powerfolder.ui.folders;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Class to display the forders tab.
  */
 public class FoldersTab extends PFUIComponent {
 
-    public static final int FOLDER_TYPE_ALL = 0;
-    public static final int FOLDER_TYPE_LOCAL = 1;
-    public static final int FOLDER_TYPE_ONLINE = 2;
-
     private JPanel uiComponent;
     private FoldersList foldersList;
-    private JComboBox folderTypeList;
-    private ValueModel folderSelectionTypeVM;
     private JScrollPane scrollPane;
     private JLabel emptyLabel;
 
@@ -62,23 +51,7 @@ public class FoldersTab extends PFUIComponent {
                 SwingConstants.CENTER);
         emptyLabel.setEnabled(false);
 
-        Integer initialSelection = PreferencesEntry.FOLDER_TYPE_SELECTION
-                .getValueInt(getController());
-
-        folderSelectionTypeVM = new ValueHolder();
-        folderSelectionTypeVM.setValue(initialSelection);
-
-        foldersList = new FoldersList(getController(), this,
-                folderSelectionTypeVM);
-
-        folderTypeList = new JComboBox();
-        folderTypeList.setToolTipText(Translation.getTranslation(
-                "folders_tab.folder_type_list.text"));
-        folderTypeList.addItem(Translation.getTranslation("folders_tab.all_folders"));
-        folderTypeList.addItem(Translation.getTranslation("folders_tab.only_local_folders"));
-        folderTypeList.addItem(Translation.getTranslation("folders_tab.only_online_folders"));
-        folderTypeList.setSelectedIndex(initialSelection);
-        folderTypeList.addActionListener(new MyActionListener());
+        foldersList = new FoldersList(getController(), this);
     }
 
     /**
@@ -132,10 +105,6 @@ public class FoldersTab extends PFUIComponent {
         }
     }
 
-    public ValueModel getFolderSelectionTypeVM() {
-        return folderSelectionTypeVM;
-    }
-
     /**
      * @return the toolbar
      */
@@ -143,13 +112,12 @@ public class FoldersTab extends PFUIComponent {
         JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
                 .getNewFolderAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(newFolderButton, cc.xy(2, 1));
-        builder.add(folderTypeList, cc.xy(4, 1));
 
         return builder.getPanel();
     }
@@ -159,15 +127,5 @@ public class FoldersTab extends PFUIComponent {
      */
     public void populate() {
         foldersList.populate();
-    }
-
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource().equals(folderTypeList)) {
-                PreferencesEntry.FOLDER_TYPE_SELECTION.setValue(getController(),
-                        folderTypeList.getSelectedIndex());
-                folderSelectionTypeVM.setValue(folderTypeList.getSelectedIndex());
-            }
-        }
     }
 }
