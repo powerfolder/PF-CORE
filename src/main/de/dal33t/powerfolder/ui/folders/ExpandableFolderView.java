@@ -596,6 +596,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             filesText = Translation
                 .getTranslation("exp_folder_view.files", "?");
         } else {
+            // FIXME: Returns # of files + # of directories
             filesText = Translation.getTranslation("exp_folder_view.files",
                 String.valueOf(folder.getKnownFilesCount()));
         }
