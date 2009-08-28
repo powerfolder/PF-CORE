@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -53,21 +52,20 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    // TODO This map comsumes a LOT memory.
-    private Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
-        2, 0.75f, 4);
+    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap
+            = new ConcurrentHashMap<FileInfo, FileInfoHolder>(2, 0.75f, 4);
     /** key = dir name, value = Directory* */
-    private Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
-        2, 0.75f, 4);
+    private final Map<String, Directory> subDirectoriesMap
+            = new ConcurrentHashMap<String, Directory>(2, 0.75f, 4);
     /**
      * the path to this directory (including its name, excluding the localbase
      * (see Folder)
      */
-    private String path;
+    private final String path;
     /** the name of this directory */
     private String name;
     /** The root Folder which this Directory belongs to */
-    private Folder rootFolder;
+    private final Folder rootFolder;
     /** The parent Directory (may be null, if no parent!) */
     private Directory parent;
     private static final Logger log = Logger.getLogger(Directory.class
@@ -186,15 +184,17 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (fileInfoHolderMap.remove(fInfo) != null) {
             return;
         }
-        for (Directory dir : subDirectoriesMap.values()) {
+        for (String key : subDirectoriesMap.keySet()) {
+            Directory dir = subDirectoriesMap.get(key);
             dir.removeFileInfo(fInfo);
             if (dir.fileInfoHolderMap.isEmpty()) {
-                subDirectoriesMap.remove(dir);
+                subDirectoriesMap.remove(key);
             }
         }
     }
 
     public boolean removeFilesOfMember(Member member) {
+        // @todo duh, member parameter is not used ???
         boolean removed = false;
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
             if (!holder.isAnyVersionAvailable()) {
@@ -202,10 +202,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 fileInfoHolderMap.remove(holder.getFileInfo());
             }
         }
-        for (Directory dir : subDirectoriesMap.values()) {
+        for (String key : subDirectoriesMap.keySet()) {
+            Directory dir = subDirectoriesMap.get(key);
             boolean dirRemoved = dir.removeFilesOfMember(member);
             if (dir.fileInfoHolderMap.isEmpty()) {
-                subDirectoriesMap.remove(dir);
+                subDirectoriesMap.remove(key);
             }
             removed = removed || dirRemoved;
         }
@@ -315,7 +316,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * @return true if this is the same object or the paths are equal
-     * @see java.lang.Object#equals(java.lang.Object)
+     * @see Object#equals(Object)
      */
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -339,7 +340,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * Added because equals is overridden. (See #692)
      * 
-     * @see java.lang.Object#hashCode()
+     * @see Object#hashCode()
      */
     @Override
     public int hashCode() {
@@ -417,26 +418,6 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return path;
     }
 
-    /**
-     * helper code to fill build the Directory with FileInfos in the correct sub
-     * Directories
-     * 
-     * @param listOfFiles
-     *            The files to add to this Diretory
-     * @param folder
-     *            The Folder that holds this directory
-     */
-    static Directory buildDirsRecursive(Member member,
-        Collection<FileInfo> listOfFiles, Folder folder)
-    {
-        Directory root = new Directory(null, Translation
-            .getTranslation("general.files"), "", folder);
-        for (FileInfo info : listOfFiles) {
-            root.add(member, info);
-        }
-        return root;
-    }
-
     /** add a file recursive to this or correct sub Directory */
     void add(Member member, FileInfo file) {
         if (file.isDiretory()) {
@@ -461,14 +442,12 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 if (subDirectoriesMap.containsKey(dirName)) {
                     Directory dir = subDirectoriesMap.get(dirName);
                     dir.add(member, file, rest);
-                    // TODO fire change ?
                 } else {
                     Directory dir = new Directory(this, dirName, dirName,
                         rootFolder);
                     // rootFolder.addDirectory(dir);
                     subDirectoriesMap.put(dirName, dir);
                     dir.add(member, file, rest);
-                    // TODO fire change ?
                 }
             }
         }
@@ -496,13 +475,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 if (subDirectoriesMap.containsKey(dirName)) {
                     Directory dir = subDirectoriesMap.get(dirName);
                     dir.add(member, file, rest);
-                    // TODO fire Change?
                 } else {
                     Directory dir = new Directory(this, dirName, path + '/'
                         + dirName, rootFolder);
                     subDirectoriesMap.put(dirName, dir);
                     dir.add(member, file, rest);
-                    // TODO fire change ?
                 }
             }
         }

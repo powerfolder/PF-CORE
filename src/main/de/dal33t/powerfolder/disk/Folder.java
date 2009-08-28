@@ -166,8 +166,14 @@ public class Folder extends PFComponent {
     /** All members of this folder. Key == Value. Use Map for concurrency. */
     private final Map<Member, Member> members;
 
-    /** cached Directory object */
+    /**
+     * Cached Directory object. NOTE - all access to rootDirectory MUST be
+     * preceded with a call to commissionRootFolder(). 
+     */
     private final Directory rootDirectory;
+
+    /** Lock for commissioning rootDirectory */
+    private final AtomicBoolean rootDirectoryLock = new AtomicBoolean();
 
     /**
      * the folder info, contains important information about
@@ -254,26 +260,9 @@ public class Folder extends PFComponent {
     {
         super(controller);
 
-        // @todo these are pointless (HG)
-        if (fInfo == null) {
-            throw new NullPointerException("FolderInfo is null");
-        }
-        if (controller == null) {
-            throw new NullPointerException("Controller is null");
-        }
-        currentInfo = new FolderInfo(fInfo.name, fInfo.id);
-
-        if (fInfo.name == null) {
-            throw new NullPointerException("Folder name is null");
-        }
-        if (fInfo.id == null) {
-            throw new NullPointerException("Folder id (" + fInfo.id
-                + ") is null");
-        }
-        if (folderSettings.getLocalBaseDir() == null) {
-            throw new NullPointerException("Folder localdir is null");
-        }
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
+
+        currentInfo = new FolderInfo(fInfo.name, fInfo.id);
 
         // Create listener support
         folderListenerSupport = ListenerSupportFactory
@@ -375,9 +364,7 @@ public class Folder extends PFComponent {
 
         previewOnly = folderSettings.isPreviewOnly();
 
-        Collection<FileInfo> infoCollection = dao.findAll(null);
-        rootDirectory = Directory.buildDirsRecursive(getController()
-            .getNodeManager().getMySelf(), infoCollection, this);
+        rootDirectory = new Directory(null, "", "", this);
 
         problems = new CopyOnWriteArrayList<Problem>();
 
@@ -542,6 +529,7 @@ public class Folder extends PFComponent {
                             + scanResult.getNewFiles().size()
                             + " to directory");
                     }
+                    commissionRootFolder();
                     rootDirectory.add(getController().getMySelf(),
                         newFileInfo);
                 }
@@ -864,6 +852,7 @@ public class Folder extends PFComponent {
                     // dbFile.copyFrom(fInfo);
                     dao.store(null, fInfo);
                     // update directory
+                    commissionRootFolder();
                     rootDirectory.removeFileInfo(fInfo);
                     rootDirectory.add(getController().getMySelf(), fInfo);
                     fileChanged(dbFile);
@@ -1103,9 +1092,6 @@ public class Folder extends PFComponent {
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
     private FileInfo scanFile(FileInfo fInfo) {
-        if (fInfo == null) {
-            throw new NullPointerException("File is null");
-        }
         if (isFiner()) {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
@@ -1188,7 +1174,7 @@ public class Folder extends PFComponent {
                     dao.store(null, addFile(fInfo));
 
                     // update directory
-                    // don't do this in the server version
+                    commissionRootFolder();
                     rootDirectory.add(getController().getMySelf(), fInfo);
 
                     // get folder icon info and set it
@@ -1283,10 +1269,9 @@ public class Folder extends PFComponent {
                     }
                     Member from = modifiedBy.getNode(getController(), true);
 
-                    if (from != null) {
-                        modifiedBy = from.getInfo();
-                    }
-
+                    // if (from != null) {
+                    //     modifiedBy = from.getInfo();
+                    // }
                     // Date modDate = dirInfo.getModifiedDate();
                     // long size = dirInfo.getSize();
                     // if (dir.exists()) {
@@ -1307,7 +1292,7 @@ public class Folder extends PFComponent {
                     dao.store(null, addFile(dirInfo));
 
                     // update directory
-                    // don't do this in the server version
+                    commissionRootFolder();
                     rootDirectory.add(getController().getMySelf(), dirInfo);
 
                     // get folder icon info and set it
@@ -1359,9 +1344,6 @@ public class Folder extends PFComponent {
      * @param fInfo
      */
     private FileInfo addFile(FileInfo fInfo) {
-        if (fInfo == null) {
-            throw new NullPointerException("File is null");
-        }
         // Add to this folder
         fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
 
@@ -1498,7 +1480,7 @@ public class Folder extends PFComponent {
      *            the file to load as db file
      * @return true if succeeded
      */
-    @SuppressWarnings("unchecked")
+//    @SuppressWarnings("unchecked")
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
@@ -1806,6 +1788,7 @@ public class Folder extends PFComponent {
                 expired++;
                 // Remove
                 dao.delete(null, file);
+                commissionRootFolder();
                 rootDirectory.removeFileInfo(file);
                 for (Member member : members.values()) {
                     dao.delete(member.getId(), file);
@@ -2083,8 +2066,8 @@ public class Folder extends PFComponent {
             return true;
         }
         logFine("Waiting to complete scan");
-        ScanResult.ResultState lastScanResultState = getLastScanResultState();
-        while (isScanning() && lastScanResultState == getLastScanResultState())
+        ScanResult.ResultState resultState = lastScanResultState;
+        while (isScanning() && resultState == lastScanResultState)
         {
             try {
                 Thread.sleep(100);
@@ -2110,6 +2093,7 @@ public class Folder extends PFComponent {
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId());
+        commissionRootFolder();
         rootDirectory.removeFilesOfMember(member);
 
         // Fire event
@@ -2217,7 +2201,7 @@ public class Folder extends PFComponent {
                             + member.getNick() + "' has " + dirList.size()
                             + " possible files");
                     }
-                    ArrayList<FileInfo> list = new ArrayList<FileInfo>(dirList);
+                    List<FileInfo> list = new ArrayList<FileInfo>(dirList);
                     Collections.sort(list, new ReverseComparator(
                         DiskItemComparator
                             .getComparator(DiskItemComparator.BY_FULL_NAME)));
@@ -2356,19 +2340,19 @@ public class Folder extends PFComponent {
         for (Member member : getMembersAsCollection()) {
             // Connected?
             if (member.isCompletelyConnected()) {
-                if (!member.isPre4Client()) {
-                    if (msgs == null) {
-                        msgs = msgProvider.getMessages(false);
-                    }
-                    if (msgs != null) {
-                        member.sendMessagesAsynchron(msgs);
-                    }
-                } else {
+                if (member.isPre4Client()) {
                     if (msgsPre4 == null) {
                         msgsPre4 = msgProvider.getMessages(true);
                     }
                     if (msgsPre4 != null) {
                         member.sendMessagesAsynchron(msgsPre4);
+                    }
+                } else {
+                    if (msgs == null) {
+                        msgs = msgProvider.getMessages(false);
+                    }
+                    if (msgs != null) {
+                        member.sendMessagesAsynchron(msgs);
                     }
                 }
             }
@@ -2464,7 +2448,7 @@ public class Folder extends PFComponent {
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
 
-        // don't do this in the server version
+        commissionRootFolder();
         rootDirectory.addAll(from, newList.files);
 
         if (syncProfile.isAutodownload() && from.isCompletelyConnected()) {
@@ -2555,9 +2539,11 @@ public class Folder extends PFComponent {
 
         // don't do this in the server version
         if (changes.added != null) {
+            commissionRootFolder();
             rootDirectory.addAll(from, changes.added);
         }
         if (changes.removed != null) {
+            commissionRootFolder();
             rootDirectory.addAll(from, changes.removed);
         }
 
@@ -2893,7 +2879,23 @@ public class Folder extends PFComponent {
      * @return Directory with all sub dirs and files set
      */
     public Directory getDirectory() {
+        commissionRootFolder();
         return rootDirectory;
+    }
+
+    /**
+     * Build up the root directory 'just in time' before use.
+     */
+    private void commissionRootFolder() {
+        synchronized (rootDirectoryLock) {
+            if (!rootDirectoryLock.getAndSet(true)) {
+                Collection<FileInfo> infoCollection = dao.findAll(null);
+                for (FileInfo info : infoCollection) {
+                    rootDirectory.add(getController().getMySelf(), info);
+                }
+                logInfo("Commissioned folder " + getName());
+            }
+        }
     }
 
     /**
@@ -2997,7 +2999,7 @@ public class Folder extends PFComponent {
                         // and put it directly into own recycle bin.
                         continue;
                     }
-                    if (notLocal || (newerThanLocal && newestRemote)) {
+                    if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
                         incomingFiles.put(remoteFile, remoteFile);
                     }
@@ -3028,7 +3030,7 @@ public class Folder extends PFComponent {
                         // and put it directly into own recycle bin.
                         continue;
                     }
-                    if (notLocal || (newerThanLocal && newestRemote)) {
+                    if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
                         incomingFiles.put(remoteDir, remoteDir);
                     }
