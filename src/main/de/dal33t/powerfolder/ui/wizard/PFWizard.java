@@ -320,7 +320,8 @@ public class PFWizard extends PFUIComponent {
             }
         });
 
-        dialog.getContentPane().add(GradientPanel.create(wizard));
+        dialog.getContentPane().add(
+            GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
         // dialog.getContentPane().add(wizard);
         dialog.pack();
         int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog

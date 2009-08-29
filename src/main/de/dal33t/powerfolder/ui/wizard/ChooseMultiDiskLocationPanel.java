@@ -26,6 +26,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -123,6 +125,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private JButton removeButton;
     private String initialDirectory;
     private List<JCheckBox> boxes;
+    private ServerClientListener listener;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -213,7 +216,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "4dlu, pref, 3dlu, 40dlu, 3dlu, pref, 7dlu, pref, 3dlu, pref, 7dlu, pref";
+            + "9dlu, pref, 3dlu, 40dlu, 3dlu, pref, 12dlu, pref, 3dlu, max(16dlu;pref), 12dlu, pref";
         // info custom add size os w
         // Fixed (60dlu) sizing used so that other components display okay if
         // there is only 1 or two (or even zero) check boxes displayed.
@@ -242,16 +245,13 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 col = 1;
             }
         }
-
         row += 3;
 
-        String infoText = (String) getWizardContext().getAttribute(
-            PROMPT_TEXT_ATTRIBUTE);
-        if (infoText == null) {
-            infoText = Translation
-                .getTranslation("wizard.choose_multi_disk_location.select");
-        }
-        builder.addLabel(infoText, cc.xyw(1, row, 6));
+        builder
+            .addLabel(
+                Translation
+                    .getTranslation("wizard.choose_multi_disk_location.select_additional"),
+                cc.xyw(1, row, 6));
         row += 2;
 
         builder.add(new JScrollPane(customDirectoryList), cc.xyw(1, row, 7));
@@ -383,6 +383,24 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         sendInviteAfterCB.setSelected(sendInvite);
 
         enableRemoveAction();
+
+        listener = new MyServerClientListener();
+    }
+
+    @Override
+    protected void afterDisplay() {
+        super.afterDisplay();
+        if (listener != null) {
+            getController().getOSClient().addListener(listener);
+        }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        if (listener != null) {
+            getController().getOSClient().removeListener(listener);
+        }
     }
 
     protected JComponent getPictoComponent() {
@@ -390,6 +408,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
+        String title = (String) getWizardContext().getAttribute(
+            PROMPT_TEXT_ATTRIBUTE);
+        if (StringUtils.isNotBlank(title)) {
+            return title;
+        }
         return Translation
             .getTranslation("wizard.choose_multi_disk_location.title");
     }
@@ -539,9 +562,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         super.updateButtons();
         if (countSelectedFolders() <= 1) {
             sendInviteAfterCB.setEnabled(true);
+            sendInviteAfterCB.setVisible(true);
         } else {
             sendInviteAfterCB.setSelected(false);
             sendInviteAfterCB.setEnabled(false);
+            sendInviteAfterCB.setVisible(false);
         }
     }
 
@@ -554,6 +579,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public void actionPerformed(ActionEvent e) {
             String dir = DialogFactory.chooseDirectory(getController(),
                 initialDirectory);
+            if (StringUtils.isBlank(dir)) {
+                return;
+            }
             File newLocation = new File(dir);
             File localBase = new File(getController().getFolderRepository()
                 .getFoldersBasedir());
@@ -605,6 +633,28 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             updateButtons();
             startFolderSizeCalculator();
         }
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            startFolderSizeCalculator();
+        }
+
+        public void login(ServerClientEvent event) {
+            startFolderSizeCalculator();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 
     private class MySwingWorker extends SwingWorker {

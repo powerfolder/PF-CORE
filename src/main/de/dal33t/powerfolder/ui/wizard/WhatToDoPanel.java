@@ -231,12 +231,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
-        // Setup choose disk location panel
-        getWizardContext()
-            .setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation
-                    .getTranslation("wizard.choose_multi_disk_location.select_additional"));
+        // Setup choose disk location panel / default text
+        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE, null);
 
         // Prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);

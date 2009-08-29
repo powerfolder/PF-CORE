@@ -19,17 +19,22 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.Controller;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 /**
  * A Label which executes the action when clicked.
@@ -94,7 +99,6 @@ public class ActionLabel extends PFComponent {
                 uiComponent.setText("<html><font color=\"" + rgb
                     + "\"><a href=\"#\">" + text + "</a></font></html>");
             } else {
-
                 uiComponent.setForeground(SystemColor.textText);
                 uiComponent.setText(text);
             }
