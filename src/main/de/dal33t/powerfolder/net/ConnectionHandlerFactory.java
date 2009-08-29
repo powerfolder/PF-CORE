@@ -347,8 +347,8 @@ public class ConnectionHandlerFactory extends PFComponent {
             }
         }
 
-        if (isWarning()) {
-            logWarning("Connections ==> good: " + good + ", medium: " + medium
+        if (isFiner()) {
+            logFiner("Connections ==> good: " + good + ", medium: " + medium
                 + ", poor: " + poor);
         }
 
