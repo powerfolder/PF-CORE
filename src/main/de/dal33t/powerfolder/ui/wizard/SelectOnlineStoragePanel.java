@@ -109,8 +109,8 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
 
     @Override
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("max(pref;140dlu), pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("180dlu, pref:grow",
+            "pref, 3dlu, fill:100dlu, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -124,18 +124,20 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         JPanel selectionPanel = createSelectionPanel();
         JScrollPane scrollPane = new JScrollPane(selectionPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        builder.add(scrollPane, cc.xy(1, row, CellConstraints.DEFAULT,
-            CellConstraints.TOP));
+        builder.add(scrollPane, cc.xy(1, row, CellConstraints.FILL,
+            CellConstraints.FILL));
         row += 2;
 
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.archive_mode")), cc.xy(1, row));
-        builder.add(archiveMode, cc.xy(1, row, CellConstraints.RIGHT,
-            CellConstraints.DEFAULT));
-        row += 2;
+        // JLabel label = new JLabel(Translation
+        // .getTranslation("settings_tab.archive_mode"));
+        // label.setOpaque(false);
+        // builder.add(label, cc.xy(1, row));
+        // builder.add(archiveMode, cc.xy(1, row, CellConstraints.RIGHT,
+        // CellConstraints.DEFAULT));
+        // row += 2;
 
         if (OSUtil.isWindowsSystem()) {
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 2));
+            builder.add(createDesktopShortcutBox, cc.xy(1, row));
             row += 2;
         }
 
@@ -180,6 +182,7 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         createDesktopShortcutBox = new JCheckBox(
             Translation
                 .getTranslation("wizard.select_online_storage.desktop_shortcut.text"));
+        createDesktopShortcutBox.setOpaque(false);
         archiveMode = new JComboBox(EnumSet.allOf(ArchiveMode.class).toArray());
         archiveMode.setSelectedItem(ArchiveMode.NO_BACKUP);
     }
