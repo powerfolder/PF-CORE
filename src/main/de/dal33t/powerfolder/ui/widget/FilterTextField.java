@@ -39,12 +39,11 @@ import java.beans.PropertyChangeListener;
 /**
  * A text field that has a X button to remove the text, has a ValueModel holding
  * the text data, so listening to text changes should be done on the ValueModel.
- * the "clear" Button is only visible if there is text.
- *
- * There is an internal and an external value model. The internal vm tracks the
- * text field changes. The external one is what the public accessor sees.
- * External value does not expose 'hint' text.
- *
+ * the "clear" Button is only visible if there is text. There is an internal and
+ * an external value model. The internal vm tracks the text field changes. The
+ * external one is what the public accessor sees. External value does not expose
+ * 'hint' text.
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilterTextField {
@@ -63,7 +62,7 @@ public class FilterTextField {
 
     /**
      * create a FilterTextField
-     *
+     * 
      * @param columns
      */
     public FilterTextField(int columns, String hint, String tooltip) {
@@ -85,14 +84,14 @@ public class FilterTextField {
         if (panel == null) {
             initComponents();
             FormLayout layout = new FormLayout("pref, 1dlu, pref:grow, 15dlu",
-                    "pref");
+                "pref");
             PanelBuilder builder = new PanelBuilder(layout);
             CellConstraints cc = new CellConstraints();
 
             builder.add(glassIcon, cc.xy(1, 1));
             builder.add(textField, cc.xy(3, 1));
             builder.add(clearTextJButton, cc.xy(4, 1, CellConstraints.RIGHT,
-                    CellConstraints.DEFAULT));
+                CellConstraints.DEFAULT));
             builder.add(spacerIcon, cc.xy(4, 1));
             builder.setBorder(new EtchedBorder());
             panel = builder.getPanel();
@@ -104,7 +103,7 @@ public class FilterTextField {
     private void initComponents() {
         // true = editable
         textField = BasicComponentFactory.createTextField(localValueModel,
-                false);
+            false);
         textField.setColumns(columns);
         textField.setBorder(null);
         // make sure we have room for the button
@@ -114,16 +113,16 @@ public class FilterTextField {
         if (tooltip != null && tooltip.length() > 0) {
             textField.setToolTipText(tooltip);
         }
-        spacerIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.BLANK));
+        spacerIcon = SimpleComponentFactory.createLabel(Icons
+            .getIconById(Icons.BLANK));
         spacerIcon.setVisible(false);
-        clearTextJButton = new JButton3Icons(
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL),
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER),
-                Icons.getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+        clearTextJButton = new JButton3Icons(Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
         clearTextJButton.setVisible(false);
-        clearTextJButton.setToolTipText(Translation.getTranslation(
-                "filter_text_field.clear.hint"));
+        clearTextJButton.setToolTipText(Translation
+            .getTranslation("filter_text_field.clear.hint"));
         // make sure the background is never drawn
         clearTextJButton.setContentAreaFilled(false);
         clearTextJButton.addActionListener(new ActionListener() {
@@ -133,8 +132,8 @@ public class FilterTextField {
                 textField.requestFocus();
             }
         });
-        glassIcon = SimpleComponentFactory
-                .createLabel(Icons.getIconById(Icons.FILTER_TEXT_FIELD_GLASS));
+        glassIcon = SimpleComponentFactory.createLabel(Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_GLASS));
 
         localValueModel.addValueChangeListener(new MyPropertyChangeListener());
 
@@ -166,27 +165,31 @@ public class FilterTextField {
 
     /**
      * Returns true if there is external text.
-     *
+     * 
      * @return
      */
     private boolean hasExternalText() {
         return externalValueModel.getValue() != null
-                && ((CharSequence) externalValueModel.getValue()).length() > 0;
+            && ((CharSequence) externalValueModel.getValue()).length() > 0;
     }
 
     public JPopupMenu createPopupMenu() {
         if (contextMenu == null) {
             contextMenu = new JPopupMenu();
             contextMenu.add(new JMenuItem("todo"));
-//            contextMenu.add(addRemoveFriendAction);
-//            contextMenu.add(reconnectAction);
+            // contextMenu.add(addRemoveFriendAction);
+            // contextMenu.add(reconnectAction);
         }
         return contextMenu;
     }
 
+    public void requestFocus() {
+        textField.requestFocusInWindow();
+    }
+
     /**
-     * Listens for changes to the local text value model.
-     * if the component has focus, set the external vm.
+     * Listens for changes to the local text value model. if the component has
+     * focus, set the external vm.
      */
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
@@ -201,8 +204,8 @@ public class FilterTextField {
     }
 
     /**
-     * Listen for changes to text filed and cancel button.
-     * If focus is totally lost, set hint if appropriate.
+     * Listen for changes to text filed and cancel button. If focus is totally
+     * lost, set hint if appropriate.
      */
     private class MyFocusListener extends FocusAdapter {
 

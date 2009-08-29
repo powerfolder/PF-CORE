@@ -54,7 +54,7 @@ public enum PreferencesEntry {
 
     SHOW_ADVANCED_SETTINGS("ShowAdvancedSettings", false),
 
-    UNDERLINE_LINKS("UnderlineLinks", true),
+    UNDERLINE_LINKS("UnderlineLinks", false),
 
     FILE_NAME_CHECK("folder.check_filenames", true),
 

@@ -218,8 +218,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
         // Include custom button in size calculations.
-        // Three buttons every row.
-        for (int i = 0; i < 1 + userDirectories.size() / 3; i++) {
+        // Four buttons every row.
+        for (int i = 0; i < 1 + userDirectories.size() / 4; i++) {
             verticalUserDirectoryLayout.append("pref, 3dlu, ");
         }
 
@@ -247,6 +247,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 col = 3;
             } else if (col == 3) {
                 col = 5;
+            } else if (col == 5) {
+                col = 7;
             } else {
                 row += 2;
                 col = 1;
@@ -376,17 +378,19 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController())
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 WizardContextAttributes.BACKUP_ONLINE_STOARGE));
-        backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
+        backupByOnlineStorageBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
 
             // Remember last preference...
-            Boolean buos = PreferencesEntry.BACKUP_OS.getValueBoolean(
-                    getController());
+            Boolean buos = PreferencesEntry.BACKUP_OS
+                .getValueBoolean(getController());
             if (buos == null) {
                 // .. or default to if last os client login ok.
                 buos = getController().getOSClient().isLoggedIn();
@@ -396,7 +400,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 PreferencesEntry.BACKUP_OS.setValue(getController(),
-                        backupByOnlineStorageBox.isSelected());
+                    backupByOnlineStorageBox.isSelected());
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
                         .getServerClientModel().checkAndSetupAccount();
@@ -406,8 +410,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
+        createDesktopShortcutBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
@@ -773,8 +778,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         folderSizeLabel.setForeground(Color.red);
                     } else {
                         folderSizeLabel.setText(Translation.getTranslation(
-                                "wizard.choose_disk_location.directory_size", Format
-                                .formatBytes(directorySize)));
+                            "wizard.choose_disk_location.directory_size",
+                            Format.formatBytes(directorySize)));
                         folderSizeLabel.setForeground(SystemColor.textText);
                     }
                 }
@@ -787,7 +792,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             if (customRB.isSelected()) {
-                if (initialLocation != null && new File(initialLocation).exists()) {
+                if (initialLocation != null
+                    && new File(initialLocation).exists())
+                {
                     doRadio(initialLocation);
                 }
                 displayChooseDirectory();

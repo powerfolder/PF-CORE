@@ -124,6 +124,7 @@ public class MainTabbedPane extends PFUIComponent {
      */
     private void initComponents() {
         uiComponent = new JTabbedPane();
+        uiComponent.setOpaque(false);
         homeTab = new HomeTab(getController());
         foldersTab = new FoldersTab(getController());
         computersTab = new ComputersTab(getController());

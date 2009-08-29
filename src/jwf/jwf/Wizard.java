@@ -1,20 +1,33 @@
 package jwf;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * This class controls a wizard.
@@ -89,14 +102,17 @@ public class Wizard extends JPanel implements ActionListener {
         barBuilder.addGridded(finishButton);
 
         JComponent navButtons = barBuilder.getPanel();
+        navButtons.setOpaque(false);
         JComponent helpButtons = ButtonBarFactory.buildCenteredBar(helpButton);
+        helpButtons.setOpaque(false);
 
         navButtons.setBorder(Borders.DLU2_BORDER);
         helpButtons.setBorder(Borders.DLU2_BORDER);
 
         JPanel buttons = new JPanel();
+        buttons.setOpaque(false);
         buttons.setLayout(new BorderLayout());
-        buttons.add(new JSeparator(), BorderLayout.NORTH);
+        // buttons.add(new JSeparator(), BorderLayout.NORTH);
         buttons.add(helpButtons, BorderLayout.WEST);
         buttons.add(navButtons, BorderLayout.EAST);
 
@@ -237,16 +253,25 @@ public class Wizard extends JPanel implements ActionListener {
     }
 
     void updateButtons() {
-        cancelButton.setEnabled(current.canCancel());
-        helpButton.setEnabled(current.hasHelp());
-        backButton.setEnabled(!previous.isEmpty() && previous.peek().canGoBackTo());
-        finishButton.setEnabled(current.canFinish());
+        enableButton(cancelButton, current.canCancel());
+        enableButton(helpButton, current.hasHelp());
+        enableButton(backButton, !previous.isEmpty()
+            && previous.peek().canGoBackTo());
+        enableButton(finishButton, current.canFinish());
 
         // If next has focus and is about to go disabled, loose focus.
         if (nextButton.hasFocus() && !current.hasNext()) {
             helpButton.requestFocus();
+        } else if (finishButton.hasFocus() && !current.canFinish()) {
+            finishButton.requestFocus();
         }
-        nextButton.setEnabled(current.hasNext());
+
+        enableButton(nextButton, current.hasNext());
+    }
+
+    private static void enableButton(JButton button, boolean enable) {
+        button.setEnabled(enable);
+        button.setVisible(enable);
     }
 
     /**
@@ -283,11 +308,11 @@ public class Wizard extends JPanel implements ActionListener {
             setCursor(c);
         }
     }
-    
+
     public JButton getNextButton() {
         return nextButton;
     }
-    
+
     private void finish() {
 
         if (current.validateFinish()) {
@@ -322,8 +347,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     private static class MyJMenuBar extends JMenuBar {
         public Dimension getPreferredSize() {
-            return new Dimension((int) super.getPreferredSize().getWidth(),
-                0);
+            return new Dimension((int) super.getPreferredSize().getWidth(), 0);
         }
     }
 }

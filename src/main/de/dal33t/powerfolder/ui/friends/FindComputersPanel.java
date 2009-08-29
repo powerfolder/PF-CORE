@@ -112,6 +112,7 @@ public class FindComputersPanel extends PFUIPanel {
         if (panel == null) {
             initComponents();
             panel = createContentPanel();
+            searchInput.requestFocus();
         }
         return panel;
     }
@@ -329,7 +330,8 @@ public class FindComputersPanel extends PFUIPanel {
                     InetSocketAddress addr = node.getReconnectAddress();
                     String conStr = addr.getAddress().getHostAddress();
                     if (addr.getPort() != ConnectionListener.DEFAULT_PORT) {
-                        conStr += ':' + addr.getPort();
+                        conStr += ':';
+                        conStr += addr.getPort();
                     }
                     setInputConnect(conStr);
                 }

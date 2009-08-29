@@ -57,7 +57,8 @@ public abstract class PFWizardPanel extends WizardPanel {
         }
         this.controller = controller;
         // Set white background for all folder panels
-        setBackground(Color.WHITE);
+        // setBackground(Color.WHITE);
+        setOpaque(false);
 
         // HACK: Find a global place
         LayoutMap.getRoot().columnPut("wlabel", "70dlu");
@@ -76,7 +77,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if this panel can finish
-     *
+     * 
      * @return
      */
     public boolean canFinish() {
@@ -85,7 +86,7 @@ public abstract class PFWizardPanel extends WizardPanel {
 
     /**
      * Override if this panel can cancel
-     *
+     * 
      * @return
      */
     public boolean canCancel() {
@@ -212,8 +213,8 @@ public abstract class PFWizardPanel extends WizardPanel {
         initComponents();
 
         JComponent content = buildContent();
-        content.setOpaque(true);
-        content.setBackground(Color.WHITE);
+        content.setOpaque(false);
+        // content.setBackground(Color.WHITE);
 
         String title = getTitle();
 
@@ -222,23 +223,24 @@ public abstract class PFWizardPanel extends WizardPanel {
 
         setBorder(Borders.EMPTY_BORDER);
 
-        FormLayout layout = new FormLayout("pref, 15dlu, fill:pref:grow",
+        FormLayout layout = new FormLayout("fill:pref:grow",
             "pref, 15dlu, pref, fill:pref:grow");
         PanelBuilder pageBuilder = new PanelBuilder(layout, this);
         pageBuilder.setBorder(Borders
-            .createEmptyBorder("3dlu, 20dlu, 0dlu, 20dlu"));
+            .createEmptyBorder("12dlu, 20dlu, 0dlu, 20dlu"));
         CellConstraints cc = new CellConstraints();
 
-        pageBuilder.add(createTitleLabel(title), cc.xy(3, 1));
+        pageBuilder.add(createTitleLabel(title), cc.xy(1, 1));
 
         // Add current wizard pico
         JComponent picto = getPictoComponent();
+        picto = null;
         if (picto != null) {
             pageBuilder.add(picto, cc.xy(1, 3, CellConstraints.DEFAULT,
                 CellConstraints.TOP));
         }
 
-        pageBuilder.add(content, cc.xy(3, 3, CellConstraints.DEFAULT,
+        pageBuilder.add(content, cc.xy(1, 3, CellConstraints.DEFAULT,
             CellConstraints.TOP));
 
         // initalized

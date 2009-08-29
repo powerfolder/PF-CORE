@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
@@ -40,17 +41,29 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.WarningEvent;
-import de.dal33t.powerfolder.net.*;
+import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.ConnectionQuality;
+import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.UIPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The status bar on the lower side of the main window.
@@ -65,7 +78,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private static final int CONNECTED = 1;
     private static final int DISCONNECTED = 2;
 
-    private Component comp;
+    private JComponent comp;
     private JButton onlineStateInfo;
     private JButton sleepButton;
     private JLabel limitedConnectivityLabel;
@@ -130,6 +143,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
 
             comp = mainBuilder.getPanel();
+            comp.setOpaque(false);
         }
         return comp;
     }

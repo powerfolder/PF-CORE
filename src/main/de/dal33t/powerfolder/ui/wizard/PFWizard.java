@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -319,7 +320,8 @@ public class PFWizard extends PFUIComponent {
             }
         });
 
-        dialog.getContentPane().add(wizard);
+        dialog.getContentPane().add(GradientPanel.create(wizard));
+        // dialog.getContentPane().add(wizard);
         dialog.pack();
         int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
             .getWidth()) / 2;

@@ -19,15 +19,45 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.awt.Color;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.prefs.Preferences;
+
+import javax.swing.Icon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.RootPaneUI;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -37,20 +67,9 @@ import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.plaf.RootPaneUI;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.prefs.Preferences;
-
 /**
  * Powerfoldes gui mainframe
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.44 $
  */
@@ -65,8 +84,8 @@ public class MainFrame extends PFUIComponent {
     private MainTabbedPane mainTabbedPane;
 
     /**
-     * The menu bar that handles F5 for sync, etc.
-     * This is not visible in the GUI.
+     * The menu bar that handles F5 for sync, etc. This is not visible in the
+     * GUI.
      */
     private JMenuBar menuBar;
 
@@ -96,17 +115,19 @@ public class MainFrame extends PFUIComponent {
 
         FormLayout layout = new FormLayout("fill:pref:grow",
             "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
-          // menu  head        body               footer
+        // menu head body footer
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(menuBar, cc.xy(1, 1));
-        builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI), SwingConstants.LEFT), cc.xy(1, 2));
+        builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI),
+            SwingConstants.LEFT), cc.xy(1, 2));
         builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 4));
         builder.add(statusBar.getUIComponent(), cc.xy(1, 6));
 
-        uiComponent.getContentPane().add(builder.getPanel());
+        uiComponent.getContentPane().add(
+            GradientPanel.create(builder.getPanel()));
         uiComponent.setBackground(Color.white);
         uiComponent.setResizable(true);
 
@@ -114,9 +135,9 @@ public class MainFrame extends PFUIComponent {
         int width = prefs.getInt("mainframe4.width", 350);
         int height = prefs.getInt("mainframe4.height", 600);
         // Initial top-right corner
-        uiComponent.setLocation(prefs.getInt("mainframe4.x",
-                Toolkit.getDefaultToolkit().getScreenSize().width - 50 - width),
-                prefs.getInt("mainframe4.y", 50));
+        uiComponent.setLocation(prefs.getInt("mainframe4.x", Toolkit
+            .getDefaultToolkit().getScreenSize().width
+            - 50 - width), prefs.getInt("mainframe4.y", 50));
 
         oldX.set(uiComponent.getX());
         oldY.set(uiComponent.getY());
@@ -147,12 +168,12 @@ public class MainFrame extends PFUIComponent {
             .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // add window listener, checks if exit is needed on pressing X
-		uiComponent.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
+        uiComponent.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
                 if (OSUtil.isSystraySupported()) {
                     handleExitFirstRequest();
                     boolean quitOnX = PreferencesEntry.QUIT_ON_X
-                            .getValueBoolean(getController());
+                        .getValueBoolean(getController());
                     if (quitOnX) {
                         exitProgram();
                     } else {
@@ -163,7 +184,7 @@ public class MainFrame extends PFUIComponent {
                     // Quit if systray is not Supported by OS.
                     exitProgram();
                 }
-			}
+            }
 
             /**
              * Hide other frames when main frame gets minimized.
@@ -173,7 +194,7 @@ public class MainFrame extends PFUIComponent {
             public void windowIconified(WindowEvent e) {
                 getUIController().hideChildPanels();
                 boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                            .getValueBoolean(getController());
+                    .getValueBoolean(getController());
                 if (minToSysTray) {
                     uiComponent.setVisible(false);
                 } else {
@@ -199,7 +220,7 @@ public class MainFrame extends PFUIComponent {
         uiComponent.addComponentListener(new MyComponentAdapter());
         uiComponent.addMouseMotionListener(new MyMouseAdapter());
     }
-    
+
     /**
      * Asks user about exit behavior of the program when the program is used for
      * the first time
@@ -244,9 +265,10 @@ public class MainFrame extends PFUIComponent {
             + Toolkit.getDefaultToolkit().getScreenSize());
 
         uiComponent = new JFrame();
-        if (uiComponent.isAlwaysOnTopSupported()&&
-                PreferencesEntry.MAIN_ALWAYS_ON_TOP.getValueBoolean(
-                        getController())) {
+        if (uiComponent.isAlwaysOnTopSupported()
+            && PreferencesEntry.MAIN_ALWAYS_ON_TOP
+                .getValueBoolean(getController()))
+        {
             uiComponent.setAlwaysOnTop(true);
         }
         uiComponent.addWindowFocusListener(new WindowFocusListener() {
@@ -261,12 +283,12 @@ public class MainFrame extends PFUIComponent {
 
             public void windowLostFocus(WindowEvent e) {
                 if (Constants.OPACITY_SUPPORTED
-                        && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
-                        .getValueBoolean(getController())) {
+                    && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
+                        .getValueBoolean(getController()))
+                {
                     // Translucency is 1 - opacity.
-                    float opacity = 1.0f - PreferencesEntry
-                            .TRANSLUCENT_PERCENTAGE.getValueInt(getController())
-                            /  100.0f;
+                    float opacity = 1.0f - PreferencesEntry.TRANSLUCENT_PERCENTAGE
+                        .getValueInt(getController()) / 100.0f;
                     UIUtil.applyTranslucency(uiComponent, opacity);
                 }
             }
@@ -284,7 +306,8 @@ public class MainFrame extends PFUIComponent {
 
     private void createMenuBar() {
         menuBar = new JMenuBar();
-        JMenuItem syncAllMenuItem = new JMenuItem(new SyncAllFoldersAction(getController()));
+        JMenuItem syncAllMenuItem = new JMenuItem(new SyncAllFoldersAction(
+            getController()));
         menuBar.add(syncAllMenuItem);
     }
 
@@ -294,7 +317,7 @@ public class MainFrame extends PFUIComponent {
     public void updateTitle() {
 
         StringBuilder title = new StringBuilder();
-        
+
         String appName = Translation.getTranslation("general.application.name");
         // Urg
         if (StringUtils.isEmpty(appName) || appName.startsWith("- ")) {
@@ -311,9 +334,7 @@ public class MainFrame extends PFUIComponent {
                 + getController().getMySelf().getNick());
         }
 
-        if (getController().isVerbose()
-            && Controller.getBuildTime() != null)
-        {
+        if (getController().isVerbose() && Controller.getBuildTime() != null) {
             title.append(" | build: " + Controller.getBuildTime());
         }
         Calendar cal = Calendar.getInstance();
@@ -335,7 +356,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Add a change listener to the main tabbed pane selection.
-     *
+     * 
      * @param l
      */
     public void addTabbedPaneChangeListener(ChangeListener l) {
@@ -344,7 +365,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Remove a change listener from the main tabbed pane.
-     *
+     * 
      * @param l
      */
     public void removeTabbedPaneChangeListener(ChangeListener l) {
@@ -406,7 +427,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Set the Icon for the home tab.
-     *
+     * 
      * @param homeIcon
      */
     public void setHomeTabIcon(Icon homeIcon) {
@@ -415,7 +436,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Set the Icon for the folders tab.
-     *
+     * 
      * @param homeIcon
      */
     public void setFoldersTabIcon(Icon foldersIcon) {
@@ -424,7 +445,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Set the Icon for the computers tab.
-     *
+     * 
      * @param homeIcon
      */
     public void setComputersTabIcon(Icon computersIcon) {
@@ -433,7 +454,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Get the selected main tab index.
-     *
+     * 
      * @return
      */
     public int getSelectedMainTabIndex() {
@@ -442,21 +463,20 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Show the pending messages button in the status bar.
-     *
+     * 
      * @param show
      */
     public void showPendingMessages(boolean show) {
         statusBar.showPendingMessages(show);
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
-     * Listen for control key, to use in MyComponentAdapter.
-     * // todo - This is really ugly. Does any one know a better way of
-     * detecting the contol key?
+     * Listen for control key, to use in MyComponentAdapter. // todo - This is
+     * really ugly. Does any one know a better way of detecting the contol key?
      */
     private class MyMouseAdapter extends MouseAdapter {
 
@@ -484,7 +504,7 @@ public class MainFrame extends PFUIComponent {
 
         /**
          * Calculate the change in movement and notify the controller.
-         *
+         * 
          * @param e
          */
         public void componentMoved(ComponentEvent e) {
@@ -496,7 +516,7 @@ public class MainFrame extends PFUIComponent {
                 int diffX = newX - ox;
                 int diffY = newY - oy;
                 getUIController().mainFrameMoved(controlKeyDown.get(), diffX,
-                        diffY);
+                    diffY);
             }
         }
     }

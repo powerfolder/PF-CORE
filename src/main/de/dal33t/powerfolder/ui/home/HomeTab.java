@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -44,6 +45,7 @@ import javax.swing.TransferHandler;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -65,16 +67,16 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
-import de.dal33t.powerfolder.security.SecurityManagerEvent;
-import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -164,22 +166,27 @@ public class HomeTab extends PFUIComponent {
     private void buildUI() {
         initComponents();
 
-        FormLayout layout = new FormLayout("3dlu, pref:grow",
+        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
             "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
+
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         // Toolbar
         JPanel toolbar = createToolBar();
+        toolbar.setOpaque(false);
         builder.add(toolbar, cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 2));
 
         // Main panel in scroll pane
         JPanel mainPanel = buildMainPanel();
+        mainPanel.setOpaque(false);
         JScrollPane scrollPane = new JScrollPane(mainPanel);
+        scrollPane.setOpaque(false);
         UIUtil.removeBorder(scrollPane);
         builder.add(scrollPane, cc.xyw(1, 6, 2));
-        uiComponent = builder.getPanel();
+
+        uiComponent = GradientPanel.create(builder.getPanel());
     }
 
     /**

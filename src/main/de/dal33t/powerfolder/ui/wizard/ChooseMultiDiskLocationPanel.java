@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -30,6 +31,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -54,7 +56,7 @@ import java.util.logging.Level;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -118,13 +120,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private JCheckBox sendInviteAfterCB;
     private Action addAction;
     private Action removeAction;
+    private JButton removeButton;
     private String initialDirectory;
     private List<JCheckBox> boxes;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
-     *
+     * 
      * @param controller
      * @param next
      *            the next panel after selecting the directory.
@@ -168,7 +171,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 if (box.getText().equals(boxName)) {
                     if (box.isSelected()) {
                         FolderCreateItem item = new FolderCreateItem(
-                                userDirectories.get(boxName));
+                            userDirectories.get(boxName));
                         folderCreateItems.add(item);
                     }
                 }
@@ -184,11 +187,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         getWizardContext().setAttribute(FOLDER_CREATE_ITEMS, folderCreateItems);
 
-        getWizardContext().setAttribute(
-            BACKUP_ONLINE_STOARGE,
+        getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
-        getWizardContext().setAttribute(
-            CREATE_DESKTOP_SHORTCUT,
+        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT,
             createDesktopShortcutBox.isSelected());
 
         // Don't allow send after if 2 or more folders.
@@ -206,18 +207,19 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
-        // Three buttons every row.
-        for (int i = 0; i < 1 + userDirectories.size() / 3; i++) {
+        // Four buttons every row.
+        for (int i = 0; i < 1 + userDirectories.size() / 4; i++) {
             verticalUserDirectoryLayout.append("pref, 3dlu, ");
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "pref, 3dlu, 40dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
-            // info        custom       add         size        os w
+            + "4dlu, pref, 3dlu, 40dlu, 3dlu, pref, 7dlu, pref, 3dlu, pref, 7dlu, pref";
+        // info custom add size os w
         // Fixed (60dlu) sizing used so that other components display okay if
         // there is only 1 or two (or even zero) check boxes displayed.
         FormLayout layout = new FormLayout(
-            "60dlu, 15dlu, 60dlu, 15dlu, 60dlu, 0:grow", verticalLayout);
+            "60dlu, 15dlu, 60dlu, 15dlu, 60dlu, 15dlu, 60dlu, 0:grow",
+            verticalLayout);
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         int row = 1;
@@ -233,13 +235,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 col = 3;
             } else if (col == 3) {
                 col = 5;
+            } else if (col == 5) {
+                col = 7;
             } else {
                 row += 2;
                 col = 1;
             }
         }
 
-        row += 2;
+        row += 3;
 
         String infoText = (String) getWizardContext().getAttribute(
             PROMPT_TEXT_ATTRIBUTE);
@@ -250,42 +254,39 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         builder.addLabel(infoText, cc.xyw(1, row, 6));
         row += 2;
 
-        builder.add(new JScrollPane(customDirectoryList), cc.xyw(1, row, 5));
-        row +=2;
-
-        builder.add(createAddRemoveLine(), cc.xyw(1, row, 6));
-
+        builder.add(new JScrollPane(customDirectoryList), cc.xyw(1, row, 7));
         row += 2;
-        builder.add(folderSizeLabel, cc.xyw(1, row, 6));
 
+        builder.add(new JButton(addAction), cc.xy(1, row));
+        builder.add(removeButton, cc.xy(3, row));
+        builder.add(folderSizeLabel, cc.xyw(5, row, 3));
         row += 2;
-        builder.add(osWarningLabel, cc.xyw(1, row, 6));
 
         if (!getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
-            row += 2;
-            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController()))
+        {
+            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
-
         if (OSUtil.isWindowsSystem()) {
-            row += 2;
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 6));
+            builder.add(createDesktopShortcutBox, cc.xyw(5, row, 3));
         }
-
-        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
-        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
-            row += 2;
-            builder.add(manualSyncCheckBox, cc.xyw(1, row, 6));
-        }
+        row += 2;
 
         // Send Invite
         if (getController().isBackupOnly()) {
             // Cannot invite in backup only mode
             sendInviteAfterCB.setSelected(false);
         } else {
-            row += 2;
-            builder.add(sendInviteAfterCB, cc.xyw(1, row, 6));
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
         }
+        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
+            builder.add(manualSyncCheckBox, cc.xyw(5, row, 3));
+        }
+        row += 2;
+
+        builder.add(osWarningLabel, cc.xyw(1, row, 6));
 
         return builder.getPanel();
     }
@@ -318,25 +319,29 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         addAction = new MyAddAction(getController());
         removeAction = new MyRemoveAction(getController());
+        removeButton = new JButton(removeAction);
 
         customDirectoryListModel = new DefaultListModel();
         customDirectoryList = new JList(customDirectoryListModel);
-        customDirectoryList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        customDirectoryList.addListSelectionListener(new MyListSelectionListener());
+        customDirectoryList
+            .setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        customDirectoryList
+            .addListSelectionListener(new MyListSelectionListener());
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController())
             && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
-        backupByOnlineStorageBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
+        backupByOnlineStorageBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
-
             // Remember last preference...
-            Boolean buos = PreferencesEntry.BACKUP_OS.getValueBoolean(
-                    getController());
+            Boolean buos = PreferencesEntry.BACKUP_OS
+                .getValueBoolean(getController());
             if (buos == null) {
                 // .. or default to if last os client login ok.
                 buos = getController().getOSClient().isLoggedIn();
@@ -346,18 +351,20 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 PreferencesEntry.BACKUP_OS.setValue(getController(),
-                        backupByOnlineStorageBox.isSelected());
+                    backupByOnlineStorageBox.isSelected());
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
                         .getServerClientModel().checkAndSetupAccount();
                 }
+                startFolderSizeCalculator();
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
+        createDesktopShortcutBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
@@ -383,7 +390,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.choose_multi_disk_location.title");
+        return Translation
+            .getTranslation("wizard.choose_multi_disk_location.title");
     }
 
     /**
@@ -473,7 +481,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     *
+     * 
      * @param root
      * @param subdir
      * @param translation
@@ -493,7 +501,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     /**
      * Adds a generic user directory if if exists for this os.
-     *
+     * 
      * @param translation
      * @param allowHidden
      *            allow display of hidden dirs
@@ -522,8 +530,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private void enableRemoveAction() {
-        removeAction.setEnabled (!customDirectoryList.getSelectionModel()
-                .isSelectionEmpty());
+        removeAction.setEnabled(!customDirectoryList.getSelectionModel()
+            .isSelectionEmpty());
+        removeButton.setVisible(removeAction.isEnabled());
     }
 
     protected void updateButtons() {
@@ -544,13 +553,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             String dir = DialogFactory.chooseDirectory(getController(),
-                    initialDirectory);
+                initialDirectory);
             File newLocation = new File(dir);
-            File localBase = new File(getController().getFolderRepository().getFoldersBasedir());
+            File localBase = new File(getController().getFolderRepository()
+                .getFoldersBasedir());
             if (newLocation.equals(localBase)) {
-                DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("wizard.choose_disk_location.local_base.title"),
-                        Translation.getTranslation("wizard.choose_disk_location.local_base.text"),
+                DialogFactory
+                    .genericDialog(
+                        getController(),
+                        Translation
+                            .getTranslation("wizard.choose_disk_location.local_base.title"),
+                        Translation
+                            .getTranslation("wizard.choose_disk_location.local_base.text"),
                         GenericDialogType.ERROR);
                 return;
             }
@@ -572,8 +586,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            customDirectoryListModel.removeRange(
-                customDirectoryList.getSelectionModel().getMinSelectionIndex(),
+            customDirectoryListModel.removeRange(customDirectoryList
+                .getSelectionModel().getMinSelectionIndex(),
                 customDirectoryList.getSelectionModel().getMaxSelectionIndex());
             updateButtons();
             startFolderSizeCalculator();
@@ -626,7 +640,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (File file : originalList) {
-                    totalDirectorySize += FileUtils.calculateDirectorySize(file, 0);
+                    totalDirectorySize += FileUtils.calculateDirectorySize(
+                        file, 0);
                 }
 
                 List<File> finalList = new ArrayList<File>();
@@ -648,7 +663,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
                 // Any selection changes during size calculations?
                 if (originalList.size() != finalList.size()
-                        || !originalList.containsAll(finalList)) {
+                    || !originalList.containsAll(finalList))
+                {
                     valid = false;
                 }
 
@@ -662,29 +678,35 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             if (valid) {
                 try {
                     folderSizeLabel.setText(Translation.getTranslation(
-                            "wizard.choose_disk_location.total_directory_size", Format
-                            .formatBytes(totalDirectorySize)));
+                        "wizard.choose_disk_location.total_directory_size",
+                        Format.formatBytes(totalDirectorySize)));
                     osWarningLabel.setText("");
+                    osWarningLabel.setIcon(null);
                     if (backupByOnlineStorageBox.isSelected()) {
                         ServerClient client = getController().getOSClient();
                         OnlineStorageSubscription storageSubscription = client
-                                .getAccount().getOSSubscription();
+                            .getAccount().getOSSubscription();
                         if (client.isConnected()) {
-                            long totalStorage = storageSubscription.getStorageSize();
-                            long spaceUsed = client.getAccountDetails().getSpaceUsed();
+                            long totalStorage = storageSubscription
+                                .getStorageSize();
+                            long spaceUsed = client.getAccountDetails()
+                                .getSpaceUsed();
                             if (spaceUsed + totalDirectorySize > totalStorage) {
-                                osWarningLabel.setText(Translation.getTranslation(
-                                        "wizard.choose_disk_location.os_over_size"));
+                                osWarningLabel
+                                    .setText(Translation
+                                        .getTranslation("wizard.choose_disk_location.os_over_size"));
+                                osWarningLabel.setIcon(Icons
+                                    .getIconById(Icons.WARNING));
                             }
                         }
                     }
 
                 } catch (Exception e) {
-                    Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+                    Logger.getAnonymousLogger().log(Level.WARNING,
+                        e.toString(), e);
                 }
             }
         }
     }
-
 
 }
