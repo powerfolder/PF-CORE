@@ -23,9 +23,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -38,6 +39,7 @@ import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
 public class ComputersList extends PFUIComponent {
@@ -49,11 +51,23 @@ public class ComputersList extends PFUIComponent {
     private ExpansionListener expansionListener;
     private ComputersTab computersTab;
     private volatile boolean populated;
+    private volatile boolean multiGroup;
 
     // Only access these when synchronized on viewList.
     private final Set<Member> previousMyComputers;
     private final Set<Member> previousFriends;
     private final Set<Member> previousConnectedLans;
+
+    private boolean collapseMyComputers;
+    private boolean collapseFriends;
+    private boolean collapseConnectedLans;
+
+    private JLabel myComputersLabel;
+    private JLabel myComputersIcon;
+    private JLabel friendsLabel;
+    private JLabel friendsIcon;
+    private JLabel connectedLansLabel;
+    private JLabel connectedLansIcon;
 
     /**
      * Constructor
@@ -71,6 +85,22 @@ public class ComputersList extends PFUIComponent {
         previousConnectedLans = new TreeSet<Member>();
         previousFriends = new TreeSet<Member>();
         previousMyComputers = new TreeSet<Member>();
+
+        myComputersLabel = new JLabel(Translation.getTranslation(
+                "computers_list.my_computers"));
+        myComputersIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
+        myComputersLabel.addMouseListener(new MyComputersListener());
+        myComputersIcon.addMouseListener(new MyComputersListener());
+        friendsLabel = new JLabel(Translation.getTranslation(
+                "computers_list.friends"));
+        friendsIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
+        friendsLabel.addMouseListener(new FriendsListener());
+        friendsIcon.addMouseListener(new FriendsListener());
+        connectedLansLabel = new JLabel(Translation.getTranslation(
+                "computers_list.lan"));
+        connectedLansIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
+        connectedLansLabel.addMouseListener(new ConnectedLansListener());
+        connectedLansIcon.addMouseListener(new ConnectedLansListener());
     }
 
     /**
@@ -110,14 +140,17 @@ public class ComputersList extends PFUIComponent {
             BoxLayout.PAGE_AXIS));
         getUIController().getApplicationModel().getNodeManagerModel()
             .addNodeManagerModelListener(new MyNodeManagerModelListener());
-        rebuild();
+        rebuild(false);
     }
 
     /**
      * Rebuild the whole list, if there is a significant change. This detects
      * things like Ln nodes becoming friends, etc.
+     *
+     * @param expCol true if expand or collapse change - MUST redisplay,
+     * even if previous are all the same.
      */
-    private void rebuild() {
+    private void rebuild(boolean expCol) {
 
         // Do nothing until populate command is called.
         if (!populated) {
@@ -163,7 +196,7 @@ public class ComputersList extends PFUIComponent {
         synchronized (viewList) {
 
             // Are the nodes same as current views?
-            boolean different = false;
+            boolean different = expCol;
             if (previousConnectedLans.size() == connectedLans.size()
                 && previousFriends.size() == connectedLans.size()
                 && previousMyComputers.size() == myComputers.size())
@@ -219,7 +252,7 @@ public class ComputersList extends PFUIComponent {
             computerListPanel.removeAll();
 
             // If there is only one group, do not bother with separators
-            boolean multiGroup = (myComputers.isEmpty() ? 0 : 1)
+            multiGroup = (myComputers.isEmpty() ? 0 : 1)
                 + (connectedLans.isEmpty() ? 0 : 1)
                 + (friends.isEmpty() ? 0 : 1) > 1;
 
@@ -228,10 +261,11 @@ public class ComputersList extends PFUIComponent {
             for (Member node : myComputers) {
                 if (firstMyComputer && multiGroup) {
                     firstMyComputer = false;
-                    addSeparator(Translation
-                        .getTranslation("computer_list.my_computers"));
+                    addSeparator(collapseMyComputers, myComputersIcon, myComputersLabel);
                 }
-                addView(node, expandedNode);
+                if (!multiGroup || !collapseMyComputers) {
+                    addView(node, expandedNode);
+                }
             }
 
             // Then friends.
@@ -239,10 +273,11 @@ public class ComputersList extends PFUIComponent {
             for (Member node : friends) {
                 if (firstFriend && multiGroup) {
                     firstFriend = false;
-                    addSeparator(Translation
-                        .getTranslation("computer_list.friends"));
+                    addSeparator(collapseFriends, friendsIcon, friendsLabel);
                 }
-                addView(node, expandedNode);
+                if (!multiGroup || !collapseFriends) {
+                    addView(node, expandedNode);
+                }
             }
 
             // Then others (connected on LAN).
@@ -250,10 +285,11 @@ public class ComputersList extends PFUIComponent {
             for (Member node : connectedLans) {
                 if (firstLan && multiGroup) {
                     firstLan = false;
-                    addSeparator(Translation
-                        .getTranslation("computer_list.lan"));
+                    addSeparator(collapseConnectedLans, connectedLansIcon, connectedLansLabel);
                 }
-                addView(node, expandedNode);
+                if (!multiGroup || !collapseConnectedLans) {
+                    addView(node, expandedNode);
+                }
             }
 
             computersTab.updateEmptyLabel();
@@ -261,12 +297,22 @@ public class ComputersList extends PFUIComponent {
         }
     }
 
-    private void addSeparator(String label) {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+    private void addSeparator(boolean collapsed, JLabel icon, JLabel label) {
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu",
             "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.addSeparator(label, cc.xy(2, 1));
+        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND)
+                : Icons.getIconById(Icons.COLLAPSE));
+        icon.setToolTipText(collapsed
+                ? Translation.getTranslation("computers_list.expand_hint")
+                : Translation.getTranslation("computers_list.collapse_hint"));
+        label.setToolTipText(collapsed
+                ? Translation.getTranslation("computers_list.expand_hint")
+                : Translation.getTranslation("computers_list.collapse_hint"));
+        builder.add(icon, cc.xy(2, 1));
+        builder.add(label, cc.xy(4, 1));
+        builder.add(new JSeparator(), cc.xy(6, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         computerListPanel.add(panel);
@@ -286,7 +332,8 @@ public class ComputersList extends PFUIComponent {
     }
 
     public boolean isEmpty() {
-        return viewList.isEmpty();
+        // If multigroup, always show, even if all collapsed.
+        return viewList.isEmpty() && !multiGroup;
     }
 
     /**
@@ -296,7 +343,7 @@ public class ComputersList extends PFUIComponent {
      */
     public void populate() {
         populated = true;
-        rebuild();
+        rebuild(false);
     }
 
     // ////////////////
@@ -311,7 +358,7 @@ public class ComputersList extends PFUIComponent {
     {
 
         public void changed() {
-            rebuild();
+            rebuild(false);
         }
     }
 
@@ -333,6 +380,27 @@ public class ComputersList extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
+        }
+    }
+
+    private class MyComputersListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseMyComputers = !collapseMyComputers;
+            rebuild(true);
+        }
+    }
+
+    private class FriendsListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseFriends = !collapseFriends;
+            rebuild(true);
+        }
+    }
+
+    private class ConnectedLansListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseConnectedLans = !collapseConnectedLans;
+            rebuild(true);
         }
     }
 }

@@ -102,6 +102,8 @@ public class Icons {
     // Wizard Arrows
     public static final String ARROW_LEFT = "arrow_left.icon";
     public static final String ARROW_RIGHT = "arrow_right.icon";
+    public static final String EXPAND = "expand.icon";
+    public static final String COLLAPSE = "collapse.icon";
 
     // Toolbar
     public static final String NEW_FOLDER_48 = "new_folder_48.icon";

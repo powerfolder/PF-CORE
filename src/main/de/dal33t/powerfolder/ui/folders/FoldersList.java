@@ -24,10 +24,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -36,6 +36,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -66,6 +67,15 @@ public class FoldersList extends PFUIComponent {
     private ExpansionListener expansionListener;
     private FoldersTab foldersTab;
     private volatile boolean populated;
+    private volatile boolean multiGroup;
+
+    private boolean collapseLocal;
+    private boolean collapseOnline;
+
+    private JLabel localLabel;
+    private JLabel localIcon;
+    private JLabel onlineLabel;
+    private JLabel onlineIcon;
 
     /**
      * Constructor
@@ -79,6 +89,17 @@ public class FoldersList extends PFUIComponent {
         expansionListener = new MyExpansionListener();
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
+
+        localLabel = new JLabel(Translation.getTranslation(
+                "folders_list.local_folders"));
+        localIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
+        localLabel.addMouseListener(new LocalListener());
+        localIcon.addMouseListener(new LocalListener());
+        onlineLabel = new JLabel(Translation.getTranslation(
+                "folders_list.online_folders"));
+        onlineIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
+        onlineLabel.addMouseListener(new OnlineListener());
+        onlineIcon.addMouseListener(new OnlineListener());
 
         controller.getFolderRepository().addProblemListenerToAllFolders(
             new MyProblemListener());
@@ -119,7 +140,7 @@ public class FoldersList extends PFUIComponent {
     }
 
     public boolean isEmpty() {
-        return views.isEmpty();
+        return views.isEmpty()  && !multiGroup;
     }
 
     /**
@@ -172,6 +193,8 @@ public class FoldersList extends PFUIComponent {
             Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
         }
 
+        multiGroup = !localFolders.isEmpty() && !onlineFolders.isEmpty();
+
         synchronized (views) {
             FolderInfo expandedFolderInfo = null;
             for (ExpandableFolderView view : views) {
@@ -199,29 +222,41 @@ public class FoldersList extends PFUIComponent {
 
             // Add new folder views.
             if (!localFolders.isEmpty() && !onlineFolders.isEmpty()) {
-                addSeparator(Translation
-                    .getTranslation("folder_list.local_folders"));
+                addSeparator(collapseLocal, localIcon, localLabel);
             }
-            for (FolderBean folderBean : localFolders) {
-                addView(folderBean, expandedFolderInfo);
+            if (!multiGroup || !collapseLocal) {
+                for (FolderBean folderBean : localFolders) {
+                    addView(folderBean, expandedFolderInfo);
+                }
             }
             if (!localFolders.isEmpty() && !onlineFolders.isEmpty()) {
-                addSeparator(Translation
-                    .getTranslation("folder_list.online_folders"));
+                addSeparator(collapseOnline, onlineIcon, onlineLabel);
             }
-            for (FolderBean folderBean : onlineFolders) {
-                addView(folderBean, expandedFolderInfo);
+            if (!multiGroup || !collapseOnline) {
+                for (FolderBean folderBean : onlineFolders) {
+                    addView(folderBean, expandedFolderInfo);
+                }
             }
         }
         foldersTab.updateEmptyLabel();
     }
 
-    private void addSeparator(String label) {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+    private void addSeparator(boolean collapsed, JLabel icon, JLabel label) {
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu",
             "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.addSeparator(label, cc.xy(2, 1));
+        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND)
+                : Icons.getIconById(Icons.COLLAPSE));
+        icon.setToolTipText(collapsed
+                ? Translation.getTranslation("folders_list.expand_hint")
+                : Translation.getTranslation("folders_list.collapse_hint"));
+        label.setToolTipText(collapsed
+                ? Translation.getTranslation("folders_list.expand_hint")
+                : Translation.getTranslation("folders_list.collapse_hint"));
+        builder.add(icon, cc.xy(2, 1));
+        builder.add(label, cc.xy(4, 1));
+        builder.add(new JSeparator(), cc.xy(6, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         folderListPanel.add(panel);
@@ -435,4 +470,19 @@ public class FoldersList extends PFUIComponent {
             return true;
         }
     }
+
+    private class LocalListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseLocal = !collapseLocal;
+            updateFolders();
+        }
+    }
+
+    private class OnlineListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseOnline = !collapseOnline;
+            updateFolders();
+        }
+    }
+
 }
