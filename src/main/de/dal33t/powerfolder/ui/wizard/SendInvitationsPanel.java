@@ -48,6 +48,7 @@ import javax.swing.event.ListSelectionListener;
 
 import jwf.WizardPanel;
 
+import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -59,13 +60,10 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.AttachPersonalizedMessageDialog;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.AutoTextField;
@@ -100,6 +98,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private Invitation invitation;
     private ValueModel messageModel;
     private JPanel removeButtonPanel;
+    private JComponent messageComp;
 
     public SendInvitationsPanel(Controller controller) {
         super(controller);
@@ -202,30 +201,19 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("140dlu, pref:grow",
-            "pref, 6dlu, pref, pref, 3dlu, pref, 3dlu, pref, pref, 6dlu, pref, 6dlu, pref");
+        FormLayout layout = new FormLayout("pref, pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref, pref, 12dlu, pref, 3dlu, pref, 15dlu, pref");
         // inv join text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-
         int row = 1;
-        builder.add(inviteInfoLabel.getUIComponent(), cc.xyw(1, row, 2));
-
-        row += 2;
 
         builder.addLabel(Translation
             .getTranslation("wizard.send_invitations.invitation_hint1"), cc
             .xyw(1, row, 2));
-
-        row++;
-
-        builder.addLabel(Translation
-            .getTranslation("wizard.send_invitations.invitation_hint2"), cc
-            .xyw(1, row, 2));
-
         row += 2;
 
-        FormLayout layout2 = new FormLayout("107dlu, 3dlu, pref, pref", "pref");
+        FormLayout layout2 = new FormLayout("140dlu, 3dlu, pref, pref", "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(addButton, cc.xy(3, 1));
@@ -251,14 +239,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
         removeButtonPanel.setOpaque(false);
         builder.add(removeButtonPanel, cc.xy(1, row));
         removeButtonPanel.setVisible(false);
-
         row += 2;
 
         builder.add(addMessageLink.getUIComponent(), cc.xy(1, row));
-
+        builder.add(messageComp, cc.xy(1, row));
         row += 2;
 
         builder.add(advancedLink.getUIComponent(), cc.xy(1, row));
+        row += 2;
+
+        builder.add(inviteInfoLabel.getUIComponent(), cc.xyw(1, row, 2));
 
         return builder.getPanel();
     }
@@ -333,6 +323,19 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         permissionsModel = new ValueHolder(
             new FolderReadWritePermission(folder), true);
+
+        JScrollPane messagePane = new JScrollPane(BasicComponentFactory
+            .createTextArea(messageModel));
+        FormLayout layout2 = new FormLayout("fill:140dlu",
+            "pref, 3dlu, fill:60dlu");
+        PanelBuilder builder2 = new PanelBuilder(layout2);
+        CellConstraints cc = new CellConstraints();
+        builder2.addLabel(Translation
+            .getTranslation("dialog.personalized_message.hint"), cc.xy(1, 1));
+        builder2.add(messagePane, cc.xy(1, 3));
+        messageComp = builder2.getPanel();
+        messageComp.setVisible(false);
+        messageComp.setOpaque(false);
 
         enableAddButton();
         enableRemoveButton();
@@ -475,9 +478,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private class MyAttachMessageAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
-            AttachPersonalizedMessageDialog d = new AttachPersonalizedMessageDialog(
-                getController(), messageModel);
-            d.open();
+            messageComp.setVisible(true);
+            addMessageLink.getUIComponent().setVisible(false);
+            // AttachPersonalizedMessageDialog d = new
+            // AttachPersonalizedMessageDialog(
+            // getController(), messageModel);
+            // d.open();
         }
     }
 

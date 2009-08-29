@@ -15,7 +15,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class GradientPanel extends JPanel {
     public static final Color VERY_VERY_LIGHT_GRAY = new Color(242, 242, 242);
-    public static final Color VERY_LIGHT_GRAY = new Color(238, 238, 238);
+    public static final Color VERY_LIGHT_GRAY = new Color(230, 230, 230);
 
     public GradientPanel(Color background) {
         super();
