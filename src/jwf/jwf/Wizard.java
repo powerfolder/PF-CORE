@@ -59,7 +59,7 @@ public class Wizard extends JPanel implements ActionListener {
 
     private final JButton backButton = new JButton("< Back");
     private final JButton nextButton = new JButton("Next >");
-    private final JButton finishButton = new JButton("Finish");
+    private final JButton finishButton = new JButton("Exit");
     private final JButton cancelButton = new JButton("Cancel");
     private final JButton helpButton = new JButton("Help");
 
