@@ -335,7 +335,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
-                onlineStateInfo.setIcon(Icons.getIconById(Icons.CONNECTED));
+                onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
             } else {
                 onlineStateInfo.setIcon(connectionQualityIcon);
                 onlineStateInfo.setToolTipText(connectionQualityText);

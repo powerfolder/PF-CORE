@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.concurrent.atomic.AtomicLong;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -49,10 +48,6 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {
-
-    private final AtomicLong goodConnections = new AtomicLong();
-    private final AtomicLong mediumConnections = new AtomicLong();
-    private final AtomicLong poorConnections = new AtomicLong();
 
     public ConnectionHandlerFactory(Controller controller) {
         super(controller);
@@ -88,7 +83,6 @@ public class ConnectionHandlerFactory extends PFComponent {
             try {
                 ConnectionHandler handler = tryToConnectTCP(remoteNode
                     .getConnectAddress());
-                goodConnections.incrementAndGet();
                 return handler;
             } catch (ConnectionException e) {
                 logFiner(e);
@@ -96,11 +90,10 @@ public class ConnectionHandlerFactory extends PFComponent {
         }
 
         try {
-            if (useUDTConnections()
-                && useRelayedTunneledConnection(remoteNode) && !nullIP)
+            if (useUDTConnections() && useRelayedTunneledConnection(remoteNode)
+                && !nullIP)
             {
                 ConnectionHandler handler = tryToConnectUDTRendezvous(remoteNode);
-                mediumConnections.incrementAndGet();
                 return handler;
             }
         } catch (ConnectionException e) {
@@ -112,7 +105,6 @@ public class ConnectionHandlerFactory extends PFComponent {
                 && useRelayedTunneledConnection(remoteNode))
             {
                 ConnectionHandler handler = tryToConnectRelayed(remoteNode);
-                poorConnections.incrementAndGet();
                 return handler;
             }
         } catch (ConnectionException e) {
@@ -334,23 +326,39 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     public ConnectionQuality getConnectionQuality() {
-        if (isFiner()) {
-            logFiner("Connections ==> good: " + goodConnections.get()
-                + ", medium: " + mediumConnections.get() + ", poor: "
-                + poorConnections.get());
+        int good = 0;
+        int medium = 0;
+        int poor = 0;
+        for (Member node : getController().getNodeManager().getConnectedNodes())
+        {
+            ConnectionHandler peer = node.getPeer();
+            ConnectionQuality qual = peer != null
+                ? peer.getConnectionQuality()
+                : null;
+            if (qual == null) {
+                continue;
+            }
+            if (qual.equals(ConnectionQuality.GOOD)) {
+                good++;
+            } else if (qual.equals(ConnectionQuality.MEDIUM)) {
+                medium++;
+            } else if (qual.equals(ConnectionQuality.POOR)) {
+                poor++;
+            }
         }
 
-        if (goodConnections.get() == 0 && mediumConnections.get() == 0
-            && poorConnections.get() == 0)
-        {
+        if (isWarning()) {
+            logWarning("Connections ==> good: " + good + ", medium: " + medium
+                + ", poor: " + poor);
+        }
+
+        if (good == 0 && medium == 0 && poor == 0) {
             return null;
         }
 
-        if (goodConnections.get() > poorConnections.get()
-            && goodConnections.get() > mediumConnections.get())
-        {
+        if (good > poor && good > medium) {
             return ConnectionQuality.GOOD;
-        } else if (mediumConnections.get() > poorConnections.get()) {
+        } else if (medium > poor) {
             return ConnectionQuality.MEDIUM;
         }
         return ConnectionQuality.POOR;

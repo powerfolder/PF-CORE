@@ -164,7 +164,6 @@ public class Icons {
     public static final String CHECKED = "checked.icon";
 
     // Online state icons
-    public static final String CONNECTED = "connected_bright.icon";
     public static final String CONNECTION_GOOD = "connection_good.icon";
     public static final String CONNECTION_MEDIUM = "connection_medium.icon";
     public static final String CONNECTION_POOR = "connection_poor.icon";
