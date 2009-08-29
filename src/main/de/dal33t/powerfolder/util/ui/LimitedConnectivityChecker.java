@@ -277,8 +277,10 @@ public class LimitedConnectivityChecker {
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     controllerArg, Translation
                         .getTranslation("limited_connection.title"),
-                    Translation.getTranslation("limited_connection.text"),
-                    new String[]{Translation.getTranslation("general.ok")}, 0,
+                    Translation.getTranslation("limited_connection.text",
+                        ConfigurationEntry.PROVIDER_WIKI_URL
+                            .getValue(controllerArg)), new String[]{Translation
+                        .getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, Translation
                         .getTranslation("limited_connection.dont_autodetect"));
 
