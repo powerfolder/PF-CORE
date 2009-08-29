@@ -322,11 +322,11 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        UIUtil.invokeLaterInEDT(new Runnable() {
-            public void run() {
-                PFWizard.openWhatToDoWizard(getController());
-            }
-        });
+//        UIUtil.invokeLaterInEDT(new Runnable() {
+//            public void run() {
+//                PFWizard.openWhatToDoWizard(getController());
+//            }
+//        });
 
     }
 
