@@ -54,6 +54,7 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -201,8 +202,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("pref, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, pref, 12dlu, pref, 3dlu, pref, 15dlu, pref");
+        FormLayout layout = new FormLayout("140dlu, pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 3dlu, pref, 15dlu, pref");
         // inv join text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -220,16 +221,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
         builder2.add(searchButton, cc.xy(4, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
-        builder.add(panel2, cc.xy(1, row));
-
+        builder.add(panel2, cc.xyw(1, row, 2));
         row += 2;
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
         inviteesListScrollPane.setPreferredSize(new Dimension(
-            getPreferredSize().width, 50));
+            getPreferredSize().width, Sizes.dialogUnitYAsPixel(40,
+                inviteesListScrollPane)));
         builder.add(inviteesListScrollPane, cc.xy(1, row));
         inviteesListScrollPane.setVisible(false);
-
         row += 1;
 
         FormLayout layout3 = new FormLayout("pref, pref:grow", "pref");
@@ -327,7 +327,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         JScrollPane messagePane = new JScrollPane(BasicComponentFactory
             .createTextArea(messageModel));
         FormLayout layout2 = new FormLayout("fill:140dlu",
-            "pref, 3dlu, fill:60dlu");
+            "pref, 3dlu, fill:40dlu");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         CellConstraints cc = new CellConstraints();
         builder2.addLabel(Translation
