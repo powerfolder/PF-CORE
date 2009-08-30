@@ -3422,10 +3422,10 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * This creates a warning if the folder has not been synchronized in a long
-     * time.
+     * This creates / removes a warning if the folder has not been synchronized
+     * in a long time.
      */
-    public void warnAboutOldSyncs() {
+    public void processUnsyncFolder() {
         if (!ConfigurationEntry.FOLDER_SYNC_USE
             .getValueBoolean(getController()))
         {
@@ -3439,11 +3439,32 @@ public class Folder extends PFComponent {
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
 
-        if (lastSyncDate != null) {
-            if (lastSyncDate.before(warningDate)) {
+        if (lastSyncDate != null && lastSyncDate.before(warningDate)) {
+
+            // Only need one of these.
+            UnsynchronizedFolderProblem ufp = null;
+            for (Problem problem : problems) {
+                if (problem instanceof UnsynchronizedFolderProblem) {
+                    ufp = (UnsynchronizedFolderProblem) problem;
+                    break;
+                }
+            }
+            if (ufp == null) {
                 Problem problem = new UnsynchronizedFolderProblem(currentInfo,
                     syncWarnDays);
                 addProblem(problem);
+            }
+        } else {
+            // Perhaps now need to remove it?
+            UnsynchronizedFolderProblem ufp = null;
+            for (Problem problem : problems) {
+                if (problem instanceof UnsynchronizedFolderProblem) {
+                    ufp = (UnsynchronizedFolderProblem) problem;
+                    break;
+                }
+            }
+            if (ufp != null) {
+                removeProblem(ufp);
             }
         }
     }

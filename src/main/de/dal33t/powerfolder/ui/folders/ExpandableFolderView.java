@@ -555,6 +555,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                 }
 
+                if (lastSyncDate != null && Double.compare(sync, 100.0) == 0) {
+                    // 100% sync - remove any sync problem.
+                    folder.processUnsyncFolder();
+                }
+
                 long localSize = statistic.getLocalSize();
                 localSizeString = Format.formatBytesShort(localSize);
 

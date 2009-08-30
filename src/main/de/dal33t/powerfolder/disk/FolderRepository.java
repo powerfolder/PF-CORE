@@ -1276,7 +1276,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
             {
-                folder.warnAboutOldSyncs();
+                folder.processUnsyncFolder();
             }
         }
     }
