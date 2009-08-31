@@ -43,6 +43,7 @@ import javax.swing.TransferHandler;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -285,84 +286,70 @@ public class HomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout(
-            "3dlu, 100dlu, pref:grow, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
+        FormLayout layout = new FormLayout("pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref, 12dlu, "
+                + // Sync section
+                "pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 9dlu, "
+                + // You have section
+                "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, " + // Online Storage
+                // section.
+                "pref:grow, pref");
         // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
-        builder.setBorder(Borders.createEmptyBorder("0, 0, 2dlu, 0"));
+        builder.setBorder(Borders.createEmptyBorder("2dlu, 3dlu, 2dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.synchronization"),
-                cc.xyw(2, row, 3));
+        builder.addSeparator(
+            Translation.getTranslation("home_tab.synchronization"), cc.xy(1,
+                row));
+        row += 2;
+        builder.add(synchronizationStatusLabel, cc.xy(1, row));
+        row += 2;
+        builder.add(synchronizationDateLabel, cc.xy(1, row));
         row += 2;
 
-        builder.add(synchronizationStatusLabel, cc.xywh(2, row, 3, 1));
+        builder.addSeparator(Translation.getTranslation("home_tab.you_have"), cc
+            .xy(1, row));
+        row += 2;
+        builder.add(newWarningsLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(filesAvailableLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(newInvitationsLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(newFriendRequestsLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(downloadsLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.add(synchronizationDateLabel, cc.xywh(2, row, 3, 1));
+        builder.addSeparator(Translation.getTranslation("home_tab.local"), cc.xy(1,
+            row));
         row += 2;
-
-        builder.addSeparator(Translation.getTranslation("home_tab.you_have"),
-                cc.xywh(2, row, 2, 1));
+        builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(computersLine.getUIComponent(), cc.xy(1, row));
         row += 2;
-
-        builder.add(newWarningsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(filesAvailableLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(newInvitationsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(newFriendRequestsLine.getUIComponent(), cc.xywh(2, row, 2,
-            1));
-        row++;
-
-        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xywh(2, row,
-            2, 1));
-        row++;
-
-        builder.add(downloadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(uploadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.addSeparator(Translation.getTranslation("home_tab.local"),
-                cc.xywh(2, row, 2, 1));
-        row += 2;
-
-        builder
-            .add(numberOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-        row++;
-
-        builder.add(computersLine.getUIComponent(), cc.xywh(2, row, 2, 1));
-
-        row++;
 
         builder.addSeparator(Translation.getTranslation("home_tab.online_storage"),
-                cc.xywh(2, row, 2, 1));
+            cc.xy(1, row));
         row += 2;
-
-        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row,
-            2, 1));
+        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xy(1, row));
         row += 2;
-
-        builder.add(onlineStorageSection.getUIComponent(), cc
-            .xywh(2, row, 2, 1));
+        builder.add(onlineStorageSection.getUIComponent(), cc.xy(1, row));
         row += 3;
-
-        builder.add(tellFriendLabel.getUIComponent(), cc.xywh(2, row, 2, 1));
+        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
         return builder.getPanel();
     }

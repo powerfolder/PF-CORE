@@ -333,8 +333,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        // Prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
+        // No invitation by default.
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Select backup by OS
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);

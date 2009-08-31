@@ -128,10 +128,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 60dlu, pref",
+        FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 40dlu, pref",
             "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
+        builder.setBorder(Borders.createEmptyBorder("30dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
