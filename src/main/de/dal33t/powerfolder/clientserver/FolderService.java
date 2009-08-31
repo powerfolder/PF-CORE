@@ -46,12 +46,13 @@ public interface FolderService {
         throws FolderException;
 
     /**
-     * Removes a folder from the server. Required admin permission on the
-     * folder. Also removes the permission to this folder afterwards.
+     * Removes a folder from the account. Required owner permission if
+     * deletedFiles is true.
      * 
      * @param foInfo
      * @param deleteFiles
-     *            true to delete all file contained in the folder.
+     *            true to delete all file contained in the folder. Requires
+     *            ownership.
      */
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
 

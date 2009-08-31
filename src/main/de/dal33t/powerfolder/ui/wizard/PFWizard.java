@@ -216,7 +216,7 @@ public class PFWizard extends PFUIComponent {
         WizardPanel nextFinishPanel;
         if (folderToSetup != null) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller,
-                folderToSetup);
+                folderToSetup.getInfo());
         } else {
             nextFinishPanel = new TextPanelPanel(controller, Translation
                 .getTranslation("wizard.finish.os_login_title"), Translation
@@ -239,7 +239,8 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller);
         wizard.getWizardContext().setAttribute(PICTO_ICON,
             Icons.getIconById(Icons.WEB_SERVICE_PICTO));
-        wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup));
+        wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup
+            .getInfo()));
     }
 
     public static void openExistingDirectoryWizard(Controller controller,

@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.awt.Component;
@@ -39,8 +39,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.task.FolderSetPermissionTask;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -98,14 +96,14 @@ public class FolderRemovePanel extends BaseDialog {
         }
         messageLabel = new JLabel(folerLeaveText);
 
-        removeFromLocalBox = SimpleComponentFactory
-            .createCheckBox(Translation.getTranslation(
-                    "folder_remove.dialog.remove_from_local"));
+        removeFromLocalBox = SimpleComponentFactory.createCheckBox(Translation
+            .getTranslation("folder_remove.dialog.remove_from_local"));
         removeFromLocalBox.setSelected(true);
         removeFromLocalBox.addActionListener(new ConvertActionListener());
 
-        deleteSystemSubFolderBox = SimpleComponentFactory.createCheckBox(
-                Translation.getTranslation("folder_remove.dialog.delete"));
+        deleteSystemSubFolderBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("folder_remove.dialog.delete"));
 
         removeFromServerBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("folder_remove.dialog.remove_from_os"));
@@ -122,8 +120,8 @@ public class FolderRemovePanel extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 leaveButton.setEnabled(false);
                 confirmedFolderLeave(removeFromLocalBox.isSelected(),
-                        deleteSystemSubFolderBox.isSelected(),
-                        removeFromServerBox.isSelected());
+                    deleteSystemSubFolderBox.isSelected(), removeFromServerBox
+                        .isSelected());
             }
         });
 
@@ -197,27 +195,26 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     private void configureComponents() {
-            deleteSystemSubFolderBox.setEnabled(removeFromLocalBox.isSelected());
-            leaveButton.setEnabled(removeFromLocalBox.isSelected());
-            if (!removeFromLocalBox.isSelected()) {
-                deleteSystemSubFolderBox.setSelected(false);
-            }
+        deleteSystemSubFolderBox.setEnabled(removeFromLocalBox.isSelected());
+        leaveButton.setEnabled(removeFromLocalBox.isSelected());
+        if (!removeFromLocalBox.isSelected()) {
+            deleteSystemSubFolderBox.setSelected(false);
+        }
 
-            leaveButton.setEnabled(removeFromLocalBox.isSelected()
-                    || removeFromServerBox.isSelected());
+        leaveButton.setEnabled(removeFromLocalBox.isSelected()
+            || removeFromServerBox.isSelected());
     }
 
-    private  void confirmedFolderLeave(boolean removeLocal, 
-                                     boolean deleteSystemSubFolder,
-                                     boolean removeFromOS) {
+    private void confirmedFolderLeave(boolean removeLocal,
+        boolean deleteSystemSubFolder, boolean removeFromOS)
+    {
 
         // Dispose before closing parent frame (when folder is deleted),
         // otherwise parent closes and this is orphanned, and reappears next
         // time Info window displays.
         close();
 
-        FolderRepository folderRepository =
-                getController()
+        FolderRepository folderRepository = getController()
             .getFolderRepository();
 
         if (removeLocal) {
@@ -226,14 +223,7 @@ public class FolderRemovePanel extends BaseDialog {
 
         if (removeFromOS) {
             ServerClient client = getController().getOSClient();
-            if (client.hasJoined(folder)) {
-                client.getFolderService().removeFolder(folder.getInfo(), true);
-            } else {
-                // Remove permission to folder.
-                AccountInfo aInfo = client.getAccountInfo();
-                getController().getTaskManager().scheduleTask(
-                    new FolderSetPermissionTask(aInfo, folder.getInfo(), null));
-            }
+            client.getFolderService().removeFolder(folder.getInfo(), true);
 
             if (!removeLocal) {
                 FolderSettings folderSettings = folderRepository
@@ -244,9 +234,9 @@ public class FolderRemovePanel extends BaseDialog {
         }
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class ConvertActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {

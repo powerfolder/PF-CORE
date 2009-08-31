@@ -24,8 +24,6 @@ import java.awt.event.ActionEvent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.task.FolderSetPermissionTask;
 import de.dal33t.powerfolder.ui.dialog.PreviewFolderRemovePanel;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
@@ -88,14 +86,7 @@ public class PreviewFolderRemoveAction extends BaseAction {
             deleteSystemSubFolder);
         if (removeFromOS) {
             ServerClient client = getController().getOSClient();
-            if (client.hasJoined(folder)) {
-                client.getFolderService().removeFolder(folder.getInfo(), true);
-            } else {
-                // Remove permission to folder.
-                AccountInfo aInfo = client.getAccountInfo();
-                getController().getTaskManager().scheduleTask(
-                    new FolderSetPermissionTask(aInfo, folder.getInfo(), null));
-            }
+            client.getFolderService().removeFolder(folder.getInfo(), true);
         }
     }
 }
