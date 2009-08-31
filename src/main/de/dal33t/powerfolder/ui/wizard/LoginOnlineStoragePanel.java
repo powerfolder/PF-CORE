@@ -165,7 +165,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(rememberPasswordBox, cc.xy(3, row));
         row += 2;
 
-        showUseOS = true;
         if (showUseOS) {
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
