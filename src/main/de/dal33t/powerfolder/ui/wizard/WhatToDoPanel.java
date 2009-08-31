@@ -136,7 +136,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             "pref, 12dlu, pref, 12dlu, pref, 12dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 10dlu, 0, 0"));
+        builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(createArrowLabel(), cc.xy(1, 1));
@@ -425,8 +425,7 @@ public class WhatToDoPanel extends PFWizardPanel {
                 .getTranslation("wizard.what_to_do.open_online_documentation"));
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
-        SimpleComponentFactory.setFontSize((JLabel) documentationLink
-            .getUiComponent(), PFWizard.MED_FONT_SIZE);
+        documentationLink.setFontSize(PFWizard.MED_FONT_SIZE);
     }
 
     protected JComponent getPictoComponent() {

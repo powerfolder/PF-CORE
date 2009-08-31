@@ -19,13 +19,16 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -72,6 +75,10 @@ public class LinkLabel extends PFComponent {
 
     public void setIcon(Icon icon) {
         uiComponent.setIcon(icon);
+    }
+
+    public void setFontSize(int fontSize) {
+        SimpleComponentFactory.setFontSize(uiComponent, fontSize);
     }
 
     public JComponent getUiComponent() {

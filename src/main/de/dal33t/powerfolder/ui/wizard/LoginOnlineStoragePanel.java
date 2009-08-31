@@ -36,6 +36,7 @@ import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -45,13 +46,12 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
@@ -114,43 +114,31 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-        boolean loginOk = false;
-        try {
-            loginOk = client.login(usernameField.getText(),
-                new String(passwordField.getPassword())).isValid();
-            if (!loginOk) {
-                DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("wizard.error_title"), Translation
-                    .getTranslation("online_storage.account_data"),
-                    GenericDialogType.INFO);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOG.log(Level.SEVERE, "Problem logging in", e);
-            DialogFactory.genericDialog(getController(), Translation
-                .getTranslation("wizard.error_title"), Translation
-                .getTranslation("online_storage.general_error",
-                    e.getMessage() == null ? e.toString() : e.getMessage()),
-                GenericDialogType.INFO);
-        }
-        return loginOk;
+        return true;
     }
 
     public WizardPanel next() {
-        return nextPanel;
+        WizardPanel loginWorkerPanel = new SwingWorkerPanel(getController(),
+            new LoginTask(), Translation
+                .getTranslation("wizard.login_online_storage.logging_in"),
+            Translation
+                .getTranslation("wizard.login_online_storage.logging_in.text"),
+            nextPanel);
+        return loginWorkerPanel;
     }
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:60dlu, 3dlu, 80dlu, pref:grow",
-            "pref, 6dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 3dlu, pref, 3dlu, pref, 20dlu, pref, 3dlu, pref");
+            "40dlu, 3dlu, 80dlu, 3dlu, 60dlu, 0:grow",
+            "pref, 15dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 12dlu, pref, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(Borders.createEmptyBorder("0, 0dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation
-            .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, row,
-            4));
+        // builder.addLabel(Translation
+        // .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, row,
+        // 4));
         row += 2;
 
         // usernameField and connectingLabel have the same slot.
@@ -165,18 +153,26 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(workingBar, cc.xyw(1, row, 3));
         row += 2;
 
-        builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
+        builder.add(rememberPasswordBox, cc.xy(3, row));
         row += 2;
 
         if (client.supportsWebRegistration()) {
-            builder.add(new LinkLabel(getController(), Translation
+            LinkLabel signupLabel = new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
-                .getRegisterURL()).getUiComponent(), cc.xyw(1, row, 4));
+                .getRegisterURL());
+            signupLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+            signupLabel.setFontSize(PFWizard.MED_FONT_SIZE);
+            builder.add(signupLabel.getUiComponent(), cc.xyw(1, row, 4));
             row += 2;
 
-            builder.add(new LinkLabel(getController(), Translation
-                .getTranslation("wizard.webservice.recover_password"),
-                getController().getOSClient().getWebURL()).getUiComponent(), cc
+            LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
+                Translation
+                    .getTranslation("wizard.webservice.recover_password"),
+                getController().getOSClient().getWebURL());
+            recoverPasswordLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+            recoverPasswordLabel.setFontSize(PFWizard.MED_FONT_SIZE);
+
+            builder.add(recoverPasswordLabel.getUiComponent(), cc
                 .xyw(1, row, 4));
             row += 2;
         }
@@ -185,10 +181,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-            builder.add(link.getUiComponent(), cc.xyw(1, row, 4));
+            builder.add(link.getUiComponent(), cc.xyw(1, row, 5));
             row += 2;
 
-            builder.add(useOSBox, cc.xyw(1, row, 4));
+            builder.add(useOSBox, cc.xyw(1, row, 5));
             row += 2;
         }
 
@@ -215,6 +211,16 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             passwordField.setText(client.getPassword());
         }
 
+        // loginButton = new JButton("Login");
+        // loginButton.setOpaque(false);
+        // loginButton.addActionListener(new ActionListener() {
+        // public void actionPerformed(ActionEvent e) {
+        // Wizard wiz = (Wizard) getWizardContext().getAttribute(
+        // WizardContextAttributes.WIZARD_ATTRIBUTE);
+        // wiz.next();
+        // }
+        // });
+
         rememberPasswordBox = BasicComponentFactory
             .createCheckBox(
                 PreferencesEntry.SERVER_REMEMBER_PASSWORD
@@ -225,6 +231,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         useOSBox = BasicComponentFactory.createCheckBox(getController()
             .getUIController().getApplicationModel().getUseOSModel(),
             Translation.getTranslation("wizard.login_online_storage.no_os"));
+        useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
         workingBar = new JProgressBar();
@@ -247,6 +254,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         usernameField.setVisible(enabled);
         passwordLabel.setVisible(enabled);
         passwordField.setVisible(enabled);
+        // loginButton.setVisible(enabled);
         rememberPasswordBox.setVisible(enabled);
         connectingLabel.setVisible(!enabled);
         workingBar.setVisible(!enabled);
@@ -255,6 +263,24 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             usernameLabel.requestFocus();
         }
         updateButtons();
+    }
+
+    private final class LoginTask implements Runnable {
+        public void run() {
+            boolean loginOk = false;
+            try {
+                loginOk = client.login(usernameField.getText(),
+                    new String(passwordField.getPassword())).isValid();
+                if (!loginOk) {
+                    throw new SecurityException(Translation
+                        .getTranslation("online_storage.account_data"));
+                }
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Problem logging in", e);
+                throw new SecurityException(e.getMessage() == null ? e
+                    .toString() : e.getMessage());
+            }
+        }
     }
 
     private class MyServerClientListner implements ServerClientListener {

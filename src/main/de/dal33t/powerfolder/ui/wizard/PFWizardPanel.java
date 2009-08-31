@@ -19,20 +19,25 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
+import jwf.Wizard;
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.LayoutMap;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and
@@ -44,6 +49,7 @@ import java.awt.*;
 public abstract class PFWizardPanel extends WizardPanel {
     private Controller controller;
     private boolean initalized;
+    private JLabel titleLabel;
 
     /**
      * Initalization
@@ -135,6 +141,7 @@ public abstract class PFWizardPanel extends WizardPanel {
     /**
      * @return the component representing the picto
      */
+    @Deprecated
     protected abstract JComponent getPictoComponent();
 
     /**
@@ -179,6 +186,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return the component with the default picto which is set on the
      *         WizardCotext.
      */
+    @Deprecated
     protected Icon getContextPicto() {
         return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
     }
@@ -187,10 +195,20 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @param text
      * @return a label which can be used as title. Has smoothed font
      */
-    private static JComponent createTitleLabel(String text) {
+    private static JLabel createTitleLabel(String text) {
         AntialiasedLabel label = new AntialiasedLabel(text);
         SimpleComponentFactory.setFontSize(label, PFWizard.HEADER_FONT_SIZE);
         return label;
+    }
+
+    /**
+     * Method for updating the buttons
+     */
+    protected void updateTitle() {
+        if (titleLabel == null) {
+            return;
+        }
+        titleLabel.setText(getTitle());
     }
 
     // General ****************************************************************
@@ -223,28 +241,26 @@ public abstract class PFWizardPanel extends WizardPanel {
 
         setBorder(Borders.EMPTY_BORDER);
 
-        FormLayout layout = new FormLayout("fill:pref:grow",
-            "pref, 15dlu, pref, fill:pref:grow");
+        FormLayout layout = new FormLayout("13px, fill:pref:grow",
+            "pref, 15dlu, pref, 3dlu, fill:pref:grow");
         PanelBuilder pageBuilder = new PanelBuilder(layout, this);
         pageBuilder.setBorder(Borders
-            .createEmptyBorder("12dlu, 20dlu, 0dlu, 20dlu"));
+            .createEmptyBorder("7dlu, 20dlu, 0dlu, 20dlu"));
         CellConstraints cc = new CellConstraints();
+        int row = 1;
 
-        pageBuilder.add(createTitleLabel(title), cc.xy(1, 1));
+        pageBuilder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI)), cc
+            .xywh(1, row, 2, 1, "left, default"));
+        row += 2;
 
-        // Add current wizard pico
-        JComponent picto = getPictoComponent();
-        picto = null;
-        if (picto != null) {
-            pageBuilder.add(picto, cc.xy(1, 3, CellConstraints.DEFAULT,
-                CellConstraints.TOP));
-        }
+        titleLabel = createTitleLabel(title);
+        pageBuilder.add(titleLabel, cc.xy(2, row));
+        row += 2;
 
-        pageBuilder.add(content, cc.xy(1, 3, CellConstraints.DEFAULT,
+        pageBuilder.add(content, cc.xy(2, row, CellConstraints.DEFAULT,
             CellConstraints.TOP));
 
         // initalized
         initalized = true;
     }
-
 }
