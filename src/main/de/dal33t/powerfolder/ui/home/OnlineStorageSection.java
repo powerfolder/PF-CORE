@@ -86,8 +86,8 @@ public class OnlineStorageSection extends PFUIComponent {
             + Format.formatBytesShort(totalStorage));
 
         usageLabel.setText(Translation.getTranslation(
-            "home_tab.online_storage.usage", Format
-                .formatNumber(percentageUsed)));
+            "home_tab.online_storage.usage", Format.formatBytesShort(spaceUsed),
+                Format.formatNumber(percentageUsed)));
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 

@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -45,7 +43,6 @@ import javax.swing.TransferHandler;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -76,7 +73,6 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -292,7 +288,7 @@ public class HomeTab extends PFUIComponent {
         FormLayout layout = new FormLayout(
             "3dlu, 100dlu, pref:grow, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, pref, 3dlu, pref, pref, pref, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
-        // sync-stat sync-date sep you-have warn, files invs comps singl
+        // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -301,20 +297,19 @@ public class HomeTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
+
+        builder.addSeparator(Translation.getTranslation("home_tab.synchronization"),
+                cc.xyw(2, row, 3));
+        row += 2;
+
         builder.add(synchronizationStatusLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
         builder.add(synchronizationDateLabel, cc.xywh(2, row, 3, 1));
         row += 2;
 
-        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
-        row += 2;
-
-        JLabel youHaveLabel = new JLabel(Translation
-            .getTranslation("home_tab.you_have"));
-        Font f = youHaveLabel.getFont();
-        youHaveLabel.setFont(new Font(f.getName(), Font.BOLD, f.getSize()));
-        builder.add(youHaveLabel, cc.xywh(2, row, 2, 1));
+        builder.addSeparator(Translation.getTranslation("home_tab.you_have"),
+                cc.xywh(2, row, 2, 1));
         row += 2;
 
         builder.add(newWarningsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
@@ -340,7 +335,8 @@ public class HomeTab extends PFUIComponent {
         builder.add(uploadsLine.getUIComponent(), cc.xywh(2, row, 2, 1));
         row++;
 
-        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
+        builder.addSeparator(Translation.getTranslation("home_tab.local"),
+                cc.xywh(2, row, 2, 1));
         row += 2;
 
         builder
@@ -354,7 +350,8 @@ public class HomeTab extends PFUIComponent {
 
         row++;
 
-        builder.addSeparator(null, cc.xywh(2, row, 2, 1));
+        builder.addSeparator(Translation.getTranslation("home_tab.online_storage"),
+                cc.xywh(2, row, 2, 1));
         row += 2;
 
         builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xywh(2, row,
@@ -403,8 +400,6 @@ public class HomeTab extends PFUIComponent {
      */
     private void updateTransferText() {
         downloadsLine.setValue((Integer) downloadsCountVM.getValue());
-        TransferCounter transferCounter = getController().getTransferManager()
-            .getUploadCounter();
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
