@@ -95,8 +95,20 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
     public void adviseOfChange(FilteredDirectoryEvent event) {
         directoryTreeModel.setTree(event.getModel());
         if (event.isFolderChanged()) {
-            // New folder - select root so table has something to display
-            tree.getSelectionModel().setSelectionPath(new TreePath(directoryTreeModel.getRoot()));
+            // New folder - select root so the table has something to display.
+            // If there are subdirectories, jump to first, then back to root,
+            // opening up the tree to the first level.
+            DefaultMutableTreeNode root =
+                    (DefaultMutableTreeNode) directoryTreeModel.getRoot();
+            int count = root.getChildCount();
+            if (count > 0) {
+                DefaultMutableTreeNode node =
+                    (DefaultMutableTreeNode) root.getChildAt(0);
+                tree.getSelectionModel().setSelectionPath(new TreePath(
+                        new Object[] {directoryTreeModel.getRoot(), node}));
+            }
+            tree.getSelectionModel().setSelectionPath(new TreePath(
+                    directoryTreeModel.getRoot()));
         }
     }
 
