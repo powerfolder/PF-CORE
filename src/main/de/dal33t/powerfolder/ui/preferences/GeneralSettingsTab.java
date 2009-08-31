@@ -43,6 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -153,9 +154,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     Translation
                         .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
-            if (WinUtils.getInstance() != null) {
-                ValueModel startWithWindowsVM = new ValueHolder(WinUtils.getInstance()
-                        .isPFStartup());
+            if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
+                ValueModel startWithWindowsVM = new ValueHolder(WinUtils
+                    .getInstance().isPFStartup());
                 startWithWindowsVM
                     .addValueChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -170,10 +171,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         }
                     });
                 ValueModel tmpModel = new BufferedValueModel(
-                        startWithWindowsVM, writeTrigger);
-                startWithWindowsBox = BasicComponentFactory.createCheckBox(
-                    tmpModel, Translation
-                        .getTranslation("preferences.dialog.start_with_windows"));
+                    startWithWindowsVM, writeTrigger);
+                startWithWindowsBox = BasicComponentFactory
+                    .createCheckBox(
+                        tmpModel,
+                        Translation
+                            .getTranslation("preferences.dialog.start_with_windows"));
             }
 
             if (OSUtil.isWindowsSystem()) {
