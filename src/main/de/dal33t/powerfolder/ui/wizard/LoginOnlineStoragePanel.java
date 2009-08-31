@@ -128,55 +128,44 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "40dlu, 3dlu, 80dlu, 3dlu, 60dlu, 0:grow",
-            "pref, 15dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 12dlu, pref, 20dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 60dlu, pref",
+            "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("0, 0dlu, 0, 0"));
+        builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        // builder.addLabel(Translation
-        // .getTranslation("wizard.webservice.enter_account"), cc.xyw(1, row,
-        // 4));
-        row += 2;
 
         // usernameField and connectingLabel have the same slot.
         builder.add(usernameLabel, cc.xy(1, row));
         builder.add(usernameField, cc.xy(3, row));
         builder.add(connectingLabel, cc.xyw(1, row, 3));
-        row += 2;
-
-        // passwordField and workingBar have the same slot.
-        builder.add(passwordLabel, cc.xy(1, row));
-        builder.add(passwordField, cc.xy(3, row));
-        builder.add(workingBar, cc.xyw(1, row, 3));
-        row += 2;
-
-        builder.add(rememberPasswordBox, cc.xy(3, row));
-        row += 2;
-
         if (client.supportsWebRegistration()) {
             LinkLabel signupLabel = new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
                 .getRegisterURL());
             signupLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
             signupLabel.setFontSize(PFWizard.MED_FONT_SIZE);
-            builder.add(signupLabel.getUiComponent(), cc.xyw(1, row, 4));
-            row += 2;
-
-            LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
-                Translation
-                    .getTranslation("wizard.webservice.recover_password"),
-                getController().getOSClient().getWebURL());
-            recoverPasswordLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-            recoverPasswordLabel.setFontSize(PFWizard.MED_FONT_SIZE);
-
-            builder.add(recoverPasswordLabel.getUiComponent(), cc
-                .xyw(1, row, 4));
-            row += 2;
+            builder.add(signupLabel.getUiComponent(), cc.xy(5, row));
         }
+        row += 2;
 
+        // passwordField and workingBar have the same slot.
+        builder.add(passwordLabel, cc.xy(1, row));
+        builder.add(passwordField, cc.xy(3, row));
+        builder.add(workingBar, cc.xyw(1, row, 3));
+        LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
+            Translation.getTranslation("wizard.webservice.recover_password"),
+            getController().getOSClient().getWebURL());
+        recoverPasswordLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+        recoverPasswordLabel.setFontSize(PFWizard.MED_FONT_SIZE);
+        builder.add(recoverPasswordLabel.getUiComponent(), cc.xy(5, row));
+        row += 2;
+
+        builder.add(rememberPasswordBox, cc.xy(3, row));
+        row += 2;
+
+        showUseOS = true;
         if (showUseOS) {
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
@@ -184,7 +173,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             builder.add(link.getUiComponent(), cc.xyw(1, row, 5));
             row += 2;
 
-            builder.add(useOSBox, cc.xyw(1, row, 5));
+            builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
         }
 
