@@ -39,5 +39,6 @@
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaSkyMetallic.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaWhiteVision.jar"/>
 	<classpathentry kind="lib" path="lib/h2-1.1.109.jar"/>
+	<classpathentry kind="lib" path="lib/l2fprod-common-directorychooser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
