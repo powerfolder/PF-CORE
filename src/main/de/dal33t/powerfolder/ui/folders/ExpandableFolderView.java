@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
+import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -107,6 +108,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyOpenMembersInformationAction openMembersInformationAction;
     private MyMostRecentChangesAction mostRecentChangesAction;
     private MyOpenExplorerAction openExplorerAction;
+    private FolderRemoveAction removeFolderAction;
 
     private JPopupMenu collapsedContextMenu;
 
@@ -174,6 +176,10 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Expand this view if collapsed.
      */
     public void expand() {
+        if (folder == null) {
+            // Don't expand for ONLINE folder only.
+            return;
+        }
         expanded.set(true);
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.collapse"));
@@ -299,8 +305,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         row++; // Just add one.
 
-        lowerBuilder
-            .add(osComponent.getUIComponent(), cc.xywh(2, row, 4, 1));
+        lowerBuilder.add(osComponent.getUIComponent(), cc.xywh(2, row, 4, 1));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -348,6 +353,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
+        removeFolderAction = new FolderRemoveAction(getController());
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         MySyncFolderAction mySyncFolderAction = new MySyncFolderAction(
@@ -414,6 +420,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncFolderButton.setVisible(enabled);
         joinOnlineStorageButton.setVisible(!enabled);
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
+
+        // Always.
+        removeFolderAction.setEnabled(true);
     }
 
     /**
@@ -551,7 +560,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                             .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", Format.formatNumber(sync));
+                            "exp_folder_view.synchronized", Format
+                                .formatNumber(sync));
                     }
                 }
 
@@ -571,7 +581,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available", String.valueOf(count));
+                        "exp_folder_view.files_available", String
+                            .valueOf(count));
                 }
             }
         }
@@ -701,9 +712,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             collapsedContextMenu.addSeparator();
             collapsedContextMenu.add(openFilesInformationAction);
             collapsedContextMenu.add(mostRecentChangesAction);
+            collapsedContextMenu.addSeparator();
             collapsedContextMenu.add(inviteAction);
             collapsedContextMenu.add(openMembersInformationAction);
+            collapsedContextMenu.addSeparator();
             collapsedContextMenu.add(openSettingsInformationAction);
+            collapsedContextMenu.add(removeFolderAction);
         }
         return collapsedContextMenu;
     }
@@ -874,8 +888,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(),
-                    evt.getY());
+            createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
         }
 
         public void mouseClicked(MouseEvent e) {
@@ -976,6 +989,19 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 getController().getUIController().syncFolder(folderInfo);
             }
+        }
+    }
+
+    private class FolderRemoveAction extends BaseAction {
+
+        private FolderRemoveAction(Controller controller) {
+            super("action_remove_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            FolderRemovePanel panel = new FolderRemovePanel(getController(),
+                folderInfo);
+            panel.open();
         }
     }
 

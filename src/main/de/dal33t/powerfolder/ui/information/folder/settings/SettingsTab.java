@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -48,8 +48,6 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.w3c.dom.events.UIEvent;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -64,16 +62,21 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderPreviewHelper;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.CopyOrMoveFileArchiverEditDialog;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
-import de.dal33t.powerfolder.ui.dialog.CopyOrMoveFileArchiverEditDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -119,7 +122,7 @@ public class SettingsTab extends PFUIComponent {
     private ActionLabel confOSActionLabel;
     private final ServerClient serverClient;
     private ActionLabel previewFolderActionLabel;
-    private final DeleteFolderAction deleteFolderAction;
+    private final RemoveFolderAction removeFolderAction;
     private final ValueModel scriptModel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
@@ -148,7 +151,7 @@ public class SettingsTab extends PFUIComponent {
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
-        deleteFolderAction = new DeleteFolderAction(getController());
+        removeFolderAction = new RemoveFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         scriptModel = new ValueHolder(null, false);
     }
@@ -278,7 +281,7 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new ActionLabel(getController(), deleteFolderAction)
+        builder.add(new ActionLabel(getController(), removeFolderAction)
             .getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
@@ -853,15 +856,15 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class DeleteFolderAction extends BaseAction {
+    private class RemoveFolderAction extends BaseAction {
 
-        private DeleteFolderAction(Controller controller) {
-            super("action_delete_folder", controller);
+        private RemoveFolderAction(Controller controller) {
+            super("action_remove_folder", controller);
         }
 
         public void actionPerformed(ActionEvent e) {
             FolderRemovePanel panel = new FolderRemovePanel(getController(),
-                folder);
+                folder.getInfo());
             panel.open();
         }
     }
