@@ -36,7 +36,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.PreviewFolderRemoveAction;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -118,7 +117,7 @@ public class PreviewFolderRemovePanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.REMOVE_FOLDER_48);
+        return null;
     }
 
     protected JButton getDefaultButton() {

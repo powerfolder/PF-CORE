@@ -110,7 +110,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
      * @return
      */
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.NEW_FOLDER_48);
+        return null;
     }
 
     /**

@@ -140,7 +140,7 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     @Override
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.JOIN_FOLDER_48);
+        return null;
     }
 
     @Override

@@ -105,12 +105,6 @@ public class Icons {
     public static final String EXPAND = "expand.icon";
     public static final String COLLAPSE = "collapse.icon";
 
-    // Toolbar
-    public static final String NEW_FOLDER_48 = "new_folder_48.icon";
-    public static final String JOIN_FOLDER_48 = "join_folder_48.icon";
-    public static final String SYNC_FOLDER_48 = "sync_48.icon";
-    public static final String REMOVE_FOLDER_48 = "leave_folder_48.icon";
-
     public static final String PREFERENCES_PICTO = "preferences_picto.icon";
     public static final String SYNC = "sync.icon";
     public static final String QUESTION = "question.icon";

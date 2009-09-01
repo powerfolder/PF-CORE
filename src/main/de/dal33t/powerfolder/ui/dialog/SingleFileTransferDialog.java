@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -46,7 +46,7 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * Dialog for offering a file to transfer to another computer..
- *
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -62,12 +62,13 @@ public class SingleFileTransferDialog extends BaseDialog {
     private ValueModel computersTextModel;
     private final Collection<Member> computersMembers = new ArrayList<Member>();
     private JTextArea messageTextArea;
-               
+
     /**
      * Constructor.
      */
     public SingleFileTransferDialog(Controller controller, File file,
-                                    Member node) {
+        Member node)
+    {
         super(controller, true);
         this.file = file;
         if (node != null) {
@@ -77,7 +78,7 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Gets the title of the dialog.
-     *
+     * 
      * @return
      */
     public String getTitle() {
@@ -90,11 +91,11 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Gets the icon for the dialog.
-     *
+     * 
      * @return
      */
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.SYNC_FOLDER_48);
+        return null;
     }
 
     protected JButton getDefaultButton() {
@@ -103,20 +104,20 @@ public class SingleFileTransferDialog extends BaseDialog {
 
     /**
      * Creates the visual component.
-     *
+     * 
      * @return
      */
     protected JComponent getContent() {
         initComponents();
-        FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, pref",
+        FormLayout layout = new FormLayout("right:pref, 3dlu, pref",
             "pref, 3dlu, pref, 3dlu, pref, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         // Profile name
-        builder.add(new JLabel(Translation.getTranslation(
-                "dialog.single_file_transfer.file_name")), cc.xy(1, 1));
+        builder.add(new JLabel(Translation
+            .getTranslation("dialog.single_file_transfer.file_name")), cc.xy(1,
+            1));
         JTextField fileNameTextField = new JTextField(file.getAbsolutePath());
         fileNameTextField.setEnabled(false);
         FormLayout layout2 = new FormLayout("140dlu", "pref");
@@ -125,8 +126,9 @@ public class SingleFileTransferDialog extends BaseDialog {
         JPanel panel2 = builder2.getPanel();
         builder.add(panel2, cc.xy(3, 1));
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "dialog.single_file_transfer.computer")), cc.xy(1, 3));
+        builder.add(new JLabel(Translation
+            .getTranslation("dialog.single_file_transfer.computer")), cc.xy(1,
+            3));
         if (computersMembers.isEmpty()) {
             FormLayout layout4 = new FormLayout("122dlu, 3dlu, pref", "pref");
             PanelBuilder builder4 = new PanelBuilder(layout4);
@@ -145,8 +147,12 @@ public class SingleFileTransferDialog extends BaseDialog {
             builder.add(panel3, cc.xy(3, 3));
         }
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "dialog.single_file_transfer.friend_message.text")), cc.xyw(1, 5, 3));
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("dialog.single_file_transfer.friend_message.text")),
+                cc.xyw(1, 5, 3));
 
         JScrollPane scrollPane = new JScrollPane(messageTextArea);
         scrollPane.setPreferredSize(new Dimension(400, 200));
@@ -178,11 +184,11 @@ public class SingleFileTransferDialog extends BaseDialog {
             }
         });
         computersText = BasicComponentFactory.createTextField(
-                computersTextModel, false);
+            computersTextModel, false);
         computersText.setEnabled(false);
-        computersSelectButton = new JButtonMini(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED),
-                Translation.getTranslation(
-                        "dialog.single_file_transfer.select_computer.tip"));
+        computersSelectButton = new JButtonMini(Icons
+            .getIconById(Icons.NODE_FRIEND_CONNECTED), Translation
+            .getTranslation("dialog.single_file_transfer.select_computer.tip"));
         computersSelectButton.addActionListener(new MyActionListener());
 
         updateTransferButton();
@@ -195,8 +201,8 @@ public class SingleFileTransferDialog extends BaseDialog {
     }
 
     private void createTransferButton() {
-        SingleFileTransferAction action =
-                new SingleFileTransferAction(getController());
+        SingleFileTransferAction action = new SingleFileTransferAction(
+            getController());
         transferButton = new JButton(action);
     }
 
@@ -207,8 +213,8 @@ public class SingleFileTransferDialog extends BaseDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
-//            getController().getTransferManager().offerSingleFile(file, 
-//                    computersMembers, messageTextArea.getText());
+            // getController().getTransferManager().offerSingleFile(file,
+            // computersMembers, messageTextArea.getText());
             close();
         }
     }
@@ -220,12 +226,12 @@ public class SingleFileTransferDialog extends BaseDialog {
 
         /**
          * Open a UserSelectDialog
-         *
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {
             NodesSelectDialog dialog = new NodesSelectDialog(getController(),
-                    computersTextModel, computersMembers);
+                computersTextModel, computersMembers);
             dialog.open();
         }
     }

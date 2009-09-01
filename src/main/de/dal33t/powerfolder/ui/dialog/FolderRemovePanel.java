@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
@@ -157,7 +156,7 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     protected Icon getIcon() {
-        return Icons.getIconById(Icons.REMOVE_FOLDER_48);
+        return null;
     }
 
     protected JComponent getContent() {
