@@ -78,14 +78,8 @@ public class SwingWorkerPanel extends PFWizardPanel {
     }
 
     @Override
-    public boolean canGoBackTo() {
-        return false;
-    }
-
-    @Override
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("140dlu, 0:grow",
-            "pref, 7dlu, pref");
+        FormLayout layout = new FormLayout("140dlu, 0:grow", "pref, 7dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -139,7 +133,8 @@ public class SwingWorkerPanel extends PFWizardPanel {
 
     @Override
     public boolean hasNext() {
-        return !isProblem();
+        // Always automatically goes to next
+        return false;
     }
 
     @Override
@@ -172,7 +167,10 @@ public class SwingWorkerPanel extends PFWizardPanel {
                 // Next
                 Wizard wiz = (Wizard) getWizardContext().getAttribute(
                     WizardContextAttributes.WIZARD_ATTRIBUTE);
-                wiz.next();
+                if (wiz.getCurrentPanel() == SwingWorkerPanel.this) {
+                    // Go to next if still visible.
+                    wiz.next();
+                }
             } catch (InterruptedException e) {
                 return;
             } catch (ExecutionException e) {
