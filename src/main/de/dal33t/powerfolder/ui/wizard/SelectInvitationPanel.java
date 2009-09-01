@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -37,22 +37,23 @@ import java.util.logging.Logger;
 
 /**
  * Wizard for sending an invitation to a user for a selected folder.
- *
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.12 $
  */
 public class SelectInvitationPanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(SelectInvitationPanel.class.getName());
+    private static final Logger log = Logger
+        .getLogger(SelectInvitationPanel.class.getName());
 
     private List<FolderInfo> possibleFolders;
     private Member member;
     private JComboBox foldersCombo;
     private JTextField messageField;
 
-    public SelectInvitationPanel(Controller controller,
-                                 Member member,
-                                 List<FolderInfo> possibleFolders) {
+    public SelectInvitationPanel(Controller controller, Member member,
+        List<FolderInfo> possibleFolders)
+    {
         super(controller);
         this.possibleFolders = possibleFolders;
         this.member = member;
@@ -66,49 +67,51 @@ public class SelectInvitationPanel extends PFWizardPanel {
         int index = foldersCombo.getSelectedIndex();
         FolderInfo folderInfo = possibleFolders.get(index);
         Invitation invitation = folderInfo.getFolder(getController())
-                .createInvitation();
-        invitation.setSuggestedLocalBase(getController(),
-                folderInfo.getFolder(getController()).getLocalBase());
+            .createInvitation();
+        invitation.setSuggestedLocalBase(getController(), folderInfo.getFolder(
+            getController()).getLocalBase());
         invitation.setInvitationText(messageField.getText());
         InvitationUtil.invitationToNode(getController(), invitation, member);
         log.finer("Invited " + member.getNick() + " to folder "
-                + folderInfo.name);
+            + folderInfo.name);
         return true;
     }
 
     public WizardPanel next() {
         // Show success panel
         return (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
+            PFWizard.SUCCESS_PANEL);
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-                "pref, max(pref;140dlu)",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, " +
-                        "pref");
+        FormLayout layout = new FormLayout("pref, max(pref;140dlu)",
+            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 6dlu, pref, 3dlu, "
+                + "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
         builder.addLabel(Translation.getTranslation("select_invitation.text1"),
-                cc.xyw(1, row, 2));
+            cc.xyw(1, row, 2));
 
         row += 2;
         builder.addLabel(Translation.getTranslation("select_invitation.text2"),
-                cc.xyw(1, row, 2));
+            cc.xyw(1, row, 2));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("select_invitation.message_text"),
-                cc.xyw(1, row, 2));
+        builder.addLabel(Translation
+            .getTranslation("select_invitation.message_text"), cc
+            .xyw(1, row, 2));
 
         row += 2;
         builder.add(messageField, cc.xy(1, row));
 
         row += 2;
-        builder.addLabel(Translation.getTranslation("select_invitation.folder_text"),
-                cc.xyw(1, row, 2));
+        builder
+            .addLabel(Translation
+                .getTranslation("select_invitation.folder_text"), cc.xyw(1,
+                row, 2));
 
         row += 2;
         builder.add(foldersCombo, cc.xy(1, row));
@@ -131,12 +134,7 @@ public class SelectInvitationPanel extends PFWizardPanel {
         messageField = new JTextField();
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
-    }
-
     protected String getTitle() {
-        return Translation
-                .getTranslation("wizard.send_invitations.title");
+        return Translation.getTranslation("wizard.send_invitations.title");
     }
 }

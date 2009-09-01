@@ -38,7 +38,7 @@ import java.io.File;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -60,7 +60,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     public WizardPanel next() {
         getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBase);
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-                localBase.getName());
+            localBase.getName());
         return new FolderSetupPanel(getController());
     }
 
@@ -70,25 +70,25 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext() {
         getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT,
-                createDesktopShortcutBox.isSelected());
+            createDesktopShortcutBox.isSelected());
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
-                backupByOnlineStorageBox.isSelected());
+            backupByOnlineStorageBox.isSelected());
         return true;
     }
 
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref, 0:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 0:grow",
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JComponent locationField = new JLabel(Translation.getTranslation(
-                "general.directory"));
+        JComponent locationField = new JLabel(Translation
+            .getTranslation("general.directory"));
 
         int row = 1;
 
@@ -99,7 +99,9 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         builder.add(folderSizeLabel, cc.xyw(1, row, 3));
 
         if (!getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())) {
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController()))
+        {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
@@ -130,17 +132,19 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
-                && Boolean.TRUE.equals(getWizardContext().getAttribute(
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController())
+            && Boolean.TRUE.equals(getWizardContext().getAttribute(
                 BACKUP_ONLINE_STOARGE));
-        backupByOnlineStorageBox = new JCheckBox(Translation
+        backupByOnlineStorageBox = new JCheckBox(
+            Translation
                 .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
 
             // Remember last preference...
-            Boolean buos = PreferencesEntry.BACKUP_OS.getValueBoolean(
-                    getController());
+            Boolean buos = PreferencesEntry.BACKUP_OS
+                .getValueBoolean(getController());
             if (buos == null) {
                 // .. or default to if last os client login ok.
                 buos = getController().getOSClient().isLoggedIn();
@@ -150,36 +154,34 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 PreferencesEntry.BACKUP_OS.setValue(getController(),
-                        backupByOnlineStorageBox.isSelected());
+                    backupByOnlineStorageBox.isSelected());
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
-                            .getServerClientModel().checkAndSetupAccount();
+                        .getServerClientModel().checkAndSetupAccount();
                 }
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(Translation
+        createDesktopShortcutBox = new JCheckBox(
+            Translation
                 .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
 
         createDesktopShortcutBox.setOpaque(false);
 
         // Send Invite
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()
-                .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
+            .getAttribute(SEND_INVIATION_AFTER_ATTRIBUTE));
         sendInviteAfterCB = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("wizard.choose_disk_location.send_invitation"));
+            .getTranslation("wizard.choose_disk_location.send_invitation"));
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(Icons.getIconById(Icons.FILE_SHARING_PICTO));
-    }
-
     protected String getTitle() {
-        return Translation.getTranslation("wizard.choose_disk_location.options");
+        return Translation
+            .getTranslation("wizard.choose_disk_location.options");
     }
 }

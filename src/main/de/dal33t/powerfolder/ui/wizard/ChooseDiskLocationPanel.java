@@ -437,10 +437,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         worker.start();
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
-    }
-
     protected String getTitle() {
         return Translation.getTranslation("wizard.choose_disk_location.title");
     }

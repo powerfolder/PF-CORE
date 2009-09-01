@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -340,10 +339,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
         enableAddButton();
         enableRemoveButton();
 
-    }
-
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

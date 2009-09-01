@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -226,10 +225,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         workingBar.setIndeterminate(true);
         updateOnlineStatus();
         client.addListener(new MyServerClientListner());
-    }
-
-    protected JComponent getPictoComponent() {
-        return new JLabel(Icons.getIconById(Icons.WEB_SERVICE_PICTO));
     }
 
     protected String getTitle() {

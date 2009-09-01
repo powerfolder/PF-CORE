@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.event.ActionEvent;
@@ -34,7 +34,6 @@ import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,7 +56,7 @@ import de.javasoft.synthetica.addons.DirectoryChooser;
 
 /**
  * Class to do sync profile configuration for OS joins.
- *
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -73,10 +72,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     private JTextField localFolderField;
     private JButton localFolderButton;
 
-
     /**
      * Constuctor
-     *
+     * 
      * @param controller
      */
     public MultiOnlineStorageSetupPanel(Controller controller) {
@@ -89,8 +87,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
-        List<FolderCreateItem> folderCreateItems =
-                new ArrayList<FolderCreateItem>();
+        List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
         for (FolderInfo folderInfo : folderProfileMap.keySet()) {
             SyncProfile sp = folderProfileMap.get(folderInfo);
@@ -101,29 +98,32 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             folderCreateItems.add(fci);
         }
 
-        getWizardContext().setAttribute(WizardContextAttributes.
-                FOLDER_CREATE_ITEMS, folderCreateItems);
+        getWizardContext().setAttribute(
+            WizardContextAttributes.FOLDER_CREATE_ITEMS, folderCreateItems);
 
         getWizardContext().setAttribute(
             WizardContextAttributes.SAVE_INVITE_LOCALLY, false);
-
 
         return new FolderCreatePanel(getController());
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
+        FormLayout layout = new FormLayout(
+            "right:pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.directory"),
-                cc.xy(1, 1));
+        builder.addLabel(Translation.getTranslation("general.directory"), cc
+            .xy(1, 1));
         builder.add(folderInfoCombo, cc.xyw(3, 1, 3));
 
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.multi_online_storage_setup.local_folder_location")),
+        builder
+            .add(
+                new JLabel(
+                    Translation
+                        .getTranslation("wizard.multi_online_storage_setup.local_folder_location")),
                 cc.xy(1, 3));
         builder.add(localFolderField, cc.xy(3, 3));
         builder.add(localFolderButton, cc.xy(5, 3));
@@ -144,23 +144,21 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
-        localFolderButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation(
-                        "wizard.multi_online_storage_setup.select_directory"));
+        localFolderButton = new JButtonMini(
+            Icons.getIconById(Icons.DIRECTORY),
+            Translation
+                .getTranslation("wizard.multi_online_storage_setup.select_directory"));
         MyActionListener myActionListener = new MyActionListener();
         localFolderButton.addActionListener(myActionListener);
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
-        syncProfileSelectorPanel.addModelValueChangeListener(
-                new MyPropertyValueChangeListener());
+        syncProfileSelectorPanel
+            .addModelValueChangeListener(new MyPropertyValueChangeListener());
 
         folderInfoComboModel = new DefaultComboBoxModel();
         folderInfoCombo = new JComboBox(folderInfoComboModel);
 
         folderInfoCombo.addItemListener(new MyItemListener());
-
-        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.getIconById(Icons.FILE_SHARING_PICTO));
     }
 
     /**
@@ -183,12 +181,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         }
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
-    }
-
     protected String getTitle() {
-        return Translation.getTranslation("wizard.multi_online_storage_setup.title");
+        return Translation
+            .getTranslation("wizard.multi_online_storage_setup.title");
     }
 
     /**
@@ -206,10 +201,10 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            localFolderField.setText(folderLocalBaseMap.get(
-                    selectedFolderInfo).getAbsolutePath());
-            syncProfileSelectorPanel.setSyncProfile(
-                    folderProfileMap.get(selectedFolderInfo), false);
+            localFolderField.setText(folderLocalBaseMap.get(selectedFolderInfo)
+                .getAbsolutePath());
+            syncProfileSelectorPanel.setSyncProfile(folderProfileMap
+                .get(selectedFolderInfo), false);
         }
 
         changingSelecton = false;
@@ -227,7 +222,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
             if (selectedFolderInfo != null) {
                 folderProfileMap.put(selectedFolderInfo,
-                        syncProfileSelectorPanel.getSyncProfile());
+                    syncProfileSelectorPanel.getSyncProfile());
             }
         }
     }
@@ -239,7 +234,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     }
 
     private class MyPropertyValueChangeListener implements
-            PropertyChangeListener {
+        PropertyChangeListener
+    {
 
         public void propertyChange(PropertyChangeEvent evt) {
             syncProfileSelectorPanelChange();
@@ -258,7 +254,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         if (selectedFolderInfo != null) {
             DirectoryChooser dc = new DirectoryChooser();
             dc.setCurrentDirectory(folderLocalBaseMap.get(selectedFolderInfo));
-            int i = dc.showOpenDialog(getController().getUIController().getActiveFrame());
+            int i = dc.showOpenDialog(getController().getUIController()
+                .getActiveFrame());
             if (i == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = dc.getSelectedFile();
                 localFolderField.setText(selectedFile.getAbsolutePath());

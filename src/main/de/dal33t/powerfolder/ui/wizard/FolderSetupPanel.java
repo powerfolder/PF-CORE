@@ -1,41 +1,50 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 /**
  * Class to do folder creation for an optional specified folderInfo.
@@ -79,8 +88,11 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel.getSyncProfile());
 
         // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.invite.select_local"));
+        getWizardContext()
+            .setAttribute(
+                PROMPT_TEXT_ATTRIBUTE,
+                Translation
+                    .getTranslation("wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -88,22 +100,22 @@ public class FolderSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
-            Boolean.TRUE);
+        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
 
         return new FolderCreatePanel(getController());
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
+        FormLayout layout = new FormLayout(
+            "right:pref, 3dlu, 140dlu, pref:grow",
             "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         // Folder Name
-        builder.add(new JLabel(Translation.getTranslation("file_info.name")), cc
-            .xy(1, 1));
+        builder.add(new JLabel(Translation.getTranslation("file_info.name")),
+            cc.xy(1, 1));
         builder.add(folderNameTextField, cc.xy(3, 1));
 
         // Sync
@@ -119,10 +131,6 @@ public class FolderSetupPanel extends PFWizardPanel {
      * Initializes all necessary components
      */
     protected void initComponents() {
-
-        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.getIconById(Icons.FILE_SHARING_PICTO));
-
         // Folder name label
         folderNameTextField = SimpleComponentFactory.createTextField(true);
         String initialFolderName = (String) getWizardContext().getAttribute(
@@ -141,10 +149,6 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
                 getController(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
-    }
-
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

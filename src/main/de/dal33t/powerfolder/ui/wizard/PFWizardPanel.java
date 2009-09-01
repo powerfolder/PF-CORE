@@ -19,11 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -139,12 +137,6 @@ public abstract class PFWizardPanel extends WizardPanel {
     }
 
     /**
-     * @return the component representing the picto
-     */
-    @Deprecated
-    protected abstract JComponent getPictoComponent();
-
-    /**
      * Returns the title for the panel
      * 
      * @return
@@ -171,25 +163,6 @@ public abstract class PFWizardPanel extends WizardPanel {
     }
 
     // Helper code ************************************************************
-
-    /**
-     * @return the default picto which is set on the WizardCotext.
-     */
-    protected JComponent getContextPictoComponent() {
-        if (getContextPicto() == null) {
-            return null;
-        }
-        return new JLabel(getContextPicto());
-    }
-
-    /**
-     * @return the component with the default picto which is set on the
-     *         WizardCotext.
-     */
-    @Deprecated
-    protected Icon getContextPicto() {
-        return (Icon) getWizardContext().getAttribute(PFWizard.PICTO_ICON);
-    }
 
     /**
      * @param text

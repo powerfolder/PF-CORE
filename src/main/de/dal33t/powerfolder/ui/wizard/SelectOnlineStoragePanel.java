@@ -31,7 +31,6 @@ import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -185,11 +184,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         createDesktopShortcutBox.setOpaque(false);
         archiveMode = new JComboBox(EnumSet.allOf(ArchiveMode.class).toArray());
         archiveMode.setSelectedItem(ArchiveMode.NO_BACKUP);
-    }
-
-    @Override
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
     }
 
     @Override

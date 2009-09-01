@@ -241,11 +241,6 @@ public class FolderCreatePanel extends PFWizardPanel {
     }
 
     @Override
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
-    }
-
-    @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.create_folder.title");
     }

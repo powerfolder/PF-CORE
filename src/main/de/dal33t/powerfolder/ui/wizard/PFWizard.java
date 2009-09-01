@@ -19,30 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+
+import java.awt.Toolkit;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JDialog;
+
 import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
 import jwf.WizardPanel;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.io.File;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The main wizard class
@@ -60,9 +61,6 @@ public class PFWizard extends PFUIComponent {
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
-
-    // The active pictogram as JLabel
-    public static final String PICTO_ICON = "pictoicon";
 
     private JDialog dialog;
     private Wizard wizard;
@@ -110,8 +108,6 @@ public class PFWizard extends PFUIComponent {
         FolderInfo foInfo)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -136,9 +132,6 @@ public class PFWizard extends PFUIComponent {
         Member member, List<FolderInfo> possibleFolders)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
-
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.send_invitations.send_success"),
             Translation
@@ -211,8 +204,6 @@ public class PFWizard extends PFUIComponent {
         ServerClient client, Folder folderToSetup)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         WizardPanel nextFinishPanel;
         if (folderToSetup != null) {
             nextFinishPanel = new FolderOnlineStoragePanel(controller,
@@ -237,8 +228,6 @@ public class PFWizard extends PFUIComponent {
         Folder folderToSetup)
     {
         PFWizard wizard = new PFWizard(controller);
-        wizard.getWizardContext().setAttribute(PICTO_ICON,
-            Icons.getIconById(Icons.WEB_SERVICE_PICTO));
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup
             .getInfo()));
     }

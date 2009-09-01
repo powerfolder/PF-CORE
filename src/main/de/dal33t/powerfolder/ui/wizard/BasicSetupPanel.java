@@ -228,10 +228,6 @@ public class BasicSetupPanel extends PFWizardPanel {
         return Translation.getTranslation("wizard.basic_setup.title");
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(Icons.getIconById(Icons.PROJECT_WORK_PICTO));
-    }
-
     // Helper classes *********************************************************
 
     private static class PrivateNetworking {

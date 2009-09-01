@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.util.List;
+import java.util.StringTokenizer;
+
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -26,12 +35,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-
-import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -105,10 +108,6 @@ public class TextPanelPanel extends PFWizardPanel {
      * Initalizes all nessesary components
      */
     protected void initComponents() {
-    }
-
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
     }
 
     protected String getTitle() {

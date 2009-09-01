@@ -405,10 +405,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
-    }
-
     protected String getTitle() {
         String title = (String) getWizardContext().getAttribute(
             PROMPT_TEXT_ATTRIBUTE);

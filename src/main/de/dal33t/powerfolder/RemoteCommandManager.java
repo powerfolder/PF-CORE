@@ -398,9 +398,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         if (!silent && getController().isUIEnabled()) {
             PFWizard wizard = new PFWizard(getController());
-            wizard.getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-                Icons.getIconById(Icons.FILE_SHARING_PICTO));
-
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             if (syncProfile != null) {
@@ -423,8 +420,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, ArchiveMode.NO_BACKUP, false,
-                false, dlScript, 0);
+                createInvitationFile, ArchiveMode.NO_BACKUP, false, false,
+                dlScript, 0);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {

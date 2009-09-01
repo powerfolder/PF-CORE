@@ -93,10 +93,6 @@ public class TellFriendPanel extends PFWizardPanel {
         return builder.getPanel();
     }
 
-    protected JComponent getPictoComponent() {
-        return new JLabel(Icons.getIconById(Icons.PROJECT_WORK_PICTO));
-    }
-
     protected String getTitle() {
         return Translation.getTranslation("wizard.tell_friend.title");
     }
@@ -119,9 +115,6 @@ public class TellFriendPanel extends PFWizardPanel {
         String[] emails = emailTextArea.getText().split("\n");
         getController().getOSClient().getAccountService().tellFriend(
             Arrays.asList(emails), personalMessageTextArea.getText());
-
-        getWizardContext().setAttribute(PFWizard.PICTO_ICON,
-            Icons.getIconById(Icons.PROJECT_WORK_PICTO));
 
         return new TextPanelPanel(getController(), Translation
             .getTranslation("wizard.tell_friend.title"), Translation

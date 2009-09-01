@@ -171,12 +171,6 @@ public class Icons {
     public static final String CONNECTION_POOR = "connection_poor.icon";
     public static final String DISCONNECTED = "connected_not.icon";
 
-    // Wizard pico icons
-    public static final String SYNC_PCS_PICTO = "sync_pc_picto.icon";
-    public static final String PROJECT_WORK_PICTO = "project_work_picto.icon";
-    public static final String FILE_SHARING_PICTO = "file_share_picto.icon";
-    public static final String WEB_SERVICE_PICTO = "web_service_picto.icon";
-
     // Wizard pictos from the quick info panels
     public static final String LOGO96X96 = "picto_logo.icon";
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";

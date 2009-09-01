@@ -313,6 +313,10 @@ public class Wizard extends JPanel implements ActionListener {
         return nextButton;
     }
 
+    public WizardPanel getCurrentPanel() {
+        return current;
+    }
+
     private void finish() {
 
         if (current.validateFinish()) {

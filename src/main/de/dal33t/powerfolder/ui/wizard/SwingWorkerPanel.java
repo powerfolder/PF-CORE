@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -118,11 +117,6 @@ public class SwingWorkerPanel extends PFWizardPanel {
 
     @Override
     protected void initComponents() {
-    }
-
-    @Override
-    protected JComponent getPictoComponent() {
-        return new JLabel(getContextPicto());
     }
 
     @Override
