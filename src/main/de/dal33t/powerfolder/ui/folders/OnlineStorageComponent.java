@@ -60,8 +60,9 @@ public class OnlineStorageComponent extends PFUIComponent {
 
     private void initialize() {
         syncLabel = new JLabel(Translation.getTranslation(
-                "online_storage_component.online_storage_text", "0"));
-        webButton = new JButtonMini(new MyOnlineStorageAction(getController()), true);
+            "online_storage_component.online_storage_text", "0"));
+        webButton = new JButtonMini(new MyOnlineStorageAction(getController()),
+            true);
     }
 
     private void buildUI() {
@@ -74,15 +75,20 @@ public class OnlineStorageComponent extends PFUIComponent {
         builder.add(syncLabel, cc.xy(1, 4));
         builder.add(webButton, cc.xy(3, 4));
         uiComponent = builder.getPanel();
+        uiComponent.setOpaque(false);
     }
 
     public void setSyncPercentage(double serverSync, boolean warned) {
         syncLabel.setText(Translation.getTranslation(
-                "online_storage_component.online_storage_text", Format.formatNumber(serverSync)));
-        syncLabel.setForeground(warned ? Color.red :
-                ColorUtil.getTextForegroundColor());
-        syncLabel.setToolTipText(warned ? Translation.getTranslation(
-                "online_storage_component.online_storage_warning") : null);
+            "online_storage_component.online_storage_text", Format
+                .formatNumber(serverSync)));
+        syncLabel.setForeground(warned ? Color.red : ColorUtil
+            .getTextForegroundColor());
+        syncLabel
+            .setToolTipText(warned
+                ? Translation
+                    .getTranslation("online_storage_component.online_storage_warning")
+                : null);
     }
 
     private class MyOnlineStorageAction extends BaseAction {

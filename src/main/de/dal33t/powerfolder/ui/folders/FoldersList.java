@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -82,21 +83,20 @@ public class FoldersList extends PFUIComponent {
      * 
      * @param controller
      */
-    public FoldersList(Controller controller, FoldersTab foldersTab)
-    {
+    public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
         this.foldersTab = foldersTab;
         expansionListener = new MyExpansionListener();
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
-        localLabel = new JLabel(Translation.getTranslation(
-                "folders_list.local_folders"));
+        localLabel = new JLabel(Translation
+            .getTranslation("folders_list.local_folders"));
         localIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         localLabel.addMouseListener(new LocalListener());
         localIcon.addMouseListener(new LocalListener());
-        onlineLabel = new JLabel(Translation.getTranslation(
-                "folders_list.online_folders"));
+        onlineLabel = new JLabel(Translation
+            .getTranslation("folders_list.online_folders"));
         onlineIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
         onlineLabel.addMouseListener(new OnlineListener());
         onlineIcon.addMouseListener(new OnlineListener());
@@ -134,13 +134,13 @@ public class FoldersList extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(folderListPanel, cc.xy(1, 1));
-        uiComponent = builder.getPanel();
+        uiComponent = GradientPanel.create(builder.getPanel());
 
         updateFolders();
     }
 
     public boolean isEmpty() {
-        return views.isEmpty()  && !multiGroup;
+        return views.isEmpty() && !multiGroup;
     }
 
     /**
@@ -242,18 +242,18 @@ public class FoldersList extends PFUIComponent {
     }
 
     private void addSeparator(boolean collapsed, JLabel icon, JLabel label) {
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu",
-            "pref, 4dlu");
+        FormLayout layout = new FormLayout(
+            "3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND)
-                : Icons.getIconById(Icons.COLLAPSE));
-        icon.setToolTipText(collapsed
-                ? Translation.getTranslation("folders_list.expand_hint")
-                : Translation.getTranslation("folders_list.collapse_hint"));
-        label.setToolTipText(collapsed
-                ? Translation.getTranslation("folders_list.expand_hint")
-                : Translation.getTranslation("folders_list.collapse_hint"));
+        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND) : Icons
+            .getIconById(Icons.COLLAPSE));
+        icon.setToolTipText(collapsed ? Translation
+            .getTranslation("folders_list.expand_hint") : Translation
+            .getTranslation("folders_list.collapse_hint"));
+        label.setToolTipText(collapsed ? Translation
+            .getTranslation("folders_list.expand_hint") : Translation
+            .getTranslation("folders_list.collapse_hint"));
         builder.add(icon, cc.xy(2, 1));
         builder.add(label, cc.xy(4, 1));
         builder.add(new JSeparator(), cc.xy(6, 1));
@@ -265,8 +265,8 @@ public class FoldersList extends PFUIComponent {
     private void addView(FolderBean folderBean, FolderInfo expandedFolderInfo) {
         ExpandableFolderView newView = new ExpandableFolderView(
             getController(), folderBean.getFolderInfo());
-        newView.configure(folderBean.getFolder(), folderBean
-            .isLocal(), folderBean.isOnline());
+        newView.configure(folderBean.getFolder(), folderBean.isLocal(),
+            folderBean.isOnline());
         folderListPanel.add(newView.getUIComponent());
         folderListPanel.invalidate();
         if (uiComponent != null) {
@@ -278,8 +278,8 @@ public class FoldersList extends PFUIComponent {
         views.add(newView);
 
         // Was view expanded before?
-        if (expandedFolderInfo != null && folderBean.getFolderInfo()
-                .equals(expandedFolderInfo))
+        if (expandedFolderInfo != null
+            && folderBean.getFolderInfo().equals(expandedFolderInfo))
         {
             newView.expand();
         }

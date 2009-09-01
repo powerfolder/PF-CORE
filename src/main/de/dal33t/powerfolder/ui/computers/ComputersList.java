@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -86,18 +87,18 @@ public class ComputersList extends PFUIComponent {
         previousFriends = new TreeSet<Member>();
         previousMyComputers = new TreeSet<Member>();
 
-        myComputersLabel = new JLabel(Translation.getTranslation(
-                "computers_list.my_computers"));
+        myComputersLabel = new JLabel(Translation
+            .getTranslation("computers_list.my_computers"));
         myComputersIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         myComputersLabel.addMouseListener(new MyComputersListener());
         myComputersIcon.addMouseListener(new MyComputersListener());
-        friendsLabel = new JLabel(Translation.getTranslation(
-                "computers_list.friends"));
+        friendsLabel = new JLabel(Translation
+            .getTranslation("computers_list.friends"));
         friendsIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
         friendsLabel.addMouseListener(new FriendsListener());
         friendsIcon.addMouseListener(new FriendsListener());
-        connectedLansLabel = new JLabel(Translation.getTranslation(
-                "computers_list.lan"));
+        connectedLansLabel = new JLabel(Translation
+            .getTranslation("computers_list.lan"));
         connectedLansIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         connectedLansLabel.addMouseListener(new ConnectedLansListener());
         connectedLansIcon.addMouseListener(new ConnectedLansListener());
@@ -128,7 +129,7 @@ public class ComputersList extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(computerListPanel, cc.xy(1, 1));
-        uiComponent = builder.getPanel();
+        uiComponent = GradientPanel.create(builder.getPanel());
     }
 
     /**
@@ -146,9 +147,10 @@ public class ComputersList extends PFUIComponent {
     /**
      * Rebuild the whole list, if there is a significant change. This detects
      * things like Ln nodes becoming friends, etc.
-     *
-     * @param expCol true if expand or collapse change - MUST redisplay,
-     * even if previous are all the same.
+     * 
+     * @param expCol
+     *            true if expand or collapse change - MUST redisplay, even if
+     *            previous are all the same.
      */
     private void rebuild(boolean expCol) {
 
@@ -261,7 +263,8 @@ public class ComputersList extends PFUIComponent {
             for (Member node : myComputers) {
                 if (firstMyComputer && multiGroup) {
                     firstMyComputer = false;
-                    addSeparator(collapseMyComputers, myComputersIcon, myComputersLabel);
+                    addSeparator(collapseMyComputers, myComputersIcon,
+                        myComputersLabel);
                 }
                 if (!multiGroup || !collapseMyComputers) {
                     addView(node, expandedNode);
@@ -285,7 +288,8 @@ public class ComputersList extends PFUIComponent {
             for (Member node : connectedLans) {
                 if (firstLan && multiGroup) {
                     firstLan = false;
-                    addSeparator(collapseConnectedLans, connectedLansIcon, connectedLansLabel);
+                    addSeparator(collapseConnectedLans, connectedLansIcon,
+                        connectedLansLabel);
                 }
                 if (!multiGroup || !collapseConnectedLans) {
                     addView(node, expandedNode);
@@ -298,18 +302,18 @@ public class ComputersList extends PFUIComponent {
     }
 
     private void addSeparator(boolean collapsed, JLabel icon, JLabel label) {
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu",
-            "pref, 4dlu");
+        FormLayout layout = new FormLayout(
+            "3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu", "pref, 4dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND)
-                : Icons.getIconById(Icons.COLLAPSE));
-        icon.setToolTipText(collapsed
-                ? Translation.getTranslation("computers_list.expand_hint")
-                : Translation.getTranslation("computers_list.collapse_hint"));
-        label.setToolTipText(collapsed
-                ? Translation.getTranslation("computers_list.expand_hint")
-                : Translation.getTranslation("computers_list.collapse_hint"));
+        icon.setIcon(collapsed ? Icons.getIconById(Icons.EXPAND) : Icons
+            .getIconById(Icons.COLLAPSE));
+        icon.setToolTipText(collapsed ? Translation
+            .getTranslation("computers_list.expand_hint") : Translation
+            .getTranslation("computers_list.collapse_hint"));
+        label.setToolTipText(collapsed ? Translation
+            .getTranslation("computers_list.expand_hint") : Translation
+            .getTranslation("computers_list.collapse_hint"));
         builder.add(icon, cc.xy(2, 1));
         builder.add(label, cc.xy(4, 1));
         builder.add(new JSeparator(), cc.xy(6, 1));
