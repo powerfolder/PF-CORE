@@ -23,6 +23,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.l2fprod.common.swing.JDirectoryChooser;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -577,8 +579,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String dir = DialogFactory.chooseDirectory(getController(),
+            JDirectoryChooser dirChooser = new JDirectoryChooser(
                 initialDirectory);
+            dirChooser.setShowingCreateDirectory(true);
+            dirChooser.setMultiSelectionEnabled(false);
+            int res = dirChooser.showOpenDialog(UIUtil.getParentWindow(e));
+            if (res != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            String dir = dirChooser.getSelectedFile().getAbsolutePath();
             if (StringUtils.isBlank(dir)) {
                 return;
             }
