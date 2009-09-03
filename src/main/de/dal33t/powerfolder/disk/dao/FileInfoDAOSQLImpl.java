@@ -368,23 +368,18 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     public Iterator<FileInfo> findDifferentFiles(int maxResults,
         String... domains)
     {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public FileHistory getFileHistory(FileInfo fileInfo) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Collection<FileInfo> findInDirectory(String path, String... domains)
-    {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Collection<DirectoryInfo> findDirectories(String domain) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public Collection<FileInfo> findInDirectory(String path, String domain) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

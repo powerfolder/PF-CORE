@@ -204,7 +204,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         List<FileInfo> files = new ArrayList<FileInfo>();
         Domain domain = getDomain(domainStr);
         for (FileInfo fInfo : domain.files.values()) {
-            if (isInSubDir(fInfo, path)) {
+            if (isInSubDir(fInfo, path, false)) {
                 // In subdir, do not consider
                 continue;
             }
@@ -252,11 +252,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     // return files.keySet();
     // }
 
-    private boolean isInSubDir(FileInfo fInfo, String path) {
+    private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
         if (!fInfo.getName().startsWith(path)) {
             return false;
         }
-        return fInfo.getName().indexOf('/', path.length() + 1) == -1;
+        if (recursive) {
+            return true;
+        }
+        int i = fInfo.getName().indexOf('/', path.length() + 2);
+        // No other subdirectory at end.
+        return i != -1;
     }
 
 }

@@ -115,16 +115,16 @@ public interface FileInfoDAO {
     @Deprecated
     Collection<FileInfo> findAll(String domain);
 
-    // /**
-    // * Finds all files in the given (sub) directory and domain only.
-    // *
-    // * @param path
-    // * the path to search for
-    // * @param domain
-    // * the domain to check.
-    // * @return the
-    // */
-    // Collection<FileInfo> findInDirectory(String path, String domain);
+    /**
+     * Finds all files in the given (sub) directory and domain only.
+     * 
+     * @param path
+     *            the path to search for
+     * @param domain
+     *            the domain to check.
+     * @return the
+     */
+    Collection<FileInfo> findInDirectory(String path, String domain);
 
     /**
      * All directories in the given base directory. optionally adds ALL
