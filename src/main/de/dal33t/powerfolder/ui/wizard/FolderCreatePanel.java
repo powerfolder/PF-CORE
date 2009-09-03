@@ -121,6 +121,7 @@ public class FolderCreatePanel extends PFWizardPanel {
             "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
@@ -404,10 +405,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         new SyncFolderPanel(getController(), folder).open();
                     }
                 }
-
-                Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                    WizardContextAttributes.WIZARD_ATTRIBUTE);
-                wiz.next();
+                getWizard().next();
             }
         }
     }

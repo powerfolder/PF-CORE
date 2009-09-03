@@ -96,6 +96,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -464,7 +465,7 @@ public class Controller extends PFComponent {
         setLoadingCompletion(30, 35);
 
         // Start the nodemanager
-        if (!Util.isRunningProVersion()) {
+        if (!ProUtil.isRunningProVersion()) {
             // Nodemanager gets later (re) started by ProLoader.
             nodeManager.start();
         }
@@ -646,7 +647,7 @@ public class Controller extends PFComponent {
         String pluginConfig = ConfigurationEntry.PLUGINS.getValue(this);
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
             || !pluginConfig.contains(Constants.PRO_LOADER_PLUGIN_CLASS);
-        if (Util.isRunningProVersion() && autoSetupPlugins) {
+        if (ProUtil.isRunningProVersion() && autoSetupPlugins) {
             logFine("Setting up pro loader");
             String newPluginConfig = Constants.PRO_LOADER_PLUGIN_CLASS;
             if (!StringUtils.isBlank(pluginConfig)) {

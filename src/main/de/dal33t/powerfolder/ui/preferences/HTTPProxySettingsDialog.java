@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.Window;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -9,7 +11,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
@@ -35,7 +36,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 public class HTTPProxySettingsDialog extends PFUIComponent {
-    private JFrame parentFrame;
+    private Window parentFrame;
     private JDialog dialog;
     private JPanel panel;
 
@@ -62,7 +63,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             .getUIComponent());
     }
 
-    public HTTPProxySettingsDialog(Controller controller, JFrame parentFrame) {
+    public HTTPProxySettingsDialog(Controller controller, Window parentFrame) {
         super(controller);
         this.parentFrame = parentFrame;
     }
@@ -70,7 +71,8 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     public void open() {
         if (dialog == null) {
             dialog = new JDialog(parentFrame, Translation
-                .getTranslation("pro.http.options.title"), true);
+                .getTranslation("pro.http.options.title"),
+                ModalityType.APPLICATION_MODAL);
             dialog.setContentPane(getUIComponent());
             dialog.pack();
             dialog.setResizable(false);

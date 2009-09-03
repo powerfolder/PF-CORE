@@ -43,7 +43,6 @@ import javax.swing.TransferHandler;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -58,6 +57,8 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
@@ -101,12 +102,15 @@ public class HomeTab extends PFUIComponent {
     private ServerClient client;
     private ActionLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
+    private LicenseInfoSection licenseInfoSection;
     private ActionLabel tellFriendLabel;
 
     private final ValueModel newWarningsCountVM;
     private final ValueModel newFriendRequestsCountVM;
     private final ValueModel newInvitationsCountVM;
     private final ValueModel newSingleFileOffersCountVM;
+
+    private JButton newFolderButton;
 
     /**
      * Constructor
@@ -140,14 +144,14 @@ public class HomeTab extends PFUIComponent {
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
         controller.getFolderRepository().addOverallFolderStatListener(
             new MyOverallFolderStatListener());
+        controller.getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
         getApplicationModel().getUseOSModel().addValueChangeListener(
             new UseOSModelListener());
     }
 
     /**
-     * Returns the UI component after optionally building it.
-     * 
-     * @return
+     * @return the UI component after optionally building it.
      */
     public JPanel getUIComponent() {
         if (uiComponent == null) {
@@ -230,7 +234,12 @@ public class HomeTab extends PFUIComponent {
                         getController().getOSClient());
                 }
             });
+        onlineStorageAccountLabel.getUIComponent().setBorder(
+            Borders.createEmptyBorder("0, 0, 3dlu, 0"));
         onlineStorageSection = new OnlineStorageSection(getController());
+        onlineStorageSection.getUIComponent().setBorder(
+            Borders.createEmptyBorder("0, 0, 3dlu, 0"));
+        licenseInfoSection = new LicenseInfoSection(getController());
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
@@ -264,7 +273,8 @@ public class HomeTab extends PFUIComponent {
         boolean synced = getController().getFolderRepository().isSynchronized();
         Date syncDate = getController().getFolderRepository()
             .getSynchronizationDate();
-        displaySyncStats(syncDate, synced);
+        displaySyncStats(syncDate, synced, !getController().getNodeManager()
+            .isStarted());
     }
 
     /**
@@ -287,35 +297,35 @@ public class HomeTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 12dlu, "
-                + // Sync section
-                "pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 9dlu, "
-                + // You have section
+            "pref, 3dlu, pref, 3dlu, pref, 12dlu, " + // Sync section
+                "pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 9dlu, " + // You
+                // have
+                // section
                 "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, " + // Online Storage
-                // section.
+                "pref, 3dlu, pref, pref, pref, 3dlu, " + // Online
+                // Storage
+                // section + License key section
                 "pref:grow, pref");
         // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
-        builder.setBorder(Borders.createEmptyBorder("2dlu, 3dlu, 2dlu, 3dlu"));
+        builder.setBorder(Borders.createEmptyBorder("1dlu, 3dlu, 2dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
 
-        builder.addSeparator(
-            Translation.getTranslation("home_tab.synchronization"), cc.xy(1,
-                row));
+        builder.addSeparator(Translation
+            .getTranslation("home_tab.synchronization"), cc.xy(1, row));
         row += 2;
         builder.add(synchronizationStatusLabel, cc.xy(1, row));
         row += 2;
         builder.add(synchronizationDateLabel, cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.you_have"), cc
-            .xy(1, row));
+        builder.addSeparator(Translation.getTranslation("home_tab.you_have"),
+            cc.xy(1, row));
         row += 2;
         builder.add(newWarningsLine.getUIComponent(), cc.xy(1, row));
         row++;
@@ -332,8 +342,8 @@ public class HomeTab extends PFUIComponent {
         builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.local"), cc.xy(1,
-            row));
+        builder.addSeparator(Translation.getTranslation("home_tab.local"), cc
+            .xy(1, row));
         row += 2;
         builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
         row++;
@@ -342,12 +352,14 @@ public class HomeTab extends PFUIComponent {
         builder.add(computersLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.online_storage"),
-            cc.xy(1, row));
+        builder.addSeparator(Translation
+            .getTranslation("home_tab.online_storage.title"), cc.xy(1, row));
         row += 2;
         builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xy(1, row));
-        row += 2;
+        row++;
         builder.add(onlineStorageSection.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
         row += 3;
         builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
@@ -419,8 +431,8 @@ public class HomeTab extends PFUIComponent {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getNewFolderAction());
+        newFolderButton = new JButton(getApplicationModel().getActionModel()
+            .getNewFolderAction());
         bar.addGridded(newFolderButton);
         if (!getController().isBackupOnly()) {
             JButton searchComputerButton = new JButton(getApplicationModel()
@@ -506,6 +518,11 @@ public class HomeTab extends PFUIComponent {
                 .setToolTipText(Translation
                     .getTranslation("home_tab.online_storage.account_connecting.tips"));
         }
+
+        // Don't show if PowerFolder is disabled.
+        onlineStorageAccountLabel.getUIComponent().setVisible(
+            getController().getNodeManager().isStarted());
+
         if (active) {
             OnlineStorageSubscription storageSubscription = client.getAccount()
                 .getOSSubscription();
@@ -516,17 +533,23 @@ public class HomeTab extends PFUIComponent {
             boolean trial = storageSubscription.isTrial();
             int daysLeft = client.getAccount().getOSSubscription()
                 .getDaysLeft();
-            onlineStorageSection.setInfo(totalStorage, spaceUsed, trial,
-                daysLeft);
+            onlineStorageSection.setInfo(totalStorage, spaceUsed);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);
         }
     }
 
-    private void displaySyncStats(Date syncDate, boolean synced) {
+    private void displaySyncStats(Date syncDate, boolean synced,
+        boolean disabled)
+    {
         if (synchronizationStatusLabel != null) {
             String syncStatsText;
-            if (getController().getFolderRepository().getFoldersCount() == 0) {
+            if (disabled) {
+                // Not running
+                syncStatsText = Translation
+                    .getTranslation("home_tab.not_running");
+            } else if (getController().getFolderRepository().getFoldersCount() == 0)
+            {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("home_tab.no_folders");
@@ -836,14 +859,27 @@ public class HomeTab extends PFUIComponent {
     private class MyOverallFolderStatListener implements
         OverallFolderStatListener
     {
-
         public void statCalculated(OverallFolderStatEvent e) {
-            displaySyncStats(e.getSyncDate(), e.isAllInSync());
+            displaySyncStats(e.getSyncDate(), e.isAllInSync(), !getController()
+                .getNodeManager().isStarted());
         }
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyNodeManagerListener extends NodeManagerAdapter {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        @Override
+        public void startStop(NodeManagerEvent e) {
+            initialSyncStats();
+        }
+
     }
 
     /**

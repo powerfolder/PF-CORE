@@ -27,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
@@ -77,6 +78,10 @@ public class ActionLabel extends PFComponent {
     public void setText(String text) {
         this.text = text;
         displayText(false);
+    }
+
+    public void setIcon(Icon icon) {
+        uiComponent.setIcon(icon);
     }
 
     public void setToolTipText(String text) {

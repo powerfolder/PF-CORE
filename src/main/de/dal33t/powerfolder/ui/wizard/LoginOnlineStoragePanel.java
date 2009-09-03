@@ -35,7 +35,6 @@ import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -130,7 +129,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 40dlu, pref",
             "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("30dlu, 10dlu, 0, 0"));
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
@@ -155,7 +154,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(workingBar, cc.xyw(1, row, 3));
         LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
             Translation.getTranslation("wizard.webservice.recover_password"),
-            getController().getOSClient().getWebURL());
+            getController().getOSClient().getLoginURLWithUsername());
         recoverPasswordLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         recoverPasswordLabel.setFontSize(PFWizard.MED_FONT_SIZE);
         builder.add(recoverPasswordLabel.getUiComponent(), cc.xy(5, row));

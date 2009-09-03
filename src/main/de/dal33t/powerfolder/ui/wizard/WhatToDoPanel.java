@@ -36,7 +36,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -130,36 +129,24 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 60dlu, pref, 3dlu, pref",
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref",
             "pref, 12dlu, pref, 12dlu, pref, 12dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(createArrowLabel(), cc.xy(1, 1));
-        builder.add(synchronizedLink.getUIComponent(), cc.xy(3, 1));
-        builder.add(createArrowLabel(), cc.xy(1, 3));
-        builder.add(backupLink.getUIComponent(), cc.xy(3, 3));
-        builder.add(createArrowLabel(), cc.xy(1, 5));
-        builder.add(hostLink.getUIComponent(), cc.xy(3, 5));
-        builder.add(createArrowLabel(), cc.xy(1, 7));
-        builder.add(customLink.getUIComponent(), cc.xy(3, 7));
+        builder.add(synchronizedLink.getUIComponent(), cc.xy(1, 1));
+        builder.add(backupLink.getUIComponent(), cc.xy(1, 3));
+        builder.add(hostLink.getUIComponent(), cc.xy(1, 5));
+        builder.add(customLink.getUIComponent(), cc.xy(1, 7));
 
-        builder.add(createArrowLabel(), cc.xy(5, 1));
-        builder.add(onlineLink.getUIComponent(), cc.xy(7, 1));
-        builder.add(createArrowLabel(), cc.xy(5, 3));
-        builder.add(inviteLink.getUIComponent(), cc.xy(7, 3));
-        builder.add(createArrowLabel(), cc.xy(5, 5));
-        builder.add(documentationLink.getUiComponent(), cc.xy(7, 5));
+        builder.add(onlineLink.getUIComponent(), cc.xy(3, 1));
+        builder.add(inviteLink.getUIComponent(), cc.xy(3, 3));
+        builder.add(documentationLink.getUiComponent(), cc.xy(3, 5));
         builder.getPanel().setOpaque(false);
 
         return builder.getPanel();
-    }
-
-    private JLabel createArrowLabel() {
-        return new JLabel(Icons.getIconById(Icons.ARROW_RIGHT));
     }
 
     public WizardPanel next() {
@@ -357,6 +344,7 @@ public class WhatToDoPanel extends PFWizardPanel {
                 synchronizedOption, decision));
         synchronizedLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.synchronized_folder.tip"));
+        synchronizedLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize((JLabel) synchronizedLink
             .getUIComponent(), PFWizard.MED_FONT_SIZE);
 
@@ -365,6 +353,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             backupOption, decision));
         backupLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.backup_folder.tip"));
+        backupLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize(
             (JLabel) backupLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
 
@@ -373,6 +362,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             hostOption, decision));
         hostLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.host_work.tip"));
+        hostLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize((JLabel) hostLink.getUIComponent(),
             PFWizard.MED_FONT_SIZE);
 
@@ -381,6 +371,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             customOption, decision));
         customLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.custom_sync.tip"));
+        customLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize(
             (JLabel) customLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
 
@@ -389,6 +380,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             onlineOption, decision));
         onlineLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.join_online.tip"));
+        onlineLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize(
             (JLabel) onlineLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
 
@@ -397,6 +389,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             inviteOption, decision));
         inviteLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.load_invite.tip"));
+        inviteLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
         SimpleComponentFactory.setFontSize(
             (JLabel) inviteLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
 
@@ -406,6 +399,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
         documentationLink.setFontSize(PFWizard.MED_FONT_SIZE);
+        documentationLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
     }
 
     protected String getTitle() {
@@ -425,9 +419,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             model.setValue(option);
-            Wizard wizard = (Wizard) getWizardContext().getAttribute(
-                WizardContextAttributes.WIZARD_ATTRIBUTE);
-            wizard.next();
+            getWizard().next();
         }
     }
 }

@@ -97,8 +97,8 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -295,7 +295,7 @@ public class UIController extends PFComponent {
 
         // Open wizard on first start. PRO version has activation wizard first
         if (getController().getPreferences().getBoolean("openwizard2", true)
-            && (!Util.isRunningProVersion() || Feature.BETA.isEnabled()))
+            && (!ProUtil.isRunningProVersion() || Feature.BETA.isEnabled()))
         {
             UIUtil.invokeLaterInEDT(new Runnable() {
 
@@ -331,7 +331,7 @@ public class UIController extends PFComponent {
     }
 
     private void gotoHPIfRequired() {
-        if (Util.isRunningProVersion() && !Util.isTrial(getController())) {
+        if (ProUtil.isRunningProVersion() && !ProUtil.isTrial(getController())) {
             return;
         }
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
@@ -352,7 +352,7 @@ public class UIController extends PFComponent {
     }
 
     private void detectAndShowLimitDialog() {
-        if (Util.isRunningProVersion()) {
+        if (ProUtil.isRunningProVersion()) {
             return;
         }
         long totalFolderSize = calculateTotalLocalSharedSize();

@@ -19,20 +19,37 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.SystemColor;
+import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.AbstractBorder;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Waiter;
 
 
 /**
@@ -83,7 +100,7 @@ public class SplashScreen extends JWindow {
         image = new JLabel(Icons.getIconById(Icons.SPLASH));
         bar = new JProgressBar(SwingConstants.HORIZONTAL, 0, 100);
         bar.setOpaque(false);
-        if (Util.isRunningProVersion()) {
+        if (ProUtil.isRunningProVersion()) {
             bar.setForeground(PRO_BAR_COLOR1);
             bar.setBackground(PRO_BAR_COLOR2);
             getContentPane().setBackground(PRO_BAR_COLOR2);
@@ -199,7 +216,7 @@ public class SplashScreen extends JWindow {
                     if (g == null) {
                         return;
                     }
-                    if (Util.isRunningProVersion()) {
+                    if (ProUtil.isRunningProVersion()) {
                         g.setColor(PRO_TEXT_COLOR);
                     } else {
                         g.setColor(FREE_TEXT_COLOR);

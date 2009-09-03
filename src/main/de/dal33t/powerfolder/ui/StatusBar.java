@@ -55,9 +55,9 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
@@ -166,10 +166,17 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     getApplicationModel().getActionModel().getConnectAction()
                         .actionPerformed(
                             new ActionEvent(onlineStateInfo,
-                                ActionEvent.ACTION_PERFORMED, null));
-                } else if (!Util.isRunningProVersion()) {
+                                ActionEvent.ACTION_PERFORMED, "clicked"));
+                } else if (!ProUtil.isRunningProVersion()) {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
+                } else if (getApplicationModel().getLicenseModel()
+                    .getActivationAction() != null)
+                {
+                    getApplicationModel().getLicenseModel()
+                        .getActivationAction().actionPerformed(
+                            new ActionEvent(onlineStateInfo,
+                                ActionEvent.ACTION_PERFORMED, "clicked"));
                 }
             }
         });

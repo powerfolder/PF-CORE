@@ -81,6 +81,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("140dlu, 0:grow", "pref, 7dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
@@ -103,9 +104,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     protected void afterDisplay() {
         if (worker != null) {
             // Back one more.
-            Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                WizardContextAttributes.WIZARD_ATTRIBUTE);
-            wiz.back();
+            getWizard().back();
         } else {
             bar.setVisible(true);
             problemLabel.setVisible(false);
@@ -159,8 +158,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
                 get();
 
                 // Next
-                Wizard wiz = (Wizard) getWizardContext().getAttribute(
-                    WizardContextAttributes.WIZARD_ATTRIBUTE);
+                Wizard wiz = getWizard();
                 if (wiz.getCurrentPanel() == SwingWorkerPanel.this) {
                     // Go to next if still visible.
                     wiz.next();

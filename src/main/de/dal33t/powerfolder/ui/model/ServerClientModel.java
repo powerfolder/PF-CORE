@@ -17,10 +17,16 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui.webservice;
+package de.dal33t.powerfolder.ui.model;
+
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.ListModel;
 
 import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.list.ArrayListModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -36,10 +42,6 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-
-import javax.swing.*;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * UI Model for the Online Storage client.
@@ -119,8 +121,7 @@ public class ServerClientModel extends PFUIComponent {
         membershipListener = new MyFolderMembershipListener();
 
         // Setup folder membership stuff
-        for (Folder folder : getController().getFolderRepository()
-            .getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders())
         {
             folder.addMembershipListener(membershipListener);
         }
@@ -135,15 +136,15 @@ public class ServerClientModel extends PFUIComponent {
         mirroredFolders.addAll(folders);
     }
 
-//    private void updateNavTree() {
-//        // Ugly
-//        RootNode rootNode = getUIController().getApplicationModel()
-//            .getNavTreeModel().getRootNode();
-//        TreeModelEvent te = new TreeModelEvent(this, new Object[]{rootNode,
-//            rootNode.WEBSERVICE_NODE});
-//        getUIController().getApplicationModel().getNavTreeModel()
-//            .fireTreeNodesChangedEvent(te);
-//    }
+    // private void updateNavTree() {
+    // // Ugly
+    // RootNode rootNode = getUIController().getApplicationModel()
+    // .getNavTreeModel().getRootNode();
+    // TreeModelEvent te = new TreeModelEvent(this, new Object[]{rootNode,
+    // rootNode.WEBSERVICE_NODE});
+    // getUIController().getApplicationModel().getNavTreeModel()
+    // .fireTreeNodesChangedEvent(te);
+    // }
 
     // Core listener **********************************************************
 
@@ -210,12 +211,12 @@ public class ServerClientModel extends PFUIComponent {
 
         public void serverConnected(ServerClientEvent event) {
             updateMirroredFolders();
-//            updateNavTree();
+            // updateNavTree();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
             updateMirroredFolders();
-//            updateNavTree();
+            // updateNavTree();
         }
     }
 }

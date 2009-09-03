@@ -19,18 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.Action;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
-import de.dal33t.powerfolder.ui.webservice.ServerClientModel;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Contains all core models for the application.
@@ -52,6 +54,7 @@ public class ApplicationModel extends PFUIComponent {
     private ValueModel chatNotificationsValueModel;
     private ValueModel systemNotificationsValueModel;
     private ValueModel useOSModel;
+    private LicenseModel licenseModel;
 
     /**
      * Constructs a non-initialized application model. Before the model can used
@@ -108,6 +111,8 @@ public class ApplicationModel extends PFUIComponent {
                     (Boolean) evt.getNewValue());
             }
         });
+
+        licenseModel = new LicenseModel();
     }
 
     /**
@@ -166,5 +171,9 @@ public class ApplicationModel extends PFUIComponent {
 
     public ValueModel getUseOSModel() {
         return useOSModel;
+    }
+
+    public LicenseModel getLicenseModel() {
+        return licenseModel;
     }
 }

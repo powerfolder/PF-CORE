@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -329,6 +330,23 @@ public class ServerClient extends PFComponent {
      */
     public boolean supportsWebRegistration() {
         return getRegisterURL() != null;
+    }
+
+    /**
+     * Convenience method for getting login URL with preset username if possible
+     * 
+     * @return the registration URL for this server.
+     */
+    public String getLoginURLWithUsername() {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String url = getWebURL() + "/login";
+        if (StringUtils.isNotBlank(getUsername())) {
+            url += "?Username=";
+            url += getUsername();
+        }
+        return url;
     }
 
     /**
@@ -842,15 +860,15 @@ public class ServerClient extends PFComponent {
         logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
-        if (Util.getPublicKey(getController(), newServerInfo.getNode()) == null)
+        if (ProUtil.getPublicKey(getController(), newServerInfo.getNode()) == null)
         {
             PublicKey serverKey = publicKeyService.getPublicKey(newServerInfo
                 .getNode());
             if (serverKey != null) {
                 logFine("Retrieved new key for server "
                     + newServerInfo.getNode() + ". " + serverKey);
-                Util.addNodeToKeyStore(getController(),
-                    newServerInfo.getNode(), serverKey);
+                ProUtil.addNodeToKeyStore(getController(), newServerInfo
+                    .getNode(), serverKey);
             }
         }
 

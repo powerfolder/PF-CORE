@@ -28,8 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -37,7 +35,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +45,6 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
@@ -62,7 +58,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  */
 public class Util {
 
-    private static final Logger log = Logger.getLogger(Util.class.getName());
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
 
     /**
      * Used building output as Hex
@@ -72,98 +68,6 @@ public class Util {
 
     // No instance possible
     private Util() {
-    }
-
-    /**
-     * @return true if the pro version is running.
-     */
-    public static final boolean isRunningProVersion() {
-        return Util.class.getClassLoader().getResourceAsStream(
-            "de/dal33t/powerfolder/ConfigurationProEntry.class") != null;
-    }
-
-    /**
-     * @param controller
-     * @return true if running a trial or non-registered version.
-     */
-    public static final boolean isTrial(Controller controller) {
-        if (!isRunningProVersion()) {
-            return true;
-        }
-        try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.CD");
-            Method m = c.getMethod("isTrial", Controller.class);
-            return (Boolean) m.invoke(null, controller);
-        } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE, "ClassNotFoundException", e);
-        } catch (SecurityException e) {
-            log.log(Level.SEVERE, "SecurityException", e);
-        } catch (NoSuchMethodException e) {
-            log.log(Level.SEVERE, "NoSuchMethodException", e);
-        } catch (IllegalArgumentException e) {
-            log.log(Level.SEVERE, "IllegalArgumentException", e);
-        } catch (IllegalAccessException e) {
-            log.log(Level.SEVERE, "IllegalAccessException", e);
-        } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
-        }
-        return true;
-    }
-
-    public static final PublicKey getPublicKey(Controller controller,
-        MemberInfo node)
-    {
-        try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
-            Method m = c.getMethod("getPublicKey", Controller.class,
-                MemberInfo.class);
-            return (PublicKey) m.invoke(null, controller, node);
-        } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE, "ClassNotFoundException", e);
-        } catch (SecurityException e) {
-            log.log(Level.SEVERE, "SecurityException", e);
-        } catch (NoSuchMethodException e) {
-            log.log(Level.SEVERE, "NoSuchMethodException", e);
-        } catch (IllegalArgumentException e) {
-            log.log(Level.SEVERE, "IllegalArgumentException", e);
-        } catch (IllegalAccessException e) {
-            log.log(Level.SEVERE, "IllegalAccessException", e);
-        } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
-        }
-        return null;
-    }
-
-    /**
-     * Adds a key for a node to the keystore if the key is new.
-     * 
-     * @param controller
-     * @param node
-     * @param key
-     * @return true if new key was inserted otherwise false.
-     */
-    public static final boolean addNodeToKeyStore(Controller controller,
-        MemberInfo node, PublicKey key)
-    {
-        try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
-            Method m = c.getMethod("addNodeToKeyStore", Controller.class,
-                MemberInfo.class, PublicKey.class);
-            return (Boolean) m.invoke(null, controller, node, key);
-        } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE, "ClassNotFoundException", e);
-        } catch (SecurityException e) {
-            log.log(Level.SEVERE, "SecurityException", e);
-        } catch (NoSuchMethodException e) {
-            log.log(Level.SEVERE, "NoSuchMethodException", e);
-        } catch (IllegalArgumentException e) {
-            log.log(Level.SEVERE, "IllegalArgumentException", e);
-        } catch (IllegalAccessException e) {
-            log.log(Level.SEVERE, "IllegalAccessException", e);
-        } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE, "InvocationTargetException", e);
-        }
-        return false;
     }
 
     /**
@@ -320,7 +224,7 @@ public class Util {
                 .getResource(altLocation + '/' + res);
         }
         if (result == null) {
-            log.severe("Unable to load resource " + res + ". alt location "
+            LOG.severe("Unable to load resource " + res + ". alt location "
                 + altLocation);
         }
         return result;
@@ -352,12 +256,12 @@ public class Util {
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
-            log.finer("Unable to find resource: " + resource);
+            LOG.finer("Unable to find resource: " + resource);
             // try harder
             in = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(altLocation + '/' + resource);
             if (in == null) {
-                log.warning("Unable to find resource: " + altLocation + '/'
+                LOG.warning("Unable to find resource: " + altLocation + '/'
                     + resource);
                 return null;
             }
@@ -369,10 +273,10 @@ public class Util {
         try {
             FileUtils.copyFromStreamToFile(in, target);
         } catch (IOException ioe) {
-            log.warning("Unable to create target for resource: " + target);
+            LOG.warning("Unable to create target for resource: " + target);
             return null;
         }
-        log.finer("created target for resource: " + target);
+        LOG.finer("created target for resource: " + target);
         return target;
     }
 
@@ -390,7 +294,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        log.finer("Creating desktop shortcut to "
+        LOG.finer("Creating desktop shortcut to "
             + shortcutTarget.getAbsolutePath());
         ShellLink link = new ShellLink(null, "PowerFolder", shortcutTarget
             .getAbsolutePath(), null);
@@ -401,8 +305,8 @@ public class Util {
             util.createLink(link, scut.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            log.warning("Couldn't create shortcut " + scut.getAbsolutePath());
-            log.log(Level.FINER, "IOException", e);
+            LOG.warning("Couldn't create shortcut " + scut.getAbsolutePath());
+            LOG.log(Level.FINER, "IOException", e);
         }
         return false;
     }
@@ -418,7 +322,7 @@ public class Util {
         if (util == null) {
             return false;
         }
-        log.finer("Removing desktop shortcut: " + shortcutName);
+        LOG.finer("Removing desktop shortcut: " + shortcutName);
         File scut = new File(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
             false), shortcutName + ".lnk");
         return scut.delete();
@@ -437,7 +341,7 @@ public class Util {
         try {
             Object content = url.getContent();
             if (!(content instanceof InputStream)) {
-                log.severe("Unable to get content from " + url
+                LOG.severe("Unable to get content from " + url
                     + ". content is of type " + content.getClass().getName());
                 return null;
             }
@@ -449,7 +353,7 @@ public class Util {
             }
             return buf.toString();
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to get content from " + url + ". "
+            LOG.log(Level.SEVERE, "Unable to get content from " + url + ". "
                 + e.toString(), e);
         }
         return null;
@@ -792,7 +696,7 @@ public class Util {
                 remotePort = Integer.parseInt(connectStr.substring(dotdot + 1,
                     connectStr.length()));
             } catch (NumberFormatException e) {
-                log.warning("Illegal port in " + connectStr
+                LOG.warning("Illegal port in " + connectStr
                     + ", trying default port");
             }
         }

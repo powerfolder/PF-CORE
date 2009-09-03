@@ -90,6 +90,7 @@ public class TextPanelPanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         // Add text as labels

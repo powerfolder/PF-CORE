@@ -1,6 +1,9 @@
 package jwf;
 
 import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 
@@ -97,8 +100,16 @@ public abstract class WizardPanel extends JPanel {
      * 
      * @return a WizardContext object
      */
-    public WizardContext getWizardContext() {
+    protected WizardContext getWizardContext() {
         return wizardContext;
+    }
+
+    /**
+     * @return the wizard
+     */
+    protected Wizard getWizard() {
+        return (Wizard) getWizardContext().getAttribute(
+            WizardContextAttributes.WIZARD_ATTRIBUTE);
     }
 
     /**
@@ -115,5 +126,9 @@ public abstract class WizardPanel extends JPanel {
                 .getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE);
             wizard.updateButtons();
         }
+    }
+
+    protected Border createFewContentBorder() {
+        return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");
     }
 }

@@ -14,8 +14,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.dialog.DownloadUpdateDialog;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -103,7 +103,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
                     return;
                 }
             }
-            if (!Util.isRunningProVersion()) {
+            if (!ProUtil.isRunningProVersion()) {
                 try {
                     // Open explorer
                     BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL

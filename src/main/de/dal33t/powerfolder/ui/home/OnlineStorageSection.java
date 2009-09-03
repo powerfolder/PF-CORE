@@ -19,16 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
 
 /**
  * Class to render the online storage info on the home tab.
@@ -38,8 +46,7 @@ public class OnlineStorageSection extends PFUIComponent {
     private JPanel uiComponent;
 
     private JProgressBar usagePB;
-    private JLabel usageLabel;
-    private TrialInfoSection trialInfoSection;
+    private LinkLabel usageLabel;
 
     /**
      * Constructor
@@ -55,13 +62,8 @@ public class OnlineStorageSection extends PFUIComponent {
      * 
      * @param totalStorage
      * @param spaceUsed
-     * @param trial
-     * @param daysLeft
      */
-    public void setInfo(long totalStorage, long spaceUsed, boolean trial,
-        int daysLeft)
-    {
-
+    public void setInfo(long totalStorage, long spaceUsed) {
         double percentageUsed = 0;
         if (totalStorage > 0) {
             percentageUsed = 100.0d * (double) spaceUsed
@@ -74,20 +76,16 @@ public class OnlineStorageSection extends PFUIComponent {
             percentageUsed = 100.0d;
         }
 
-        if (trial) {
-            trialInfoSection.getUIComponent().setVisible(true);
-            trialInfoSection.setTrialPeriod(daysLeft);
-        } else {
-            trialInfoSection.getUIComponent().setVisible(false);
-        }
-
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 
-        usageLabel.setText(Translation.getTranslation(
-            "home_tab.online_storage.usage", Format.formatBytesShort(spaceUsed),
-                Format.formatNumber(percentageUsed)));
+        String loginURL = getController().getOSClient()
+            .getLoginURLWithUsername();
+        usageLabel.setTextAndURL(Translation.getTranslation(
+            "home_tab.online_storage.usage",
+            Format.formatBytesShort(spaceUsed), Format
+                .formatNumber(percentageUsed)), loginURL);
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 
@@ -95,7 +93,7 @@ public class OnlineStorageSection extends PFUIComponent {
             .getValueBoolean(getController());
         // Don't show if not using it
         usagePB.setVisible(showOS);
-        usageLabel.setVisible(showOS);
+        usageLabel.getUiComponent().setVisible(showOS);
     }
 
     /**
@@ -116,14 +114,13 @@ public class OnlineStorageSection extends PFUIComponent {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("100dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref, 3dlu");
         // prog usage trial
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(usagePB, cc.xy(1, 1));
-        builder.add(usageLabel, cc.xywh(1, 3, 2, 1));
-        builder.add(trialInfoSection.getUIComponent(), cc.xywh(1, 5, 2, 1));
+        builder.add(usageLabel.getUiComponent(), cc.xywh(1, 3, 2, 1));
         uiComponent = builder.getPanel();
     }
 
@@ -132,8 +129,18 @@ public class OnlineStorageSection extends PFUIComponent {
      */
     private void initComponents() {
         usagePB = new JProgressBar(0, 0, 100);
-        usageLabel = new JLabel("");
-        trialInfoSection = new TrialInfoSection(getController());
+        usagePB.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    BrowserLauncher.openURL(getController().getOSClient()
+                        .getLoginURLWithUsername());
+                } catch (IOException e1) {
+                    logWarning(e1);
+                }
+            }
+        });
+        usageLabel = new LinkLabel(getController(), "", "");
     }
 
 }
