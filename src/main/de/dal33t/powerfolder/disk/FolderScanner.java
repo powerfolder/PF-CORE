@@ -251,10 +251,10 @@ public class FolderScanner extends PFComponent {
             if (isWarning()) {
                 if (unableToScanFiles.isEmpty()) {
                     logFiner("Unable to scan " + unableToScanFiles.size()
-                            + " file(s)");
+                        + " file(s)");
                 } else {
                     logWarning("Unable to scan " + unableToScanFiles.size()
-                            + " file(s)");
+                        + " file(s)");
                 }
             }
             // Remaining files = deleted! But only if they are not already
@@ -379,7 +379,7 @@ public class FolderScanner extends PFComponent {
                     problemList = new ArrayList<Problem>();
                 }
                 problemList.addAll(FilenameProblemHelper.getProblems(
-                        getController(), fileInfo));
+                    getController(), fileInfo));
 
             }
             if (problemList != null) {
@@ -633,16 +633,16 @@ public class FolderScanner extends PFComponent {
         // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
         currentScanResult.incrementTotalFilesCount();
         String pathname = currentDirName;
-      
 
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
-        DirectoryInfo dirInfo = DirectoryInfo.getTemplate(currentScanningFolder.getInfo(),
-            pathname);
+        DirectoryInfo dirInfo = DirectoryInfo.getTemplate(currentScanningFolder
+            .getInfo(), pathname);
 
         // #1531
         FileInfo exists = remaining.remove(dirInfo);
-        //logWarning("Existing dir for " + dirInfo + ": " + exists + " remaining: " + remaining);
+        // logWarning("Existing dir for " + dirInfo + ": " + exists +
+        // " remaining: " + remaining);
         if (exists == null && OSUtil.isWindowsSystem()) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
@@ -652,11 +652,13 @@ public class FolderScanner extends PFComponent {
                         + ", dbDir: "
                         + otherFInfo.toDetailString());
                     if (dirInfo.getName().equals(otherFInfo.getName())
-                        && !dirInfo.equals(otherFInfo))
+                        && !dirInfo.equals(otherFInfo)
+                        && otherFInfo.isDiretory())
                     {
                         throw new RuntimeException(
                             "Bad failure: DirectoryInfos not equal. "
-                                + dirInfo.toDetailString() + " and "
+                                + dirInfo.toDetailString()
+                                + " and "
                                 + otherFInfo.toDetailString()
                                 + " Probably FolderInfo objects or type are not equal?");
                     }
@@ -679,9 +681,9 @@ public class FolderScanner extends PFComponent {
             } else {
                 boolean changed = !exists.inSyncWithDisk(dirToScan);
                 if (changed) {
-                    logWarning("Changed directory detected: " + exists.toDetailString()
-                        + ". On disk: size: " + dirToScan.length()
-                        + ", lastMod: "
+                    logWarning("Changed directory detected: "
+                        + exists.toDetailString() + ". On disk: size: "
+                        + dirToScan.length() + ", lastMod: "
                         + dirToScan.lastModified());
                     currentScanResult.changedFiles.add(exists);
                 }
@@ -697,7 +699,6 @@ public class FolderScanner extends PFComponent {
         }
         return true;
     }
-
 
     /**
      * calculates the subdir of this file relative to the location of the folder
@@ -797,7 +798,7 @@ public class FolderScanner extends PFComponent {
                 "current scanning folder must not be null");
             String currentDirName = getCurrentDirName(currentScanningFolder,
                 dirToScan);
-            
+
             scanDirectory(dirToScan, currentDirName);
             File[] files = dirToScan.listFiles();
             if (files == null) { // hardware failure
