@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
+import java.awt.Dimension;
+
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
@@ -41,22 +45,21 @@ public class FoldersTab extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public FoldersTab(Controller controller) {
         super(controller);
-        emptyLabel = new JLabel(
-                Translation.getTranslation("folders_tab.no_folders_available"),
-                SwingConstants.CENTER);
-        emptyLabel.setEnabled(false);
-
-        foldersList = new FoldersList(getController(), this);
+        this.emptyLabel = new JLabel(Translation
+            .getTranslation("folders_tab.no_folders_available"),
+            SwingConstants.CENTER);
+        this.emptyLabel.setEnabled(false);
+        this.foldersList = new FoldersList(getController(), this);
     }
 
     /**
      * Returns the ui component.
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -109,17 +112,24 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
-                .getNewFolderAction());
+        JButton newFolderButton = new JButton(getApplicationModel()
+            .getActionModel().getNewFolderAction());
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow",
-            "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
+        // Same width of the buttons please
+        JButton searchComputerButton = new JButton(getApplicationModel()
+            .getActionModel().getFindComputersAction());
+        newFolderButton.setMinimumSize(searchComputerButton.getMinimumSize());
+        newFolderButton.setMaximumSize(searchComputerButton.getMaximumSize());
+        newFolderButton.setPreferredSize(searchComputerButton
+            .getPreferredSize());
+        searchComputerButton.setVisible(false);
 
-        builder.add(newFolderButton, cc.xy(2, 1));
-
-        return builder.getPanel();
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.setBorder(Borders.createEmptyBorder("0, 3dlu, 0, 0"));
+        bar.addGridded(newFolderButton);
+        bar.addRelatedGap();
+        bar.addGridded(searchComputerButton);
+        return bar.getPanel();
     }
 
     /**
