@@ -59,7 +59,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
     private final Map<FolderInfo, Boolean> folderMap;
 
     private JCheckBox createDesktopShortcutBox;
-    private JComboBox archiveMode;
 
     public SelectOnlineStoragePanel(Controller controller,
         List<FolderInfo> possibleFolders)
@@ -88,9 +87,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
             createDesktopShortcutBox.isSelected());
-
-        getWizardContext().setAttribute(WizardContextAttributes.ARCHIVE_MODE,
-            archiveMode.getSelectedItem());
 
         List<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
         for (FolderInfo folderInfo : folderMap.keySet()) {
@@ -182,8 +178,6 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
             Translation
                 .getTranslation("wizard.select_online_storage.desktop_shortcut.text"));
         createDesktopShortcutBox.setOpaque(false);
-        archiveMode = new JComboBox(EnumSet.allOf(ArchiveMode.class).toArray());
-        archiveMode.setSelectedItem(ArchiveMode.NO_BACKUP);
     }
 
     @Override

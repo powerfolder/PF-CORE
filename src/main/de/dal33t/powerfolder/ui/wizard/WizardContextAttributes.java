@@ -24,10 +24,10 @@ package de.dal33t.powerfolder.ui.wizard;
  */
 public interface WizardContextAttributes {
     /** The wizard object */
-    public static final String WIZARD_ATTRIBUTE = "wizard";
+    String WIZARD_ATTRIBUTE = "wizard";
 
     /** The dialog the wizard is displayed in */
-    public static final String DIALOG_ATTRIBUTE = "dialog";
+    String DIALOG_ATTRIBUTE = "dialog";
 
     /** The attribute in wizard context, which will be displayed */
     String PROMPT_TEXT_ATTRIBUTE = "disklocation.prompt_text";
@@ -73,8 +73,6 @@ public interface WizardContextAttributes {
      * when creating a folder from an invitation.
      */
     String MAKE_FRIEND_AFTER = "make.friend.after";
-
-    String ARCHIVE_MODE = "archive.mode";
 
     /**
      * List<FolderInfo>

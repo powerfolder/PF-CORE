@@ -32,11 +32,11 @@ public enum ArchiveMode {
     };
 
     private static Logger log = Logger.getLogger(ArchiveMode.class.getName());
-    private final String tkey;
+    private final String key;
 
-    ArchiveMode(String tkey) {
-        assert StringUtils.isNotEmpty(tkey);
-        this.tkey = tkey;
+    ArchiveMode(String key) {
+        assert StringUtils.isNotEmpty(key);
+        this.key = key;
     }
 
     /**
@@ -44,7 +44,7 @@ public enum ArchiveMode {
      */
     @Override
     public String toString() {
-        return Translation.getTranslation(tkey);
+        return Translation.getTranslation(key);
     }
 
     public abstract FileArchiver getInstance(Folder f);

@@ -155,13 +155,6 @@ public class FolderCreatePanel extends PFWizardPanel {
             WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
 
-        ArchiveMode archiveMode = (ArchiveMode) getWizardContext()
-            .getAttribute(WizardContextAttributes.ARCHIVE_MODE);
-
-        if (archiveMode == null) {
-            archiveMode = ArchiveMode.NO_BACKUP;
-        }
-
         createShortcut = (Boolean) getWizardContext().getAttribute(
             WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(
@@ -189,9 +182,11 @@ public class FolderCreatePanel extends PFWizardPanel {
                 if (folderInfo == null) {
                     folderInfo = createFolderInfo(localBase);
                 }
+                ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
+                int archiveHistory = folderCreateItem.getArchiveHistory();
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                    false, null, 0);
+                    false, null, archiveHistory);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -213,8 +208,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                false, null, 0);
+                    syncProfile, saveLocalInvite, ArchiveMode.FULL_BACKUP, 
+                    previewFolder, false, null, 5);
             configurations.put(folderInfo, folderSettings);
         }
 
