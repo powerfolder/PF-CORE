@@ -434,7 +434,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            ArchiveMode.NO_BACKUP, preview, whitelist, dlScript, 0);
+            ArchiveMode.FULL_BACKUP, preview, whitelist, dlScript, 5);
     }
 
     /**
