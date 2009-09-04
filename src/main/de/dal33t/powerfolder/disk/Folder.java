@@ -168,7 +168,7 @@ public class Folder extends PFComponent {
 
     /**
      * Cached Directory object. NOTE - all access to rootDirectory MUST be
-     * preceded with a call to commissionRootFolder(). 
+     * preceded with a call to commissionRootFolder().
      */
     private final Directory rootDirectory;
 
@@ -525,13 +525,11 @@ public class Folder extends PFComponent {
                     // Add file to folder
                     currentInfo.addFile(newFileInfo);
                     if (isFiner()) {
-                        logFiner("Adding "
-                            + scanResult.getNewFiles().size()
+                        logFiner("Adding " + scanResult.getNewFiles().size()
                             + " to directory");
                     }
                     commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(),
-                        newFileInfo);
+                    rootDirectory.add(getController().getMySelf(), newFileInfo);
                 }
                 dao.store(null, scanResult.getNewFiles());
 
@@ -796,8 +794,10 @@ public class Folder extends PFComponent {
                 FileArchiver arch = archiver;
                 if (arch != null) {
                     try {
-                        arch.archive(fInfo.getLocalFileInfo(getController()
-                            .getFolderRepository()), targetFile, false);
+                        arch.archive(fInfo, targetFile, false);
+                        // This (getLocalFileInfo) causes NPEs:
+                        // arch.archive(fInfo.getLocalFileInfo(getController()
+                        // .getFolderRepository()), targetFile, false);
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
@@ -1270,7 +1270,7 @@ public class Folder extends PFComponent {
                     Member from = modifiedBy.getNode(getController(), true);
 
                     // if (from != null) {
-                    //     modifiedBy = from.getInfo();
+                    // modifiedBy = from.getInfo();
                     // }
                     // Date modDate = dirInfo.getModifiedDate();
                     // long size = dirInfo.getSize();
@@ -1480,7 +1480,7 @@ public class Folder extends PFComponent {
      *            the file to load as db file
      * @return true if succeeded
      */
-//    @SuppressWarnings("unchecked")
+    // @SuppressWarnings("unchecked")
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
@@ -2067,8 +2067,7 @@ public class Folder extends PFComponent {
         }
         logFine("Waiting to complete scan");
         ScanResult.ResultState resultState = lastScanResultState;
-        while (isScanning() && resultState == lastScanResultState)
-        {
+        while (isScanning() && resultState == lastScanResultState) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
