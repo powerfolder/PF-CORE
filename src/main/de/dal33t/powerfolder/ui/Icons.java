@@ -390,8 +390,11 @@ public class Icons {
             // Unknown
             return getIconById(NODE_NON_FRIEND_CONNECTED);
         }
+
         String iconID;
-        if (node.isCompletelyConnected()) {
+        if (node.isMySelf()) {
+            iconID = Icons.NODE_FRIEND_CONNECTED;
+        } else if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
             if (node.isFriend()) {
                 iconID = Icons.NODE_FRIEND_CONNECTED;
