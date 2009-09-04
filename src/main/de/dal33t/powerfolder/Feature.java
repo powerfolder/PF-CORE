@@ -88,7 +88,7 @@ public enum Feature {
     /**
      * If it should be possible to select a script after download.
      */
-    DOWNLOAD_SCRIPT(false),
+    DOWNLOAD_SCRIPT(true),
 
     /**
      * Display Tip Of Day.
