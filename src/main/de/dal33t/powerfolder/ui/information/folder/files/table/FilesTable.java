@@ -217,7 +217,7 @@ public class FilesTable extends JTable {
                             // preference goes to deleted, then ignored then available icon
                         } else if (fileInfo.isDeleted()) {
                             setForeground(DELETED);
-                            setIcon(Icons.getIconById(Icons.DELETE));
+                            setIcon(null);
                             statusForTooltip = Translation.getTranslation("file_info.deleted");
 
                         } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
