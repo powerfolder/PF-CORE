@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -40,7 +39,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -63,9 +61,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         Folder folder = getController().getFolderRepository().getFolder(foInfo);
         boolean osJoined = folder != null
             && controller.getOSClient().hasJoined(folder);
-        boolean hasAccess = controller.getOSClient().getAccount()
-            .hasReadPermissions(foInfo);
-        removeFolder = hasAccess || osJoined;
+        removeFolder = osJoined;
     }
 
     // From WizardPanel *******************************************************
