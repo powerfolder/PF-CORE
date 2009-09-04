@@ -104,6 +104,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
             "pref, 6dlu, pref, 6dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         if (removeFolder) {
