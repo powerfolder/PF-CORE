@@ -691,14 +691,16 @@ public class SettingsTab extends PFUIComponent {
 
             boolean osConfigured = serverClient.hasJoined(folder);
             if (osConfigured) {
-                confOSActionLabel.setText("action_stop_online_storage.name");
-                confOSActionLabel
-                    .setText("action_stop_online_storage.description");
+                confOSActionLabel.setText(Translation
+                    .getTranslation("action_stop_online_storage.name"));
+                confOSActionLabel.setToolTipText(Translation
+                    .getTranslation("action_stop_online_storage.description"));
             } else {
+                confOSActionLabel.setText(Translation
+                    .getTranslation("action_backup_online_storage.name"));
                 confOSActionLabel
-                    .setToolTipText("action_backup_online_storage.name");
-                confOSActionLabel
-                    .setToolTipText("action_backup_online_storage.description");
+                    .setToolTipText(Translation
+                        .getTranslation("action_backup_online_storage.description"));
             }
 
         }
