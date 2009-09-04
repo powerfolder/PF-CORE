@@ -194,7 +194,7 @@ public class SettingsTab extends PFUIComponent {
 
         row += 2;
         builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.archive_mode")), cc.xy(2, row));
+            .getTranslation("general.archive_mode")), cc.xy(2, row));
         builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(4, row, 4));
 
         row += 2;

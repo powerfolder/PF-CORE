@@ -815,6 +815,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         folder.addFolderListener(folderListener);
         folder.addProblemListener(valveProblemListenerSupport);
+        folder.setArchiveMode(folderSettings.getArchiveMode());
+        folder.setArchiveVersions(folderSettings.getVersions());
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 

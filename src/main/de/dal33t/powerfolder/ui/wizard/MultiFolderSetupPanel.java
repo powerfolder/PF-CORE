@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.ui.wizard;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -32,12 +34,10 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -60,15 +60,13 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private DefaultComboBoxModel localBaseComboModel;
 
     private FolderCreateItem selectedItem;
+    private ValueModel modeModel;
+    private ValueModel versionsModel;
 
     private JTextField nameField;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
-    private JComboBox archiveModeCombo;
-    private ComboBoxModel archiveModeComboModel;
-
-    private JSpinner archiveHistorySpinner;
-    private SpinnerNumberModel archiveHistorySpinnerModel;
+    private ArchiveModeSelectorPanel archiveModeSelectorPanel;
 
     /**
      * Constuctor
@@ -143,28 +141,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         builder.add(new JLabel(Translation
                 .getTranslation("general.archive_mode")), cc.xy(1, 7));
-        builder.add(createArchivePanel(), cc.xyw(3, 7, 2));
+        builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3, 7, 2));
 
         return builder.getPanel();
-    }
-
-    private Component createArchivePanel() {
-        FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
-                "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        builder.add(archiveModeCombo, cc.xy(1, 1));
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.multi_folder_setup.versions_text")), cc.xy(3, 1));
-        builder.add(archiveHistorySpinner, cc.xy(5, 1));
-        builder.add(new JLabel(Translation.getTranslation(
-                "wizard.multi_folder_setup.versions_hint_text")), cc.xy(7, 1));
-        JPanel panel = builder.getPanel();
-        panel.setOpaque(false);
-        return panel;
     }
 
     /**
@@ -186,15 +165,15 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         nameField = new JTextField();
         nameField.addKeyListener(myKeyListener);
 
-        archiveModeComboModel = new DefaultComboBoxModel(new Object[]{ArchiveMode.NO_BACKUP,
-                ArchiveMode.FULL_BACKUP});
-        archiveModeCombo = new JComboBox(archiveModeComboModel);
-        MyItemListener itemListener = new MyItemListener();
-        archiveModeCombo.addItemListener(itemListener);
+        PropertyChangeListener listener = new MyPropertyChangeListener();
+        modeModel = new ValueHolder();
+        versionsModel = new ValueHolder();
+        modeModel.addValueChangeListener(listener);
+        versionsModel.addValueChangeListener(listener);
+        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(getController(),
+                modeModel, versionsModel);
 
-        archiveHistorySpinnerModel = new SpinnerNumberModel(5, -1, 9999, 1);
-        archiveHistorySpinner = new JSpinner(archiveHistorySpinnerModel);
-        archiveHistorySpinner.addChangeListener(new MyChangeListener());
+        MyItemListener itemListener = new MyItemListener();
 
         localBaseCombo.addItemListener(itemListener);
     }
@@ -241,8 +220,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                     profile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
                 }
                 syncProfileSelectorPanel.setSyncProfile(profile, false);
-                archiveHistorySpinnerModel.setValue(item.getArchiveHistory());
-                archiveModeComboModel.setSelectedItem(item.getArchiveMode());
                 break;
             }
         }
@@ -269,15 +246,16 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         }
     }
 
-    private void archiveModeComboSelectionChange() {
+    private void updateModeAndVersion() {
         if (selectedItem != null) {
-            selectedItem.setArchiveMode((ArchiveMode) archiveModeCombo.getSelectedItem());
-        }
-    }
-
-    private void archiveHistorySpinnerStateChanged() {
-        if (selectedItem != null) {
-            selectedItem.setArchiveHistory(archiveHistorySpinnerModel.getNumber().intValue());
+            ArchiveMode am = (ArchiveMode) modeModel.getValue();
+            if (am == ArchiveMode.NO_BACKUP) {
+                selectedItem.setArchiveMode(ArchiveMode.NO_BACKUP);
+            } else {
+                selectedItem.setArchiveMode(ArchiveMode.FULL_BACKUP);
+                int version = (Integer) versionsModel.getValue();
+                selectedItem.setArchiveHistory(version);
+            }
         }
     }
 
@@ -289,8 +267,6 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         public void itemStateChanged(ItemEvent e) {
             if (e.getSource() == localBaseCombo) {
                 localBaseComboSelectionChanged();
-            } else if (e.getSource() == archiveModeCombo) {
-                archiveModeComboSelectionChange();
             }
         }
     }
@@ -317,10 +293,10 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         }
     }
 
-    private class MyChangeListener implements ChangeListener {
-        public void stateChanged(ChangeEvent e) {
-            if (e.getSource() == archiveHistorySpinner) {
-                archiveHistorySpinnerStateChanged();
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == modeModel || evt.getSource() == versionsModel) {
+                updateModeAndVersion();
             }
         }
     }

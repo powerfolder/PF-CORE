@@ -184,6 +184,7 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
         CellConstraints cc = new CellConstraints();
 
         panel.add(archiveCombo, cc.xy(1, 1));
+        panel.setOpaque(false);
     }
 
     /**
