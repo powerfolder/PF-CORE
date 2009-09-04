@@ -53,8 +53,8 @@ public interface FolderService {
      * @param deleteFiles
      *            true to delete all file contained in the folder. Requires
      *            ownership.
+     * @deprecated legacy support. remove after major 4.0 distribution
      */
-    @Deprecated
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
 
     /**
