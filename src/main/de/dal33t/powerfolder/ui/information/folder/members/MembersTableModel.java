@@ -635,15 +635,17 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
             AccountInfo aInfo = member.getAccountInfo();
-            FolderPermission folderPermission = null;
-            if (aInfo != null) {
-                folderPermission = permInfo.remove(aInfo);
-            }
+            FolderPermission folderPermission = permInfo.get(aInfo);
             FolderMember folderMember = new FolderMember(folder, member, aInfo,
                 folderPermission);
             members.add(folderMember);
         }
-
+        for (Member member : folder.getMembersAsCollection()) {
+            AccountInfo aInfo = member.getAccountInfo();
+            if (aInfo != null) {
+                permInfo.remove(aInfo);
+            }
+        }
         // Step 2) All other users not joined with any computer.
         if (!permInfo.isEmpty()) {
             for (Entry<AccountInfo, FolderPermission> permissionInfo : permInfo
