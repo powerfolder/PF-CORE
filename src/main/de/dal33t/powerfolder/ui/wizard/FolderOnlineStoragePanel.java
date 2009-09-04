@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -98,46 +99,51 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
 
     public WizardPanel next() {
         // Actually setup mirror
-        try {
-            if (removeFolder) {
-                getController().getOSClient().getFolderService().removeFolder(
-                    foInfo, true);
-                return new TextPanelPanel(
-                    getController(),
-                    Translation
-                        .getTranslation("wizard.folder_online_storage.remove_success_title"),
-                    Translation.getTranslation(
-                        "wizard.folder_online_storage.remove_success_message",
-                        foInfo.name));
-            } else {
-                getController().getOSClient().getFolderService().createFolder(
-                    foInfo, SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                return new TextPanelPanel(
-                    getController(),
-                    Translation
-                        .getTranslation("wizard.folder_online_storage.backup_success_title"),
-                    Translation.getTranslation(
-                        "wizard.folder_online_storage.backup_success_message",
-                        foInfo.name));
-            }
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "", e);
+        Runnable task;
+        WizardPanel next;
 
-            // Split long error message into multiple lines on ':'.
-            String message = e.getMessage();
-            String[] strings = message.split(":");
-            StringBuilder sb = new StringBuilder();
-            for (String string : strings) {
-                sb.append(string.trim()).append('\n');
-            }
+        if (removeFolder) {
+            task = new Runnable() {
+                public void run() {
+                    // Keep folder permission
+                    getController().getOSClient().getFolderService()
+                        .removeFolder(foInfo, true, false);
+                }
 
-            return new TextPanelPanel(getController(), Translation
-                .getTranslation("wizard.folder_online_storage.failure_title"),
+            };
+            next = new TextPanelPanel(
+                getController(),
+                Translation
+                    .getTranslation("wizard.folder_online_storage.remove_success_title"),
                 Translation.getTranslation(
-                    "wizard.folder_online_storage.failure_message",
-                    foInfo.name, sb.toString().trim()));
-        }
+                    "wizard.folder_online_storage.remove_success_message",
+                    foInfo.name));
+        } else {
+            task = new Runnable() {
+                public void run() {
+                    try {
+                        getController().getOSClient().getFolderService()
+                            .createFolder(foInfo,
+                                SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                    } catch (FolderException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
+            };
 
+            next = new TextPanelPanel(
+                getController(),
+                Translation
+                    .getTranslation("wizard.folder_online_storage.backup_success_title"),
+                Translation.getTranslation(
+                    "wizard.folder_online_storage.backup_success_message",
+                    foInfo.name));
+        }
+        return new SwingWorkerPanel(getController(), task, Translation
+            .getTranslation("wizard.folder_online_storage.working"),
+            Translation
+                .getTranslation("wizard.folder_online_storage.working.text"),
+            next);
     }
 
     protected JPanel buildContent() {

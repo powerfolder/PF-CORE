@@ -54,7 +54,22 @@ public interface FolderService {
      *            true to delete all file contained in the folder. Requires
      *            ownership.
      */
+    @Deprecated
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
+
+    /**
+     * Removes a folder from the account. Required owner permission if
+     * deletedFiles is true.
+     * 
+     * @param foInfo
+     * @param deleteFiles
+     *            true to delete all file contained in the folder. Requires
+     *            ownership.
+     * @param removePermission
+     *            if the permission to this folder should also be removed.
+     */
+    void removeFolder(FolderInfo foInfo, boolean deleteFiles,
+        boolean removePermission);
 
     /**
      * #854

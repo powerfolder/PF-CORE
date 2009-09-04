@@ -230,7 +230,9 @@ public class FolderRemovePanel extends BaseDialog {
 
         if (removeFromOS) {
             ServerClient client = getController().getOSClient();
-            client.getFolderService().removeFolder(foInfo, true);
+            // If remove local means = total removal of folder, also remove
+            // permissions.
+            client.getFolderService().removeFolder(foInfo, true, removeLocal);
 
             if (!removeLocal) {
                 // TODO For what is that?

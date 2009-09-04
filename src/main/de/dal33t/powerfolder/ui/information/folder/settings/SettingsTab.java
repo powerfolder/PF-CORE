@@ -59,6 +59,8 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.PatternChangeListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -78,7 +80,14 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
+import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
+import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 
 /**
@@ -92,6 +101,7 @@ public class SettingsTab extends PFUIComponent {
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
     private ValueModel versionModel;
+    private FolderMembershipListener membershipListner;
 
     /**
      * Folders with this setting will backup files before replacing them with
@@ -133,6 +143,7 @@ public class SettingsTab extends PFUIComponent {
         patternsListModel = new DefaultListModel();
         removeFolderAction = new RemoveFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
+        membershipListner = new MyFolderMembershipListener();
         scriptModel = new ValueHolder(null, false);
         MyValueChangeListener listener = new MyValueChangeListener();
         modeModel = new ValueHolder();
@@ -140,7 +151,7 @@ public class SettingsTab extends PFUIComponent {
         versionModel = new ValueHolder();
         versionModel.addValueChangeListener(listener);
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
-                modeModel, versionModel);
+            modeModel, versionModel);
     }
 
     /**
@@ -151,15 +162,15 @@ public class SettingsTab extends PFUIComponent {
     public void setFolderInfo(FolderInfo folderInfo) {
         if (folder != null) {
             folder.getDiskItemFilter().removeListener(patternChangeListener);
+            folder.removeMembershipListener(membershipListner);
         }
-        folder = getController().getFolderRepository()
-            .getFolder(folderInfo);
+        folder = getController().getFolderRepository().getFolder(folderInfo);
         folder.getDiskItemFilter().addListener(patternChangeListener);
+        folder.addMembershipListener(membershipListner);
         transferModeSelectorPanel.setUpdateableFolder(folder);
         scriptModel.setValue(folder.getDownloadScript());
         archiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
-                .getArchiveMode(), folder.getFileArchiver()
-                .getVersionsPerFile());
+            .getArchiveMode(), folder.getFileArchiver().getVersionsPerFile());
         update();
         enableConfigOSAction();
         enablePreviewFolderAction();
@@ -182,7 +193,7 @@ public class SettingsTab extends PFUIComponent {
         // label folder butn padding
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -195,7 +206,8 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("general.archive_mode")), cc.xy(2, row));
-        builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(4, row, 4));
+        builder.add(archiveModeSelectorPanel.getUIComponent(), cc
+            .xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
@@ -209,9 +221,9 @@ public class SettingsTab extends PFUIComponent {
             row));
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
+        row += 2;
 
         if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
-            row += 2;
             builder.addLabel(Translation
                 .getTranslation("settings_tab.download_script"), cc.xy(2, row));
             builder.add(createScriptField(), cc.xy(4, row));
@@ -248,8 +260,9 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new ActionLabel(getController(), removeFolderAction)
-            .getUIComponent(), cc.xy(1, 1));
+        ActionLabel label = new ActionLabel(getController(), removeFolderAction);
+        builder.add(label.getUIComponent(), cc.xy(1, 1));
+        UIUtil.convertToBigLabel((JLabel) label.getUIComponent());
         return builder.getPanel();
     }
 
@@ -259,6 +272,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         confOSActionLabel = new ActionLabel(getController(),
             new FolderOnlineStorageAction(getController()));
+        UIUtil.convertToBigLabel((JLabel) confOSActionLabel.getUIComponent());
         builder.add(confOSActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
@@ -269,6 +283,8 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         previewFolderActionLabel = new ActionLabel(getController(),
             new PreviewFolderAction(getController()));
+        UIUtil.convertToBigLabel((JLabel) previewFolderActionLabel
+            .getUIComponent());
         builder.add(previewFolderActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
@@ -646,10 +662,10 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                    .getSyncProfile(), false, folder.getFileArchiver()
-                    .getArchiveMode(), folder.isPreviewOnly(),
-                    folder.isWhitelist(), folder.getDownloadScript(),
-                    folder.getFileArchiver().getVersionsPerFile());
+                .getSyncProfile(), false, folder.getFileArchiver()
+                .getArchiveMode(), folder.isPreviewOnly(),
+                folder.isWhitelist(), folder.getDownloadScript(), folder
+                    .getFileArchiver().getVersionsPerFile());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -688,7 +704,6 @@ public class SettingsTab extends PFUIComponent {
             && serverClient.isLoggedIn())
         {
             enabled = true;
-
             boolean osConfigured = serverClient.hasJoined(folder);
             if (osConfigured) {
                 confOSActionLabel.setText(Translation
@@ -702,9 +717,8 @@ public class SettingsTab extends PFUIComponent {
                     .setToolTipText(Translation
                         .getTranslation("action_backup_online_storage.description"));
             }
-
         }
-        confOSActionLabel.setEnabled(enabled);
+        confOSActionLabel.getUIComponent().setVisible(enabled);
     }
 
     /**
@@ -906,6 +920,30 @@ public class SettingsTab extends PFUIComponent {
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
+    {
+
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            {
+                enableConfigOSAction();
+            }
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            {
+                enableConfigOSAction();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 
     /**

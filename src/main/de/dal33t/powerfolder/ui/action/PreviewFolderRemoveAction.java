@@ -86,7 +86,8 @@ public class PreviewFolderRemoveAction extends BaseAction {
             deleteSystemSubFolder);
         if (removeFromOS) {
             ServerClient client = getController().getOSClient();
-            client.getFolderService().removeFolder(folder.getInfo(), true);
+            client.getFolderService().removeFolder(folder.getInfo(), true,
+                false);
         }
     }
 }
