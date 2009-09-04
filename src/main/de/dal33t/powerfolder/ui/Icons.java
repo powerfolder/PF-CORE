@@ -51,7 +51,10 @@ import javax.swing.plaf.IconUIResource;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
@@ -387,22 +390,41 @@ public class Icons {
             // Unknown
             return getIconById(NODE_NON_FRIEND_CONNECTED);
         }
-        Icon icon;
-
-        boolean connected = node.isCompletelyConnected() || node.isMySelf();
-        if (connected) {
+        String iconID;
+        if (node.isCompletelyConnected()) {
+            ConnectionHandler peer = node.getPeer();
             if (node.isFriend()) {
-                icon = getIconById(NODE_FRIEND_CONNECTED);
+                iconID = Icons.NODE_FRIEND_CONNECTED;
             } else {
-                icon = getIconById(NODE_NON_FRIEND_CONNECTED);
+                iconID = Icons.NODE_NON_FRIEND_CONNECTED;
+            }
+
+            if (node.isOnLAN()) {
+                iconID = Icons.NODE_FRIEND_LAN;
+            } else if (peer != null) {
+                ConnectionQuality quality = peer.getConnectionQuality();
+                if (quality != null) {
+                    switch (quality) {
+                        case GOOD :
+                            iconID = Icons.NODE_FRIEND_CONNECTED;
+                            break;
+                        case MEDIUM :
+                            iconID = Icons.NODE_FRIEND_MEDIUM;
+                            break;
+                        case POOR :
+                            iconID = Icons.NODE_FRIEND_POOR;
+                            break;
+                    }
+                }
             }
         } else {
             if (node.isFriend()) {
-                icon = getIconById(NODE_FRIEND_DISCONNECTED);
+                iconID = Icons.NODE_FRIEND_DISCONNECTED;
             } else {
-                icon = getIconById(NODE_NON_FRIEND_DISCONNECTED);
+                iconID = Icons.NODE_NON_FRIEND_DISCONNECTED;
             }
         }
+        Icon icon = Icons.getIconById(iconID);
         if (!node.isOnSameNetwork()) {
             icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
         }

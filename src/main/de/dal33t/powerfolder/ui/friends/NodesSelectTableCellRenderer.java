@@ -1,25 +1,27 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.friends;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
@@ -45,13 +47,7 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
             Member member = (Member) value;
             switch (column) {
                 case 0 :
-                    String text = member.getNick();
-                    if (member.isOnLAN()) {
-                        text += " ("
-                            + Translation.getTranslation("general.localnet")
-                            + ')';
-                    }
-                    myValue = text;
+                    myValue = renderInfo(member, member.getAccountInfo());
                     setIcon(Icons.getIconFor(member));
                     break;
             }
@@ -59,20 +55,29 @@ public class NodesSelectTableCellRenderer extends DefaultTableCellRenderer {
             // Just print text (no users)
             myValue = value;
         } else {
-            throw new IllegalStateException(
-                "Don't know how to render " + (value == null ? "null" : value
-                    .getClass().getName()));
+            throw new IllegalStateException("Don't know how to render "
+                + (value == null ? "null" : value.getClass().getName()));
         }
 
-        Component rendererComponent = super.getTableCellRendererComponent(table,
-                myValue, isSelected, hasFocus, row, column);
+        Component rendererComponent = super.getTableCellRendererComponent(
+            table, myValue, isSelected, hasFocus, row, column);
 
         if (!isSelected) {
-            setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+            setBackground(row % 2 == 0
+                ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                : ColorUtil.ODD_TABLE_ROW_COLOR);
         }
 
-
         return rendererComponent;
+    }
+
+    private String renderInfo(Member member, AccountInfo aInfo) {
+        String text = member.getNick();
+        if (aInfo != null) {
+            text += " (";
+            text += aInfo.getScrabledUsername();
+            text += ')';
+        }
+        return text;
     }
 }

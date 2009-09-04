@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -51,6 +52,7 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
@@ -62,6 +64,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
@@ -74,6 +77,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -119,16 +123,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         invitation.setPermission(fp);
         boolean theResult = false;
-        Member[] friends = getController().getNodeManager().getFriends();
+        Collection<Member> candidates = getCandidates();
 
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
-            sendInvite(friends, viaPowerFolderText.getText());
+            sendInvite(candidates, viaPowerFolderText.getText());
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
             String invitee = (String) o;
-            sendInvite(friends, invitee);
+            sendInvite(candidates, invitee);
             theResult = true;
         }
 
@@ -149,8 +153,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @param friends
      * @param invitee
      */
-    private void sendInvite(Member[] friends, String invitee) {
-        for (Member member : friends) {
+    private void sendInvite(Collection<Member> candidates, String invitee) {
+        for (Member member : candidates) {
             if (invitee.equalsIgnoreCase(member.getNick())) {
                 InvitationUtil.invitationToNode(getController(), invitation,
                     member);
@@ -188,23 +192,45 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-        if (messageModel.getValue() != null) {
-            invitation.setInvitationText((String) messageModel.getValue());
-        }
-        return sendInvitation();
+        return true;
     }
 
     public WizardPanel next() {
-        // Show success panel
-        return (WizardPanel) getWizardContext().getAttribute(
-            PFWizard.SUCCESS_PANEL);
+        if (messageModel.getValue() != null) {
+            invitation.setInvitationText((String) messageModel.getValue());
+        }
+        Runnable inviteTask = new Runnable() {
+            public void run() {
+                if (messageModel.getValue() != null) {
+                    invitation.setInvitationText((String) messageModel
+                        .getValue());
+                }
+                if (!sendInvitation()) {
+                    throw new RuntimeException(Translation
+                        .getTranslation("wizard.send_invitations.no_invitees"));
+                }
+            }
+
+        };
+        WizardPanel successPanel = (WizardPanel) getWizardContext()
+            .getAttribute(PFWizard.SUCCESS_PANEL);
+        return new SwingWorkerPanel(
+            getController(),
+            inviteTask,
+            Translation
+                .getTranslation("wizard.send_invitations.sending_invites"),
+            Translation
+                .getTranslation("wizard.send_invitations.sending_invites.text"),
+            successPanel);
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("140dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 3dlu, pref, 15dlu, pref");
+        FormLayout layout = new FormLayout(
+            "140dlu, pref:grow",
+            "pref, 3dlu, pref, 3dlu, pref, max(9dlu;pref), 3dlu, pref, 20dlu, pref, 3dlu, pref");
         // inv join text inv fdl hint1 hint2 auto list remove adv
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
         int row = 1;
 
@@ -213,14 +239,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .xyw(1, row, 2));
         row += 2;
 
-        FormLayout layout2 = new FormLayout("140dlu, 3dlu, pref, pref", "pref");
+        FormLayout layout2 = new FormLayout("pref:grow, 3dlu, pref, pref",
+            "pref");
         PanelBuilder builder2 = new PanelBuilder(layout2);
         builder2.add(viaPowerFolderText, cc.xy(1, 1));
         builder2.add(addButton, cc.xy(3, 1));
         builder2.add(searchButton, cc.xy(4, 1));
         JPanel panel2 = builder2.getPanel();
         panel2.setOpaque(false);
-        builder.add(panel2, cc.xyw(1, row, 2));
+        builder.add(panel2, cc.xy(1, row));
         row += 2;
 
         inviteesListScrollPane = new JScrollPane(inviteesList);
@@ -297,16 +324,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         inviteesList.getSelectionModel().addListSelectionListener(
             new MyListSelectionListener());
 
-        List<String> friendNicks = new ArrayList<String>();
-        for (Member friend : getController().getNodeManager().getFriends()) {
-            friendNicks.add(friend.getNick());
-            AccountInfo aInfo = friend.getAccountInfo();
-            if (aInfo != null) {
-                // FIXME Shows email unscrambled!
-                friendNicks.add(aInfo.getUsername());
-            }
-        }
-        viaPowerFolderText.setDataList(friendNicks);
+        List<String> candidateAddresses = getCandidatesAddresses();
+        viaPowerFolderText.setDataList(candidateAddresses);
         advancedLink = new ActionLabel(getController(), new MyAdvanceAction(
             getController()));
 
@@ -316,6 +335,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.send_invitations.add_message.text"));
         addMessageLink.setToolTipText(Translation
             .getTranslation("wizard.send_invitations.add_message.tip"));
+        addMessageLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+        SimpleComponentFactory.setFontSize((JLabel) addMessageLink
+            .getUIComponent(), PFWizard.MED_FONT_SIZE);
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());
@@ -339,6 +361,46 @@ public class SendInvitationsPanel extends PFWizardPanel {
         enableAddButton();
         enableRemoveButton();
 
+    }
+
+    private List<String> getCandidatesAddresses() {
+        List<String> candidateAddresses = new ArrayList<String>();
+        for (Member friend : getController().getNodeManager().getFriends()) {
+            AccountInfo aInfo = friend.getAccountInfo();
+            if (aInfo != null) {
+                // FIXME Shows email unscrambled!
+                candidateAddresses.add(aInfo.getUsername());
+            }
+            candidateAddresses.add(friend.getNick());
+        }
+        for (Member node : getController().getNodeManager().getConnectedNodes())
+        {
+            if (!node.isOnLAN()) {
+                continue;
+            }
+            AccountInfo aInfo = node.getAccountInfo();
+            if (aInfo != null) {
+                // FIXME Shows email unscrambled!
+                candidateAddresses.add(aInfo.getUsername());
+            }
+            candidateAddresses.add(node.getNick());
+        }
+        return candidateAddresses;
+    }
+
+    private List<Member> getCandidates() {
+        List<Member> candidate = new ArrayList<Member>();
+        for (Member friend : getController().getNodeManager().getFriends()) {
+            candidate.add(friend);
+        }
+        for (Member node : getController().getNodeManager().getConnectedNodes())
+        {
+            if (!node.isOnLAN()) {
+                continue;
+            }
+            candidate.add(node);
+        }
+        return candidate;
     }
 
     protected String getTitle() {
