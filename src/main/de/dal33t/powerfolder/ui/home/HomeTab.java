@@ -464,6 +464,7 @@ public class HomeTab extends PFUIComponent {
      * by the type selection in the computers tab.
      */
     private void updateComputers() {
+        // FIXME This calculation depends on FILTER setting.
         int nodeCount = getUIController().getApplicationModel()
             .getNodeManagerModel().getNodes().size();
         computersLine.setValue(nodeCount);
