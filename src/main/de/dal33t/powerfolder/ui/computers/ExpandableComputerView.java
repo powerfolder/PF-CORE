@@ -96,6 +96,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private MyReconnectAction reconnectAction;
     private JLabel lastSeenLabel;
+    private JLabel usernameLabel;
     private MyNodeManagerListener nodeManagerListener;
     private MySecurityManagerListener secManagerListener;
 
@@ -184,16 +185,17 @@ public class ExpandableComputerView extends PFUIComponent implements
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
             "3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
-            "pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 8));
 
-        lowerBuilder.add(lastSeenLabel, cc.xy(2, 3));
-        lowerBuilder.add(chatButton, cc.xy(5, 3));
-        lowerBuilder.add(addRemoveButton, cc.xy(6, 3));
-        lowerBuilder.add(reconnectButton, cc.xy(7, 3));
+        lowerBuilder.add(usernameLabel, cc.xy(2, 3));
+        lowerBuilder.add(chatButton, cc.xywh(5, 3, 1, 3));
+        lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
+        lowerBuilder.add(reconnectButton, cc.xywh(7, 3, 1, 3));
+        lowerBuilder.add(lastSeenLabel, cc.xy(2, 5));
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -235,8 +237,12 @@ public class ExpandableComputerView extends PFUIComponent implements
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
-        infoLabel = new JLabel(renderInfo(node, node.getAccountInfo()));
+        infoLabel = new JLabel(renderInfo(node));
         lastSeenLabel = new JLabel();
+        AccountInfo aInfo = node.getAccountInfo();
+        usernameLabel = new JLabel(aInfo != null
+            ? aInfo.getScrabledUsername()
+            : null);
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction, true);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
@@ -307,7 +313,7 @@ public class ExpandableComputerView extends PFUIComponent implements
             // logWarning("UI: PROCESSING ACCOUNT UPDATE ON: " + node +
             // " is now "
             // + node.getAccountInfo());
-            infoLabel.setText(renderInfo(node, node.getAccountInfo()));
+            infoLabel.setText(renderInfo(node));
         }
     }
 
@@ -338,6 +344,15 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
         lastSeenLabel.setText(Translation.getTranslation(
             "exp_computer_view.last_seen_text", lastConnectedTime));
+
+        AccountInfo aInfo = node.getAccountInfo();
+        if (aInfo != null) {
+            usernameLabel.setText(Translation.getTranslation(
+                "exp_computer_view.account", aInfo.getScrabledUsername()));
+        } else {
+            usernameLabel.setText(Translation
+                .getTranslation("exp_computer_view.no_login"));
+        }
 
         String iconName;
         String text;
@@ -442,13 +457,8 @@ public class ExpandableComputerView extends PFUIComponent implements
         return contextMenu;
     }
 
-    private String renderInfo(Member member, AccountInfo aInfo) {
+    private String renderInfo(Member member) {
         String text = member.getNick();
-        if (aInfo != null) {
-            text += " (";
-            text += aInfo.getScrabledUsername();
-            text += ')';
-        }
         if (getController().isVerbose()) {
             Identity id = member.getIdentity();
             if (id != null) {
@@ -547,10 +557,12 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         public void nodeConnected(NodeManagerEvent e) {
+            updateInfoIfRequired(e.getNode());
             updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
+            updateInfoIfRequired(e.getNode());
             updateDetailsIfRequired(e.getNode());
         }
 
@@ -577,7 +589,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private class MySecurityManagerListener implements SecurityManagerListener {
 
         public void nodeAccountStateChanged(SecurityManagerEvent event) {
-            updateInfoIfRequired(event.getNode());
+            updateDetailsIfRequired(event.getNode());
         }
 
         public boolean fireInEventDispatchThread() {
