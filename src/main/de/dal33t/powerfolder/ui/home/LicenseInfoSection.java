@@ -26,6 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
@@ -45,6 +46,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class to render the online storage trial info on the home tab.
@@ -89,7 +91,7 @@ public class LicenseInfoSection extends PFUIComponent {
 
         builder.add(progressBar, cc.xy(1, 1));
         builder.add(infoLabel.getUIComponent(), cc.xywh(1, 2, 2, 1));
-        builder.add(buyNowLabel.getUiComponent(), cc.xyw(1, 4, 2));
+        builder.add(buyNowLabel.getUIComponent(), cc.xyw(1, 4, 2));
 
         uiComponent = builder.getPanel();
     }
@@ -114,8 +116,7 @@ public class LicenseInfoSection extends PFUIComponent {
         buyNowLabel = new LinkLabel(getController(), Translation
             .getTranslation("pro.home_tab.upgrade_to_full"),
             ConfigurationEntry.PROVIDER_BUY_URL.getValue(getController()));
-        buyNowLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        buyNowLabel.setFontSize(15);
+        UIUtil.convertToBigLabel((JLabel) buyNowLabel.getUIComponent());
 
         getApplicationModel().getLicenseModel().getDaysValidModel()
             .addValueChangeListener(new PropertyChangeListener() {
@@ -188,12 +189,12 @@ public class LicenseInfoSection extends PFUIComponent {
 
     private void showBuyNowLink(String text) {
         if (StringUtils.isBlank(text)) {
-            buyNowLabel.getUiComponent().setVisible(false);
+            buyNowLabel.getUIComponent().setVisible(false);
             return;
         }
         buyNowLabel.setTextAndURL(text, ConfigurationEntry.PROVIDER_BUY_URL
             .getValue(getController()));
-        buyNowLabel.getUiComponent().setVisible(true);
+        buyNowLabel.getUIComponent().setVisible(true);
     }
 
     private class MyClickListener extends MouseAdapter {

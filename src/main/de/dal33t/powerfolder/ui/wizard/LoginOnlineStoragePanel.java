@@ -45,12 +45,12 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -142,9 +142,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             LinkLabel signupLabel = new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
                 .getRegisterURL());
-            signupLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-            signupLabel.setFontSize(PFWizard.MED_FONT_SIZE);
-            builder.add(signupLabel.getUiComponent(), cc.xy(5, row));
+            UIUtil.convertToBigLabel((JLabel) signupLabel.getUIComponent());
+            builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
         }
         row += 2;
 
@@ -155,9 +154,9 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
             Translation.getTranslation("wizard.webservice.recover_password"),
             getController().getOSClient().getLoginURLWithUsername());
-        recoverPasswordLabel.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        recoverPasswordLabel.setFontSize(PFWizard.MED_FONT_SIZE);
-        builder.add(recoverPasswordLabel.getUiComponent(), cc.xy(5, row));
+        UIUtil
+            .convertToBigLabel((JLabel) recoverPasswordLabel.getUIComponent());
+        builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
         row += 2;
 
         builder.add(rememberPasswordBox, cc.xy(3, row));
@@ -167,7 +166,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-            builder.add(link.getUiComponent(), cc.xyw(1, row, 5));
+            builder.add(link.getUIComponent(), cc.xyw(1, row, 5));
             row += 2;
 
             builder.add(useOSBox, cc.xyw(1, row, 4));

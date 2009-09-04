@@ -104,7 +104,7 @@ public class FreeLimitationDialog extends BaseDialog {
         LinkLabel linkLabel = new LinkLabel(getController(), Translation
             .getTranslation("free_limit_dialog.whatispro"),
             ConfigurationEntry.PROVIDER_BUY_URL.getValue(getController()));
-        builder.add(linkLabel.getUiComponent(), cc.xy(1, row));
+        builder.add(linkLabel.getUIComponent(), cc.xy(1, row));
 
         return builder.getPanel();
     }

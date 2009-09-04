@@ -52,7 +52,6 @@ import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.Sizes;
@@ -64,7 +63,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
@@ -77,7 +75,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -335,9 +333,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.send_invitations.add_message.text"));
         addMessageLink.setToolTipText(Translation
             .getTranslation("wizard.send_invitations.add_message.tip"));
-        addMessageLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize((JLabel) addMessageLink
-            .getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) addMessageLink.getUIComponent());
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());

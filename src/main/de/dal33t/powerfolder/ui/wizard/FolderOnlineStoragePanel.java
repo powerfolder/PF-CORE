@@ -96,34 +96,6 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         }
     }
 
-    protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
-            "pref, 6dlu, pref, 6dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(createFewContentBorder());
-        CellConstraints cc = new CellConstraints();
-
-        if (removeFolder) {
-            builder.addLabel(Translation
-                .getTranslation("wizard.webservice.unmirror_folder"), cc.xyw(1,
-                1, 4));
-        } else {
-            builder.addLabel(Translation
-                .getTranslation("wizard.webservice.mirror_folder"), cc.xyw(1,
-                1, 4));
-        }
-
-        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
-            3));
-        builder.add(folderLabel, cc.xy(3, 3));
-
-        LinkLabel link = new LinkLabel(getController(), Translation
-            .getTranslation("wizard.webservice.learn_more"),
-            ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
-        builder.add(link.getUiComponent(), cc.xyw(1, 5, 3));
-        return builder.getPanel();
-    }
-
     public WizardPanel next() {
         // Actually setup mirror
         try {
@@ -166,6 +138,34 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     foInfo.name, sb.toString().trim()));
         }
 
+    }
+
+    protected JPanel buildContent() {
+        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
+            "pref, 6dlu, pref, 6dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
+        CellConstraints cc = new CellConstraints();
+
+        if (removeFolder) {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.unmirror_folder"), cc.xyw(1,
+                1, 4));
+        } else {
+            builder.addLabel(Translation
+                .getTranslation("wizard.webservice.mirror_folder"), cc.xyw(1,
+                1, 4));
+        }
+
+        builder.addLabel(Translation.getTranslation("general.folder"), cc.xy(1,
+            3));
+        builder.add(folderLabel, cc.xy(3, 3));
+
+        LinkLabel link = new LinkLabel(getController(), Translation
+            .getTranslation("wizard.webservice.learn_more"),
+            ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
+        builder.add(link.getUIComponent(), cc.xyw(1, 5, 3));
+        return builder.getPanel();
     }
 
     /**

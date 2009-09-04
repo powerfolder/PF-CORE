@@ -50,14 +50,13 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -143,7 +142,7 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         builder.add(onlineLink.getUIComponent(), cc.xy(3, 1));
         builder.add(inviteLink.getUIComponent(), cc.xy(3, 3));
-        builder.add(documentationLink.getUiComponent(), cc.xy(3, 5));
+        builder.add(documentationLink.getUIComponent(), cc.xy(3, 5));
         builder.getPanel().setOpaque(false);
 
         return builder.getPanel();
@@ -344,62 +343,49 @@ public class WhatToDoPanel extends PFWizardPanel {
                 synchronizedOption, decision));
         synchronizedLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.synchronized_folder.tip"));
-        synchronizedLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize((JLabel) synchronizedLink
-            .getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) synchronizedLink.getUIComponent());
 
         backupLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.backup_folder"),
             backupOption, decision));
         backupLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.backup_folder.tip"));
-        backupLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize(
-            (JLabel) backupLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) backupLink.getUIComponent());
 
         hostLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.host_work"),
             hostOption, decision));
         hostLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.host_work.tip"));
-        hostLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize((JLabel) hostLink.getUIComponent(),
-            PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) hostLink.getUIComponent());
 
         customLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.custom_sync"),
             customOption, decision));
         customLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.custom_sync.tip"));
-        customLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize(
-            (JLabel) customLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) customLink.getUIComponent());
 
         onlineLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.join_online"),
             onlineOption, decision));
         onlineLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.join_online.tip"));
-        onlineLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize(
-            (JLabel) onlineLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) onlineLink.getUIComponent());
 
         inviteLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.load_invite"),
             inviteOption, decision));
         inviteLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.load_invite.tip"));
-        inviteLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize(
-            (JLabel) inviteLink.getUIComponent(), PFWizard.MED_FONT_SIZE);
+        UIUtil.convertToBigLabel((JLabel) inviteLink.getUIComponent());
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
             Translation
                 .getTranslation("wizard.what_to_do.open_online_documentation"));
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
-        documentationLink.setFontSize(PFWizard.MED_FONT_SIZE);
-        documentationLink.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+        UIUtil.convertToBigLabel((JLabel) documentationLink.getUIComponent());
     }
 
     protected String getTitle() {

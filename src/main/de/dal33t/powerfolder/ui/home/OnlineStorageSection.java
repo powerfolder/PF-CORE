@@ -93,7 +93,7 @@ public class OnlineStorageSection extends PFUIComponent {
             .getValueBoolean(getController());
         // Don't show if not using it
         usagePB.setVisible(showOS);
-        usageLabel.getUiComponent().setVisible(showOS);
+        usageLabel.getUIComponent().setVisible(showOS);
     }
 
     /**
@@ -120,7 +120,7 @@ public class OnlineStorageSection extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(usagePB, cc.xy(1, 1));
-        builder.add(usageLabel.getUiComponent(), cc.xywh(1, 3, 2, 1));
+        builder.add(usageLabel.getUIComponent(), cc.xywh(1, 3, 2, 1));
         uiComponent = builder.getPanel();
     }
 

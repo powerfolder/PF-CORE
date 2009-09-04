@@ -97,6 +97,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private MyReconnectAction reconnectAction;
     private JLabel lastSeenLabel;
     private JLabel usernameLabel;
+    private JLabel versionLabel;
     private MyNodeManagerListener nodeManagerListener;
     private MySecurityManagerListener secManagerListener;
 
@@ -185,7 +186,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
             "3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
@@ -196,6 +197,11 @@ public class ExpandableComputerView extends PFUIComponent implements
         lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
         lowerBuilder.add(reconnectButton, cc.xywh(7, 3, 1, 3));
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 5));
+        if (getController().isVerbose()) {
+            lowerBuilder.appendRow("3dlu");
+            lowerBuilder.appendRow("pref");
+            lowerBuilder.add(versionLabel, cc.xy(2, 7));
+        }
 
         JPanel lowerPanel = lowerBuilder.getPanel();
         lowerPanel.setOpaque(false);
@@ -237,12 +243,14 @@ public class ExpandableComputerView extends PFUIComponent implements
      */
     private void initComponent() {
         expanded = new AtomicBoolean();
-        infoLabel = new JLabel(renderInfo(node));
+        infoLabel = new JLabel(node.getNick());
         lastSeenLabel = new JLabel();
         AccountInfo aInfo = node.getAccountInfo();
         usernameLabel = new JLabel(aInfo != null
             ? aInfo.getScrabledUsername()
             : null);
+        versionLabel = new JLabel(Translation.getTranslation(
+            "exp_computer_view.version", ""));
         reconnectAction = new MyReconnectAction(getController());
         reconnectButton = new JButtonMini(reconnectAction, true);
         addRemoveFriendAction = new MyAddRemoveFriendAction(getController());
@@ -300,24 +308,6 @@ public class ExpandableComputerView extends PFUIComponent implements
     }
 
     /**
-     * Updates the displayed info if for this member.
-     * 
-     * @param eventNode
-     */
-    private void updateInfoIfRequired(Member eventNode) {
-        if (node == null) {
-            return;
-        }
-        if (node.equals(eventNode)) {
-            // Only if account info has also been refreshed already.
-            // logWarning("UI: PROCESSING ACCOUNT UPDATE ON: " + node +
-            // " is now "
-            // + node.getAccountInfo());
-            infoLabel.setText(renderInfo(node));
-        }
-    }
-
-    /**
      * Configure the add / remove button on node change.
      */
     private void configureAddRemoveButton() {
@@ -352,6 +342,14 @@ public class ExpandableComputerView extends PFUIComponent implements
         } else {
             usernameLabel.setText(Translation
                 .getTranslation("exp_computer_view.no_login"));
+        }
+
+        if (getController().isVerbose()) {
+            Identity id = node.getIdentity();
+            if (id != null) {
+                versionLabel.setText(Translation.getTranslation(
+                    "exp_computer_view.version", id.getProgramVersion()));
+            }
         }
 
         String iconName;
@@ -457,18 +455,6 @@ public class ExpandableComputerView extends PFUIComponent implements
         return contextMenu;
     }
 
-    private String renderInfo(Member member) {
-        String text = member.getNick();
-        if (getController().isVerbose()) {
-            Identity id = member.getIdentity();
-            if (id != null) {
-                text += " / ";
-                text += id.getProgramVersion();
-            }
-        }
-        return text;
-    }
-
     // /////////////////
     // Inner Classes //
     // /////////////////
@@ -557,12 +543,10 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         public void nodeConnected(NodeManagerEvent e) {
-            updateInfoIfRequired(e.getNode());
             updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeDisconnected(NodeManagerEvent e) {
-            updateInfoIfRequired(e.getNode());
             updateDetailsIfRequired(e.getNode());
         }
 

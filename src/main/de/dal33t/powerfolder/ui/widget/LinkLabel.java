@@ -81,7 +81,7 @@ public class LinkLabel extends PFComponent {
         SimpleComponentFactory.setFontSize(uiComponent, fontSize);
     }
 
-    public JComponent getUiComponent() {
+    public JComponent getUIComponent() {
         return uiComponent;
     }
 

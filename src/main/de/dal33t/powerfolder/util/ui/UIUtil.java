@@ -21,9 +21,7 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -35,7 +33,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
-import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -48,6 +46,8 @@ import javax.swing.tree.TreePath;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -62,6 +62,9 @@ import de.dal33t.powerfolder.util.Reject;
 public class UIUtil {
 
     private static final Logger log = Logger.getLogger(UIUtil.class.getName());
+
+    // The size of a medium sized font, e.g. the big subpoints on a wizard
+    private static final int MED_FONT_SIZE = 15;
 
     /** Flag if awt is available */
     private static boolean AWTAvailable;
@@ -228,6 +231,16 @@ public class UIUtil {
         dims.width = 0;
         comp.setPreferredSize(dims);
         return comp;
+    }
+
+    /**
+     * Converts the given label to a big arrow label.
+     * 
+     * @param label
+     */
+    public static void convertToBigLabel(JLabel label) {
+        label.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+        SimpleComponentFactory.setFontSize(label, MED_FONT_SIZE);
     }
 
     /**

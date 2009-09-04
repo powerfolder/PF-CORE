@@ -55,7 +55,7 @@ public class LinkedTextBuilder {
             // Simplifies things much
             if (lineText.toLowerCase().startsWith("http://")) {
                 builder.appendRow("pref");
-                builder.add(new LinkLabel(controller, lineText, lineText).getUiComponent(), cc.xy(1,
+                builder.add(new LinkLabel(controller, lineText, lineText).getUIComponent(), cc.xy(1,
                         row));
             } else if (StringUtils.isEmpty(lineText.trim())) {
                 // Add gap
