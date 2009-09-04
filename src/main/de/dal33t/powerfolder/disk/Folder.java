@@ -451,13 +451,26 @@ public class Folder extends PFComponent {
      */
     public void setArchiveMode(ArchiveMode mode) {
         archiver = mode.getInstance(this);
+        // Store on disk
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+        getController().getConfig()
+            .put(syncProfKey, mode.name());
+        getController().saveConfig();
     }
 
-    /**
-     * @return the active ArchiveMode
-     */
-    public ArchiveMode getArchiveMode() {
-        return archiver.getArchiveMode();
+    public void setArchiveVersions(int versions) {
+        archiver.setVersionsPerFile(versions);
+        // Store on disk
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FolderSettings.FOLDER_SETTINGS_VERSIONS;
+        getController().getConfig()
+            .put(syncProfKey, String.valueOf(versions));
+        getController().saveConfig();
     }
 
     /**

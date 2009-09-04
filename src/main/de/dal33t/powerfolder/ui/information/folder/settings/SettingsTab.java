@@ -19,10 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
-
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,13 +26,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -62,8 +55,6 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
-import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -74,7 +65,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.dialog.CopyOrMoveFileArchiverEditDialog;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -88,14 +78,7 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
-import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
-import de.dal33t.powerfolder.util.ui.SelectionModel;
-import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 import de.javasoft.synthetica.addons.DirectoryChooser;
 
 /**
@@ -106,13 +89,14 @@ public class SettingsTab extends PFUIComponent {
     private JPanel uiComponent;
     private Folder folder;
     private final SyncProfileSelectorPanel transferModeSelectorPanel;
-    private boolean adjusting;
+    private ArchiveModeSelectorPanel archiveModeSelectorPanel;
+    private ValueModel modeModel;
+    private ValueModel versionModel;
 
     /**
      * Folders with this setting will backup files before replacing them with
      * newer downloaded ones.
      */
-    private final JComboBox archivingLocalFiles;
     private DefaultListModel patternsListModel = new DefaultListModel();
     private JList patternsList;
     private final SelectionModel selectionModel;
@@ -126,7 +110,6 @@ public class SettingsTab extends PFUIComponent {
     private final ValueModel scriptModel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
-    private JButtonMini editArchiveButton;
 
     /**
      * Constructor
@@ -138,10 +121,7 @@ public class SettingsTab extends PFUIComponent {
         serverClient = controller.getOSClient();
         transferModeSelectorPanel = new SyncProfileSelectorPanel(
             getController());
-        archivingLocalFiles = new JComboBox(EnumSet.allOf(ArchiveMode.class)
-            .toArray());
         MyActionListener myActionListener = new MyActionListener();
-        archivingLocalFiles.addActionListener(myActionListener);
         selectionModel = new SelectionModel();
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
@@ -154,6 +134,13 @@ public class SettingsTab extends PFUIComponent {
         removeFolderAction = new RemoveFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         scriptModel = new ValueHolder(null, false);
+        MyValueChangeListener listener = new MyValueChangeListener();
+        modeModel = new ValueHolder();
+        modeModel.addValueChangeListener(listener);
+        versionModel = new ValueHolder();
+        versionModel.addValueChangeListener(listener);
+        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
+                modeModel, versionModel);
     }
 
     /**
@@ -165,26 +152,17 @@ public class SettingsTab extends PFUIComponent {
         if (folder != null) {
             folder.getDiskItemFilter().removeListener(patternChangeListener);
         }
-        adjusting = true;
-        try {
-            folder = getController().getFolderRepository()
-                .getFolder(folderInfo);
-            folder.getDiskItemFilter().addListener(patternChangeListener);
-            transferModeSelectorPanel.setUpdateableFolder(folder);
-            scriptModel.setValue(folder.getDownloadScript());
-            archivingLocalFiles.setSelectedItem(folder.getArchiveMode());
-            update();
-            enableConfigOSAction();
-            enablePreviewFolderAction();
-            enableEditArchiveButton();
-        } finally {
-            adjusting = false;
-        }
-    }
-
-    private void enableEditArchiveButton() {
-        editArchiveButton
-            .setEnabled(folder.getArchiveMode() == ArchiveMode.FULL_BACKUP);
+        folder = getController().getFolderRepository()
+            .getFolder(folderInfo);
+        folder.getDiskItemFilter().addListener(patternChangeListener);
+        transferModeSelectorPanel.setUpdateableFolder(folder);
+        scriptModel.setValue(folder.getDownloadScript());
+        archiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
+                .getArchiveMode(), folder.getFileArchiver()
+                .getVersionsPerFile());
+        update();
+        enableConfigOSAction();
+        enablePreviewFolderAction();
     }
 
     /**
@@ -217,7 +195,7 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("settings_tab.archive_mode")), cc.xy(2, row));
-        builder.add(createArchivePanel(), cc.xyw(4, row, 4));
+        builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
@@ -264,17 +242,6 @@ public class SettingsTab extends PFUIComponent {
                 removeButton.setEnabled(selectionsLength > 0);
             }
         });
-    }
-
-    private JPanel createArchivePanel() {
-        EditArchiveAction a = new EditArchiveAction(getController());
-        editArchiveButton = new JButtonMini(a);
-        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(archivingLocalFiles, cc.xy(1, 1));
-        builder.add(editArchiveButton, cc.xy(3, 1));
-        return builder.getPanel();
     }
 
     private JPanel createDeletePanel() {
@@ -679,10 +646,10 @@ public class SettingsTab extends PFUIComponent {
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.getArchiveMode(), folder
-                .isPreviewOnly(), folder.isWhitelist(), folder
-                .getDownloadScript(), folder.getFileArchiver()
-                .getVersionsPerFile());
+                    .getSyncProfile(), false, folder.getFileArchiver()
+                    .getArchiveMode(), folder.isPreviewOnly(),
+                    folder.isWhitelist(), folder.getDownloadScript(),
+                    folder.getFileArchiver().getVersionsPerFile());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -763,27 +730,20 @@ public class SettingsTab extends PFUIComponent {
         previewFolderActionLabel.setEnabled(enabled);
     }
 
-    private void editArchiveVersions() {
-        FileArchiver fileArchiver = folder.getFileArchiver();
-        if (fileArchiver instanceof CopyOrMoveFileArchiver) {
-            CopyOrMoveFileArchiver comfa = (CopyOrMoveFileArchiver) fileArchiver;
-            CopyOrMoveFileArchiverEditDialog comfaed = new CopyOrMoveFileArchiverEditDialog(
-                getController(), comfa);
-            comfaed.open();
-            Properties config = getController().getConfig();
-            String md5 = new String(Util.encodeHex(Util.md5(folder.getInfo().id
-                .getBytes())));
-            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                + FOLDER_SETTINGS_VERSIONS, String.valueOf(comfa
-                .getVersionsPerFile()));
-            getController().saveConfig();
-
+    private void updateArchiveMode() {
+        ArchiveMode am = (ArchiveMode) modeModel.getValue();
+        if (am == ArchiveMode.NO_BACKUP) {
+            folder.setArchiveMode(ArchiveMode.NO_BACKUP);
+        } else {
+            folder.setArchiveMode(ArchiveMode.FULL_BACKUP);
+            Integer versions = (Integer) versionModel.getValue();
+            folder.setArchiveVersions(versions);
         }
     }
 
-    // /////////////////
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     /**
      * Local class to handle action events.
@@ -792,22 +752,6 @@ public class SettingsTab extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource().equals(localFolderButton)) {
                 moveLocalFolder();
-            } else if (e.getSource() == archivingLocalFiles) {
-                if (!adjusting) {
-                    ArchiveMode mode = (ArchiveMode) archivingLocalFiles
-                        .getSelectedItem();
-                    folder.setArchiveMode(mode);
-                    Properties config = getController().getConfig();
-                    String md5 = new String(Util.encodeHex(Util.md5(folder
-                        .getInfo().id.getBytes())));
-                    config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                        + FOLDER_SETTINGS_ARCHIVE, mode.name());
-                    config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-                        + FOLDER_SETTINGS_VERSIONS, String.valueOf(folder
-                        .getFileArchiver().getVersionsPerFile()));
-                    getController().saveConfig();
-                    enableEditArchiveButton();
-                }
             }
         }
     }
@@ -990,16 +934,6 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class EditArchiveAction extends BaseAction {
-        private EditArchiveAction(Controller controller) {
-            super("action_edit_archive", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            editArchiveVersions();
-        }
-    }
-
     /**
      * Add a pattern to the backlist, opens a input dialog so user can enter
      * one.
@@ -1053,4 +987,12 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
+    private class MyValueChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == modeModel || evt.getSource() == versionModel)
+            {
+                updateArchiveMode();
+            }
+        }
+    }
 }
