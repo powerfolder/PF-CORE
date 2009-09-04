@@ -124,6 +124,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
     }
 
+    private final Object requestLock = new Object();
+
     /**
      * Gets the {@link AccountInfo} for the given node. Retrieves it from server
      * if necessary. NEVER refreshes from server when running in EDT thread.
@@ -133,7 +135,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     public AccountInfo getAccountInfo(Member node) {
         Session session = sessions.get(node);
         // Cache hit
-        if (session != null && CACHE_ENABLED) {
+        if (session != null) {
             if (isFiner()) {
                 logFiner("Retured cached account for " + node + " : "
                     + session.getAccountInfo());
@@ -154,14 +156,28 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         }
         AccountInfo aInfo;
         try {
-            Map<MemberInfo, AccountInfo> res = client.getSecurityService()
-                .getAccountInfos(Collections.singleton(node.getInfo()));
-            aInfo = res.get(node.getInfo());
-            if (isFiner()) {
-                logFiner("Retrieved account " + aInfo + " for " + node);
-            }
-            if (CACHE_ENABLED) {
-                sessions.put(node, new Session(aInfo));
+            synchronized (requestLock) {
+                // After we are request lock owner. Check if other thread
+                // probably has refreshed the session we are looking for.
+                session = sessions.get(node);
+                // Cache hit
+                if (session != null) {
+                    if (isFiner()) {
+                        logFiner("Retured cached account for " + node + " : "
+                            + session.getAccountInfo());
+                    }
+                    return session.getAccountInfo();
+                }
+
+                Map<MemberInfo, AccountInfo> res = client.getSecurityService()
+                    .getAccountInfos(Collections.singleton(node.getInfo()));
+                aInfo = res.get(node.getInfo());
+                if (isFiner()) {
+                    logFiner("Retrieved account " + aInfo + " for " + node);
+                }
+                if (CACHE_ENABLED) {
+                    sessions.put(node, new Session(aInfo));
+                }
             }
         } catch (RemoteCallException e) {
             logSevere("Unable to retrieve account info for " + node + ". " + e);
@@ -242,7 +258,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
     private void clearNodeCache(Member node) {
         Session s = sessions.remove(node);
         if (isFiner()) {
-            logFiner("Clearing permissions cache on " + node + ": " + s);
+            logFiner("Clearing cache on " + node + ": " + s);
         }
         permissionsCacheAccounts.remove(nullSafeGet(s != null ? s
             .getAccountInfo() : null));
@@ -280,8 +296,7 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         if (node.isMySelf()) {
             return true;
         }
-        return node.isCompletelyConnected()
-            && (node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN());
+        return node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN();
     }
 
     private final class DefaultRefresher implements Runnable {

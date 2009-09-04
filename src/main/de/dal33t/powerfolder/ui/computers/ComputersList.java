@@ -174,7 +174,9 @@ public class ComputersList extends PFUIComponent {
         for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
         {
             Member member = iterator.next();
-            if (member.isMyComputer()) {
+            // My computers should get automatically friends by
+            // ServerClient.updateFriendsList(..)
+            if (member.isFriend() && member.isMyComputer()) {
                 myComputers.add(member);
                 iterator.remove();
             }
