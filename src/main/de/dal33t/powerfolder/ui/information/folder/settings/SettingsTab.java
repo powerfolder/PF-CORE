@@ -760,6 +760,37 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
+    public static void doPreviewChange(Controller controller, Folder fldr) {
+        if (fldr.isPreviewOnly()) {
+
+            // Join preview folder.
+            PreviewToJoinPanel panel = new PreviewToJoinPanel(
+                controller, fldr);
+            panel.open();
+
+        } else {
+
+            int result = DialogFactory
+                .genericDialog(
+                    controller,
+                    Translation
+                        .getTranslation("settings_tab.preview_warning_title"),
+                    Translation
+                        .getTranslation("settings_tab.preview_warning_message"),
+                    new String[]{
+                        Translation
+                            .getTranslation("settings_tab.preview_warning_convert"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.WARN);
+
+            if (result == 0) { // Convert to preview
+
+                // Convert folder to preview.
+                FolderPreviewHelper.convertFolderToPreview(controller, fldr);
+            }
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -839,36 +870,7 @@ public class SettingsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-
-            if (folder.isPreviewOnly()) {
-
-                // Join preview folder.
-                PreviewToJoinPanel panel = new PreviewToJoinPanel(
-                    getController(), folder);
-                panel.open();
-
-            } else {
-
-                int result = DialogFactory
-                    .genericDialog(
-                        getController(),
-                        Translation
-                            .getTranslation("settings_tab.preview_warning_title"),
-                        Translation
-                            .getTranslation("settings_tab.preview_warning_message"),
-                        new String[]{
-                            Translation
-                                .getTranslation("settings_tab.preview_warning_convert"),
-                            Translation.getTranslation("general.cancel")}, 0,
-                        GenericDialogType.WARN);
-
-                if (result == 0) { // Convert to preview
-
-                    // Convert folder to preview.
-                    FolderPreviewHelper.convertFolderToPreview(getController(),
-                        folder);
-                }
-            }
+            doPreviewChange (getController(), folder);
         }
     }
 

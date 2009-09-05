@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
+import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -50,6 +51,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Date;
@@ -90,7 +92,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JLabel totalSizeLabel;
     private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
-    private JLabel jLabel;
+    private JButtonMini primaryButton;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
@@ -217,10 +219,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             "pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
-        jLabel = new JLabel();
+        primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
         updateIconAndOS();
 
-        upperBuilder.add(jLabel, cc.xy(1, 1));
+        upperBuilder.add(primaryButton, cc.xy(1, 1));
         upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
@@ -237,7 +239,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
-        jLabel.addMouseListener(ma);
+
+        primaryButton.addActionListener(new PrimaryButtonActionListener());
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
@@ -658,21 +661,21 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateIconAndOS() {
 
         if (folder == null) {
-            jLabel.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
-            jLabel.setToolTipText(Translation
+            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+            primaryButton.setToolTipText(Translation
                 .getTranslation("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(false);
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
-                jLabel.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
-                jLabel.setToolTipText(Translation
+                primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
+                primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
                 osComponent.getUIComponent().setVisible(false);
             } else if (online) {
-                jLabel
+                primaryButton
                     .setIcon(Icons.getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
-                jLabel
+                primaryButton
                     .setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(true);
@@ -682,8 +685,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getOSSubscription().isWarnedUsage();
                 osComponent.setSyncPercentage(sync, warned);
             } else {
-                jLabel.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
-                jLabel.setToolTipText(Translation
+                primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
+                primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_local_text"));
                 osComponent.getUIComponent().setVisible(false);
             }
@@ -1090,6 +1093,23 @@ public class ExpandableFolderView extends PFUIComponent implements
         public void actionPerformed(ActionEvent e) {
             // FolderOnlineStoragePanel knows if folder already joined :-)
             PFWizard.openMirrorFolderWizard(getController(), folder);
+        }
+    }
+
+    private class PrimaryButtonActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (folder.isPreviewOnly()) {
+                // Preview
+                SettingsTab.doPreviewChange(getController(), folder);
+            } else if (online && !local) {
+                // Online only
+                PFWizard.openMirrorFolderWizard(getController(), folder);
+            } else {
+                // Local
+                if (Desktop.isDesktopSupported()) {
+                   openExplorer();
+                }
+            }
         }
     }
 }
