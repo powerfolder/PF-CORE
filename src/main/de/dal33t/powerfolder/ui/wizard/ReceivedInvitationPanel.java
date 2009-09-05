@@ -165,6 +165,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         // Invite info
