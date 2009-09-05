@@ -178,7 +178,7 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("70dlu, pref:grow", "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();

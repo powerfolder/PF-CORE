@@ -116,7 +116,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         valueModel = new ValueHolder();
         valueModel.setValue(syncProfile);
 
-        configureButton = new JButtonMini(new MyConfigureAction(getController()));
+        configureButton = new JButtonMini(
+            new MyConfigureAction(getController()));
         deleteButton = new JButtonMini(new MyDeleteAction(getController()));
 
         settingSyncProfile = true;
@@ -176,8 +177,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         for (SyncProfile aSyncProfile : SyncProfile.getSyncProfilesCopy()) {
             syncProfilesCombo.addItem(aSyncProfile.getName());
             if (syncProfile.equals(aSyncProfile)) {
-                syncProfilesCombo
-                    .setSelectedItem(aSyncProfile.getName());
+                syncProfilesCombo.setSelectedItem(aSyncProfile.getName());
             }
         }
 
@@ -192,8 +192,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("107dlu, 3dlu, pref, pref, pref:grow",
-                "pref");
+        int iconHeight = configureButton.getIcon().getIconHeight();
+        FormLayout layout = new FormLayout(
+            "120dlu, 3dlu, pref, pref, pref:grow", "max(pref;" + iconHeight + ")");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -371,8 +372,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
             + '\n'
             + Translation.getTranslation(messageKey);
         NeverAskAgainResponse response = DialogFactory.genericDialog(
-            getController(),
-            title, message, new String[]{"OK", "Cancel"}, 0,
+            getController(), title, message, new String[]{"OK", "Cancel"}, 0,
             GenericDialogType.WARN, Translation
                 .getTranslation("general.neverAskAgain"));
         if (response.isNeverAskAgain()) {
