@@ -56,7 +56,7 @@ public class TellFriendPanel extends PFWizardPanel {
 
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout("140dlu, pref:grow",
-            "pref, 3dlu, pref, 10dlu, pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
+            "pref, 2dlu, pref, 10dlu, pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         int row = 1;
