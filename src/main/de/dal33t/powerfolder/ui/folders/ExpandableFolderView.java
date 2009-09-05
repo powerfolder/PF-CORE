@@ -712,23 +712,29 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     public JPopupMenu createPopupMenu() {
         JPopupMenu contextMenu = new JPopupMenu();
-        contextMenu.add(openExplorerAction);
-        contextMenu.addSeparator();
-        contextMenu.add(openFilesInformationAction);
-        contextMenu.add(mostRecentChangesAction);
-        contextMenu.addSeparator();
-        contextMenu.add(inviteAction);
-        contextMenu.add(openMembersInformationAction);
-        contextMenu.addSeparator();
-        contextMenu.add(openSettingsInformationAction);
-        contextMenu.add(removeFolderAction);
-        if (folder != null && serverClient.isConnected()
-            && serverClient.isLoggedIn()) {
-            boolean osConfigured = serverClient.hasJoined(folder);
-            if (osConfigured) {
-                contextMenu.add(stopOnlineStorageAction);
-            } else {
-                contextMenu.add(backupOnlineStorageAction);
+        if (online && !local) {
+            // Online-only folder popup
+            contextMenu.add(removeFolderAction);
+        } else {
+            // Local folder popup
+            contextMenu.add(openExplorerAction);
+            contextMenu.addSeparator();
+            contextMenu.add(openFilesInformationAction);
+            contextMenu.add(mostRecentChangesAction);
+            contextMenu.addSeparator();
+            contextMenu.add(inviteAction);
+            contextMenu.add(openMembersInformationAction);
+            contextMenu.addSeparator();
+            contextMenu.add(openSettingsInformationAction);
+            contextMenu.add(removeFolderAction);
+            if (folder != null && serverClient.isConnected()
+                && serverClient.isLoggedIn()) {
+                boolean osConfigured = serverClient.hasJoined(folder);
+                if (osConfigured) {
+                    contextMenu.add(stopOnlineStorageAction);
+                } else {
+                    contextMenu.add(backupOnlineStorageAction);
+                }
             }
         }
         return contextMenu;
