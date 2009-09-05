@@ -110,7 +110,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyOpenExplorerAction openExplorerAction;
     private FolderRemoveAction removeFolderAction;
 
-    private JPopupMenu collapsedContextMenu;
+    private JPopupMenu contextMenu;
 
     /**
      * Constructor
@@ -706,20 +706,20 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     public JPopupMenu createPopupMenu() {
-        if (collapsedContextMenu == null) {
-            collapsedContextMenu = new JPopupMenu();
-            collapsedContextMenu.add(openExplorerAction);
-            collapsedContextMenu.addSeparator();
-            collapsedContextMenu.add(openFilesInformationAction);
-            collapsedContextMenu.add(mostRecentChangesAction);
-            collapsedContextMenu.addSeparator();
-            collapsedContextMenu.add(inviteAction);
-            collapsedContextMenu.add(openMembersInformationAction);
-            collapsedContextMenu.addSeparator();
-            collapsedContextMenu.add(openSettingsInformationAction);
-            collapsedContextMenu.add(removeFolderAction);
+        if (contextMenu == null) {
+            contextMenu = new JPopupMenu();
+            contextMenu.add(openExplorerAction);
+            contextMenu.addSeparator();
+            contextMenu.add(openFilesInformationAction);
+            contextMenu.add(mostRecentChangesAction);
+            contextMenu.addSeparator();
+            contextMenu.add(inviteAction);
+            contextMenu.add(openMembersInformationAction);
+            contextMenu.addSeparator();
+            contextMenu.add(openSettingsInformationAction);
+            contextMenu.add(removeFolderAction);
         }
-        return collapsedContextMenu;
+        return contextMenu;
     }
 
     private void openExplorer() {
