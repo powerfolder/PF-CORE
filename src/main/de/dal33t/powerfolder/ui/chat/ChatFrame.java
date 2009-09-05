@@ -416,6 +416,13 @@ public class ChatFrame extends MagneticFrame {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     clearMessagesIcon();
+
+                    Component component = tabbedPane.getSelectedComponent();
+                    for (ChatPanel chatPanel : memberPanels.values()) {
+                        if (component == chatPanel.getUiComponent()) {
+                            chatPanel.setInputFocus();
+                        }
+                    }
                 }
             });
         }

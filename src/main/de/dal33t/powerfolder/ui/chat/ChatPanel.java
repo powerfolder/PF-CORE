@@ -117,6 +117,9 @@ public class ChatPanel extends PFUIComponent {
         builder.addSeparator(null, cc.xy(2, 8));
         builder.add(inputScrollPane, cc.xy(2, 10));
         uiComponent = builder.getPanel();
+        if (chatInput.isEnabled()) {
+            chatInput.requestFocusInWindow();
+        }
     }
 
     /**
@@ -209,7 +212,7 @@ public class ChatPanel extends PFUIComponent {
         }
         chatInput.setEnabled(connected);
         if (connected) {
-            chatInput.requestFocus();
+            chatInput.requestFocusInWindow();
         }
     }
 
@@ -318,6 +321,10 @@ public class ChatPanel extends PFUIComponent {
         } else {
             addRemoveFriendAction.setAdd(true);
         }
+    }
+
+    public void setInputFocus() {
+        chatInput.requestFocusInWindow();
     }
 
     // /////////////////
