@@ -60,14 +60,13 @@ import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The status bar on the lower side of the main window.
- * 
+ *
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -81,13 +80,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JComponent comp;
     private JButton onlineStateInfo;
     private JButton sleepButton;
-    private JLabel limitedConnectivityLabel;
     private JLabel portLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
     private JButton openDebugButton;
     private JButton pendingMessagesButton;
     private boolean shownQualityWarningToday;
+    private boolean shownLimitedConnectivityToday;
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
@@ -115,7 +114,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
 
             FormLayout mainLayout = new FormLayout("1dlu, " + debugArea
-                + "pref, 3dlu, pref,  3dlu, pref, fill:pref:grow, pref, 3dlu, "
+                + "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, "
                 + portArea + " pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
@@ -130,8 +129,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 mainBuilder.add(openDebugButton, cc.xy(col, 1));
                 col += 2;
             }
-            mainBuilder.add(limitedConnectivityLabel, cc.xy(col, 1));
-            col += 2; // Central fill area
             mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
             col += 2;
             if (portArea.length() > 0) {
@@ -189,23 +186,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
 
-        limitedConnectivityLabel = new JLabel();
-        limitedConnectivityLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (getController().isLimitedConnectivity()) {
-                    getController().getThreadPool().execute(
-                        new LimitedConnectivityChecker.CheckTask(
-                            getController(), false));
-                    // Directly show dialog, not after check! may take up to 30
-                    // seconds.poü
-                    LimitedConnectivityChecker
-                        .showConnectivityWarning(getController());
-                }
-            }
-        });
-
-        // Behaviour when the limited connecvitiy gets checked
+        // Behavior when the limited connecvitiy gets checked
         getController().addPropertyChangeListener(
             Controller.PROPERTY_LIMITED_CONNECTIVITY,
             new PropertyChangeListener() {
@@ -263,13 +244,42 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void updateLimitedConnectivityLabel() {
-        if (getController().isLimitedConnectivity()) {
-            limitedConnectivityLabel.setToolTipText(Translation
-                .getTranslation("limited_connection.title"));
-            limitedConnectivityLabel.setIcon(Icons.getIconById(Icons.WARNING));
-        } else {
-            limitedConnectivityLabel.setText("");
-            limitedConnectivityLabel.setIcon(null);
+        if (getController().isLimitedConnectivity() && !shownLimitedConnectivityToday) {
+            shownLimitedConnectivityToday = true;
+            showLimitedConnectivityWarning(getController());
+        }
+    }
+
+    private static void showLimitedConnectivityWarning(final Controller controller) {
+        Boolean warn = PreferencesEntry.TEST_CONNECTIVITY
+                .getValueBoolean(controller);
+        if (warn) {
+            // Advise user of limited connectivity.
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    NeverAskAgainResponse response = DialogFactory
+                            .genericDialog(
+                                    controller,
+                                    Translation.getTranslation(
+                                            "status_bar.limited_connectivity_warning.title"),
+                                    Translation.getTranslation(
+                                            "status_bar.limited_connectivity_warning.text",
+                                            ConfigurationEntry.PROVIDER_WIKI_URL
+                                                    .getValue(controller)),
+                                    new String[]{Translation
+                                            .getTranslation("general.ok")}, 0,
+                                    GenericDialogType.INFO, Translation
+                                            .getTranslation("general.neverAskAgain"));
+                    if (response.isNeverAskAgain()) {
+                        PreferencesEntry.TEST_CONNECTIVITY.setValue(controller,
+                                false);
+                    }
+                }
+            };
+            WarningEvent warningEvent = new WarningEvent(runnable);
+            controller.getUIController().getApplicationModel()
+                    .getWarningsModel().pushWarning(warningEvent);
+
         }
     }
 
