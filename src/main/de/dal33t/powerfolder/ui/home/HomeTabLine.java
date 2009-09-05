@@ -33,8 +33,8 @@ import java.text.DecimalFormat;
 
 /**
  * Class to render a value - label line in the HomeTab.
- * It can be configured
- * a) to just show a value and description,
+ * It can be configured to
+ * a) just show a value and description,
  * b) show a value and description only if non-zero, or
  * c) show alternate line for zero value.
  *
@@ -62,27 +62,8 @@ public class HomeTabLine extends PFUIComponent {
     private JLabel normalLabel;
     private ActionLabel normalActionLabel;
     private JLabel zeroLabel;
-    private Action normalAction;
-
-    /**
-     * Constructor - shows zeroLabelText if value is zero.
-     *
-     * @param controller
-     * @param normalLabelText
-     *                  the text to show to the right of the value
-     * @param zeroLabelText
-     *                  text to replace line if zero. If null, normal line
-     *                  still displays for zero.
-     * @param hideOnZero
-     *                  hides entire uiComponent if true if value zero
-     * @param castInt
-     *                  cast value to int for display
-     */
-    public HomeTabLine(Controller controller, String normalLabelText,
-                       String zeroLabelText, boolean hideOnZero,
-                       boolean castInt) {
-        this(controller, normalLabelText, zeroLabelText, hideOnZero, castInt, null);
-    }
+    private final Action normalAction;
+    private final Icon nzIcon;
 
     /**
      * Constructor - shows zeroLabelText if value is zero.
@@ -103,7 +84,7 @@ public class HomeTabLine extends PFUIComponent {
      */
     public HomeTabLine(Controller controller, String normalLabelText,
                        String zeroLabelText, boolean hideOnZero, boolean castInt,
-                       Action normalAction)
+                       Action normalAction, Icon nzIcon)
     {
         super(controller);
         this.normalLabelText = normalLabelText;
@@ -111,6 +92,7 @@ public class HomeTabLine extends PFUIComponent {
         this.hideOnZero = hideOnZero;
         this.castInt = castInt;
         this.normalAction = normalAction;
+        this.nzIcon = nzIcon;
     }
 
     /**
@@ -218,16 +200,21 @@ public class HomeTabLine extends PFUIComponent {
         cardPanel.add(zeroLabel, ZERO_CARD);
 
         // Add normal card.
-        FormLayout nzLayout = new FormLayout("right:30dlu, 3dlu, pref:grow",
-            "pref");
+        FormLayout nzLayout = new FormLayout("right:20dlu, 3dlu, pref, 3dlu, pref:grow",
+                "pref");
         PanelBuilder nzBuilder = new PanelBuilder(nzLayout);
         CellConstraints cc = new CellConstraints();
 
-        nzBuilder.add(valueLabel, cc.xy(1, 1));
+        if (nzIcon != null) {
+            nzBuilder.add(new JLabel(nzIcon), cc.xy(1, 1));
+        }
+
+        nzBuilder.add(valueLabel, cc.xy(3, 1));
+
         if (normalAction == null) {
-            nzBuilder.add(normalLabel, cc.xy(3, 1));
+            nzBuilder.add(normalLabel, cc.xy(5, 1));
         } else {
-            nzBuilder.add(normalActionLabel.getUIComponent(), cc.xy(3, 1));
+            nzBuilder.add(normalActionLabel.getUIComponent(), cc.xy(5, 1));
         }
 
         cardPanel.add(nzBuilder.getPanel(), NORMAL_CARD);

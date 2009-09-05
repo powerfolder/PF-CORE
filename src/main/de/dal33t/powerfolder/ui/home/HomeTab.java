@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -109,8 +110,6 @@ public class HomeTab extends PFUIComponent {
     private final ValueModel newFriendRequestsCountVM;
     private final ValueModel newInvitationsCountVM;
     private final ValueModel newSingleFileOffersCountVM;
-
-    private JButton newFolderButton;
 
     /**
      * Constructor
@@ -197,36 +196,38 @@ public class HomeTab extends PFUIComponent {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
         numberOfFoldersLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.folders"), null, false, true);
+            .getTranslation("home_tab.folders"), null, false, true, null, null);
         sizeOfFoldersLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.total", "KB"), null, true, false);
+            .getTranslation("home_tab.total", "KB"), null, true, false, null, null);
         filesAvailableLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.files_available"), null, true, true);
+            .getTranslation("home_tab.files_available"), null, true, true, null, null);
         newWarningsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_warnings"), null, true, true,
-            getApplicationModel().getActionModel().getActivateWarningAction());
+            getApplicationModel().getActionModel().getActivateWarningAction(),
+                Icons.getIconById(Icons.WARNING));
         newInvitationsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_invitations"), null, true, true,
             getApplicationModel().getActionModel()
-                .getOpenInvitationReceivedWizardAction());
+                .getOpenInvitationReceivedWizardAction(), null);
         newFriendRequestsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_friend_requests"), null, true, true,
-            getApplicationModel().getActionModel().getAskForFriendshipAction());
+            getApplicationModel().getActionModel().getAskForFriendshipAction(),
+                Icons.getIconById(Icons.WARNING));
         newSingleFileOffersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_single_file_offers"), null, true,
             true, getApplicationModel().getActionModel()
-                .getSingleFileTransferOfferAction());
+                .getSingleFileTransferOfferAction(), null);
         downloadsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.files_downloaded"), null, false, true,
             getApplicationModel().getActionModel()
-                .getOpenDownloadsInformationAction());
+                .getOpenDownloadsInformationAction(), null);
         uploadsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.files_uploaded"), null, false, true,
             getApplicationModel().getActionModel()
-                .getOpenUploadsInformationAction());
+                .getOpenUploadsInformationAction(), null);
         computersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.computers"), Translation
-            .getTranslation("home_tab.no_computers"), false, true);
+            .getTranslation("home_tab.no_computers"), false, true, null, null);
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
@@ -431,8 +432,8 @@ public class HomeTab extends PFUIComponent {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        newFolderButton = new JButton(getApplicationModel().getActionModel()
-            .getNewFolderAction());
+        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
+                .getNewFolderAction());
         bar.addGridded(newFolderButton);
         if (!getController().isBackupOnly()) {
             JButton searchComputerButton = new JButton(getApplicationModel()
@@ -531,9 +532,6 @@ public class HomeTab extends PFUIComponent {
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
 
             onlineStorageSection.getUIComponent().setVisible(true);
-            boolean trial = storageSubscription.isTrial();
-            int daysLeft = client.getAccount().getOSSubscription()
-                .getDaysLeft();
             onlineStorageSection.setInfo(totalStorage, spaceUsed);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);
