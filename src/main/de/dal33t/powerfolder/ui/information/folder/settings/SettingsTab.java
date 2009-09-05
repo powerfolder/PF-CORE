@@ -95,29 +95,32 @@ import de.javasoft.synthetica.addons.DirectoryChooser;
  */
 public class SettingsTab extends PFUIComponent {
 
-    private JPanel uiComponent;
+    // Model and other stuff
+    private final ServerClient serverClient;
     private Folder folder;
-    private final SyncProfileSelectorPanel transferModeSelectorPanel;
-    private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
     private ValueModel versionModel;
+    private final ValueModel scriptModel;
+    private DefaultListModel patternsListModel = new DefaultListModel();
+    private final SelectionModel selectionModel;
     private FolderMembershipListener membershipListner;
+    private final PatternChangeListener patternChangeListener;
 
     /**
      * Folders with this setting will backup files before replacing them with
      * newer downloaded ones.
      */
-    private DefaultListModel patternsListModel = new DefaultListModel();
+    private final RemoveFolderAction removeFolderAction;
+
+    // UI Components
+    private JPanel uiComponent;
+    private final SyncProfileSelectorPanel transferModeSelectorPanel;
+    private final ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private JList patternsList;
-    private final SelectionModel selectionModel;
     private final JTextField localFolderField;
     private final JButton localFolderButton;
-    private final PatternChangeListener patternChangeListener;
     private ActionLabel confOSActionLabel;
-    private final ServerClient serverClient;
     private ActionLabel previewFolderActionLabel;
-    private final RemoveFolderAction removeFolderAction;
-    private final ValueModel scriptModel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
 
