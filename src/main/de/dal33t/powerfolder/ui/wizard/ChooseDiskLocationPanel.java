@@ -226,7 +226,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             + "3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
 
         FormLayout layout = new FormLayout(
-            "pref, 15dlu, pref, 15dlu, pref, 0:grow", verticalLayout);
+            "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 0:grow", verticalLayout);
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -277,20 +277,20 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             infoText = Translation
                 .getTranslation("wizard.choose_disk_location.select");
         }
-        builder.addLabel(infoText, cc.xyw(1, row, 6));
+        builder.addLabel(infoText, cc.xyw(1, row, 8));
         row += 2;
 
-        builder.add(locationField, cc.xyw(1, row, 6));
+        builder.add(locationField, cc.xyw(1, row, 8));
 
         row += 2;
-        builder.add(folderSizeLabel, cc.xyw(1, row, 6));
+        builder.add(folderSizeLabel, cc.xyw(1, row, 8));
 
         if (!getController().isLanOnly()
             && PreferencesEntry.USE_ONLINE_STORAGE
                 .getValueBoolean(getController()))
         {
             row += 2;
-            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 6));
+            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 8));
         }
 
         // Send Invite
@@ -299,18 +299,18 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
-            builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 7));
         }
 
         if (OSUtil.isWindowsSystem()) {
             row += 2;
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 5));
+            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 7));
         }
 
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
         if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
             row += 2;
-            builder.add(manualSyncCheckBox, cc.xyw(1, row, 5));
+            builder.add(manualSyncCheckBox, cc.xyw(1, row, 7));
         }
 
         return builder.getPanel();
@@ -548,7 +548,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             .getTranslation("wizard.choose_disk_location.select_file"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
-        return builder.getPanel();
+        JPanel panel = builder.getPanel();
+        panel.setOpaque(false);
+        return panel;
     }
 
     /**

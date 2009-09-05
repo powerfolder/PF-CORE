@@ -42,7 +42,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import jwf.Wizard;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
