@@ -36,8 +36,6 @@ import java.nio.CharBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JFrame;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -138,7 +136,6 @@ public class LimitedConnectivityChecker {
         private boolean delay;
 
         public CheckTask(Controller controller, boolean delay) {
-            super();
             this.controller = controller;
             this.delay = delay;
         }

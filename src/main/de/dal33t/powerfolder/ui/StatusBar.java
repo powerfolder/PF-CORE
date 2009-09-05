@@ -58,11 +58,7 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
-import de.dal33t.powerfolder.util.ui.UIPanel;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.*;
 
 /**
  * The status bar on the lower side of the main window.
@@ -257,23 +253,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Advise user of limited connectivity.
             Runnable runnable = new Runnable() {
                 public void run() {
-                    NeverAskAgainResponse response = DialogFactory
-                            .genericDialog(
-                                    controller,
-                                    Translation.getTranslation(
-                                            "status_bar.limited_connectivity_warning.title"),
-                                    Translation.getTranslation(
-                                            "status_bar.limited_connectivity_warning.text",
-                                            ConfigurationEntry.PROVIDER_WIKI_URL
-                                                    .getValue(controller)),
-                                    new String[]{Translation
-                                            .getTranslation("general.ok")}, 0,
-                                    GenericDialogType.INFO, Translation
-                                            .getTranslation("general.neverAskAgain"));
-                    if (response.isNeverAskAgain()) {
-                        PreferencesEntry.TEST_CONNECTIVITY.setValue(controller,
-                                false);
-                    }
+                    controller.getThreadPool().execute(
+                        new LimitedConnectivityChecker.CheckTask(
+                            controller, false));
+                    LimitedConnectivityChecker
+                        .showConnectivityWarning(controller);
                 }
             };
             WarningEvent warningEvent = new WarningEvent(runnable);
