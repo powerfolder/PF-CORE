@@ -20,10 +20,10 @@
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.l2fprod.common.swing.JDirectoryChooser;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
-import de.javasoft.synthetica.addons.DirectoryChooser;
 
 import javax.swing.*;
 import java.io.File;
@@ -50,7 +50,7 @@ public class DialogFactory {
     public static String chooseDirectory(Controller controller,
         String initialDirectory)
     {
-        DirectoryChooser dc = new DirectoryChooser();
+        JDirectoryChooser dc = new JDirectoryChooser();
         if (initialDirectory != null && initialDirectory.trim().length() != 0) {
             dc.setCurrentDirectory(new File(initialDirectory));
         }

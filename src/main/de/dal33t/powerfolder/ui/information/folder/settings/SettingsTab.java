@@ -88,7 +88,7 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.javasoft.synthetica.addons.DirectoryChooser;
+import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
  * UI component for the information settings tab
@@ -501,7 +501,7 @@ public class SettingsTab extends PFUIComponent {
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        DirectoryChooser dc = new DirectoryChooser();
+        JDirectoryChooser dc = new JDirectoryChooser();
         if (originalDirectory != null) {
             dc.setCurrentDirectory(originalDirectory);
         }

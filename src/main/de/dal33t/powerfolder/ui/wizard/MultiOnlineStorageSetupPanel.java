@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import de.javasoft.synthetica.addons.DirectoryChooser;
+import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -252,7 +252,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            DirectoryChooser dc = new DirectoryChooser();
+            JDirectoryChooser dc = new JDirectoryChooser();
             dc.setCurrentDirectory(folderLocalBaseMap.get(selectedFolderInfo));
             int i = dc.showOpenDialog(getController().getUIController()
                 .getActiveFrame());
