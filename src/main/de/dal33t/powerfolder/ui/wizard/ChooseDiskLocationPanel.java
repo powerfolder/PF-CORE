@@ -83,6 +83,7 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
+@Deprecated
 public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     // Some standard user directory names from various OS.
@@ -201,10 +202,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
 
-        String nick = getController().getMySelf().getNick();
         String lastPart = localBase.getName();
-        getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-            nick + '-' + lastPart);
+        getWizardContext().setAttribute(INITIAL_FOLDER_NAME, lastPart);
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
