@@ -137,7 +137,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         // usernameField and connectingLabel have the same slot.
         builder.add(usernameLabel, cc.xy(1, row));
         builder.add(usernameField, cc.xy(3, row));
-        builder.add(connectingLabel, cc.xyw(1, row, 3));
+        builder.add(connectingLabel, cc.xyw(1, row, 4));
         if (client.supportsWebRegistration()) {
             LinkLabel signupLabel = new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client

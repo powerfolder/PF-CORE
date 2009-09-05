@@ -109,8 +109,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyMostRecentChangesAction mostRecentChangesAction;
     private MyOpenExplorerAction openExplorerAction;
     private FolderRemoveAction removeFolderAction;
-
-    private JPopupMenu contextMenu;
+    private BackupOnlineStorageAction backupOnlineStorageAction;
+    private StopOnlineStorageAction stopOnlineStorageAction;
 
     /**
      * Constructor
@@ -354,6 +354,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
         removeFolderAction = new FolderRemoveAction(getController());
+        backupOnlineStorageAction = new BackupOnlineStorageAction(getController());
+        stopOnlineStorageAction = new StopOnlineStorageAction(getController());
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         MySyncFolderAction mySyncFolderAction = new MySyncFolderAction(
@@ -706,18 +708,25 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     public JPopupMenu createPopupMenu() {
-        if (contextMenu == null) {
-            contextMenu = new JPopupMenu();
-            contextMenu.add(openExplorerAction);
-            contextMenu.addSeparator();
-            contextMenu.add(openFilesInformationAction);
-            contextMenu.add(mostRecentChangesAction);
-            contextMenu.addSeparator();
-            contextMenu.add(inviteAction);
-            contextMenu.add(openMembersInformationAction);
-            contextMenu.addSeparator();
-            contextMenu.add(openSettingsInformationAction);
-            contextMenu.add(removeFolderAction);
+        JPopupMenu contextMenu = new JPopupMenu();
+        contextMenu.add(openExplorerAction);
+        contextMenu.addSeparator();
+        contextMenu.add(openFilesInformationAction);
+        contextMenu.add(mostRecentChangesAction);
+        contextMenu.addSeparator();
+        contextMenu.add(inviteAction);
+        contextMenu.add(openMembersInformationAction);
+        contextMenu.addSeparator();
+        contextMenu.add(openSettingsInformationAction);
+        contextMenu.add(removeFolderAction);
+        if (folder != null && serverClient.isConnected()
+            && serverClient.isLoggedIn()) {
+            boolean osConfigured = serverClient.hasJoined(folder);
+            if (osConfigured) {
+                contextMenu.add(stopOnlineStorageAction);
+            } else {
+                contextMenu.add(backupOnlineStorageAction);
+            }
         }
         return contextMenu;
     }
@@ -1059,6 +1068,28 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             openExplorer();
+        }
+    }
+
+    private class BackupOnlineStorageAction extends BaseAction {
+        private BackupOnlineStorageAction(Controller controller) {
+            super("action_backup_online_storage", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // FolderOnlineStoragePanel knows if folder already joined :-)
+            PFWizard.openMirrorFolderWizard(getController(), folder);
+        }
+    }
+
+    private class StopOnlineStorageAction extends BaseAction {
+        private StopOnlineStorageAction(Controller controller) {
+            super("action_stop_online_storage", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // FolderOnlineStoragePanel knows if folder already joined :-)
+            PFWizard.openMirrorFolderWizard(getController(), folder);
         }
     }
 }
