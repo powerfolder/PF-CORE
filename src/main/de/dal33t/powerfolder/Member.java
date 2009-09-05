@@ -1526,8 +1526,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // Invitation to folder
                 Invitation invitation = (Invitation) message;
 
-                // To ensure invitor is correct
-                invitation.setInvitor(getInfo());
+                // Server is the only one who is allowed to send invitations
+                // with a different invitor
+                if (!getController().getOSClient().isServer(this)) {
+                    // To ensure invitor is correct for all other computers
+                    invitation.setInvitor(getInfo());
+                }
 
                 getController().invitationReceived(invitation, false);
                 expectedTime = 100;
