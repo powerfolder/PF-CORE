@@ -133,7 +133,7 @@ public class MainFrame extends PFUIComponent {
 
         Preferences prefs = getController().getPreferences();
         int width = prefs.getInt("mainframe4.width", 350);
-        int height = prefs.getInt("mainframe4.height", 600);
+        int height = prefs.getInt("mainframe4.height", 700);
         // Initial top-right corner
         uiComponent.setLocation(prefs.getInt("mainframe4.x", Toolkit
             .getDefaultToolkit().getScreenSize().width
