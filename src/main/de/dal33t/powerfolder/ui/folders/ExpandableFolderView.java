@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Collections;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -357,7 +358,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
         removeFolderAction = new FolderRemoveAction(getController());
-        backupOnlineStorageAction = new BackupOnlineStorageAction(getController());
+        backupOnlineStorageAction = new BackupOnlineStorageAction(
+            getController());
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
@@ -673,8 +675,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getTranslation("exp_folder_view.folder_preview_text"));
                 osComponent.getUIComponent().setVisible(false);
             } else if (online) {
-                primaryButton
-                    .setIcon(Icons.getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+                primaryButton.setIcon(Icons
+                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
                 primaryButton
                     .setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_online_text"));
@@ -728,7 +730,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
             if (folder != null && serverClient.isConnected()
-                && serverClient.isLoggedIn()) {
+                && serverClient.isLoggedIn())
+            {
                 boolean osConfigured = serverClient.hasJoined(folder);
                 if (osConfigured) {
                     contextMenu.add(stopOnlineStorageAction);
@@ -1105,16 +1108,16 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private class PrimaryButtonActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (folder.isPreviewOnly()) {
+            if (folder == null && folderInfo != null) {
+                PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
+                    Collections.singletonList(folderInfo));
+            } else if (folder.isPreviewOnly()) {
                 // Preview
                 SettingsTab.doPreviewChange(getController(), folder);
-            } else if (online && !local) {
-                // Online only
-                PFWizard.openMirrorFolderWizard(getController(), folder);
             } else {
                 // Local
                 if (Desktop.isDesktopSupported()) {
-                   openExplorer();
+                    openExplorer();
                 }
             }
         }
