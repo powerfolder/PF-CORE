@@ -87,11 +87,11 @@ public class BasicSetupPanel extends PFWizardPanel {
         long uploadSpeedKBPS = wanLineSpeed.getUploadSpeedKBPS();
         long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
         if (uploadSpeedKBPS == 0 && downloadSpeedKBPS == 0) {
-            int result = DialogFactory.genericDialog(getController(), Translation
-                .getTranslation("wizard.basic_setup.upload.title"), Translation
-                .getTranslation("wizard.basic_setup.upload.text"), new String[]{
-                Translation.getTranslation("general.continue"),
-                Translation.getTranslation("general.cancel")}, 0,
+            int result = DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("wizard.basic_setup.upload.title"),
+                Translation.getTranslation("wizard.basic_setup.upload.text"),
+                new String[]{Translation.getTranslation("general.continue"),
+                    Translation.getTranslation("general.cancel")}, 0,
                 GenericDialogType.WARN); // Default is continue.
             return result == 0; // Continue
         }
@@ -99,7 +99,8 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("right:pref, 3dlu, 140dlu, pref:grow",
+        FormLayout layout = new FormLayout(
+            "right:pref, 3dlu, 140dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -107,18 +108,18 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.addLabel(Translation
             .getTranslation("wizard.basic_setup.computer_name"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
+        // builder.addLabel(Translation
+        // .getTranslation("wizard.basic_setup.networking"), cc.xy(1, 3));
+        // builder.add(networkingModeChooser, cc.xy(3, 3));
         builder.addLabel(Translation
-            .getTranslation("wizard.basic_setup.networking"), cc.xy(1, 3));
-        builder.add(networkingModeChooser, cc.xy(3, 3));
-        builder.addLabel(Translation
-            .getTranslation("preferences.dialog.line_settings"), cc.xy(1, 5));
-        builder.add(wanLineSpeed, cc.xy(3, 5));
+            .getTranslation("preferences.dialog.line_settings"), cc.xy(1, 3));
+        builder.add(wanLineSpeed, cc.xy(3, 3));
         builder
             .addLabel(Translation
-                .getTranslation("wizard.basic_setup.language_restart"),
-                    cc.xy(1, 7));
-        builder.add(languageChooser, cc.xy(3, 7));
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 9, 2));
+                .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
+                1, 5));
+        builder.add(languageChooser, cc.xy(3, 5));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 3));
 
         return builder.getPanel();
     }
@@ -167,7 +168,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             return defaultFolderHelper.next(new WhatToDoPanel(getController()),
                 getWizardContext());
         }
-        
+
         return nextPanel;
     }
 
@@ -265,12 +266,14 @@ public class BasicSetupPanel extends PFWizardPanel {
         return chooser;
     }
 
-    private static class MyDefaultListCellRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list,
-            Object value, int index, boolean isSelected,
-            boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index,
-                isSelected, cellHasFocus);
+    private static class MyDefaultListCellRenderer extends
+        DefaultListCellRenderer
+    {
+        public Component getListCellRendererComponent(JList list, Object value,
+            int index, boolean isSelected, boolean cellHasFocus)
+        {
+            super.getListCellRendererComponent(list, value, index, isSelected,
+                cellHasFocus);
             if (value instanceof Locale) {
                 Locale locale = (Locale) value;
                 setText(locale.getDisplayName(locale));
