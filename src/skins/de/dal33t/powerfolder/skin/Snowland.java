@@ -19,26 +19,27 @@
  */
 package de.dal33t.powerfolder.skin;
 
-public class PowerFolder2Skin extends AbstractSyntheticaSkin {
+public class Snowland extends AbstractSyntheticaSkin {
+    public static final String NAME = "Snowland";
 
     @Override
     public String getName() {
-        return "PowerFolder Skin 2";
+        return NAME;
     }
 
     @Override
     public String getID() {
-        return "PowerFolderSkin2";
+        return "Snowland";
     }
 
     @Override
     public String getIconsPropertiesFileName() {
-        return "de/dal33t/powerfolder/skin/powerfolder2/icons.properties";
+        return "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
     }
 
     @Override
     public String getSynthXMLFileName() {
-        return "/de/dal33t/powerfolder/skin/powerfolder2/synth.xml";
+        return "/de/dal33t/powerfolder/skin/powerfolder1/synth.xml";
     }
 
 }
