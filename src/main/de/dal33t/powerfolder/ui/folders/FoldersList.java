@@ -178,20 +178,15 @@ public class FoldersList extends PFUIComponent {
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
 
-        // Only process OS if USE_ONLINE_STORAGE configured.
-        if (PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()))
-        {
-            for (FolderInfo folderInfo : client.getAccountFolders()) {
-                FolderBean bean = new FolderBean(folderInfo);
-                if (!localFolders.contains(bean)) {
-                    // Not locally synced, but available on account.
-                    bean.setOnline(true);
-                    onlineFolders.add(bean);
-                }
+        for (FolderInfo folderInfo : client.getAccountFolders()) {
+            FolderBean bean = new FolderBean(folderInfo);
+            if (!localFolders.contains(bean)) {
+                // Not locally synced, but available on account.
+                bean.setOnline(true);
+                onlineFolders.add(bean);
             }
-            Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
         }
+        Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
 
         multiGroup = !localFolders.isEmpty() && !onlineFolders.isEmpty();
 
