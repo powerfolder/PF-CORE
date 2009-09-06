@@ -22,6 +22,7 @@ package de.dal33t.powerfolder;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 
@@ -110,7 +111,7 @@ public enum PreferencesEntry {
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
 
     /** Skin name. */
-    SKIN_NAME("skin.name", "PowerFolder Skin 1"),
+    SKIN_NAME("skin.name", Snowland.NAME),
 
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
