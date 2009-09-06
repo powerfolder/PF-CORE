@@ -150,12 +150,12 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for WAN
      */
     public void loadWANSelection() {
-        addLineSpeed("line_speed.isdn_speed64", 5, 0);
-        addLineSpeed("line_speed.isdn_speed128", 11, 0);
         addLineSpeed("line_speed.adsl128", 11, 0);
         addLineSpeed("line_speed.adsl256", 23, 0);
         addLineSpeed("line_speed.adsl512", 46, 0);
         addLineSpeed("line_speed.adsl768", 69, 0);
+        addLineSpeed("line_speed.adsl1024", 128, 0);
+        addLineSpeed("line_speed.adsl1536", 192, 0);
         addLineSpeed("line_speed.T1", 140, 0);
         addLineSpeed("line_speed.T3", 3930, 0);
         addLineSpeed("line_speed.unlimited", 0, 0);
