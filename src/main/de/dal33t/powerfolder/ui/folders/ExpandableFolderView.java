@@ -229,7 +229,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(problemButton, cc.xy(8, 1));
 
         // syncFolderButton and joinOnlineStorageButton share same slot.
-        // upperBuilder.add(syncFolderButton, cc.xy(9, 1));
+        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
         upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
@@ -422,7 +422,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         membersLabel.setEnabled(enabled);
         openMembersInformationAction.setEnabled(enabled);
 
-        syncFolderButton.setVisible(enabled);
+        syncFolderButton.setVisible(enabled && !folder.getSyncProfile().isAutodownload());
         joinOnlineStorageButton.setVisible(!enabled);
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
 
@@ -810,6 +810,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (folder == null || folder.equals(folderEvent.getFolder())) {
                 updateStatsDetails();
                 updateIconAndOS();
+                updateButtons();
             }
         }
 
