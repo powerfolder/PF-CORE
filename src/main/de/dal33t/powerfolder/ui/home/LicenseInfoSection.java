@@ -139,11 +139,6 @@ public class LicenseInfoSection extends PFUIComponent {
         boolean aboutToExpire = days != -1 && days < 30;
         boolean disabled = !getController().getNodeManager().isStarted();
 
-        // logWarning("DAYS VALID: " + days);
-        // logWarning("Trial: " + trial);
-        // logWarning("AboutToExpire: " + aboutToExpire);
-        // logWarning("Disabled: " + disabled);
-
         if (trial) {
             showBuyNowLink(Translation
                 .getTranslation("pro.home_tab.upgrade_to_full"));
