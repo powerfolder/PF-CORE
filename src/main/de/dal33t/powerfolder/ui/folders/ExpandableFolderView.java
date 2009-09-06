@@ -19,47 +19,66 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
+import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
+
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.*;
-import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.event.ExpansionEvent;
+import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.FolderEvent;
+import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.ExpandableView;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.FileUtils;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.awt.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.Collections;
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimerTask;
-import java.io.IOException;
 
 /**
  * Class to render expandable view of a folder.
@@ -78,7 +97,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini inviteButton;
     private JButtonMini problemButton;
     private JButtonMini syncFolderButton;
-    private JButtonMini joinOnlineStorageButton;
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
@@ -228,10 +246,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
         upperBuilder.add(problemButton, cc.xy(8, 1));
-
-        // syncFolderButton and joinOnlineStorageButton share same slot.
         upperBuilder.add(syncFolderButton, cc.xy(9, 1));
-        upperBuilder.add(joinOnlineStorageButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -381,8 +396,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteButton = new JButtonMini(inviteAction, true);
         problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
-        joinOnlineStorageButton = new JButtonMini(myJoinOnlineStorageAction,
-            true);
         filesLabel = new JLabel();
         transferModeLabel = new JLabel();
         syncPercentLabel = new JLabel();
@@ -424,8 +437,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         membersLabel.setEnabled(enabled);
         openMembersInformationAction.setEnabled(enabled);
 
-        syncFolderButton.setVisible(enabled && !folder.getSyncProfile().isAutodownload());
-        joinOnlineStorageButton.setVisible(!enabled);
+        syncFolderButton.setVisible(enabled
+            && !folder.getSyncProfile().isAutodownload());
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
 
         // Always.
