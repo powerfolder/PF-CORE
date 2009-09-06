@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
+import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
 
@@ -49,7 +50,9 @@ public class UploadsInformationCard extends InformationCard
     private JPanel uiComponent;
     private JPanel toolBar;
     private UploadsTablePanel tablePanel;
-    private FileDetailsPanel detailsPanel;
+    private JPanel detailsPanel;
+    private FileDetailsPanel fileDetailsPanel;
+    private FileVersionsPanel fileVersionsPanel;
     private JCheckBox autoCleanupCB;
     private Action clearCompletedUploadsAction;
     private JSlider cleanupSlider;
@@ -106,7 +109,10 @@ public class UploadsInformationCard extends InformationCard
         cleanupLabel = new JLabel();
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(), clearCompletedUploadsAction);
-        detailsPanel = new FileDetailsPanel(getController(), true);
+        fileDetailsPanel = new FileDetailsPanel(getController(), true);
+        fileVersionsPanel = new FileVersionsPanel(getController());
+        detailsPanel = createDetailsPanel();
+        detailsPanel.setVisible(false);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         buildStatsPanel();
@@ -133,6 +139,33 @@ public class UploadsInformationCard extends InformationCard
         builder.add(uploadCounterLabel, cc.xy(11, 1));
 
         statsPanel = builder.getPanel();
+    }
+
+    private JPanel createDetailsPanel() {
+        FormLayout layout = new FormLayout("fill:pref:grow", "pref, 3dlu, pref");
+        // spacer, tabs
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        // Spacer
+        builder.addSeparator(null, cc.xy(1, 1));
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        builder.add(tabbedPane, cc.xy(1, 3));
+
+        tabbedPane.add(fileDetailsPanel.getPanel(), Translation
+            .getTranslation("files_table_panel.file_details_tab.text"));
+        tabbedPane.setToolTipTextAt(0, Translation
+            .getTranslation("files_table_panel.file_details_tab.tip"));
+        tabbedPane.setIconAt(0, Icons.getIconById(Icons.FILE_DETAILS));
+
+        tabbedPane.add(fileVersionsPanel.getPanel(), Translation
+            .getTranslation("files_table_panel.file_versions_tab.text"));
+        tabbedPane.setToolTipTextAt(1, Translation
+            .getTranslation("files_table_panel.file_versions_tab.tip"));
+        tabbedPane.setIconAt(1, Icons.getIconById(Icons.FILE_VERSION));
+
+        return builder.getPanel();
     }
 
     /**
@@ -191,7 +224,7 @@ public class UploadsInformationCard extends InformationCard
         builder.add(cleanupLabel, cc.xy(4, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 5));
         builder.add(tablePanel.getUIComponent(), cc.xyw(2, 6, 3));
-        builder.add(detailsPanel.getPanel(), cc.xyw(2, 8, 3));
+        builder.add(detailsPanel, cc.xyw(2, 8, 3));
         builder.addSeparator(null, cc.xyw(1, 9, 5));
         builder.add(statsPanel, cc.xyw(2, 10, 3));
         uiComponent = builder.getPanel();
@@ -207,8 +240,7 @@ public class UploadsInformationCard extends InformationCard
      * Toggle the details panel.
      */
     public void toggleDetails() {
-        detailsPanel.getPanel().setVisible(
-                !detailsPanel.getPanel().isVisible());
+        detailsPanel.setVisible(!detailsPanel.isVisible());
     }
 
     /**
@@ -219,7 +251,8 @@ public class UploadsInformationCard extends InformationCard
                 .getTransferManagerModel().getUploadsTableModel()
                 .getRowCount() > 0);
 
-        detailsPanel.setFileInfo(tablePanel.getSelectdFile());
+        fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
+        fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
     }
 
     private void updateCleanupLabel() {

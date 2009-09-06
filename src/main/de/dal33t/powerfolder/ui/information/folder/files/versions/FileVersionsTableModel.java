@@ -73,9 +73,30 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
      * @param infos
      */
     public void setVersionInfos(List<FileInfo> infos) {
-        versionInfos.clear();
-        versionInfos.addAll(infos);
-        fireModelChanged();
+        boolean allSame = true;
+        if (versionInfos.size() == infos.size()) {
+            for (FileInfo info : infos) {
+                boolean thisSame = false;
+                for (FileInfo versionInfo : versionInfos) {
+                    if (info.isVersionDateAndSizeIdentical(versionInfo)) {
+                        thisSame = true;
+                        break;
+                    }
+                }
+                if (!thisSame) {
+                    allSame = false;
+                    break;
+                }
+            }
+        } else {
+            allSame = false;
+        }
+
+        if (!allSame) {
+            versionInfos.clear();
+            versionInfos.addAll(infos);
+            fireModelChanged();
+        }
     }
 
     public Class<?> getColumnClass(int columnIndex) {
