@@ -106,7 +106,7 @@ public class FilteredDirectoryModel {
         List<Directory> list = new ArrayList<Directory>();
         for (FilteredDirectoryModel subdirectory : subdirectories) {
             Directory d = new Directory(null, subdirectory.displayName,
-                    file.getAbsolutePath(), null);
+                    file.getAbsolutePath(), rootFolder);
             list.add(d);
         }
         return list;

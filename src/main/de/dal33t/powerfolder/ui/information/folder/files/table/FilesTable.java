@@ -304,6 +304,7 @@ public class FilesTable extends JTable {
                 }
             } else if (diskItem instanceof Directory) {
                 Directory dir = (Directory) diskItem;
+                Folder folder = dir.getRootFolder();
                 myValue = "";
                 setIcon(null);
                 switch (column) {
@@ -314,12 +315,16 @@ public class FilesTable extends JTable {
                         break;
                     case 1: // dir name
                         myValue = dir.getName();
+                        if (folder.getDiskItemFilter().isExcluded(dir)
+                                && !folder.isWhitelist()) {
+                            setIcon(Icons.getIconById(Icons.BLACK_LIST));
+                        }
+                        break;
                 }
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
                     isSelected, hasFocus, row, column);
-
 
             // Show new files in bold.
             if (diskItem instanceof FileInfo) {

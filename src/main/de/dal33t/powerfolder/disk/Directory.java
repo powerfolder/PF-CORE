@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -77,6 +78,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     public Directory(Directory parent, String name, String path,
         Folder rootFolder)
     {
+        Reject.ifNull(rootFolder, "Need a root folder");
         this.parent = parent;
         this.name = name;
         this.path = path;

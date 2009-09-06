@@ -141,7 +141,7 @@ public class DiskItemFilter {
             file.createNewFile();
             writer = new FileWriter(file);
             for (CompilingPatternMatch pattern : patterns) {
-                writer.write(pattern.getPatternText() + "\r\n");
+                writer.write(pattern.getRealPatternText() + "\r\n");
             }
             dirty = false;
         } catch (IOException e) {
@@ -181,7 +181,7 @@ public class DiskItemFilter {
                     new PatternChangedEvent(this, patternText, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE,
-                    "Problem adding pattern " + pattern.getPatternText(), e);
+                    "Problem adding pattern " + pattern.getRealPatternText(), e);
         }
         dirty = true;
     }
@@ -196,9 +196,7 @@ public class DiskItemFilter {
      */
     public void removePattern(String patternText) {
         for (CompilingPatternMatch patternMatch : patterns) {
-            String text = (patternMatch.isFirstStar() ? "*" : "") +
-                    patternMatch.getPatternText() +
-                    (patternMatch.isLastStar() ? "*" : "");
+            String text = patternMatch.getRealPatternText();
             if (text.equals(patternText.toLowerCase())) {
                 patterns.remove(patternMatch);
             }
@@ -244,7 +242,7 @@ public class DiskItemFilter {
                 }
             }
         } else if (diskItem instanceof FileInfo) {
-            String name = ((FileInfo) diskItem).getName();
+            String name = diskItem.getName();
 
             for (CompilingPatternMatch pattern : patterns) {
                 if (pattern.isMatch(name)) {
@@ -265,7 +263,7 @@ public class DiskItemFilter {
     public List<String> getPatterns() {
         List<String> result = new ArrayList<String>();
         for (CompilingPatternMatch pattern : patterns) {
-            result.add(pattern.getPatternText());
+            result.add(pattern.getRealPatternText());
         }
         return result;
     }

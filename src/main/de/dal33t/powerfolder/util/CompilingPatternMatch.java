@@ -134,9 +134,8 @@ public class CompilingPatternMatch {
         return lastStar || matchPointer == matchStringLength;
     }
 
-
-    public String getPatternText() {
-        return patternText;
+    public String getRealPatternText() {
+        return (firstStar ? "*" : "") + patternText + (lastStar ? "*" : "");
     }
 
     public boolean isFirstStar() {

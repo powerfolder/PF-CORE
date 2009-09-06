@@ -459,6 +459,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private class MyListSelectionListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
+            boolean done = false;
             if (getSelectedRows().length > 0) {
                 DiskItem diskItem = getSelectedRows()[0];
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
@@ -504,18 +505,31 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                     singleFileTransferAction.setEnabled(true);
 
-                    return;
+                    done = true;
+                } else if (diskItem != null && diskItem instanceof Directory) {
+                    Directory diretory = (Directory) diskItem;
+                    boolean retained = tableModel.getFolder().getDiskItemFilter()
+                        .isRetained(diretory);
+                    addIgnoreAction.setEnabled(retained);
+                    removeIgnoreAction.setEnabled(!retained);
+
+                    fileDetailsPanel.setFileInfo(null);
+                    fileVersionsPanel.setFileInfo(null);
+
+                    done = true;
                 }
             }
 
-            fileDetailsPanel.setFileInfo(null);
-            fileVersionsPanel.setFileInfo(null);
-            deleteFileAction.setEnabled(false);
-            abortDownloadAction.setEnabled(false);
-            addIgnoreAction.setEnabled(false);
-            removeIgnoreAction.setEnabled(false);
-            unmarkAction.setEnabled(false);
-            singleFileTransferAction.setEnabled(false);
+            if (!done) {
+                fileDetailsPanel.setFileInfo(null);
+                fileVersionsPanel.setFileInfo(null);
+                deleteFileAction.setEnabled(false);
+                abortDownloadAction.setEnabled(false);
+                addIgnoreAction.setEnabled(false);
+                removeIgnoreAction.setEnabled(false);
+                unmarkAction.setEnabled(false);
+                singleFileTransferAction.setEnabled(false);
+            }
         }
     }
 
@@ -581,6 +595,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     FileInfo fileInfo = (FileInfo) diskItem;
                     tableModel.getFolder().getDiskItemFilter().addPattern(
                         fileInfo.getName());
+                } else if (diskItem != null && diskItem instanceof Directory) {
+                    Directory directory = (Directory) diskItem;
+                    tableModel.getFolder().getDiskItemFilter().addPattern(
+                        directory.getName() + "/*");
                 }
             }
         }
@@ -598,6 +616,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     FileInfo fileInfo = (FileInfo) diskItem;
                     tableModel.getFolder().getDiskItemFilter().removePattern(
                         fileInfo.getName());
+                } else if (diskItem != null && diskItem instanceof Directory) {
+                    Directory directory = (Directory) diskItem;
+                    tableModel.getFolder().getDiskItemFilter().removePattern(
+                        directory.getName() + "/*");
                 }
             }
         }
