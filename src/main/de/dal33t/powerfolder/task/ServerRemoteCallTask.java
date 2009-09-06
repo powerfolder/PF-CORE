@@ -81,13 +81,6 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
 
     @Override
     public void initialize() {
-        if (!PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()))
-        {
-            // Skip. We don't use the online storage.
-            remove();
-            return;
-        }
         if (isExpired()) {
             // Expired
             remove();
