@@ -149,13 +149,18 @@ public interface FolderService {
      * 
      * @param versionInfo
      *            the FileInfo of the archived file.
+     * @param sameLocation
+     *            if the file should be restored under the same location and
+     *            name. otherwise server stores file under a different name.
+     *            Check returned FileInfo at any case.
      * @param target
-     * @return the new fileInfo of the restored file. Can be used for automatic
+     * @return the fileInfo of the restored file. Can be used for automatic
      *         downloading this file from the server after restoring.
      * @throws IOException
      *             problem restoring the file.
      */
-    FileInfo restore(FileInfo versionInfo) throws IOException;
+    FileInfo restore(FileInfo versionInfo, boolean sameLocation)
+        throws IOException;
 
     /**
      * Controls the archive configuration on the server.
