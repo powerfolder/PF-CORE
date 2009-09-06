@@ -43,7 +43,7 @@ public abstract class AbstractDistribution extends Loggable implements
      * @return true if the set server is part of the public PowerFolder network
      *         (non inhouse server).
      */
-    protected static boolean isPowerFolderServer(Controller c) {
+    public static boolean isPowerFolderServer(Controller c) {
         String host = ConfigurationEntry.SERVER_HOST.getValue(c);
         if (host != null) {
             if (host.toLowerCase().contains("powerfolder.com")) {
