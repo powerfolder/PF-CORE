@@ -63,7 +63,7 @@ public class OnlineStorageSection extends PFUIComponent {
      * @param totalStorage
      * @param spaceUsed
      */
-    public void setInfo(long totalStorage, long spaceUsed) {
+    void setInfo(long totalStorage, long spaceUsed) {
         double percentageUsed = 0;
         if (totalStorage > 0) {
             percentageUsed = 100.0d * (double) spaceUsed
