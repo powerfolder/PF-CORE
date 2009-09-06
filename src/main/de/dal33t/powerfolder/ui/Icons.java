@@ -33,7 +33,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelGrabber;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
@@ -54,7 +57,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
@@ -128,6 +130,7 @@ public class Icons {
     public static final String DIRECTORY_OPEN_RED = "directory_open_red.icon";
 
     // Node icons
+    public static final String NODE_MYSELF = "node_myself.icon";
     public static final String NODE_FRIEND_CONNECTED = "node_friend_connected.icon";
     public static final String NODE_FRIEND_DISCONNECTED = "node_friend_disconnected.icon";
     public static final String NODE_NON_FRIEND_CONNECTED = "node_non_friend_connected.icon";
@@ -393,7 +396,7 @@ public class Icons {
 
         String iconID;
         if (node.isMySelf()) {
-            iconID = Icons.NODE_FRIEND_CONNECTED;
+            iconID = Icons.NODE_MYSELF;
         } else if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
             if (node.isFriend()) {
