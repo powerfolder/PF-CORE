@@ -19,13 +19,17 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
  * Access/Control over folders of a server.
@@ -126,4 +130,39 @@ public interface FolderService {
      * @return the list of servers the folders are hosted on.
      */
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
+
+    // Server archive calls ***************************************************
+
+    /**
+     * Retrieves a List of existing FileInfos for an archived file.
+     * 
+     * @param fileInfo
+     *            fileInfo of the file to get archived versions for.
+     * @return list of archived {@link FileInfo}.
+     */
+    List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
+
+    /**
+     * Restores/Copies a file version from the archive to a new File within the
+     * folder. Does NOT deleted the file in the archive. Does scan the related
+     * folder and returns the new FileInfo of the restored file.
+     * 
+     * @param versionInfo
+     *            the FileInfo of the archived file.
+     * @param target
+     * @return the new fileInfo of the restored file. Can be used for automatic
+     *         downloading this file from the server after restoring.
+     * @throws IOException
+     *             problem restoring the file.
+     */
+    FileInfo restore(FileInfo versionInfo) throws IOException;
+
+    /**
+     * Controls the archive configuration on the server.
+     * 
+     * @param foInfo
+     * @param mode
+     * @param versionsPerFile
+     */
+    void setArchiveMode(FolderInfo foInfo, ArchiveMode mode, int versionsPerFile);
 }
