@@ -369,8 +369,10 @@ public class Account extends Model implements Serializable {
     public long calulateTotalFoldersSize(Controller controller) {
         long totalSize = 0;
         for (Permission p : getPermissions()) {
-            if (p instanceof FolderAdminPermission) {
-                FolderAdminPermission fp = (FolderAdminPermission) p;
+            if (p instanceof FolderOwnerPermission
+                || p instanceof FolderAdminPermission)
+            {
+                FolderPermission fp = (FolderPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
                     continue;
@@ -388,8 +390,10 @@ public class Account extends Model implements Serializable {
     public long calulateTotalRecycleBinSize(Controller controller) {
         long recycleSize = 0;
         for (Permission p : getPermissions()) {
-            if (p instanceof FolderAdminPermission) {
-                FolderAdminPermission fp = (FolderAdminPermission) p;
+            if (p instanceof FolderOwnerPermission
+                || p instanceof FolderAdminPermission)
+            {
+                FolderPermission fp = (FolderPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
                     continue;
