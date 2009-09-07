@@ -307,8 +307,7 @@ public class UIController extends PFComponent {
             });
         }
 
-        // Goes to the home page if required.
-        gotoHPIfRequired();
+        // Check limits
         detectAndShowLimitDialog();
 
         // Start the blinkers later, so the UI is fully displayed first.
@@ -322,33 +321,12 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-//        UIUtil.invokeLaterInEDT(new Runnable() {
-//            public void run() {
-//                PFWizard.openWhatToDoWizard(getController());
-//            }
-//        });
+        // UIUtil.invokeLaterInEDT(new Runnable() {
+        // public void run() {
+        // PFWizard.openWhatToDoWizard(getController());
+        // }
+        // });
 
-    }
-
-    private void gotoHPIfRequired() {
-        if (ProUtil.isRunningProVersion() && !ProUtil.isTrial(getController())) {
-            return;
-        }
-        String prefKey = "startCount" + Controller.PROGRAM_VERSION;
-        int thisVersionStartCount = getController().getPreferences().getInt(
-            prefKey, 0);
-        // Go to HP every 20 starts
-        if (thisVersionStartCount % 20 == 0) {
-            try {
-                BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL
-                    .getValue(getController()));
-            } catch (IOException e1) {
-                log.log(Level.WARNING, "Unable to goto PowerFolder homepage",
-                    e1);
-            }
-        }
-        thisVersionStartCount++;
-        getController().getPreferences().putInt(prefKey, thisVersionStartCount);
     }
 
     private void detectAndShowLimitDialog() {
