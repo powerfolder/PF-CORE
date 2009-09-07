@@ -25,12 +25,12 @@ import java.beans.PropertyChangeListener;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 
 /**
  * Contains all core models for the application.
@@ -65,6 +65,7 @@ public class ApplicationModel extends PFUIComponent {
         super(controller);
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
+        new ChatNotificationManager(chatModel);
         nodeManagerModel = new NodeManagerModel(getController());
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -173,5 +174,26 @@ public class ApplicationModel extends PFUIComponent {
 
     public LicenseModel getLicenseModel() {
         return licenseModel;
+    }
+
+    private class ChatNotificationManager implements ChatModelListener {
+
+        private ChatNotificationManager(ChatModel chatModel) {
+            chatModel.addChatModelListener(this);
+        }
+
+        public void chatChanged(ChatModelEvent event) {
+            if (event.isStatus()) {
+                // Ignore status updates
+                return;
+            }
+            getController().getUIController().notifyMessage(Translation
+                    .getTranslation("chat.notification.title"), Translation
+                    .getTranslation("chat.notification.message"), true);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
 }

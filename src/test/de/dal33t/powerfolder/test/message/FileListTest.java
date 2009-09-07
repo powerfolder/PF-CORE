@@ -70,7 +70,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FileList.createFileListMessagesForTest(
-            createRandomFolderInfo(), files, new DiskItemFilter(false));
+            createRandomFolderInfo(), files, new DiskItemFilter());
 
         // Test
         assertTrue(msgs[0] instanceof FileList);
@@ -125,7 +125,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(false), true,
+            createRandomFolderInfo(), files, new DiskItemFilter(), true,
             true);
 
         // Test
@@ -150,7 +150,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(false), false,
+            createRandomFolderInfo(), files, new DiskItemFilter(), false,
             true);
 
         // Test

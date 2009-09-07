@@ -80,7 +80,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         }
         // Now split
         final Message[] msgs = FileList.createFileListMessagesForTest(foInfo, Arrays
-            .asList(files), new DiskItemFilter(false));
+            .asList(files), new DiskItemFilter());
 
         for (int i = 0; i < msgs.length; i++) {
             Message message = msgs[i];

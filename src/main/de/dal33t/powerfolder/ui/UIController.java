@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -633,7 +632,7 @@ public class UIController extends PFComponent {
         String fileName = activeSkin.getIconsPropertiesFileName();
         Icons.loadOverrideFile(fileName);
         try {
-            LookAndFeelSupport.setLookAndFeel((LookAndFeel) activeSkin
+            LookAndFeelSupport.setLookAndFeel(activeSkin
                 .getLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
             logSevere("Failed to set look and feel for skin "
@@ -677,7 +676,11 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        informationFrame.getUIComponent().setVisible(true);
+        JFrame frame = informationFrame.getUIComponent();
+        if (frame.getExtendedState() == Frame.ICONIFIED) {
+            frame.setExtendedState(Frame.NORMAL);
+        }
+        frame.setVisible(true);
     }
 
     /**
@@ -758,6 +761,10 @@ public class UIController extends PFComponent {
     public void openChat(MemberInfo memberInfo) {
         if (memberInfo != null) {
             chatFrame.displayChat(memberInfo, true);
+        }
+        JFrame frame = chatFrame.getUIComponent();
+        if (frame.getExtendedState() == Frame.ICONIFIED) {
+            frame.setExtendedState(Frame.NORMAL);
         }
         chatFrame.getUIComponent().setVisible(true);
     }
@@ -1171,6 +1178,7 @@ public class UIController extends PFComponent {
         if (started && mainFrame.isIconifiedOrHidden()
             && !getController().isShuttingDown())
         {
+            System.out.println("hghg " + chat);
             if (chat
                 ? (Boolean) applicationModel.getChatNotificationsValueModel()
                     .getValue()

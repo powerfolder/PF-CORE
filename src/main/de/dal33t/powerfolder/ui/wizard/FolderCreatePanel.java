@@ -186,7 +186,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 int archiveHistory = folderCreateItem.getArchiveHistory();
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                    false, null, archiveHistory);
+                    null, archiveHistory);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -209,7 +209,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
             FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, ArchiveMode.FULL_BACKUP, 
-                    previewFolder, false, null, 5);
+                    previewFolder, null, 5);
             configurations.put(folderInfo, folderSettings);
         }
 

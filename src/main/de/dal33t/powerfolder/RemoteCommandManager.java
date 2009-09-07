@@ -47,7 +47,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -420,7 +419,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, ArchiveMode.NO_BACKUP, false, false,
+                createInvitationFile, ArchiveMode.NO_BACKUP, false,
                 dlScript, 0);
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);

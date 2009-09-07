@@ -668,7 +668,7 @@ public class SettingsTab extends PFUIComponent {
             FolderSettings fs = new FolderSettings(newDirectory, folder
                 .getSyncProfile(), false, folder.getFileArchiver()
                 .getArchiveMode(), folder.isPreviewOnly(),
-                folder.isWhitelist(), folder.getDownloadScript(), folder
+                    folder.getDownloadScript(), folder
                     .getFileArchiver().getVersionsPerFile());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {

@@ -37,7 +37,6 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
-    public static final String FOLDER_SETTINGS_WHITELIST = ".whitelist";
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
@@ -75,11 +74,6 @@ public class FolderSettings {
     private final boolean previewOnly;
 
     /**
-     * Whether the folder is a black- or white-list.
-     */
-    private final boolean whitelist;
-
-    /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
      */
@@ -92,13 +86,12 @@ public class FolderSettings {
      * @param syncProfile
      * @param createInvitationFile
      * @param previewOnly
-     * @param whitelist
      * @param downloadScript
      * @param versions
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
-        ArchiveMode archiveMode, boolean previewOnly, boolean whitelist,
+        ArchiveMode archiveMode, boolean previewOnly,
         String downloadScript, int versions)
     {
 
@@ -109,14 +102,13 @@ public class FolderSettings {
         this.createInvitationFile = createInvitationFile;
         this.archiveMode = archiveMode;
         this.previewOnly = previewOnly;
-        this.whitelist = whitelist;
         this.downloadScript = downloadScript;
         this.versions = versions;
     }
 
     /**
-     * Constructor. Creates a new FolderSettings object. NON preview, NON
-     * whitelisted, NO download script.
+     * Constructor. Creates a new FolderSettings object. NON preview,
+     * NO download script.
      * 
      * @param localBaseDir
      * @param syncProfile
@@ -127,7 +119,7 @@ public class FolderSettings {
         boolean createInvitationFile, ArchiveMode archiveMode, int versions)
     {
         this(localBaseDir, syncProfile, createInvitationFile,
-            archiveMode, false, false, null, versions);
+            archiveMode, false, null, versions);
     }
 
     // /////////////
@@ -156,10 +148,6 @@ public class FolderSettings {
 
     public boolean isPreviewOnly() {
         return previewOnly;
-    }
-
-    public boolean isWhitelist() {
-        return whitelist;
     }
 
     public String getDownloadScript() {

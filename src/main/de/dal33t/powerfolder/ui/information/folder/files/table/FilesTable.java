@@ -220,16 +220,9 @@ public class FilesTable extends JTable {
                             setIcon(null);
                             statusForTooltip = Translation.getTranslation("file_info.deleted");
 
-                        } else if (folder.getDiskItemFilter().isExcluded(fileInfo)
-                                && !folder.isWhitelist()) {
+                        } else if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
                             // Blacklist and file filtered out by blacklist.
                             setIcon(Icons.getIconById(Icons.BLACK_LIST));
-                            statusForTooltip = replaceSpacesWithNBSP(Translation
-                                    .getTranslation("file_info.ignore"));
-                        } else if (!folder.getDiskItemFilter().isExcluded(fileInfo)
-                                && folder.isWhitelist()) {
-                            // Whitelist and file not filtered out by whitelist.
-                            setIcon(Icons.getIconById(Icons.WHITE_LIST));
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
                         } else
@@ -315,8 +308,7 @@ public class FilesTable extends JTable {
                         break;
                     case 1: // dir name
                         myValue = dir.getName();
-                        if (folder.getDiskItemFilter().isExcluded(dir)
-                                && !folder.isWhitelist()) {
+                        if (folder.getDiskItemFilter().isExcluded(dir)) {
                             setIcon(Icons.getIconById(Icons.BLACK_LIST));
                         }
                         break;

@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class DiskItemFilterTest extends TestCase {
 
     public void testBlackList() {
-        DiskItemFilter blacklist = new DiskItemFilter(false);
+        DiskItemFilter blacklist = new DiskItemFilter();
         FolderInfo folderInfo = new FolderInfo("foldername", "id");
         FileInfo fileInfo = FileInfoFactory.lookupInstance(folderInfo,
             "thumbs.db");
@@ -53,7 +53,7 @@ public class DiskItemFilterTest extends TestCase {
     }
 
     public void testBlacklistPatterns() {
-        DiskItemFilter blacklist = new DiskItemFilter(false);
+        DiskItemFilter blacklist = new DiskItemFilter();
         FolderInfo folderInfo = new FolderInfo("foldername", "id");
         blacklist.addPattern("*thumbs.db");
         blacklist.addPattern("*THAMBS.db");
@@ -74,7 +74,7 @@ public class DiskItemFilterTest extends TestCase {
         assertTrue(blacklist.isRetained(FileInfoFactory.lookupInstance(
             folderInfo, "thusssmbs.db")));
 
-        DiskItemFilter blacklist2 = new DiskItemFilter(false);
+        DiskItemFilter blacklist2 = new DiskItemFilter();
         blacklist2.addPattern("images/*thumbs.db");
 
         assertTrue(blacklist2.isRetained(FileInfoFactory.lookupInstance(
@@ -90,78 +90,11 @@ public class DiskItemFilterTest extends TestCase {
         assertFalse(blacklist2.isRetained(FileInfoFactory.lookupInstance(
             folderInfo, "images/deepinimages/thumbs.DB")));
     }
-
-    public void testWhiteList() {
-        DiskItemFilter whitelist = new DiskItemFilter(true);
-        FolderInfo folderInfo = new FolderInfo("foldername", "id");
-        FileInfo fileInfo = FileInfoFactory.lookupInstance(folderInfo,
-            "thumbs.db");
-        FileInfo fileInfo2 = FileInfoFactory.lookupInstance(folderInfo,
-            "thumbs.db");
-        FileInfo fileInfo3 = FileInfoFactory.lookupInstance(folderInfo,
-            "somefile.txt");
-        FileInfo fileInfo4 = FileInfoFactory.lookupInstance(folderInfo,
-            "A_UPPER_case_FILENAME.xxx");
-        whitelist.addPattern(fileInfo.getName());
-        assertTrue(whitelist.isRetained(fileInfo));
-        // other instance but equals
-        assertTrue(whitelist.isRetained(fileInfo2));
-        // not blacklisted
-        assertFalse(whitelist.isRetained(fileInfo3));
-        // after remove allow download again
-        whitelist.removePattern(fileInfo.getName());
-        assertFalse(whitelist.isRetained(fileInfo));
-        // Mix-case filename test
-        whitelist.addPattern(fileInfo4.getName());
-        assertTrue(whitelist.isRetained(fileInfo4));
-    }
-
-    public void testWhitelistPatterns() {
-        DiskItemFilter whitelist = new DiskItemFilter(true);
-        FolderInfo folderInfo = new FolderInfo("foldername", "id");
-        whitelist.addPattern("*thumbs.db");
-        whitelist.addPattern("*THAMBS.db");
-
-        assertTrue(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "thumbs.db")));
-        assertTrue(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "somewhere/in/a/sub/thumbs.db")));
-        assertFalse(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "thusssmbs.db")));
-
-        whitelist.removePattern("*thumbs.db");
-
-        assertFalse(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "thumbs.db")));
-        assertFalse(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "somewhere/in/a/sub/thumbs.db")));
-        assertFalse(whitelist.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "thusssmbs.db")));
-
-        DiskItemFilter whitelist2 = new DiskItemFilter(true);
-        whitelist2.addPattern("images/*thumbs.db");
-
-        assertFalse(whitelist2.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "thumbs.db")));
-        assertTrue(whitelist2.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "images/thumbs.db")));
-        assertTrue(whitelist2.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "images/deepinimages/thumbs.db")));
-
-        // Mixed case pattern. Should match!
-        assertTrue(whitelist2.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "images/deepinimages/THUMBS.db")));
-        assertTrue(whitelist2.isRetained(FileInfoFactory.lookupInstance(
-            folderInfo, "images/deepinimages/thumbs.DB")));
-    }
-
     public void testMulti() throws Exception {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
             testBlackList();
             testBlacklistPatterns();
-            testWhiteList();
-            testWhitelistPatterns();
             tearDown();
             setUp();
         }

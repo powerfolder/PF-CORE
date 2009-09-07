@@ -8,7 +8,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -105,9 +104,6 @@ public class FolderConfigRestore {
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_WHITELIST, String.valueOf(folderSettings
-            .isWhitelist()));
         String dlScript = folderSettings.getDownloadScript() != null
             ? folderSettings.getDownloadScript()
             : "";

@@ -52,13 +52,6 @@ public class DiskItemFilter {
     private static final String PATTERNS_FILENAME = "ignore.patterns";
 
     /**
-     * The mode of the filter.
-     * If true, items will be excluded unless they match a pattern.
-     * If false, items will be retained unless they match a pattern.
-     */
-    private boolean excludeByDefault;
-
-    /**
      * The patterns that will be used to match DiskItems with.
      */
     private final List<CompilingPatternMatch> patterns =
@@ -71,11 +64,8 @@ public class DiskItemFilter {
 
     /**
      * Constructor
-     *
-     * @param excludeByDefault
      */
-    public DiskItemFilter(boolean excludeByDefault) {
-        this.excludeByDefault = excludeByDefault;
+    public DiskItemFilter() {
         listenerSupport = ListenerSupportFactory
                 .createListenerSupport(PatternChangeListener.class);
     }
@@ -207,15 +197,6 @@ public class DiskItemFilter {
     }
 
     /**
-     * Sets the mode of the filter.
-     *
-     * @param excludeByDefault
-     */
-    public void setExcludeByDefault(boolean excludeByDefault) {
-        this.excludeByDefault = excludeByDefault;
-    }
-
-    /**
      * True if patterns have been changed.
      *
      * @return
@@ -307,7 +288,7 @@ public class DiskItemFilter {
      * @return
      */
     public boolean isExcluded(DiskItem diskItem) {
-        return isMatches(diskItem) ^ excludeByDefault;
+        return isMatches(diskItem);
     }
 
     /**

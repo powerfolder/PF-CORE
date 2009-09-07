@@ -207,8 +207,6 @@ public class Folder extends PFComponent {
      */
     private volatile boolean dirty;
 
-    private boolean whitelist;
-
     /**
      * The FileInfos that have problems inlcuding the desciptions of the
      * problems. DISABLED
@@ -276,7 +274,6 @@ public class Folder extends PFComponent {
 
         localBase = folderSettings.getLocalBaseDir();
         syncProfile = folderSettings.getSyncProfile();
-        whitelist = folderSettings.isWhitelist();
         downloadScript = folderSettings.getDownloadScript();
 
         // Initially there are no other members, so is in sync (with self).
@@ -307,7 +304,7 @@ public class Folder extends PFComponent {
             setDBDirty();
         }
 
-        diskItemFilter = new DiskItemFilter(whitelist);
+        diskItemFilter = new DiskItemFilter();
         diskItemFilter.loadPatternsFrom(getSystemSubDir());
 
         transferPriorities = new TransferPriorities();
@@ -671,15 +668,6 @@ public class Folder extends PFComponent {
 
     public ScanResult.ResultState getLastScanResultState() {
         return lastScanResultState;
-    }
-
-    public boolean isWhitelist() {
-        return whitelist;
-    }
-
-    public void setWhitelist(boolean whitelist) {
-        this.whitelist = whitelist;
-        diskItemFilter.setExcludeByDefault(whitelist);
     }
 
     /**

@@ -29,7 +29,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_WHITELIST;
 
 import java.io.File;
 import java.io.IOException;
@@ -428,15 +427,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean preview = previewSetting != null
             && "true".equalsIgnoreCase(previewSetting);
 
-        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_WHITELIST);
-        boolean whitelist = whitelistSetting != null
-            && "true".equalsIgnoreCase(whitelistSetting);
-
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            ArchiveMode.FULL_BACKUP, preview, whitelist, dlScript, 5);
+            ArchiveMode.FULL_BACKUP, preview, dlScript, 5);
     }
 
     /**
@@ -585,16 +579,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean preview = previewSetting != null
             && "true".equalsIgnoreCase(previewSetting);
 
-        String whitelistSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_WHITELIST);
-        boolean whitelist = whitelistSetting != null
-            && "true".equalsIgnoreCase(whitelistSetting);
-
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            archiveMode, preview, whitelist, dlScript, versions);
+            archiveMode, preview, dlScript, versions);
     }
 
     /**
@@ -880,9 +869,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_WHITELIST, String.valueOf(folderSettings
-            .isWhitelist()));
         String dlScript = folderSettings.getDownloadScript() != null
             ? folderSettings.getDownloadScript()
             : "";

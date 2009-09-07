@@ -147,11 +147,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                 Folder folder = fInfo.getFolder(controller
                         .getFolderRepository());
                 if (folder != null && folder.getDiskItemFilter().isExcluded(fInfo)) {
-                    if (folder.isWhitelist()) {
-                        setIcon(Icons.getIconById(Icons.WHITE_LIST));
-                    } else {
-                        setIcon(Icons.getIconById(Icons.BLACK_LIST));
-                    }
+                    setIcon(Icons.getIconById(Icons.BLACK_LIST));
                 } else {
                     setIcon(null);
                 }
