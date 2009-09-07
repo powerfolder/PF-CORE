@@ -508,7 +508,8 @@ public class HomeTab extends PFUIComponent {
             licenseInfoSection.setDaysValid(-1);
         }
 
-        // Display buynow link: If is trial or about to expire
+        // Display buynow link: If is trial or about to expire or not allowed to
+        // run
         boolean trial = ProUtil.isTrial(getController());
         boolean allowed = ProUtil.isAllowedToRun(getController());
         boolean aboutToExpire = daysValid != -1 && daysValid < 30;
