@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.awt.Cursor;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -65,6 +65,8 @@ import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -90,7 +92,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private JButtonMini chatButton;
     private JButtonMini reconnectButton;
     private JButtonMini addRemoveButton;
-    private JLabel pictoLabel;
+    private JButtonMini pictoLabel;
     private MyOpenChatAction chatAction;
     private JPanel upperPanel;
     private MyAddRemoveFriendAction addRemoveFriendAction;
@@ -180,7 +182,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        pictoLabel.addMouseListener(ma);
+        pictoLabel.addActionListener(new PrimaryButtonActionListener());
 
         // Build lower detials with line border.
         // last, qual rmve recon
@@ -257,7 +259,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         addRemoveButton = new JButtonMini(addRemoveFriendAction, true);
         chatAction = new MyOpenChatAction(getController());
         chatButton = new JButtonMini(chatAction, true);
-        pictoLabel = new JLabel();
+        pictoLabel = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
         updateDetails();
         configureAddRemoveButton();
         registerListeners();
@@ -506,18 +508,11 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         public void mouseClicked(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-
-                if (e.getClickCount() == 1) {
-                    if (expanded.get()) {
-                        collapse();
-                    } else {
-                        expand();
-                    }
+                if (expanded.get()) {
+                    collapse();
                 } else {
-                    getController().getUIController().openChat(
-                        getNode().getInfo());
+                    expand();
                 }
-
             }
         }
     }
@@ -767,6 +762,16 @@ public class ExpandableComputerView extends PFUIComponent implements
                 logSevere(e);
             }
             return null;
+        }
+    }
+
+    private class PrimaryButtonActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (expanded.get()) {
+                collapse();
+            } else {
+                expand();
+            }
         }
     }
 }
