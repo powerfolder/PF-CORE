@@ -1178,7 +1178,6 @@ public class UIController extends PFComponent {
         if (started && mainFrame.isIconifiedOrHidden()
             && !getController().isShuttingDown())
         {
-            System.out.println("hghg " + chat);
             if (chat
                 ? (Boolean) applicationModel.getChatNotificationsValueModel()
                     .getValue()
