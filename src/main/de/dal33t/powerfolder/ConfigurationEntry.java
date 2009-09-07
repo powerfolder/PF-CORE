@@ -162,6 +162,12 @@ public enum ConfigurationEntry {
      */
     SERVER_HOST("server.host", "access.powerfolder.com:1337"),
 
+    /**
+     * #1687: How this computer should behave when the server is not connected.
+     */
+    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", String
+        .valueOf(Boolean.TRUE)),
+
     // General settings *******************************************************
 
     /**

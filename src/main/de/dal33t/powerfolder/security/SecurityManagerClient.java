@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -104,8 +105,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
                     cache.set(permission, hasPermission);
                     source = "recvd";
                 } else {
-                    // TODO How to handle server disconnect?
-                    hasPermission = true;
+                    hasPermission = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                        .getValueBoolean(getController());
                     source = "nocon";
                 }
             } else {

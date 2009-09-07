@@ -1,72 +1,78 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.io.File;
 
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.ui.LANList;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LANList;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
     private JPanel panel;
     private JTextField advPort;
     private JComboBox bindAddress;
-    private JTextArea ifDescr;
+    private JCheckBox useZipOnInternetCheckBox;
     private JCheckBox useZipOnLanCheckBox;
     private JCheckBox useDeltaSyncOnLanCheckBox;
     private LANList lanList;
@@ -146,6 +152,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 Enumeration<InetAddress> ie = ni.getInetAddresses();
                 while (ie.hasMoreElements()) {
                     InetAddress addr = ie.nextElement();
+                    if (!(addr instanceof Inet4Address)) {
+                        continue;
+                    }
                     bindAddress.addItem(new InterfaceChoice(ni, addr));
                     if (!StringUtils.isEmpty(cfgBind)) {
                         if (addr.getHostAddress().equals(cfgBind)) {
@@ -159,61 +168,57 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             logSevere("SocketException", e1);
         }
 
-        ifDescr = new JTextArea(3, 20);
-        ifDescr.setLineWrap(true);
-        ifDescr.setWrapStyleWord(true);
-        ifDescr.setEditable(false);
-        ifDescr.setOpaque(false);
-
-        updateIFDescr();
-
-        bindAddress.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                if (arg0.getStateChange() == ItemEvent.SELECTED) {
-                    updateIFDescr();
-                }
-            }
-
-        });
-
         useZipOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
             .getTranslation("preferences.dialog.use_zip_on_lan"));
         useZipOnLanCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.use_zip_on_lan.tooltip"));
         useZipOnLanCheckBox.setSelected(ConfigurationEntry.USE_ZIP_ON_LAN
+            .getValueBoolean(getController()));
+
+        // Always uses compression on internet
+        useZipOnInternetCheckBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.use_zip_on_internet"));
+        useZipOnInternetCheckBox.setSelected(true);
+        useZipOnInternetCheckBox.setEnabled(false);
+
+        useDeltaSyncOnLanCheckBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.use_delta_on_lan"));
+        useDeltaSyncOnLanCheckBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.use_delta_on_lan.tooltip"));
+        useDeltaSyncOnLanCheckBox
+            .setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
                 .getValueBoolean(getController()));
 
-        useDeltaSyncOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-        		.getTranslation("preferences.dialog.use_delta_on_lan"));
-        useDeltaSyncOnLanCheckBox.setToolTipText(Translation
-        		.getTranslation("preferences.dialog.use_delta_on_lan.tooltip"));
-        useDeltaSyncOnLanCheckBox.setSelected(ConfigurationEntry.USE_DELTA_ON_LAN
-                .getValueBoolean(getController()));
-        
-        useDeltaSyncOnInternetCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.delta_sync"));
-        useDeltaSyncOnInternetCheckBox.setToolTipText(Translation
-            .getTranslation("preferences.dialog.delta_sync.tooltip"));
+        useDeltaSyncOnInternetCheckBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.use_delta_on_internet"));
+        useDeltaSyncOnInternetCheckBox
+            .setToolTipText(Translation
+                .getTranslation("preferences.dialog.use_delta_on_internet.tooltip"));
         useDeltaSyncOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_DELTA_ON_INTERNET
                 .getValueBoolean(getController()));
 
-        useSwarmingOnLanCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.swarming.lan"));
+        useSwarmingOnLanCheckBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.swarming.lan"));
         useSwarmingOnLanCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.swarming.lan.tooltip"));
         useSwarmingOnLanCheckBox
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_LAN
                 .getValueBoolean(getController()));
 
-        useSwarmingOnInternetCheckBox = SimpleComponentFactory.createCheckBox(Translation
-            .getTranslation("preferences.dialog.swarming.internet"));
+        useSwarmingOnInternetCheckBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.swarming.internet"));
         useSwarmingOnInternetCheckBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.swarming.internet.tooltip"));
         useSwarmingOnInternetCheckBox
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
                 .getValueBoolean(getController()));
-        
+
         lanList = new LANList(getController());
         lanList.load();
 
@@ -244,10 +249,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         originalVerbose = ConfigurationEntry.VERBOSE
             .getValueBoolean(getController());
         verboseBox = SimpleComponentFactory.createCheckBox(Translation
-                .getTranslation("preferences.dialog.verbose"));
-        verboseBox
-            .setSelected(ConfigurationEntry.VERBOSE
-                .getValueBoolean(getController()));
+            .getTranslation("preferences.dialog.verbose"));
+        verboseBox.setSelected(ConfigurationEntry.VERBOSE
+            .getValueBoolean(getController()));
     }
 
     /**
@@ -261,11 +265,11 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
     /**
      * Creates a pair of location text field and button.
-     *
+     * 
      * @return
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("122dlu, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -275,8 +279,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-                Translation.getTranslation("folder_create.dialog.select_directory.text"));
+        JButton locationButton = new JButtonMini(Icons
+            .getIconById(Icons.DIRECTORY), Translation
+            .getTranslation("folder_create.dialog.select_directory.text"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -290,8 +295,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,"
-                + "3dlu, pref, 3dlu, pref, 3dlu";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -304,7 +308,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
-            builder.add(randomPort, cc.xyw(3, row, 2));
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
+            builder.add(locationField, cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(
@@ -314,15 +320,13 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.advPort.tooltip"));
             builder.add(advPort, cc.xy(3, row));
 
+            row += 2;
+            builder.add(randomPort, cc.xy(3, row));
+
             if (FirewallUtil.isFirewallAccessible()) {
                 row += 2;
                 builder.add(openport, cc.xyw(3, row, 2));
             }
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.base_dir")), cc.xy(1, row));
-            builder.add(locationField, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(
@@ -332,29 +336,43 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(bindAddress, cc.xy(3, row));
 
             row += 2;
-            ifDescr.setBorder(new TitledBorder(Translation
-                .getTranslation("preferences.dialog.bindDescr")));
-            builder.add(ifDescr, cc.xy(3, row));
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.ip_lan_list"), cc.xywh(1,
+                row, 1, 1, "default, top"));
+            builder.add(lanList.getUIPanel(), cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.ip_lan_list"), cc.xy(1, row));
-            builder.add(lanList.getUIPanel(), cc.xyw(3, row, 2));
+                .getTranslation("preferences.dialog.zip_compression"), cc.xy(1,
+                row));
+            ButtonBarBuilder zipBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
+            zipBar.addGridded(useZipOnInternetCheckBox);
+            zipBar.addRelatedGap();
+            zipBar.addGridded(useZipOnLanCheckBox);
+            builder.add(zipBar.getPanel(), cc.xyw(3, row, 2));
+            row += 2;
 
+            builder
+                .addLabel(Translation
+                    .getTranslation("preferences.dialog.delta_sync"), cc.xy(1,
+                    row));
+            ButtonBarBuilder deltaBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
+            deltaBar.addGridded(useDeltaSyncOnInternetCheckBox);
+            deltaBar.addRelatedGap();
+            deltaBar.addGridded(useDeltaSyncOnLanCheckBox);
+            builder.add(deltaBar.getPanel(), cc.xyw(3, row, 2));
             row += 2;
-            builder.add(useZipOnLanCheckBox, cc.xyw(3, row, 2));
 
-            row += 2;
-            builder.add(useDeltaSyncOnInternetCheckBox, cc.xyw(3, row, 2));
-            
-            row += 2;
-            builder.add(useDeltaSyncOnLanCheckBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(useSwarmingOnInternetCheckBox, cc.xyw(3, row, 2));
-            
-            row += 2;
-            builder.add(useSwarmingOnLanCheckBox, cc.xyw(3, row, 2));
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.swarming"), cc.xy(1, row));
+            ButtonBarBuilder swarmingBar = ButtonBarBuilder
+                .createLeftToRightBuilder();
+            swarmingBar.addGridded(useSwarmingOnInternetCheckBox);
+            swarmingBar.addRelatedGap();
+            swarmingBar.addGridded(useSwarmingOnLanCheckBox);
+            builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(verboseBox, cc.xyw(3, row, 2));
@@ -362,16 +380,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             panel = builder.getPanel();
         }
         return panel;
-    }
-
-    private void updateIFDescr() {
-        Object selection = bindAddress.getSelectedItem();
-        if (selection instanceof InterfaceChoice) {
-            ifDescr.setText(((InterfaceChoice) selection).getNetInterface()
-                .getDisplayName());
-        } else {
-            ifDescr.setText("");
-        }
     }
 
     /**
@@ -440,51 +448,53 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
 
         // zip on lan?
-        boolean current = ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(
-                getController());
+        boolean current = ConfigurationEntry.USE_ZIP_ON_LAN
+            .getValueBoolean(getController());
         if (current != useZipOnLanCheckBox.isSelected()) {
-            ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(),
-                    String.valueOf(useZipOnLanCheckBox.isSelected()));
+            ConfigurationEntry.USE_ZIP_ON_LAN.setValue(getController(), String
+                .valueOf(useZipOnLanCheckBox.isSelected()));
         }
 
         // delta on lan?
-        current = ConfigurationEntry.USE_DELTA_ON_LAN.getValueBoolean(
-                getController());
+        current = ConfigurationEntry.USE_DELTA_ON_LAN
+            .getValueBoolean(getController());
         if (current != useDeltaSyncOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getController(),
-                    String.valueOf(useDeltaSyncOnLanCheckBox.isSelected()));
+                String.valueOf(useDeltaSyncOnLanCheckBox.isSelected()));
             needsRestart = true;
         }
 
-        current = ConfigurationEntry.USE_DELTA_ON_INTERNET.getValueBoolean(getController());
+        current = ConfigurationEntry.USE_DELTA_ON_INTERNET
+            .getValueBoolean(getController());
         if (current != useDeltaSyncOnInternetCheckBox.isSelected()) {
-            ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(
-                getController(), Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
+            ConfigurationEntry.USE_DELTA_ON_INTERNET.setValue(getController(),
+                Boolean.toString(useDeltaSyncOnInternetCheckBox.isSelected()));
             needsRestart = true;
         }
-        
-        
+
         // Swarming
-        current = ConfigurationEntry.USE_SWARMING_ON_LAN.getValueBoolean(
-            getController());
+        current = ConfigurationEntry.USE_SWARMING_ON_LAN
+            .getValueBoolean(getController());
         if (current != useSwarmingOnLanCheckBox.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_LAN.setValue(getController(),
-                    String.valueOf(useSwarmingOnLanCheckBox.isSelected()));
-            needsRestart = true;
-        }
-    
-        current = ConfigurationEntry.USE_SWARMING_ON_INTERNET.getValueBoolean(getController());
-        if (current != useSwarmingOnInternetCheckBox.isSelected()) {
-            ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
-                getController(), Boolean.toString(useSwarmingOnInternetCheckBox.isSelected()));
+                String.valueOf(useSwarmingOnLanCheckBox.isSelected()));
             needsRestart = true;
         }
 
-        current = ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(
-                getController());
+        current = ConfigurationEntry.USE_SWARMING_ON_INTERNET
+            .getValueBoolean(getController());
+        if (current != useSwarmingOnInternetCheckBox.isSelected()) {
+            ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
+                getController(), Boolean.toString(useSwarmingOnInternetCheckBox
+                    .isSelected()));
+            needsRestart = true;
+        }
+
+        current = ConfigurationEntry.NET_BIND_RANDOM_PORT
+            .getValueBoolean(getController());
         if (current != randomPort.isSelected()) {
             ConfigurationEntry.NET_BIND_RANDOM_PORT.setValue(getController(),
-                    String.valueOf(randomPort.isSelected()));
+                String.valueOf(randomPort.isSelected()));
             needsRestart = true;
         }
 
@@ -506,8 +516,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
             .toString(verboseBox.isSelected()));
 
-        ConfigurationEntry.VERBOSE.setValue(
-            getController(), Boolean.toString(verboseBox.isSelected()));
+        ConfigurationEntry.VERBOSE.setValue(getController(), Boolean
+            .toString(verboseBox.isSelected()));
 
         // LAN list
         needsRestart |= lanList.save();
@@ -531,8 +541,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 }
                 sb.append(address.getAddress()[i] & 0xff);
             }
-            // sb.append("
-            // (").append(netInterface.getDisplayName().trim()).append(')');
+            sb.append(" / ");
+            sb.append(netInterface.getDisplayName().trim());
             showString = sb.toString();
         }
 
@@ -542,10 +552,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         public InetAddress getAddress() {
             return address;
-        }
-
-        public NetworkInterface getNetInterface() {
-            return netInterface;
         }
     }
 
@@ -573,7 +579,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
     }
 
-
     /**
      * Action listener for the location button. Opens a choose dir dialog and
      * sets the location model with the result.
@@ -581,21 +586,25 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            String newLocationName = DialogFactory.chooseDirectory(getController(),
-                initial);
+            String newLocationName = DialogFactory.chooseDirectory(
+                getController(), initial);
             File newLocation = new File(newLocationName);
 
             // Make sure that the user is not setting this to the base dir of
             // an existing folder.
-            for (Folder folder : getController().getFolderRepository().getFolders()) {
+            for (Folder folder : getController().getFolderRepository()
+                .getFolders())
+            {
                 if (folder.getLocalBase().equals(newLocation)) {
-                    DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation(
-                                    "preferences.dialog.duplicate_localbase.title"),
-                            Translation.getTranslation(
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("preferences.dialog.duplicate_localbase.title"),
+                            Translation
+                                .getTranslation(
                                     "preferences.dialog.duplicate_localbase.message",
-                                    folder.getName()),
-                            GenericDialogType.ERROR);
+                                    folder.getName()), GenericDialogType.ERROR);
                     return;
                 }
             }
