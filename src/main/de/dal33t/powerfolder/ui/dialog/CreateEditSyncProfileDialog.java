@@ -124,6 +124,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             "right:pref, 3dlu, pref",
             "pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setDefaultDialogBorder();
         CellConstraints cc = new CellConstraints();
 
         // Profile name
