@@ -65,8 +65,6 @@ import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
