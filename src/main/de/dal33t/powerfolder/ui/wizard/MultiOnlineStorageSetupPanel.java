@@ -109,15 +109,16 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, 122dlu, 3dlu, 15dlu, pref:grow",
+            "right:pref, 3dlu, 140dlu, 3dlu, 15dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation.getTranslation("general.directory"), cc
             .xy(1, 1));
-        builder.add(folderInfoCombo, cc.xyw(3, 1, 3));
+        builder.add(folderInfoCombo, cc.xy(3, 1));
 
         builder
             .add(
