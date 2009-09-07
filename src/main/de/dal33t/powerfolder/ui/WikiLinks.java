@@ -43,4 +43,5 @@ public interface WikiLinks {
     String SCRIPT_EXECUTION = "Script_execution";
     String DEFAULT_FOLDER = "Default_Folder";
     String INVITATIONS = "Invitations";
+    String TRANSFER_MODES = "Transfer_Modes";
 }
