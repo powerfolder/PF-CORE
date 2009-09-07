@@ -27,10 +27,12 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
 import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -194,7 +196,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private void buildPanel() {
         int iconHeight = configureButton.getIcon().getIconHeight();
         FormLayout layout = new FormLayout(
-            "120dlu, 3dlu, pref, pref, pref:grow", "max(pref;" + iconHeight + ")");
+            "140dlu, 3dlu, pref, pref, pref, pref:grow", "max(pref;"
+                + iconHeight + ")");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -202,6 +205,8 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         panel.add(syncProfilesCombo, cc.xy(1, 1));
         panel.add(configureButton, cc.xy(3, 1));
         panel.add(deleteButton, cc.xy(4, 1));
+        panel.add(Help.createWikiLinkButton(getController(),
+            WikiLinks.TRANSFER_MODES), cc.xy(5, 1));
     }
 
     /**
