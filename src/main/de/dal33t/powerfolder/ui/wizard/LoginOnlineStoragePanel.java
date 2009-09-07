@@ -159,7 +159,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
         row += 2;
 
-        builder.add(rememberPasswordBox, cc.xy(3, row));
+        builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
 
         if (showUseOS) {
