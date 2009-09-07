@@ -117,7 +117,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
                     .getTranslation("wizard.folder_online_storage.remove_success_title"),
                 Translation.getTranslation(
                     "wizard.folder_online_storage.remove_success_message",
-                    foInfo.name));
+                    foInfo.name), true);
         } else {
             task = new Runnable() {
                 public void run() {
