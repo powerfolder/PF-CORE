@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -136,6 +137,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Registered to ALL folders to deligate problem event of any folder to
      * registered listeners.
+     * <p>
+     * TODO: Valve listeners deteriorate the UI refresh speed.
      */
     private final ProblemListener valveProblemListenerSupport;
 
@@ -159,11 +162,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         folderRepositoryListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
 
-        folderListener = new MyFolderListener();
+        folderListener = new OverallStatsCaludatorFolderListener();
 
         overallFolderStatListenerSupport = ListenerSupportFactory
             .createListenerSupport(OverallFolderStatListener.class);
-
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
     }
@@ -1323,7 +1325,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private class MyFolderListener implements FolderListener {
+    private class OverallStatsCaludatorFolderListener implements FolderListener
+    {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             calculateOverallStats();
