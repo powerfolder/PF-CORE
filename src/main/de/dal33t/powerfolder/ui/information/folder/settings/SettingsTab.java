@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -195,7 +196,7 @@ public class SettingsTab extends PFUIComponent {
     private void buildUIComponent() {
         // label folder butn padding
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 122dlu, 3dlu, pref, pref:grow",
+            "3dlu, right:pref, 3dlu, 140dlu, 3dlu, pref, pref:grow",
             "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -229,7 +230,7 @@ public class SettingsTab extends PFUIComponent {
         if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
             builder.addLabel(Translation
                 .getTranslation("settings_tab.download_script"), cc.xy(2, row));
-            builder.add(createScriptField(), cc.xy(4, row));
+            builder.add(createScriptField(), cc.xyw(4, row, 4));
         }
 
         row += 2;
@@ -329,7 +330,7 @@ public class SettingsTab extends PFUIComponent {
             }
         });
 
-        FormLayout layout = new FormLayout("0:grow, 4dlu, 15dlu, 4dlu, pref",
+        FormLayout layout = new FormLayout("140dlu, 4dlu, pref, 4dlu, pref",
             "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -340,10 +341,10 @@ public class SettingsTab extends PFUIComponent {
         locationTF.setEditable(true);
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButton(Icons.DIRECTORY);
-        locationButton.setToolTipText(Translation
+        JButton locationButton = new JButtonMini(Icons
+            .getIconById(Icons.DIRECTORY), Translation
             .getTranslation("settings_tab.download_script"));
-        locationButton.addActionListener(new SelectScriptListener());
+        locationButton.addActionListener(new SelectScriptAction());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
             WikiLinks.SCRIPT_EXECUTION), cc.xy(5, 1));
@@ -764,8 +765,7 @@ public class SettingsTab extends PFUIComponent {
         if (fldr.isPreviewOnly()) {
 
             // Join preview folder.
-            PreviewToJoinPanel panel = new PreviewToJoinPanel(
-                controller, fldr);
+            PreviewToJoinPanel panel = new PreviewToJoinPanel(controller, fldr);
             panel.open();
 
         } else {
@@ -870,7 +870,7 @@ public class SettingsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            doPreviewChange (getController(), folder);
+            doPreviewChange(getController(), folder);
         }
     }
 
@@ -999,7 +999,7 @@ public class SettingsTab extends PFUIComponent {
      * Action listener for the location button. Opens a choose dir dialog and
      * sets the location model with the result.
      */
-    private class SelectScriptListener implements ActionListener {
+    private class SelectScriptAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) scriptModel.getValue();
             JFileChooser chooser = DialogFactory.createFileChooser();
