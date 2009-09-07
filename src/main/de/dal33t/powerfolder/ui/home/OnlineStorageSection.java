@@ -114,7 +114,7 @@ public class OnlineStorageSection extends PFUIComponent {
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("100dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu");
+            "pref, 3dlu, pref");
         // prog usage trial
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();

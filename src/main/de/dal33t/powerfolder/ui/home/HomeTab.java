@@ -47,7 +47,9 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -67,13 +69,15 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -104,6 +108,7 @@ public class HomeTab extends PFUIComponent {
     private ActionLabel onlineStorageAccountLabel;
     private OnlineStorageSection onlineStorageSection;
     private LicenseInfoSection licenseInfoSection;
+    private LinkLabel buyNowLabel;
     private ActionLabel tellFriendLabel;
 
     private final ValueModel newWarningsCountVM;
@@ -147,6 +152,8 @@ public class HomeTab extends PFUIComponent {
             new MyNodeManagerListener());
         getApplicationModel().getUseOSModel().addValueChangeListener(
             new UseOSModelListener());
+        getApplicationModel().getLicenseModel().getDaysValidModel()
+            .addValueChangeListener(new MyDaysValidListener());
     }
 
     /**
@@ -198,13 +205,15 @@ public class HomeTab extends PFUIComponent {
         numberOfFoldersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.folders"), null, false, true, null, null);
         sizeOfFoldersLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.total", "KB"), null, true, false, null, null);
+            .getTranslation("home_tab.total", "KB"), null, true, false, null,
+            null);
         filesAvailableLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.files_available"), null, true, true, null, null);
+            .getTranslation("home_tab.files_available"), null, true, true,
+            null, null);
         newWarningsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_warnings"), null, true, true,
             getApplicationModel().getActionModel().getActivateWarningAction(),
-                Icons.getIconById(Icons.WARNING));
+            Icons.getIconById(Icons.WARNING));
         newInvitationsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_invitations"), null, true, true,
             getApplicationModel().getActionModel()
@@ -212,7 +221,7 @@ public class HomeTab extends PFUIComponent {
         newFriendRequestsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_friend_requests"), null, true, true,
             getApplicationModel().getActionModel().getAskForFriendshipAction(),
-                Icons.getIconById(Icons.WARNING));
+            Icons.getIconById(Icons.WARNING));
         newSingleFileOffersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_single_file_offers"), null, true,
             true, getApplicationModel().getActionModel()
@@ -241,6 +250,15 @@ public class HomeTab extends PFUIComponent {
         onlineStorageSection.getUIComponent().setBorder(
             Borders.createEmptyBorder("0, 0, 3dlu, 0"));
         licenseInfoSection = new LicenseInfoSection(getController());
+        buyNowLabel = new LinkLabel(getController(), "", "");
+        UIUtil.convertToBigLabel((JLabel) buyNowLabel.getUIComponent());
+        buyNowLabel.getUIComponent().setVisible(false);
+        buyNowLabel.getUIComponent().setBorder(
+            Borders.createEmptyBorder("20dlu, 0, 0, 0"));
+        if (!ProUtil.isRunningProVersion() && Feature.BETA.isDisabled()) {
+            showBuyNowLink(Translation
+                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+        }
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
@@ -258,6 +276,7 @@ public class HomeTab extends PFUIComponent {
         recalculateFilesAvailable();
         updateComputers();
         updateOnlineStorageDetails();
+        updateLicenseDetails();
         updateNewInvitationsText();
         updateNewWarningsText();
         updateNewComputersText();
@@ -303,7 +322,7 @@ public class HomeTab extends PFUIComponent {
                 // have
                 // section
                 "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
-                "pref, 3dlu, pref, pref, pref, 3dlu, " + // Online
+                "pref, 3dlu, pref, pref, pref, pref, 3dlu, " + // Online
                 // Storage
                 // section + License key section
                 "pref:grow, pref");
@@ -361,6 +380,8 @@ public class HomeTab extends PFUIComponent {
         builder.add(onlineStorageSection.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
+        row++;
+        builder.add(buyNowLabel.getUIComponent(), cc.xy(1, row));
         row += 3;
         builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
@@ -423,6 +444,12 @@ public class HomeTab extends PFUIComponent {
         newSingleFileOffersLine.setValue(integer);
     }
 
+    private void showBuyNowLink(String text) {
+        buyNowLabel.setTextAndURL(text, ConfigurationEntry.PROVIDER_BUY_URL
+            .getValue(getController()));
+        buyNowLabel.getUIComponent().setVisible(true);
+    }
+
     /**
      * Cretes the toolbar.
      * 
@@ -432,8 +459,8 @@ public class HomeTab extends PFUIComponent {
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
-        JButton newFolderButton = new JButton(getApplicationModel().getActionModel()
-                .getNewFolderAction());
+        JButton newFolderButton = new JButton(getApplicationModel()
+            .getActionModel().getNewFolderAction());
         bar.addGridded(newFolderButton);
         if (!getController().isBackupOnly()) {
             JButton searchComputerButton = new JButton(getApplicationModel()
@@ -471,11 +498,35 @@ public class HomeTab extends PFUIComponent {
         computersLine.setValue(nodeCount);
     }
 
+    private void updateLicenseDetails() {
+        licenseInfoSection.getUIComponent();
+        Integer daysValid = (Integer) getApplicationModel().getLicenseModel()
+            .getDaysValidModel().getValue();
+        if (daysValid != null) {
+            licenseInfoSection.setDaysValid(daysValid);
+        } else {
+            licenseInfoSection.setDaysValid(-1);
+        }
+
+        // Display buynow link: If is trial or about to expire
+        boolean trial = ProUtil.isTrial(getController());
+        boolean allowed = ProUtil.isAllowedToRun(getController());
+        boolean aboutToExpire = daysValid != -1 && daysValid < 30;
+        if (trial || !allowed) {
+            showBuyNowLink(Translation
+                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+        } else if (aboutToExpire) {
+            showBuyNowLink(Translation
+                .getTranslation("pro.home_tab.renew_license"));
+        }
+    }
+
     /**
      * Updates the Online Storage details.
      */
     private void updateOnlineStorageDetails() {
         boolean active = false;
+        boolean showBuyNow = false;
         if (client.getUsername() == null
             || client.getUsername().trim().length() == 0)
         {
@@ -505,6 +556,7 @@ public class HomeTab extends PFUIComponent {
                 onlineStorageAccountLabel
                     .setToolTipText(Translation
                         .getTranslation("home_tab.online_storage.account_disabled.tips"));
+                showBuyNow = true;
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
                     "home_tab.online_storage.account", client.getUsername()));
@@ -530,12 +582,21 @@ public class HomeTab extends PFUIComponent {
                 .getOSSubscription();
             long totalStorage = storageSubscription.getStorageSize();
             long spaceUsed = client.getAccountDetails().getSpaceUsed();
-
+            if (spaceUsed > ((double) totalStorage) * 0.8) {
+                showBuyNow = true;
+            }
             onlineStorageSection.getUIComponent().setVisible(true);
             onlineStorageSection.setInfo(totalStorage, spaceUsed);
         } else {
             onlineStorageSection.getUIComponent().setVisible(false);
         }
+
+        // Show Buy now link if: Disabled OR >80%
+        if (showBuyNow) {
+            showBuyNowLink(Translation
+                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+        }
+
     }
 
     private void displaySyncStats(Date syncDate, boolean synced,
@@ -827,6 +888,12 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
+    private final class MyDaysValidListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateLicenseDetails();
+        }
+    }
+
     private class MyOfferPropertyListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -877,8 +944,8 @@ public class HomeTab extends PFUIComponent {
         @Override
         public void startStop(NodeManagerEvent e) {
             initialSyncStats();
+            updateLicenseDetails();
         }
-
     }
 
     /**

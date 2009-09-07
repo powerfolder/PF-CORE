@@ -22,11 +22,8 @@ package de.dal33t.powerfolder.ui.home;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
@@ -35,18 +32,11 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class to render the online storage trial info on the home tab.
@@ -57,7 +47,6 @@ public class LicenseInfoSection extends PFUIComponent {
 
     private JProgressBar progressBar;
     private ActionLabel infoLabel;
-    private LinkLabel buyNowLabel;
 
     /**
      * Constructor.
@@ -83,15 +72,13 @@ public class LicenseInfoSection extends PFUIComponent {
      * Build the uiComponent. Adds separator, progress bar and label.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("100dlu, pref:grow",
-            "pref, pref, 20dlu, pref");
+        FormLayout layout = new FormLayout("100dlu, pref:grow", "pref, pref");
         // space prog label
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(progressBar, cc.xy(1, 1));
         builder.add(infoLabel.getUIComponent(), cc.xywh(1, 2, 2, 1));
-        builder.add(buyNowLabel.getUIComponent(), cc.xyw(1, 4, 2));
 
         uiComponent = builder.getPanel();
     }
@@ -113,46 +100,15 @@ public class LicenseInfoSection extends PFUIComponent {
         infoLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("3dlu, 0, 0, 0"));
 
-        buyNowLabel = new LinkLabel(getController(), Translation
-            .getTranslation("pro.home_tab.upgrade_to_full"),
-            ConfigurationEntry.PROVIDER_BUY_URL.getValue(getController()));
-        UIUtil.convertToBigLabel((JLabel) buyNowLabel.getUIComponent());
-
-        getApplicationModel().getLicenseModel().getDaysValidModel()
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Integer daysValid = (Integer) getApplicationModel()
-                        .getLicenseModel().getDaysValidModel().getValue();
-                    if (daysValid != null) {
-                        setDaysValid(daysValid);
-                    }
-                }
-            });
         setDaysValid(-1);
-
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
     }
 
-    private void setDaysValid(int days) {
-        boolean trial = ProUtil.isTrial(getController());
+    void setDaysValid(int days) {
         boolean aboutToExpire = days != -1 && days < 30;
         boolean disabled = !getController().getNodeManager().isStarted();
 
-        if (trial) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.upgrade_to_full"));
-        } else if (aboutToExpire) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.renew_license"));
-        } else {
-            showBuyNowLink(null);
-        }
-
         if (disabled) {
-
             infoLabel.setIcon(Icons.getIconById(Icons.WARNING));
-
             infoLabel.setText(Translation
                 .getTranslation("pro.home_tab.disabled"));
             infoLabel.setToolTipText(Translation
@@ -182,16 +138,6 @@ public class LicenseInfoSection extends PFUIComponent {
 
     }
 
-    private void showBuyNowLink(String text) {
-        if (StringUtils.isBlank(text)) {
-            buyNowLabel.getUIComponent().setVisible(false);
-            return;
-        }
-        buyNowLabel.setTextAndURL(text, ConfigurationEntry.PROVIDER_BUY_URL
-            .getValue(getController()));
-        buyNowLabel.getUIComponent().setVisible(true);
-    }
-
     private class MyClickListener extends MouseAdapter {
 
         @Override
@@ -201,23 +147,6 @@ public class LicenseInfoSection extends PFUIComponent {
                 getApplicationModel().getLicenseModel().getActivationAction()
                     .actionPerformed(
                         new ActionEvent(e.getSource(), 0, "clicked"));
-            }
-        }
-
-    }
-
-    private class MyNodeManagerListener extends NodeManagerAdapter {
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        @Override
-        public void startStop(NodeManagerEvent e) {
-            Integer daysValid = (Integer) getApplicationModel()
-                .getLicenseModel().getDaysValidModel().getValue();
-            if (daysValid != null) {
-                setDaysValid(daysValid);
             }
         }
 
