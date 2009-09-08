@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.io.BufferedOutputStream;
@@ -47,26 +47,7 @@ public class CleanupTranslationFiles {
     /**
      * Removes the translation of the following keys to force retranslation
      */
-    private static final String[] RETRANSLATE = {"quickinfo.webservice.folders_mirrored"};
-    // "preferences.dialog.show_preview_panel.tooltip",
-    //
-    //        
-    // "preferences.dialog.startPanel.myFolders", "quickinfo.my_folders.title",
-    // "title.my.folders", "about.dialog.professional_folder_sharing_tool",
-    // "create_shortcut.description", "dialog.add_member_to_friend_list.explain",
-    // "dialog.add_member_to_friend_list.question",
-    // "filelist.status.no_files_available_add_files_and_invite",
-    // "folder_create.description", "folder_create.dialog.backup_error.text",
-    // "folder_create.dialog.backup_error.title",
-    // "folder_create.dialog.save_invitation", "folder_create.dialog.settings",
-    // "folder_create.dialog.title", "folder_create.error.already_taken",
-    // "folder_create.dirempty.text", "folder_create.error.it_is_base_dir",
-    // "folder_create.name_empty.text", "folder_create.name_empty.title",
-    // "folder_create.progress.text", "folder_create.success",
-    // "folder_exception.dialog.text", "folder_exception.dialog.title",
-    // "folder_join.description", "folder_join.dialog.title",
-    // "folder_leave.description", "folder_leave.description",
-    // "folder_leave.dialog.text", "folder_leave.dialog.title"};
+    private static final String[] RETRANSLATE = {};
 
     private static final String headerText = "#\n# PowerFolder translation file\n"
         + "#\n"
@@ -75,10 +56,13 @@ public class CleanupTranslationFiles {
         + "# You just need to translate the english text behind the =\n"
         + "# Then remove the ## in front of the line.\n"
         + "#\n"
+        + "# Original English texts for existing translations are\n"
+        + "# indicated with a proceeding #orig#.\n"
+        + "#\n"
         + "# Pro version translations start with the prefix 'pro.'\n"
         + "#\n"
         + "# There is also a guide on our offical webpage under\n"
-        + "# http://www.powerfolder.com/node/i18n\n"
+        + "# http://www.powerfolder.com/development.html\n"
         + "#\n"
         + "# When you are completed please send your translation file to\n"
         + "# translation@powerfolder.com\n"
@@ -99,7 +83,7 @@ public class CleanupTranslationFiles {
         }
         Collections.sort(keys);
 
-        writeTranslationFile(null, keys, originals);
+        // writeTranslationFile(null, keys, originals);
 
         Locale[] supportedLocales = Translation.getSupportedLocales();
         for (Locale locale : supportedLocales) {
@@ -152,12 +136,13 @@ public class CleanupTranslationFiles {
 
         for (String key : keys) {
             String val = translations.getProperty(key);
+            String originalVal = originals.getProperty(key);
             if (Arrays.asList(RETRANSLATE).contains(key)) {
                 val = null;
             }
             boolean translationFound = val != null;
             if (val == null) {
-                val = originals.getProperty(key);
+                val = originalVal;
             }
 
             // Get prefix
@@ -172,6 +157,12 @@ public class CleanupTranslationFiles {
 
             try {
                 if (!prefix.equals(lastPrefix)) {
+                    out.newLine();
+                }
+                if (translationFound) {
+                    out.write("#orig#");
+                    out.write(saveConvert(key, true) + "="
+                        + saveConvert(originalVal, false));
                     out.newLine();
                 }
                 if (!translationFound && !original) {
