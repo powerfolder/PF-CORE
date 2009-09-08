@@ -32,8 +32,10 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -225,7 +227,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(udtConnectionBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(httpProxyButton, cc.xy(3, row));
+            builder.add(ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
+                cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation

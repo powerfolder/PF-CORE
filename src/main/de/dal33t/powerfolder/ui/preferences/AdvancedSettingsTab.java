@@ -325,7 +325,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
             if (FirewallUtil.isFirewallAccessible()) {
                 row += 2;
-                builder.add(openport, cc.xyw(3, row, 2));
+                builder.add(openport, cc.xy(3, row));
             }
 
             row += 2;

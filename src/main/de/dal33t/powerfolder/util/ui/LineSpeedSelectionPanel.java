@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -44,7 +44,8 @@ import java.util.logging.Logger;
  */
 public class LineSpeedSelectionPanel extends JPanel {
 
-    private static final Logger log = Logger.getLogger(LineSpeedSelectionPanel.class.getName());
+    private static final Logger log = Logger
+        .getLogger(LineSpeedSelectionPanel.class.getName());
 
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
@@ -116,19 +117,18 @@ public class LineSpeedSelectionPanel extends JPanel {
 
     private JPanel createCustomSpeedInputFieldPanel() {
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, pref:grow, 3dlu, pref", "pref, 3dlu, pref");
+            "pref:grow, 3dlu, pref, 3dlu, 30dlu, 7dlu, pref, 3dlu, 30dlu",
+            "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("line_speed.download_speed")), cc.xy(1, 1));
-        builder.add(customDownloadSpeedField, cc.xy(3, 1));
-        builder.add(new JLabel("KB/s"), cc.xy(5, 1));
+            .getTranslation("line_speed.download_speed")), cc.xy(3, 1));
+        builder.add(customDownloadSpeedField, cc.xy(5, 1));
 
         builder.add(new JLabel(Translation
-            .getTranslation("line_speed.upload_speed")), cc.xy(1, 3));
-        builder.add(customUploadSpeedField, cc.xy(3, 3));
-        builder.add(new JLabel("KB/s"), cc.xy(5, 3));
+            .getTranslation("line_speed.upload_speed")), cc.xy(7, 1));
+        builder.add(customUploadSpeedField, cc.xy(9, 1));
 
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
@@ -308,7 +308,7 @@ public class LineSpeedSelectionPanel extends JPanel {
         }
         return -1;
     }
-    
+
     @Override
     public void setEnabled(boolean enabled) {
         customSpeedPanel.setEnabled(enabled);
@@ -331,7 +331,7 @@ public class LineSpeedSelectionPanel extends JPanel {
 
         /**
          * Creates a new LineSpeed
-         *
+         * 
          * @param desc
          *            the "name" of the speed value
          * @param uploadSpeed
