@@ -19,20 +19,23 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.util.Translation;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
-import java.util.logging.Logger;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -69,14 +72,15 @@ public class LineSpeedSelectionPanel extends JPanel {
     }
 
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, pref");
         setLayout(layout);
 
         CellConstraints cc = new CellConstraints();
         customSpeedPanel = createCustomSpeedInputFieldPanel();
+        customSpeedPanel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
 
         add(speedSelectionBox, cc.xy(1, 1));
-        add(customSpeedPanel, cc.xy(1, 3));
+        add(customSpeedPanel, cc.xy(1, 2));
     }
 
     private void initComponents() {
