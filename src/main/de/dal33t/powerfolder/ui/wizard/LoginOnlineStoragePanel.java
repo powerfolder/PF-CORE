@@ -34,6 +34,8 @@ import javax.swing.JTextField;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
+import com.jgoodies.binding.value.AbstractConverter;
+import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -163,13 +165,12 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         row += 2;
 
         if (showUseOS) {
+            builder.add(useOSBox, cc.xyw(1, row, 4));
+            row += 2;
             LinkLabel link = new LinkLabel(getController(), Translation
                 .getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUIComponent(), cc.xyw(1, row, 5));
-            row += 2;
-
-            builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
         }
 
@@ -213,9 +214,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
-        useOSBox = BasicComponentFactory.createCheckBox(getController()
-            .getUIController().getApplicationModel().getUseOSModel(),
-            Translation.getTranslation("wizard.login_online_storage.no_os"));
+        useOSBox = BasicComponentFactory.createCheckBox(
+            new BooleanNotConverter(getController().getUIController()
+                .getApplicationModel().getUseOSModel()), Translation
+                .getTranslation("wizard.login_online_storage.no_os"));
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
@@ -294,4 +296,18 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         }
     }
 
+    private final class BooleanNotConverter extends AbstractConverter {
+        private BooleanNotConverter(ValueModel subject) {
+            super(subject);
+        }
+
+        @Override
+        public Object convertFromSubject(Object b) {
+            return !(Boolean) b;
+        }
+
+        public void setValue(Object b) {
+            subject.setValue(!(Boolean) b);
+        }
+    }
 }

@@ -103,6 +103,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             "right:pref, 3dlu, 140dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation
