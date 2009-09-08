@@ -31,14 +31,18 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
-import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
@@ -172,16 +176,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
 
-        Member server = getController().getOSClient().getServer();
-        serverModel = new ValueHolder(server, true);
-        severSelector = new ServerSelectorPanel(getController(), serverModel);
+        severSelector = new ServerSelectorPanel(getController());
 
-        useOnlineStorageCB = new JCheckBox(Translation.getTranslation(
-                "preferences.dialog.online_storage.text"));
-        useOnlineStorageCB.setToolTipText(Translation.getTranslation(
-                "preferences.dialog.online_storage.tip"));
+        useOnlineStorageCB = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.online_storage.text"));
+        useOnlineStorageCB.setToolTipText(Translation
+            .getTranslation("preferences.dialog.online_storage.tip"));
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController()));
+            .getValueBoolean(getController()));
         enableDisableComponents(getController().isLanOnly());
     }
 
@@ -203,8 +205,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 "right:pref, 3dlu, 140dlu, pref:grow",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders.createEmptyBorder(
-                    "3dlu, 3dlu, 3dlu, 3dlu"));
+            builder.setBorder(Borders
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
@@ -212,10 +214,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.network_mode.name"), cc.xy(
                 1, row));
             builder.add(networkingMode, cc.xy(3, row));
-            
+
             row += 2;
             builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
-            
+
             row += 2;
             builder.add(relayedConnectionBox, cc.xyw(3, row, 2));
 
@@ -227,18 +229,19 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.line_settings"), cc.xy(1,
-                row));
+                .getTranslation("preferences.dialog.line_settings"), cc.xywh(1,
+                row, 1, 1, "default, top"));
             builder.add(wanSpeed, cc.xy(3, row));
 
             row += 2;
             builder.addLabel(Translation
-                .getTranslation("preferences.dialog.lan_line_settings"), cc.xy(
-                1, row));
+                .getTranslation("preferences.dialog.lan_line_settings"), cc
+                .xywh(1, row, 1, 1, "default, top"));
             builder.add(lanSpeed, cc.xy(3, row));
 
             row += 2;
-            builder.add(silentThrottleLabel, cc.xy(1, row));
+            builder.add(silentThrottleLabel, cc.xywh(1, row, 1, 1,
+                "default, top"));
             builder.add(silentModeThrottle, cc.xy(3, row));
 
             if (getController().getDistribution().allowUserToSelectServer()) {
@@ -260,11 +263,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
      */
     public void save() {
 
-        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
-                ^ useOnlineStorageCB.isSelected()) {
+        if (PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController())
+            ^ useOnlineStorageCB.isSelected())
+        {
             needsRestart = true;
         }
-        
+
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
@@ -282,7 +287,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         Member oldServer = getController().getOSClient().getServer();
         Member newServer = (Member) serverModel.getValue();
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
-                useOnlineStorageCB.isSelected());
+            useOnlineStorageCB.isSelected());
         if (newServer == null) {
             ConfigurationEntry.SERVER_NAME.removeValue(getController());
             ConfigurationEntry.SERVER_HOST.removeValue(getController());
