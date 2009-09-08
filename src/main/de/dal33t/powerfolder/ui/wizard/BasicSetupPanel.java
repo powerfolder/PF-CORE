@@ -28,8 +28,6 @@ import java.util.Locale;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -46,12 +44,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LineSpeedSelectionPanel;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -84,17 +79,6 @@ public class BasicSetupPanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-        long uploadSpeedKBPS = wanLineSpeed.getUploadSpeedKBPS();
-        long downloadSpeedKBPS = wanLineSpeed.getDownloadSpeedKBPS();
-        if (uploadSpeedKBPS == 0 && downloadSpeedKBPS == 0) {
-            int result = DialogFactory.genericDialog(getController(),
-                Translation.getTranslation("wizard.basic_setup.upload.title"),
-                Translation.getTranslation("wizard.basic_setup.upload.text"),
-                new String[]{Translation.getTranslation("general.continue"),
-                    Translation.getTranslation("general.cancel")}, 0,
-                GenericDialogType.WARN); // Default is continue.
-            return result == 0; // Continue
-        }
         return true;
     }
 
