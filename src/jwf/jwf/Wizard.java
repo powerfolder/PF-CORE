@@ -150,10 +150,16 @@ public class Wizard extends JPanel implements ActionListener {
 
             finishButton.setActionCommand("Finish");
             finishButton.setToolTipText(map.get(FINISH_I18N_DESCRIPTION));
+            finishButton.setMinimumSize(nextButton.getMinimumSize());
+            finishButton.setMaximumSize(nextButton.getMaximumSize());
+            finishButton.setPreferredSize(nextButton.getPreferredSize());
 
             cancelButton.setText(map.get(CANCEL_I18N));
             cancelButton.setToolTipText(map.get(CANCEL_I18N_DESCRIPTION));
             cancelButton.setActionCommand("Cancel");
+            cancelButton.setMinimumSize(nextButton.getMinimumSize());
+            cancelButton.setMaximumSize(nextButton.getMaximumSize());
+            cancelButton.setPreferredSize(nextButton.getPreferredSize());
 
             helpButton.setText(map.get(HELP_I18N));
             helpButton.setToolTipText(map.get(HELP_I18N_DESCRIPTION));
