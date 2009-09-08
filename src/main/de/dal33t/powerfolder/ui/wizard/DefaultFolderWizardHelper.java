@@ -74,8 +74,7 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
         setupDefaultCB = BasicComponentFactory.createCheckBox(
             setupDefaultModel, Translation
                 .getTranslation("wizard.login_online_storage.setup_default"));
-        setupDefaultCB.setOpaque(true);
-        setupDefaultCB.setBackground(Color.white);
+        setupDefaultCB.setOpaque(false);
 
         defaultSynchronizedFolder = new File(getController()
             .getFolderRepository().getFoldersBasedir(), Translation
@@ -98,12 +97,12 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
             CellConstraints cc = new CellConstraints();
             builder.add(setupDefaultCB, cc.xy(1, 1));
             builder.add(Help.createWikiLinkButton(getController(),
-                    WikiLinks.DEFAULT_FOLDER),
-                    cc.xy(3, 1));
+                WikiLinks.DEFAULT_FOLDER), cc.xy(3, 1));
             builder.setOpaque(true);
             builder.setBackground(Color.white);
 
             panel = builder.getPanel();
+            panel.setOpaque(false);
             updateVisibility();
         }
         return panel;
@@ -123,8 +122,8 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
 
             // If there is already a default folder for this account, use that
             FolderInfo accountFolder = account.getDefaultSynchronizedFolder();
-            logInfo("Default synced folder on " + account.getUsername() + " is "
-                    + accountFolder);
+            logInfo("Default synced folder on " + account.getUsername()
+                + " is " + accountFolder);
 
             FolderInfo foInfo;
             if (accountFolder == null) {
