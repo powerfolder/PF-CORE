@@ -119,7 +119,7 @@ public class BasicSetupPanel extends PFWizardPanel {
                 .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
                 1, 5));
         builder.add(languageChooser, cc.xy(3, 5));
-        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 3));
+        builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 2));
 
         return builder.getPanel();
     }
