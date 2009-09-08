@@ -85,7 +85,7 @@ public class BasicSetupPanel extends PFWizardPanel {
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, 140dlu, pref:grow",
-            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
@@ -93,11 +93,9 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.addLabel(Translation
             .getTranslation("wizard.basic_setup.computer_name"), cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
-        // builder.addLabel(Translation
-        // .getTranslation("wizard.basic_setup.networking"), cc.xy(1, 3));
-        // builder.add(networkingModeChooser, cc.xy(3, 3));
         builder.addLabel(Translation
-            .getTranslation("preferences.dialog.line_settings"), cc.xy(1, 3));
+            .getTranslation("preferences.dialog.line_settings"), cc.xywh(1, 3,
+            1, 1, "default, top"));
         builder.add(wanLineSpeed, cc.xy(3, 3));
         builder
             .addLabel(Translation
