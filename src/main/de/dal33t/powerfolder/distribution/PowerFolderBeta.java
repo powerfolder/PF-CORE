@@ -49,11 +49,6 @@ public class PowerFolderBeta extends AbstractDistribution {
         return true;
     }
 
-    public boolean allowUserToSelectServer() {
-        // Don't allow the user to change the server.
-        return true;
-    }
-
     public UpdateSetting createUpdateSettings() {
         return null;
     }

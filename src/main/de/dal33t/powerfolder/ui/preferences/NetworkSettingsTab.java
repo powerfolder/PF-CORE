@@ -31,9 +31,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -41,7 +40,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -63,8 +61,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private JLabel silentThrottleLabel;
     private JButton httpProxyButton;
     private ServerSelectorPanel severSelector;
-    private ValueModel serverModel;
     private JCheckBox useOnlineStorageCB;
+    private JComboBox serverDisconnectBehaviorBox;
 
     public NetworkSettingsTab(Controller controller) {
         super(controller);
@@ -187,6 +185,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
         enableDisableComponents(getController().isLanOnly());
+
+        options = new String[]{
+            Translation
+                .getTranslation("preferences.dialog.server_disconnect.sync"),
+            Translation
+                .getTranslation("preferences.dialog.server_disconnect.nosync")};
+        serverDisconnectBehaviorBox = new JComboBox(options);
+        int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+            .getValueBoolean(getController()) ? 0 : 1;
+        serverDisconnectBehaviorBox.setSelectedIndex(selected);
     }
 
     private void enableDisableComponents(boolean lanOnly) {
@@ -205,8 +213,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
-            PanelBuilder builder = new PanelBuilder(layout);
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            PanelBuilder builder = new PanelBuilder(layout,
+                new FormDebugPanel());
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
             CellConstraints cc = new CellConstraints();
@@ -247,14 +256,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 "default, top"));
             builder.add(silentModeThrottle, cc.xy(3, row));
 
-            if (getController().getDistribution().allowUserToSelectServer()) {
-                row += 2;
-                builder
-                    .addLabel(Translation
-                        .getTranslation("preferences.dialog.server"), cc.xy(1,
-                        row));
-                builder.add(severSelector.getUIComponent(), cc.xy(3, row));
-            }
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.server"), cc.xy(1, row));
+            builder.add(severSelector.getUIComponent(), cc.xy(3, row));
+
+            row += 2;
+            builder.addLabel(Translation
+                .getTranslation("preferences.dialog.server_disconnect"), cc.xy(
+                1, row));
+            builder.add(serverDisconnectBehaviorBox, cc.xy(3, row));
 
             panel = builder.getPanel();
         }
@@ -287,22 +298,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             getController(), "" + relayedConnectionBox.isSelected());
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(), ""
             + udtConnectionBox.isSelected());
-        Member oldServer = getController().getOSClient().getServer();
-        Member newServer = (Member) serverModel.getValue();
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
             useOnlineStorageCB.isSelected());
-        if (newServer == null) {
-            ConfigurationEntry.SERVER_NAME.removeValue(getController());
-            ConfigurationEntry.SERVER_HOST.removeValue(getController());
-            ConfigurationEntry.SERVER_NODEID.removeValue(getController());
-            ConfigurationEntry.SERVER_WEB_URL.removeValue(getController());
-        } else if (!newServer.equals(oldServer)) {
-            getController().getOSClient()
-                .setServerInConfig(newServer.getInfo());
-            // TODO: Unknown.
-            getController().getOSClient().setServerWebURLInConfig(null);
-            getController().getOSClient().setServer(newServer, false);
-        }
+        boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
+        ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS.setValue(
+            getController(), String.valueOf(syncAnyways));
     }
 
     private static String getTooltip(NetworkingMode nm) {
