@@ -35,6 +35,8 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 public class OnlineStorageSubscription extends Model implements Serializable {
     private static final long serialVersionUID = 8695479753037728184L;
 
+    public static final String PROPERTY_TRIAL = "trial";
+    public static final String PROPERTY_STORAGE_SIZE = "storageSize";
     public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
@@ -167,6 +169,18 @@ public class OnlineStorageSubscription extends Model implements Serializable {
      */
     public long getStorageSize() {
         return storageSize;
+    }
+
+    public void setStorageSize(long storageSize) {
+        Object oldValue = getStorageSize();
+        this.storageSize = storageSize;
+        firePropertyChange(PROPERTY_STORAGE_SIZE, oldValue, this.storageSize);
+    }
+
+    public void setTrial(boolean trial) {
+        Object oldValue = isTrial();
+        this.trial = trial;
+        firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
     }
 
     /**
