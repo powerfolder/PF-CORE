@@ -1175,8 +1175,7 @@ public class UIController extends PFComponent {
      *            message
      */
     public void notifyMessage(String title, String message, boolean chat) {
-        if (started && mainFrame.isIconifiedOrHidden()
-            && !getController().isShuttingDown())
+        if (started && !getController().isShuttingDown())
         {
             if (chat
                 ? (Boolean) applicationModel.getChatNotificationsValueModel()
