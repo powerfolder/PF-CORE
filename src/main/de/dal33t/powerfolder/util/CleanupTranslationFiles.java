@@ -58,6 +58,7 @@ public class CleanupTranslationFiles {
         + "#\n"
         + "# Original English texts for existing translations are\n"
         + "# indicated with a proceeding #orig#.\n"
+        + "# Please check if the meaning is still the same.\n"
         + "#\n"
         + "# Pro version translations start with the prefix 'pro.'\n"
         + "#\n"
