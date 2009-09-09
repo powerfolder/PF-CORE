@@ -217,11 +217,12 @@ public class HomeTab extends PFUIComponent {
         newInvitationsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_invitations"), null, true, true,
             getApplicationModel().getActionModel()
-                .getOpenInvitationReceivedWizardAction(), null);
+                .getOpenInvitationReceivedWizardAction(), Icons
+                .getIconById(Icons.INFORMATION));
         newFriendRequestsLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_friend_requests"), null, true, true,
             getApplicationModel().getActionModel().getAskForFriendshipAction(),
-            Icons.getIconById(Icons.WARNING));
+            Icons.getIconById(Icons.INFORMATION));
         newSingleFileOffersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.new_single_file_offers"), null, true,
             true, getApplicationModel().getActionModel()
