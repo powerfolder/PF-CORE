@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
  */
 public class OnlineStorageSubscription extends Model implements Serializable {
     private static final long serialVersionUID = 8695479753037728184L;
-    
+
     public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
@@ -172,19 +172,20 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public int getStorageSizeGB() {
         return (int) (getStorageSize() / 1024 / 1024 / 1024);
     }
-    
+
     public boolean isTrial() {
         return type.isTrial();
     }
-    
+
     public String getArticleNo() {
         return type.getArticleNo();
     }
 
     public String getDescription() {
-        return type.getDescription();
+        return getStorageSizeGB() + " GB";
     }
 
+    @Deprecated
     public OnlineStorageSubscriptionType getType() {
         return type;
     }
@@ -193,5 +194,11 @@ public class OnlineStorageSubscription extends Model implements Serializable {
         Object oldValue = getType();
         this.type = type;
         firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+    }
+
+    @Override
+    public String toString() {
+        return "OS Subscription " + getDescription() + ", valid till "
+            + getValidTill() + ", trial? " + isTrial();
     }
 }

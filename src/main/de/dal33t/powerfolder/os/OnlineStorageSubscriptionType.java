@@ -28,24 +28,24 @@ package de.dal33t.powerfolder.os;
  */
 @Deprecated
 public enum OnlineStorageSubscriptionType {
-    TRIAL("OS-T", "1 GB (30 days)", 1, true, false),
-    TRIAL_PRO("OS-TP", "DONTUSE: 1 GB (60)", 1, true, false), 
-    STARTER("OS-1", "1 GB", 1, false, true),
-    BASIC("OS-5", "5 GB", 5, false, true),
-    ADVANCED("OS-10", "10 GB", 10, false, true),
+    TRIAL("OS-T", 1, true, false),
+    TRIAL_PRO("OS-TP", 1, true, false), 
+    STARTER("OS-1", 1, false, true),
+    BASIC("OS-5", 5, false, true),
+    ADVANCED("OS-10",  10, false, true),
 
     /**
      * For JUNIT testing only
      */
     TEST_TRIAL(true),
 
-    SMALL_ENTERPRISE("OS-20", "20 GB", 20, false, true),
-    UNLIMITED("OS-U", "Unlimited", 9999, false, true),
-    NONE("OS-N", "None", 0, false, true),
-    GB50("OS-50", "50 GB", 50, false, true),
-    GB100("OS-100", "100 GB", 100, false, true),
-    GB250("OS-250", "250 GB", 250, false, true),
-    TRIAL_5GB("OS-T-5", "5 GB (30 days)", 5, true, false),
+    SMALL_ENTERPRISE("OS-20", 20, false, true),
+    UNLIMITED("OS-U", 9999, false, true),
+    NONE("OS-N", 0, false, true),
+    GB50("OS-50", 50, false, true),
+    GB100("OS-100", 100, false, true),
+    GB250("OS-250", 250, false, true),
+    TRIAL_5GB("OS-T-5", 5, true, false),
     
     /**
      * For JUNIT testing only
@@ -53,16 +53,14 @@ public enum OnlineStorageSubscriptionType {
     TEST_PAYING(false);
 
     private String articleNo;
-    private String description;
     private long storageSize;
     private boolean trial;
     private boolean active;
 
-    private OnlineStorageSubscriptionType(String articleNo, String description,
+    private OnlineStorageSubscriptionType(String articleNo,
         long gbs, boolean trial, boolean active)
     {
         this.articleNo = articleNo;
-        this.description = description;
         this.storageSize = gbs * 1024 * 1024 * 1024;
         this.trial = trial;
         this.active = active;
@@ -73,7 +71,6 @@ public enum OnlineStorageSubscriptionType {
      */
     private OnlineStorageSubscriptionType(boolean trial) {
         this.articleNo = "TEST";
-        this.description = "DONTUSE: 1 MB Test subscription";
         this.storageSize = 1 * 1024 * 1024;
         this.trial = trial;
         this.active = false;
@@ -94,11 +91,6 @@ public enum OnlineStorageSubscriptionType {
     @Deprecated
     public String getArticleNo() {
         return articleNo;
-    }
-
-    @Deprecated
-    public String getDescription() {
-        return description;
     }
 
     /**
