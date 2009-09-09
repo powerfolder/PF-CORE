@@ -42,6 +42,9 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public static final String PROPERTY_DISABLED_EXPIRATION_DATE = "disabledExpirationDate";
     public static final String PROPERTY_TYPE = "type";
 
+    private long storageSize;
+    private boolean trial;
+
     private Date validTill;
 
     private Date warnedUsageDate;
@@ -163,7 +166,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
      * @return the storage size in bytes
      */
     public long getStorageSize() {
-        return type.getStorageSize();
+        return storageSize;
     }
 
     /**
@@ -174,11 +177,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     }
 
     public boolean isTrial() {
-        return type.isTrial();
-    }
-
-    public String getArticleNo() {
-        return type.getArticleNo();
+        return trial;
     }
 
     public String getDescription() {
@@ -191,6 +190,8 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     }
 
     public void setType(OnlineStorageSubscriptionType type) {
+        this.storageSize = type.getStorageSize();
+        this.trial = type.isTrial();
         Object oldValue = getType();
         this.type = type;
         firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
@@ -198,7 +199,16 @@ public class OnlineStorageSubscription extends Model implements Serializable {
 
     @Override
     public String toString() {
-        return "OS Subscription " + getDescription() + ", valid till "
-            + getValidTill() + ", trial? " + isTrial();
+        StringBuilder b = new StringBuilder("OS Subscription ");
+        b.append(getDescription());
+        if (trial) {
+            b.append(" (trial)");
+        }
+        if (validTill != null) {
+            b.append(" valid till " + validTill);
+        } else {
+            b.append(" valid forever");
+        }
+        return b.toString();
     }
 }
