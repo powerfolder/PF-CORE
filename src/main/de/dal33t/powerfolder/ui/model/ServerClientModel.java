@@ -83,18 +83,12 @@ public class ServerClientModel extends PFUIComponent {
      * problem occour.
      */
     public void checkAndSetupAccount() {
-
-        // Don't do account if lan only mode.
-        if (getController().isLanOnly()) {
-            return;
-        }
-
         if (client.isLoggedIn()) {
             return;
         }
 
         if (!client.isLastLoginKnown()) {
-            PFWizard.openLoginWebServiceWizard(getController(), client);
+            PFWizard.openLoginWizard(getController(), client);
             return;
         }
 
@@ -107,7 +101,7 @@ public class ServerClientModel extends PFUIComponent {
             @Override
             public void finished() {
                 if (get() == null || !(Boolean) get()) {
-                    PFWizard.openLoginWebServiceWizard(getController(), client);
+                    PFWizard.openLoginWizard(getController(), client);
                 }
             }
         };

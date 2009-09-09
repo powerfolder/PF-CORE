@@ -241,7 +241,7 @@ public class HomeTab extends PFUIComponent {
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    PFWizard.openLoginWebServiceWizard(getController(),
+                    PFWizard.openLoginWizard(getController(),
                         getController().getOSClient());
                 }
             });

@@ -179,37 +179,13 @@ public class PFWizard extends PFUIComponent {
         wizard.open(panel);
     }
 
-    public static void openLoginWebServiceWizard(Controller controller,
+    public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
-        openLoginWebServiceWizard(controller, client, null);
-    }
-
-    /**
-     * Opens the wizard to login to the given server.
-     * 
-     * @param controller
-     * @param client
-     *            the client to login to.
-     * @param folderSetupAfterwards
-     *            true if the folder backup setup dialog should be shown after
-     *            successfully login.
-     * @param folderToSetup
-     *            folder to configure for O/S (optional)
-     */
-    public static void openLoginWebServiceWizard(Controller controller,
-        ServerClient client, Folder folderToSetup)
-    {
         PFWizard wizard = new PFWizard(controller);
-        WizardPanel nextFinishPanel;
-        if (folderToSetup != null) {
-            nextFinishPanel = new FolderOnlineStoragePanel(controller,
-                folderToSetup.getInfo());
-        } else {
-            nextFinishPanel = new TextPanelPanel(controller, Translation
-                .getTranslation("wizard.finish.os_login_title"), Translation
-                .getTranslation("wizard.finish.os_login_text"), true);
-        }
+        WizardPanel nextFinishPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.finish.os_login_title"),
+            Translation.getTranslation("wizard.finish.os_login_text"), true);
         wizard.open(new LoginOnlineStoragePanel(controller, client,
             nextFinishPanel, false));
     }
