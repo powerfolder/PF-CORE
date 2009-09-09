@@ -36,16 +36,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Class to manage received invitations. Invitations can be added and removed.
  * Also a value model is available to count invites.
  */
-public class ReceivedInvitationsModel extends PFComponent implements InvitationHandler {
+public class ReceivedInvitationsModel extends PFComponent implements
+    InvitationHandler
+{
 
     private final ValueModel receivedInvitationsCountVM = new ValueHolder();
 
-    private List<Invitation> invitations =
-            new CopyOnWriteArrayList<Invitation>();
+    private List<Invitation> invitations = new CopyOnWriteArrayList<Invitation>();
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public ReceivedInvitationsModel(Controller controller) {
@@ -57,13 +58,20 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
     /**
      * Received invitation in the context of an InvitationHandler. Ask user if
      * the invitation should be added.
-     *
+     * 
      * @param invitation
      * @param sendIfJoined
      */
-    public void gotInvitation(final Invitation invitation, boolean sendIfJoined) {
+    public void gotInvitation(final Invitation invitation, boolean sendIfJoined)
+    {
 
-        final FolderRepository repository = getController().getFolderRepository();
+        final FolderRepository repository = getController()
+            .getFolderRepository();
+
+        if (alreadyHave(invitation)) {
+            // Skip dupe invitations
+            return;
+        }
 
         if (sendIfJoined) {
 
@@ -75,10 +83,10 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
                 public void run() {
                     if (repository.hasJoinedFolder(invitation.folder)) {
                         PFWizard.openSendInvitationWizard(getController(),
-                                invitation.folder);
+                            invitation.folder);
                     } else {
                         PFWizard.openInvitationReceivedWizard(getController(),
-                                invitation);
+                            invitation);
                     }
                 }
             };
@@ -96,9 +104,13 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
         }
     }
 
+    private boolean alreadyHave(Invitation invitation) {
+        return invitations.contains(invitation);
+    }
+
     /**
      * Remove an invitation from the model for display, etc.
-     *
+     * 
      * @return
      */
     public Invitation popInvitation() {
@@ -112,7 +124,7 @@ public class ReceivedInvitationsModel extends PFComponent implements InvitationH
 
     /**
      * Value model with integer count of received invitations.
-     *
+     * 
      * @return
      */
     public ValueModel getReceivedInvitationsCountVM() {

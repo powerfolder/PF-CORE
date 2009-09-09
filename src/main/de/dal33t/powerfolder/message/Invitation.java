@@ -219,4 +219,73 @@ public class Invitation extends FolderRelatedMessage {
         return System.getProperty("user.home");
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+            + ((invitationText == null) ? 0 : invitationText.hashCode());
+        result = prime * result + ((invitor == null) ? 0 : invitor.hashCode());
+        result = prime * result
+            + ((permission == null) ? 0 : permission.hashCode());
+        result = prime * result + relative;
+        result = prime
+            * result
+            + ((suggestedLocalBase == null) ? 0 : suggestedLocalBase.hashCode());
+        result = prime
+            * result
+            + ((suggestedLocalBasePath == null) ? 0 : suggestedLocalBasePath
+                .hashCode());
+        result = prime
+            * result
+            + ((suggestedSyncProfileConfig == null)
+                ? 0
+                : suggestedSyncProfileConfig.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Invitation other = (Invitation) obj;
+        if (invitationText == null) {
+            if (other.invitationText != null)
+                return false;
+        } else if (!invitationText.equals(other.invitationText))
+            return false;
+        if (invitor == null) {
+            if (other.invitor != null)
+                return false;
+        } else if (!invitor.equals(other.invitor))
+            return false;
+        if (permission == null) {
+            if (other.permission != null)
+                return false;
+        } else if (!permission.equals(other.permission))
+            return false;
+        if (relative != other.relative)
+            return false;
+        if (suggestedLocalBase == null) {
+            if (other.suggestedLocalBase != null)
+                return false;
+        } else if (!suggestedLocalBase.equals(other.suggestedLocalBase))
+            return false;
+        if (suggestedLocalBasePath == null) {
+            if (other.suggestedLocalBasePath != null)
+                return false;
+        } else if (!suggestedLocalBasePath.equals(other.suggestedLocalBasePath))
+            return false;
+        if (suggestedSyncProfileConfig == null) {
+            if (other.suggestedSyncProfileConfig != null)
+                return false;
+        } else if (!suggestedSyncProfileConfig
+            .equals(other.suggestedSyncProfileConfig))
+            return false;
+        return true;
+    }
 }
