@@ -116,6 +116,14 @@ public class Notification implements Serializable {
         return typeId;
     }
 
+    /**
+     * @param id
+     * @deprecated ONLY FOR MIGRATION!!
+     */
+    public void setTypeId(String id) {
+        this.typeId = id;
+    }
+
     public Date getCreationDate() {
         return creationDate;
     }
