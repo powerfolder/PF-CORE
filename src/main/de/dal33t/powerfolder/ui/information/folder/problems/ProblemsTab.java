@@ -132,6 +132,7 @@ public class ProblemsTab extends PFUIComponent {
      */
     public void updateProblems(List<Problem> problemList) {
         problemsTableModel.updateProblems(problemList);
+        problemsTable.getSelectionModel().setSelectionInterval(-1, -1);
     }
 
     /**
