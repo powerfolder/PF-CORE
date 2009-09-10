@@ -34,15 +34,17 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
  */
 public class OnlineStorageSubscription extends Model implements Serializable {
     private static final long serialVersionUID = 8695479753037728184L;
+    private static final int UNLIMITED_GB = 9999;
 
+    public static final String PROPERTY_TYPE = "type";
     public static final String PROPERTY_TRIAL = "trial";
     public static final String PROPERTY_STORAGE_SIZE = "storageSize";
+    public static final String PROPERTY_STORAGE_SIZE_GB = "storageSizeGB";
     public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
     public static final String PROPERTY_WARNED_EXPIRATION_DATE = "warnedExpirationDate";
     public static final String PROPERTY_DISABLED_EXPIRATION_DATE = "disabledExpirationDate";
-    public static final String PROPERTY_TYPE = "type";
 
     private long storageSize;
     private boolean trial;
@@ -164,6 +166,10 @@ public class OnlineStorageSubscription extends Model implements Serializable {
         return isDisabledExpiration() || isDisabledUsage();
     }
 
+    public boolean isUnlimited() {
+        return getStorageSizeGB() == UNLIMITED_GB;
+    }
+
     /**
      * @return the storage size in bytes
      */
@@ -173,14 +179,15 @@ public class OnlineStorageSubscription extends Model implements Serializable {
 
     public void setStorageSize(long storageSize) {
         Object oldValue = getStorageSize();
+        Object oldGB = getStorageSizeGB();
         this.storageSize = storageSize;
         firePropertyChange(PROPERTY_STORAGE_SIZE, oldValue, this.storageSize);
+        firePropertyChange(PROPERTY_STORAGE_SIZE_GB, oldGB, getStorageSizeGB());
+        setTypeLegacy();
     }
 
-    public void setTrial(boolean trial) {
-        Object oldValue = isTrial();
-        this.trial = trial;
-        firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
+    public void setStorageSizeGB(int storageSizeGB) {
+        setStorageSize(1024L * 1024L * 1024L * storageSizeGB);
     }
 
     /**
@@ -190,11 +197,21 @@ public class OnlineStorageSubscription extends Model implements Serializable {
         return (int) (getStorageSize() / 1024 / 1024 / 1024);
     }
 
+    public void setTrial(boolean trial) {
+        Object oldValue = isTrial();
+        this.trial = trial;
+        firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
+        setTypeLegacy();
+    }
+
     public boolean isTrial() {
         return trial;
     }
 
     public String getDescription() {
+        if (isUnlimited()) {
+            return "Unlimited";
+        }
         return getStorageSizeGB() + " GB";
     }
 
@@ -203,12 +220,48 @@ public class OnlineStorageSubscription extends Model implements Serializable {
         return type;
     }
 
+    /**
+     * Legacy type for 3.1.X clients.
+     * 
+     * @param type
+     */
+    public void setTypeLegacy() {
+        Object oldValue = getType();
+        this.type = findLegacyType();
+        firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+    }
+
     public void setType(OnlineStorageSubscriptionType type) {
-        this.storageSize = type.getStorageSize();
-        this.trial = type.isTrial();
+        if (type != null) {
+            setStorageSize(type.getStorageSize());
+            setTrial(type.isTrial());
+        } else {
+            setStorageSize(0);
+            setTrial(false);
+        }
         Object oldValue = getType();
         this.type = type;
         firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+    }
+
+    private OnlineStorageSubscriptionType findLegacyType() {
+        OnlineStorageSubscriptionType best = isTrial()
+            ? OnlineStorageSubscriptionType.TRIAL_5GB
+            : OnlineStorageSubscriptionType.UNLIMITED;
+        for (OnlineStorageSubscriptionType legacyType : OnlineStorageSubscriptionType
+            .values())
+        {
+            if (!legacyType.isActive()) {
+                continue;
+            }
+            if (legacyType.getStorageSize() >= getStorageSize()
+                && legacyType.getStorageSize() < best.getStorageSize()
+                && (isTrial() == legacyType.isTrial()))
+            {
+                best = legacyType;
+            }
+        }
+        return best;
     }
 
     @Override
