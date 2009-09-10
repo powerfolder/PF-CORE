@@ -84,7 +84,7 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-            "right:pref, 3dlu, 140dlu, pref:grow",
+            "right:pref, 3dlu, 100dlu, pref:grow",
             "pref, 6dlu, pref, 6dlu, pref, 6dlu, top:pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
