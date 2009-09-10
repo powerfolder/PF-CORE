@@ -116,7 +116,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     @Override
     protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("pref, $lcg, $wfield",
+        FormLayout layout = new FormLayout("140dlu, $lcg, $wfield",
             "pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -208,8 +208,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, ArchiveMode.FULL_BACKUP, 
-                    previewFolder, null, 5);
+                syncProfile, saveLocalInvite, ArchiveMode.FULL_BACKUP,
+                previewFolder, null, 5);
             configurations.put(folderInfo, folderSettings);
         }
 
