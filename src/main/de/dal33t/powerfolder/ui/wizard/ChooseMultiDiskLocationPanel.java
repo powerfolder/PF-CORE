@@ -308,7 +308,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      */
     protected void initComponents() {
 
-        initialDirectory = System.getProperty("user.home");
+        initialDirectory = getController().getFolderRepository()
+            .getFoldersBasedir();
 
         findUserDirectories();
 
