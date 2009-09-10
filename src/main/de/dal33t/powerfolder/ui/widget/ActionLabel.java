@@ -49,13 +49,14 @@ public class ActionLabel extends PFComponent {
     private volatile boolean enabled = true;
     private String text;
     private Action action;
+    private volatile boolean mouseOver;
 
     public ActionLabel(Controller controller, Action action) {
         super(controller);
         this.action = action;
         uiComponent = new JLabel();
         text = (String) action.getValue(Action.NAME);
-        displayText(false);
+        displayText();
         String toolTips = (String) action.getValue(Action.SHORT_DESCRIPTION);
         if (toolTips != null && toolTips.length() > 0) {
             uiComponent.setToolTipText(toolTips);
@@ -77,7 +78,7 @@ public class ActionLabel extends PFComponent {
      */
     public void setText(String text) {
         this.text = text;
-        displayText(false);
+        displayText();
     }
 
     public void setIcon(Icon icon) {
@@ -90,10 +91,10 @@ public class ActionLabel extends PFComponent {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        displayText(false);
+        displayText();
     }
 
-    public void displayText(boolean mouseOver) {
+    public void displayText() {
         if (enabled) {
             if (mouseOver
                 || PreferencesEntry.UNDERLINE_LINKS
@@ -116,11 +117,13 @@ public class ActionLabel extends PFComponent {
     private class MyMouseAdapter extends MouseAdapter {
 
         public void mouseEntered(MouseEvent e) {
-            displayText(true);
+            mouseOver = true;
+            displayText();
         }
 
         public void mouseExited(MouseEvent e) {
-            displayText(false);
+            mouseOver = false;
+            displayText();
         }
 
         public void mouseClicked(MouseEvent e) {

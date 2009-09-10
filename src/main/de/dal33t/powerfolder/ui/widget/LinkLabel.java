@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -51,6 +50,7 @@ public class LinkLabel extends PFComponent {
     private String url;
     private JLabel uiComponent;
     private String text;
+    private volatile boolean mouseOver;
 
     public LinkLabel(Controller controller, String text, String url) {
         super(controller);
@@ -58,7 +58,7 @@ public class LinkLabel extends PFComponent {
         this.url = url;
         uiComponent = new JLabel();
 
-        setText(false);
+        setText();
 
         uiComponent.addMouseListener(new MyMouseAdapter());
 
@@ -70,7 +70,7 @@ public class LinkLabel extends PFComponent {
     public void setTextAndURL(String text, String url) {
         this.text = text;
         this.url = url;
-        setText(false);
+        setText();
     }
 
     public void setIcon(Icon icon) {
@@ -85,7 +85,7 @@ public class LinkLabel extends PFComponent {
         return uiComponent;
     }
 
-    private void setText(boolean mouseOver) {
+    private void setText() {
 
         if (mouseOver
             || PreferencesEntry.UNDERLINE_LINKS
@@ -114,11 +114,13 @@ public class LinkLabel extends PFComponent {
         }
 
         public void mouseEntered(MouseEvent e) {
-            setText(true);
+            mouseOver = true;
+            setText();
         }
 
         public void mouseExited(MouseEvent e) {
-            setText(false);
+            mouseOver = false;
+            setText();
         }
     }
 

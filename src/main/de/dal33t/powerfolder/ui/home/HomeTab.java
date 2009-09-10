@@ -124,9 +124,9 @@ public class HomeTab extends PFUIComponent {
     public HomeTab(Controller controller) {
         super(controller);
         downloadsCountVM = getApplicationModel().getTransferManagerModel()
-            .getCompletedDownloadsCountVM();
+            .getAllDownloadsCountVM();
         uploadsCountVM = getApplicationModel().getTransferManagerModel()
-            .getCompletedUploadsCountVM();
+            .getAllUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
         newFriendRequestsCountVM = getUIController().getApplicationModel()
@@ -228,11 +228,11 @@ public class HomeTab extends PFUIComponent {
             true, getApplicationModel().getActionModel()
                 .getSingleFileTransferOfferAction(), null);
         downloadsLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.files_downloaded"), null, false, true,
+            .getTranslation("home_tab.files_downloads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenDownloadsInformationAction(), null);
         uploadsLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.files_uploaded"), null, false, true,
+            .getTranslation("home_tab.files_uploads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction(), null);
         computersLine = new HomeTabLine(getController(), Translation
@@ -969,20 +969,20 @@ public class HomeTab extends PFUIComponent {
             double d = uploadCounter.calculateCurrentKBS();
             if (Double.compare(d, 0) == 0) {
                 uploadsLine.setNormalLabelText(Translation
-                    .getTranslation("home_tab.files_uploaded"));
+                    .getTranslation("home_tab.files_uploads"));
             } else {
                 String s = Format.formatNumber(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
-                    "home_tab.files_uploaded_active", s));
+                        "home_tab.files_uploads_active", s));
             }
             d = downloadCounter.calculateCurrentKBS();
             if (Double.compare(d, 0) == 0) {
                 downloadsLine.setNormalLabelText(Translation
-                    .getTranslation("home_tab.files_downloaded"));
+                    .getTranslation("home_tab.files_downloads"));
             } else {
                 String s = Format.formatNumber(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
-                    "home_tab.files_downloaded_active", s));
+                        "home_tab.files_downloads_active", s));
             }
         }
     }
