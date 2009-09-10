@@ -98,7 +98,13 @@ public class WhatToDoPanel extends PFWizardPanel {
         if (option == onlineOption) {
             List<FolderInfo> folderList = findFolderList();
 
-            if (folderList.isEmpty()) {
+            if (!getController().getOSClient().isLoggedIn()) {
+                DialogFactory.genericDialog(getController(), Translation
+                    .getTranslation("wizard.error_title"), Translation
+                    .getTranslation("wizard.what_to_do.no_login"),
+                    GenericDialogType.INFO);
+                return false;
+            } else if (folderList.isEmpty()) {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("wizard.error_title"), Translation
                     .getTranslation("wizard.what_to_do.no_os_text"),
