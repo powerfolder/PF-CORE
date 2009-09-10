@@ -138,7 +138,7 @@ public class Invitation extends FolderRelatedMessage {
      * environment.
      * 
      * @param controller
-     * @return
+     * @return the suggestion path on the local computer
      */
     public File getSuggestedLocalBase(Controller controller) {
 
