@@ -697,7 +697,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 Member server = serverClient.getServer();
                 double sync = folder.getStatistic().getSyncPercentage(server);
                 boolean warned = serverClient.getAccountDetails().getAccount()
-                    .getOSSubscription().isWarnedUsage();
+                    .getOSSubscription().isDisabledUsage();
                 osComponent.setSyncPercentage(sync, warned);
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));

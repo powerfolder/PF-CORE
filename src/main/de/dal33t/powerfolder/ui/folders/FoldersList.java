@@ -19,15 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -35,10 +39,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.widget.GradientPanel;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -48,9 +48,14 @@ import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -66,6 +71,7 @@ public class FoldersList extends PFUIComponent {
     private ServerClient client;
     private JScrollPane scrollPane;
     private ExpansionListener expansionListener;
+    private FolderMembershipListener membershipListener;
     private FoldersTab foldersTab;
     private volatile boolean populated;
     private volatile boolean multiGroup;
@@ -87,6 +93,7 @@ public class FoldersList extends PFUIComponent {
         super(controller);
         this.foldersTab = foldersTab;
         expansionListener = new MyExpansionListener();
+        membershipListener = new MyFolderMembershipListener();
 
         views = new CopyOnWriteArrayList<ExpandableFolderView>();
 
@@ -100,9 +107,6 @@ public class FoldersList extends PFUIComponent {
         onlineIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
         onlineLabel.addMouseListener(new OnlineListener());
         onlineIcon.addMouseListener(new OnlineListener());
-
-        controller.getFolderRepository().addProblemListenerToAllFolders(
-            new MyProblemListener());
         buildUI();
     }
 
@@ -147,8 +151,14 @@ public class FoldersList extends PFUIComponent {
      * Adds a listener for folder repository changes.
      */
     private void registerListeners() {
+        getController().getFolderRepository().addProblemListenerToAllFolders(
+            new MyProblemListener());
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            folder.addMembershipListener(membershipListener);
+        }
         getController().getOSClient().addListener(new MyServerClientListener());
     }
 
@@ -322,10 +332,12 @@ public class FoldersList extends PFUIComponent {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             updateFolders();
+            e.getFolder().removeMembershipListener(membershipListener);
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
             updateFolders();
+            e.getFolder().addMembershipListener(membershipListener);
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
@@ -362,6 +374,30 @@ public class FoldersList extends PFUIComponent {
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyFolderMembershipListener implements
+        FolderMembershipListener
+    {
+
+        public void memberJoined(FolderMembershipEvent folderEvent) {
+            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            {
+                updateFolders();
+            }
+        }
+
+        public void memberLeft(FolderMembershipEvent folderEvent) {
+            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            {
+                updateFolders();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 
     private class FolderBean {
