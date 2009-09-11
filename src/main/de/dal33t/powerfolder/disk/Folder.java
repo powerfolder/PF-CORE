@@ -361,7 +361,7 @@ public class Folder extends PFComponent {
 
         previewOnly = folderSettings.isPreviewOnly();
 
-        rootDirectory = new Directory(null, "", "", this);
+        rootDirectory = new Directory(this, null, "");
 
         problems = new CopyOnWriteArrayList<Problem>();
 

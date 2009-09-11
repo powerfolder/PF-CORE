@@ -214,13 +214,13 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
         FilteredDirectoryModel filteredDirectoryModel = new FilteredDirectoryModel(
-            null, folder, folder.getName(), originalDirectory.getFile());
+            null, folder, folder.getName(), originalDirectory.getRelativeFile());
 
         FilteredDirectoryModel flatFilteredDirectoryModel = null;
 
         if (isFlatMode()) {
             flatFilteredDirectoryModel = new FilteredDirectoryModel(null,
-                folder, folder.getName(), originalDirectory.getFile());
+                folder, folder.getName(), originalDirectory.getRelativeFile());
         }
 
         // Recursive filter.
@@ -255,7 +255,6 @@ public class DirectoryFilter extends FilterModel {
      * @param originalCount
      * @param filteredCount
      * @param deletedCount
-     * @param recycledCount
      * @param incomingCount
      * @param localCount
      */
@@ -266,7 +265,7 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong deletedCount, AtomicLong incomingCount, AtomicLong localCount)
     {
 
-        for (FileInfo fileInfo : directory.getFiles()) {
+        for (FileInfo fileInfo : directory.getFileInfos()) {
 
             int searchMode = (Integer) searchModeVM.getValue();
 
@@ -316,9 +315,9 @@ public class DirectoryFilter extends FilterModel {
 
                 if (showFile) {
                     filteredCount.incrementAndGet();
-                    filteredDirectoryModel.getFiles().add(fileInfo);
+                    filteredDirectoryModel.getFileInfos().add(fileInfo);
                     if (flatFilteredDirectoryModel != null) {
-                        flatFilteredDirectoryModel.getFiles().add(fileInfo);
+                        flatFilteredDirectoryModel.getFileInfos().add(fileInfo);
                     }
                     if (isNew) {
                         filteredDirectoryModel.setNewFiles(true);
@@ -338,16 +337,16 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        for (Directory subDirectory : directory.getSubDirectoriesAsCollection())
+        for (Directory subDirectory : directory.getSubdirectories())
         {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
-                directory, folder, subDirectory.getFile().getName(),
-                subDirectory.getFile());
+                directory, folder, subDirectory.getFilenameOnly(),
+                subDirectory.getRelativeFile());
 
             FilteredDirectoryModel flatSubModel = null;
             if (isFlatMode()) {
                 flatSubModel = new FilteredDirectoryModel(directory, folder,
-                    subDirectory.getFile().getName(), subDirectory.getFile());
+                    subDirectory.getName(), subDirectory.getRelativeFile());
             }
             filterDirectory(subDirectory, subModel, flatSubModel, keywords,
                 originalCount, filteredCount, deletedCount, incomingCount,
@@ -356,16 +355,16 @@ public class DirectoryFilter extends FilterModel {
             // Add FileInfos from subdirs to flat model.
             if (flatFilteredDirectoryModel != null) {
                 for (FileInfo fileInfo : subModel.getFilesRecursive()) {
-                    if (!flatFilteredDirectoryModel.getFiles().contains(
+                    if (!flatFilteredDirectoryModel.getFileInfos().contains(
                         fileInfo))
                     {
-                        flatFilteredDirectoryModel.getFiles().add(fileInfo);
+                        flatFilteredDirectoryModel.getFileInfos().add(fileInfo);
                     }
                 }
             }
 
             // Only keep if files lower in tree.
-            if (!subModel.getFiles().isEmpty()
+            if (!subModel.getFileInfos().isEmpty()
                 || !subModel.getSubdirectories().isEmpty())
             {
                 filteredDirectoryModel.getSubdirectories().add(subModel);
@@ -393,12 +392,7 @@ public class DirectoryFilter extends FilterModel {
             return true;
         }
 
-        for (int i = 0; i < keywords.length; i++) {
-            String keyword = keywords[i];
-            if (keyword == null) {
-                throw new NullPointerException("Keyword empty at index " + i);
-            }
-
+        for (String keyword : keywords) {
             if (keyword.startsWith("-")) {
 
                 // Negative search:

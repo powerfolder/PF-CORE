@@ -307,10 +307,17 @@ public class FilesTable extends JTable {
                         setHorizontalAlignment(LEFT);
                         break;
                     case 1: // dir name
-                        myValue = dir.getName();
+                        myValue = dir.getFilenameOnly();
                         if (folder.getDiskItemFilter().isExcluded(dir)) {
                             setIcon(Icons.getIconById(Icons.BLACK_LIST));
+                            setForeground(NORMAL);
+                        } else if (dir.isExpected(controller.getFolderRepository())) {
+                            setForeground(AVAILABLE);
+                            setIcon(Icons.getIconById(Icons.EXPECTED));
+                        } else {
+                            setForeground(NORMAL);
                         }
+
                         break;
                 }
             }

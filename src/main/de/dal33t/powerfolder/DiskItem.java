@@ -32,8 +32,7 @@ public interface DiskItem {
     String getExtension();
 
     /**
-     * @return the name including full, relative path information within the
-     *         folder.
+     * @return the name, relative to the folder base.
      */
     String getName();
 

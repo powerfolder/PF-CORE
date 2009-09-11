@@ -252,7 +252,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         for (DiskItem diskItem : diskItems) {
             if (diskItem instanceof Directory) {
                 Directory directory = (Directory) diskItem;
-                File file = new File(directory.getPath());
+                File file = directory.getAbsoluteFile();
                 if (file.exists()) {
                     try {
                         FileUtils.openFile(file);

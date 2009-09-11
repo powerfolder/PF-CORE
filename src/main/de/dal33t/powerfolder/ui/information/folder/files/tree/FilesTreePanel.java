@@ -118,7 +118,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
      * @param directory
      */
     public void setSelection(Directory directory) {
-        File file = new File(directory.getPath(), directory.getName());
+        File file = directory.getRelativeFile();
         DefaultMutableTreeNode root =
                 (DefaultMutableTreeNode) directoryTreeModel.getRoot();
         int count = root.getChildCount();

@@ -61,7 +61,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /**
-     * The filename (including the path from the base of the folder)
+     * The filename, relative to the filder base directory
      * <p>
      * Actually 'final'. Only non-final because of serialization readObject()
      * fileName.intern();
@@ -208,7 +208,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return existanceSync && lastModificationSync && sizeSync;
     }
 
-    /** @return The filename (including the path from the base of the folder) */
+    /**
+     * @return the name , relative to the folder base.
+     */
     public String getName() {
         return fileName;
     }

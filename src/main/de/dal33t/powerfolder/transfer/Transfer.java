@@ -421,7 +421,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     //
     // @Override
     // public String getLoggerName() {
-    // return getClass().getSimpleName() + " '" + getFile().getFilenameOnly()
+    // return getClass().getSimpleName() + " '" + getRelativeFile().getFilenameOnly()
     // + "'";
     // }
 }

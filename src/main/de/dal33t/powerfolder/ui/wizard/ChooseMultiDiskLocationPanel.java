@@ -536,7 +536,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         for (Folder folder1 : getController().getFolderRepository()
             .getFolders())
         {
-            if (folder1.getDirectory().getFile().getAbsoluteFile().equals(
+            if (folder1.getDirectory().getAbsoluteFile().equals(
                 directory))
             {
                 return;

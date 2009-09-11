@@ -129,9 +129,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
                                             boolean flat) {
-        File file = model.getFile();
+        File file = model.getRelativeFile();
         List<DiskItem> diskItemList = new ArrayList<DiskItem>();
-        diskItemList.addAll(model.getFiles());
+        diskItemList.addAll(model.getFileInfos());
         if (!flat) {
             diskItemList.addAll(model.getSubdirectoryDirectories());
         }

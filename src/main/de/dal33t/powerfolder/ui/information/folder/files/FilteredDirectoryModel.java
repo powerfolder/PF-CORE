@@ -34,25 +34,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class FilteredDirectoryModel {
 
-    private String displayName;
-    private File file;
-    private List<FileInfo> files;
-    private List<FilteredDirectoryModel> subdirectories;
-    private boolean newFiles;
-    private Folder rootFolder;
     private final Directory parentDirectory;
+    private final Folder rootFolder;
+    private final String name;
+    private final File relativeFile;
+    private final List<FileInfo> fileInfos;
+    private final List<FilteredDirectoryModel> subdirectories;
+    private boolean newFiles;
 
     /**
      * Constructor
      */
     public FilteredDirectoryModel(Directory parentDirectory,
-                                  Folder rootFolder, String displayName,
-                                  File file) {
+                                  Folder rootFolder, String name,
+                                  File relativeFile) {
         this.parentDirectory = parentDirectory;
         this.rootFolder = rootFolder;
-        this.displayName = displayName;
-        this.file = file;
-        files = new CopyOnWriteArrayList<FileInfo>();
+        this.name = name;
+        this.relativeFile = relativeFile;
+        fileInfos = new CopyOnWriteArrayList<FileInfo>();
         subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
     }
 
@@ -73,8 +73,8 @@ public class FilteredDirectoryModel {
      *
      * @return
      */
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
 
     /**
@@ -82,8 +82,8 @@ public class FilteredDirectoryModel {
      *
      * @return
      */
-    public File getFile() {
-        return file;
+    public File getRelativeFile() {
+        return relativeFile;
     }
 
     /**
@@ -91,8 +91,8 @@ public class FilteredDirectoryModel {
      *
      * @return
      */
-    public List<FileInfo> getFiles() {
-        return files;
+    public List<FileInfo> getFileInfos() {
+        return fileInfos;
     }
 
     /**
@@ -104,9 +104,11 @@ public class FilteredDirectoryModel {
 
     public List<Directory> getSubdirectoryDirectories() {
         List<Directory> list = new ArrayList<Directory>();
-        for (FilteredDirectoryModel subdirectory : subdirectories) {
-            Directory d = new Directory(null, subdirectory.displayName,
-                    file.getAbsolutePath(), rootFolder);
+        for (FilteredDirectoryModel fdm : subdirectories) {
+            Directory d = new Directory(rootFolder, fdm.parentDirectory,
+                    fdm.name);
+                d.addAll(rootFolder.getController().getMySelf(),
+                        fdm.fileInfos.toArray(new FileInfo[fdm.fileInfos.size()]));
             list.add(d);
         }
         return list;
@@ -119,7 +121,7 @@ public class FilteredDirectoryModel {
      * @return
      */
     public boolean hasDescendantFiles() {
-        if (!files.isEmpty()) {
+        if (!fileInfos.isEmpty()) {
             return true;
         }
         for (FilteredDirectoryModel subdirectory : subdirectories) {
@@ -161,7 +163,7 @@ public class FilteredDirectoryModel {
 
     public List<FileInfo> getFilesRecursive() {
         List<FileInfo> list = new ArrayList<FileInfo>();
-        list.addAll(files);
+        list.addAll(fileInfos);
         for (FilteredDirectoryModel subdirectory : subdirectories) {
             list.addAll(subdirectory.getFilesRecursive());
         }

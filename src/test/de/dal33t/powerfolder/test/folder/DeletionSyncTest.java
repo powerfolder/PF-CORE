@@ -145,7 +145,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertNotNull(sources);
         assertEquals(1, sources.size());
         // assertEquals(1, getFolderAtBart().getConnectedMembers()[0]
-        // .getFile(testfInfoBart).getVersion());
+        // .getRelativeFile(testfInfoBart).getVersion());
 
         DownloadManager source = getContollerBart().getTransferManager()
             .downloadNewestVersion(testfInfoBart);
