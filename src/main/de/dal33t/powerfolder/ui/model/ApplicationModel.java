@@ -65,15 +65,19 @@ public class ApplicationModel extends PFUIComponent {
         super(controller);
         actionModel = new ActionModel(getController());
         chatModel = new ChatModel(getController());
-        new ChatNotificationManager(chatModel);
+        chatModel.addChatModelListener(new ChatNotificationManager());
         nodeManagerModel = new NodeManagerModel(getController());
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
         receivedInvitationsModel = new ReceivedInvitationsModel(getController());
+        receivedInvitationsModel.getReceivedInvitationsCountVM()
+                .addValueChangeListener(new MyReceivedInvitationListener());
         receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel(
             getController());
+        receivedAskedForFriendshipModel.getReceivedAskForFriendshipCountVM()
+                .addValueChangeListener(new MyReceivedFrendshipListener());
         receivedSingleFileOffersModel = new ReceivedSingleFileOffersModel(
             getController());
         warningsModel = new WarningModel(getController());
@@ -178,10 +182,6 @@ public class ApplicationModel extends PFUIComponent {
 
     private class ChatNotificationManager implements ChatModelListener {
 
-        private ChatNotificationManager(ChatModel chatModel) {
-            chatModel.addChatModelListener(this);
-        }
-
         public void chatChanged(ChatModelEvent event) {
             if (event.isStatus()) {
                 // Ignore status updates
@@ -196,4 +196,29 @@ public class ApplicationModel extends PFUIComponent {
             return true;
         }
     }
+
+    private class MyReceivedInvitationListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            Integer newValue = (Integer) evt.getNewValue();
+            Integer oldValue = (Integer) evt.getOldValue();
+            if (newValue != null && oldValue != null && newValue > oldValue) {
+                getController().getUIController().notifyMessage(Translation
+                        .getTranslation("invitation.notification.title"), Translation
+                        .getTranslation("invitation.notification.message"), false);
+            }
+        }
+    }
+
+    private class MyReceivedFrendshipListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            Integer newValue = (Integer) evt.getNewValue();
+            Integer oldValue = (Integer) evt.getOldValue();
+            if (newValue != null && oldValue != null && newValue > oldValue) {
+                getController().getUIController().notifyMessage(Translation
+                        .getTranslation("friendship.notification.title"), Translation
+                        .getTranslation("friendship.notification.message"), false);
+            }
+        }
+    }
+
 }
