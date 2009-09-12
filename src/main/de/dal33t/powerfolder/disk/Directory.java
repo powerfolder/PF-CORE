@@ -206,6 +206,22 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
+     * Get the files in this dir and all subdirectories, recursively.
+     *
+     * @return the list of files
+     */
+    public List<FileInfo> getFileInfosRecursive() {
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
+            files.add(fileInfo);
+        }
+        for (Directory directory : subDirectoriesMap.values()) {
+            files.addAll(directory.getFileInfosRecursive());
+        }
+        return files;
+    }
+
+    /**
      * @return true if all filesInfos and filesInfos in subdirectories are
      *         deleted
      */

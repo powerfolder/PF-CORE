@@ -24,6 +24,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -291,6 +292,12 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                             FileInfo fileInfo = (FileInfo) diskItem;
                             Folder folder = fileInfo.getFolder(repo);
                             folder.removeFilesLocal(fileInfo);
+                        } else if (diskItem instanceof Directory) {
+                            Directory directory = (Directory) diskItem;
+                            List<FileInfo> fileInfoList = directory.getFileInfos();
+                            Folder folder = directory.getRootFolder();
+                            folder.removeFilesLocal(fileInfoList.toArray(
+                                    new FileInfo[fileInfoList.size()]));
                         }
                     } catch (Exception e) {
                         logSevere(e);
@@ -512,6 +519,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         .isRetained(diretory);
                     addIgnoreAction.setEnabled(retained);
                     removeIgnoreAction.setEnabled(!retained);
+                    deleteFileAction.setEnabled(true);
 
                     fileDetailsPanel.setFileInfo(null);
                     fileVersionsPanel.setFileInfo(null);
