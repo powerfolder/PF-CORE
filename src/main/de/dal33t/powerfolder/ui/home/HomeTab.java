@@ -47,7 +47,10 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -510,8 +513,7 @@ public class HomeTab extends PFUIComponent {
         // run
         boolean trial = ProUtil.isTrial(getController());
         boolean allowed = ProUtil.isAllowedToRun(getController());
-        boolean aboutToExpire = daysValid != null && daysValid != -1
-                && daysValid < 30;
+        boolean aboutToExpire = daysValid != null && daysValid != -1 && daysValid < 30;
         if (trial || !allowed) {
             showBuyNowLink(Translation
                 .getTranslation("pro.home_tab.upgrade_powerfolder"));
@@ -525,14 +527,7 @@ public class HomeTab extends PFUIComponent {
      * Updates the Online Storage details.
      */
     private void updateOnlineStorageDetails() {
-        if (!PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()) ||
-                !getController().getNodeManager().isStarted()) {
-            onlineStorageAccountLabel.getUIComponent().setVisible(false);
-            return;
-        }
-
-        onlineStorageAccountLabel.getUIComponent().setVisible(true);
-
+        boolean active = false;
         boolean showBuyNow = false;
         if (client.getUsername() == null
             || client.getUsername().trim().length() == 0)
@@ -569,6 +564,7 @@ public class HomeTab extends PFUIComponent {
                     "home_tab.online_storage.account", client.getUsername()));
                 onlineStorageAccountLabel.setToolTipText(Translation
                     .getTranslation("home_tab.online_storage.account.tips"));
+                active = true;
             }
         } else {
             onlineStorageAccountLabel.setText(Translation.getTranslation(
@@ -579,15 +575,23 @@ public class HomeTab extends PFUIComponent {
                     .getTranslation("home_tab.online_storage.account_connecting.tips"));
         }
 
-        OnlineStorageSubscription storageSubscription = client.getAccount()
-            .getOSSubscription();
-        long totalStorage = storageSubscription.getStorageSize();
-        long spaceUsed = client.getAccountDetails().getSpaceUsed();
-        if (spaceUsed > (double) totalStorage * 0.8) {
-            showBuyNow = true;
+        // Don't show if PowerFolder is disabled.
+        onlineStorageAccountLabel.getUIComponent().setVisible(
+            getController().getNodeManager().isStarted());
+
+        if (active) {
+            OnlineStorageSubscription storageSubscription = client.getAccount()
+                .getOSSubscription();
+            long totalStorage = storageSubscription.getStorageSize();
+            long spaceUsed = client.getAccountDetails().getSpaceUsed();
+            if (spaceUsed > (double) totalStorage * 0.8) {
+                showBuyNow = true;
+            }
+            onlineStorageSection.getUIComponent().setVisible(true);
+            onlineStorageSection.setInfo(totalStorage, spaceUsed);
+        } else {
+            onlineStorageSection.getUIComponent().setVisible(false);
         }
-        onlineStorageSection.getUIComponent().setVisible(true);
-        onlineStorageSection.setInfo(totalStorage, spaceUsed);
 
         // Show Buy now link if: Disabled OR >80%
         if (showBuyNow) {
@@ -886,7 +890,7 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private class MyDaysValidListener implements PropertyChangeListener {
+    private final class MyDaysValidListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateLicenseDetails();
         }
