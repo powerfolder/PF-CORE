@@ -703,7 +703,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_local_text"));
-                osComponent.getUIComponent().setVisible(false);
+                osComponent.getUIComponent().setVisible(PreferencesEntry
+                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
             }
         }
     }

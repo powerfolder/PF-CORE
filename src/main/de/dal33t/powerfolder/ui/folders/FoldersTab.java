@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import java.awt.Dimension;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -50,11 +48,11 @@ public class FoldersTab extends PFUIComponent {
      */
     public FoldersTab(Controller controller) {
         super(controller);
-        this.emptyLabel = new JLabel(Translation
+        emptyLabel = new JLabel(Translation
             .getTranslation("folders_tab.no_folders_available"),
             SwingConstants.CENTER);
-        this.emptyLabel.setEnabled(false);
-        this.foldersList = new FoldersList(getController(), this);
+        emptyLabel.setEnabled(false);
+        foldersList = new FoldersList(getController(), this);
     }
 
     /**
