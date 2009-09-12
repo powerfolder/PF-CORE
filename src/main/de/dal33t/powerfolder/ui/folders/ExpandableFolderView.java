@@ -679,7 +679,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             primaryButton.setToolTipText(Translation
                 .getTranslation("exp_folder_view.folder_online_text"));
-            osComponent.getUIComponent().setVisible(false);
+            osComponent.getUIComponent().setVisible(PreferencesEntry
+                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
@@ -693,7 +694,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton
                     .setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_online_text"));
-                osComponent.getUIComponent().setVisible(true);
+                osComponent.getUIComponent().setVisible(PreferencesEntry
+                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
                 Member server = serverClient.getServer();
                 double sync = folder.getStatistic().getSyncPercentage(server);
                 boolean warned = serverClient.getAccountDetails().getAccount()
