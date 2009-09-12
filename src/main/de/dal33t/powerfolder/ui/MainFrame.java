@@ -52,10 +52,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -468,6 +465,10 @@ public class MainFrame extends PFUIComponent {
      */
     public void showPendingMessages(boolean show) {
         statusBar.showPendingMessages(show);
+    }
+
+    public void setNetworkingModeStatus(NetworkingMode networkingMode) {
+        statusBar.setNetworkingModeStatus(networkingMode);
     }
 
     // /////////////////

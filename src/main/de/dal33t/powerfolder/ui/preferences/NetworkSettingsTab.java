@@ -104,8 +104,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 NetworkingMode selNm = NetworkingMode.values()[networkingMode
                     .getSelectedIndex()];
                 networkingMode.setToolTipText(getTooltip(selNm));
-                enableDisableComponents(NetworkingMode.LANONLYMODE
-                    .equals(selNm));
+                enableDisableComponents(NetworkingMode.LANONLYMODE == selNm);
             }
         });
 
@@ -293,9 +292,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
             getController(), Integer.toString(silentModeThrottle.getValue()));
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
-            getController(), "" + relayedConnectionBox.isSelected());
-        ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(), ""
-            + udtConnectionBox.isSelected());
+            getController(), String.valueOf(relayedConnectionBox.isSelected()));
+        ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
+                String.valueOf(udtConnectionBox.isSelected()));
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
             useOnlineStorageCB.isSelected());
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
@@ -304,13 +303,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private static String getTooltip(NetworkingMode nm) {
-        if (nm.equals(NetworkingMode.LANONLYMODE)) {
+        if (nm == NetworkingMode.LANONLYMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
-        } else if (nm.equals(NetworkingMode.PRIVATEMODE)) {
+        } else if (nm == NetworkingMode.PRIVATEMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.private.tooltip");
-        } else if (nm.equals(NetworkingMode.SERVERONLYMODE)) {
+        } else if (nm == NetworkingMode.SERVERONLYMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.server_only.tooltip");
         }

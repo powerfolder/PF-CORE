@@ -1226,8 +1226,7 @@ public class Controller extends PFComponent {
         return networkingMode;
     }
 
-    public void setNetworkingMode(NetworkingMode newModeParam) {
-        NetworkingMode newMode = newModeParam;
+    public void setNetworkingMode(NetworkingMode newMode) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
             newMode = NetworkingMode.SERVERONLYMODE;
@@ -1246,6 +1245,10 @@ public class Controller extends PFComponent {
             nodeManager.shutdown();
             nodeManager.start();
             reconnectManager.buildReconnectionQueue();
+
+            if (isUIEnabled()) {
+                uiController.getMainFrame().setNetworkingModeStatus(newMode);
+            }
         }
     }
 

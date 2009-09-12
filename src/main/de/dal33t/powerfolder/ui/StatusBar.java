@@ -77,6 +77,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton onlineStateInfo;
     private JButton sleepButton;
     private JLabel portLabel;
+    private JLabel networkModeLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
     private JButton openDebugButton;
@@ -101,7 +102,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             String debugArea = "";
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                debugArea = "pref, 3dlu, ";
+                debugArea = "3dlu, pref, ";
             }
 
             String portArea = "";
@@ -109,8 +110,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 portArea = "pref, 3dlu, ";
             }
 
-            FormLayout mainLayout = new FormLayout("1dlu, " + debugArea
-                + "pref, 3dlu, pref, fill:pref:grow, pref, 3dlu, "
+            FormLayout mainLayout = new FormLayout("1dlu, pref, 3dlu, pref, " + debugArea + "center:pref:grow, pref, 3dlu, "
                 + portArea + " pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
@@ -120,11 +120,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(sleepButton, cc.xy(col, 1));
-            col += 2;
+            col += 1;
             if (debugArea.length() > 0) {
+                col += 1;
                 mainBuilder.add(openDebugButton, cc.xy(col, 1));
-                col += 2;
+                col += 1;
             }
+            mainBuilder.add(networkModeLabel, cc.xy(col, 1));
+            col += 1;
             mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
             col += 2;
             if (portArea.length() > 0) {
@@ -199,6 +202,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
             String.valueOf(getController().getConnectionListener().getPort())));
         portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
+
+        networkModeLabel = new JLabel("nwm");
 
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
@@ -440,6 +445,18 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
         }, 0, 1000);
         return label;
+    }
+
+    public void setNetworkingModeStatus(NetworkingMode networkingMode) {
+        if (networkingMode == NetworkingMode.LANONLYMODE) {
+            networkModeLabel.setText(Translation.getTranslation(
+                    "general.network_mode.lan_only"));
+        } else if (networkingMode == NetworkingMode.SERVERONLYMODE) {
+            networkModeLabel.setText(Translation.getTranslation(
+                    "general.network_mode.server_only"));
+        } else {
+            networkModeLabel.setText("");
+        }
     }
 
     private class MyActionListener implements ActionListener {
