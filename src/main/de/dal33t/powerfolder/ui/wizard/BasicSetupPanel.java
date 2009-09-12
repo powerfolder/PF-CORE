@@ -216,13 +216,13 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     private static class PrivateNetworking {
         public String toString() {
-            return Translation.getTranslation("wizard.basic_setup.private");
+            return Translation.getTranslation("general.network_mode.private");
         }
     }
 
     private static class LanOnlyNetworking {
         public String toString() {
-            return Translation.getTranslation("wizard.basic_setup.lan_only");
+            return Translation.getTranslation("general_network_mode.lan_only");
         }
     }
 

@@ -328,11 +328,11 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 String text = Translation.getTranslation("online_label.online");
                 if (controller.isLanOnly()) {
                     text += " ("
-                        + Translation.getTranslation("general.lan_only") + ')';
+                        + Translation.getTranslation("general.network_mode.lan_only") + ')';
                 } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
                 {
                     text += " ("
-                        + Translation.getTranslation("general.server_only")
+                        + Translation.getTranslation("general.network_mode.server_only")
                         + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
@@ -346,12 +346,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Connecting
             String text = Translation.getTranslation("online_label.connecting");
             if (controller.isLanOnly()) {
-                text += " (" + Translation.getTranslation("general.lan_only")
+                text += " (" + Translation.getTranslation("general.network_mode.lan_only")
                     + ')';
             } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
-                    + Translation.getTranslation("general.server_only") + ')';
+                    + Translation.getTranslation("general.network_mode.server_only") + ')';
             }
             onlineStateInfo.setToolTipText(text);
             onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));

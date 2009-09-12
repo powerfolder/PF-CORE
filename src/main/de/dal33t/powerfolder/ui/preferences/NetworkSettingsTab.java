@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -88,11 +87,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
         options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.network_mode.private");
+            .getTranslation("general.network_mode.private");
         options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.network_mode.lan_only");
+            .getTranslation("general.network_mode.lan_only");
         options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
-            .getTranslation("preferences.dialog.network_mode.server_only");
+            .getTranslation("general.network_mode.server_only");
         networkingMode = new JComboBox(options);
 
         NetworkingMode currentNetworkingMode = getController()
