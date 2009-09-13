@@ -28,10 +28,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -104,7 +102,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private AtomicBoolean expanded;
 
     private JLabel filesLabel;
-    private JLabel transferModeLabel;
+    private ActionLabel transferModeLabel;
     private JLabel syncPercentLabel;
     private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
@@ -306,7 +304,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         // No computers stuff if backup mode.
         if (getController().isBackupOnly()) {
-            lowerBuilder.add(transferModeLabel, cc.xy(2, row));
+            lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
 
         } else {
@@ -319,7 +317,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             row += 2;
 
-            lowerBuilder.add(transferModeLabel, cc.xy(2, row));
+            lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
         }
 
@@ -396,7 +394,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
         filesLabel = new JLabel();
-        transferModeLabel = new JLabel();
+        transferModeLabel = new ActionLabel(getController(),
+                openSettingsInformationAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -422,6 +421,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         boolean enabled = folder != null;
 
         openSettingsInformationButton.setEnabled(enabled);
+        transferModeLabel.setEnabled(enabled);
         openSettingsInformationAction.setEnabled(enabled);
 
         openFilesInformationButton.setEnabled(enabled);
