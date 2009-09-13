@@ -52,7 +52,7 @@ public enum Feature {
     /**
      * If file movements should be checked after scan.
      */
-    CORRECT_MOVEMENT_DETECTION,
+    CORRECT_MOVEMENT_DETECTION(false),
 
     /**
      * If typical strings of FileInfo should be cached with a softreference.
@@ -103,7 +103,9 @@ public enum Feature {
     /**
      * True if running in beta mode. Basically to identify differences.
      */
-    BETA(true);
+    BETA(false),
+    
+    CONFLICT_DETECTION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
