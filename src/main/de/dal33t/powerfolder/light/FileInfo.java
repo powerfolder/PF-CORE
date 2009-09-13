@@ -197,15 +197,26 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         Reject.ifNull(diskFile, "Diskfile is null");
         boolean diskFileDeleted = !diskFile.exists();
+
         boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
             && !deleted;
         if (ignoreSizeAndModDate) {
             return existanceSync;
         }
+        if (!existanceSync) {
+            return false;
+        }
         boolean lastModificationSync = Util.equalsFileDateCrossPlattform(
             diskFile.lastModified(), lastModifiedDate.getTime());
+        if (!lastModificationSync) {
+            return false;
+        }
         boolean sizeSync = size == diskFile.length();
-        return existanceSync && lastModificationSync && sizeSync;
+        if (!sizeSync) {
+            return false;
+        }
+        return true;
+        // return existanceSync && lastModificationSync && sizeSync;
     }
 
     /**
