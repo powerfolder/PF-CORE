@@ -3099,15 +3099,12 @@ public class Folder extends PFComponent {
      * @return the number of connected members EXCLUDING myself.
      */
     public int getConnectedMembersCount() {
-        int nConnected = 0;
-        for (Member member : members.values()) {
-            if (member.isCompletelyConnected()) {
-                nConnected++;
-            }
-        }
-        return nConnected;
+        return getConnectedMembers().length;
     }
 
+    /**
+     * @return the connected members EXCLUDING myself. 
+     */
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
         for (Member member : getMembersAsCollection()) {
