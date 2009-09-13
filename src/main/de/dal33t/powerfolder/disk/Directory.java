@@ -112,6 +112,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * returns the Directory with this name, creates it if not exists yet
      */
+    public Directory getSubDirectory(String nameArg) {
+        return subDirectoriesMap.get(nameArg);
+    }
+    
+    /**
+     * returns the Directory with this name, creates it if not exists yet
+     */
     public Directory getCreateSubDirectory(String nameArg) {
         if (subDirectoriesMap.containsKey(nameArg)) {
             return subDirectoriesMap.get(nameArg);
