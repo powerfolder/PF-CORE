@@ -453,8 +453,7 @@ public class Folder extends PFComponent {
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-        getController().getConfig()
-            .put(syncProfKey, mode.name());
+        getController().getConfig().put(syncProfKey, mode.name());
         getController().saveConfig();
     }
 
@@ -465,8 +464,7 @@ public class Folder extends PFComponent {
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FolderSettings.FOLDER_SETTINGS_VERSIONS;
-        getController().getConfig()
-            .put(syncProfKey, String.valueOf(versions));
+        getController().getConfig().put(syncProfKey, String.valueOf(versions));
         getController().saveConfig();
     }
 
@@ -788,86 +786,84 @@ public class Folder extends PFComponent {
         }
 
         // TODO BOTTLENECK for many transfers
-        synchronized (scanLock) {
-            if (targetFile.exists()) {
-                // if file was a "newer file" the file already exists here
-                // Using local var because of possible race condition!!
-                FileArchiver arch = archiver;
-                if (arch != null) {
-                    try {
-                        arch.archive(fInfo, targetFile, false);
-                        // This (getLocalFileInfo) causes NPEs:
-                        // arch.archive(fInfo.getLocalFileInfo(getController()
-                        // .getFolderRepository()), targetFile, false);
-                    } catch (IOException e) {
-                        // Same behavior as below, on failure drop out
-                        // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
-                        return false;
-                    }
-                }
-                if (targetFile.exists() && !targetFile.delete()) {
-                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                        + targetFile.getAbsolutePath()
-                        + ". "
-                        + fInfo.toDetailString());
-                    return false;
-                }
-            }
-            if (!tempFile.renameTo(targetFile)) {
-                logWarning("Was not able to rename tempfile, copiing "
-                    + tempFile.getAbsolutePath() + " to "
-                    + targetFile.getAbsolutePath() + ". "
-                    + fInfo.toDetailString());
-
+        // synchronized (scanLock) {
+        if (targetFile.exists()) {
+            // if file was a "newer file" the file already exists here
+            // Using local var because of possible race condition!!
+            FileArchiver arch = archiver;
+            if (arch != null) {
                 try {
-                    FileUtils.copyFile(tempFile, targetFile);
+                    arch.archive(fInfo, targetFile, false);
+                    // This (getLocalFileInfo) causes NPEs:
+                    // arch.archive(fInfo.getLocalFileInfo(getController()
+                    // .getFolderRepository()), targetFile, false);
                 } catch (IOException e) {
-                    // TODO give a diskfull warning?
-                    logSevere("Unable to store completed download "
-                        + targetFile.getAbsolutePath() + ". " + e.getMessage()
-                        + ". " + fInfo.toDetailString());
-                    logFiner(e);
+                    // Same behavior as below, on failure drop out
+                    // TODO Maybe raise folder-problem....
+                    logWarning("Unable to archive old file!", e);
                     return false;
-                }
-
-                // Set modified date of remote
-                if (!targetFile.setLastModified(fInfo.getModifiedDate()
-                    .getTime()))
-                {
-                    logSevere("Failed to set modified date on " + targetFile
-                        + " to " + fInfo.getModifiedDate().getTime());
-                    return false;
-                }
-
-                if (tempFile.exists() && !tempFile.delete()) {
-                    logSevere("Unable to remove temp file: " + tempFile);
                 }
             }
+            if (targetFile.exists() && !targetFile.delete()) {
+                logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
+                    + targetFile.getAbsolutePath()
+                    + ". "
+                    + fInfo.toDetailString());
+                return false;
+            }
+        }
+        if (!tempFile.renameTo(targetFile)) {
+            logWarning("Was not able to rename tempfile, copiing "
+                + tempFile.getAbsolutePath() + " to "
+                + targetFile.getAbsolutePath() + ". " + fInfo.toDetailString());
 
-            synchronized (dbAccessLock) {
-                // Update internal database
-                FileInfo dbFile = getFile(fInfo);
-                if (dbFile != null) {
-                    // Update database
-                    // dbFile.copyFrom(fInfo);
-                    dao.store(null, fInfo);
-                    // update directory
-                    commissionRootFolder();
-                    rootDirectory.removeFileInfo(fInfo);
-                    rootDirectory.add(getController().getMySelf(), fInfo);
-                    fileChanged(dbFile);
+            try {
+                FileUtils.copyFile(tempFile, targetFile);
+            } catch (IOException e) {
+                // TODO give a diskfull warning?
+                logSevere("Unable to store completed download "
+                    + targetFile.getAbsolutePath() + ". " + e.getMessage()
+                    + ". " + fInfo.toDetailString());
+                logFiner(e);
+                return false;
+            }
+
+            // Set modified date of remote
+            if (!targetFile.setLastModified(fInfo.getModifiedDate().getTime()))
+            {
+                logSevere("Failed to set modified date on " + targetFile
+                    + " to " + fInfo.getModifiedDate().getTime());
+                return false;
+            }
+
+            if (tempFile.exists() && !tempFile.delete()) {
+                logSevere("Unable to remove temp file: " + tempFile);
+            }
+        }
+
+        synchronized (dbAccessLock) {
+            // Update internal database
+            FileInfo dbFile = getFile(fInfo);
+            if (dbFile != null) {
+                // Update database
+                // dbFile.copyFrom(fInfo);
+                dao.store(null, fInfo);
+                // update directory
+                commissionRootFolder();
+                rootDirectory.removeFileInfo(fInfo);
+                rootDirectory.add(getController().getMySelf(), fInfo);
+                fileChanged(dbFile);
+            } else {
+                // File new, scan
+                FileInfo fileInfo = scanFile(fInfo);
+                if (fileInfo != null) {
+                    fileChanged(fInfo);
                 } else {
-                    // File new, scan
-                    FileInfo fileInfo = scanFile(fInfo);
-                    if (fileInfo != null) {
-                        fileChanged(fInfo);
-                    } else {
-                        return false;
-                    }
+                    return false;
                 }
             }
         }
+        // }
         return true;
     }
 
@@ -2169,7 +2165,7 @@ public class Folder extends PFComponent {
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
-        synchronized (scanLock) {
+        //synchronized (scanLock) {
             for (Member member : getMembersAsCollection()) {
                 if (!member.isCompletelyConnected()) {
                     // disconected go to next member
@@ -2212,7 +2208,7 @@ public class Folder extends PFComponent {
                     }
                 }
             }
-        }
+        //}
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
@@ -2887,6 +2883,10 @@ public class Folder extends PFComponent {
      * Build up the root directory 'just in time' before use.
      */
     private void commissionRootFolder() {
+        if (!rootDirectoryLock.get()) {
+            // #1705 Performance optimizatiom. Don't hang on lock
+            return;
+        }
         synchronized (rootDirectoryLock) {
             if (!rootDirectoryLock.getAndSet(true)) {
                 Collection<FileInfo> infoCollection = dao.findAll(null);
@@ -3099,7 +3099,13 @@ public class Folder extends PFComponent {
      * @return the number of connected members EXCLUDING myself.
      */
     public int getConnectedMembersCount() {
-        return getConnectedMembers().length;
+        int nConnected = 0;
+        for (Member member : members.values()) {
+            if (member.isCompletelyConnected()) {
+                nConnected++;
+            }
+        }
+        return nConnected;
     }
 
     /**
