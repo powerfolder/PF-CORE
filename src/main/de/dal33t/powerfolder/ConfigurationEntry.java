@@ -500,13 +500,13 @@ public enum ConfigurationEntry {
      * change to the folder happend. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
      */
-    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", String.valueOf(10)),
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", String.valueOf(30)),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory
      * before writing it to disk in seconds.
      */
-    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", String.valueOf(5)),
+    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", String.valueOf(30)),
 
     /**
      * The number of seconds between db maintenance scans (30 minutes).
