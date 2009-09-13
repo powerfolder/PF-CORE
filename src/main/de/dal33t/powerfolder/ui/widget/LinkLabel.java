@@ -73,6 +73,10 @@ public class LinkLabel extends PFComponent {
         setText();
     }
 
+    public void setForeground(Color c) {
+        uiComponent.setForeground(c);
+    }
+
     public void setIcon(Icon icon) {
         uiComponent.setIcon(icon);
     }

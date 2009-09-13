@@ -89,6 +89,10 @@ public class ActionLabel extends PFComponent {
         uiComponent.setToolTipText(text);
     }
 
+    public void setForeground(Color c) {
+        uiComponent.setForeground(c);
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         displayText();

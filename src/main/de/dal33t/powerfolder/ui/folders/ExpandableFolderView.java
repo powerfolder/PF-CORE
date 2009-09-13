@@ -181,6 +181,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         folder = folderArg;
         local = localArg;
         online = onlineArg;
+        osComponent.setFolder(folderArg);
 
         updateStatsDetails();
         updateNumberOfFiles();
@@ -380,12 +381,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         MySyncFolderAction mySyncFolderAction = new MySyncFolderAction(
             getController());
-        MyJoinOnlineStorageAction myJoinOnlineStorageAction = new MyJoinOnlineStorageAction(
-            getController());
 
         expanded = new AtomicBoolean();
 
-        osComponent = new OnlineStorageComponent(getController());
+        osComponent = new OnlineStorageComponent(getController(), folder);
 
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction, true);
@@ -687,7 +686,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_preview_text"));
-                osComponent.getUIComponent().setVisible(false);
             } else if (online) {
                 primaryButton.setIcon(Icons
                     .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
@@ -696,17 +694,29 @@ public class ExpandableFolderView extends PFUIComponent implements
                         .getTranslation("exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(PreferencesEntry
                         .USE_ONLINE_STORAGE.getValueBoolean(getController()));
-                Member server = serverClient.getServer();
-                double sync = folder.getStatistic().getSyncPercentage(server);
-                boolean warned = serverClient.getAccountDetails().getAccount()
-                    .getOSSubscription().isDisabledUsage();
-                osComponent.setSyncPercentage(sync, warned);
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_local_text"));
-                osComponent.getUIComponent().setVisible(PreferencesEntry
-                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
+            }
+        }
+
+        if (folder != null && folder.isPreviewOnly()) {
+            osComponent.getUIComponent().setVisible(false);
+        } else {
+            Boolean osComponentVisible = PreferencesEntry.USE_ONLINE_STORAGE
+                    .getValueBoolean(getController());
+            osComponent.getUIComponent().setVisible(osComponentVisible);
+            if (osComponentVisible) {
+                Member server = serverClient.getServer();
+                double sync = 0;
+                if (folder != null && server != null) {
+                    sync = folder.getStatistic().getSyncPercentage(server);
+                }
+                boolean warned = serverClient.getAccountDetails().getAccount()
+                    .getOSSubscription().isDisabledUsage();
+                boolean joined = folder != null && serverClient.hasJoined(folder);
+                osComponent.setSyncPercentage(sync, warned, joined);
             }
         }
     }
@@ -1055,20 +1065,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private class MyJoinOnlineStorageAction extends BaseAction {
-
-        private MyJoinOnlineStorageAction(Controller controller) {
-            super("action_join_online_storage", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            List<FolderInfo> folderInfoList = new ArrayList<FolderInfo>();
-            folderInfoList.add(folderInfo);
-            PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
-                folderInfoList);
-        }
-    }
-
     private class MyMostRecentChangesAction extends BaseAction {
 
         private MyMostRecentChangesAction(Controller controller) {
@@ -1127,7 +1123,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (folder == null && folderInfo != null) {
                 PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
-            } else if (folder.isPreviewOnly()) {
+            } else if (folder != null && folder.isPreviewOnly()) {
                 // Preview
                 SettingsTab.doPreviewChange(getController(), folder);
             } else {
