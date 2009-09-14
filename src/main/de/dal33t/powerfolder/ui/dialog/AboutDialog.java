@@ -232,15 +232,20 @@ public class AboutDialog extends PFUIComponent {
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
             "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
+        team.setVisible(getController().getDistribution().showCredentials());
 
         contributers = createTextBox(
             Translation.getTranslation("about_dialog.contributers"),
             "Anas Hnidi\nDaniel Harabor\nDane Smith\nJan van Oosterom\nMichael Petrovic-Brings\nNick Khazov\nThorsten Lenze\nPavel Tenenbaum\nPeter H&uuml;ren\nOliver H&auml;usler");
+        contributers.setVisible(getController().getDistribution()
+            .showCredentials());
 
         translators = createTextBox(Translation
             .getTranslation("about_dialog.translators"), "Bayan El Ameen\n"
             + "Cecilia Saltori\n" + "Javier Isassi\n" + "Keblo\n"
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
+        translators.setVisible(getController().getDistribution()
+            .showCredentials());
     }
 
     /**
