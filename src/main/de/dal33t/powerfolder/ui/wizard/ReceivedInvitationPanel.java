@@ -109,7 +109,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         return true;
     }
 
-    @Override
     public WizardPanel next() {
 
         // Set sync profile

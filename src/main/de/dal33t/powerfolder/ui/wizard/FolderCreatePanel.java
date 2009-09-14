@@ -50,6 +50,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
@@ -208,8 +209,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, ArchiveMode.FULL_BACKUP,
-                previewFolder, null, 5);
+                syncProfile, saveLocalInvite, ArchiveMode.valueOf(
+                            PreferencesEntry.DEFAULT_ARCHIVE_MODE
+                                    .getValueString(getController())),
+                previewFolder, null, PreferencesEntry.DEFAULT_ARCHIVE_VERIONS
+                                .getValueInt(getController()));
             configurations.put(folderInfo, folderSettings);
         }
 

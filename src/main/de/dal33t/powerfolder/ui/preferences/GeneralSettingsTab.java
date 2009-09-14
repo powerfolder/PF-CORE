@@ -43,7 +43,8 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -55,7 +56,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox startWithWindowsBox;
 
-
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
@@ -66,6 +66,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JCheckBox usePowerFolderIconBox;
     private JCheckBox usePowerFolderLink;
+
+    private ArchiveModeSelectorPanel archiveModeSelectorPanel;
+    private ValueModel modeModel;
+    private ValueModel versionModel;
 
     private boolean needsRestart;
 
@@ -94,7 +98,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     /**
      * TODO Move this into a <code>PreferencesModel</code>
      * 
-     * @return the model containing the visibible-state of the advanced settings
+     * @return the model containing the visible-state of the advanced settings
      *         dialog
      */
     public ValueModel getShowAdvancedSettingsModel() {
@@ -194,8 +198,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     new BufferedValueModel(pflModel, writeTrigger), Translation
                         .getTranslation("preferences.dialog.show_pf_link"));
             }
-
         }
+
+        modeModel = new ValueHolder();
+        versionModel = new ValueHolder();
+        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(getController(),
+                modeModel, versionModel);
+        archiveModeSelectorPanel.setArchiveMode(ArchiveMode.valueOf(
+                PreferencesEntry.DEFAULT_ARCHIVE_MODE.getValueString(
+                        getController())), PreferencesEntry.
+                DEFAULT_ARCHIVE_VERIONS.getValueInt(getController()));
     }
 
     /**
@@ -205,7 +217,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -270,6 +282,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
 
+            row += 2;
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.default_archive_mode.text")), cc.xy(1, 
+                    row));
+            builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3,
+                    row, 2));
+
             panel = builder.getPanel();
         }
         return panel;
@@ -327,7 +346,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),
                 massDeleteBox.isSelected());
         PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
-                massDeleteSlider.getValue()); 
+                massDeleteSlider.getValue());
+
+        PreferencesEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
+                ((ArchiveMode) modeModel.getValue()).name());
+        PreferencesEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
+                (Integer) versionModel.getValue());
     }
 
     private void configureFavorite(boolean newValue) {

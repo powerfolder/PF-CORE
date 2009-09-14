@@ -330,8 +330,7 @@ public class SettingsTab extends PFUIComponent {
             }
         });
 
-        FormLayout layout = new FormLayout("140dlu, 4dlu, pref, 4dlu, pref",
-            "pref");
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -347,7 +346,7 @@ public class SettingsTab extends PFUIComponent {
         locationButton.addActionListener(new SelectScriptAction());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
-            WikiLinks.SCRIPT_EXECUTION), cc.xy(5, 1));
+            WikiLinks.SCRIPT_EXECUTION), cc.xy(4, 1));
         return builder.getPanel();
     }
 

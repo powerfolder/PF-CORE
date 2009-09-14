@@ -72,7 +72,7 @@ public class LineSpeedSelectionPanel extends JPanel {
     }
 
     private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 1dlu, pref");
         setLayout(layout);
 
         CellConstraints cc = new CellConstraints();
@@ -80,7 +80,7 @@ public class LineSpeedSelectionPanel extends JPanel {
         customSpeedPanel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
 
         add(speedSelectionBox, cc.xy(1, 1));
-        add(customSpeedPanel, cc.xy(1, 2));
+        add(customSpeedPanel, cc.xy(1, 3));
     }
 
     private void initComponents() {

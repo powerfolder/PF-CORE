@@ -78,7 +78,6 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
 
     private JComboBox archiveCombo;
     private JPanel panel;
-    private boolean adjusting;
     private ValueModel modeModel; // <ArchiveMode>
     private ValueModel versionModel; // <Integer>
 
@@ -109,27 +108,22 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      * @param versionHistory
      */
     public void setArchiveMode(ArchiveMode archiveMode, int versionHistory) {
-        adjusting = true;
-        try {
-            if (archiveMode == ArchiveMode.NO_BACKUP) {
-                archiveCombo.setSelectedIndex(0); // No Backup
-            } else if (versionHistory == -1) {
-                archiveCombo.setSelectedIndex(PAIRS.size() - 1); // Unlimited
-            } else {
-                int index = 0;
-                for (NameValuePair nvp : PAIRS) {
-                    if (index != 0 && versionHistory <= nvp.getValue()) {
-                        archiveCombo.setSelectedIndex(index);
-                        return;
-                    }
-                    index++;
+        if (archiveMode == ArchiveMode.NO_BACKUP) {
+            archiveCombo.setSelectedIndex(0); // No Backup
+        } else if (versionHistory == -1) {
+            archiveCombo.setSelectedIndex(PAIRS.size() - 1); // Unlimited
+        } else {
+            int index = 0;
+            for (NameValuePair nvp : PAIRS) {
+                if (index != 0 && versionHistory <= nvp.getValue()) {
+                    archiveCombo.setSelectedIndex(index);
+                    return;
                 }
-
-                // versionHistory > max ==> Unlimited
-                archiveCombo.setSelectedIndex(PAIRS.size() - 1);
+                index++;
             }
-        } finally {
-            adjusting = false;
+
+            // versionHistory > max ==> Unlimited
+            archiveCombo.setSelectedIndex(PAIRS.size() - 1);
         }
     }
 
@@ -162,15 +156,14 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      * Notifiy the value models of selection changes.
      */
     private void fireChange() {
-        if (!adjusting) {
-            int index = archiveCombo.getSelectedIndex();
-            if (index == 0) { // No Backup
-                modeModel.setValue(ArchiveMode.NO_BACKUP);
-            } else {
-                versionModel.setValue(PAIRS.toArray(new NameValuePair[
-                        PAIRS.size()])[index].getValue());
-                modeModel.setValue(ArchiveMode.FULL_BACKUP);
-            }
+        int index = archiveCombo.getSelectedIndex();
+        if (index == 0) { // No Backup
+            versionModel.setValue(0);
+            modeModel.setValue(ArchiveMode.NO_BACKUP);
+        } else {
+            versionModel.setValue(PAIRS.toArray(new NameValuePair[
+                    PAIRS.size()])[index].getValue());
+            modeModel.setValue(ArchiveMode.FULL_BACKUP);
         }
     }
 

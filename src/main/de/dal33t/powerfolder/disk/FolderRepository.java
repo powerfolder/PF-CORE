@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -430,7 +429,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            ArchiveMode.FULL_BACKUP, preview, dlScript, 5);
+            ArchiveMode.valueOf(PreferencesEntry.DEFAULT_ARCHIVE_MODE
+                    .getValueString(getController())), preview, dlScript,
+                        PreferencesEntry.DEFAULT_ARCHIVE_VERIONS
+                                .getValueInt(getController()));
     }
 
     /**
