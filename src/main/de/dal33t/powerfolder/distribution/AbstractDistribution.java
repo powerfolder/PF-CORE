@@ -38,6 +38,14 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
+    
+    /**
+     * @return true if the credentials in the about box should be shown.
+     */
+    public boolean showCredentials() {
+        return true;
+    }
+
     /**
      * @param c
      * @return true if the set server is part of the public PowerFolder network
