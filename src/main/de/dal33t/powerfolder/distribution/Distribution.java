@@ -44,6 +44,11 @@ public interface Distribution {
      *            the controller this branding is loaded on
      */
     void init(Controller controller);
+    
+    /**
+     * @return true if the credentials in the about box should be shown.
+     */
+    boolean showCredentials();
 
     /**
      * @return true if this client supports registration of new trial account
