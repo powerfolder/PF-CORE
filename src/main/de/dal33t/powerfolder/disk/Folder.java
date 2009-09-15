@@ -1161,11 +1161,11 @@ public class Folder extends PFComponent {
                     if (fInfo.isDeleted()) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
                             currentInfo, fInfo.getName(), modifiedBy, modDate,
-                            fInfo.getVersion());
+                            fInfo.getVersion(), file.isDirectory());
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
                             currentInfo, fInfo.getName(), size, modifiedBy,
-                            modDate, fInfo.getVersion());
+                            modDate, fInfo.getVersion(), file.isDirectory());
                     }
 
                     dao.store(null, addFile(fInfo));
@@ -1457,17 +1457,15 @@ public class Folder extends PFComponent {
         }
         dao = new FileInfoDAOHashMapImpl();
 
-        // File daoDir = new File(getSystemSubDir(), "db_h2");
-        // dao = new FileInfoDAOSQLImpl(getController(), "jdbc:h2:"
-        // + daoDir, "sa", "", null);
-
-        // File daoDir = new File(getSystemSubDir(), "db");
+        // File daoDir = new File(getSystemSubDir(), "db/h2");
         // try {
-        // dao = new FileInfoDAOLuceneImpl(getController(), daoDir);
+        // FileUtils.recursiveDelete(daoDir.getParentFile());
         // } catch (IOException e) {
-        // logSevere("Unable to initialize file info index database at "
-        // + daoDir);
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
         // }
+        // dao = new FileInfoDAOSQLImpl(getController(), "jdbc:h2:" + daoDir,
+        // "sa", "", null);
     }
 
     /**
@@ -1582,12 +1580,7 @@ public class Folder extends PFComponent {
 
                 logFine("Loaded folder database (" + files.length
                     + " files) from " + dbFile.getAbsolutePath());
-            } catch (IOException e) {
-                logWarning(this + ": Unable to read database file: "
-                    + dbFile.getAbsolutePath());
-                logFiner(e);
-                return false;
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 logWarning(this + ": Unable to read database file: "
                     + dbFile.getAbsolutePath());
                 logFiner(e);
@@ -1668,7 +1661,7 @@ public class Folder extends PFComponent {
         try {
             FileInfo[] files;
             synchronized (dbAccessLock) {
-                Collection<FileInfo> infoCollection = dao.findAll(null);
+                Collection<FileInfo> infoCollection = dao.findAllFiles(null);
                 files = infoCollection.toArray(new FileInfo[infoCollection
                     .size()]);
             }
@@ -1776,7 +1769,7 @@ public class Folder extends PFComponent {
                 + new Date(removeBeforeDate));
         }
         int expired = 0;
-        for (FileInfo file : dao.findAll(null)) {
+        for (FileInfo file : dao.findAllFiles(null)) {
             if (!file.isDeleted()) {
                 continue;
             }
@@ -2165,50 +2158,47 @@ public class Folder extends PFComponent {
         }
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
-        //synchronized (scanLock) {
-            for (Member member : getMembersAsCollection()) {
-                if (!member.isCompletelyConnected()) {
-                    // disconected go to next member
-                    continue;
-                }
-                if (!hasWritePermission(member)) {
-                    logWarning("Not syncing deletions. No write permission for "
-                        + member);
-                    continue;
-                }
+        // synchronized (scanLock) {
+        for (Member member : getMembersAsCollection()) {
+            if (!member.isCompletelyConnected()) {
+                // disconected go to next member
+                continue;
+            }
+            if (!hasWritePermission(member)) {
+                logWarning("Not syncing deletions. No write permission for "
+                    + member);
+                continue;
+            }
 
-                Collection<FileInfo> fileList = getFilesAsCollection(member);
-                if (fileList != null) {
-                    if (isFiner()) {
-                        logFiner("RemoteFileDeletion sync. Member '"
-                            + member.getNick() + "' has " + fileList.size()
-                            + " possible files");
-                    }
-                    for (FileInfo remoteFile : fileList) {
-                        handleFileDeletion(remoteFile, force, member,
-                            removedFiles);
-                    }
+            Collection<FileInfo> fileList = getFilesAsCollection(member);
+            if (fileList != null) {
+                if (isFiner()) {
+                    logFiner("RemoteFileDeletion sync. Member '"
+                        + member.getNick() + "' has " + fileList.size()
+                        + " possible files");
                 }
-
-                Collection<DirectoryInfo> dirList = getDirectoriesAsCollection(member);
-                if (dirList != null) {
-                    if (isFiner()) {
-                        logFiner("RemoteDirDeletion sync. Member '"
-                            + member.getNick() + "' has " + dirList.size()
-                            + " possible files");
-                    }
-                    List<FileInfo> list = new ArrayList<FileInfo>(dirList);
-                    Collections.sort(list, new ReverseComparator(
-                        DiskItemComparator
-                            .getComparator(DiskItemComparator.BY_FULL_NAME)));
-                    // logWarning("" + list.size());
-                    for (FileInfo remoteDir : list) {
-                        handleFileDeletion(remoteDir, force, member,
-                            removedFiles);
-                    }
+                for (FileInfo remoteFile : fileList) {
+                    handleFileDeletion(remoteFile, force, member, removedFiles);
                 }
             }
-        //}
+
+            Collection<DirectoryInfo> dirList = getDirectoriesAsCollection(member);
+            if (dirList != null) {
+                if (isFiner()) {
+                    logFiner("RemoteDirDeletion sync. Member '"
+                        + member.getNick() + "' has " + dirList.size()
+                        + " possible files");
+                }
+                List<FileInfo> list = new ArrayList<FileInfo>(dirList);
+                Collections.sort(list, new ReverseComparator(DiskItemComparator
+                    .getComparator(DiskItemComparator.BY_FULL_NAME)));
+                // logWarning("" + list.size());
+                for (FileInfo remoteDir : list) {
+                    handleFileDeletion(remoteDir, force, member, removedFiles);
+                }
+            }
+        }
+        // }
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
@@ -2775,7 +2765,7 @@ public class Folder extends PFComponent {
     private void writeFilelist() {
         // Write filelist to disk
         Debug.writeFileListCSV(getName(),
-            getController().getMySelf().getNick(), dao.findAll(null),
+            getController().getMySelf().getNick(), dao.findAllFiles(null),
             "FileList of folder " + getName() + ", member " + this + ':');
     }
 
@@ -2845,7 +2835,7 @@ public class Folder extends PFComponent {
      */
     @Deprecated
     public FileInfo[] getKnowFilesAsArray() {
-        Collection<FileInfo> infoCollection = dao.findAll(null);
+        Collection<FileInfo> infoCollection = dao.findAllFiles(null);
         return infoCollection.toArray(new FileInfo[infoCollection.size()]);
     }
 
@@ -2856,7 +2846,7 @@ public class Folder extends PFComponent {
      *         hashmap (keySet).
      */
     public Collection<FileInfo> getKnownFiles() {
-        return dao.findAll(null);
+        return dao.findAllFiles(null);
     }
 
     /**
@@ -2866,7 +2856,7 @@ public class Folder extends PFComponent {
      *         database hashmap (keySet).
      */
     public Collection<DirectoryInfo> getKnownDirectories() {
-        return dao.findDirectories(null);
+        return dao.findAllDirectories(null);
     }
 
     /**
@@ -2889,7 +2879,7 @@ public class Folder extends PFComponent {
         }
         synchronized (rootDirectoryLock) {
             if (!rootDirectoryLock.getAndSet(true)) {
-                Collection<FileInfo> infoCollection = dao.findAll(null);
+                Collection<FileInfo> infoCollection = dao.findAllFiles(null);
                 for (FileInfo info : infoCollection) {
                     rootDirectory.add(getController().getMySelf(), info);
                 }
@@ -3005,8 +2995,8 @@ public class Folder extends PFComponent {
                     }
                 }
             }
-            Collection<DirectoryInfo> memberDirs = dao.findDirectories(member
-                .getId());
+            Collection<DirectoryInfo> memberDirs = dao
+                .findAllDirectories(member.getId());
             if (memberDirs != null) {
                 for (DirectoryInfo remoteDir : memberDirs) {
                     if (remoteDir.isDeleted() && !includeDeleted) {
@@ -3058,9 +3048,9 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return dao.findAll(null);
+            return dao.findAllFiles(null);
         }
-        return dao.findAll(member.getId());
+        return dao.findAllFiles(member.getId());
     }
 
     /**
@@ -3072,9 +3062,9 @@ public class Folder extends PFComponent {
             throw new NullPointerException("Member is null");
         }
         if (member.isMySelf()) {
-            return dao.findDirectories(null);
+            return dao.findAllDirectories(null);
         }
-        return dao.findDirectories(member.getId());
+        return dao.findAllDirectories(member.getId());
     }
 
     /**
@@ -3109,7 +3099,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return the connected members EXCLUDING myself. 
+     * @return the connected members EXCLUDING myself.
      */
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
