@@ -113,7 +113,7 @@ public interface FileInfoDAO {
      *             BAD idea generally.
      */
     @Deprecated
-    Collection<FileInfo> findAll(String domain);
+    Collection<FileInfo> findAllFiles(String domain);
 
     /**
      * Finds all files in the given (sub) directory and domain only.
@@ -135,7 +135,7 @@ public interface FileInfoDAO {
      * @param domain
      * @return the collection of available directories
      */
-    Collection<DirectoryInfo> findDirectories(String domain);
+    Collection<DirectoryInfo> findAllDirectories(String domain);
 
     /**
      * @param fileInfo

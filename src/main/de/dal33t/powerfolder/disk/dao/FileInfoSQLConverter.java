@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.util.Reject;
 public class FileInfoSQLConverter {
     static final String FIELDNAME_FOLDER_ID = "folderId";
     static final String FIELDNAME_FILE_NAME_LOWER_CASE = "fileNameLower";
+    static final String FIELDNAME_DIR = "dir";
     static final String FIELDNAME_MODIFIED_BY_NODE_ID = "modifiedByNodeId";
 
     private static final Logger LOG = Logger
@@ -61,17 +62,19 @@ public class FileInfoSQLConverter {
      * <p>
      * 2 = fileName (lower case)
      * <p>
-     * 3 = size
+     * 3 = dir (file or directory)
      * <p>
-     * 4 = node id of modifier
+     * 4 = size
      * <p>
-     * 5 = last modification time in milliseconds.
+     * 5 = node id of modifier
      * <p>
-     * 6 = version
+     * 6 = last modification time in milliseconds.
      * <p>
-     * 7 = deleted flag
+     * 7 = version
      * <p>
-     * 8 = folder id
+     * 8 = deleted flag
+     * <p>
+     * 9 = folder id
      * 
      * @param fInfo
      *            the {@link FileInfo}
@@ -86,9 +89,11 @@ public class FileInfoSQLConverter {
         Reject.ifNull(fInfo, "FileInfo is null");
         Reject.ifNull(ps, "Prepared statement is null");
 
+        // i = 1: Domain name
         int i = 2;
         ps.setString(i++, fInfo.getName());
         ps.setString(i++, fInfo.getName().toLowerCase());
+        ps.setBoolean(i++, fInfo.isDiretory());
         ps.setLong(i++, fInfo.getSize());
         ps.setString(i++, fInfo.getModifiedBy() != null
             ? fInfo.getModifiedBy().id
@@ -123,12 +128,12 @@ public class FileInfoSQLConverter {
 
         String fileName = rs.getString(FileInfo.PROPERTYNAME_FILE_NAME);
         String folderId = rs.getString(FIELDNAME_FOLDER_ID);
+        boolean dir = rs.getBoolean(FIELDNAME_DIR);
         FolderInfo foInfo = null;
         // Try to retrieve from repo
         // TODO Speed this UP!
         if (controller != null) {
-            for (Folder folder : controller.getFolderRepository()
-                .getFolders())
+            for (Folder folder : controller.getFolderRepository().getFolders())
             {
                 if (folder.getId().equals(folderId)) {
                     foInfo = folder.getInfo();
@@ -164,10 +169,10 @@ public class FileInfoSQLConverter {
 
         if (deleted) {
             return FileInfoFactory.unmarshallDeletedFile(foInfo, fileName,
-                modifiedByInfo, modDate, version);
+                modifiedByInfo, modDate, version, dir);
         } else {
-            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName, size,
-                modifiedByInfo, modDate, version);
+            return FileInfoFactory.unmarshallExistingFile(foInfo, fileName,
+                size, modifiedByInfo, modDate, version, dir);
         }
     }
 }

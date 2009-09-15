@@ -53,12 +53,13 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     private static final String DEFAULT_TABLE_NAME = "FileInfo";
 
     // SQLs
-    private static final String SQL_INSERT = "INSERT INTO FileInfo VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?)";
+    public static final String SQL_INSERT = "INSERT INTO FileInfo VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_COUNT = "SELECT COUNT(fileName) FROM %TABLE_NAME% WHERE domain = ?";
-    private static final String SQL_FIND_ALL = "SELECT * FROM %TABLE_NAME% WHERE domain = ?";
+    private static final String SQL_FIND_ALL_FILES = "SELECT * FROM %TABLE_NAME% WHERE domain = ? AND dir = false";
+    private static final String SQL_FIND_ALL_DIRS = "SELECT * FROM %TABLE_NAME% WHERE domain = ? AND dir = true";
     private static final String SQL_FIND = "SELECT * FROM %TABLE_NAME% WHERE %FILE_NAME_FIELD% = ? AND domain = ?";
     private static final String SQL_FIND_NEWEST_VERSION = "SELECT * FROM %TABLE_NAME% WHERE %FILE_NAME_FIELD% = ? AND domain IN (?) ORDER BY version DESC";
-    private static final String SQL_DELETE_FILE = "DELETE FROM %TABLE_NAME% WHERE %FILE_NAME_FIELD% = ? AND domain = ?";
+    private static final String SQL_DELETE = "DELETE FROM %TABLE_NAME% WHERE %FILE_NAME_FIELD% = ? AND domain = ?";
     private static final String SQL_DELETE_DOMAIN = "DELETE FROM %TABLE_NAME% WHERE domain = ?";
 
     private String tableName;
@@ -81,9 +82,10 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         ds.setUser(username);
         ds.setPassword(password);
         this.connectionPool = JdbcConnectionPool.create(ds);
-        // connectionPool.setMaxConnections(10);
+        connectionPool.setMaxConnections(1000);
+        connectionPool.setLoginTimeout(1);
         ignoreFileNameCase = OSUtil.isWindowsSystem();
-        ignoreFileNameCase = false;
+        // ignoreFileNameCase = false;
 
         try {
             byte[] content = StreamUtils.readIntoByteArray(Thread
@@ -132,19 +134,25 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     public void delete(String domain, FileInfo info) {
         Connection c = openConnection();
         try {
-            PreparedStatement ps = createCaseQuery(c, SQL_DELETE_FILE, info
-                .getName());
-            ps.setString(2, dn(domain));
-            ps.execute();
-            ps.close();
-        } catch (SQLException e) {
-            throw handleSQLException(e, SQL_DELETE_FILE);
+            delete0(domain, info, c);
         } finally {
             try {
                 c.close();
             } catch (SQLException e) {
                 logWarning("Unable to close database connection", e);
             }
+        }
+    }
+
+    private void delete0(String domain, FileInfo info, Connection c) {
+        try {
+            PreparedStatement ps = createCaseQuery(c, SQL_DELETE, info
+                .getName());
+            ps.setString(2, dn(domain));
+            ps.execute();
+            ps.close();
+        } catch (SQLException e) {
+            throw handleSQLException(e, SQL_DELETE);
         }
     }
 
@@ -194,10 +202,10 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    public Collection<FileInfo> findAll(String domain) {
+    public Collection<FileInfo> findAllFiles(String domain) {
         Connection c = openConnection();
         try {
-            PreparedStatement ps = c.prepareStatement(tn(SQL_FIND_ALL));
+            PreparedStatement ps = c.prepareStatement(tn(SQL_FIND_ALL_FILES));
             ps.setString(1, dn(domain));
             ps.execute();
             ResultSet rs = ps.getResultSet();
@@ -213,7 +221,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
             ps.close();
             return Collections.unmodifiableCollection(fInfos.values());
         } catch (SQLException e) {
-            throw handleSQLException(e, tn(SQL_FIND_ALL));
+            throw handleSQLException(e, tn(SQL_FIND_ALL_FILES));
         } finally {
             try {
                 c.close();
@@ -280,8 +288,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
             PreparedStatement ps = c.prepareStatement(tn(SQL_INSERT));
             ps.setString(1, dn(domain));
             for (FileInfo fInfo : infos) {
-                // OPTIMIZE
-                delete(domain, fInfo);
+                delete0(domain, fInfo, c);
                 FileInfoSQLConverter.set(fInfo, ps);
                 ps.execute();
             }
@@ -324,6 +331,13 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
 
     private Connection openConnection() {
         try {
+            int ac = connectionPool.getActiveConnections();
+            if (ac > 500) {
+                logWarning("Active connection: "
+                    + connectionPool.getActiveConnections(),
+                    new RuntimeException("here"));
+            }
+
             return connectionPool.getConnection();
         } catch (SQLException e) {
             logSevere("Unable to open database connection. " + e, e);
@@ -375,8 +389,34 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public Collection<DirectoryInfo> findDirectories(String domain) {
-        throw new UnsupportedOperationException("Not implemented");
+    public Collection<DirectoryInfo> findAllDirectories(String domain) {
+        Connection c = openConnection();
+        try {
+            PreparedStatement ps = c.prepareStatement(tn(SQL_FIND_ALL_DIRS));
+            ps.setString(1, dn(domain));
+            ps.execute();
+            ResultSet rs = ps.getResultSet();
+            // TODO Optimize. Initialize with size.
+            Map<DirectoryInfo, DirectoryInfo> fInfos = new HashMap<DirectoryInfo, DirectoryInfo>();
+            while (rs.next()) {
+                DirectoryInfo dirInfo = (DirectoryInfo) FileInfoSQLConverter
+                    .get(getController(), rs);
+                if (fInfos.put(dirInfo, dirInfo) != null) {
+                    logSevere("Found multiple FileInfos in domain '" + domain
+                        + "': " + dirInfo.toDetailString());
+                }
+            }
+            ps.close();
+            return Collections.unmodifiableCollection(fInfos.values());
+        } catch (SQLException e) {
+            throw handleSQLException(e, tn(SQL_FIND_ALL_DIRS));
+        } finally {
+            try {
+                c.close();
+            } catch (SQLException e) {
+                logWarning("Unable to close database connection", e);
+            }
+        }
     }
 
     public Collection<FileInfo> findInDirectory(String path, String domain) {
