@@ -117,7 +117,7 @@ public class FolderStatistic extends PFComponent {
             return;
         }
         if (millisPast > delay || current.totalFilesCount < MAX_ITEMS) {
-            setCalculateIn(50);
+            setCalculateIn(500);
         } else {
             setCalculateIn(delay);
         }
