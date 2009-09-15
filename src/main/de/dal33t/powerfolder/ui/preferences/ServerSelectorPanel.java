@@ -69,13 +69,23 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
     }
 
     private void initComponent() {
-        InetSocketAddress addr = getController().getOSClient().getServer() != null
-            ? getController().getOSClient().getServer().getReconnectAddress()
-            : null;
-        String addrStr = addr != null ? NetworkUtil
-            .getHostAddressNoResolve(addr.getAddress()) : "n/a";
-        if (addr != null && addr.getPort() != ConnectionListener.DEFAULT_PORT) {
-            addrStr += ":" + addr.getPort();
+        String addrStr;
+        if (getController().getOSClient().getServer() != null) {
+            if (getController().getOSClient().getServer().isMySelf()) {
+                addrStr = "myself";
+            } else {
+                InetSocketAddress addr = getController().getOSClient()
+                    .getServer().getReconnectAddress();
+                addrStr = addr != null ? NetworkUtil
+                    .getHostAddressNoResolve(addr.getAddress()) : "n/a";
+                if (addr != null
+                    && addr.getPort() != ConnectionListener.DEFAULT_PORT)
+                {
+                    addrStr += ":" + addr.getPort();
+                }
+            }
+        } else {
+            addrStr = "n/a";
         }
         addressField = new JTextField(addrStr);
         addressField.setEditable(false);
