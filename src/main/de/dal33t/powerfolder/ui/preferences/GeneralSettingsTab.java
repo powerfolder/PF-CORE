@@ -207,9 +207,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
             getController(), modeModel, versionModel);
         archiveModeSelectorPanel.setArchiveMode(ArchiveMode
-            .valueOf(PreferencesEntry.DEFAULT_ARCHIVE_MODE
-                .getValueString(getController())),
-            PreferencesEntry.DEFAULT_ARCHIVE_VERIONS
+            .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                .getValue(getController())),
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                 .getValueInt(getController()));
     }
 
@@ -354,10 +354,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
             massDeleteSlider.getValue());
 
-        PreferencesEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
+        ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
             ((ArchiveMode) modeModel.getValue()).name());
-        PreferencesEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
-            (Integer) versionModel.getValue());
+        ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
+            versionModel.getValue().toString());
     }
 
     private void configureFavorite(boolean newValue) {

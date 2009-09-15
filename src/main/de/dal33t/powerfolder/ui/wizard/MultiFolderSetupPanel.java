@@ -25,7 +25,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
@@ -171,8 +171,8 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(getController(),
                 modeModel, versionsModel);
         archiveModeSelectorPanel.setArchiveMode(ArchiveMode.valueOf(
-                PreferencesEntry.DEFAULT_ARCHIVE_MODE.getValueString(
-                        getController())), PreferencesEntry
+                ConfigurationEntry.DEFAULT_ARCHIVE_MODE.getValue(
+                        getController())), ConfigurationEntry
                 .DEFAULT_ARCHIVE_VERIONS.getValueInt(getController()));
         PropertyChangeListener listener = new MyPropertyChangeListener();
         modeModel.addValueChangeListener(listener);

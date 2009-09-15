@@ -30,6 +30,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -582,7 +583,13 @@ public enum ConfigurationEntry {
         .valueOf(Boolean.TRUE)),
 
     /** Online storage only client. */
-    BACKUP_ONLY_CLIENT("backup.only.client", Boolean.FALSE.toString());
+    BACKUP_ONLY_CLIENT("backup.only.client", Boolean.FALSE.toString()),
+
+    /** The number of file versions to use when creating a new folder. */
+    DEFAULT_ARCHIVE_VERIONS("default.archive.versions", "5"),
+
+    /** The archive mode to use when creating a new folder. */
+    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name());
 
     // Methods/Constructors ***************************************************
 

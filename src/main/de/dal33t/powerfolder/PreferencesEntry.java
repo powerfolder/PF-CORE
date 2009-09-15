@@ -123,12 +123,6 @@ public enum PreferencesEntry {
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 
-    /** The number of file versions to use when creating a new folder. */
-    DEFAULT_ARCHIVE_VERIONS("default.archive.versions", 5),
-
-    /** The archive mode to use when creating a new folder. */
-    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
-
     FILE_SEARCH_MODE("file.search.mode", DirectoryFilter
             .SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
 
