@@ -56,15 +56,15 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(n, dao.count("WWW"));
         assertEquals(0, dao.count("123"));
 
-        assertEquals(n, dao.findAll(null).size());
-        assertEquals(n, dao.findAll("XXX").size());
-        assertEquals(n, dao.findAll("WWW").size());
-        assertEquals(0, dao.findAll("123").size());
+        assertEquals(n, dao.findAllFiles(null).size());
+        assertEquals(n, dao.findAllFiles("XXX").size());
+        assertEquals(n, dao.findAllFiles("WWW").size());
+        assertEquals(0, dao.findAllFiles("123").size());
 
-        assertEquals(n, dao.findAll(null).size());
-        assertEquals(n, dao.findAll("XXX").size());
-        assertEquals(n, dao.findAll("WWW").size());
-        assertEquals(0, dao.findAll("123").size());
+        assertEquals(n, dao.findAllFiles(null).size());
+        assertEquals(n, dao.findAllFiles("XXX").size());
+        assertEquals(n, dao.findAllFiles("WWW").size());
+        assertEquals(0, dao.findAllFiles("123").size());
     }
 
     protected void testFindNewestVersion(FileInfoDAO dao) {
@@ -100,7 +100,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         // Should overwrite
         dao.store(null, retrieved);
 
-        assertEquals(1, dao.findAll(null).size());
+        assertEquals(1, dao.findAllFiles(null).size());
         assertEquals(1, dao.count(null));
     }
 
@@ -110,7 +110,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(), IdGenerator
             .makeId(), IdGenerator.makeId());
         return FileInfoFactory.unmarshallExistingFile(foInfo, fn, (long) Math.random()
-            * Long.MAX_VALUE, mInfo, new Date(), 0);
+            * Long.MAX_VALUE, mInfo, new Date(), 0, false);
     }
 
     protected static FolderInfo createRandomFolderInfo() {

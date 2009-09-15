@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test.folder.h2;
+package de.dal33t.powerfolder.test.folder.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,12 +15,11 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOSQLImpl;
 import de.dal33t.powerfolder.disk.dao.FileInfoSQLConverter;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.test.folder.db.FileInfoDAOTestCase;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class H2DBTest extends FileInfoDAOTestCase {
+public class FileInfoDAOH2DBTest extends FileInfoDAOTestCase {
     private Connection con;
     private String createTableSQL;
     private FileInfoDAO dao;
@@ -78,11 +77,12 @@ public class H2DBTest extends FileInfoDAOTestCase {
         testCreateTable();
 
         PreparedStatement ps = con
-            .prepareStatement("INSERT INTO FileInfo VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?)");
+            .prepareStatement(FileInfoDAOSQLImpl.SQL_INSERT);
         int i = 1;
         ps.setString(i++, "DOMAIN");
         ps.setString(i++, "TestFile.txt");
         ps.setString(i++, "TestFile.txt".toLowerCase());
+        ps.setBoolean(i++, false);
         ps.setLong(i++, 1337);
         ps.setString(i++, "[XIDSNNID]");
         ps.setLong(i++, 1238604350944L);
@@ -159,7 +159,7 @@ public class H2DBTest extends FileInfoDAOTestCase {
         int nFiles = 30000;
         Map<String, FileInfo> fInfos = new HashMap<String, FileInfo>();
         PreparedStatement ps = con
-            .prepareStatement("INSERT INTO FileInfo VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?)");
+            .prepareStatement(FileInfoDAOSQLImpl.SQL_INSERT);
         for (int i = 0; i < nFiles; i++) {
             FileInfo fInfo = createRandomFileInfo(i, "Random");
             ps.setString(1, "DOMAIN");
