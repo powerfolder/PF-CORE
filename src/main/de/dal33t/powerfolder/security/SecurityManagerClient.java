@@ -121,7 +121,8 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             logWarning("Unable to check permission for "
                 + nullSafeGet(accountInfo) + ". " + e);
             logFiner(e);
-            return false;
+            return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                .getValueBoolean(getController());
         }
     }
 
