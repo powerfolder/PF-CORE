@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ItemListener;
@@ -115,8 +115,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             PreferencesEntry.SHOW_ADVANCED_SETTINGS
                 .getValueBoolean(getController()));
         ValueModel backupOnlyClientModel = new ValueHolder(
-                ConfigurationEntry.BACKUP_ONLY_CLIENT
-                        .getValueBoolean(getController()));
+            ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
@@ -125,23 +125,25 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.show_advanced"));
 
         backupOnlyClientBox = BasicComponentFactory.createCheckBox(
-                backupOnlyClientModel, Translation
+            backupOnlyClientModel, Translation
                 .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel massDeleteModel = new ValueHolder(
-                PreferencesEntry.MASS_DELETE_PROTECTION.getValueBoolean(getController()));
+            PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()));
         massDeleteBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(massDeleteModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.use_mass_delete"));
         massDeleteBox.addItemListener(new MassDeleteItemListener());
-        massDeleteSlider = new JSlider(20, 100, PreferencesEntry.
-                MASS_DELETE_THRESHOLD.getValueInt(getController()));
+        massDeleteSlider = new JSlider(20, 100,
+            PreferencesEntry.MASS_DELETE_THRESHOLD.getValueInt(getController()));
         massDeleteSlider.setMajorTickSpacing(20);
         massDeleteSlider.setMinorTickSpacing(5);
         massDeleteSlider.setPaintTicks(true);
         massDeleteSlider.setPaintLabels(true);
         Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing()) {
+        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing())
+        {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
         massDeleteSlider.setLabelTable(dictionary);
@@ -202,12 +204,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         modeModel = new ValueHolder();
         versionModel = new ValueHolder();
-        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(getController(),
-                modeModel, versionModel);
-        archiveModeSelectorPanel.setArchiveMode(ArchiveMode.valueOf(
-                PreferencesEntry.DEFAULT_ARCHIVE_MODE.getValueString(
-                        getController())), PreferencesEntry.
-                DEFAULT_ARCHIVE_VERIONS.getValueInt(getController()));
+        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
+            getController(), modeModel, versionModel);
+        archiveModeSelectorPanel.setArchiveMode(ArchiveMode
+            .valueOf(PreferencesEntry.DEFAULT_ARCHIVE_MODE
+                .getValueString(getController())),
+            PreferencesEntry.DEFAULT_ARCHIVE_VERIONS
+                .getValueInt(getController()));
     }
 
     /**
@@ -221,7 +224,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
-                    .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
 
             CellConstraints cc = new CellConstraints();
             int row = 1;
@@ -230,26 +233,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.nickname")), cc.xy(1, row));
             builder.add(nickField, cc.xy(3, row));
 
-            row += 2;
-            builder.add(massDeleteBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.mass_delete_threshold")),
-                    cc.xy(1, row));
-            builder.add(massDeleteSlider, cc.xy(3, row));
-
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-
                 row += 2;
                 builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
 
                 if (startWithWindowsBox != null) {
+                    builder.appendRow("3dlu");
+                    builder.appendRow("pref");
                     row += 2;
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
@@ -269,7 +262,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
-
                 row += 2;
                 builder.add(new JLabel(Translation
                     .getTranslation("preferences.dialog.non_windows_info"),
@@ -283,11 +275,23 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.default_archive_mode.text")), cc.xy(1, 
-                    row));
+            builder.add(massDeleteBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.mass_delete_threshold")),
+                cc.xy(1, row));
+            builder.add(massDeleteSlider, cc.xy(3, row));
+
+            row += 2;
+            builder
+                .add(
+                    new JLabel(
+                        Translation
+                            .getTranslation("preferences.dialog.default_archive_mode.text")),
+                    cc.xy(1, row));
             builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3,
-                    row, 2));
+                row, 2));
 
             panel = builder.getPanel();
         }
@@ -319,11 +323,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // set bu only
         if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
-                .equals(String.valueOf(backupOnlyClientBox.isSelected()))) {
+            .equals(String.valueOf(backupOnlyClientBox.isSelected())))
+        {
             needsRestart = true;
         }
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
-            String.valueOf(backupOnlyClientBox.isSelected()));
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(), String
+            .valueOf(backupOnlyClientBox.isSelected()));
 
         if (usePowerFolderIconBox != null) {
             // PowerFolder icon
@@ -332,8 +337,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         if (usePowerFolderLink != null) {
-            boolean oldValue = Boolean.parseBoolean(ConfigurationEntry
-                    .USE_PF_LINK.getValue(getController()));
+            boolean oldValue = Boolean
+                .parseBoolean(ConfigurationEntry.USE_PF_LINK
+                    .getValue(getController()));
             boolean newValue = usePowerFolderLink.isSelected();
             if (oldValue ^ newValue) {
                 configureFavorite(newValue);
@@ -344,14 +350,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),
-                massDeleteBox.isSelected());
+            massDeleteBox.isSelected());
         PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
-                massDeleteSlider.getValue());
+            massDeleteSlider.getValue());
 
         PreferencesEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
-                ((ArchiveMode) modeModel.getValue()).name());
+            ((ArchiveMode) modeModel.getValue()).name());
         PreferencesEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
-                (Integer) versionModel.getValue());
+            (Integer) versionModel.getValue());
     }
 
     private void configureFavorite(boolean newValue) {
@@ -361,6 +367,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             logSevere(e);
         }
     }
+
     private class MassDeleteItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             enableMassDeleteSlider();
