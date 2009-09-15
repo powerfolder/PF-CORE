@@ -35,27 +35,27 @@ import java.util.logging.Logger;
  * Represents a directory of files. No actual disk access from this file, build
  * from list of FileInfos Holds the SubDirectories (may contain Files and
  * Subdirectories themselfs) and Files (FileInfos)
- *
+ * 
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom </a>
  * @version $Revision: 1.43 $
  */
 public class Directory implements Comparable<Directory>, DiskItem {
 
     private static final Logger log = Logger.getLogger(Directory.class
-            .getName());
+        .getName());
 
     /**
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap
-            = new ConcurrentHashMap<FileInfo, FileInfoHolder>(2, 0.75f, 4);
+    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
+        2, 0.75f, 4);
 
     /**
      * key = dir name, value = Directory
      */
-    private final Map<String, Directory> subDirectoriesMap
-            = new ConcurrentHashMap<String, Directory>(2, 0.75f, 4);
+    private final Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
+        2, 0.75f, 4);
 
     /**
      * The name of this directory (no path elements)
@@ -74,7 +74,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Constructor
-     *
+     * 
      * @param rootFolder
      * @param parent
      * @param name
@@ -110,33 +110,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
-     * returns the Directory with this name, creates it if not exists yet
+     * returns the Directory with this name.
      */
     public Directory getSubDirectory(String nameArg) {
         return subDirectoriesMap.get(nameArg);
     }
-    
-    /**
-     * returns the Directory with this name, creates it if not exists yet
-     */
-    public Directory getCreateSubDirectory(String nameArg) {
-        if (subDirectoriesMap.containsKey(nameArg)) {
-            return subDirectoriesMap.get(nameArg);
-        }
-        Directory sub = new Directory(rootFolder, parent, nameArg);
-
-        File newFileName = new File(getAbsoluteFile(), nameArg);
-        if (!newFileName.exists()) {
-            if (!newFileName.mkdir()) {
-                log.info("Failed to create " + newFileName.getAbsolutePath());
-            }
-        }
-        return sub;
-    }
 
     /**
      * Answers if all files in this dir and in subdirs are expected.
-     *
+     * 
      * @param folderRepository
      * @return if the directory is expected
      */
@@ -163,7 +145,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * Removes a fileinfo from this directory or subdirectories. Also erases
      * directory objects if the got empty.
-     *
+     * 
      * @param fileInfo
      */
     public void removeFileInfo(FileInfo fileInfo) {
@@ -201,7 +183,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * get the files in this dir (not the files in the subs)
-     *
+     * 
      * @return the list of files
      */
     public List<FileInfo> getFileInfos() {
@@ -214,7 +196,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Get the files in this dir and all subdirectories, recursively.
-     *
+     * 
      * @return the list of files
      */
     public List<FileInfo> getFileInfosRecursive() {
@@ -262,7 +244,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (!name.equals(directory.name)) {
             return false;
         }
-        if (parent != null ? !parent.equals(directory.parent) : directory.parent != null) {
+        if (parent != null
+            ? !parent.equals(directory.parent)
+            : directory.parent != null)
+        {
             return false;
         }
         if (!rootFolder.equals(directory.rootFolder)) {
@@ -297,8 +282,9 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Adds a FileInfo to this Directory
-     *
-     * @param fileInfo the file to add to this Directory
+     * 
+     * @param fileInfo
+     *            the file to add to this Directory
      */
     private void addFile(Member member, FileInfo fileInfo) {
         if (fileInfo.isDiretory()) {
@@ -319,7 +305,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 fileInfoHolder.put(member, fileInfo);
             } else { // new
                 FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,
-                        member, fileInfo);
+                    member, fileInfo);
                 fileInfoHolderMap.put(fileInfo, fileInfoHolder);
             }
         }
