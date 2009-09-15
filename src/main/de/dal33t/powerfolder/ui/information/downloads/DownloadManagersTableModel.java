@@ -78,10 +78,8 @@ public class DownloadManagersTableModel extends PFComponent implements
         super(model.getController());
         this.model = model;
         Reject.ifNull(model, "Model is null");
-        listeners = Collections
-            .synchronizedCollection(new LinkedList<TableModelListener>());
-        downloadManagers = Collections
-            .synchronizedList(new ArrayList<DownloadManager>());
+        listeners = new LinkedList<TableModelListener>();
+        downloadManagers = new ArrayList<DownloadManager>();
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
