@@ -793,10 +793,9 @@ public class Folder extends PFComponent {
             FileArchiver arch = archiver;
             if (arch != null) {
                 try {
-                    arch.archive(fInfo, targetFile, false);
-                    // This (getLocalFileInfo) causes NPEs:
-                    // arch.archive(fInfo.getLocalFileInfo(getController()
-                    // .getFolderRepository()), targetFile, false);
+                    FileInfo oldLocalFileInfo = fInfo
+                        .getLocalFileInfo(getController().getFolderRepository());
+                    arch.archive(oldLocalFileInfo, targetFile, false);
                 } catch (IOException e) {
                     // Same behavior as below, on failure drop out
                     // TODO Maybe raise folder-problem....
