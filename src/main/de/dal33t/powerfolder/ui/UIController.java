@@ -626,10 +626,11 @@ public class UIController extends PFComponent {
         }
 
         String fileName = activeSkin.getIconsPropertiesFileName();
-        Icons.loadOverrideFile(fileName);
+        if (fileName != null) {
+            Icons.loadOverrideFile(fileName);
+        }
         try {
-            LookAndFeelSupport.setLookAndFeel(activeSkin
-                .getLookAndFeel());
+            LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
             logSevere("Failed to set look and feel for skin "
                 + activeSkin.getName(), e);
@@ -1171,8 +1172,7 @@ public class UIController extends PFComponent {
      *            message
      */
     public void notifyMessage(String title, String message, boolean chat) {
-        if (started && !getController().isShuttingDown())
-        {
+        if (started && !getController().isShuttingDown()) {
             if (chat
                 ? (Boolean) applicationModel.getChatNotificationsValueModel()
                     .getValue()

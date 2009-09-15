@@ -37,6 +37,6 @@ public class GreenDreamSkin implements Skin {
     }
     
     public String getIconsPropertiesFileName() {
-        return "skin/GreenDreamIcons.properties";
+        return "de/dal33t/powerfolder/skin/greendream/icons.properties";
     }
 }

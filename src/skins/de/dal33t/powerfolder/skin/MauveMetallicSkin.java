@@ -37,6 +37,6 @@ public class MauveMetallicSkin implements Skin {
     }
 
     public String getIconsPropertiesFileName() {
-        return "skin/MauveMetallicIcons.properties";
+        return "de/dal33t/powerfolder/skin/mauvemetal/icons.properties";
     }
 }
