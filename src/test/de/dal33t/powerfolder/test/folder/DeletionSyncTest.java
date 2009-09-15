@@ -511,9 +511,17 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
 
-        TestHelper.waitForCondition(100, new Condition() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
-                return !testFileBart.exists();
+                return !testFileBart.exists()
+                    && 2 == getFolderAtBart().getKnownFiles().iterator().next()
+                        .getVersion();
+            }
+
+            public String message() {
+                return "Barts file: "
+                    + getFolderAtBart().getKnownFiles().iterator().next()
+                        .toDetailString();
             }
         });
         assertFalse(testFileBart.exists());
