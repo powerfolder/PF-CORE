@@ -36,12 +36,18 @@ public class OSUtil {
     private OSUtil() {
     }
 
+    private static Boolean windows;
+
     /**
      * @return if current system is running windows
      */
     public static boolean isWindowsSystem() {
-        String os = System.getProperty("os.name");
-        return os != null && os.toLowerCase().indexOf("windows") >= 0;
+        if (windows == null) {
+            String os = System.getProperty("os.name");
+            windows = Boolean.valueOf(os != null
+                && os.toLowerCase().indexOf("windows") >= 0);
+        }
+        return windows.booleanValue();
     }
 
     /**
