@@ -116,7 +116,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         MemberInfo m = new MemberInfo("test", "ID", null);
         return FileInfoFactory.unmarshallExistingFile(foInfo, UUID.randomUUID()
-            .toString().intern(), 0, m, new Date(), 0);
+            .toString().intern(), 0, m, new Date(), 0, false);
     }
 
     private final class MyMessageListener implements MessageListener {
