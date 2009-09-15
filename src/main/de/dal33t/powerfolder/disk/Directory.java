@@ -113,7 +113,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * returns the Directory with this name.
      */
     public Directory getSubDirectory(String nameArg) {
-        return subDirectoriesMap.get(nameArg);
+        int i = nameArg.indexOf('/');
+        if (i >= 0) {
+            String subDir = nameArg.substring(0, i);
+            String restPath = nameArg.substring(i + 1);
+            Directory dir = subDirectoriesMap.get(subDir);
+            return dir.getSubDirectory(restPath);
+        } else {
+            return subDirectoriesMap.get(nameArg);
+        }
     }
 
     /**
@@ -318,7 +326,16 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     public String getName() {
-        return getRelativeFile().getPath();
+        // TODO REMOVE THIS MESS.
+        String fullName = getRelativeFile().getPath();
+        fullName = fullName.replace("\\", "/");
+        if (fullName.startsWith("/")) {
+            fullName = fullName.substring(1);
+        }
+        if (fullName.endsWith("/")) {
+            fullName = fullName.substring(0, fullName.length() - 1);
+        }
+        return fullName;
     }
 
     public String getFilenameOnly() {
