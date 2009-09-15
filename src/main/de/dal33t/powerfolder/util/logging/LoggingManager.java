@@ -267,18 +267,8 @@ public class LoggingManager {
      * @return the directory that the file logging is written to.
      */
     public static File getDebugDir() {
-        File canidate = new File(DEBUG_DIR);
-        if (canidate.exists() && canidate.isDirectory()) {
-            return canidate;
-        }
-
-        canidate.mkdirs();
-        if (canidate.exists() && canidate.isDirectory()) {
-            return canidate;
-        }
-
         // Fallback! TRAC #1087
-        canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
+        File canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
         if (canidate.exists() && canidate.isDirectory()) {
             return canidate;
         }
