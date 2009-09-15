@@ -103,7 +103,7 @@ public enum Feature {
     /**
      * True if running in beta mode. Basically to identify differences.
      */
-    BETA(false),
+    BETA(true),
     
     CONFLICT_DETECTION(false);
 
