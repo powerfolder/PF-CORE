@@ -116,7 +116,7 @@ public enum ConfigurationEntry {
      */
     PROVIDER_BUY_URL(
         "provider.url.buy",
-        "http://www.powerfolder.com/buy_business.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+        "http://www.powerfolder.com/buynow.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL where the contact form resides
@@ -299,6 +299,7 @@ public enum ConfigurationEntry {
      * My dynamic dns hostname or fix ip.
      */
     HOSTNAME("hostname") {
+
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -307,6 +308,18 @@ public enum ConfigurationEntry {
                 value = controller.getConfig().getProperty("mydyndns");
             }
             return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("mydyndns");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("mydyndns");
         }
     },
 
@@ -344,12 +357,15 @@ public enum ConfigurationEntry {
                 if (util != null) {
                     return util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
                         false)
-                        + System.getProperty("file.separator") + "PowerFolders";
+                        + System.getProperty("file.separator")
+                        + System.getProperty("pf.base_dir_default",
+                            "PowerFolders");
                 }
             }
             // Also place the base dir into user home on Vista.
             return System.getProperty("user.home")
-                + System.getProperty("file.separator") + "PowerFolders";
+                + System.getProperty("file.separator")
+                + System.getProperty("pf.base_dir_default", "PowerFolders");
         }
     },
 
