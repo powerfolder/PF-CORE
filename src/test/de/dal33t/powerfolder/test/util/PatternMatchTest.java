@@ -1,27 +1,29 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: PatternMatchTest.java 8022 2009-05-21 07:46:07Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: PatternMatchTest.java 8022 2009-05-21 07:46:07Z harry $
+ */
 package de.dal33t.powerfolder.test.util;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.CompilingPatternMatch;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
 
 public class PatternMatchTest extends TestCase {
 
@@ -54,28 +56,57 @@ public class PatternMatchTest extends TestCase {
         assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("sdfgkjh"));
         assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("SdFgKjH"));
         assertTrue(new CompilingPatternMatch("SdFgKjH").isMatch("sdfgkjh"));
-        assertFalse(new CompilingPatternMatch("sdfxxxxxgkjh").isMatch("sdfgkjh"));
-        assertFalse(new CompilingPatternMatch("sdfgkjh").isMatch("sdfxxxxxgkjh"));
+        assertFalse(new CompilingPatternMatch("sdfxxxxxgkjh")
+            .isMatch("sdfgkjh"));
+        assertFalse(new CompilingPatternMatch("sdfgkjh")
+            .isMatch("sdfxxxxxgkjh"));
 
-        assertTrue(new CompilingPatternMatch("sdf*gkjh").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new CompilingPatternMatch("sdf*gkjh")
+            .isMatch("sdfxxxxxgkjh"));
         assertTrue(new CompilingPatternMatch("sdf*gkjh").isMatch("sdfgkjh"));
         assertTrue(new CompilingPatternMatch("sdf*g*h").isMatch("sdfgkjh"));
         assertTrue(new CompilingPatternMatch("*").isMatch(""));
-        assertTrue(new CompilingPatternMatch("*").isMatch(" "));
+        // Disabled since filenames usually DON'T start/end with spaces #1705
 
-        assertTrue(new CompilingPatternMatch("*file*").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*test*").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*test*/*name").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c*/*/*name").isMatch("c:/test/file.name"));
-        assertFalse(new CompilingPatternMatch("c*/huh/*name").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c:/*.name").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c:/*").isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*.name").isMatch("c:/test/file.name"));
+        // assertTrue(new CompilingPatternMatch("*").isMatch(" "));
 
-        assertTrue(new CompilingPatternMatch("c:\\*").isMatch("c:\\test\\file.name"));
+        assertTrue(new CompilingPatternMatch("*file*")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*test*")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*test*/*name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c*/*/*name")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new CompilingPatternMatch("c*/huh/*name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c:/*.name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c:/*")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*.name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*thumbs.db")
+            .isMatch("c:/test/file.name/Thumbs.db"));
+
+        assertTrue(new CompilingPatternMatch("c:\\*")
+            .isMatch("c:\\test\\file.name"));
         assertTrue(new CompilingPatternMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y")
-                .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
-        assertTrue(new CompilingPatternMatch("a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*ab")
-                .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
+            .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
+        assertTrue(new CompilingPatternMatch(
+            "a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*ab")
+            .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
+    }
+
+    public void testPerformance() {
+        Profiling.setEnabled(true);
+
+        for (int i = 0; i < 100000; i++) {
+            ProfilingEntry pe = Profiling.start();
+            testCompiledPatterns();
+            Profiling.end(pe);
+        }
+
+        System.err.println(Profiling.dumpStats());
     }
 }

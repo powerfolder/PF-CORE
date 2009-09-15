@@ -1,27 +1,27 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: CompilingPatternMatch.java 8022 2009-05-21 07:46:07Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: CompilingPatternMatch.java 8022 2009-05-21 07:46:07Z harry $
+ */
 package de.dal33t.powerfolder.util;
 
 /**
- * Compiling pattern matcher that uses compiled parts to match '*' characters
- * to any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
+ * Compiling pattern matcher that uses compiled parts to match '*' characters to
+ * any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
  */
 public class CompilingPatternMatch {
 
@@ -41,7 +41,7 @@ public class CompilingPatternMatch {
 
     /**
      * Constructor.
-     *
+     * 
      * @param patternStringArg
      */
     public CompilingPatternMatch(String patternStringArg) {
@@ -49,15 +49,18 @@ public class CompilingPatternMatch {
         // Everything is case-insensitive.
         String patternString = patternStringArg.toLowerCase().trim();
 
-        // If it starts with a '*', we can scan forward to find an initial match.
+        // If it starts with a '*', we can scan forward to find an initial
+        // match.
         if (patternString.startsWith("*")) {
             patternString = patternString.substring(1);
             firstStar = true;
         }
 
-        // If it ends with a '*', there can be tail characters in the match string.
+        // If it ends with a '*', there can be tail characters in the match
+        // string.
         if (patternString.endsWith("*")) {
-            patternString = patternString.substring(0, patternString.length() - 1);
+            patternString = patternString.substring(0,
+                patternString.length() - 1);
             lastStar = true;
         }
 
@@ -68,9 +71,7 @@ public class CompilingPatternMatch {
     }
 
     public boolean isMatch(String matchStringArg) {
-
-        // Everything is case-insensitive.
-        String matchString = matchStringArg.toLowerCase().trim();
+        String matchString = matchStringArg;
 
         // Precalculate the length of the match string.
         int matchStringLength = matchString.length();
@@ -102,10 +103,11 @@ public class CompilingPatternMatch {
 
                 // Look for match of part with current position of matchString.
                 String currentMatchPart = matchString.substring(matchPointer,
-                        matchPointer + partLength);
-                if (part.equals(currentMatchPart)) {
+                    matchPointer + partLength);
+                if (part.equalsIgnoreCase(currentMatchPart)) {
 
-                    // Good so far, next part on the next section of the matchString.
+                    // Good so far, next part on the next section of the
+                    // matchString.
                     matchPointer += partLength;
 
                     // Exit scan loop.
@@ -157,8 +159,8 @@ public class CompilingPatternMatch {
         CompilingPatternMatch that = (CompilingPatternMatch) obj;
 
         return !(patternText != null
-                ? !patternText.equals(that.patternText) 
-                : that.patternText != null);
+            ? !patternText.equals(that.patternText)
+            : that.patternText != null);
     }
 
     public int hashCode() {
