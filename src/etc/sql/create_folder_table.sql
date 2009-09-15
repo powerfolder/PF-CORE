@@ -2,6 +2,7 @@ CREATE TABLE %TABLE_NAME% (
 	domain VARCHAR(100),
 	fileName VARCHAR(255) NOT NULL,
 	fileNameLower VARCHAR(255) NOT NULL,
+	dir BOOLEAN NOT NULL,
 	size BIGINT NOT NULL,
 	modifiedByNodeId VARCHAR(100),
 	lastModifiedDate BIGINT NOT NULL,
