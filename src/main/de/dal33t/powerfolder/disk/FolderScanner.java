@@ -823,19 +823,19 @@ public class FolderScanner extends PFComponent {
                 if (abort) {
                     break;
                 }
-                if (subFile.isDirectory()) {
-                    if (!scanDir(subFile)) {
-                        // hardware failure
-                        failure = true;
-                        return false;
-                    }
-                } else if (subFile.isFile()) {
+                if (subFile.isFile()) {
                     if (allowFile(subFile)) {
                         if (!scanFile(subFile, currentDirName)) {
                             // hardware failure
                             failure = true;
                             return false;
                         }
+                    }
+                } else if (subFile.isDirectory()) {
+                    if (!scanDir(subFile)) {
+                        // hardware failure
+                        failure = true;
+                        return false;
                     }
                 } else {
                     logWarning("Unable to scan file: "
