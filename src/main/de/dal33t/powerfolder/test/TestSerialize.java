@@ -94,7 +94,7 @@ public class TestSerialize {
 
         return FileInfoFactory.unmarshallExistingFile(generateFolderInfo(), fn,
             (long) (Math.random() * 100000), generateMemberInfo(), new Date(),
-            0);
+            0, false);
     }
 
     private static MemberInfo generateMemberInfo() {
