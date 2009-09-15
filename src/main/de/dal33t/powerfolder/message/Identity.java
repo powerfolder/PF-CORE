@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.message;
 import java.util.Calendar;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.util.Reject;
@@ -72,7 +73,7 @@ public class Identity extends Message {
 
     private Boolean useCompressedStream;
 
-    private boolean supportingFileHistoryRequests = true;
+    private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION.isEnabled();
 
     /**
      * If I got interesting pending messages for you. Better keep the
