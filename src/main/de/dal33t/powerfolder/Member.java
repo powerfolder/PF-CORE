@@ -831,7 +831,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // My messages sent, now wait for his folder list.
-        boolean receivedFolderList = waitForFolderList();
+        boolean receivedFolderList = waitForFolderJoin();
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
@@ -1090,7 +1090,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * 
      * @return true if list was received successfully
      */
-    private boolean waitForFolderList() {
+    private boolean waitForFolderJoin() {
         synchronized (folderListWaiter) {
             if (lastFolderList == null) {
                 try {
@@ -1294,9 +1294,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                     public void run() {
                         folderJoinLock.lock();
                         try {
-                            lastFolderList = fList;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
+                            // Set AFTER the list has been processed
+                            lastFolderList = fList;
                         } finally {
                             folderJoinLock.unlock();
                         }
