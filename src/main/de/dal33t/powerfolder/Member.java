@@ -249,13 +249,20 @@ public class Member extends PFComponent implements Comparable<Member> {
         return peer != null && peer.isEncrypted();
     }
 
+    private Boolean mySelf;
+
     /**
      * Answers if this is myself
      * 
      * @return true if this object references to "myself" else false
      */
     public boolean isMySelf() {
-        return equals(getController().getMySelf());
+        if (mySelf != null) {
+            // Use cache
+            return mySelf;
+        }
+        mySelf = equals(getController().getMySelf());
+        return mySelf;
     }
 
     /**
