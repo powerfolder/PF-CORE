@@ -67,16 +67,24 @@ public final class FileInfoFactory {
     }
 
     public static FileInfo unmarshallExistingFile(FolderInfo fi,
-        String fileName, long size, MemberInfo modby, Date modDate, int version)
+        String fileName, long size, MemberInfo modby, Date modDate,
+        int version, boolean dir)
     {
-        // TODO DIRECOTRY
+        if (dir) {
+            return new DirectoryInfo(fileName, size, modby, modDate, version,
+                false, fi);
+        }
         return new FileInfo(fileName, size, modby, modDate, version, false, fi);
     }
 
     public static FileInfo unmarshallDeletedFile(FolderInfo fi,
-        String fileName, MemberInfo modby, Date modDate, int version)
+        String fileName, MemberInfo modby, Date modDate, int version,
+        boolean dir)
     {
-        // TODO DIRECTORY
+        if (dir) {
+            return new DirectoryInfo(fileName, 0, modby, modDate, version,
+                true, fi);
+        }
         return new FileInfo(fileName, 0, modby, modDate, version, true, fi);
     }
 
