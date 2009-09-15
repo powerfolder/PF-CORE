@@ -92,7 +92,7 @@ public class NodeManager extends PFComponent {
     private Object acceptLock = new Object();
 
     private Map<String, Member> knownNodes;
-    private List<Member> friends;
+    private Map<String, Member> friends;
     private List<Member> connectedNodes;
     private List<AddressRange> lanRanges;
 
@@ -149,8 +149,7 @@ public class NodeManager extends PFComponent {
 
         // Use concurrent hashmap
         knownNodes = new ConcurrentHashMap<String, Member>();
-
-        friends = Collections.synchronizedList(new ArrayList<Member>());
+        friends = new ConcurrentHashMap<String, Member>();
         connectedNodes = new CopyOnWriteArrayList<Member>();
 
         // The nodes, that went online in the meantime
@@ -304,7 +303,7 @@ public class NodeManager extends PFComponent {
         if (node.isMySelf()) {
             return true;
         }
-        return friends.contains(node);
+        return friends.containsKey(node.getId());
     }
 
     /**
@@ -582,11 +581,7 @@ public class NodeManager extends PFComponent {
      * @return the list of friends
      */
     public Member[] getFriends() {
-        synchronized (friends) {
-            Member[] friendsArr = new Member[friends.size()];
-            friends.toArray(friendsArr);
-            return friendsArr;
-        }
+        return friends.values().toArray(new Member[0]);
     }
 
     /**
@@ -609,7 +604,7 @@ public class NodeManager extends PFComponent {
         boolean nodesChanged = false;
 
         if (friend) {
-            friends.add(node);
+            friends.put(node.getId(), node);
             nodesChanged = true;
             fireFriendAdded(node);
             // Mark node for immediate connection
@@ -621,7 +616,7 @@ public class NodeManager extends PFComponent {
                         .getInfo(), personalMessage), node.getId()));
             }
         } else if (wasFriend) {
-            friends.remove(node);
+            friends.remove(node.getId());
             nodesChanged = true;
             fireFriendRemoved(node);
 
@@ -764,13 +759,11 @@ public class NodeManager extends PFComponent {
         if (mySelf.isSupernode()) {
             return RequestNodeList.createRequestAllNodes();
         }
-        synchronized (friends) {
-            // TODO Change second paramter to RequestNodeList.NodesCriteria.NONE
-            // when network folder list also covers private folders.
-            return RequestNodeList.createRequest(friends,
-                RequestNodeList.NodesCriteria.ONLINE,
-                RequestNodeList.NodesCriteria.ONLINE);
-        }
+        // TODO Change second paramter to RequestNodeList.NodesCriteria.NONE
+        // when network folder list also covers private folders.
+        return RequestNodeList.createRequest(friends.values(),
+            RequestNodeList.NodesCriteria.ONLINE,
+            RequestNodeList.NodesCriteria.ONLINE);
     }
 
     /**
@@ -1264,8 +1257,9 @@ public class NodeManager extends PFComponent {
 
             for (MemberInfo friend : nodeList.getFriendsSet()) {
                 Member node = friend.getNode(getController(), true);
-                if (!this.friends.contains(node) && !node.isMySelf()) {
-                    this.friends.add(node);
+                if (!this.friends.containsKey(node.getId()) && !node.isMySelf())
+                {
+                    this.friends.put(node.getId(), node);
                 }
             }
             return !nodeList.getNodeList().isEmpty();
@@ -1314,7 +1308,8 @@ public class NodeManager extends PFComponent {
             .values());
         allNodesInfos.add(getMySelf().getInfo());
         // Add myself to know nodes
-        Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends);
+        Collection<MemberInfo> friendInfos = Convert.asMemberInfos(friends
+            .values());
         NodeList nodeList = new NodeList(allNodesInfos, friendInfos);
 
         if (storeNodes0(getController().getConfigName() + ".nodes", nodeList)) {
