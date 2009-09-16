@@ -643,15 +643,8 @@ public class ServerClient extends PFComponent {
      * @return a list of folder infos that are available on this account. These
      *         folder may or may not be backed up by the Online Storage/Server.
      */
-    public List<FolderInfo> getAccountFolders() {
-        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
-        for (Permission permission : getAccount().getPermissions()) {
-            if (permission instanceof FolderPermission) {
-                FolderPermission fp = (FolderPermission) permission;
-                folderInfos.add(fp.getFolder());
-            }
-        }
-        return folderInfos;
+    public Collection<FolderInfo> getAccountFolders() {
+        return getAccount().getFolders();
     }
 
     /**
