@@ -78,7 +78,6 @@ public class FolderStatistic extends PFComponent {
     // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
     // Used to calculate ETA
     private TransferCounter downloadCounter;
-    private long lastCalc;
     private MyCalculatorTask calculatorTask;
 
     FolderStatistic(Folder folder) {
@@ -112,11 +111,11 @@ public class FolderStatistic extends PFComponent {
             logWarning("Unable to calc stats. Folder not joined");
             return;
         }
-        long millisPast = System.currentTimeMillis() - lastCalc;
+        // long millisPast = System.currentTimeMillis() - lastCalc;
         if (calculatorTask != null) {
             return;
         }
-        if (millisPast > delay || current.totalFilesCount < MAX_ITEMS) {
+        if (current.totalFilesCount < MAX_ITEMS) {
             setCalculateIn(500);
         } else {
             setCalculateIn(delay);
@@ -130,6 +129,8 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
+        // logWarning("Scheduled new calculation", new
+        // RuntimeException("here"));
         calculatorTask = new MyCalculatorTask();
         try {
             getController().schedule(calculatorTask, timeToWait);
@@ -145,8 +146,8 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
-        if (isFiner()) {
-            logFiner("-------------Recalculation statisitcs on " + folder);
+        if (isWarning()) {
+            logWarning("-------------Recalculation statisitcs on " + folder);
         }
         long startTime = System.currentTimeMillis();
         // clear statistics before
@@ -172,7 +173,6 @@ public class FolderStatistic extends PFComponent {
         // Switch figures
         current = calculating;
         calculating = null;
-        lastCalc = System.currentTimeMillis();
 
         // Recalculate the last modified date of the folder.
         Date date = null;
@@ -189,9 +189,9 @@ public class FolderStatistic extends PFComponent {
             lastFileChangeDate = date;
         }
 
-        if (isFiner()) {
-            logFiner("---------calc stats  " + folder.getName() + " done @: "
-                + (System.currentTimeMillis() - startTime));
+        if (isWarning()) {
+            logWarning("---------calc stats  " + folder.getName() + " done in "
+                + (System.currentTimeMillis() - startTime) + "ms");
         }
 
         // Fire event
