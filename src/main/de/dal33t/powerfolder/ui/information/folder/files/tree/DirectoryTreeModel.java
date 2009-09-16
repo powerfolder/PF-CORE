@@ -25,6 +25,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Tree model to hold tree structure of the directory files.
@@ -65,7 +68,13 @@ public class DirectoryTreeModel extends DefaultTreeModel {
      */
     private void buildTree(FilteredDirectoryModel model,
                            DefaultMutableTreeNode node) {
+
+        // Use a map to order the directories alphabetically
+        Map<String, FilteredDirectoryModel> map = new TreeMap<String, FilteredDirectoryModel>();
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
+            map.put(subModel.getName(), subModel);
+        }
+        for (FilteredDirectoryModel subModel : map.values()) {
             if (subModel.hasDescendantFiles()) {
                 File subFile = subModel.getRelativeFile();
                 String subDisplayName = subModel.getName();
