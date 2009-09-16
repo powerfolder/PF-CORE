@@ -21,10 +21,12 @@ package de.dal33t.powerfolder.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -189,6 +191,22 @@ public class Account extends Model implements Serializable {
 
     public boolean isIllegal() {
         return permissions == null || osSubscription == null;
+    }
+
+    /**
+     * @return all folders the account has directly at folder read permission
+     *         granted.
+     */
+    public Collection<FolderInfo> getFolders() {
+        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>(permissions
+            .size());
+        for (Permission permission : permissions) {
+            if (permission instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) permission;
+                folderInfos.add(fp.getFolder());
+            }
+        }
+        return folderInfos;
     }
 
     // Accessing / API ********************************************************
