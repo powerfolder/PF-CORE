@@ -492,7 +492,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "Unable to determine newest version. Folder not joined "
                     + folderInfo);
         }
-        ArrayList<String> domains = new ArrayList<String>();
+        ArrayList<String> domains = new ArrayList<String>(folder
+            .getMembersCount());
         for (Member member : folder.getMembersAsCollection()) {
             if (member.isCompletelyConnected()) {
                 domains.add(member.getId());
