@@ -46,11 +46,11 @@ import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
  * <p>
  * Two events:
  * <p>
- * -----E-------E---X-----------------
+ * -----E-------E---U-----------------
  * <p>
  * Many events:
  * <p>
- * -----E--E-E--E---X--E--E----E---X--
+ * -----E--E-E--E---U--E--E----E---U--
  * 
  * @author Christian Sprajc
  * @version $Revision$
