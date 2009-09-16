@@ -493,6 +493,10 @@ public class DownloadManagersTableModel extends PFComponent implements
         private int findDownloadIndex(Download dl) {
             for (int i = 0; i < downloadManagers.size(); i++) {
                 DownloadManager downloadManager = downloadManagers.get(i);
+                if (downloadManager == null) {
+                    // Skip
+                    continue;
+                }
                 for (Download download : downloadManager.getSources()) {
                     if (download.getFile().isVersionDateAndSizeIdentical(
                         dl.getFile())
