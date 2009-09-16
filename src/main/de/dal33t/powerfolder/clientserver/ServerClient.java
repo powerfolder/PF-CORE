@@ -44,8 +44,6 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
-import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -654,39 +652,6 @@ public class ServerClient extends PFComponent {
      */
     public boolean hasJoined(Folder folder) {
         return folder.hasMember(server);
-    }
-
-    /**
-     * Syncs the folder memberships with the FolderAdminPermissions on the
-     * server.
-     */
-    public void syncFolderRights() {
-        Reject.ifFalse(isLoggedIn(), "Last login not ok");
-        // FolderInfo[] myFolders = getController().getFolderRepository()
-        // .getJoinedFolderInfos();
-        //
-        // if (logWarn) {
-        // logWarning(
-        // "Granting admin permission on: " + Arrays.asList(myFolders));
-        // }
-        // getFolderService().grantAdmin(myFolders);
-
-        logWarning("Rights: " + getAccount().getPermissions().size());
-        // TODO Also get READ/WRITE permission folder
-        // Collection<FolderInfo> foInfos = FolderAdminPermission
-        // .filter(getAccount());
-        // logWarning("Rights on: " + foInfos);
-        // for (FolderInfo foInfo : foInfos) {
-        // logWarning("Checking: " + foInfo);
-        // if (getController().getFolderRepository().hasJoinedFolder(foInfo)) {
-        // continue;
-        // }
-        // FolderSettings settings = new FolderSettings(new File("."),
-        // SyncProfile.AUTOMATIC_SYNCHRONIZATION, true, true, true, false);
-        // logWarning("Adding as preview: " + foInfo);
-        // getController().getFolderRepository().createPreviewFolder(foInfo,
-        // settings);
-        // }
     }
 
     /**
