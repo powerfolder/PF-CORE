@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.light.FileInfo;
 
 import javax.swing.*;
@@ -145,8 +146,25 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
-        VersionHistoryLoader loader = new VersionHistoryLoader();
-        loader.execute();
+        // Loading...
+        setState(STATE_LOADING);
+        try {
+            Folder folder = fileInfo.getFolder(getController()
+                .getFolderRepository());
+            FileArchiver fileArchiver = folder.getFileArchiver();
+            List<FileInfo> archiveFileInfos = fileArchiver
+                .getArchivedFilesInfos(fileInfo);
+            if (archiveFileInfos.isEmpty()) {
+                setState(STATE_EMPTY);
+            } else {
+                setState(STATE_RESULTS);
+                fileVersionsTableModel
+                    .setVersionInfos(archiveFileInfos);
+            }
+        } catch (Exception e) {
+            // Huh?
+            logSevere(e);
+        }
     }
 
     /**
@@ -154,22 +172,26 @@ public class FileVersionsPanel extends PFUIComponent {
      * 
      * @param state
      */
-    private void setState(int state) {
-        if (panel == null) {
-            return;
-        }
+    private void setState(final int state) {
+        UIUtil.invokeLaterInEDT(new Runnable() {
+            public void run() {
+                if (panel == null) {
+                    return;
+                }
 
-        emptyLabel.setVisible(state != STATE_RESULTS);
-        scrollPane.setVisible(state == STATE_RESULTS);
+                emptyLabel.setVisible(state != STATE_RESULTS);
+                scrollPane.setVisible(state == STATE_RESULTS);
 
-        if (state == STATE_LOADING) {
-            emptyLabel.setText("");
-        } else if (state == STATE_EMPTY) {
-            emptyLabel.setText(Translation
-                .getTranslation("file_version_tab.no_versions_available"));
-        }
+                if (state == STATE_LOADING) {
+                    emptyLabel.setText("");
+                } else if (state == STATE_EMPTY) {
+                    emptyLabel.setText(Translation
+                        .getTranslation("file_version_tab.no_versions_available"));
+                }
 
-        enableRestoreAction();
+                enableRestoreAction();
+            }
+        });
     }
 
     private void enableRestoreAction() {
@@ -192,41 +214,6 @@ public class FileVersionsPanel extends PFUIComponent {
     // /////////////////
     // Inner Classes //
     // /////////////////
-
-    /**
-     * Swing worker to load the versions in the background.
-     */
-    private class VersionHistoryLoader extends SwingWorker {
-
-        protected Object doInBackground() {
-
-            // Loading...
-            setState(STATE_LOADING);
-            try {
-                if (fileInfo != null) {
-                    Folder folder = fileInfo.getFolder(getController()
-                        .getFolderRepository());
-                    FileArchiver fileArchiver = folder.getFileArchiver();
-                    List<FileInfo> archiveFileInfos = fileArchiver
-                        .getArchivedFilesInfos(fileInfo);
-                    if (archiveFileInfos.isEmpty()) {
-                        setState(STATE_EMPTY);
-                    } else {
-                        setState(STATE_RESULTS);
-                        fileVersionsTableModel
-                            .setVersionInfos(archiveFileInfos);
-                    }
-                } else {
-                    setState(STATE_EMPTY);
-                }
-            } catch (Exception e) {
-                // Huh?
-                logSevere(e);
-            }
-
-            return null;
-        }
-    }
 
     private class RestoreAction extends BaseAction {
 
