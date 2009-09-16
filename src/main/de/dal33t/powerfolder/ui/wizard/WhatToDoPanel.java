@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -123,7 +124,7 @@ public class WhatToDoPanel extends PFWizardPanel {
     private List<FolderInfo> findFolderList() {
         List<FolderInfo> folderList = new ArrayList<FolderInfo>();
         ServerClient client = getController().getOSClient();
-        List<FolderInfo> onlineFolderInfos = client.getAccountFolders();
+        Collection<FolderInfo> onlineFolderInfos = client.getAccountFolders();
         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
             Folder folder = onlineFolderInfo.getFolder(getController());
             if (folder == null) {
