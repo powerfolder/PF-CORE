@@ -551,8 +551,7 @@ public class ReconnectManager extends PFComponent {
                                 && otherNodeInfo
                                     .isOnSameNetwork(getController()))
                             {
-                                logWarning("Invalid identity from "
-                                    + currentNode
+                                logFine("Invalid identity from " + currentNode
                                     + ". Triing to connect to IP. " + e);
                                 logFiner(e);
                                 try {
