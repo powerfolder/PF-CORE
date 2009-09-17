@@ -191,9 +191,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
             .next();
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 1;
+            }
+
+            public String message() {
+                return "Know files at lisa: "
+                    + getFolderAtLisa().getKnownFilesCount();
             }
         });
         assertEquals(1, getFolderAtLisa().getKnownFilesCount());
