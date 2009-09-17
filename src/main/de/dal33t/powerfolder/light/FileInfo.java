@@ -605,55 +605,22 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (otherFile == null) {
             return false;
         }
-
+        if (version != otherFile.version) {
+            // This is quick do it first
+            return false;
+        }
+        if (!Util.equals(size, otherFile.size)) {
+            return false;
+        }
         if (!equals(otherFile)) {
             // not equals, return
             return false;
         }
-
-        return version == otherFile.version
-            && Util.equals(size, otherFile.size)
-            && lastModifiedDate.equals(otherFile.lastModifiedDate);
-    }
-
-    /**
-     * ATTENTION: BE WARNED USING THIS METHOD! It is possible that FileInfos
-     * with version 0, same date BUT DIFFRENT modifier exists! This is caused by
-     * initial scans on both sides. WHO wins then? NOBODY, FileInfos then have
-     * version 0 same date but DIFFRENT modifiers. If you are seeking a way of
-     * checking if a FileInfo is newer/or in sync use the method
-     * <code>{@link #isVersionDateAndSizeIdentical(FileInfo)}</code>
-     * 
-     * @param otherFile
-     *            the other file to compare with
-     * @return if the the two files are completely identical, also checks
-     *         version, date and modified user
-     * @see #isVersionDateAndSizeIdentical(FileInfo)
-     * @deprecated
-     */
-    @Deprecated
-    public boolean isCompletelyIdentical(FileInfo otherFile) {
-        if (otherFile == null) {
+        if (!lastModifiedDate.equals(otherFile.lastModifiedDate)) {
             return false;
         }
-
-        if (!equals(otherFile)) {
-            // not equals, return
-            return false;
-        }
-
-        boolean identical = version == otherFile.version
-            && lastModifiedDate.equals(otherFile.lastModifiedDate)
-            && modifiedBy.equals(otherFile.modifiedBy);
-
-        if (version != 0 && version == otherFile.version
-            && lastModifiedDate.equals(otherFile.lastModifiedDate)
-            && !modifiedBy.equals(otherFile.modifiedBy))
-        {
-            log.severe("Found identical files, but diffrent modifier:"
-                + toDetailString() + " other: " + otherFile.toDetailString());
-        }
-        return identical;
+        // All match!
+        return true;
     }
 
     @Override
@@ -670,8 +637,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
-            return otherInfo.isFile()
-                && Util.equals(fileName, otherInfo.fileName)
+            if (!otherInfo.isFile()) {
+                return false;
+            }
+            return Util.equals(fileName, otherInfo.fileName)
                 && Util.equals(folderInfo, otherInfo.folderInfo);
         }
 

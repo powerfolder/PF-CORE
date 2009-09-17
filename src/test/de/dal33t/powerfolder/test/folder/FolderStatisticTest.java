@@ -703,7 +703,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
                 return false;
             }
             FileInfo fileA = listA.get(atA);
-            if (!fileA.isCompletelyIdentical(fileB)) {
+            if (!fileA.isVersionDateAndSizeIdentical(fileB)
+                && fileA.getModifiedBy().equals(fileB.getModifiedBy()))
+            {
                 return false;
             }
         }
