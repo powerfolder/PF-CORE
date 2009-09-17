@@ -50,6 +50,10 @@ public class FolderInfo implements Serializable, Cloneable {
         this.name = name;
         this.id = id;
     }
+    
+    public String getName() {
+        return name;
+    }
 
     /**
      * Returns the joined folder, or null if folder is not joined
