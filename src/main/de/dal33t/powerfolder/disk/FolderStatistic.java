@@ -146,8 +146,8 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
-        if (isWarning()) {
-            logWarning("-------------Recalculation statisitcs on " + folder);
+        if (isFiner()) {
+            logFiner("-------------Recalculation statisitcs on " + folder);
         }
         long startTime = System.currentTimeMillis();
         // clear statistics before
@@ -190,8 +190,11 @@ public class FolderStatistic extends PFComponent {
         }
 
         if (isWarning()) {
-            logWarning("---------calc stats  " + folder.getName() + " done in "
-                + (System.currentTimeMillis() - startTime) + "ms");
+            long took = System.currentTimeMillis() - startTime;
+            double perf = took != 0 ? (current.analyzedFiles / took) : 0;
+            logWarning("Recalculation completed (" + current.analyzedFiles
+                + " Files analyzed) in " + took + "ms. Performance: " + perf
+                + " ana/ms");
         }
 
         // Fire event
@@ -242,6 +245,7 @@ public class FolderStatistic extends PFComponent {
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
         for (FileInfo fileInfo : files) {
+            calculating.analyzedFiles++;
             if (fileInfo.isDeleted()) {
                 continue;
             }
@@ -633,6 +637,8 @@ public class FolderStatistic extends PFComponent {
 
         // Finer values
         public int incomingFilesCount;
+
+        public int analyzedFiles;
 
         // Number of files
         public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
