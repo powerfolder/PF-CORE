@@ -318,11 +318,19 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(5, getFolderAtBart().getKnownFilesCount());
 
         // Give them time to copy
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownFilesCount() >= 3
                     && getContollerBart().getTransferManager()
                         .getCompletedUploadsCollection().size() >= 3;
+            }
+
+            public String message() {
+                return "Lisa known files: "
+                    + getFolderAtLisa().getKnownFilesCount()
+                    + ". Bart completed uploads: "
+                    + getContollerBart().getTransferManager()
+                        .getCompletedUploadsCollection().size();
             }
         });
 
