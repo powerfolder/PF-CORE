@@ -1289,19 +1289,25 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
-                folderJoinLock.lock();
-                try {
-                    lastFolderList = fList;
-                    // Send filelist only during handshake
-                    joinToLocalFolders(fList, fromPeer);
-                    // TODO: Set AFTER the list has been processed
-                } finally {
-                    folderJoinLock.unlock();
-                }
-                // Notify waiting ppl
-                synchronized (folderListWaiter) {
-                    folderListWaiter.notifyAll();
-                }
+                Runnable r = new Runnable() {
+                    public void run() {
+                        folderJoinLock.lock();
+                        try {
+                            lastFolderList = fList;
+                            // Send filelist only during handshake
+                            joinToLocalFolders(fList, fromPeer);
+                            // TODO: Set AFTER the list has been processed
+                        } finally {
+                            folderJoinLock.unlock();
+                        }
+                        // Notify waiting ppl
+                        synchronized (folderListWaiter) {
+                            folderListWaiter.notifyAll();
+                        }
+                    }
+                };
+                getController().getIOProvider().startIO(r);
+
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
