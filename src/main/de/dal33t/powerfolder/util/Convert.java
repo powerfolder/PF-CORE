@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -145,23 +144,6 @@ public class Convert {
      */
     public static long convertToGlobalPrecision(long date) {
         return date / 2000 * 2000;
-    }
-
-    /**
-     * Cleans the list of files. Saves memory by setting <code>MemberInfo</code>
-     * and <code>FolderInfo</code> with those instance already existing in
-     * controller context. Afterwards unused <code>MemberInfo</code> and
-     * <code>FolderInfo</code> objects may be collected by the garbage
-     * collector.
-     * 
-     * @param controller
-     * @param list
-     *            the list to cleanup.
-     */
-    @Deprecated
-    public static void cleanFileList(Controller controller, FileInfo[] list) {
-        // cleanFolderInfos(controller.getFolderRepository(), list);
-        // cleanMemberInfos(controller.getNodeManager(), list);
     }
 
     /**
