@@ -169,7 +169,8 @@ public class DownloadManagersTableModel extends PFComponent implements
             boolean insert = true;
             for (DownloadManager downloadManager : downloadManagers) {
                 for (Download download : downloadManager.getSources()) {
-                    if (dl.getFile().isCompletelyIdentical(download.getFile()))
+                    if (dl.getFile().isVersionDateAndSizeIdentical(
+                        download.getFile()))
                     {
                         insert = false;
                         break;
