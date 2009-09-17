@@ -60,9 +60,13 @@ import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
@@ -395,7 +399,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncFolderButton = new JButtonMini(mySyncFolderAction, true);
         filesLabel = new JLabel();
         transferModeLabel = new ActionLabel(getController(),
-                openSettingsInformationAction);
+            openSettingsInformationAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -436,12 +440,19 @@ public class ExpandableFolderView extends PFUIComponent implements
         membersLabel.setEnabled(enabled);
         openMembersInformationAction.setEnabled(enabled);
 
-        syncFolderButton.setVisible(enabled
-            && !folder.getSyncProfile().isAutodownload());
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
 
         // Always.
         removeFolderAction.setEnabled(true);
+        updateSyncButton();
+    }
+
+    private void updateSyncButton() {
+        if (folder == null) {
+            syncFolderButton.setVisible(false);
+        } else {
+            syncFolderButton.setVisible(folder.isSyncing());
+        }
     }
 
     /**
@@ -468,6 +479,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             myNodeManagerListener = new MyNodeManagerListener();
             getController().getNodeManager().addNodeManagerListener(
                 myNodeManagerListener);
+            getController().getTransferManager().addListener(
+                new MyTransferManagerListener());
+            getController().getFolderRepository().addFolderRepositoryListener(
+                new MyFolderRepositoryListener());
         }
     }
 
@@ -678,8 +693,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             primaryButton.setToolTipText(Translation
                 .getTranslation("exp_folder_view.folder_online_text"));
-            osComponent.getUIComponent().setVisible(PreferencesEntry
-                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
+            osComponent.getUIComponent().setVisible(
+                PreferencesEntry.USE_ONLINE_STORAGE
+                    .getValueBoolean(getController()));
         } else {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
@@ -692,8 +708,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton
                     .setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_online_text"));
-                osComponent.getUIComponent().setVisible(PreferencesEntry
-                        .USE_ONLINE_STORAGE.getValueBoolean(getController()));
+                osComponent.getUIComponent().setVisible(
+                    PreferencesEntry.USE_ONLINE_STORAGE
+                        .getValueBoolean(getController()));
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
@@ -705,7 +722,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             osComponent.getUIComponent().setVisible(false);
         } else {
             Boolean osComponentVisible = PreferencesEntry.USE_ONLINE_STORAGE
-                    .getValueBoolean(getController());
+                .getValueBoolean(getController());
             osComponent.getUIComponent().setVisible(osComponentVisible);
             if (osComponentVisible) {
                 Member server = serverClient.getServer();
@@ -715,7 +732,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
                 boolean warned = serverClient.getAccountDetails().getAccount()
                     .getOSSubscription().isDisabledUsage();
-                boolean joined = folder != null && serverClient.hasJoined(folder);
+                boolean joined = folder != null
+                    && serverClient.hasJoined(folder);
                 osComponent.setSyncPercentage(sync, warned, joined);
             }
         }
@@ -890,6 +908,107 @@ public class ExpandableFolderView extends PFUIComponent implements
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
+
+        private void updateIfRequired(FolderRepositoryEvent e) {
+            if (!folder.equals(e.getFolder())) {
+                return;
+            }
+            updateSyncButton();
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateIfRequired(e);
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateIfRequired(e);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        private void updateIfRequired(TransferManagerEvent event) {
+            if (!folderInfo.equals(event.getFile().getFolderInfo())) {
+                return;
+            }
+            updateSyncButton();
+        }
+
+        @Override
+        public void downloadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadQueued(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 
     /**
