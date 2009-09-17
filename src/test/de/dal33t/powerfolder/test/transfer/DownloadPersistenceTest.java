@@ -41,10 +41,17 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(nFiles, new Condition() {
+        TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .getCompletedDownloadsCollection().size() == nFiles;
+            }
+
+            public String message() {
+                return "Completed downloads at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .getCompletedDownloadsCollection().size()
+                    + ". Expected: " + nFiles;
             }
         });
 
