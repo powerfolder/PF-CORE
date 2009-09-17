@@ -1289,24 +1289,19 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
-                Runnable runner = new Runnable() {
-                    public void run() {
-                        folderJoinLock.lock();
-                        try {
-                            lastFolderList = fList;
-                            // Send filelist only during handshake
-                            joinToLocalFolders(fList, fromPeer);
-                            // TODO: Set AFTER the list has been processed
-                        } finally {
-                            folderJoinLock.unlock();
-                        }
-                        // Notify waiting ppl
-                        synchronized (folderListWaiter) {
-                            folderListWaiter.notifyAll();
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(runner);
+                folderJoinLock.lock();
+                try {
+                    lastFolderList = fList;
+                    // Send filelist only during handshake
+                    joinToLocalFolders(fList, fromPeer);
+                    // TODO: Set AFTER the list has been processed
+                } finally {
+                    folderJoinLock.unlock();
+                }
+                // Notify waiting ppl
+                synchronized (folderListWaiter) {
+                    folderListWaiter.notifyAll();
+                }
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
@@ -1321,7 +1316,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof RequestDownload) {
-                // a download is requested
+                // a download is requested. Put handling in background thread
+                // for faster processing.
                 Runnable runner = new Runnable() {
                     public void run() {
                         RequestDownload dlReq = (RequestDownload) message;
@@ -1335,7 +1331,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     }
                 };
                 getController().getIOProvider().startIO(runner);
-
                 expectedTime = 100;
 
             } else if (message instanceof DownloadQueued) {
@@ -1449,26 +1444,14 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedListMessages.put(remoteFileList.folder,
                     remoteFileList.nFollowingDeltas);
 
-                Convert.cleanFileList(getController(), remoteFileList.files);
-
-                // Trigger requesting
-                // FIXME: Really inform folder on first list message on complete
-                // file list?.
                 if (targetFolder != null) {
                     // Inform folder
-                    getController().getIOProvider().startIO(new Runnable() {
-                        public void run() {
-                            targetFolder.fileListChanged(Member.this,
-                                remoteFileList);
-                        }
-                    });
+                    targetFolder.fileListChanged(Member.this, remoteFileList);
                 }
                 expectedTime = 250;
 
             } else if (message instanceof FolderFilesChanged) {
                 final FolderFilesChanged changes = (FolderFilesChanged) message;
-                Convert.cleanFileList(getController(), changes.added);
-                Convert.cleanFileList(getController(), changes.removed);
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     logSevere("Received folder changes on "
@@ -1520,11 +1503,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
                 if (targetFolder != null) {
                     // Inform folder
-                    getController().getIOProvider().startIO(new Runnable() {
-                        public void run() {
-                            targetFolder.fileListChanged(Member.this, changes);
-                        }
-                    });
+                    targetFolder.fileListChanged(Member.this, changes);
                 }
                 expectedTime = 250;
 
@@ -1581,7 +1560,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 getController().addAskForFriendship(event);
                 expectedTime = 50;
             } else if (message instanceof Notification) {
-                // This is the V3 freidnship notification class.
+                // This is the V3 friendship notification class.
                 // V4 uses AddFriendNotification.
                 Notification not = (Notification) message;
                 if (not.getEvent() == null) {
@@ -1600,14 +1579,20 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
 
             } else if (message instanceof RequestPart) {
-                RequestPart pr = (RequestPart) message;
-                Upload up = getController().getTransferManager().getUpload(
-                    this, pr.getFile());
-                if (up != null) { // If the upload isn't broken
-                    up.enqueuePartRequest(pr);
-                } else {
-                    sendMessageAsynchron(new AbortUpload(pr.getFile()), null);
-                }
+                final RequestPart pr = (RequestPart) message;
+                Runnable r = new Runnable() {
+                    public void run() {
+                        Upload up = getController().getTransferManager()
+                            .getUpload(Member.this, pr.getFile());
+                        if (up != null) { // If the upload isn't broken
+                            up.enqueuePartRequest(pr);
+                        } else {
+                            sendMessageAsynchron(new AbortUpload(pr.getFile()),
+                                null);
+                        }
+                    }
+                };
+                getController().getIOProvider().startIO(r);
                 expectedTime = 100;
 
             } else if (message instanceof StartUpload) {
