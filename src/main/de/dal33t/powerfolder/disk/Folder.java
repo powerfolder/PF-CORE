@@ -785,8 +785,6 @@ public class Folder extends PFComponent {
             return false;
         }
 
-    
-        
         if (targetFile.exists()) {
             // if file was a "newer file" the file already exists here
             // Using local var because of possible race condition!!
@@ -2160,6 +2158,10 @@ public class Folder extends PFComponent {
      *            folder. otherwise it checks the modifier.
      */
     public void syncRemoteDeletedFiles(boolean force) {
+        if (getConnectedMembersCount() == 0) {
+            // Skip.
+            return;
+        }
         if (isFine()) {
             logFine("Deleting files, which are deleted by friends. con-members: "
                 + Arrays.asList(getConnectedMembers()));
