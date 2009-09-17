@@ -92,8 +92,9 @@ public class FolderStatistic extends PFComponent {
         delay = 1000L * ConfigurationEntry.FOLDER_STATS_CALC_TIME
             .getValueInt(getController());
 
-        folder.addFolderListener(new MyFolderListener());
-        folder.addMembershipListener(new MyFolderMembershipListener());
+        MyFolderListener listener = new MyFolderListener();
+        folder.addFolderListener(listener);
+        folder.addMembershipListener(listener);
 
         // Add to NodeManager
         getController().getNodeManager().addNodeManagerListener(
@@ -102,6 +103,7 @@ public class FolderStatistic extends PFComponent {
 
     // package protected called from Folder
     void scheduleCalculate() {
+        //logWarning("Scheduled new calculation", new RuntimeException("here"));
         if (calculating != null) {
             return;
         }
@@ -129,8 +131,6 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
-        // logWarning("Scheduled new calculation", new
-        // RuntimeException("here"));
         calculatorTask = new MyCalculatorTask();
         try {
             getController().schedule(calculatorTask, timeToWait);
@@ -528,38 +528,36 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    /**
-     * FolderMembershipListener
-     */
-    private class MyFolderMembershipListener implements
+    private class MyFolderListener extends FolderAdapter implements
         FolderMembershipListener
     {
+
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+            if (folderEvent.getMember().isCompletelyConnected()) {
+                // Recalculate statistics
+                scheduleCalculate();
+            }
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+            if (folderEvent.getMember().isCompletelyConnected()) {
+                // Recalculate statistics
+                scheduleCalculate();
+            }
         }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-
-    }
-
-    private class MyFolderListener extends FolderAdapter {
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            // Recalculate statistics
-            scheduleCalculate();
+            if (folderEvent.getMember().isCompletelyConnected()) {
+                // Recalculate statistics
+                scheduleCalculate();
+            }
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 // Recalculate statistics
+                logWarning("Found change on disk: "
+                    + folderEvent.getScanResult());
                 scheduleCalculate();
             }
         }
@@ -604,11 +602,9 @@ public class FolderStatistic extends PFComponent {
         }
 
         public void friendAdded(NodeManagerEvent e) {
-            calculateIfRequired(e);
         }
 
         public void friendRemoved(NodeManagerEvent e) {
-            calculateIfRequired(e);
         }
 
         public boolean fireInEventDispatchThread() {
