@@ -2456,7 +2456,7 @@ public class Folder extends PFComponent {
             // triggerSyncRemoteDeletedFiles(false);
         }
 
-        fireRemoteContentsChanged(newList);
+        fireRemoteContentsChanged(from, newList);
     }
 
     /**
@@ -2577,7 +2577,7 @@ public class Folder extends PFComponent {
         }
 
         // Fire event
-        fireRemoteContentsChanged(changes);
+        fireRemoteContentsChanged(from, changes);
     }
 
     /**
@@ -3369,19 +3369,20 @@ public class Folder extends PFComponent {
         folderListenerSupport.filesDeleted(folderEvent);
     }
 
-    private void fireRemoteContentsChanged(FileList list) {
+    private void fireRemoteContentsChanged(Member from, FileList list) {
         if (isFiner()) {
             logFiner("fireRemoteContentsChanged: " + this);
         }
-        FolderEvent folderEvent = new FolderEvent(this, list);
+        FolderEvent folderEvent = new FolderEvent(this, list, from);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
 
-    private void fireRemoteContentsChanged(FolderFilesChanged list) {
+    private void fireRemoteContentsChanged(Member from, FolderFilesChanged list)
+    {
         if (isFiner()) {
             logFiner("fireRemoteContentsChanged: " + this);
         }
-        FolderEvent folderEvent = new FolderEvent(this, list);
+        FolderEvent folderEvent = new FolderEvent(this, list, from);
         folderListenerSupport.remoteContentsChanged(folderEvent);
     }
 
