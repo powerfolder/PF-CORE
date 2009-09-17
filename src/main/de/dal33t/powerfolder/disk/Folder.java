@@ -2089,14 +2089,22 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Checks if the folder is syncing. Means: local file scan running or active
+     * transfers.
+     * 
+     * @return if this folder is currently synchronizing.
+     */
+    public boolean isSyncing() {
+        return isScanning() || isTransferring();
+    }
+
+    /**
      * Checks if the folder is in Sync, called by FolderRepository
      * 
-     * @return if this folder synchronizing
+     * @return if this folder is transferring files
      */
     public boolean isTransferring() {
-        return getController().getTransferManager()
-            .countNumberOfDownloads(this) > 0
-            || getController().getTransferManager().countUploadsOn(this) > 0;
+        return isDownloading() || isUploading();
     }
 
     /**
