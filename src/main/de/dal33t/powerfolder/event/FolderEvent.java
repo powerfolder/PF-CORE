@@ -1,27 +1,28 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.event;
 
 import java.util.Collection;
 import java.util.EventObject;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -54,6 +55,11 @@ public class FolderEvent extends EventObject {
     private FolderFilesChanged changeList;
 
     /**
+     * The member which send the remote content changes.
+     */
+    private Member member;
+
+    /**
      * The single file that has been freshly scanned
      */
     private FileInfo scannedFileInfo;
@@ -78,16 +84,20 @@ public class FolderEvent extends EventObject {
         this.scanResult = sr;
     }
 
-    public FolderEvent(Folder source, FileList fileList) {
+    public FolderEvent(Folder source, FileList fileList, Member member) {
         super(source);
         Reject.ifNull(fileList, "Filelist is null");
         this.fileList = fileList;
+        this.member = member;
     }
 
-    public FolderEvent(Folder source, FolderFilesChanged changeList) {
+    public FolderEvent(Folder source, FolderFilesChanged changeList,
+        Member member)
+    {
         super(source);
         Reject.ifNull(changeList, "ChangeList is null");
         this.changeList = changeList;
+        this.member = member;
     }
 
     public FolderEvent(Folder source, FileInfo fileInfo) {
@@ -122,6 +132,10 @@ public class FolderEvent extends EventObject {
 
     public FolderFilesChanged getChangeList() {
         return changeList;
+    }
+
+    public Member getMember() {
+        return member;
     }
 
     public FileInfo getScannedFileInfo() {
