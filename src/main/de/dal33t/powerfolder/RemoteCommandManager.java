@@ -419,8 +419,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, ArchiveMode.NO_BACKUP, false,
-                dlScript, 0);
+                createInvitationFile, ArchiveMode.valueOf(ConfigurationEntry
+                            .DEFAULT_ARCHIVE_MODE.getValue(getController())),
+                    false, dlScript, ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                            .getValueInt(getController()));
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {
