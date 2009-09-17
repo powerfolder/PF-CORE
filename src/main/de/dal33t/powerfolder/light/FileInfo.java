@@ -259,7 +259,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         String tmpFileName = getFilenameOnly();
         int index = tmpFileName.lastIndexOf('.');
         if (index == -1) {
-            return null;
+            return "";
         }
         return tmpFileName.substring(index + 1, tmpFileName.length())
             .toUpperCase();
