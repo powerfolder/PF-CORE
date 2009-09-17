@@ -88,16 +88,16 @@ public class RemoteServiceStubFactory {
             throws Throwable
         {
             RuntimeException rte = new RuntimeException("Call source");
-            StackTraceElement[] te = rte.getStackTrace();
-            for (StackTraceElement stackTraceElement : te) {
-                if (stackTraceElement.getMethodName().contains("handleMessage"))
-                {
-                    throw new RemoteCallException(
-                        "Illegal to call remote service method (" + serviceId
-                            + " " + method + ") in message handling code ("
-                            + stackTraceElement + ").", rte);
-                }
-            }
+            // StackTraceElement[] te = rte.getStackTrace();
+            // for (StackTraceElement stackTraceElement : te) {
+            // if (stackTraceElement.getMethodName().contains("handleMessage"))
+            // {
+            // throw new RemoteCallException(
+            // "Illegal to call remote service method (" + serviceId
+            // + " " + method + ") in message handling code ("
+            // + stackTraceElement + ").", rte);
+            // }
+            // }
             if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed in EDT thread. Args: "
