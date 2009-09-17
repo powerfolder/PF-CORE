@@ -372,6 +372,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
         assertEquals(nFiles, getFolderAtBart().getKnownFilesCount());
+        assertEquals("Connected nodes at bart: "
+            + getContollerBart().getNodeManager().getConnectedNodes(), 1,
+            getContollerBart().getNodeManager().getConnectedNodes().size());
+        assertEquals("Connected nodes at lisa: "
+            + getContollerLisa().getNodeManager().getConnectedNodes(), 1,
+            getContollerLisa().getNodeManager().getConnectedNodes().size());
 
         // Wait for copy (timeout 50)
         TestHelper.waitForCondition(200, new ConditionWithMessage() {
