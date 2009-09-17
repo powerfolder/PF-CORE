@@ -108,7 +108,7 @@ public class Download extends Transfer {
 
     public synchronized void setDownloadManager(DownloadManager handler) {
         Reject.ifNull(handler, "Handler is null!");
-        if (handler.getFileInfo().isVersionDateAndSizeIdentical(getFile())) {
+        if (!handler.getFileInfo().isVersionDateAndSizeIdentical(getFile())) {
             throw new IllegalArgumentException("Fileinfos mismatch. expected "
                 + getFile().toDetailString() + ", got "
                 + handler.getFileInfo().toDetailString());

@@ -2375,6 +2375,11 @@ public class TransferManager extends PFComponent {
             // Reverse to restore in right order
             Collections.reverse(storedDownloads);
 
+            if (storedDownloads.size() > 1000) {
+                logWarning("Got many completed downloads ("
+                    + storedDownloads.size() + "). Cleanup is recommended");
+            }
+            // TODO #1705: Runs O(n^2)
             for (Iterator<?> it = storedDownloads.iterator(); it.hasNext();) {
                 Download download = (Download) it.next();
 
