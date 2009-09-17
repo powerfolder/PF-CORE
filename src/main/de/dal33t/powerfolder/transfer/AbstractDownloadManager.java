@@ -221,7 +221,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return fileInfo;
     }
 
-    public synchronized State getState() {
+    public State getState() {
         return transferState;
     }
 
@@ -246,15 +246,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return tempFile;
     }
 
-    public synchronized boolean isBroken() {
+    public boolean isBroken() {
         return state == InternalState.BROKEN;
     }
 
-    public synchronized boolean isCompleted() {
+    public boolean isCompleted() {
         return state == InternalState.COMPLETED;
     }
 
-    public synchronized boolean isDone() {
+    public boolean isDone() {
         return state.isDone();
     }
 
@@ -262,7 +262,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         return automatic;
     }
 
-    public synchronized boolean isStarted() {
+    public boolean isStarted() {
         return started;
     }
 

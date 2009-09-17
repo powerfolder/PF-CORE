@@ -785,8 +785,8 @@ public class Folder extends PFComponent {
             return false;
         }
 
-        // TODO BOTTLENECK for many transfers
-        // synchronized (scanLock) {
+    
+        
         if (targetFile.exists()) {
             // if file was a "newer file" the file already exists here
             // Using local var because of possible race condition!!
@@ -840,29 +840,30 @@ public class Folder extends PFComponent {
             }
         }
 
-        synchronized (dbAccessLock) {
-            // Update internal database
-            FileInfo dbFile = getFile(fInfo);
-            if (dbFile != null) {
-                // Update database
-                // dbFile.copyFrom(fInfo);
-                dao.store(null, fInfo);
-                // update directory
-                commissionRootFolder();
-                rootDirectory.removeFileInfo(fInfo);
-                rootDirectory.add(getController().getMySelf(), fInfo);
-                fileChanged(dbFile);
-            } else {
-                // File new, scan
-                FileInfo fileInfo = scanFile(fInfo);
-                if (fileInfo != null) {
-                    fileChanged(fInfo);
+        synchronized (scanLock) {
+            synchronized (dbAccessLock) {
+                // Update internal database
+                FileInfo dbFile = getFile(fInfo);
+                if (dbFile != null) {
+                    // Update database
+                    // dbFile.copyFrom(fInfo);
+                    dao.store(null, fInfo);
+                    // update directory
+                    commissionRootFolder();
+                    rootDirectory.removeFileInfo(fInfo);
+                    rootDirectory.add(getController().getMySelf(), fInfo);
+                    fileChanged(dbFile);
                 } else {
-                    return false;
+                    // File new, scan
+                    FileInfo fileInfo = scanFile(fInfo);
+                    if (fileInfo != null) {
+                        fileChanged(fInfo);
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
-        // }
         return true;
     }
 
