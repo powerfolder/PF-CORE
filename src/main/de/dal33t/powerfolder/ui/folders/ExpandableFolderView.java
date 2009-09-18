@@ -65,7 +65,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -120,7 +119,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
-    
+
     private MyServerClientListener myServerClientListener;
     private MyTransferManagerListener myTransferManagerListener;
     private MyFolderRepositoryListener myFolderRepositoryListener;
@@ -142,6 +141,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private StopOnlineStorageAction stopOnlineStorageAction;
 
     private DelayedUpdater syncUpdater;
+    private DelayedUpdater folderUpdater;
+    private DelayedUpdater folderDetailsUpdater;
 
     /**
      * Constructor
@@ -375,6 +376,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void initComponent() {
 
         syncUpdater = new DelayedUpdater(getController());
+        folderDetailsUpdater = new DelayedUpdater(getController());
+        folderUpdater = new DelayedUpdater(getController());
 
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
@@ -687,7 +690,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else {
             // FIXME: Returns # of files + # of directories
             filesText = Translation.getTranslation("exp_folder_view.files",
-                String.valueOf(folder.getKnownFilesCount()));
+                String.valueOf(folder.getStatistic().getLocalFilesCount()));
         }
         filesLabel.setText(filesText);
     }
@@ -712,6 +715,18 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Updates the folder member details.
      */
     private void updateFolderMembershipDetails() {
+        folderDetailsUpdater.schedule(new Runnable() {
+            public void run() {
+                updateFolderMembershipDetails0();
+            }
+        });
+
+    }
+
+    /**
+     * Updates the folder member details.
+     */
+    private void updateFolderMembershipDetails0() {
         String countText;
         String connectedCountText;
         if (folder == null) {
@@ -882,9 +897,14 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         private void doFolderChanges(FolderEvent folderEvent) {
             if (folder == null || folder.equals(folderEvent.getFolder())) {
-                updateStatsDetails();
-                updateIconAndOS();
-                updateButtons();
+                folderUpdater.schedule(new Runnable() {
+                    public void run() {
+                        updateNumberOfFiles();
+                        updateStatsDetails();
+                        updateIconAndOS();
+                        updateButtons();
+                    }
+                });
             }
         }
 
@@ -1147,19 +1167,19 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyServerClientListener implements ServerClientListener {
 
         public void login(ServerClientEvent event) {
-           // updateIconAndOS();
+            // updateIconAndOS();
         }
 
         public void accountUpdated(ServerClientEvent event) {
-            //updateIconAndOS();
+            // updateIconAndOS();
         }
 
         public void serverConnected(ServerClientEvent event) {
-          //  updateIconAndOS();
+            // updateIconAndOS();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
-        //    updateIconAndOS();
+            // updateIconAndOS();
         }
 
         public boolean fireInEventDispatchThread() {
