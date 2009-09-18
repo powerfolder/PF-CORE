@@ -103,7 +103,8 @@ public class FolderStatistic extends PFComponent {
 
     // package protected called from Folder
     void scheduleCalculate() {
-        //logWarning("Scheduled new calculation", new RuntimeException("here"));
+        // logWarning("Scheduled new calculation", new
+        // RuntimeException("here"));
         if (calculating != null) {
             return;
         }
@@ -257,8 +258,10 @@ public class FolderStatistic extends PFComponent {
             FileInfo myFileInfo = folder.getFile(fileInfo);
 
             if (newestFileInfo == null) {
-                logSevere("zzzz");
-                newestFileInfo = fileInfo.getNewestVersion(repo);
+                logSevere("Newest version not found for "
+                    + fileInfo.toDetailString());
+                // newestFileInfo = fileInfo;
+                continue;
             }
             boolean inSync = inSync(fileInfo, newestFileInfo);
 
