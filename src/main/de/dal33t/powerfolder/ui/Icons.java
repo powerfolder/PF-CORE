@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.util.ui.OverlayedIcon;
  */
 public class Icons {
 
+    // General stuff
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL = "filter_text_field_clear_button_normal.icon";
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER = "filter_text_field_clear_button_hover.icon";
     public static final String FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH = "filter_text_field_clear_button_push.icon";
@@ -155,15 +156,13 @@ public class Icons {
     public static final String UPLOAD_ACTIVE = "upload_active.icon";
     public static final String INACTIVE = "inactive.icon";
     public static final String EXPECTED = "expected.icon";
-
-    // Folder syncs
-    public static final String FOLDER_SYNC_UNKNOWN = "folder_sync_unknown.icon";
-    public static final String FOLDER_SYNC_0 = "folder_sync_0.icon";
-    public static final String FOLDER_SYNC_1 = "folder_sync_1.icon";
-    public static final String FOLDER_SYNC_2 = "folder_sync_2.icon";
-    public static final String FOLDER_SYNC_3 = "folder_sync_3.icon";
-
     public static final String CHECKED = "checked.icon";
+
+    // Sync icons
+    public static final String[] SYNC_ANIMATION = new String[]{"sync00.icon",
+        "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
+        "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
+        "sync09.icon", "sync10.icon", "sync11.icon", "sync12.icon"};
 
     // Online state icons
     public static final String CONNECTION_GOOD = "connection_good.icon";
