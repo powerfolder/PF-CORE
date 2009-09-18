@@ -81,9 +81,8 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     {
         super(model.getController());
         this.model = model;
-        listeners = Collections
-            .synchronizedCollection(new LinkedList<TableModelListener>());
-        uploads = Collections.synchronizedList(new ArrayList<Upload>());
+        listeners = new LinkedList<TableModelListener>();
+        uploads = new ArrayList<Upload>();
         // Add listener
         model.getTransferManager().addListener(
             new UploadTransferManagerListener());

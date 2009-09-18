@@ -241,8 +241,8 @@ public class HomeTab extends PFUIComponent {
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    PFWizard.openLoginWizard(getController(),
-                        getController().getOSClient());
+                    PFWizard.openLoginWizard(getController(), getController()
+                        .getOSClient());
                 }
             });
         onlineStorageAccountLabel.getUIComponent().setBorder(
@@ -482,8 +482,10 @@ public class HomeTab extends PFUIComponent {
         long count = 0;
         for (Folder folder : folders) {
             count += folder.getStatistic().getIncomingFilesCount();
-            logFine("Folder: " + folder.getName() + ", incoming: "
-                + folder.getStatistic().getIncomingFilesCount());
+            if (isFine()) {
+                logFine("Folder: " + folder.getName() + ", incoming: "
+                    + folder.getStatistic().getIncomingFilesCount());
+            }
         }
         filesAvailableLine.setValue(count);
     }
@@ -513,7 +515,8 @@ public class HomeTab extends PFUIComponent {
         // run
         boolean trial = ProUtil.isTrial(getController());
         boolean allowed = ProUtil.isAllowedToRun(getController());
-        boolean aboutToExpire = daysValid != null && daysValid != -1 && daysValid < 30;
+        boolean aboutToExpire = daysValid != null && daysValid != -1
+            && daysValid < 30;
         if (trial || !allowed) {
             showBuyNowLink(Translation
                 .getTranslation("pro.home_tab.upgrade_powerfolder"));
@@ -973,7 +976,7 @@ public class HomeTab extends PFUIComponent {
             } else {
                 String s = Format.formatNumber(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_uploads_active", s));
+                    "home_tab.files_uploads_active", s));
             }
             d = downloadCounter.calculateCurrentKBS();
             if (Double.compare(d, 0) == 0) {
@@ -982,7 +985,7 @@ public class HomeTab extends PFUIComponent {
             } else {
                 String s = Format.formatNumber(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
-                        "home_tab.files_downloads_active", s));
+                    "home_tab.files_downloads_active", s));
             }
         }
     }

@@ -218,6 +218,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             });
 
         syncButton = new SyncIconButtonMini(getController());
+        syncButton.addActionListener(listener);
         updateSyncButton();
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
@@ -608,7 +609,19 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 getController().setSilentMode(!getController().isSilentMode());
             } else if (e.getSource() == pendingMessagesButton) {
                 getController().getUIController().openChat(null);
+            } else if (e.getSource() == syncButton) {
+                syncAllFolders();
             }
+        }
+    }
+
+    private void syncAllFolders() {
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            if (folder.isPreviewOnly()) {
+                continue;
+            }
+            getController().getUIController().syncFolder(folder);
         }
     }
 

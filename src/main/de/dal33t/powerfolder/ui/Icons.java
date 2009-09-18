@@ -269,14 +269,18 @@ public class Icons {
         if (id.equals(UNKNOWN_FILE_GRAY)) {
             icon = getGrayIcon(getIconById(UNKNOWN_FILE));
             if (icon != null) {
-                log.fine("Cached icon " + id);
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Cached icon " + id);
+                }
                 ID_ICON_MAP.put(id, icon);
             }
             return icon;
         } else if (id.equals(UNKNOWN_FILE_RED)) {
             icon = convertToRed(getGrayIcon(getIconById(UNKNOWN_FILE)));
             if (icon != null) {
-                log.fine("Cached icon " + id);
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Cached icon " + id);
+                }
                 ID_ICON_MAP.put(id, icon);
             }
             return icon;
@@ -284,19 +288,25 @@ public class Icons {
 
         String iconId = getIconId(id);
         if (iconId == null) {
-            log.fine("Icon not found ID: '" + id + '\'');
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Icon not found ID: '" + id + '\'');
+            }
             return null;
         }
 
         URL iconURL = Thread.currentThread().getContextClassLoader()
             .getResource(iconId);
         if (iconURL == null) {
-            log.fine("Icon not found '" + id + '\'');
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Icon not found '" + id + '\'');
+            }
             return null;
         }
 
         icon = new ImageIcon(iconURL);
-        log.fine("Cached icon " + id);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("Cached icon " + id);
+        }
         ID_ICON_MAP.put(id, icon);
         return icon;
     }

@@ -62,7 +62,13 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -795,10 +801,7 @@ public class UIController extends PFComponent {
         systemMonitorFrame.getUIComponent().setVisible(false);
     }
 
-    public void syncFolder(FolderInfo folderInfo) {
-        Folder folder = getController().getFolderRepository().getFolder(
-            folderInfo);
-
+    public void syncFolder(Folder folder) {
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
             // Ask for more sync options on that folder if on project sync
@@ -816,7 +819,7 @@ public class UIController extends PFComponent {
 
             // Trigger file requesting.
             getController().getFolderRepository().getFileRequestor()
-                .triggerFileRequesting(folderInfo);
+                .triggerFileRequesting(folder.getInfo());
         }
     }
 
