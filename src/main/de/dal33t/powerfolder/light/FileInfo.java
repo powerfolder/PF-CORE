@@ -86,6 +86,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     protected final FolderInfo folderInfo;
 
     /**
+     * The cached hash info.
+     */
+    private int hash;
+
+    /**
      * Contains some cached string.
      */
     protected transient Reference<FileInfoStrings> cachedStrings;
@@ -100,6 +105,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         version = 0;
         deleted = false;
         folderInfo = null;
+
+        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
+        this.hash = hashCode0();
     }
 
     protected FileInfo(String fileName, long size, MemberInfo modifiedBy,
@@ -114,6 +122,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.deleted = deleted;
         this.folderInfo = folderInfo;
         validate();
+
+        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
+        this.hash = hashCode0();
     }
 
     protected FileInfo(FolderInfo folder, String name) {
@@ -127,6 +138,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         lastModifiedDate = null;
         version = 0;
         deleted = false;
+
+        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
+        this.hash = hashCode0();
     }
 
     /**
@@ -625,6 +639,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Override
     public int hashCode() {
+        return hash;
+    }
+
+    private int hashCode0() {
         int hash = fileName.hashCode();
         hash += folderInfo.hashCode();
         return hash;
@@ -716,6 +734,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         in.defaultReadObject();
         // Internalized strings are not guaranteed to be garbage collected!
         fileName = fileName.intern();
+
+        // Oh! Default value. Better recalculate hashcode cache
+        if (hash == 0) {
+            hash = hashCode0();
+        }
         // validate();
     }
 }
