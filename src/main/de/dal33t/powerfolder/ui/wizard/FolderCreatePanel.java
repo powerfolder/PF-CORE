@@ -210,11 +210,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
 
             FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, ArchiveMode.valueOf(
-                            ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                                    .getValue(getController())),
-                previewFolder, null, ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                                .getValueInt(getController()));
+                syncProfile, saveLocalInvite, ArchiveMode
+                    .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                        .getValue(getController())), previewFolder, null,
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                    .getValueInt(getController()));
             configurations.put(folderInfo, folderSettings);
         }
 
@@ -304,43 +304,34 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
 
                 if (backupByOS && client.isLoggedIn()) {
-                    try {
-                        // Try to back this up by online storage.
-                        if (client.hasJoined(folder)) {
-                            // Already have this os folder.
-                            log.log(Level.WARNING, "Already have os folder "
-                                + folderInfoFolderSettingsEntry.getKey().name);
-                            continue;
-                        }
+                    // Try to back this up by online storage.
+                    if (client.hasJoined(folder)) {
+                        // Already have this os folder.
+                        log.log(Level.WARNING, "Already have os folder "
+                            + folderInfoFolderSettingsEntry.getKey().name);
+                        continue;
+                    }
 
-                        client.getFolderService().createFolder(
-                            folderInfoFolderSettingsEntry.getKey(),
-                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                    client.getFolderService().createFolder(
+                        folderInfoFolderSettingsEntry.getKey(),
+                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
-                        // Set as default synced folder?
-                        attribute = getWizardContext().getAttribute(
-                            SET_DEFAULT_SYNCHRONIZED_FOLDER);
-                        if (attribute != null && (Boolean) attribute) {
-                            // TODO: Ugly. Use abstraction: Runnable? Callback
-                            // with
-                            // folder? Which is placed on WizardContext.
-                            client.getFolderService()
-                                .setDefaultSynchronizedFolder(
-                                    folderInfoFolderSettingsEntry.getKey());
-                            createDefaultFolderHelpFile(folder);
-                            folder.recommendScanOnNextMaintenance();
-                            try {
-                                FileUtils.openFile(folder.getLocalBase());
-                            } catch (IOException e) {
-                                log.log(Level.FINER, "IOException", e);
-                            }
+                    // Set as default synced folder?
+                    attribute = getWizardContext().getAttribute(
+                        SET_DEFAULT_SYNCHRONIZED_FOLDER);
+                    if (attribute != null && (Boolean) attribute) {
+                        // TODO: Ugly. Use abstraction: Runnable? Callback
+                        // with
+                        // folder? Which is placed on WizardContext.
+                        client.getFolderService().setDefaultSynchronizedFolder(
+                            folderInfoFolderSettingsEntry.getKey());
+                        createDefaultFolderHelpFile(folder);
+                        folder.recommendScanOnNextMaintenance();
+                        try {
+                            FileUtils.openFile(folder.getLocalBase());
+                        } catch (IOException e) {
+                            log.log(Level.FINER, "IOException", e);
                         }
-                    } catch (FolderException e) {
-                        addProblem(Translation.getTranslation(
-                            "folder_create.os_error.text", e.fInfo.name)
-                            + '\n' + e.getMessage());
-                        log.log(Level.SEVERE,
-                            "Unable to backup folder to online storage", e);
                     }
                 }
             }

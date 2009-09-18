@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
@@ -37,7 +36,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -121,13 +119,9 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         } else {
             task = new Runnable() {
                 public void run() {
-                    try {
-                        getController().getOSClient().getFolderService()
-                            .createFolder(foInfo,
-                                SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                    } catch (FolderException e) {
-                        throw new RuntimeException(e.getMessage(), e);
-                    }
+                    getController().getOSClient().getFolderService()
+                        .createFolder(foInfo,
+                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
                 }
             };
 
