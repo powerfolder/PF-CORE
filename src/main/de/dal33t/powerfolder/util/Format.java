@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.text.DateFormat;
@@ -28,14 +28,14 @@ import java.util.Formatter;
 
 /**
  * Helper class for all formatting
- *
+ * 
  * @version $Revision: 1.6 $
  */
 public class Format {
 
     /**
      * Returns a count of bytes in a string
-     *
+     * 
      * @param bytes
      * @return
      */
@@ -61,7 +61,7 @@ public class Format {
 
     /**
      * Returns a count of bytes in a string
-     *
+     * 
      * @param bytes
      * @return
      */
@@ -84,7 +84,7 @@ public class Format {
 
     /**
      * Formats a date
-     *
+     * 
      * @param date
      * @return
      */
@@ -97,13 +97,13 @@ public class Format {
         Calendar calNow = Calendar.getInstance();
         if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
             int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
-                    - calNow.get(Calendar.DAY_OF_YEAR);
+                - calNow.get(Calendar.DAY_OF_YEAR);
             if (dayDiffer == 0) {
                 return Translation.getTranslation("general.today") + ' '
-                        + getFileDateHoursFormat().format(date);
+                    + getFileDateHoursFormat().format(date);
             } else if (dayDiffer == -1) {
                 return Translation.getTranslation("general.yesterday") + ' '
-                        + getFileDateHoursFormat().format(date);
+                    + getFileDateHoursFormat().format(date);
             }
 
         }
@@ -113,7 +113,7 @@ public class Format {
 
     /**
      * Formats numbers
-     *
+     * 
      * @param n
      * @return
      */
@@ -127,8 +127,9 @@ public class Format {
 
     /**
      * Translates a "how much time remaining" value into a string.
-     *
-     * @param dt The time in milliseconds
+     * 
+     * @param dt
+     *            The time in milliseconds
      * @return the formatted string. Examples: "102 days", "10:30:23"
      */
     public static String formatDeltaTime(long dt) {
@@ -136,61 +137,79 @@ public class Format {
         long days = dt / 1000 / 60 / 60 / 24;
         long hours = dt / 1000 / 60 / 60;
         if (days > 1) { // Two days or more
-            f.format(Translation.getTranslation("general.days", String.valueOf(days)) + ", ");
+            f.format(Translation.getTranslation("general.days", String
+                .valueOf(days))
+                + ", ");
             hours %= 24;
         }
         long minutes = (dt / 1000 / 60) % 60;
         long seconds = (dt / 1000) % 60;
         return f.format(Translation.getTranslation("general.time"), hours,
-                minutes, seconds).out().toString();
+            minutes, seconds).out().toString();
+    }
+
+    /**
+     * @param syncPercentage
+     * @return the rendered sync percentage.
+     */
+    public static final String formatSyncPercentage(double syncPercentage) {
+        if (syncPercentage >= 0) {
+            return Translation.getTranslation("percent.place.holder", Format
+                .getNumberFormat().format(syncPercentage));
+        }
+        return Translation.getTranslation("percent.place.holder", "?");
     }
 
     /*
-      * The reason for the following methods: The javadoc of DateFormat states,
-      * that that class (and subclasses mention the same) is not thread safe.
-      * Actually they recommend to create an instance per thread. (But since this
-      * is a general purpose class, we won't do that).
-      */
+     * The reason for the following methods: The javadoc of DateFormat states,
+     * that that class (and subclasses mention the same) is not thread safe.
+     * Actually they recommend to create an instance per thread. (But since this
+     * is a general purpose class, we won't do that).
+     */
 
     /**
      * See #692
-     *
+     * 
      * @return the TIME_ONLY_DATE_FOMRAT
      */
     public static DateFormat getTimeOnlyDateFormat() {
-        return createSimpleDateFormat("date_format.time_only_date", "[HH:mm:ss]");
+        return createSimpleDateFormat("date_format.time_only_date",
+            "[HH:mm:ss]");
     }
 
     /**
      * See #692
-     *
+     * 
      * @return the DETAILED_TIME_FOMRAT
      */
     public static DateFormat getDetailedTimeFormat() {
-        return createSimpleDateFormat("date_format.detailed_time", "[HH:mm:ss:SSS]");
+        return createSimpleDateFormat("date_format.detailed_time",
+            "[HH:mm:ss:SSS]");
     }
 
     /**
      * See #692
-     *
+     * 
      * @return the FULL_DATE_FOMRAT
      */
     public static DateFormat getFullDateFormat() {
-        return createSimpleDateFormat("date_format.full_date", "MM/dd/yyyy HH:mm:ss");
+        return createSimpleDateFormat("date_format.full_date",
+            "MM/dd/yyyy HH:mm:ss");
     }
 
     /**
      * See #692
-     *
+     * 
      * @return the FILE_DATE_FORMAT
      */
     public static DateFormat getFileDateFormat() {
-        return createSimpleDateFormat("date_format.file_date", "MM/dd/yyyy HH:mm");
+        return createSimpleDateFormat("date_format.file_date",
+            "MM/dd/yyyy HH:mm");
     }
 
     /**
      * See #692
-     *
+     * 
      * @return the FILE_DATE_FORMAT_HOURS
      */
     private static DateFormat getFileDateHoursFormat() {
@@ -205,7 +224,9 @@ public class Format {
         return createDecimalFormat("number_format.number", "#,###,###,###.##");
     }
 
-    private static DecimalFormat createDecimalFormat(String preferred, String fallback) {
+    private static DecimalFormat createDecimalFormat(String preferred,
+        String fallback)
+    {
         try {
             return new DecimalFormat(Translation.getTranslation(preferred));
         } catch (Exception e) {
@@ -213,7 +234,9 @@ public class Format {
         }
     }
 
-    private static SimpleDateFormat createSimpleDateFormat(String preferred, String fallback) {
+    private static SimpleDateFormat createSimpleDateFormat(String preferred,
+        String fallback)
+    {
         try {
             return new SimpleDateFormat(Translation.getTranslation(preferred));
         } catch (Exception e) {
