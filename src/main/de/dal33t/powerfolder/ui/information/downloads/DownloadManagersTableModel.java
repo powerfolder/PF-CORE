@@ -96,12 +96,6 @@ public class DownloadManagersTableModel extends PFComponent implements
         TransferManager tm = model.getTransferManager();
         downloadManagers.addAll(tm.getCompletedDownloadsCollection());
         downloadManagers.addAll(tm.getActiveDownloads());
-        // for (DownloadManager man : tm.getCompletedDownloadsCollection()) {
-        // addAll(man.getSources());
-        // }
-        // for (DownloadManager man : tm.getActiveDownloads()) {
-        // addAll(man.getSources());
-        // }
         addAll(tm.getPendingDownloads());
     }
 
@@ -170,7 +164,9 @@ public class DownloadManagersTableModel extends PFComponent implements
         for (Download dl : dls) {
             boolean insert = true;
             for (DownloadManager downloadManager : downloadManagers) {
-                if (downloadManager.equals(dl.getDownloadManager())) {
+                if (dl != null && dl.getDownloadManager() != null
+                    && downloadManager.equals(dl.getDownloadManager()))
+                {
                     insert = false;
                     break;
                 }
