@@ -94,12 +94,14 @@ public class DownloadManagersTableModel extends PFComponent implements
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        for (DownloadManager man : tm.getCompletedDownloadsCollection()) {
-            addAll(man.getSources());
-        }
-        for (DownloadManager man : tm.getActiveDownloads()) {
-            addAll(man.getSources());
-        }
+        downloadManagers.addAll(tm.getCompletedDownloadsCollection());
+        downloadManagers.addAll(tm.getActiveDownloads());
+        // for (DownloadManager man : tm.getCompletedDownloadsCollection()) {
+        // addAll(man.getSources());
+        // }
+        // for (DownloadManager man : tm.getActiveDownloads()) {
+        // addAll(man.getSources());
+        // }
         addAll(tm.getPendingDownloads());
     }
 
@@ -168,14 +170,18 @@ public class DownloadManagersTableModel extends PFComponent implements
         for (Download dl : dls) {
             boolean insert = true;
             for (DownloadManager downloadManager : downloadManagers) {
-                for (Download download : downloadManager.getSources()) {
-                    if (dl.getFile().isVersionDateAndSizeIdentical(
-                        download.getFile()))
-                    {
-                        insert = false;
-                        break;
-                    }
+                if (downloadManager.equals(dl.getDownloadManager())) {
+                    insert = false;
+                    break;
                 }
+                // for (Download download : downloadManager.getSources()) {
+                // if (dl.getFile().isVersionDateAndSizeIdentical(
+                // download.getFile()))
+                // {
+                // insert = false;
+                // break;
+                // }
+                // }
             }
             if (insert) {
                 downloadManagers.add(dl.getDownloadManager());
@@ -492,25 +498,30 @@ public class DownloadManagersTableModel extends PFComponent implements
          *         found
          */
         private int findDownloadIndex(Download dl) {
-            for (int i = 0; i < downloadManagers.size(); i++) {
-                DownloadManager downloadManager = downloadManagers.get(i);
-                if (downloadManager == null) {
-                    // Skip
-                    continue;
-                }
-                for (Download download : downloadManager.getSources()) {
-                    if (download.getFile().isVersionDateAndSizeIdentical(
-                        dl.getFile())
-                        && (Util.equals(download.getPartner(), dl.getPartner()) || download
-                            .isPending()))
-                    {
-                        return i;
-                    }
-                }
-            }
-
-            // No match
-            return -1;
+            return downloadManagers.indexOf(dl.getDownloadManager());
+            // for (int i = 0; i < downloadManagers.size(); i++) {
+            // DownloadManager downloadManager = downloadManagers.get(i);
+            // if (downloadManager == null) {
+            // // Skip
+            // continue;
+            // }
+            // if (downloadManager.equals(dl.getDownloadManager())) {
+            // return i;
+            // }
+            // // for (Download download : downloadManager.getSources()) {
+            // // if (download.getFile().isVersionDateAndSizeIdentical(
+            // // dl.getFile())
+            // // && (Util.equals(download.getPartner(), dl.getPartner()) ||
+            // // download
+            // // .isPending()))
+            // // {
+            // // return i;
+            // // }
+            // // }
+            // }
+            //
+            // // No match
+            // return -1;
         }
 
         private void addOrUpdateDownload(Download dl) {
