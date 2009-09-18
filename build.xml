@@ -78,7 +78,6 @@ For creation of the installer:
 			<include name="binding-2.0.1.jar" />
 			<include name="forms-1.2.0.jar" />
 			<include name="looks-2.1.4.jar" />
-			<include name="uif_lite-2.0.4.jar" />
 			<include name="validation-2.0.1.jar" />
 			<include name="h2-1.1.109.jar" />
 			<include name="ehcache-1.6.0.jar" />
