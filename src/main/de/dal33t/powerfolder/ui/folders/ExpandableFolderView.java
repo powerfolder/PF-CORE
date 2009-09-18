@@ -81,6 +81,8 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
+import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 
 /**
  * Class to render expandable view of a folder.
@@ -134,6 +136,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private FolderRemoveAction removeFolderAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
+
+    private DelayedUpdater syncUpdater;
 
     /**
      * Constructor
@@ -366,6 +370,8 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void initComponent() {
 
+        syncUpdater = new DelayedUpdater(getController());
+
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
         inviteAction = new MyInviteAction(getController());
@@ -396,7 +402,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         inviteButton = new JButtonMini(inviteAction, true);
         problemButton = new JButtonMini(myProblemAction, true);
-        syncFolderButton = new JButtonMini(mySyncFolderAction, true);
+        syncFolderButton = new SyncIconButtonMini(getController());
+        syncFolderButton.addActionListener(mySyncFolderAction);
         filesLabel = new JLabel();
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
@@ -448,11 +455,15 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateSyncButton() {
-        if (folder == null) {
-            syncFolderButton.setVisible(false);
-        } else {
-            syncFolderButton.setVisible(folder.isSyncing());
-        }
+        syncUpdater.schedule(new Runnable() {
+            public void run() {
+                if (folder == null) {
+                    syncFolderButton.setVisible(false);
+                } else {
+                    syncFolderButton.setVisible(folder.isSyncing());
+                }
+            }
+        });
     }
 
     /**
