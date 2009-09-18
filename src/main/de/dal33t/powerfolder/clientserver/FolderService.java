@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -44,10 +43,8 @@ public interface FolderService {
      * 
      * @param foInfo
      * @param profile
-     * @throws FolderException
      */
-    void createFolder(FolderInfo foInfo, SyncProfile profile)
-        throws FolderException;
+    void createFolder(FolderInfo foInfo, SyncProfile profile);
 
     /**
      * Removes a folder from the account. Required owner permission if
