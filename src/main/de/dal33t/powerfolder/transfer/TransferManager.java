@@ -32,10 +32,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -2275,7 +2277,7 @@ public class TransferManager extends PFComponent {
      */
     public boolean isCompletedDownload(FileInfo fInfo) {
         for (DownloadManager dm : completedDownloads) {
-            if (dm.getFileInfo().equals(fInfo)) {
+            if (dm.getFileInfo().isVersionDateAndSizeIdentical(fInfo)) {
                 return true;
             }
         }
@@ -2375,11 +2377,12 @@ public class TransferManager extends PFComponent {
             // Reverse to restore in right order
             Collections.reverse(storedDownloads);
 
-            if (storedDownloads.size() > 1000) {
+            if (storedDownloads.size() > 10000) {
                 logWarning("Got many completed downloads ("
                     + storedDownloads.size() + "). Cleanup is recommended");
             }
-            // TODO #1705: Runs O(n^2)
+            // #1705: Speed up of start
+            Map<FileInfo, List<DownloadManager>> tempMap = new HashMap<FileInfo, List<DownloadManager>>();
             for (Iterator<?> it = storedDownloads.iterator(); it.hasNext();) {
                 Download download = (Download) it.next();
 
@@ -2387,20 +2390,30 @@ public class TransferManager extends PFComponent {
                 download.init(TransferManager.this);
                 if (download.isCompleted()) {
                     DownloadManager man = null;
-                    for (DownloadManager tmp : completedDownloads) {
-                        if (tmp.getFileInfo().isVersionDateAndSizeIdentical(
+                    List<DownloadManager> dlms = tempMap
+                        .get(download.getFile());
+                    if (dlms == null) {
+                        dlms = new ArrayList<DownloadManager>();
+                        tempMap.put(download.getFile(), dlms);
+                    }
+
+                    for (DownloadManager dlm : dlms) {
+                        if (dlm.getFileInfo().isVersionDateAndSizeIdentical(
                             download.getFile()))
                         {
-                            man = tmp;
+                            man = dlm;
                             break;
                         }
                     }
+
                     if (man == null) {
                         man = downloadManagerFactory.createDownloadManager(
                             getController(), download.getFile(), download
                                 .isRequestedAutomatic());
                         man.init(true);
                         completedDownloads.add(man);
+                        // For faster loading
+                        dlms.add(man);
                     }
                     // FIXME The UI shouldn't access Downloads directly anyway,
                     // there should be a representation suitable for that.
