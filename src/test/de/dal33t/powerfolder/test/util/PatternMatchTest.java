@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.test.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PatternMatch;
 import de.dal33t.powerfolder.util.CompilingPatternMatch;
 import de.dal33t.powerfolder.util.Profiling;
@@ -86,6 +90,14 @@ public class PatternMatchTest extends TestCase {
             .isMatch("c:/test/file.name"));
         assertTrue(new CompilingPatternMatch("*.name")
             .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("*name")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new CompilingPatternMatch("name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompilingPatternMatch("c:/test*")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new CompilingPatternMatch("c:/test")
+            .isMatch("c:/test/file.name"));
         assertTrue(new CompilingPatternMatch("*thumbs.db")
             .isMatch("c:/test/file.name/Thumbs.db"));
 
@@ -101,11 +113,22 @@ public class PatternMatchTest extends TestCase {
     public void testPerformance() {
         Profiling.setEnabled(true);
 
-        for (int i = 0; i < 100000; i++) {
-            ProfilingEntry pe = Profiling.start();
-            testCompiledPatterns();
-            Profiling.end(pe);
+        CompilingPatternMatch p1 = new CompilingPatternMatch("SdFgKjH");
+        CompilingPatternMatch p2 = new CompilingPatternMatch("sdf*g*h");
+        CompilingPatternMatch p3 = new CompilingPatternMatch("*");
+        CompilingPatternMatch p4 = new CompilingPatternMatch("*test*/*name");
+        CompilingPatternMatch p5 = new CompilingPatternMatch("c*/huh/*name");
+        CompilingPatternMatch p6 = new CompilingPatternMatch("*thumbs.db");
+        ProfilingEntry pe = Profiling.start();
+        for (int i = 0; i < 1000000; i++) {
+            p1.isMatch("C:\\Programme\\test\\Thumbs.db");
+            p2.isMatch("C:\\Programme\\test\\Thumbs.db");
+            p3.isMatch("C:\\Programme\\test\\Thumbs.db");
+            p4.isMatch("C:\\Programme\\test\\Thumbs.db");
+            p5.isMatch("C:\\Programme\\test\\Thumbs.db");
+            p6.isMatch("C:\\Programme\\test\\Thumbs.db");
         }
+        Profiling.end(pe);
 
         System.err.println(Profiling.dumpStats());
     }
