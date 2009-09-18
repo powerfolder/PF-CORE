@@ -734,10 +734,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private void validateDownload(Download download) {
         Reject.ifNull(download, "Download is null!");
-        Reject.ifTrue(!download.getFile().isVersionDateAndSizeIdentical(
-            getFileInfo()), "Download FileInfo differs: "
-            + download.getFile().toDetailString() + " vs mine: "
-            + getFileInfo().toDetailString());
+        if (!download.getFile().isVersionDateAndSizeIdentical(getFileInfo())) {
+            throw new IllegalArgumentException("Download FileInfo differs: "
+                + download.getFile().toDetailString() + " vs mine: "
+                + getFileInfo().toDetailString());
+        }
     }
 
     private synchronized void checkFileValidity() {
