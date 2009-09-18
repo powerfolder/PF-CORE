@@ -71,7 +71,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SyncProfileUtil;
 
 /**
  * Class to model a folder's members. provides columns for image, name, sync
@@ -328,7 +327,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 return "";
             }
             double sync = stats.getSyncPercentage(member);
-            return SyncProfileUtil.renderSyncPercentage(sync);
+            return Format.formatSyncPercentage(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
             if (member == null
                 || (!member.isCompletelyConnected() && !member.isMySelf()))
