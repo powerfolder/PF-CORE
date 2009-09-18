@@ -419,22 +419,17 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, ArchiveMode.valueOf(ConfigurationEntry
-                            .DEFAULT_ARCHIVE_MODE.getValue(getController())),
-                    false, dlScript, ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                            .getValueInt(getController()));
+                createInvitationFile, ArchiveMode
+                    .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                        .getValue(getController())), false, dlScript,
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                    .getValueInt(getController()));
             Folder folder = getController().getFolderRepository().createFolder(
                 foInfo, settings);
             if (backupByServer) {
-                try {
-                    getController().getOSClient().getFolderService()
-                        .createFolder(folder.getInfo(),
-                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                } catch (Exception e) {
-                    logSevere(
-                        "Unable to setup folder to be backed up by server: "
-                            + folder + ". " + e, e);
-                }
+                getController().getOSClient().getFolderService().createFolder(
+                    folder.getInfo(),
+                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
             }
         }
     }
