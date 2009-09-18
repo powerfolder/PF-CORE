@@ -35,7 +35,6 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.uif_lite.component.UIFSplitPane;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -88,7 +87,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         directoryFilter.setFlatMode(flatMode);
         treePanel.addTreeSelectionListener(tablePanel);
 
-        splitPane = new UIFSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
             .getUIComponent(), tablePanel.getUIComponent());
         int dividerLocation = getController().getPreferences().getInt(
             "files.tab.location", 150);
