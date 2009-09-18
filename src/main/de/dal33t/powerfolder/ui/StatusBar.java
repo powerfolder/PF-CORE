@@ -68,6 +68,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -216,7 +217,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
-        syncButton = new JButtonMini(Icons.getIconById(Icons.SYNC), "");
+        syncButton = new SyncIconButtonMini(getController());
         updateSyncButton();
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
