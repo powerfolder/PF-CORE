@@ -46,9 +46,14 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.net.ConnectionListener;
@@ -58,11 +63,17 @@ import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.UIPanel;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The status bar on the lower side of the main window.
- *
+ * 
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
@@ -76,6 +87,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JComponent comp;
     private JButton onlineStateInfo;
     private JButton sleepButton;
+    private JButton syncButton;
     private JLabel portLabel;
     private JLabel networkModeLabel;
     private JButton openAboutBoxButton;
@@ -87,6 +99,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
+
+    private DelayedUpdater updater;
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -102,7 +116,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             String debugArea = "";
             if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
-                debugArea = "3dlu, pref, ";
+                debugArea = "pref, 3dlu, ";
             }
 
             String portArea = "";
@@ -110,8 +124,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 portArea = "pref, 3dlu, ";
             }
 
-            FormLayout mainLayout = new FormLayout("1dlu, pref, 3dlu, pref, " + debugArea + "center:pref:grow, pref, 3dlu, "
-                + portArea + " pref, 3dlu, pref, 1dlu", "pref");
+            FormLayout mainLayout = new FormLayout(
+                "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
+                    + portArea + debugArea + " pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
             CellConstraints cc = new CellConstraints();
@@ -120,18 +135,19 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             mainBuilder.add(onlineStateInfo, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(sleepButton, cc.xy(col, 1));
+            col += 2;
+            mainBuilder.add(syncButton, cc.xy(col, 1));
             col += 1;
-            if (debugArea.length() > 0) {
-                col += 1;
-                mainBuilder.add(openDebugButton, cc.xy(col, 1));
-                col += 1;
-            }
             mainBuilder.add(networkModeLabel, cc.xy(col, 1));
             col += 1;
             mainBuilder.add(pendingMessagesButton, cc.xy(col, 1));
             col += 2;
             if (portArea.length() > 0) {
                 mainBuilder.add(portLabel, cc.xy(col, 1));
+                col += 2;
+            }
+            if (debugArea.length() > 0) {
+                mainBuilder.add(openDebugButton, cc.xy(col, 1));
                 col += 2;
             }
             mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
@@ -149,6 +165,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void initComponents() {
+        updater = new DelayedUpdater(getController(), 500L);
 
         onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
@@ -199,6 +216,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             });
 
+        syncButton = new JButtonMini(Icons.getIconById(Icons.SYNC), "");
+        updateSyncButton();
+        getController().getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
+
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
             String.valueOf(getController().getConnectionListener().getPort())));
         portLabel.setToolTipText(Translation.getTranslation("status.port.tip"));
@@ -245,29 +269,33 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void updateLimitedConnectivityLabel() {
-        if (getController().isLimitedConnectivity() && !shownLimitedConnectivityToday) {
+        if (getController().isLimitedConnectivity()
+            && !shownLimitedConnectivityToday)
+        {
             shownLimitedConnectivityToday = true;
             showLimitedConnectivityWarning(getController());
         }
     }
 
-    private static void showLimitedConnectivityWarning(final Controller controller) {
+    private static void showLimitedConnectivityWarning(
+        final Controller controller)
+    {
         Boolean warn = PreferencesEntry.TEST_CONNECTIVITY
-                .getValueBoolean(controller);
+            .getValueBoolean(controller);
         if (warn) {
             // Advise user of limited connectivity.
             Runnable runnable = new Runnable() {
                 public void run() {
                     controller.getThreadPool().execute(
-                        new LimitedConnectivityChecker.CheckTask(
-                            controller, false));
+                        new LimitedConnectivityChecker.CheckTask(controller,
+                            false));
                     LimitedConnectivityChecker
                         .showConnectivityWarning(controller);
                 }
             };
             WarningEvent warningEvent = new WarningEvent(runnable);
             controller.getUIController().getApplicationModel()
-                    .getWarningsModel().pushWarning(warningEvent);
+                .getWarningsModel().pushWarning(warningEvent);
 
         }
     }
@@ -333,11 +361,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 String text = Translation.getTranslation("online_label.online");
                 if (controller.isLanOnly()) {
                     text += " ("
-                        + Translation.getTranslation("general.network_mode.lan_only") + ')';
+                        + Translation
+                            .getTranslation("general.network_mode.lan_only")
+                        + ')';
                 } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
                 {
                     text += " ("
-                        + Translation.getTranslation("general.network_mode.server_only")
+                        + Translation
+                            .getTranslation("general.network_mode.server_only")
                         + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
@@ -351,12 +382,15 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Connecting
             String text = Translation.getTranslation("online_label.connecting");
             if (controller.isLanOnly()) {
-                text += " (" + Translation.getTranslation("general.network_mode.lan_only")
-                    + ')';
+                text += " ("
+                    + Translation
+                        .getTranslation("general.network_mode.lan_only") + ')';
             } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
             {
                 text += " ("
-                    + Translation.getTranslation("general.network_mode.server_only") + ')';
+                    + Translation
+                        .getTranslation("general.network_mode.server_only")
+                    + ')';
             }
             onlineStateInfo.setToolTipText(text);
             onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
@@ -449,14 +483,122 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     public void setNetworkingModeStatus(NetworkingMode networkingMode) {
         if (networkingMode == NetworkingMode.LANONLYMODE) {
-            networkModeLabel.setText(Translation.getTranslation(
-                    "general.network_mode.lan_only"));
+            networkModeLabel.setText(Translation
+                .getTranslation("general.network_mode.lan_only"));
         } else if (networkingMode == NetworkingMode.SERVERONLYMODE) {
-            networkModeLabel.setText(Translation.getTranslation(
-                    "general.network_mode.server_only"));
+            networkModeLabel.setText(Translation
+                .getTranslation("general.network_mode.server_only"));
         } else {
             networkModeLabel.setText("");
         }
+    }
+
+    private void updateSyncButton() {
+        updater.schedule(new Runnable() {
+            public void run() {
+                boolean anySynchronizing = false;
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders())
+                {
+                    if (folder.isSyncing()) {
+                        anySynchronizing = true;
+                        break;
+                    }
+                }
+                syncButton.setVisible(anySynchronizing);
+            }
+        });
+    }
+
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
+
+        public void folderCreated(FolderRepositoryEvent e) {
+        }
+
+        public void folderRemoved(FolderRepositoryEvent e) {
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            updateSyncButton();
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            updateSyncButton();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        private void updateIfRequired(TransferManagerEvent event) {
+            updateSyncButton();
+        }
+
+        @Override
+        public void downloadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadQueued(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void downloadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        @Override
+        public void uploadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
     }
 
     private class MyActionListener implements ActionListener {
