@@ -19,17 +19,21 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
-
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -375,17 +379,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 dirName = thePath.substring(0, index);
                 rest = thePath.substring(index + 1, thePath.length());
             }
+            Directory dir;
             synchronized (subDirectoriesMap) {
-                if (subDirectoriesMap.containsKey(dirName)) {
-                    Directory dir = subDirectoriesMap.get(dirName);
-                    dir.add(member, file, rest);
-                } else {
-                    Directory dir = new Directory(rootFolder, this, dirName);
-                    // rootFolder.addDirectory(dir);
+                dir = subDirectoriesMap.get(dirName);
+                if (dir == null) {
+                    dir = new Directory(rootFolder, this, dirName);
                     subDirectoriesMap.put(dirName, dir);
-                    dir.add(member, file, rest);
                 }
             }
+            dir.add(member, file, rest);
         }
     }
 
@@ -407,16 +409,16 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 dirName = restPath.substring(0, index);
                 rest = restPath.substring(index + 1, restPath.length());
             }
+
+            Directory dir;
             synchronized (subDirectoriesMap) {
-                if (subDirectoriesMap.containsKey(dirName)) {
-                    Directory dir = subDirectoriesMap.get(dirName);
-                    dir.add(member, file, rest);
-                } else {
-                    Directory dir = new Directory(rootFolder, this, dirName);
+                dir = subDirectoriesMap.get(dirName);
+                if (dir == null) {
+                    dir = new Directory(rootFolder, this, dirName);
                     subDirectoriesMap.put(dirName, dir);
-                    dir.add(member, file, rest);
                 }
             }
+            dir.add(member, file, rest);
         }
     }
 
