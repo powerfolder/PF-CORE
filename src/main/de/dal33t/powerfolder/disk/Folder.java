@@ -2883,7 +2883,7 @@ public class Folder extends PFComponent {
      * Build up the root directory 'just in time' before use.
      */
     private void commissionRootFolder() {
-        if (!rootDirectoryLock.get()) {
+        if (rootDirectoryLock.get()) {
             // #1705 Performance optimizatiom. Don't hang on lock
             return;
         }
