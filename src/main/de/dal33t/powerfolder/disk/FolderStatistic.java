@@ -118,7 +118,7 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
-        if (current.totalFilesCount < MAX_ITEMS) {
+        if (current.analyzedFiles < MAX_ITEMS) {
             setCalculateIn(500);
         } else {
             setCalculateIn(delay);
@@ -190,10 +190,10 @@ public class FolderStatistic extends PFComponent {
             lastFileChangeDate = date;
         }
 
-        if (isWarning()) {
+        if (isFine()) {
             long took = System.currentTimeMillis() - startTime;
             double perf = took != 0 ? (current.analyzedFiles / took) : 0;
-            logWarning("Recalculation completed (" + current.analyzedFiles
+            logFine("Recalculation completed (" + current.analyzedFiles
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
                 + " ana/ms");
         }
