@@ -19,14 +19,13 @@
 */
 package de.dal33t.powerfolder.ui;
 
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.skin.Skin;
-import de.javasoft.plaf.synthetica.*;
-
-import javax.swing.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
+import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 /**
  * Class which offers several helper methods for handling with LookAndFeels.
