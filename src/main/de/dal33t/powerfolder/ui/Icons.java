@@ -158,6 +158,7 @@ public class Icons {
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
 
+    
     // Sync icons
     public static final String[] SYNC_ANIMATION = new String[]{"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
