@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -198,6 +199,9 @@ public class DirectoryFilter extends FilterModel {
         // Get original and create
         Directory originalDirectory = folder.getDirectory();
 
+        Date start = new Date();
+        logFine("Starting filter of " + originalDirectory.getRelativeName());
+
         // Prepare keywords from text filter
         String textFilter = (String) getSearchFieldVM().getValue();
         String[] keywords = null;
@@ -214,13 +218,13 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
         FilteredDirectoryModel filteredDirectoryModel = new FilteredDirectoryModel(
-            null, folder, folder.getName(), originalDirectory.getRelativeFile());
+            null, folder, originalDirectory.getRelativeName());
 
         FilteredDirectoryModel flatFilteredDirectoryModel = null;
 
         if (isFlatMode()) {
             flatFilteredDirectoryModel = new FilteredDirectoryModel(null,
-                folder, folder.getName(), originalDirectory.getRelativeFile());
+                folder, originalDirectory.getRelativeName());
         }
 
         // Recursive filter.
@@ -240,9 +244,11 @@ public class DirectoryFilter extends FilterModel {
             listener.adviseOfChange(event);
         }
 
-        logFine("Filtered directory " + originalDirectory.getName()
+        Date end = new Date();
+        logFine("Filtered directory " + originalDirectory.getRelativeName()
             + ", original count " + originalFileCount.get()
-            + ", filtered count " + filteredFileCount.get());
+            + ", filtered count " + filteredFileCount.get()
+            + " in " + (end.getTime() - start.getTime()) + "ms");
     }
 
     /**
@@ -340,13 +346,12 @@ public class DirectoryFilter extends FilterModel {
         for (Directory subDirectory : directory.getSubdirectories())
         {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
-                directory, folder, subDirectory.getFilenameOnly(),
-                subDirectory.getRelativeFile());
+                directory, folder, subDirectory.getRelativeName());
 
             FilteredDirectoryModel flatSubModel = null;
             if (isFlatMode()) {
                 flatSubModel = new FilteredDirectoryModel(directory, folder,
-                    subDirectory.getName(), subDirectory.getRelativeFile());
+                    subDirectory.getRelativeName());
             }
             filterDirectory(subDirectory, subModel, flatSubModel, keywords,
                 originalCount, filteredCount, deletedCount, incomingCount,
@@ -431,7 +436,7 @@ public class DirectoryFilter extends FilterModel {
         int searchMode)
     {
         if (searchMode == SEARCH_MODE_FILE_NAME_DIRECTORY_NAME) {
-            String filename = fileInfo.getLowerCaseName();
+            String filename = fileInfo.getLowerCaseFilenameOnly();
             if (filename.contains(keyword)) {
                 return true;
             }

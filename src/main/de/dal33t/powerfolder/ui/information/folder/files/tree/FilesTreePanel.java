@@ -118,7 +118,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
      * @param directory
      */
     public void setSelection(Directory directory) {
-        File file = directory.getRelativeFile();
+        String relativeName = directory.getRelativeName();
         DefaultMutableTreeNode root =
                 (DefaultMutableTreeNode) directoryTreeModel.getRoot();
         int count = root.getChildCount();
@@ -127,18 +127,19 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                     (DefaultMutableTreeNode) root.getChildAt(i);
             DirectoryTreeNodeUserObject userObject =
                     (DirectoryTreeNodeUserObject) node.getUserObject();
-            drill(file, node, userObject, 0);
+            drill(relativeName, node, userObject, 0);
         }
     }
 
     /**
      * Drill down the directory stucture and try to find the file.
      *
-     * @param file
+     * @param relativeName
+     *              name of directory relative to root, like bob/test/sub
      * @param node
      * @param userObject
      */
-    private void drill(File file, DefaultMutableTreeNode node,
+    private void drill(String relativeName, DefaultMutableTreeNode node,
                        DirectoryTreeNodeUserObject userObject, int level) {
 
         if (level > 100) {
@@ -146,7 +147,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
             return;
         }
 
-        if (userObject.getFile().equals(file)) {
+        if (userObject.getRelativeName().equals(relativeName)) {
             tree.setSelectionPath(new TreePath(node.getPath()));
         } else {
             // Recurse.
@@ -156,7 +157,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                         (DefaultMutableTreeNode) node.getChildAt(i);
                 DirectoryTreeNodeUserObject subUserObject =
                         (DirectoryTreeNodeUserObject) subNode.getUserObject();
-                drill(file, subNode, subUserObject, level + 1);
+                drill(relativeName, subNode, subUserObject, level + 1);
             }
         }
     }

@@ -80,11 +80,11 @@ public class FolderDBDebug {
         boolean dupe = false;
         HashSet<String> lowerCasenames = new HashSet<String>();
         for (FileInfo file : list) {
-            if (lowerCasenames.contains(file.getName().toLowerCase())) {
+            if (lowerCasenames.contains(file.getRelativeName().toLowerCase())) {
                 dupe = true;
                 System.err.println("Detected dupe: " + file.toDetailString());
             }
-            lowerCasenames.add(file.getName().toLowerCase());
+            lowerCasenames.add(file.getRelativeName().toLowerCase());
         }
         return dupe;
     }

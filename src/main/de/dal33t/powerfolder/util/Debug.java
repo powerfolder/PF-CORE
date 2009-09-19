@@ -189,7 +189,7 @@ public class Debug {
         if (f.isDeleted()) {
             b.append("(del) ");
         }
-        b.append(f.getName());
+        b.append(f.getRelativeName());
         b.append(';');
 
         b.append(f.getModifiedBy().nick);

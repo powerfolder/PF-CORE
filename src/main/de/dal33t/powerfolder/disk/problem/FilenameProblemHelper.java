@@ -25,6 +25,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -195,9 +196,8 @@ public class FilenameProblemHelper {
             return;
         }
 
-        File newFile = new File(folder.getLocalBase(), fileInfo
-            .getLocationInFolder()
-            + '/' + newFilename);
+        File newFile = FileUtils.buildFileFromRelativeName(folder.getLocalBase(),
+                fileInfo.getRelativeName());
         if (file.renameTo(newFile)) {
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
                 controller.getMySelf().getInfo());
@@ -231,9 +231,8 @@ public class FilenameProblemHelper {
                                    FileInfo fileInfo) {
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
-        File newFile = new File(folder.getLocalBase(), fileInfo
-            .getLocationInFolder()
-            + '/' + newName);
+        File newFile = FileUtils.buildFileFromRelativeName(folder.getLocalBase(),
+                fileInfo.getRelativeName());
         return !newFile.exists();
     }
 

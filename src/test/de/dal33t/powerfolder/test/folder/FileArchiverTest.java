@@ -40,7 +40,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         }
 
         File expected = new File(fb.getSystemSubDir(), "archive");
-        expected = new File(expected, fib.getName() + "_K_" + fib.getVersion());
+        expected = new File(expected, fib.getRelativeName() + "_K_" + fib.getVersion());
         assertTrue(expected.exists());
         assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
     }
@@ -62,9 +62,9 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnowFilesAsArray()[0];
         File eBart = new File(fb.getSystemSubDir(), "archive");
-        eBart = new File(eBart, fib.getName() + "_K_" + fib.getVersion());
+        eBart = new File(eBart, fib.getRelativeName() + "_K_" + fib.getVersion());
         File eLisa = new File(fl.getSystemSubDir(), "archive");
-        eLisa = new File(eLisa, fib.getName() + "_K_" + fib.getVersion());
+        eLisa = new File(eLisa, fib.getRelativeName() + "_K_" + fib.getVersion());
 
         modLisaFile(tl, fib);
 
@@ -96,7 +96,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         File ver[] = new File[4];
         File archdir = new File(fb.getSystemSubDir(), "archive");
         for (int i = 0; i < ver.length; i++) {
-            ver[i] = new File(archdir, fib.getName() + "_K_" + i);
+            ver[i] = new File(archdir, fib.getRelativeName() + "_K_" + i);
         }
 
         assertFalse(ver[0].exists());

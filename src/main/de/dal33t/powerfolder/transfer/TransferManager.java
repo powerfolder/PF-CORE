@@ -321,7 +321,7 @@ public class TransferManager extends PFComponent {
                 long numberOfDays = calcDays(completedUpload.getCompletedDate());
                 if (numberOfDays >= uploadCleanupFrequency) {
                     logInfo("Auto-cleaning up upload '"
-                        + completedUpload.getFile().getName() + "' (days="
+                        + completedUpload.getFile().getRelativeName() + "' (days="
                         + numberOfDays + ')');
                     clearCompletedUpload(completedUpload);
                 }
@@ -337,7 +337,7 @@ public class TransferManager extends PFComponent {
                     .getCompletedDate());
                 if (numberOfDays >= downloadCleanupFrequency) {
                     logInfo("Auto-cleaning up download '"
-                        + completedDownload.getFileInfo().getName()
+                        + completedDownload.getFileInfo().getRelativeName()
                         + "' (days=" + numberOfDays + ')');
                     clearCompletedDownload(completedDownload);
                 }
@@ -695,7 +695,7 @@ public class TransferManager extends PFComponent {
             for (Upload upload : queuedUploads) {
                 if (fInfo.equals(upload.getFile())) {
                     setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
-                        .getName());
+                        .getRelativeName());
                 }
             }
         }
@@ -705,7 +705,7 @@ public class TransferManager extends PFComponent {
                 if (fInfo.equals(upload.getFile())) {
                     upload.abort();
                     setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
-                        .getName());
+                        .getRelativeName());
                 }
             }
         }
@@ -714,7 +714,7 @@ public class TransferManager extends PFComponent {
             for (Download download : man.getSources()) {
                 if (fInfo.equals(download.getFile())) {
                     download.setBroken(TransferProblem.FILE_CHANGED, fInfo
-                        .getName());
+                        .getRelativeName());
                 }
             }
         }
@@ -1161,8 +1161,8 @@ public class TransferManager extends PFComponent {
             throw new NullPointerException("Downloadrequest/File is null");
         }
         // Never upload db files !!
-        if (Folder.DB_FILENAME.equalsIgnoreCase(dl.file.getName())
-            || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file.getName()))
+        if (Folder.DB_FILENAME.equalsIgnoreCase(dl.file.getRelativeName())
+            || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file.getRelativeName()))
         {
             logSevere(from.getNick()
                 + " has illegally requested to download a folder database file");

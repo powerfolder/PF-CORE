@@ -59,16 +59,16 @@ public class FileInfoDAOEhcacheTest extends FileInfoDAOTestCase {
         Map<String, FileInfo> fInfos = new HashMap<String, FileInfo>();
         for (int i = 0; i < nFiles; i++) {
             FileInfo fInfo = createRandomFileInfo(i, "Random");
-            Element e = new Element(fInfo.getName(), fInfo);
+            Element e = new Element(fInfo.getRelativeName(), fInfo);
             cache.put(e);
-            fInfos.put(fInfo.getName(), fInfo);
+            fInfos.put(fInfo.getRelativeName(), fInfo);
         }
         cache.flush();
         assertEquals(nFiles, cache.getSize());
         List<String> keys = cache.getKeys();
         for (String key : keys) {
             FileInfo fInfo = (FileInfo) cache.get(key).getValue();
-            String fileName = fInfo.getName();
+            String fileName = fInfo.getRelativeName();
             assertTrue(fileName.startsWith("subdir1/SUBDIR2/"));
         }
     }

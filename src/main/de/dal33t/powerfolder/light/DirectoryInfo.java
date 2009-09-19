@@ -51,7 +51,7 @@ public class DirectoryInfo extends FileInfo {
     @Override
     public String toString() {
         return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
-            + fileName + " (D)";
+            + getRelativeName() + " (D)";
     }
 
     /**
@@ -101,7 +101,7 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public int hashCode() {
-        int hash = fileName.hashCode();
+        int hash = getRelativeName().hashCode();
         hash += folderInfo.hashCode();
         return hash;
     }
@@ -113,7 +113,7 @@ public class DirectoryInfo extends FileInfo {
         }
         if (other instanceof DirectoryInfo) {
             DirectoryInfo otherInfo = (DirectoryInfo) other;
-            return Util.equals(this.fileName, otherInfo.fileName)
+            return Util.equals(this.getRelativeName(), otherInfo.getRelativeName())
                 && Util.equals(this.folderInfo, otherInfo.folderInfo);
         }
 

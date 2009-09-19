@@ -339,7 +339,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                         FolderSettings folderSettings = loadV3FolderSettings(folderName);
 
-                        // Do not add if already added
+                        // Do not add0 if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
                             && folderSettings != null)
                         {
@@ -487,7 +487,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         FolderInfo foInfo = new FolderInfo(folderName, folderId);
                         FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
 
-                        // Do not add if already added
+                        // Do not add0 if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
                             && folderSettings != null)
                         {
@@ -757,7 +757,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
-     * Also stores a invitation file for the folder in the local directory if
+     * Also stores an invitation file for the folder in the local directory if
      * wanted.
      * 
      * @param folderInfo

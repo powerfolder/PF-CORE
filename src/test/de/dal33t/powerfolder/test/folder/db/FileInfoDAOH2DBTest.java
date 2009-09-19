@@ -164,7 +164,7 @@ public class FileInfoDAOH2DBTest extends FileInfoDAOTestCase {
             FileInfo fInfo = createRandomFileInfo(i, "Random");
             ps.setString(1, "DOMAIN");
             FileInfoSQLConverter.set(fInfo, ps);
-            fInfos.put(fInfo.getName(), fInfo);
+            fInfos.put(fInfo.getRelativeName(), fInfo);
             assertFalse(ps.execute());
         }
         ps.close();

@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.FileUtils;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -64,7 +65,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * The name of this directory (no path elements)
      */
-    private final String name;
+    private final String filenameOnly;
 
     /**
      * The root Folder which this Directory belongs to
@@ -81,50 +82,36 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * 
      * @param rootFolder
      * @param parent
-     * @param name
+     * @param filenameOnly
      */
-    public Directory(Folder rootFolder, Directory parent, String name) {
+    public Directory(Folder rootFolder, Directory parent, String filenameOnly) {
         Reject.ifNull(rootFolder, "Need a root folder");
-        Reject.ifNull(name, "Need a name");
+        Reject.ifNull(filenameOnly, "Need a filenameOnly");
         this.rootFolder = rootFolder;
         this.parent = parent;
-        this.name = name;
-    }
-
-    /**
-     * returns file relative to the root folder base directory.
-     */
-    public File getRelativeFile() {
-        if (parent == null) {
-            return new File(name);
-        } else {
-            return new File(parent.getRelativeFile(), name);
-        }
+        this.filenameOnly = filenameOnly;
     }
 
     /**
      * returns the absolute file for this directory.
      */
     public File getAbsoluteFile() {
-        if (parent == null) {
-            return new File(rootFolder.getLocalBase(), name);
-        } else {
-            return new File(parent.getAbsoluteFile(), name);
-        }
+        return FileUtils.buildFileFromRelativeName(rootFolder.getLocalBase(), getRelativeName());
     }
 
     /**
-     * returns the Directory with this name.
+     * returns the Directory with this relativeName (the name relative to root
+     * folder).
      */
-    public Directory getSubDirectory(String nameArg) {
-        int i = nameArg.indexOf('/');
-        if (i >= 0) {
-            String subDir = nameArg.substring(0, i);
-            String restPath = nameArg.substring(i + 1);
+    public Directory getSubDirectory(String relativeName) {
+        int i = relativeName.indexOf('/');
+        if (i == -1) {
+            return subDirectoriesMap.get(relativeName);
+        } else {
+            String subDir = relativeName.substring(0, i);
+            String restPath = relativeName.substring(i + 1);
             Directory dir = subDirectoriesMap.get(subDir);
             return dir.getSubDirectory(restPath);
-        } else {
-            return subDirectoriesMap.get(nameArg);
         }
     }
 
@@ -253,7 +240,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
         Directory directory = (Directory) obj;
 
-        if (!name.equals(directory.name)) {
+        if (!filenameOnly.equals(directory.filenameOnly)) {
             return false;
         }
         if (parent != null
@@ -270,14 +257,14 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     public int hashCode() {
-        int result = name.hashCode();
+        int result = filenameOnly.hashCode();
         result = 31 * result + rootFolder.hashCode();
         result = 31 * result + (parent != null ? parent.hashCode() : 0);
         return result;
     }
 
     public int compareTo(Directory o) {
-        if (name.equals(o.name)) {
+        if (filenameOnly.equals(o.filenameOnly)) {
             if (rootFolder.getInfo().equals(o.rootFolder.getInfo())) {
                 if (parent == null) {
                     return o.parent == null ? 0 : -1;
@@ -288,7 +275,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 return rootFolder.getInfo().compareTo(o.rootFolder.getInfo());
             }
         } else {
-            return name.compareTo(o.name);
+            return filenameOnly.compareTo(o.filenameOnly);
         }
     }
 
@@ -300,7 +287,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
      */
     private void addFile(Member member, FileInfo fileInfo) {
         if (fileInfo.isDiretory()) {
-            // Not supported yet.
+            // Not supported.
             return;
         }
         // Keep synchronization here.
@@ -329,25 +316,27 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
     }
 
-    public String getName() {
-        // TODO REMOVE THIS MESS.
-        String fullName = getRelativeFile().getPath();
-        fullName = fullName.replace("\\", "/");
-        if (fullName.startsWith("/")) {
-            fullName = fullName.substring(1);
+    /**
+     * Build a path name relative to root.
+     *
+     * @return
+     */
+    public String getRelativeName() {
+        if (parent == null) {
+            return filenameOnly;
+        } else if (parent.getRelativeName().trim().length() == 0) {
+            return filenameOnly;
+        } else {
+            return parent.getRelativeName().trim() + '/' + filenameOnly;
         }
-        if (fullName.endsWith("/")) {
-            fullName = fullName.substring(0, fullName.length() - 1);
-        }
-        return fullName;
     }
 
     public String getFilenameOnly() {
-        return name;
+        return filenameOnly;
     }
 
     public String toString() {
-        return name;
+        return filenameOnly;
     }
 
     /**
@@ -358,68 +347,52 @@ public class Directory implements Comparable<Directory>, DiskItem {
     }
 
     /**
-     * add a file recursive to this or correct sub Directory
+     * Add a file recursive to this or correct sub Directory
+     *
+     * @param member
+     *          member to add for
+     * @param fileInfo
+     *          FileInfo to add
      */
-    void add(Member member, FileInfo file) {
-        if (file.isDiretory()) {
-            // Not supported yet.
-            return;
-        }
-        String thePath = file.getLocationInFolder();
-        if (thePath.length() == 0) {
-            addFile(member, file);
-        } else {
-            String dirName;
-            String rest;
-            int index = thePath.indexOf('/');
-            if (index == -1) {
-                dirName = thePath;
-                rest = "";
-            } else {
-                dirName = thePath.substring(0, index);
-                rest = thePath.substring(index + 1, thePath.length());
-            }
-            Directory dir;
-            synchronized (subDirectoriesMap) {
-                dir = subDirectoriesMap.get(dirName);
-                if (dir == null) {
-                    dir = new Directory(rootFolder, this, dirName);
-                    subDirectoriesMap.put(dirName, dir);
-                }
-            }
-            dir.add(member, file, rest);
-        }
+    void add(Member member, FileInfo fileInfo) {
+        add0(member, fileInfo, fileInfo.getRelativeName());
     }
 
-    private void add(Member member, FileInfo file, String restPath) {
-        if (file.isDiretory()) {
-            // Not supported yet.
+    /**
+     * Add a file recursive from a point in the tree.
+     *
+     * @param member
+     *          member to add for
+     * @param fileInfo
+     *          FileInfo to add
+     * @param relativePath
+     *          relative path in the tree, relative to this directory
+     */
+    void add0(Member member, FileInfo fileInfo, String relativePath) {
+        if (fileInfo.isDiretory()) {
+            // Not supported.
             return;
         }
-        if (restPath.length() == 0) {
-            addFile(member, file);
-        } else {
-            String dirName;
-            String rest;
-            int index = restPath.indexOf('/');
-            if (index == -1) {
-                dirName = restPath;
-                rest = "";
-            } else {
-                dirName = restPath.substring(0, index);
-                rest = restPath.substring(index + 1, restPath.length());
-            }
 
-            Directory dir;
-            synchronized (subDirectoriesMap) {
-                dir = subDirectoriesMap.get(dirName);
-                if (dir == null) {
-                    dir = new Directory(rootFolder, this, dirName);
-                    subDirectoriesMap.put(dirName, dir);
-                }
-            }
-            dir.add(member, file, rest);
+        int index = relativePath.indexOf('/');
+        if (index == -1) {
+            // Local. Put it here
+            addFile(member, fileInfo);
+            return;
         }
+
+        String dirName = relativePath.substring(0, index);
+        String theRest = relativePath.substring(index + 1);
+
+        synchronized (subDirectoriesMap) {
+            Directory dir = subDirectoriesMap.get(dirName);
+            if (dir == null) {
+                dir = new Directory(rootFolder, this, dirName);
+                subDirectoriesMap.put(dirName, dir);
+            }
+            dir.add0(member, fileInfo, theRest);
+        }
+
     }
 
     public Collection<Directory> getSubdirectories() {
@@ -434,8 +407,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
         return "";
     }
 
-    public String getLowerCaseName() {
-        return name == null ? "" : name.toLowerCase();
+    public String getLowerCaseFilenameOnly() {
+        return filenameOnly == null ? "" : filenameOnly.toLowerCase();
     }
 
     public long getSize() {

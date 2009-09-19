@@ -417,7 +417,7 @@ public class ScanFolderTest extends ControllerTestCase {
         for (File file : files) {
             FileInfo fInfo = retrieveFileInfo(file);
             assertFileMatch(file, fInfo);
-            assertEquals(fInfo.getName(), 0, fInfo.getVersion());
+            assertEquals(fInfo.getRelativeName(), 0, fInfo.getVersion());
         }
     }
 
@@ -444,7 +444,7 @@ public class ScanFolderTest extends ControllerTestCase {
             for (File file : files) {
                 FileInfo fInfo = retrieveFileInfo(file);
                 assertFileMatch(file, fInfo);
-                assertEquals(fInfo.getName(), i, fInfo.getVersion());
+                assertEquals(fInfo.getRelativeName(), i, fInfo.getVersion());
             }
             for (File file : files) {
                 TestHelper.changeFile(file);

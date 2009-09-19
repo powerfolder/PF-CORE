@@ -127,17 +127,17 @@ public final class FileInfoFactory {
         Reject.ifNull(original, "Original FileInfo is null");
         if (original.isTemplate()) {
             // TODO Check if this causes problems with DirectoryInfo
-            return lookupInstance(fi, original.fileName);
+            return lookupInstance(fi, original.getRelativeName());
         } else {
             if (original.folderInfo.equals(fi)) {
                 return original;
             }
             if (original.isFile()) {
-                return new FileInfo(original.fileName, original.size,
+                return new FileInfo(original.getRelativeName(), original.size,
                     original.modifiedBy, original.lastModifiedDate,
                     original.version, original.deleted, fi);
             } else if (original.isDiretory()) {
-                return new DirectoryInfo(original.fileName, original.size,
+                return new DirectoryInfo(original.getRelativeName(), original.size,
                     original.modifiedBy, original.lastModifiedDate,
                     original.version, original.deleted, fi);
             } else {
@@ -156,8 +156,8 @@ public final class FileInfoFactory {
             .ifTrue(original.isTemplate(), "Cannot modify template FileInfo!");
         String fn = buildFileName(original.getFolder(rep).getLocalBase(),
             localFile);
-        if (original.fileName.equals(fn)) {
-            fn = original.fileName;
+        if (original.getRelativeName().equals(fn)) {
+            fn = original.getRelativeName();
         }
 
         if (original.isFile()) {
@@ -181,10 +181,10 @@ public final class FileInfoFactory {
         Reject
             .ifTrue(original.isTemplate(), "Cannot delete template FileInfo!");
         if (original.isFile()) {
-            return new FileInfo(original.fileName, 0L, delby, delDate,
+            return new FileInfo(original.getRelativeName(), 0L, delby, delDate,
                 original.version + 1, true, original.folderInfo);
         } else if (original.isDiretory()) {
-            return new DirectoryInfo(original.fileName, 0L, delby, delDate,
+            return new DirectoryInfo(original.getRelativeName(), 0L, delby, delDate,
                 original.version + 1, true, original.folderInfo);
         } else {
             throw new IllegalArgumentException("Illegal original FileInfo: "
@@ -206,7 +206,7 @@ public final class FileInfoFactory {
         Reject.ifTrue(original instanceof DirectoryInfo,
             "Possible problem. Unable to perform on dirInfo:"
                 + original.toDetailString());
-        return new FileInfo(original.fileName, original.size,
+        return new FileInfo(original.getRelativeName(), original.size,
             original.modifiedBy, original.lastModifiedDate, newVersion,
             original.deleted, original.folderInfo);
     }
@@ -220,7 +220,7 @@ public final class FileInfoFactory {
                 throw new IllegalArgumentException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
-            fn = parent.getName() + "/" + fn;
+            fn = parent.getName() + '/' + fn;
             parent = parent.getParentFile();
         }
         return fn;

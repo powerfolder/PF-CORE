@@ -91,8 +91,8 @@ public class FileInfoSQLConverter {
 
         // i = 1: Domain name
         int i = 2;
-        ps.setString(i++, fInfo.getName());
-        ps.setString(i++, fInfo.getName().toLowerCase());
+        ps.setString(i++, fInfo.getRelativeName());
+        ps.setString(i++, fInfo.getRelativeName().toLowerCase());
         ps.setBoolean(i++, fInfo.isDiretory());
         ps.setLong(i++, fInfo.getSize());
         ps.setString(i++, fInfo.getModifiedBy() != null

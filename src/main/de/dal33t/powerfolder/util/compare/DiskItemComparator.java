@@ -188,7 +188,7 @@ public class DiskItemComparator extends Loggable implements
             return 1;
         }
         if (fullName) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
+            return o1.getRelativeName().compareToIgnoreCase(o2.getRelativeName());
         } else {
             return o1.getFilenameOnly().compareToIgnoreCase(
                 o2.getFilenameOnly());

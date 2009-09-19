@@ -64,8 +64,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private static final int COL_MODIFIED_DATE = 4;
 
     private Folder folder;
-    private File selectedDirectory;
-    private final ConcurrentMap<File, List<DiskItem>> directories;
+    private String selectedRelativeName;
+    /** A map of relativeName, DiskItem */
+    private final ConcurrentMap<String, List<DiskItem>> directories;
     private final List<DiskItem> diskItems;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
@@ -80,7 +81,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     public FilesTableModel(Controller controller) {
         super(controller);
-        directories = new ConcurrentHashMap<File, List<DiskItem>>();
+        directories = new ConcurrentHashMap<String, List<DiskItem>>();
         diskItems = new ArrayList<DiskItem>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
@@ -105,8 +106,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
      *
      * @param selectedDirectory
      */
-    public void setSelectedDirectory(File selectedDirectory) {
-        this.selectedDirectory = selectedDirectory;
+    public void setSelectedRelativeName(String selectedRelativeName) {
+        this.selectedRelativeName = selectedRelativeName;
         update();
     }
 
@@ -129,13 +130,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
                                             boolean flat) {
-        File file = model.getRelativeFile();
+        String relativeName = model.getRelativeName();
         List<DiskItem> diskItemList = new ArrayList<DiskItem>();
         diskItemList.addAll(model.getFileInfos());
         if (!flat) {
             diskItemList.addAll(model.getSubdirectoryDirectories());
         }
-        directories.putIfAbsent(file, diskItemList);
+        directories.putIfAbsent(relativeName, diskItemList);
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
             walkFilteredDirectoryModel(subModel, flat);
         }
@@ -159,7 +160,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        if (selectedDirectory == null) {
+        if (selectedRelativeName == null) {
             return;
         }
 
@@ -167,8 +168,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        if (directories.keySet().contains(selectedDirectory)) {
-            logInfo("Found " + selectedDirectory + " in directories");
+        if (directories.keySet().contains(selectedRelativeName)) {
+            logInfo("Found " + selectedRelativeName + " in directories");
         } else {
             return;
         }
@@ -181,7 +182,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
                     tempList.addAll(diskItems);
 
                     // Look for extra items in the selectedDiskItems list to insert.
-                    List<DiskItem> selectedDiskItems = directories.get(selectedDirectory);
+                    List<DiskItem> selectedDiskItems = directories.get(selectedRelativeName);
                     if (selectedDiskItems == null) {
                         selectedDiskItems = new ArrayList<DiskItem>();
                     }

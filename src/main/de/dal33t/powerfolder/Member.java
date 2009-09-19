@@ -69,7 +69,6 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Profiling;
@@ -1472,7 +1471,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
                         FileInfo file = changes.added[i];
-                        if (file.getName().contains(
+                        if (file.getRelativeName().contains(
                             Constants.POWERFOLDER_SYSTEM_SUBDIR))
                         {
                             continue;
@@ -1485,7 +1484,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.removed != null) {
                     for (int i = 0; i < changes.removed.length; i++) {
                         FileInfo file = changes.removed[i];
-                        if (file.getName().contains(
+                        if (file.getRelativeName().contains(
                             Constants.POWERFOLDER_SYSTEM_SUBDIR))
                         {
                             continue;

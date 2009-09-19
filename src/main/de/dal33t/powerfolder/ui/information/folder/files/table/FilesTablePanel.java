@@ -230,14 +230,14 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 Object userObject = node.getUserObject();
                 if (userObject instanceof DirectoryTreeNodeUserObject) {
                     DirectoryTreeNodeUserObject dtnuo = (DirectoryTreeNodeUserObject) userObject;
-                    tableModel.setSelectedDirectory(dtnuo.getFile());
+                    tableModel.setSelectedRelativeName(dtnuo.getRelativeName());
                     return;
                 }
             }
         }
 
         // Failed to set file - clear selection.
-        tableModel.setSelectedDirectory(null);
+        tableModel.setSelectedRelativeName(null);
     }
 
     public void setFolder(Folder folder) {
@@ -602,11 +602,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (diskItem != null && diskItem instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) diskItem;
                     tableModel.getFolder().getDiskItemFilter().addPattern(
-                        fileInfo.getName());
+                        fileInfo.getRelativeName());
                 } else if (diskItem != null && diskItem instanceof Directory) {
                     Directory directory = (Directory) diskItem;
                     tableModel.getFolder().getDiskItemFilter().addPattern(
-                        directory.getName() + "/*");
+                        directory.getRelativeName() + "/*");
                 }
             }
         }
@@ -623,11 +623,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (diskItem != null && diskItem instanceof FileInfo) {
                     FileInfo fileInfo = (FileInfo) diskItem;
                     tableModel.getFolder().getDiskItemFilter().removePattern(
-                        fileInfo.getName());
+                        fileInfo.getRelativeName());
                 } else if (diskItem != null && diskItem instanceof Directory) {
                     Directory directory = (Directory) diskItem;
                     tableModel.getFolder().getDiskItemFilter().removePattern(
-                        directory.getName() + "/*");
+                        directory.getRelativeName() + "/*");
                 }
             }
         }

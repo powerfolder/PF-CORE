@@ -36,8 +36,7 @@ public class FilteredDirectoryModel {
 
     private final Directory parentDirectory;
     private final Folder rootFolder;
-    private final String name;
-    private final File relativeFile;
+    private final String relativeName;
     private final List<FileInfo> fileInfos;
     private final List<FilteredDirectoryModel> subdirectories;
     private boolean newFiles;
@@ -46,12 +45,10 @@ public class FilteredDirectoryModel {
      * Constructor
      */
     public FilteredDirectoryModel(Directory parentDirectory,
-                                  Folder rootFolder, String name,
-                                  File relativeFile) {
+                                  Folder rootFolder, String relativeName) {
         this.parentDirectory = parentDirectory;
         this.rootFolder = rootFolder;
-        this.name = name;
-        this.relativeFile = relativeFile;
+        this.relativeName = relativeName;
         fileInfos = new CopyOnWriteArrayList<FileInfo>();
         subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
     }
@@ -73,8 +70,13 @@ public class FilteredDirectoryModel {
      *
      * @return
      */
-    public String getName() {
-        return name;
+    public String getFilenameOnly() {
+        int index = relativeName.lastIndexOf('/');
+        if (index >= 0) {
+            return relativeName.substring(index + 1);
+        } else {
+            return relativeName;
+        }
     }
 
     /**
@@ -82,8 +84,8 @@ public class FilteredDirectoryModel {
      *
      * @return
      */
-    public File getRelativeFile() {
-        return relativeFile;
+    public String getRelativeName() {
+        return relativeName;
     }
 
     /**
@@ -106,7 +108,7 @@ public class FilteredDirectoryModel {
         List<Directory> list = new ArrayList<Directory>();
         for (FilteredDirectoryModel fdm : subdirectories) {
             Directory d = new Directory(rootFolder, fdm.parentDirectory,
-                    fdm.name);
+                    fdm.getFilenameOnly());
                 d.addAll(rootFolder.getController().getMySelf(),
                         fdm.fileInfos.toArray(new FileInfo[fdm.fileInfos.size()]));
             list.add(d);

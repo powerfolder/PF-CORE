@@ -34,14 +34,14 @@ public interface DiskItem {
     /**
      * @return the name, relative to the folder base.
      */
-    String getName();
+    String getRelativeName();
 
     /**
      * @return the name of the item only excluding any path information.
      */
     String getFilenameOnly();
 
-    String getLowerCaseName();
+    String getLowerCaseFilenameOnly();
 
     long getSize();
 

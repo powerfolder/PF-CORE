@@ -88,7 +88,7 @@ public class FileUtils {
         if (!isTempDownloadFile(file)) {
             return false;
         }
-        // String targetFilename = file.getName().substring(11);
+        // String targetFilename = file.getRelativeName().substring(11);
         String targetFilename = file.getName().substring(13);
         File targetFile = new File(file.getParentFile(), targetFilename);
         return targetFile.exists() && (targetFile.length() == file.length());
@@ -807,6 +807,35 @@ public class FileUtils {
             return false;
         } else {
             throw new IllegalArgumentException("Can conly compare directories.");
+        }
+    }
+
+    /**
+     * This method builds a real File from a base file (directory) and a 
+     * DiskItem relativeName. relativeNames are always unix separators ('/')
+     * so this method ensures that the file is built using the correct
+     * underlying OS separators.
+     *
+     *
+     * @param base
+     *          a base directory File
+     * @param relativeName
+     *          the DiskItem relativeName, like bob/dir/sub
+     * @return
+     */
+    public static File buildFileFromRelativeName(File base, String relativeName) {
+        Reject.ifNull(base, "Need a base directory");
+        Reject.ifFalse(base.isDirectory(), "Base must be a directory");
+        Reject.ifNull(relativeName, "RelativeName required");
+        if (relativeName.indexOf('/') == -1) {
+            return new File(base, relativeName);
+        } else {
+            String[] parts = relativeName.split("/");
+            File f = base;
+            for (String part : parts) {
+                f = new File(f, part);
+            }
+            return f;
         }
     }
 }

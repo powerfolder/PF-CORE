@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
-import java.io.File;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -46,13 +45,13 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 (DirectoryTreeNodeUserObject) ((DefaultMutableTreeNode) getRoot())
                         .getUserObject();
 
-        if (rootUO != null && rootUO.getFile().equals(model.getRelativeFile())) {
+        if (rootUO != null && rootUO.getRelativeName().equals(model.getRelativeName())) {
             updateTree(model, (DefaultMutableTreeNode) getRoot());
         } else {
-            // New tree.
+            // New tree. Node is the folder.
             DirectoryTreeNodeUserObject newRootUO =
-                    new DirectoryTreeNodeUserObject(model.getName(),
-                            model.getRelativeFile(), model.hasDescendantNewFiles());
+                    new DirectoryTreeNodeUserObject(model.getRootFolder().getName(),
+                            "", model.hasDescendantNewFiles());
             DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(newRootUO);
             setRoot(newRoot);
             buildTree(model, (DefaultMutableTreeNode) getRoot());
@@ -72,16 +71,16 @@ public class DirectoryTreeModel extends DefaultTreeModel {
         Map<String, FilteredDirectoryModel> map = new TreeMap<String,
                 FilteredDirectoryModel>();
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
-            map.put(subModel.getName(), subModel);
+            map.put(subModel.getFilenameOnly(), subModel);
         }
         for (FilteredDirectoryModel subModel : map.values()) {
             if (subModel.hasDescendantFiles()) {
-                File subFile = subModel.getRelativeFile();
-                String subDisplayName = subModel.getName();
+                String subFilenameOnly = subModel.getFilenameOnly();
+                String subRelativeName = subModel.getRelativeName();
                 boolean subNewFiles = subModel.hasDescendantNewFiles();
                 DirectoryTreeNodeUserObject newSubUO =
-                        new DirectoryTreeNodeUserObject(subDisplayName, subFile,
-                                subNewFiles);
+                        new DirectoryTreeNodeUserObject(subFilenameOnly,
+                                subRelativeName, subNewFiles);
                 DefaultMutableTreeNode newSubNode =
                         new DefaultMutableTreeNode(newSubUO);
                 insertNodeInto(newSubNode, node, node.getChildCount());
@@ -101,8 +100,8 @@ public class DirectoryTreeModel extends DefaultTreeModel {
 
         // Has the node changed? Like newFiles changed perhaps.
         DirectoryTreeNodeUserObject candidateNode =
-                new DirectoryTreeNodeUserObject(model.getName(),
-                        model.getRelativeFile(), model.hasDescendantNewFiles());
+                new DirectoryTreeNodeUserObject(model.getFilenameOnly(),
+                        model.getRelativeName(), model.hasDescendantNewFiles());
         DirectoryTreeNodeUserObject existingNode =
                 (DirectoryTreeNodeUserObject) node.getUserObject();
         if (!candidateNode.equals(existingNode)) {
@@ -121,7 +120,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                             node.getChildAt(i);
                     DirectoryTreeNodeUserObject subUO =
                             (DirectoryTreeNodeUserObject) subNode.getUserObject();
-                    if (subModel.getRelativeFile().equals(subUO.getFile())) {
+                    if (subModel.getRelativeName().equals(subUO.getRelativeName())) {
                         found = true;
 
                         // Side effect - this matching node needs to be updated.
@@ -132,12 +131,12 @@ public class DirectoryTreeModel extends DefaultTreeModel {
 
                 // Insert missing node.
                 if (!found) {
-                    File subFile = subModel.getRelativeFile();
-                    String subDisplayName = subModel.getName();
+                    String subFilenameOnly = subModel.getFilenameOnly();
+                    String subRelativeName = subModel.getRelativeName();
                     boolean subNewFiles = subModel.hasDescendantNewFiles();
                     DirectoryTreeNodeUserObject newSubUO =
-                            new DirectoryTreeNodeUserObject(subDisplayName,
-                                    subFile, subNewFiles);
+                            new DirectoryTreeNodeUserObject(subFilenameOnly,
+                                    subRelativeName, subNewFiles);
                     DefaultMutableTreeNode newSubNode =
                             new DefaultMutableTreeNode(newSubUO);
                     insertNodeInto(newSubNode, node, node.getChildCount());
@@ -154,7 +153,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                     subNode.getUserObject();
             boolean found = false;
             for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
-                if (subModel.getRelativeFile().equals(subUO.getFile())) {
+                if (subModel.getRelativeName().equals(subUO.getRelativeName())) {
                     if (subModel.hasDescendantFiles()) {
                         found = true;
                         break;

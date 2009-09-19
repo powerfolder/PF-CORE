@@ -274,7 +274,7 @@ public class FolderStatistic extends PFComponent {
                         if (isFiner()) {
                             logFiner("Removed partial stat for "
                                 + member.getInfo().nick + ", "
-                                + fileInfo.getName() + ", " + removedBytes);
+                                + fileInfo.getRelativeName() + ", " + removedBytes);
                         }
                     }
                 }
@@ -501,7 +501,7 @@ public class FolderStatistic extends PFComponent {
         long bytesTransferred)
     {
         if (isFiner()) {
-            logFiner("Partial stat for " + fileInfo.getName() + ", "
+            logFiner("Partial stat for " + fileInfo.getRelativeName() + ", "
                 + member.getInfo().nick + ", " + bytesTransferred);
         }
         Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);

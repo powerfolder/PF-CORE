@@ -61,12 +61,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /**
-     * The filename, relative to the filder base directory
+     * The relativeName of the file relative to the base
      * <p>
      * Actually 'final'. Only non-final because of serialization readObject()
      * fileName.intern();
      */
-    protected String fileName;
+    private String fileName;
 
     /** The size of the file */
     protected final Long size;
@@ -110,11 +110,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.hash = hashCode0();
     }
 
-    protected FileInfo(String fileName, long size, MemberInfo modifiedBy,
+    protected FileInfo(String relativeName, long size, MemberInfo modifiedBy,
         Date lastModifiedDate, int version, boolean deleted,
         FolderInfo folderInfo)
     {
-        this.fileName = fileName;
+        this.fileName = relativeName;
         this.size = size;
         this.modifiedBy = modifiedBy;
         this.lastModifiedDate = lastModifiedDate;
@@ -127,10 +127,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         this.hash = hashCode0();
     }
 
-    protected FileInfo(FolderInfo folder, String name) {
+    protected FileInfo(FolderInfo folder, String relativeName) {
         Reject.ifNull(folder, "folder is null!");
-        Reject.ifNull(name, "name is null!");
-        fileName = name;
+        Reject.ifNull(relativeName, "relativeName is null!");
+        this.fileName = relativeName;
         folderInfo = folder;
 
         size = null;
@@ -236,7 +236,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the name , relative to the folder base.
      */
-    public String getName() {
+    public String getRelativeName() {
         return fileName;
     }
 
@@ -244,9 +244,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return The filename (including the path from the base of the folder)
      *         converted to lowercase
      */
-    public String getLowerCaseName() {
+    public String getLowerCaseFilenameOnly() {
         if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-            return fileName.toLowerCase();
+            return getFilenameOnly0().toLowerCase();
         }
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
@@ -296,41 +296,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     private final String getFilenameOnly0() {
-        int lastOffset = fileName.lastIndexOf('/');
-        if (lastOffset < 0) {
-            lastOffset = fileName.lastIndexOf('\\');
+        int index = fileName.lastIndexOf('/');
+        if (index > -1) {
+            return fileName.substring(index + 1).toLowerCase();
+        } else {
+            return fileName.toLowerCase();
         }
-        if (lastOffset < 0) {
-            return fileName;
-        }
-        return fileName.substring(lastOffset + 1, fileName.length());
-    }
-
-    /**
-     * Returns the location in folder (subdirectory) (path)
-     * 
-     * @return the location in folder
-     */
-    public String getLocationInFolder() {
-        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-            return getLocationInFolder0();
-        }
-        FileInfoStrings strings = getStringsCache();
-        if (strings.getLocationInFolder() == null) {
-            strings.setLocationInFolder(getLocationInFolder0());
-        }
-        return strings.getLocationInFolder();
-    }
-
-    private final String getLocationInFolder0() {
-        String filenameOnly = getFilenameOnly();
-        int filenameOnlyLength = filenameOnly.length();
-        int filenameLength = fileName.length();
-
-        if (filenameOnlyLength == filenameLength) {
-            return "";
-        }
-        return fileName.substring(0, filenameLength - filenameOnlyLength - 1);
     }
 
     /**

@@ -628,7 +628,7 @@ public class Folder extends PFComponent {
     //
     // // update UI
     // if (getController().isUIEnabled()) {
-    // getDirectory().add(getController().getMySelf(),
+    // getDirectory().add0(getController().getMySelf(),
     // convertedFileInfo);
     // }
     // }
@@ -1158,11 +1158,11 @@ public class Folder extends PFComponent {
 
                     if (fInfo.isDeleted()) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
-                            currentInfo, fInfo.getName(), modifiedBy, modDate,
+                            currentInfo, fInfo.getRelativeName(), modifiedBy, modDate,
                             fInfo.getVersion(), file.isDirectory());
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
-                            currentInfo, fInfo.getName(), size, modifiedBy,
+                            currentInfo, fInfo.getRelativeName(), size, modifiedBy,
                             modDate, fInfo.getVersion(), file.isDirectory());
                     }
 
@@ -1276,11 +1276,11 @@ public class Folder extends PFComponent {
 
                     // if (dirInfo.isDeleted()) {
                     // fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
-                    // fInfo.getName(), modifiedBy, modDate, fInfo
+                    // fInfo.getRelativeName(), modifiedBy, modDate, fInfo
                     // .getVersion());
                     // } else {
                     // fInfo = FileInfo.unmarshallExistingFile(currentInfo,
-                    // fInfo.getName(), size, modifiedBy, modDate, fInfo
+                    // fInfo.getRelativeName(), size, modifiedBy, modDate, fInfo
                     // .getVersion());
                     // }
 
@@ -1491,7 +1491,7 @@ public class Folder extends PFComponent {
                     files);
                 synchronized (dbAccessLock) {
                     for (int i = 0; i < files.length; i++) {
-                        if (files[i].getName().contains(
+                        if (files[i].getRelativeName().contains(
                             Constants.POWERFOLDER_SYSTEM_SUBDIR))
                         {
                             // Skip #1411
@@ -1520,9 +1520,9 @@ public class Folder extends PFComponent {
                     Object object = in.readObject();
                     Collection<FileInfo> infos = (Collection<FileInfo>) object;
                     for (FileInfo info : infos) {
-                        diskItemFilter.addPattern(info.getName());
+                        diskItemFilter.addPattern(info.getRelativeName());
                         if (isFiner()) {
-                            logFiner("ignore@" + info.getName());
+                            logFiner("ignore@" + info.getRelativeName());
                         }
                     }
                 } catch (EOFException e) {
@@ -1891,7 +1891,7 @@ public class Folder extends PFComponent {
         String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
         String confVal = downloadScript != null ? downloadScript : "";
-        getController().getConfig().put(confKey, downloadScript);
+        getController().getConfig().put(confKey, confVal);
         logInfo("Download script set to '" + confVal + '\'');
         getController().saveConfig();
     }
@@ -2636,8 +2636,8 @@ public class Folder extends PFComponent {
                 .getSize();
             boolean dateSame = Util.equalsFileDateCrossPlattform(localFileInfo
                 .getModifiedDate(), remoteFileInfo.getModifiedDate());
-            boolean fileCaseSame = localFileInfo.getName().equals(
-                remoteFileInfo.getName());
+            boolean fileCaseSame = localFileInfo.getRelativeName().equals(
+                remoteFileInfo.getRelativeName());
 
             if (localFileInfo.getVersion() < remoteFileInfo.getVersion()
                 && remoteFileInfo.getVersion() > 0)
@@ -2676,7 +2676,7 @@ public class Folder extends PFComponent {
                 // fileChanged(localFileInfo);
                 // }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
-                if (localFileInfo.getName().compareTo(remoteFileInfo.getName()) <= 0)
+                if (localFileInfo.getRelativeName().compareTo(remoteFileInfo.getRelativeName()) <= 0)
                 {
                     // Skip this fileinfo. Compare by name is performed
                     // to ensure that the FileInfo with the greatest
@@ -2693,7 +2693,7 @@ public class Folder extends PFComponent {
                     }
 
                     synchronized (dbAccessLock) {
-                        // FIXME: Ugly. FileInfo needs to be removed add
+                        // FIXME: Ugly. FileInfo needs to be removed add0
                         // re-added to Map since filename is the key and
                         // this is diffrent in this case
                         // knownFiles.remove(localFileInfo);
@@ -2954,7 +2954,7 @@ public class Folder extends PFComponent {
         // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new DiskItemComparator(DiskItemComparator.BY_FULL_NAME));
-        // add expeced files
+        // add0 expeced files
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
                 // disconnected or myself (=skip)
@@ -3160,7 +3160,7 @@ public class Folder extends PFComponent {
      *         exist!! check before use
      */
     public File getDiskFile(FileInfo fInfo) {
-        return new File(localBase, fInfo.getName());
+        return new File(localBase, fInfo.getRelativeName());
     }
 
     /**

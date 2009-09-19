@@ -107,10 +107,10 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         assertEquals(msgs.length - 1, receivedDeltas);
 
         // String .intern check after serialization
-        assertEquals(files[0].getName(), filelist.files[0].getName());
+        assertEquals(files[0].getRelativeName(), filelist.files[0].getRelativeName());
         assertSame(
             "Filename string instances are not SAME (==). Intern missing at serialization?",
-            files[0].getName(), filelist.files[0].getName());
+            files[0].getRelativeName(), filelist.files[0].getRelativeName());
     }
 
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {

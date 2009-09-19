@@ -386,4 +386,37 @@ public class FileUtilsTest extends TestCase {
 
     }
 
+    public void testBuildFileFromRelativeName() {
+
+        File base = new File("build");
+
+        try {
+            FileUtils.buildFileFromRelativeName(null, "");
+            assertTrue("Built a file with no base", true);
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            FileUtils.buildFileFromRelativeName(new File("test.txt"), "");
+            assertTrue("Built a file with base file", true);
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            FileUtils.buildFileFromRelativeName(base, null);
+            assertTrue("Built a file with no relative", true);
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        File f = FileUtils.buildFileFromRelativeName(base, "bob");
+        assertEquals("Bad file name", "bob", f.getName());
+        assertEquals("Bad file name", "build", f.getParent());
+
+        f = FileUtils.buildFileFromRelativeName(base, "bob/jim");
+        assertEquals("Bad file name", "jim", f.getName());
+        assertTrue("Bad file name", f.getParent().endsWith("bob"));
+    }
 }

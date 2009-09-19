@@ -235,7 +235,7 @@ public class FolderScanner extends PFComponent {
                         .hasNext();)
                     {
                         FileInfo fInfo2 = it.next();
-                        String locationInFolder = fInfo2.getLowerCaseName();
+                        String locationInFolder = fInfo2.getLowerCaseFilenameOnly();
                         if (dirPath.endsWith(locationInFolder)) {
                             logWarning("Found file in unreadable folder. Unable to scan: "
                                 + fInfo2);
@@ -365,12 +365,12 @@ public class FolderScanner extends PFComponent {
 
             // #836
             if (!OSUtil.isWindowsSystem()) {
-                if (lowerCaseNames.containsKey(fileInfo.getLowerCaseName())) {
+                if (lowerCaseNames.containsKey(fileInfo.getLowerCaseFilenameOnly())) {
                     Problem problem = new DuplicateFilenameProblem(fileInfo);
                     problemList = new ArrayList<Problem>();
                     problemList.add(problem);
                 } else {
-                    lowerCaseNames.put(fileInfo.getLowerCaseName(), fileInfo);
+                    lowerCaseNames.put(fileInfo.getLowerCaseFilenameOnly(), fileInfo);
                 }
             }
 
@@ -554,12 +554,12 @@ public class FolderScanner extends PFComponent {
         if (exists == null && OSUtil.isWindowsSystem()) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
-                if (otherFInfo.getName().equalsIgnoreCase(filename)) {
+                if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
                     logWarning("Found local diskfile with diffrent name-case in db. file: "
                         + fileToScan.getAbsolutePath()
                         + ", dbFile: "
                         + otherFInfo.toDetailString());
-                    if (fInfo.getName().equals(otherFInfo.getName())
+                    if (fInfo.getRelativeName().equals(otherFInfo.getRelativeName())
                         && !fInfo.equals(otherFInfo))
                     {
                         throw new RuntimeException(
@@ -646,12 +646,12 @@ public class FolderScanner extends PFComponent {
         if (exists == null && OSUtil.isWindowsSystem()) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
-                if (otherFInfo.getName().equalsIgnoreCase(pathname)) {
+                if (otherFInfo.getRelativeName().equalsIgnoreCase(pathname)) {
                     logWarning("Found local file/dir with diffrent name-case in db. file: "
                         + dirToScan.getAbsolutePath()
                         + ", dbDir: "
                         + otherFInfo.toDetailString());
-                    if (dirInfo.getName().equals(otherFInfo.getName())
+                    if (dirInfo.getRelativeName().equals(otherFInfo.getRelativeName())
                         && !dirInfo.equals(otherFInfo)
                         && otherFInfo.isDiretory())
                     {

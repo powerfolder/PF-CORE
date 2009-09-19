@@ -193,7 +193,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     private File getArchiveTarget(FileInfo fileInfo) {
-        return new File(archiveDirectory, fileInfo.getName() + "_K_"
+        return new File(archiveDirectory, fileInfo.getRelativeName() + "_K_"
             + fileInfo.getVersion());
     }
 
@@ -260,8 +260,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
-        File subdirectory = new File(archiveDirectory, fileInfo
-            .getLocationInFolder());
+        File subdirectory = FileUtils.buildFileFromRelativeName(archiveDirectory,
+                fileInfo.getRelativeName());
         if (!subdirectory.exists()) {
             return Collections.emptyList();
         }
@@ -295,7 +295,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     }
 
     public void restore(FileInfo versionInfo, File target) throws IOException {
-        log.info("Copying " + versionInfo.getName() + " to "
+        log.info("Copying " + versionInfo.getRelativeName() + " to "
             + target.getAbsolutePath());
         File archiveFile = getArchiveTarget(versionInfo);
         if (!archiveFile.exists()) {

@@ -19,53 +19,53 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.tree;
 
-import java.io.File;
-
 /**
  * User object for the directory tree.
  */
 public class DirectoryTreeNodeUserObject {
 
+    /**
+     * The display name for the node. May not be a true path or file name.
+     */
     private final String displayName;
-    private final File file;
+
+    /** The relative name of the directory from the root, like /bob/test/sub */
+    private final String relativeName;
+
     private final boolean newFiles;
 
-    public DirectoryTreeNodeUserObject(String displayName, File file,
-                                       boolean newFiles) {
+    public DirectoryTreeNodeUserObject(String displayName, String relativeName, boolean newFiles) {
         this.displayName = displayName;
-        this.file = file;
+        this.relativeName = relativeName;
         this.newFiles = newFiles;
+    }
+
+    public String getRelativeName() {
+        return relativeName;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public File getFile() {
-        return file;
-    }
-
     public boolean hasNewFiles() {
         return newFiles;
     }
 
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        DirectoryTreeNodeUserObject that = (DirectoryTreeNodeUserObject) o;
+        DirectoryTreeNodeUserObject that = (DirectoryTreeNodeUserObject) obj;
 
         if (newFiles != that.newFiles) {
             return false;
         }
-        if (!displayName.equals(that.displayName)) {
-            return false;
-        }
-        if (!file.equals(that.file)) {
+        if (!relativeName.equals(that.relativeName)) {
             return false;
         }
 
@@ -73,8 +73,7 @@ public class DirectoryTreeNodeUserObject {
     }
 
     public int hashCode() {
-        int result = displayName.hashCode();
-        result = 31 * result + file.hashCode();
+        int result = relativeName.hashCode();
         result = 31 * result + (newFiles ? 1 : 0);
         return result;
     }

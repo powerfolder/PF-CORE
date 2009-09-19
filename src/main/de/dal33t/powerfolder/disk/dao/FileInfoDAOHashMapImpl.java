@@ -251,13 +251,13 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     // }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
-        if (!fInfo.getName().startsWith(path)) {
+        if (!fInfo.getRelativeName().startsWith(path)) {
             return false;
         }
         if (recursive) {
             return true;
         }
-        int i = fInfo.getName().indexOf('/', path.length() + 2);
+        int i = fInfo.getRelativeName().indexOf('/', path.length() + 2);
         // No other subdirectory at end.
         return i != -1;
     }

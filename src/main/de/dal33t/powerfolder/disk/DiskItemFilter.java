@@ -215,7 +215,7 @@ public class DiskItemFilter {
     private boolean isMatches(DiskItem diskItem) {
         if (diskItem instanceof Directory) {
             Directory dir = (Directory) diskItem;
-            String dirName = dir.getName() + "/*";
+            String dirName = dir.getRelativeName() + "/*";
 
             for (CompilingPatternMatch pattern : patterns) {
                 if (pattern.isMatch(dirName)) {
@@ -223,7 +223,7 @@ public class DiskItemFilter {
                 }
             }
         } else if (diskItem instanceof FileInfo) {
-            String name = diskItem.getName();
+            String name = diskItem.getRelativeName();
 
             for (CompilingPatternMatch pattern : patterns) {
                 if (pattern.isMatch(name)) {

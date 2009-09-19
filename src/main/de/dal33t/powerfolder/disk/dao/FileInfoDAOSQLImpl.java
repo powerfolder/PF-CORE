@@ -147,7 +147,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     private void delete0(String domain, FileInfo info, Connection c) {
         try {
             PreparedStatement ps = createCaseQuery(c, SQL_DELETE, info
-                .getName());
+                .getRelativeName());
             ps.setString(2, dn(domain));
             ps.execute();
             ps.close();
@@ -177,7 +177,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     public FileInfo find(FileInfo info, String domain) {
         Connection c = openConnection();
         try {
-            PreparedStatement ps = createCaseQuery(c, SQL_FIND, info.getName());
+            PreparedStatement ps = createCaseQuery(c, SQL_FIND, info.getRelativeName());
             ps.setString(2, dn(domain));
             ps.execute();
             ResultSet rs = ps.getResultSet();
@@ -252,7 +252,7 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
 
             q.append(") ORDER BY version DESC");
             PreparedStatement ps = createCaseQuery(c, q.toString(), info
-                .getName());
+                .getRelativeName());
 
             // ps.setString(2, b.toString());
             ps.execute();

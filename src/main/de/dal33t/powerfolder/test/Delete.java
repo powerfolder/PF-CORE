@@ -84,7 +84,7 @@ public class Delete {
             FileUtils.makeHiddenOnWindows(recycleBinDir);
         }
 
-        File target = new File(recycleBinDir, file.getName()); //getName should be the complete dir but for this test this is ok
+        File target = new File(recycleBinDir, file.getName()); //getRelativeName should be the complete dir but for this test this is ok
         //File target = new File("newname.xxx");
         if (!new File(target.getParent()).mkdirs()) {
             System.out

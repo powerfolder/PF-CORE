@@ -82,7 +82,7 @@ public class CheckForDupeFiles extends TestCase {
         HashSet<String> memberIds = new HashSet<String>();
         boolean dupes = false;
         for (FileInfo file : list) {
-            if (lowerCasenames.contains(file.getName().toLowerCase())) {
+            if (lowerCasenames.contains(file.getRelativeName().toLowerCase())) {
                 System.err.println("Detected dupe: " + file.toDetailString());
                 dupes = true;
             }
@@ -109,7 +109,7 @@ public class CheckForDupeFiles extends TestCase {
                 instancesFI.add(file.getFolderInfo());
             }
 
-            lowerCasenames.add(file.getName().toLowerCase());
+            lowerCasenames.add(file.getRelativeName().toLowerCase());
         }
         System.out.println("Got " + instancesMI.size()
             + " diffrent memberinfo instances with " + memberIds.size()

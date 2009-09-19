@@ -38,17 +38,17 @@ public class DiskItemFilterTest extends TestCase {
             "somefile.txt");
         FileInfo fileInfo4 = FileInfoFactory.lookupInstance(folderInfo,
             "A_UPPER_case_FILENAME.xxx");
-        blacklist.addPattern(fileInfo.getName());
+        blacklist.addPattern(fileInfo.getRelativeName());
         assertTrue(blacklist.isExcluded(fileInfo));
         // other instance but equals
         assertTrue(blacklist.isExcluded(fileInfo2));
         // not blacklisted
         assertTrue(blacklist.isRetained(fileInfo3));
         // after remove allow download again
-        blacklist.removePattern(fileInfo.getName());
+        blacklist.removePattern(fileInfo.getRelativeName());
         assertTrue(blacklist.isRetained(fileInfo));
         // Mix-case filename test
-        blacklist.addPattern(fileInfo4.getName());
+        blacklist.addPattern(fileInfo4.getRelativeName());
         assertTrue(blacklist.isExcluded(fileInfo4));
     }
 

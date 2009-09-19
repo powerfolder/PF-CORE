@@ -562,7 +562,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testMultipleManPow2() throws Exception {
-        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getName());
+        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
         // l.setFilter(null);
         // l.setLevel(Level.ALL);
         // ConsoleHandler ch = new ConsoleHandler();
@@ -739,7 +739,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void xtestMultipleResumeTransfer() throws Exception {
-        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getName());
+        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
         // l.setFilter(null);
         // l.setLevel(Level.ALL);
         // ConsoleHandler ch = new ConsoleHandler();

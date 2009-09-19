@@ -160,7 +160,7 @@ public class FileDetailsPanel extends PFUIComponent {
 
         nameField.setText(fileInfo.getFilenameOnly());
         nameField.setCaretPosition(0);
-        locationField.setText(fileInfo.getLocationInFolder());
+        locationField.setText(fileInfo.getRelativeName());
         locationField.setCaretPosition(0);
 
         folderField.setText(fileInfo.getFolderInfo().name);
