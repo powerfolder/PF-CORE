@@ -73,7 +73,7 @@ public class RecycleTest extends ControllerTestCase {
         assertTrue(fileInfo.toDetailString(), fileInfo.getModifiedDate().after(
             lastModified));
 
-        archiver.restore(origFile, file);
+        archiver.restore(getController(), origFile, file);
         getFolder().scanRestoredFile(origFile);
         fileInfo = getFolder().getKnownFiles().iterator().next();
 
@@ -96,7 +96,7 @@ public class RecycleTest extends ControllerTestCase {
 
         getFolder().removeFilesLocal(testfile);
         assertFalse(file.exists());
-        ((CopyOrMoveFileArchiver) archiver).setVersionsPerFile(0);
+        (archiver).setVersionsPerFile(0);
         ((CopyOrMoveFileArchiver) archiver).maintain();
         File recycleBinDir = new File(getFolder().getSystemSubDir(), "archive");
         assertTrue(recycleBinDir.exists());

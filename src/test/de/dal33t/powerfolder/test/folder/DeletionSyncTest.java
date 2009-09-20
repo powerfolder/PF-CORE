@@ -404,7 +404,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                     .getArchivedFilesInfos(fileAtLisa);
                 FileInfo inArchive = versions.get(0);
                 assertEquals(fileAtLisa.getRelativeName(), inArchive.getRelativeName());
-                archiver.restore(versions.get(0), fileAtLisa
+                archiver.restore(getContollerLisa(), versions.get(0), fileAtLisa
                     .getDiskFile(getContollerLisa().getFolderRepository()));
             }
         }

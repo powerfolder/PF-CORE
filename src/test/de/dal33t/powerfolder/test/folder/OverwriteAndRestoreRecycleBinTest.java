@@ -106,7 +106,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             .get(0);
 
         // Restore
-        archiveAtLisa.restore(infoAtLisa, infoAtLisa
+        archiveAtLisa.restore(getContollerLisa(), infoAtLisa, infoAtLisa
             .getDiskFile(getContollerLisa().getFolderRepository()));
         scanFolder(getFolderAtLisa());
         // File should be still in archive
