@@ -108,6 +108,14 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
         // Restore
         archiveAtLisa.restore(getContollerLisa(), infoAtLisa, infoAtLisa
             .getDiskFile(getContollerLisa().getFolderRepository()));
+
+        // Restore is async, so give it a couple of seconds to complete.
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
         scanFolder(getFolderAtLisa());
         // File should be still in archive
         assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
