@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
 import de.dal33t.powerfolder.disk.Folder;
@@ -37,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.ArrayList;
 
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -133,7 +136,8 @@ public class FileVersionsPanel extends PFUIComponent {
         restoreAction = new RestoreAction(getController());
     }
 
-    public void setFileInfo(FileInfo fileInfo) {
+    public void setFileInfo(final FileInfo fileInfo) {
+
         if (panel == null) {
             // Panel not initalized yet
             return;
@@ -146,25 +150,69 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
-        // Loading...
-        setState(STATE_LOADING);
-        try {
-            Folder folder = fileInfo.getFolder(getController()
-                .getFolderRepository());
-            FileArchiver fileArchiver = folder.getFileArchiver();
-            List<FileInfo> archiveFileInfos = fileArchiver
-                .getArchivedFilesInfos(fileInfo);
-            if (archiveFileInfos.isEmpty()) {
-                setState(STATE_EMPTY);
-            } else {
-                setState(STATE_RESULTS);
-                fileVersionsTableModel
-                    .setVersionInfos(archiveFileInfos);
+        // Run this outside of EDT, in case it runs slow.
+        getController().getThreadPool().execute(new Runnable() {
+            public void run() {
+
+                // Loading...
+                setState(STATE_LOADING);
+                try {
+                    Folder folder = fileInfo.getFolder(getController()
+                        .getFolderRepository());
+                    FileArchiver fileArchiver = folder.getFileArchiver();
+
+                    // Get local versions.
+                    List<FileInfo> consolidatedFileInfos
+                            = new ArrayList<FileInfo>();
+                    consolidatedFileInfos.addAll(fileArchiver
+                            .getArchivedFilesInfos(fileInfo));
+                    logFine("Local versions " + consolidatedFileInfos.size());
+
+                    // Also try getting versions from OnlineStorage.
+                    boolean online = folder.hasMember(getController()
+                            .getOSClient().getServer());
+                    if (online) {
+                        ServerClient client = getController().getOSClient();
+                        if (client != null && client.isConnected()
+                                && client.isLoggedIn()) {
+                            FolderService service = client.getFolderService();
+                            if (service != null) {
+                                List<FileInfo> infoList = service
+                                        .getArchivedFilesInfos(fileInfo);
+                                logFine("Online versions " + infoList.size());
+                                for (FileInfo info : infoList) {
+                                    boolean gotIt = false;
+                                    for (FileInfo consolidatedFileInfo
+                                            : consolidatedFileInfos) {
+                                        if (info.isVersionDateAndSizeIdentical(
+                                                consolidatedFileInfo)) {
+                                            gotIt = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!gotIt) {
+                                        consolidatedFileInfos.add(info);
+                                    }
+                                }
+
+                                logFine("Consolidated versions "
+                                        + consolidatedFileInfos.size());
+                            }
+                        }
+                    }
+                    if (consolidatedFileInfos.isEmpty()) {
+                        setState(STATE_EMPTY);
+                    } else {
+                        setState(STATE_RESULTS);
+                        fileVersionsTableModel
+                            .setVersionInfos(consolidatedFileInfos);
+                    }
+                } catch (Exception e) {
+                    // Huh?
+                    logSevere(e);
+                }
             }
-        } catch (Exception e) {
-            // Huh?
-            logSevere(e);
-        }
+        });
     }
 
     /**

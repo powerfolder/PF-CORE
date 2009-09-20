@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -198,7 +197,7 @@ public class RestoreArchiveDialog extends BaseDialog {
                 }
             }
             if (restore) {
-                fileArchiver.restore(versionInfo, restoreTo);
+                fileArchiver.restore(getController(), versionInfo, restoreTo);
                 folder.scanRestoredFile(versionInfo);
                 close();
             }

@@ -25,6 +25,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * This class represents an archive for Files. Subclasses can store file as they
@@ -76,7 +77,8 @@ public interface FileArchiver {
      * @throws IOException
      *             problem restoring the file.
      */
-    void restore(FileInfo versionInfo, File target) throws IOException;
+    void restore(Controller controller, FileInfo versionInfo, File target)
+            throws IOException;
 
     void setVersionsPerFile(int versionsPerFile);
 
