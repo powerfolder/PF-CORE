@@ -74,6 +74,14 @@ public class RecycleTest extends ControllerTestCase {
             lastModified));
 
         archiver.restore(getController(), origFile, file);
+
+        // Restore is async, so give it a couple of seconds to complete.
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
         getFolder().scanRestoredFile(origFile);
         fileInfo = getFolder().getKnownFiles().iterator().next();
 
