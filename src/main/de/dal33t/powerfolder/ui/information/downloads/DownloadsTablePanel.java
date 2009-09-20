@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DownloadsTablePanel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DownloadsTablePanel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.downloads;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -62,12 +62,13 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
-    public DownloadsTablePanel(Controller controller, Action openDownloadAction,
-                               Action abortDownloadsAction,
-                               Action clearCompletedDownloadsAction) {
+    public DownloadsTablePanel(Controller controller,
+        Action openDownloadAction, Action abortDownloadsAction,
+        Action clearCompletedDownloadsAction)
+    {
         super(controller);
         this.openDownloadAction = openDownloadAction;
         this.abortDownloadsAction = abortDownloadsAction;
@@ -76,7 +77,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns the ui component.
-     *
+     * 
      * @return
      */
     public JComponent getUIComponent() {
@@ -91,8 +92,8 @@ public class DownloadsTablePanel extends PFUIComponent {
      * Initialize components
      */
     private void initialize() {
-        TransferManagerModel transferManagerModel =
-                getUIController().getTransferManagerModel();
+        TransferManagerModel transferManagerModel = getUIController()
+            .getTransferManagerModel();
 
         table = new DownloadManagersTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -108,7 +109,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Add a selection listener to the table.
-     *
+     * 
      * @param l
      */
     public void addListSelectionListener(ListSelectionListener l) {
@@ -129,8 +130,7 @@ public class DownloadsTablePanel extends PFUIComponent {
      * Build the ui component tab pane.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("fill:pref:grow",
-            "fill:0:grow");
+        FormLayout layout = new FormLayout("fill:pref:grow", "fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
@@ -157,62 +157,65 @@ public class DownloadsTablePanel extends PFUIComponent {
      */
     public void clearDownloads() {
 
-        ActivityVisualizationWorker avw =
-                new ActivityVisualizationWorker(getUIController()) {
+        ActivityVisualizationWorker avw = new ActivityVisualizationWorker(
+            getUIController())
+        {
 
-                    protected String getTitle() {
-                        return Translation.getTranslation("downloads_panel.cleanup_activity.title");
+            protected String getTitle() {
+                return Translation
+                    .getTranslation("downloads_panel.cleanup_activity.title");
+            }
+
+            protected String getWorkingText() {
+                return Translation
+                    .getTranslation("downloads_panel.cleanup_activity.description");
+            }
+
+            public Object construct() {
+                int rowCount = table.getRowCount();
+                if (rowCount == 0) {
+                    return null;
+                }
+
+                // If no rows are selected,
+                // arrange for all downloads to be cleared.
+                boolean noneSelected = true;
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (table.isRowSelected(i)) {
+                        noneSelected = false;
+                        break;
                     }
+                }
 
-                    protected String getWorkingText() {
-                        return Translation.getTranslation("downloads_panel.cleanup_activity.description");
-                    }
+                // Do in two passes so changes to the model do not affect
+                // the process.
+                List<DownloadManager> downloadManagersToClear = new ArrayList<DownloadManager>();
 
-                    public Object construct() {
-                        int rowCount = table.getRowCount();
-                        if (rowCount == 0) {
-                            return null;
-                        }
-
-                        // If no rows are selected,
-                        // arrange for all downloads to be cleared.
-                        boolean noneSelected = true;
-                        for (int i = 0; i < table.getRowCount(); i++) {
-                            if (table.isRowSelected(i)) {
-                                noneSelected = false;
-                                break;
-                            }
-                        }
-
-                        // Do in two passes so changes to the model do not affect
-                        // the process.
-                        List<DownloadManager> downloadManagersToClear =
-                                new ArrayList<DownloadManager>();
-
-                        for (int i = 0; i < table.getRowCount(); i++) {
-                            if (noneSelected || table.isRowSelected(i)) {
-                                DownloadManager dlm = tableModel.getDownloadManagerAtRow(i);
-                                if (dlm.isCompleted()) {
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    if (noneSelected || table.isRowSelected(i)) {
+                        DownloadManager dlm = tableModel
+                            .getDownloadManagerAtRow(i);
+                        if (dlm.isCompleted()) {
+                            downloadManagersToClear.add(dlm);
+                        } else {
+                            // Also take out any broken downloads.
+                            for (Download download : dlm.getSources()) {
+                                if (download.isBroken()) {
                                     downloadManagersToClear.add(dlm);
-                                } else {
-                                    // Also take out any broken downloads.
-                                    for (Download download : dlm.getSources()) {
-                                        if (download.isBroken()) {
-                                            downloadManagersToClear.add(dlm);
-                                            break;
-                                        }
-                                    }
+                                    break;
                                 }
                             }
                         }
-                        for (DownloadManager dlm : downloadManagersToClear) {
-                            getController().getTransferManager()
-                                    .clearCompletedDownload(dlm);
-                        }
-
-                        return null;
                     }
-                };
+                }
+                for (DownloadManager dlm : downloadManagersToClear) {
+                    getController().getTransferManager()
+                        .clearCompletedDownload(dlm);
+                }
+
+                return null;
+            }
+        };
 
         // Clear completed downloads
         avw.start();
@@ -220,7 +223,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if the table has any rows.
-     *
+     * 
      * @return
      */
     public boolean isRowsExist() {
@@ -229,7 +232,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if the table has any selected incomplete downloads.
-     *
+     * 
      * @return
      */
     public boolean isIncompleteSelected() {
@@ -240,7 +243,8 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(row);
+                DownloadManager downloadManager = tableModel
+                    .getDownloadManagerAtRow(row);
                 if (downloadManager == null) {
                     continue;
                 }
@@ -255,7 +259,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if a single completed download is selected.
-     *
+     * 
      * @return
      */
     public boolean isSingleCompleteSelected() {
@@ -265,8 +269,9 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(rows[0]);
-            if (downloadManager.isCompleted()) {
+            DownloadManager downloadManager = tableModel
+                .getDownloadManagerAtRow(rows[0]);
+            if (downloadManager != null && downloadManager.isCompleted()) {
                 return true;
             }
         }
@@ -283,10 +288,14 @@ public class DownloadsTablePanel extends PFUIComponent {
         int[] rows = table.getSelectedRows();
         boolean singleRowSelected = rows.length == 1;
         if (singleRowSelected) {
-            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(rows[0]);
+            DownloadManager downloadManager = tableModel
+                .getDownloadManagerAtRow(rows[0]);
+            if (downloadManager == null) {
+                return;
+            }
             if (downloadManager.isCompleted()) {
                 File file = downloadManager.getFileInfo().getDiskFile(
-                        getController().getFolderRepository());
+                    getController().getFolderRepository());
                 if (file != null && file.exists()) {
                     try {
                         FileUtils.openFile(file);
@@ -309,7 +318,8 @@ public class DownloadsTablePanel extends PFUIComponent {
         boolean rowsSelected = rows.length > 0;
         if (rowsSelected) {
             for (int row : rows) {
-                DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(row);
+                DownloadManager downloadManager = tableModel
+                    .getDownloadManagerAtRow(row);
                 if (downloadManager == null) {
                     continue;
                 }
@@ -326,7 +336,11 @@ public class DownloadsTablePanel extends PFUIComponent {
         }
         int[] rows = table.getSelectedRows();
         if (rows.length == 1) {
-            return tableModel.getDownloadManagerAtRow(rows[0]).getFileInfo();
+            DownloadManager downloadManager = tableModel
+                .getDownloadManagerAtRow(rows[0]);
+            if (downloadManager != null) {
+                return downloadManager.getFileInfo();
+            }
         }
         return null;
     }
@@ -334,7 +348,11 @@ public class DownloadsTablePanel extends PFUIComponent {
     public int countActiveDownloadCount() {
         int count = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(i);
+            DownloadManager downloadManager = tableModel
+                .getDownloadManagerAtRow(i);
+            if (downloadManager == null) {
+                continue;
+            }
             if (downloadManager.isStarted() && !downloadManager.isCompleted()) {
                 count++;
             }
@@ -345,7 +363,11 @@ public class DownloadsTablePanel extends PFUIComponent {
     public int countCompletedDownloadCount() {
         int count = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            DownloadManager downloadManager = tableModel.getDownloadManagerAtRow(i);
+            DownloadManager downloadManager = tableModel
+                .getDownloadManagerAtRow(i);
+            if (downloadManager == null) {
+                continue;
+            }
             if (downloadManager.isCompleted()) {
                 count++;
             }
@@ -353,13 +375,13 @@ public class DownloadsTablePanel extends PFUIComponent {
         return count;
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     /**
      * Listener on table header, takes care about the sorting of table
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class TableHeaderMouseListener extends MouseAdapter {
