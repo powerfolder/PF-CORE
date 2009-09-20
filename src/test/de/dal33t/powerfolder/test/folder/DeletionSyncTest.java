@@ -408,6 +408,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                     .getDiskFile(getContollerLisa().getFolderRepository()));
             }
         }
+
+        // Restore is asynchronous, so give is a couple of seconds to complete.
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         scanFolder(getFolderAtLisa());
 
         // all 3 must not be deleted at lisas folder
