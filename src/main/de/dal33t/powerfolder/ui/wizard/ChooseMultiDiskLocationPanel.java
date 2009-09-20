@@ -19,6 +19,42 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+
+import java.awt.Component;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.Action;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import jwf.WizardPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -29,33 +65,22 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.security.OnlineStorageSubscription;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.*;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import jwf.WizardPanel;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.*;
-import java.io.File;
-import java.util.*;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -65,53 +90,8 @@ import java.util.logging.Level;
  */
 public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
-    // Some standard user directory names from various OS.
-    private static final String USER_DIR_CONTACTS = "Contacts";
-    private static final String USER_DIR_DESKTOP = "Desktop";
-    private static final String USER_DIR_DOCUMENTS = "Documents";
-    // Ubuntu mail client
-    private static final String USER_DIR_EVOLUTION = ".evolution";
-    private static final String USER_DIR_FAVORITES = "Favorites";
-    private static final String USER_DIR_LINKS = "Links";
-    private static final String USER_DIR_MUSIC = "Music";
-    private static final String USER_DIR_PICTURES = "Pictures";
-    private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
-    private static final String USER_DIR_VIDEOS = "Videos";
-
-    // Vista has issues with these, so instantiate separately
-    private static String userDirMyDocuments;
-    private static String userDirMyMusic;
-    private static String userDirMyPictures;
-    private static String userDirMyVideos;
-    private static String appsDirOutlook;
-
-    private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
-        + "Firefox";
-    private static final String APPS_DIR_SUNBIRD = "Mozilla" + File.separator
-        + "Sunbird";
-    private static final String APPS_DIR_THUNDERBIRD = "Thunderbird";
-    private static final String APPS_DIR_FIREFOX2 = "firefox"; // Linux
-    private static final String APPS_DIR_SUNBIRD2 = "sunbird"; // Linux
-    private static final String APPS_DIR_THUNDERBIRD2 = "thunderbird"; // Linux
-
-    static {
-        if (WinUtils.getInstance() != null) {
-            appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
-                + File.separator + "Microsoft" + File.separator + "Outlook";
-            userDirMyDocuments = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_PERSONAL, false);
-            userDirMyMusic = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYMUSIC, false);
-            userDirMyPictures = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYPICTURES, false);
-            userDirMyVideos = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_MYVIDEO, false);
-        }
-    }
-
+    private static Map<String, File> userDirectories;
     private WizardPanel next;
-    private Map<String, File> userDirectories;
     private JLabel folderSizeLabel;
     private JLabel osWarningLabel;
 
@@ -141,7 +121,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         super(controller);
         Reject.ifNull(next, "Next wizard panel is null");
         this.next = next;
-        userDirectories = new TreeMap<String, File>();
     }
 
     // From WizardPanel *******************************************************
@@ -311,7 +290,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         initialDirectory = getController().getFolderRepository()
             .getFoldersBasedir();
 
-        findUserDirectories();
+        userDirectories = UserDirectories
+            .getUserDirectoriesFiltered(getController());
 
         folderSizeLabel = new JLabel();
         osWarningLabel = new JLabel();
@@ -415,139 +395,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             .getTranslation("wizard.choose_multi_disk_location.title");
     }
 
-    /**
-     * Find some generic user directories. Not all will be valid for all os, but
-     * that is okay.
-     */
-    private void findUserDirectories() {
-        File userHome = new File(System.getProperty("user.home"));
-        addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation
-            .getTranslation("user.dir.contacts"), false);
-        addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation
-            .getTranslation("user.dir.desktop"), false);
-        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, Translation
-            .getTranslation("user.dir.documents"), false);
-        addTargetDirectory(userHome, USER_DIR_EVOLUTION, Translation
-            .getTranslation("user.dir.evolution"), true);
-        addTargetDirectory(userHome, USER_DIR_FAVORITES, Translation
-            .getTranslation("user.dir.favorites"), false);
-        addTargetDirectory(userHome, USER_DIR_LINKS, Translation
-            .getTranslation("user.dir.links"), false);
-        addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
-            .getTranslation("user.dir.music"), false);
-
-        // Hidden by Vista.
-        if (userDirMyDocuments != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyDocuments), Translation
-                .getTranslation("user.dir.my_documents"), false);
-        }
-        if (userDirMyMusic != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyMusic), Translation
-                .getTranslation("user.dir.my_music"), false);
-        }
-        if (userDirMyPictures != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyPictures), Translation
-                .getTranslation("user.dir.my_pictures"), false);
-        }
-        if (userDirMyVideos != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyVideos), Translation
-                .getTranslation("user.dir.my_videos"), false);
-        }
-
-        addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
-            .getTranslation("user.dir.pictures"), false);
-        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation
-            .getTranslation("user.dir.recent_documents"), false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
-            .getTranslation("user.dir.videos"), false);
-        if (OSUtil.isWindowsSystem()) {
-            String appDataname = System.getenv("APPDATA");
-            if (appDataname == null && WinUtils.getInstance() != null) {
-                appDataname = WinUtils.getInstance().getSystemFolderPath(
-                    WinUtils.CSIDL_APP_DATA, false);
-            }
-            if (appDataname != null) {
-                File appData = new File(appDataname);
-                addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
-                    .getTranslation("apps.dir.firefox"), false);
-                addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
-                    .getTranslation("apps.dir.sunbird"), false);
-                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
-                    .getTranslation("apps.dir.thunderbird"), false);
-                if (appsDirOutlook != null) {
-                    addTargetDirectory(appData, appsDirOutlook, Translation
-                        .getTranslation("apps.dir.outlook"), false);
-                }
-            } else {
-                Logger.getAnonymousLogger().severe(
-                    "Application data directory not found.");
-            }
-        } else if (OSUtil.isLinux()) {
-            File appData = new File("/etc");
-            addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation
-                .getTranslation("apps.dir.firefox"), false);
-            addTargetDirectory(appData, APPS_DIR_SUNBIRD2, Translation
-                .getTranslation("apps.dir.sunbird"), false);
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
-                .getTranslation("apps.dir.thunderbird"), false);
-        } else {
-            // @todo Anyone know Mac???
-        }
-    }
-
     private void startFolderSizeCalculator() {
         SwingWorker worker = new MySwingWorker();
         worker.start();
-    }
-
-    /**
-     * Adds a generic user directory if if exists for this os.
-     * 
-     * @param root
-     * @param subdir
-     * @param translation
-     * @param allowHidden
-     *            allow display of hidden dirs
-     */
-    private void addTargetDirectory(File root, String subdir,
-        String translation, boolean allowHidden)
-    {
-        File directory = joinFile(root, subdir);
-        addTargetDirectory(directory, translation, allowHidden);
-    }
-
-    private static File joinFile(File root, String subdir) {
-        return new File(root + File.separator + subdir);
-    }
-
-    /**
-     * Adds a generic user directory if if exists for this os.
-     * 
-     * @param translation
-     * @param allowHidden
-     *            allow display of hidden dirs
-     */
-    private void addTargetDirectory(File directory, String translation,
-        boolean allowHidden)
-    {
-
-        // See if any folders already exists for this directory.
-        // No reason to show if already subscribed.
-        for (Folder folder1 : getController().getFolderRepository()
-            .getFolders())
-        {
-            if (folder1.getDirectory().getAbsoluteFile().equals(
-                directory))
-            {
-                return;
-            }
-        }
-
-        if (directory.exists() && directory.isDirectory()
-            && (allowHidden || !directory.isHidden()))
-        {
-            userDirectories.put(translation, directory);
-        }
     }
 
     private void enableRemoveAction() {

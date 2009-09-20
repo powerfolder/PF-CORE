@@ -44,6 +44,7 @@ import jwf.WizardPanel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.l2fprod.common.swing.JDirectoryChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -52,7 +53,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
-import com.l2fprod.common.swing.JDirectoryChooser;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -166,6 +167,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Build map of foInfo and syncProfs
      */
     public void afterDisplay() {
+        Map<String, File> userDirs = UserDirectories
+            .getUserDirectoriesFiltered(getController());
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
         folderLocalBaseMap = new HashMap<FolderInfo, File>();
         String folderBasedir = getController().getFolderRepository()
@@ -176,8 +179,12 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         for (FolderInfo folderInfo : folderInfoList) {
             folderProfileMap.put(folderInfo,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-            folderLocalBaseMap.put(folderInfo, new File(folderBasedir,
-                folderInfo.name));
+            // Suggesr user dir.
+            File dirSuggestion = userDirs.get(folderInfo.name);
+            if (dirSuggestion == null) {
+                dirSuggestion = new File(folderBasedir, folderInfo.name);
+            }
+            folderLocalBaseMap.put(folderInfo, dirSuggestion);
             folderInfoComboModel.addElement(folderInfo.name);
         }
     }
