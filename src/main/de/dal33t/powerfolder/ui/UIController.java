@@ -1059,6 +1059,9 @@ public class UIController extends PFComponent {
         }
     }
 
+    public Image getTrayIcon() {
+        return sysTrayMenu.getImage();
+    }
     // Message dialog helpers *************************************************
 
     /**

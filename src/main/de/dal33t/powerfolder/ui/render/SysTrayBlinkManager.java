@@ -83,7 +83,9 @@ public class SysTrayBlinkManager extends PFUIComponent {
         boolean blink = System.currentTimeMillis() / 1000 % 2 != 0;
         if (blink && flashSysTray.get()) {
             uiController.setTrayIcon(Icons.getImageById(Icons.BLANK));
-        } else {
+        } else if (uiController.getTrayIcon() == Icons
+            .getImageById(Icons.BLANK))
+        {
             uiController.setTrayIcon(null); // the default
         }
     }
