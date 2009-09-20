@@ -152,32 +152,43 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @param invitee
      */
     private void sendInvite(Collection<Member> candidates, String invitee) {
-        for (Member member : candidates) {
-            if (invitee.equalsIgnoreCase(member.getNick())) {
-                InvitationUtil.invitationToNode(getController(), invitation,
-                    member);
-                if (member.getAccountInfo() != null) {
-                    try {
-                        InvitationUtil.invitationByServer(getController(),
-                            invitation, member.getAccountInfo().getUsername(),
-                            false);
-                    } catch (Exception e) {
-                        LOG.log(Level.SEVERE, "Unable to send invitation to "
-                            + member + " / " + member.getAccountInfo() + ". "
-                            + e, e);
-                    }
-
-                }
-                break;
-            }
-        }
         if (Util.isValidEmail(invitee)) {
+            // Invitation by email
             try {
                 InvitationUtil.invitationByServer(getController(), invitation,
                     invitee, false);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
                     + ". " + e, e);
+            }
+            for (Member node : candidates) {
+                if (node.getAccountInfo() != null
+                    && node.getAccountInfo().getUsername().equalsIgnoreCase(
+                        invitee))
+                {
+                    InvitationUtil.invitationToNode(getController(),
+                        invitation, node);
+                }
+            }
+        } else {
+            // Invitation by node name
+            for (Member node : candidates) {
+                if (invitee.equalsIgnoreCase(node.getNick())) {
+                    InvitationUtil.invitationToNode(getController(),
+                        invitation, node);
+                    if (node.getAccountInfo() != null) {
+                        try {
+                            InvitationUtil.invitationByServer(getController(),
+                                invitation,
+                                node.getAccountInfo().getUsername(), false);
+                        } catch (Exception e) {
+                            LOG.log(Level.SEVERE,
+                                "Unable to send invitation to " + node + " / "
+                                    + node.getAccountInfo() + ". " + e, e);
+                        }
+                    }
+                    break;
+                }
             }
         }
     }
