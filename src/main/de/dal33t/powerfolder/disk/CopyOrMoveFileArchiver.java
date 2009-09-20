@@ -261,7 +261,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         File subdirectory = FileUtils.buildFileFromRelativeName(archiveDirectory,
-                fileInfo.getRelativeName());
+                fileInfo.getRelativeName()).getParentFile();
         if (!subdirectory.exists()) {
             return Collections.emptyList();
         }
