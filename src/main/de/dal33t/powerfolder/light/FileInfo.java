@@ -167,7 +167,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // Check if files match
         if (!diskFile.getName().equals(getFilenameOnly())) {
             throw new IllegalArgumentException(
-                "Diskfile does not match fileinfo: " + this + ", diskfile: "
+                "Diskfile does not match fileinfo name '" + getFilenameOnly()
+                    + "', details: " + this.toDetailString()
+                    + ", diskfile name '" + diskFile.getName() + "', path: "
                     + diskFile);
         }
 
@@ -298,9 +300,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private final String getFilenameOnly0() {
         int index = fileName.lastIndexOf('/');
         if (index > -1) {
-            return fileName.substring(index + 1).toLowerCase();
+            return fileName.substring(index + 1);
         } else {
-            return fileName.toLowerCase();
+            return fileName;
         }
     }
 
