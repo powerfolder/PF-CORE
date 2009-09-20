@@ -931,9 +931,9 @@ public class UIController extends PFComponent {
                     .getTranslation("systray.tooltip.in_sync"));
             }
             double totalCPSdownKB = getController().getTransferManager()
-                .getDownloadCounter().calculateAverageCPS() / 1024;
+                .getDownloadCounter().calculateCurrentKBS();
             double totalCPSupKB = getController().getTransferManager()
-                .getUploadCounter().calculateAverageCPS() / 1024;
+                .getUploadCounter().calculateCurrentKBS();
 
             String downText;
 
@@ -1062,6 +1062,7 @@ public class UIController extends PFComponent {
     public Image getTrayIcon() {
         return sysTrayMenu.getImage();
     }
+
     // Message dialog helpers *************************************************
 
     /**
