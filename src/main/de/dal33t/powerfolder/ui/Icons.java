@@ -112,7 +112,6 @@ public class Icons {
     public static final String COLLAPSE = "collapse.icon";
 
     public static final String PREFERENCES_PICTO = "preferences_picto.icon";
-    public static final String SYNC = "sync.icon";
     public static final String QUESTION = "question.icon";
 
     public static final String SORT_UP = "sort_up.icon";
@@ -159,10 +158,11 @@ public class Icons {
     public static final String CHECKED = "checked.icon";
 
     // Sync icons
+    public static final String SYNC = "sync.icon";
     public static final String[] SYNC_ANIMATION = new String[]{"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
-        "sync09.icon", "sync10.icon", "sync11.icon", "sync12.icon"};
+        "sync09.icon", "sync10.icon", "sync11.icon"};
 
     // Online state icons
     public static final String CONNECTION_GOOD = "connection_good.icon";
