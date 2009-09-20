@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DownloadManagerComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.compare.TransferComparator;
@@ -374,24 +373,10 @@ public class DownloadManagersTableModel extends PFComponent implements
      * @param download
      */
     private void removeDownload(Download download) {
-        int index = -1;
-        int i = 0;
-        for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter
-            .hasNext();)
-        {
-            DownloadManager downloadManager = iter.next();
-            for (Download myDownload : downloadManager.getSources()) {
-                if (myDownload.equals(download)) {
-                    index = i;
-                    break;
-                }
-            }
-            if (index >= 0) {
-                iter.remove();
-                break;
-            }
-            i++;
-        }
+        int index = downloadManagers.indexOf(download.getDownloadManager());
+        downloadManagers.remove(index);
+        // logWarning("Removing at index " + index + ": " + download,
+        // new RuntimeException("here"));
         if (index >= 0) {
             rowRemoved(index);
         } else {
