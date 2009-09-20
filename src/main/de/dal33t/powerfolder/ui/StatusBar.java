@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -69,6 +70,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
+import de.dal33t.powerfolder.util.ui.SyncIconHelper;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -101,7 +103,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     /** Connection state */
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
 
-    private DelayedUpdater updater;
+    private DelayedUpdater syncUpdater;
+    /** TODO: Find a better place for systray icon setter */
+    private SyncIconHelper syncHelper;
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -166,7 +170,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void initComponents() {
-        updater = new DelayedUpdater(getController(), 500L);
+        syncUpdater = new DelayedUpdater(getController(), 1000L);
 
         onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
@@ -224,6 +228,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             new MyFolderRepositoryListener());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
+
+        // FIND a better place
+        syncHelper = new SyncIconHelper(getController());
 
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
             String.valueOf(getController().getConnectionListener().getPort())));
@@ -496,7 +503,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void updateSyncButton() {
-        updater.schedule(new Runnable() {
+        syncUpdater.schedule(new Runnable() {
             public void run() {
                 boolean anySynchronizing = false;
                 for (Folder folder : getController().getFolderRepository()
@@ -508,6 +515,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
                 syncButton.setVisible(anySynchronizing);
+                syncHelper.setVisible(anySynchronizing);
             }
         });
     }
