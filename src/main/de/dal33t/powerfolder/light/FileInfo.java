@@ -69,21 +69,21 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private String fileName;
 
     /** The size of the file */
-    protected final Long size;
+    private final Long size;
 
     /** modified info */
-    protected final MemberInfo modifiedBy;
+    private final MemberInfo modifiedBy;
     /** modified in folder on date */
-    protected final Date lastModifiedDate;
+    private final Date lastModifiedDate;
 
     /** Version number of this file */
-    protected final int version;
+    private final int version;
 
     /** the deleted flag */
-    protected final boolean deleted;
+    private final boolean deleted;
 
     /** the folder */
-    protected final FolderInfo folderInfo;
+    private final FolderInfo folderInfo;
 
     /**
      * The cached hash info.
@@ -93,7 +93,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Contains some cached string.
      */
-    protected transient Reference<FileInfoStrings> cachedStrings;
+    private transient Reference<FileInfoStrings> cachedStrings;
 
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo

@@ -129,17 +129,19 @@ public final class FileInfoFactory {
             // TODO Check if this causes problems with DirectoryInfo
             return lookupInstance(fi, original.getRelativeName());
         } else {
-            if (original.folderInfo.equals(fi)) {
+            if (original.getFolderInfo().equals(fi)) {
                 return original;
             }
             if (original.isFile()) {
-                return new FileInfo(original.getRelativeName(), original.size,
-                    original.modifiedBy, original.lastModifiedDate,
-                    original.version, original.deleted, fi);
+                return new FileInfo(original.getRelativeName(), original
+                    .getSize(), original.getModifiedBy(), original
+                    .getModifiedDate(), original.getVersion(), original
+                    .isDeleted(), fi);
             } else if (original.isDiretory()) {
-                return new DirectoryInfo(original.getRelativeName(), original.size,
-                    original.modifiedBy, original.lastModifiedDate,
-                    original.version, original.deleted, fi);
+                return new DirectoryInfo(original.getRelativeName(), original
+                    .getSize(), original.getModifiedBy(), original
+                    .getModifiedDate(), original.getVersion(), original
+                    .isDeleted(), fi);
             } else {
                 throw new IllegalArgumentException(
                     "Illegal original FileInfo: " + original.getClass() + ": "
@@ -162,12 +164,12 @@ public final class FileInfoFactory {
 
         if (original.isFile()) {
             return new FileInfo(fn, localFile.length(), modby, new Date(
-                localFile.lastModified()), original.version + 1, false,
-                original.folderInfo);
+                localFile.lastModified()), original.getVersion() + 1, false,
+                original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(fn, localFile.length(), modby, new Date(
-                localFile.lastModified()), original.version + 1, false,
-                original.folderInfo);
+                localFile.lastModified()), original.getVersion() + 1, false,
+                original.getFolderInfo());
         } else {
             throw new IllegalArgumentException("Illegal original FileInfo: "
                 + original.getClass() + ": " + original.toDetailString());
@@ -182,10 +184,11 @@ public final class FileInfoFactory {
             .ifTrue(original.isTemplate(), "Cannot delete template FileInfo!");
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), 0L, delby, delDate,
-                original.version + 1, true, original.folderInfo);
+                original.getVersion() + 1, true, original.getFolderInfo());
         } else if (original.isDiretory()) {
-            return new DirectoryInfo(original.getRelativeName(), 0L, delby, delDate,
-                original.version + 1, true, original.folderInfo);
+            return new DirectoryInfo(original.getRelativeName(), 0L, delby,
+                delDate, original.getVersion() + 1, true, original
+                    .getFolderInfo());
         } else {
             throw new IllegalArgumentException("Illegal original FileInfo: "
                 + original.getClass() + ": " + original.toDetailString());
@@ -206,9 +209,9 @@ public final class FileInfoFactory {
         Reject.ifTrue(original instanceof DirectoryInfo,
             "Possible problem. Unable to perform on dirInfo:"
                 + original.toDetailString());
-        return new FileInfo(original.getRelativeName(), original.size,
-            original.modifiedBy, original.lastModifiedDate, newVersion,
-            original.deleted, original.folderInfo);
+        return new FileInfo(original.getRelativeName(), original.getSize(),
+            original.getModifiedBy(), original.getModifiedDate(), newVersion,
+            original.isDeleted(), original.getFolderInfo());
     }
 
     protected static String buildFileName(File baseDirectory, File file) {

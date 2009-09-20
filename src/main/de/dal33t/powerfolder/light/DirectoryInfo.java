@@ -50,8 +50,8 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public String toString() {
-        return "[" + folderInfo.name + "]:" + (deleted ? "(del) /" : "/")
-            + getRelativeName() + " (D)";
+        return "[" + getFolderInfo().name + "]:"
+            + (isDeleted() ? "(del) /" : "/") + getRelativeName() + " (D)";
     }
 
     /**
@@ -62,23 +62,21 @@ public class DirectoryInfo extends FileInfo {
      */
     private final void toDetailString(StringBuilder str) {
         str.append(toString());
-        str.append(", size: ");
-        str.append(size);
-        str.append(" bytes, version: ");
+        str.append(", version: ");
         str.append(getVersion());
         str.append(", modified: ");
-        str.append(lastModifiedDate);
+        str.append(getModifiedDate());
         str.append(" (");
-        if (lastModifiedDate != null) {
-            str.append(lastModifiedDate.getTime());
+        if (getModifiedDate() != null) {
+            str.append(getModifiedDate().getTime());
         } else {
             str.append("-n/a-");
         }
         str.append(") by '");
-        if (modifiedBy == null) {
+        if (getModifiedBy() == null) {
             str.append("-n/a-");
         } else {
-            str.append(modifiedBy.nick);
+            str.append(getModifiedBy().nick);
         }
         str.append("'");
     }
@@ -102,7 +100,7 @@ public class DirectoryInfo extends FileInfo {
     @Override
     public int hashCode() {
         int hash = getRelativeName().hashCode();
-        hash += folderInfo.hashCode();
+        hash += getFolderInfo().hashCode();
         return hash;
     }
 
@@ -113,8 +111,9 @@ public class DirectoryInfo extends FileInfo {
         }
         if (other instanceof DirectoryInfo) {
             DirectoryInfo otherInfo = (DirectoryInfo) other;
-            return Util.equals(this.getRelativeName(), otherInfo.getRelativeName())
-                && Util.equals(this.folderInfo, otherInfo.folderInfo);
+            return Util.equals(this.getRelativeName(), otherInfo
+                .getRelativeName())
+                && Util.equals(this.getFolderInfo(), otherInfo.getFolderInfo());
         }
 
         return false;
