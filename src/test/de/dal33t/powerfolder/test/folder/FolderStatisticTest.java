@@ -62,8 +62,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() {
-
-        assertSyncDate(false, false, false, false, false);
+        getFolderAtBart().getStatistic().calculate0();
+        getFolderAtLisa().getStatistic().calculate0();
+        getFolderAtHomer().getStatistic().calculate0();
+        getFolderAtMarge().getStatistic().calculate0();
+        getFolderAtMaggie().getStatistic().calculate0();
+        assertHasLastSyncDate(false, false, false, false, false);
 
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
@@ -73,7 +77,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForFileListOnTestFolder();
         forceStatsCals();
         assertAllInSync(1, testFile.length());
-        assertSyncDate(true, true, true, true, true);
+        getFolderAtBart().getStatistic().calculate0();
+        getFolderAtLisa().getStatistic().calculate0();
+        getFolderAtHomer().getStatistic().calculate0();
+        getFolderAtMarge().getStatistic().calculate0();
+        getFolderAtMaggie().getStatistic().calculate0();
+        assertHasLastSyncDate(true, true, true, true, true);
 
         setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.changeFile(testFile, 500);
@@ -103,7 +112,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         connectAll();
 
         // Make sure that last sync is persisted.
-        assertSyncDate(true, true, true, true, true);
+        assertHasLastSyncDate(true, true, true, true, true);
     }
 
     /**
@@ -514,8 +523,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             maggie);
     }
 
-    private void assertSyncDate(boolean homer, boolean bart, boolean marge,
-        boolean lisa, boolean maggie)
+    private void assertHasLastSyncDate(boolean homer, boolean bart,
+        boolean marge, boolean lisa, boolean maggie)
     {
         assertEquals(getFolderAtHomer().getLastSyncDate() != null, homer);
         assertEquals(getFolderAtBart().getLastSyncDate() != null, bart);
