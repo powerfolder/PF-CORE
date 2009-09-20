@@ -138,6 +138,13 @@ public interface AccountService {
     void checkAccounts(String... usernames);
 
     /**
+     * Performs all checks on the given online storage user accounts.
+     * 
+     * @param accounts
+     */
+    void checkAccounts(Collection<Account> accounts);
+
+    /**
      * @return the folder containing the license keys.
      */
     @Deprecated
