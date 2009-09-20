@@ -274,7 +274,8 @@ public class FolderStatistic extends PFComponent {
                         if (isFiner()) {
                             logFiner("Removed partial stat for "
                                 + member.getInfo().nick + ", "
-                                + fileInfo.getRelativeName() + ", " + removedBytes);
+                                + fileInfo.getRelativeName() + ", "
+                                + removedBytes);
                         }
                     }
                 }
@@ -559,8 +560,6 @@ public class FolderStatistic extends PFComponent {
         public void scanResultCommited(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 // Recalculate statistics
-                logWarning("Found change on disk: "
-                    + folderEvent.getScanResult());
                 scheduleCalculate();
             }
         }
