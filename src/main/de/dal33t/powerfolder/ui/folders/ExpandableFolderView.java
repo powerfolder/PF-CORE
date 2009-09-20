@@ -375,7 +375,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void initComponent() {
 
-        syncUpdater = new DelayedUpdater(getController());
+        syncUpdater = new DelayedUpdater(getController(), 1000L);
         folderDetailsUpdater = new DelayedUpdater(getController());
         folderUpdater = new DelayedUpdater(getController());
 
