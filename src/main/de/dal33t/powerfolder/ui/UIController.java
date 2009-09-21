@@ -299,7 +299,6 @@ public class UIController extends PFComponent {
             && (!ProUtil.isRunningProVersion() || Feature.BETA.isEnabled()))
         {
             UIUtil.invokeLaterInEDT(new Runnable() {
-
                 // Don't block start!
                 public void run() {
                     hideSplash();
