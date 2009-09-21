@@ -148,8 +148,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             || getController().isLanOnly())
         {
             // Setup default folder and go to what to do panel
-            return defaultFolderHelper.next(new WhatToDoPanel(getController()),
-                getWizardContext());
+            return defaultFolderHelper.next(nextPanel, getWizardContext());
         }
 
         return nextPanel;
