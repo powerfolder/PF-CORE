@@ -81,7 +81,7 @@ public class OnlineStorageSection extends PFUIComponent {
             + Format.formatBytesShort(totalStorage));
 
         String loginURL = getController().getOSClient()
-            .getLoginURLWithUsername();
+            .getLoginURLWithCredentials();
         usageLabel.setTextAndURL(Translation.getTranslation(
             "home_tab.online_storage.usage",
             Format.formatBytesShort(spaceUsed), Format
@@ -134,7 +134,7 @@ public class OnlineStorageSection extends PFUIComponent {
             public void mouseClicked(MouseEvent e) {
                 try {
                     BrowserLauncher.openURL(getController().getOSClient()
-                        .getLoginURLWithUsername());
+                        .getLoginURLWithCredentials());
                 } catch (IOException e1) {
                     logWarning(e1);
                 }

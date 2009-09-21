@@ -331,11 +331,32 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * Convenience method for getting login URL with preset username and password if possible
+     * 
+     * @return the login URL
+     */
+    public String getLoginURLWithCredentials() {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String url = getWebURL() + "/login";
+        if (StringUtils.isNotBlank(getUsername())) {
+            url += "?Username=";
+            url += getUsername();
+            if (StringUtils.isNotBlank(getPassword())) {
+                url += "?Password=";
+                url += getPassword();
+            }
+        }
+        return url;
+    }
+    
+    /**
      * Convenience method for getting login URL with preset username if possible
      * 
      * @return the registration URL for this server.
      */
-    public String getLoginURLWithUsername() {
+    public String getRecoverPasswordURL() {
         if (!hasWebURL()) {
             return null;
         }

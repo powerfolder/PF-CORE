@@ -126,7 +126,7 @@ public class OnlineStorageComponent extends PFUIComponent {
                 if (getController().getOSClient().hasWebURL()) {
                     try {
                         BrowserLauncher.openURL(getController().getOSClient()
-                            .getLoginURLWithUsername());
+                            .getLoginURLWithCredentials());
                     } catch (IOException e1) {
                         logSevere(e1);
                     }

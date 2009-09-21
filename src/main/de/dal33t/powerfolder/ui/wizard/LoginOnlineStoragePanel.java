@@ -155,7 +155,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(workingBar, cc.xyw(1, row, 3));
         LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
             Translation.getTranslation("wizard.webservice.recover_password"),
-            client.getLoginURLWithUsername());
+            client.getRecoverPasswordURL());
         UIUtil
             .convertToBigLabel((JLabel) recoverPasswordLabel.getUIComponent());
         builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
