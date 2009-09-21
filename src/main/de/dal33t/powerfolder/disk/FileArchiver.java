@@ -73,11 +73,11 @@ public interface FileArchiver {
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param target
+     * @return true if the file was actually restored. false if not in archive.
      * @throws IOException
      *             problem restoring the file.
      */
-    boolean restore(FileInfo versionInfo, File target)
-            throws IOException;
+    boolean restore(FileInfo versionInfo, File target) throws IOException;
 
     void setVersionsPerFile(int versionsPerFile);
 
