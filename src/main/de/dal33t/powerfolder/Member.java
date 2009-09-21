@@ -316,16 +316,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this client is a pre 4.0 client.
      */
     public boolean isPre4Client() {
-        return isPre4Client(peer);
-    }
-
-    /**
-     * TODO Remove after major distribution of 4.0
-     * 
-     * @param conHan
-     * @return true if this client is a pre 4.0 client.
-     */
-    public boolean isPre4Client(ConnectionHandler conHan) {
+        ConnectionHandler conHan = peer;
         if (conHan == null) {
             return false;
         }
