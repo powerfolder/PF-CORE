@@ -158,7 +158,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     private void waitForEmptyFolder(final Folder folder) {
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
-                return "Files for " + folder + ": "
+                return "Folder not empty. Files in " + folder + ": "
                     + Arrays.asList(folder.getLocalBase().list());
             }
 
