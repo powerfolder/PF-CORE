@@ -374,10 +374,8 @@ public class DownloadManagersTableModel extends PFComponent implements
      */
     private void removeDownload(Download download) {
         int index = downloadManagers.indexOf(download.getDownloadManager());
-        downloadManagers.remove(index);
-        // logWarning("Removing at index " + index + ": " + download,
-        // new RuntimeException("here"));
         if (index >= 0) {
+            downloadManagers.remove(index);
             rowRemoved(index);
         } else {
             logSevere("Unable to remove download from tablemodel, not found: "
