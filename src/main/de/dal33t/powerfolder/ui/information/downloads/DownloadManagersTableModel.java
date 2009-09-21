@@ -95,7 +95,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         TransferManager tm = model.getTransferManager();
         downloadManagers.addAll(tm.getCompletedDownloadsCollection());
         downloadManagers.addAll(tm.getActiveDownloads());
-        addAll(tm.getPendingDownloads());
+        // #1732 FIXME: Does not work addAll(tm.getPendingDownloads());
     }
 
     /**
@@ -465,7 +465,8 @@ public class DownloadManagersTableModel extends PFComponent implements
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            addOrUpdateDownload(event.getDownload());
+            // #1732 FIXME
+            // addOrUpdateDownload(event.getDownload());
         }
 
         /**
