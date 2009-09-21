@@ -53,6 +53,13 @@ public class UserDirectories {
     private static final String USER_DIR_PICTURES = "Pictures";
     private static final String USER_DIR_RECENT_DOCUMENTS = "Recent Documents";
     private static final String USER_DIR_VIDEOS = "Videos";
+    // Mac additionals
+    private static final String USER_DIR_MOVIES = "Movies";
+    private static final String USER_DIR_DOWNLOADS = "Downloads";
+    private static final String USER_DIR_PUBLIC = "Public";
+    private static final String USER_DIR_LIBRARY = "Library";
+    private static final String USER_DIR_SITES = "Sites";
+
 
     // Vista has issues with these, so instantiate separately
     private static String userDirMyDocuments;
@@ -145,7 +152,17 @@ public class UserDirectories {
             .getTranslation("user.dir.links"), false);
         addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
             .getTranslation("user.dir.music"), false);
-
+        addTargetDirectory(userHome, USER_DIR_MOVIES, Translation
+            .getTranslation("user.dir.movies"), false);
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
+            .getTranslation("user.dir.videos"), false);
+        addTargetDirectory(userHome, USER_DIR_DOWNLOADS, Translation
+            .getTranslation("user.dir.downloads"), false);
+        addTargetDirectory(userHome, USER_DIR_PUBLIC, Translation
+            .getTranslation("user.dir.public"), false);
+        addTargetDirectory(userHome, USER_DIR_SITES, Translation
+            .getTranslation("user.dir.sites"), false);
+        
         // Hidden by Vista.
         if (userDirMyDocuments != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyDocuments), Translation
@@ -170,6 +187,11 @@ public class UserDirectories {
             .getTranslation("user.dir.recent_documents"), false);
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
+        
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
+            .getTranslation("user.dir.videos"), false);
+        
+        
         if (OSUtil.isWindowsSystem()) {
             String appDataname = System.getenv("APPDATA");
             if (appDataname == null && WinUtils.getInstance() != null) {
