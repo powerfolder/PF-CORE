@@ -187,8 +187,9 @@ public class UploadsTablePanel extends PFUIComponent {
         }
         int[] rows = table.getSelectedRows();
         if (rows.length == 1) {
-            return ((Upload) tableModel.getValueAt(rows[0],
-                    UploadsTableModel.COLPROGRESS)).getFile();
+            Upload ul = (Upload) tableModel.getValueAt(rows[0],
+                UploadsTableModel.COLPROGRESS);
+            return ul != null ? ul.getFile() : null;
         }
         return null;
     }
