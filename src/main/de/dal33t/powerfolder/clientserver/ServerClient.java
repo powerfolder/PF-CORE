@@ -344,7 +344,7 @@ public class ServerClient extends PFComponent {
             url += "?Username=";
             url += getUsername();
             if (StringUtils.isNotBlank(getPassword())) {
-                url += "?Password=";
+                url += "&Password=";
                 url += getPassword();
             }
         }
