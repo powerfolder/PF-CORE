@@ -60,7 +60,6 @@ public class UserDirectories {
     private static final String USER_DIR_LIBRARY = "Library";
     private static final String USER_DIR_SITES = "Sites";
 
-
     // Vista has issues with these, so instantiate separately
     private static String userDirMyDocuments;
     private static String userDirMyMusic;
@@ -162,7 +161,7 @@ public class UserDirectories {
             .getTranslation("user.dir.public"), false);
         addTargetDirectory(userHome, USER_DIR_SITES, Translation
             .getTranslation("user.dir.sites"), false);
-        
+
         // Hidden by Vista.
         if (userDirMyDocuments != null && !OSUtil.isWindowsVistaSystem()) {
             addTargetDirectory(new File(userDirMyDocuments), Translation
@@ -187,11 +186,10 @@ public class UserDirectories {
             .getTranslation("user.dir.recent_documents"), false);
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
-        
+
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
-        
-        
+
         if (OSUtil.isWindowsSystem()) {
             String appDataname = System.getenv("APPDATA");
             if (appDataname == null && WinUtils.getInstance() != null) {
@@ -222,8 +220,14 @@ public class UserDirectories {
                 .getTranslation("apps.dir.sunbird"), false);
             addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
                 .getTranslation("apps.dir.thunderbird"), false);
-        } else {
-            // @todo Anyone know Mac???
+        } else if (OSUtil.isMacOS()) {
+            File appData = new File(userHome, "Library");
+            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
+                .getTranslation("apps.dir.firefox"), false);
+            addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
+                .getTranslation("apps.dir.sunbird"), false);
+            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
+                .getTranslation("apps.dir.thunderbird"), false);
         }
     }
 
