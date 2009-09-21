@@ -197,7 +197,8 @@ public class Slider {
                 // Do not animate, just fade in / out full-size window.
                 animatingHeight = contentsSize.height;
             } else {
-                animatingHeight = (int) (percentage * contentsSize.height / 100.0);
+              //  animatingHeight = (int) (percentage * contentsSize.height / 100.0);
+                animatingHeight = contentsSize.height;
             }
             animatingHeight = Math.max(animatingHeight, 1);
             animatingSheet.setAnimatingHeight(animatingHeight);
