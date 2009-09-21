@@ -24,6 +24,8 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -170,36 +172,77 @@ public class RestoreArchiveDialog extends BaseDialog {
     private void restore() {
 
         FolderRepository repo = getController().getFolderRepository();
-        Folder folder = repo.getFolder(versionInfo.getFolderInfo());
-        FileArchiver fileArchiver = folder.getFileArchiver();
+        final Folder folder = repo.getFolder(versionInfo.getFolderInfo());
+        final FileArchiver fileArchiver = folder.getFileArchiver();
+        final File restoreTo;
 
-        try {
-            File restoreTo;
-            if (restoreRB.isSelected()) {
-                restoreTo = versionInfo.getDiskFile(getController()
-                    .getFolderRepository());
-            } else {
-                restoreTo = new File(fileLocationField.getText(),
-                        fileInfo.getFilenameOnly());
+        if (restoreRB.isSelected()) {
+            restoreTo = versionInfo.getDiskFile(getController()
+                .getFolderRepository());
+        } else {
+            restoreTo = new File(fileLocationField.getText(),
+                    fileInfo.getFilenameOnly());
+        }
+        boolean restore = true;
+        if (restoreTo.exists()) {
+            // Check user is okay with overwriting the file.
+            int result = DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation("dialog.restore_archive.overwrite_title"),
+                    Translation.getTranslation("dialog.restore_archive.overwrite_message"),
+                    new String[] {
+                            Translation.getTranslation("dialog.restore_archive.overwrite"),
+                            Translation.getTranslation("general.cancel")
+                    }, 0, GenericDialogType.QUESTION);
+            if (result != 0) {
+                restore = false;
             }
-            boolean restore = true;
-            if (restoreTo.exists()) {
-                // Check user is okay with overwriting the file.
-                int result = DialogFactory.genericDialog(getController(),
-                        Translation.getTranslation("dialog.restore_archive.overwrite_title"),
-                        Translation.getTranslation("dialog.restore_archive.overwrite_message"),
-                        new String[] {
-                                Translation.getTranslation("dialog.restore_archive.overwrite"),
-                                Translation.getTranslation("general.cancel")
-                        }, 0, GenericDialogType.QUESTION);
-                if (result != 0) {
-                    restore = false;
+        }
+        if (restore) {
+            getController().getThreadPool().execute(new Runnable() {
+                public void run() {
+                    // Run this outside of the EDT, it may take some time.
+                    restore0(folder, fileArchiver, restoreTo);
+                }
+            });
+        }
+        close();
+    }
+
+    /**
+     * Restore from the archiver, or failing that from online storage.
+     *
+     * @param folder
+     * @param fileArchiver
+     * @param restoreTo
+     */
+    private void restore0(Folder folder, FileArchiver fileArchiver,
+                          File restoreTo) {
+        try {
+            boolean restored = false;
+            if (fileArchiver.restore(versionInfo, restoreTo)) {
+                logInfo("Restored from local archive");
+                folder.scanRestoredFile(versionInfo);
+                restored = true;
+            } else {
+                // Not local. OnlineStorage perhaps?
+                boolean online = folder.hasMember(getController()
+                        .getOSClient().getServer());
+                if (online) {
+                    ServerClient client = getController().getOSClient();
+                    if (client != null && client.isConnected()
+                            && client.isLoggedIn()) {
+                        FolderService service = client.getFolderService();
+                        if (service != null) {
+                            service.restore(versionInfo, true);
+                            logInfo("Restored from OS archive");
+                            restored = true;
+                        }
+                    }
                 }
             }
-            if (restore) {
-                fileArchiver.restore(getController(), versionInfo, restoreTo);
-                folder.scanRestoredFile(versionInfo);
-                close();
+
+            if (!restored) {
+                throw new IOException("Restore failed");
             }
         } catch (IOException e) {
             logSevere(e);

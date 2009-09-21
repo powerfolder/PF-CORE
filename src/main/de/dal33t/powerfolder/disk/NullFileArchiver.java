@@ -26,7 +26,6 @@ import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * An implementation of {@link FileArchiver} that does nothing.
@@ -48,7 +47,7 @@ public class NullFileArchiver implements FileArchiver {
         return Collections.emptyList();
     }
 
-    public void restore(Controller controller, FileInfo versionInfo, File target)
+    public boolean restore(FileInfo versionInfo, File target)
             throws IOException {
         // Not available.
         throw new IOException("No archive. Unable to restore file "

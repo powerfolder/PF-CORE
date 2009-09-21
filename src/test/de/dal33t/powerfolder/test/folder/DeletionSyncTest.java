@@ -404,16 +404,9 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                     .getArchivedFilesInfos(fileAtLisa);
                 FileInfo inArchive = versions.get(0);
                 assertEquals(fileAtLisa.getRelativeName(), inArchive.getRelativeName());
-                archiver.restore(getContollerLisa(), versions.get(0), fileAtLisa
+                archiver.restore(versions.get(0), fileAtLisa
                     .getDiskFile(getContollerLisa().getFolderRepository()));
             }
-        }
-
-        // Restore is asynchronous, so give is a couple of seconds to complete.
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
         scanFolder(getFolderAtLisa());

@@ -35,9 +35,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.FolderService;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -300,73 +297,22 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     /**
      * Restore a file version.
      *
-     * @param controller
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param target
      */
-    public void restore(final Controller controller, final FileInfo versionInfo,
-                        final File target) {
+    public boolean restore(FileInfo versionInfo, File target)
+            throws IOException {
 
-        // Run this outside of the EDT.
-        controller.getThreadPool().execute(new Runnable() {
-            public void run() {
-                restore0(controller, versionInfo, target);
-            }
-        });
-    }
-
-    /**
-     * Actual restore of a file. Should be called outside EDT as it may take
-     * some time to complete.
-     *
-     * @param controller
-     * @param versionInfo
-     * @param target
-     */
-    private void restore0(Controller controller, FileInfo versionInfo,
-                        File target) {
-
-        log.info("Restoring " + versionInfo.getRelativeName() + " to "
-            + target.getAbsolutePath());
-
-        try {
-            boolean restored = false;
-
-            // Try locally
-            File archiveFile = getArchiveTarget(versionInfo);
-            if (archiveFile.exists()) {
-                FileUtils.copyFile(archiveFile, target);
-                target.setLastModified(versionInfo.getModifiedDate().getTime());
-                restored = true;
-                log.info("Restored from local archive");
-            } else {
-
-                // Not local. OnlineStorage perhaps?
-                Folder folder = controller.getFolderRepository().getFolder(
-                        versionInfo.getFolderInfo());
-                if (folder != null) {
-                    boolean online = folder.hasMember(controller.getOSClient()
-                            .getServer());
-                    if (online) {
-                        ServerClient client = controller.getOSClient();
-                        if (client != null && client.isConnected()
-                                && client.isLoggedIn()) {
-                            FolderService service = client.getFolderService();
-                            if (service != null) {
-                                service.restore(versionInfo, true);
-                                restored = true;
-                                log.info("Restored from OS archive");
-                            }
-                        }
-                    }
-                }
-            }
-            if (!restored) {
-                throw new IOException("Unable to restore file " + versionInfo);
-            }
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "IOException", e);
+        File archiveFile = getArchiveTarget(versionInfo);
+        if (archiveFile.exists()) {
+            log.info("Restoring " + versionInfo.getRelativeName() + " to "
+                + target.getAbsolutePath());
+            FileUtils.copyFile(archiveFile, target);
+            target.setLastModified(versionInfo.getModifiedDate().getTime());
+            return true;
+        } else {
+            return false;
         }
     }
 
