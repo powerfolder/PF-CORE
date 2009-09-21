@@ -1,37 +1,38 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: InformationFrame.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: InformationFrame.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information;
 
 import java.awt.Frame;
-import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.util.prefs.Preferences;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.MagneticFrame;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
@@ -58,18 +59,18 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public InformationFrame(Controller controller) {
         super(controller);
         controller.getFolderRepository().addFolderRepositoryListener(
-                new MyFolderRepositoryListener());
+            new MyFolderRepositoryListener());
     }
 
     /**
      * Returns the ui component.
-     *
+     * 
      * @return
      */
     public JFrame getUIComponent() {
@@ -84,15 +85,18 @@ public class InformationFrame extends MagneticFrame {
      * Builds the UI component.
      */
     private void buildUIComponent() {
+        JFrame mainFrame = getUIController().getMainFrame().getUIComponent();
         Preferences prefs = getController().getPreferences();
-        uiComponent.setLocation(prefs.getInt("infoframe4.x", 50), prefs.getInt(
-            "infoframe4.y", 50));
+        
+        int y = prefs.getInt("infoframe4.y", mainFrame.getY());
+        int x = prefs.getInt("infoframe4.x", 50);
+        uiComponent.setLocation(x, y);
 
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("infoframe4.width", 700);
-        int height = prefs.getInt("infoframe4.height", 500);
+        int width = prefs.getInt("infoframe4.width", mainFrame.getLocation().x - x - 10);
+        int height = prefs.getInt("infoframe4.height", mainFrame.getHeight());
         if (width < 50) {
             width = 50;
         }
@@ -125,8 +129,9 @@ public class InformationFrame extends MagneticFrame {
             public void windowGainedFocus(WindowEvent e) {
                 getUIController().setActiveFrame(UIController.INFO_FRAME_ID);
             }
+
             public void windowLostFocus(WindowEvent e) {
-                //Ignore.
+                // Ignore.
             }
         });
 
@@ -141,8 +146,8 @@ public class InformationFrame extends MagneticFrame {
         if (uiComponent == null) {
             return;
         }
-        if ((uiComponent.getExtendedState() &
-                Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
+        if ((uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH)
+        {
             prefs.putBoolean("infoframe4.maximized", true);
         } else {
             prefs.putInt("infoframe4.x", uiComponent.getX());
@@ -159,11 +164,13 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Displays file info for a folder.
-     *
+     * 
      * @param folderInfo
      * @param directoryFilterMode
      */
-    public void displayFolderFiles(FolderInfo folderInfo, int directoryFilterMode) {
+    public void displayFolderFiles(FolderInfo folderInfo,
+        int directoryFilterMode)
+    {
         buildFolderInformationCard();
         folderInformationCard.setFolderInfo(folderInfo, directoryFilterMode);
         folderInformationCard.showFiles();
@@ -175,7 +182,7 @@ public class InformationFrame extends MagneticFrame {
     /**
      * Displays file info for a folder with filter set to local / incoming and
      * sort set to date descending.
-     *
+     * 
      * @param folderInfo
      */
     public void displayFolderFilesLatest(FolderInfo folderInfo) {
@@ -189,7 +196,7 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Displays settings info for a folder
-     *
+     * 
      * @param folderInfo
      */
     public void displayFolderSettings(FolderInfo folderInfo) {
@@ -203,7 +210,7 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Displays folder member info
-     *
+     * 
      * @param folderInfo
      */
     public void displayFolderMembers(FolderInfo folderInfo) {
@@ -217,7 +224,7 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Displays folder problems
-     *
+     * 
      * @param folderInfo
      */
     public void displayFolderProblems(FolderInfo folderInfo) {
@@ -240,13 +247,13 @@ public class InformationFrame extends MagneticFrame {
         displayCard(uploadsInformationCard);
         showingFolder = false;
     }
-    
+
     public void displayDebug() {
-    	buildDebugInformationCard();
+        buildDebugInformationCard();
         displayCard(debugInformationCard);
         showingFolder = false;
     }
-    
+
     /**
      * Displays a card with tile and icon.
      * 
@@ -273,7 +280,8 @@ public class InformationFrame extends MagneticFrame {
      */
     private void buildDownloadsInformationCard() {
         if (downloadsInformationCard == null) {
-            downloadsInformationCard = new DownloadsInformationCard(getController());
+            downloadsInformationCard = new DownloadsInformationCard(
+                getController());
         }
     }
 
@@ -285,29 +293,32 @@ public class InformationFrame extends MagneticFrame {
             uploadsInformationCard = new UploadsInformationCard(getController());
         }
     }
-    
+
     /**
      * Builds the local DebugInformationCard if required.
      */
     private void buildDebugInformationCard() {
         if (debugInformationCard == null) {
-        	debugInformationCard = new DebugInformationCard(getController());
+            debugInformationCard = new DebugInformationCard(getController());
         }
     }
 
     /**
      * Fires when a folder is removed. Hide this if showing the folder.
-     *
+     * 
      * @param folderInfo
      */
     private void removedFolder(FolderInfo folderInfo) {
         if (showingFolder && currentFolderInfo != null
-                && currentFolderInfo.equals(folderInfo)) {
+            && currentFolderInfo.equals(folderInfo))
+        {
             getUIComponent().setVisible(false);
         }
     }
 
-    private class MyFolderRepositoryListener implements FolderRepositoryListener {
+    private class MyFolderRepositoryListener implements
+        FolderRepositoryListener
+    {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             removedFolder(e.getFolderInfo());
