@@ -247,6 +247,9 @@ public class TransferManagerModel extends PFUIComponent {
         int completedDownloadsCount = 0;
         for (int i = 0; i < downloadCount; i++) {
             DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            if (dlm == null) {
+                continue;
+            }
             if (dlm.isStarted() && !dlm.isCompleted()) {
                 activeDownloadCount++;
             } else if (dlm.isCompleted()) {
