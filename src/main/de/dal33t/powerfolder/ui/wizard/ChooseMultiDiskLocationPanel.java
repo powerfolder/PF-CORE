@@ -66,11 +66,13 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -155,6 +157,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     if (box.isSelected()) {
                         FolderCreateItem item = new FolderCreateItem(
                             userDirectories.get(boxName));
+                        item.setFolderInfo(createFolderInfo(boxName));
                         folderCreateItems.add(item);
                     }
                 }
@@ -614,4 +617,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
+    private static FolderInfo createFolderInfo(String name) {
+        // Create new folder info
+        String folderId = '[' + IdGenerator.makeId() + ']';
+        return new FolderInfo(name, folderId);
+    }
 }
