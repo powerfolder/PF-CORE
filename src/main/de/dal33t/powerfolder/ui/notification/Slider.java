@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.notification;
 
 import javax.swing.*;
@@ -34,24 +34,18 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * currently set to 10 seconds.<br>
  * This class is based on code and ideas from <i>Swing Hacks</i> book by Joshua
  * Marinacci and Chris Adamson.<br>
- *
  * If the Java version is high enough, it fades the window instead of sliding
  * it.
- *
+ * 
  * @author <a href="mailto:magapov@gmail.com">Maxim Agapov</a>
  * @version $Revision: 1.2 $
  */
 public class Slider {
 
     /**
-     * Default animation time, 700ms
+     * Default delay between animation frames, 5ms
      */
-    public static final int ANIMATION_TIME = 700;
-
-    /**
-     * Default delay between animation frames, 10ms
-     */
-    public static final int ANIMATION_DELAY = 10;
+    public static final int ANIMATION_DELAY = 5;
 
     private int displaySeconds;
     private JWindow window;
@@ -67,13 +61,14 @@ public class Slider {
 
     /**
      * Constructor
-     *
+     * 
      * @param contents
      * @param displaySeconds
      * @param translucencyPercentage
      */
     public Slider(JComponent contents, int displaySeconds,
-                  int translucencyPercentage) {
+        int translucencyPercentage)
+    {
         this.contents = contents;
         this.displaySeconds = displaySeconds;
         this.translucencyPercentage = translucencyPercentage;
@@ -119,6 +114,7 @@ public class Slider {
         // Timer to animate the sheet down.
         animateDownTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 99;
+
             public void actionPerformed(ActionEvent e) {
                 animate(percentage);
                 if (percentage-- <= 0) {
@@ -138,6 +134,7 @@ public class Slider {
         // Timer to animate the sheet up.
         animateUpTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
             private int percentage = 1;
+
             public void actionPerformed(ActionEvent e) {
                 animate(percentage);
                 if (percentage++ >= 100) {
@@ -149,7 +146,6 @@ public class Slider {
 
         animateUpTimer.start();
     }
-
 
     /**
      * Close and dispose the animated window.
@@ -176,7 +172,7 @@ public class Slider {
 
     /**
      * Show the correct percentage of the size.
-     *
+     * 
      * @param percentage
      */
     public void animate(long percentage) {
@@ -201,8 +197,7 @@ public class Slider {
                 // Do not animate, just fade in / out full-size window.
                 animatingHeight = contentsSize.height;
             } else {
-                animatingHeight =
-                        (int) (percentage * contentsSize.height / 100.0);
+                animatingHeight = (int) (percentage * contentsSize.height / 100.0);
             }
             animatingHeight = Math.max(animatingHeight, 1);
             animatingSheet.setAnimatingHeight(animatingHeight);

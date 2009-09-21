@@ -103,7 +103,7 @@ public enum PreferencesEntry {
     TRANSLUCENT_MAIN_FRAME("translucent.main.frame", false),
 
     /** How many seconds the notification should display. */
-    NOTIFICATION_DISPLAY("notification.display", 10),
+    NOTIFICATION_DISPLAY("notification.display", 4),
 
     /** How translucent the notification should display, as percentage. */
     NOTIFICATION_TRANSLUCENT("notification.translucent", 0),
