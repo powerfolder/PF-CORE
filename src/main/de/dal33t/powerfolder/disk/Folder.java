@@ -1158,12 +1158,13 @@ public class Folder extends PFComponent {
 
                     if (fInfo.isDeleted()) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
-                            currentInfo, fInfo.getRelativeName(), modifiedBy, modDate,
-                            fInfo.getVersion(), file.isDirectory());
+                            currentInfo, fInfo.getRelativeName(), modifiedBy,
+                            modDate, fInfo.getVersion(), file.isDirectory());
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
-                            currentInfo, fInfo.getRelativeName(), size, modifiedBy,
-                            modDate, fInfo.getVersion(), file.isDirectory());
+                            currentInfo, fInfo.getRelativeName(), size,
+                            modifiedBy, modDate, fInfo.getVersion(), file
+                                .isDirectory());
                     }
 
                     dao.store(null, addFile(fInfo));
@@ -2284,9 +2285,15 @@ public class Folder extends PFComponent {
                         + localFile.toDetailString());
                 }
                 if (!localCopy.delete()) {
-                    logWarning("Unable to delete directory locally: "
-                        + localCopy + ". Info: " + localFile.toDetailString()
-                        + ". contents: " + Arrays.asList(localCopy.list()));
+                    if (isWarning()) {
+                        String[] content = localCopy.list();
+                        String contentStr = content != null ? Arrays.asList(
+                            content).toString() : "(unable to access)";
+                        logWarning("Unable to delete directory locally: "
+                            + localCopy + ". Info: "
+                            + localFile.toDetailString() + ". contents: "
+                            + contentStr);
+                    }
                 }
             } else if (localFile.isFile()) {
                 if (!deleteFile(localFile, localCopy)) {
@@ -2676,7 +2683,8 @@ public class Folder extends PFComponent {
                 // fileChanged(localFileInfo);
                 // }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
-                if (localFileInfo.getRelativeName().compareTo(remoteFileInfo.getRelativeName()) <= 0)
+                if (localFileInfo.getRelativeName().compareTo(
+                    remoteFileInfo.getRelativeName()) <= 0)
                 {
                     // Skip this fileinfo. Compare by name is performed
                     // to ensure that the FileInfo with the greatest
