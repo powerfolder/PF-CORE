@@ -69,6 +69,18 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
     }
 
     private void initComponent() {
+        addressField = new JTextField(getServerString());
+        addressField.setEditable(false);
+        searchButton = new JButtonMini(Icons.getIconById(Icons.EDIT),
+            Translation.getTranslation("general.search"));
+        searchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ProUtil.openConfigLoaderDialog(getController());
+            }
+        });
+    }
+
+    private String getServerString() {
         String addrStr;
         if (getController().getOSClient().getServer() != null) {
             if (getController().getOSClient().getServer().isMySelf()) {
@@ -87,14 +99,6 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
         } else {
             addrStr = "n/a";
         }
-        addressField = new JTextField(addrStr);
-        addressField.setEditable(false);
-        searchButton = new JButtonMini(Icons.getIconById(Icons.EDIT),
-            Translation.getTranslation("general.search"));
-        searchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ProUtil.openConfigLoaderDialog(getController());
-            }
-        });
+        return addrStr;
     }
 }

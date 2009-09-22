@@ -19,11 +19,14 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,11 +49,17 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.distribution.AbstractDistribution;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.ui.preferences.ServerSelectorPanel;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -64,6 +73,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JLabel connectingLabel;
+    private JLabel serverLabel;
+    private ActionLabel serverInfoLabel;
     private JLabel usernameLabel;
     private JLabel passwordLabel;
     private JProgressBar workingBar;
@@ -129,7 +140,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("40dlu, 3dlu, 80dlu, 40dlu, pref",
-            "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 20dlu, pref, 3dlu, pref");
+            "15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, pref, 20dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
@@ -164,6 +175,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
 
+        builder.add(serverLabel, cc.xy(1, row));
+        builder.add(serverInfoLabel.getUIComponent(), cc.xyw(3, row, 2));
+        row += 2;
+
         if (showUseOS) {
             builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
@@ -183,7 +198,16 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      * Initalizes all nessesary components
      */
     protected void initComponents() {
-        // FIXME Use separate account stores for diffrent servers?
+        serverLabel = new JLabel(Translation.getTranslation("general.server"));
+        serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e) {
+                ProUtil.openConfigLoaderDialog(getController());
+            }
+        });
+        serverInfoLabel.setText(getServerString());
+
+        // FIXME Use separate account stores for different servers?
         usernameLabel = new JLabel(Translation
             .getTranslation("wizard.webservice.username"));
         usernameField = new JTextField();
@@ -227,6 +251,33 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         client.addListener(new MyServerClientListner());
     }
 
+    /**
+     * COPIED FROM {@link ServerSelectorPanel}
+     * 
+     * @return
+     */
+    private String getServerString() {
+        String addrStr;
+        if (getController().getOSClient().getServer() != null) {
+            if (getController().getOSClient().getServer().isMySelf()) {
+                addrStr = "myself";
+            } else {
+                InetSocketAddress addr = getController().getOSClient()
+                    .getServer().getReconnectAddress();
+                addrStr = addr != null ? NetworkUtil
+                    .getHostAddressNoResolve(addr.getAddress()) : "n/a";
+                if (addr != null
+                    && addr.getPort() != ConnectionListener.DEFAULT_PORT)
+                {
+                    addrStr += ":" + addr.getPort();
+                }
+            }
+        } else {
+            addrStr = "n/a";
+        }
+        return addrStr;
+    }
+
     protected String getTitle() {
         return Translation.getTranslation("wizard.webservice.login");
     }
@@ -241,6 +292,15 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(enabled);
         connectingLabel.setVisible(!enabled);
         workingBar.setVisible(!enabled);
+
+        if (!AbstractDistribution.isPowerFolderServer(getController())) {
+            serverLabel.setVisible(true);
+            serverInfoLabel.getUIComponent().setVisible(true);
+            serverInfoLabel.setText(getServerString());
+        } else {
+            serverLabel.setVisible(false);
+            serverInfoLabel.getUIComponent().setVisible(false);
+        }
 
         if (enabled) {
             usernameLabel.requestFocus();
