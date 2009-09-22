@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: ProblemsTab.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: ProblemsTab.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
 import de.dal33t.powerfolder.PFUIComponent;
@@ -63,14 +63,14 @@ public class ProblemsTab extends PFUIComponent {
         problemsTableModel = new ProblemsTableModel(controller);
         problemsTable = new ProblemsTable(problemsTableModel);
         problemsTable.getSelectionModel().setSelectionMode(
-                ListSelectionModel.SINGLE_SELECTION);
+            ListSelectionModel.SINGLE_SELECTION);
         problemsTable.getSelectionModel().addListSelectionListener(
-                new MySelectionListener());
+            new MySelectionListener());
     }
 
     /**
      * Gets the ui component
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -85,7 +85,7 @@ public class ProblemsTab extends PFUIComponent {
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
         clearProblemAction = new MyClearProblemAction(getController());
-       resolveProblemAction = new MyResolveProblemAction(getController());
+        resolveProblemAction = new MyResolveProblemAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
 
@@ -123,6 +123,13 @@ public class ProblemsTab extends PFUIComponent {
 
     public void setFolderInfo(FolderInfo folderInfo) {
         this.folderInfo = folderInfo;
+        this.selectedProblem = null;
+        if (problemsTableModel.getRowCount() > 0) {
+            problemsTable.getSelectionModel().setSelectionInterval(0, 0);
+        } else {
+            problemsTable.getSelectionModel().removeIndexInterval(0,
+                problemsTableModel.getRowCount());
+        }
     }
 
     /**
@@ -132,29 +139,41 @@ public class ProblemsTab extends PFUIComponent {
      */
     public void updateProblems(List<Problem> problemList) {
         problemsTableModel.updateProblems(problemList);
-        problemsTable.getSelectionModel().setSelectionInterval(-1, -1);
+        if (!problemList.isEmpty()) {
+            problemsTable.getSelectionModel().setSelectionInterval(0, 0);
+        } else {
+            problemsTable.getSelectionModel().removeIndexInterval(0,
+                problemsTableModel.getRowCount());
+        }
+        enableOnSelection();
+
     }
 
     /**
      * Enable the invite action on the table selection.
      */
     private void enableOnSelection() {
+        getUIComponent();
         int selectedRow = problemsTable.getSelectedRow();
         if (selectedRow >= 0) {
             selectedProblem = (Problem) problemsTableModel.getValueAt(
-                    problemsTable.getSelectedRow(), 0);
+                problemsTable.getSelectedRow(), 0);
             openProblemAction.setEnabled(true);
-            resolveProblemAction.setEnabled(selectedProblem instanceof ResolvableProblem);
+            resolveProblemAction
+                .setEnabled(selectedProblem instanceof ResolvableProblem);
         } else {
             selectedProblem = null;
             openProblemAction.setEnabled(false);
             resolveProblemAction.setEnabled(false);
         }
+        logWarning("Selected row: " + problemsTable.getSelectedRow()
+            + ". Problem: " + selectedProblem);
+
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class MyOpenProblemAction extends BaseAction {
 
@@ -165,9 +184,9 @@ public class ProblemsTab extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = problemsTable.getSelectedRow();
             Problem problem = (Problem) problemsTableModel.getValueAt(
-                    selectedRow, 0);
+                selectedRow, 0);
             String wikiArticleURL = Help.getWikiArticleURL(getController(),
-                    problem.getWikiLinkKey());
+                problem.getWikiLinkKey());
             try {
                 BrowserLauncher.openURL(wikiArticleURL);
             } catch (IOException e1) {
@@ -183,7 +202,8 @@ public class ProblemsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Folder folder = getController().getFolderRepository().getFolder(folderInfo);
+            Folder folder = getController().getFolderRepository().getFolder(
+                folderInfo);
             if (folder != null) {
                 if (selectedProblem == null) {
                     folder.removeAllProblems();
@@ -200,16 +220,16 @@ public class ProblemsTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (selectedProblem != null &&
-                    selectedProblem instanceof ResolvableProblem) {
-                ResolvableProblem resolvableProblem = (ResolvableProblem)
-                        selectedProblem;
-                SwingUtilities.invokeLater(resolvableProblem.resolution(
-                        getController()));
+            if (selectedProblem != null
+                && selectedProblem instanceof ResolvableProblem)
+            {
+                ResolvableProblem resolvableProblem = (ResolvableProblem) selectedProblem;
+                SwingUtilities.invokeLater(resolvableProblem
+                    .resolution(getController()));
             } else {
-                logSevere("Tried to resolve a non-resolvable problem " +
-                (selectedProblem == null ? null :
-                        selectedProblem.getClass().getName()));
+                logSevere("Tried to resolve a non-resolvable problem "
+                    + (selectedProblem == null ? null : selectedProblem
+                        .getClass().getName()));
             }
         }
     }
