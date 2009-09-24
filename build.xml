@@ -207,7 +207,7 @@ For creation of the installer:
 			<zipgroupfileset refid="libs" />
 		</jar>
 
-		<signjar jar="${dist.dir}\PowerFolder.jar" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="${SignAlias}" />
+		<signjar jar="${dist.dir}\PowerFolder.jar" storetype="pkcs12" keystore="${KeystoreLocation}" storepass="${SignPassword}" alias="${SignAlias}" />
 	</target>
 
 	<!-- generate an installer  -->
