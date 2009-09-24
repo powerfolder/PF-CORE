@@ -548,8 +548,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (File file : originalList) {
-                    totalDirectorySize += FileUtils.calculateDirectorySize(
-                        file, 0);
+                    totalDirectorySize += FileUtils
+                        .calculateDirectorySize(file);
                 }
 
                 List<File> finalList = new ArrayList<File>();

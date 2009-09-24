@@ -580,10 +580,13 @@ public class FileUtils {
      * Scans a directory and gets full size of all files.
      * 
      * @param directory
-     * @param depth
      * @return the size in byte of the directory
      */
-    public static long calculateDirectorySize(File directory, int depth) {
+    public static long calculateDirectorySize(File directory) {
+        return calculateDirectorySize0(directory, 0);
+    }
+
+    private static long calculateDirectorySize0(File directory, int depth) {
 
         // Limit evil recursive symbolic links.
         if (depth == 100) {
@@ -597,7 +600,7 @@ public class FileUtils {
         long sum = 0;
         for (File file : files) {
             if (file.isDirectory()) {
-                sum += calculateDirectorySize(file, depth + 1);
+                sum += calculateDirectorySize0(file, depth + 1);
             } else {
                 sum += file.length();
             }
@@ -811,19 +814,19 @@ public class FileUtils {
     }
 
     /**
-     * This method builds a real File from a base file (directory) and a 
-     * DiskItem relativeName. relativeNames are always unix separators ('/')
-     * so this method ensures that the file is built using the correct
-     * underlying OS separators.
-     *
-     *
+     * This method builds a real File from a base file (directory) and a
+     * DiskItem relativeName. relativeNames are always unix separators ('/') so
+     * this method ensures that the file is built using the correct underlying
+     * OS separators.
+     * 
      * @param base
-     *          a base directory File
+     *            a base directory File
      * @param relativeName
-     *          the DiskItem relativeName, like bob/dir/sub
+     *            the DiskItem relativeName, like bob/dir/sub
      * @return
      */
-    public static File buildFileFromRelativeName(File base, String relativeName) {
+    public static File buildFileFromRelativeName(File base, String relativeName)
+    {
         Reject.ifNull(base, "Need a base directory");
         Reject.ifFalse(base.isDirectory(), "Base must be a directory");
         Reject.ifNull(relativeName, "RelativeName required");
