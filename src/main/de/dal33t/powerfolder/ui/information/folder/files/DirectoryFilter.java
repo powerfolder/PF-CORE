@@ -218,13 +218,13 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong incomingCount = new AtomicLong();
         AtomicLong localCount = new AtomicLong();
         FilteredDirectoryModel filteredDirectoryModel = new FilteredDirectoryModel(
-            null, folder, originalDirectory.getRelativeName());
+            null, folder, "");
 
         FilteredDirectoryModel flatFilteredDirectoryModel = null;
 
         if (isFlatMode()) {
             flatFilteredDirectoryModel = new FilteredDirectoryModel(null,
-                folder, originalDirectory.getRelativeName());
+                folder, "");
         }
 
         // Recursive filter.

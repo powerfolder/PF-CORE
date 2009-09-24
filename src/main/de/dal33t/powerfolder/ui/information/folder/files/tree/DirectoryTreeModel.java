@@ -44,7 +44,6 @@ public class DirectoryTreeModel extends DefaultTreeModel {
         DirectoryTreeNodeUserObject rootUO =
                 (DirectoryTreeNodeUserObject) ((DefaultMutableTreeNode) getRoot())
                         .getUserObject();
-
         if (rootUO != null && rootUO.getRelativeName().equals(model.getRelativeName())) {
             updateTree(model, (DefaultMutableTreeNode) getRoot());
         } else {
@@ -98,12 +97,25 @@ public class DirectoryTreeModel extends DefaultTreeModel {
     private void updateTree(FilteredDirectoryModel model,
                             DefaultMutableTreeNode node) {
 
-        // Has the node changed? Like newFiles changed perhaps.
-        DirectoryTreeNodeUserObject candidateNode =
-                new DirectoryTreeNodeUserObject(model.getFilenameOnly(),
-                        model.getRelativeName(), model.hasDescendantNewFiles());
         DirectoryTreeNodeUserObject existingNode =
                 (DirectoryTreeNodeUserObject) node.getUserObject();
+
+        // Has the node changed? Like newFiles changed perhaps.
+        DirectoryTreeNodeUserObject candidateNode;
+        if (existingNode.getDisplayName().length() == 0) {
+
+            // Updating root - show folder name
+            candidateNode = new DirectoryTreeNodeUserObject(
+                    model.getRootFolder().getName(), "",
+                    model.hasDescendantNewFiles());
+        } else {
+
+            // Updating branch
+            candidateNode = new DirectoryTreeNodeUserObject(
+                    existingNode.getDisplayName(),
+                    existingNode.getRelativeName(),
+                    model.hasDescendantNewFiles());
+        }
         if (!candidateNode.equals(existingNode)) {
             node.setUserObject(candidateNode);
             nodeChanged(node);
