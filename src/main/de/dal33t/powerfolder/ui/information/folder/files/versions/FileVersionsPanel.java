@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.ui.dialog.RestoreArchiveDialog;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.light.FileInfo;
 
@@ -64,7 +65,11 @@ public class FileVersionsPanel extends PFUIComponent {
     private FileVersionsTable fileVersionsTable;
     private volatile FileInfo fileInfo;
     private RestoreAction restoreAction;
+    private JPanel currentVersionPanel;
     private JPopupMenu popupMenu;
+    private JLabel currentVersionLabel;
+    private JLabel currentSizeLabel;
+    private JLabel currentDateLabel;
 
     public FileVersionsPanel(Controller controller) {
         super(controller);
@@ -100,11 +105,13 @@ public class FileVersionsPanel extends PFUIComponent {
     }
 
     private Component createButtonPanel() {
-        FormLayout layout = new FormLayout("pref, fill:0:grow", "pref");
+        FormLayout layout = new FormLayout("pref, fill:0:grow, pref", "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JButton(restoreAction), cc.xy(1, 1));
+        builder.add(currentVersionPanel, cc.xy(3, 1, CellConstraints.DEFAULT,
+                CellConstraints.BOTTOM));
         return builder.getPanel();
     }
 
@@ -134,12 +141,44 @@ public class FileVersionsPanel extends PFUIComponent {
         emptyLabel.setEnabled(false);
 
         restoreAction = new RestoreAction(getController());
+
+        currentVersionLabel = new JLabel();
+        currentSizeLabel = new JLabel();
+        currentDateLabel = new JLabel();
+
+        currentVersionPanel = createCurrentVersionPanel();
+        currentVersionPanel.setVisible(false);
+    }
+
+    private JPanel createCurrentVersionPanel() {
+
+        FormLayout layout = new FormLayout(
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, fill:0:grow",
+                "pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(currentVersionLabel, cc.xy(1, 1));
+
+        JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
+        sep1.setPreferredSize(new Dimension(2, 12));
+        builder.add(sep1, cc.xy(3, 1));
+
+        builder.add(currentSizeLabel, cc.xy(5, 1));
+
+        JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
+        sep2.setPreferredSize(new Dimension(2, 12));        
+        builder.add(sep2, cc.xy(7, 1));
+
+        builder.add(currentDateLabel, cc.xy(9, 1));
+
+        return builder.getPanel();
     }
 
     public void setFileInfo(final FileInfo fileInfo) {
 
         if (panel == null) {
-            // Panel not initalized yet
+            // Panel not initialized yet
             return;
         }
 
@@ -147,8 +186,20 @@ public class FileVersionsPanel extends PFUIComponent {
 
         if (fileInfo == null) {
             setState(STATE_EMPTY);
+            currentVersionPanel.setVisible(false);
             return;
         }
+        
+        currentVersionLabel.setText(Translation.getTranslation(
+                "file_version_tab.current_version",
+                String.valueOf(fileInfo.getVersion())));
+        currentSizeLabel.setText(Translation.getTranslation(
+                "file_version_tab.size",
+                Format.formatBytesShort(fileInfo.getSize())));
+        currentDateLabel.setText(Translation.getTranslation(
+                "file_version_tab.date",
+                Format.formatDate(fileInfo.getModifiedDate())));
+        currentVersionPanel.setVisible(true);
 
         // Run this outside of EDT, in case it runs slow.
         getController().getThreadPool().execute(new Runnable() {
