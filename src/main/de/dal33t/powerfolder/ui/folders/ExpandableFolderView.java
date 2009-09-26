@@ -100,7 +100,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private JButtonMini problemButton;
-    private JButtonMini syncFolderButton;
+    private SyncIconButtonMini syncFolderButton;
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
@@ -248,7 +248,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name space # files probs sync / join
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref, pref", "pref");
+            "pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
@@ -265,7 +265,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
         upperBuilder.add(problemButton, cc.xy(8, 1));
-        upperBuilder.add(syncFolderButton, cc.xy(9, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -298,11 +297,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         row += 2;
 
         lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, row));
-        lowerBuilder.add(openFilesInformationButton, cc.xy(5, row));
+        lowerBuilder.add(syncFolderButton, cc.xy(5, row));
 
         row += 2;
 
         lowerBuilder.add(syncPercentLabel, cc.xy(2, row));
+        lowerBuilder.add(openFilesInformationButton, cc.xy(5, row));
 
         row += 2;
 
@@ -468,15 +468,15 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateSyncButton() {
         if (folder == null) {
-            syncFolderButton.setVisible(false);
+            syncFolderButton.spin(false);
             return;
         }
         syncUpdater.schedule(new Runnable() {
             public void run() {
                 if (folder == null) {
-                    syncFolderButton.setVisible(false);
+                    syncFolderButton.spin(false);
                 } else {
-                    syncFolderButton.setVisible(folder.isSyncing());
+                    syncFolderButton.spin(folder.isSyncing());
                 }
             }
         });
