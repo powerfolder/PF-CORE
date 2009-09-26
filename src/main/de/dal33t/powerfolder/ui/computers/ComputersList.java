@@ -19,9 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -167,9 +165,10 @@ public class ComputersList extends PFUIComponent {
         // 1) My Computers,
         // 2) Friends and
         // 3) Connected LAN
-        Set<Member> myComputers = new TreeSet<Member>();
-        Set<Member> friends = new TreeSet<Member>();
-        Set<Member> connectedLans = new TreeSet<Member>();
+        // Use maps to sort by name.
+        Map<String, Member> myComputers = new TreeMap<String, Member>();
+        Map<String, Member> friends = new TreeMap<String, Member>();
+        Map<String, Member> connectedLans = new TreeMap<String, Member>();
 
         for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
         {
@@ -177,7 +176,7 @@ public class ComputersList extends PFUIComponent {
             // My computers should get automatically friends by
             // ServerClient.updateFriendsList(..)
             if (member.isFriend() && member.isMyComputer()) {
-                myComputers.add(member);
+                myComputers.put(member.getNick().toLowerCase(),member);
                 iterator.remove();
             }
         }
@@ -186,14 +185,14 @@ public class ComputersList extends PFUIComponent {
         {
             Member member = iterator.next();
             if (member.isOnLAN() && member.isCompletelyConnected()) {
-                connectedLans.add(member);
+                connectedLans.put(member.getNick().toLowerCase(),member);
                 iterator.remove();
             }
         }
 
         for (Member member : nodes) {
             if (member.isFriend()) {
-                friends.add(member);
+                friends.put(member.getNick().toLowerCase(),member);
             }
         }
 
@@ -205,21 +204,21 @@ public class ComputersList extends PFUIComponent {
                 && previousFriends.size() == connectedLans.size()
                 && previousMyComputers.size() == myComputers.size())
             {
-                for (Member member : myComputers) {
+                for (Member member : myComputers.values()) {
                     if (!previousMyComputers.contains(member)) {
                         different = true;
                         break;
                     }
                 }
                 if (!different) {
-                    for (Member member : connectedLans) {
+                    for (Member member : connectedLans.values()) {
                         if (!previousConnectedLans.contains(member)) {
                             different = true;
                             break;
                         }
                     }
                     if (!different) {
-                        for (Member member : friends) {
+                        for (Member member : friends.values()) {
                             if (!previousFriends.contains(member)) {
                                 different = true;
                                 break;
@@ -239,9 +238,9 @@ public class ComputersList extends PFUIComponent {
             previousConnectedLans.clear();
             previousFriends.clear();
             previousMyComputers.clear();
-            previousConnectedLans.addAll(connectedLans);
-            previousMyComputers.addAll(myComputers);
-            previousFriends.addAll(friends);
+            previousConnectedLans.addAll(connectedLans.values());
+            previousMyComputers.addAll(myComputers.values());
+            previousFriends.addAll(friends.values());
 
             // Clear view listeners
             Member expandedNode = null;
@@ -262,7 +261,7 @@ public class ComputersList extends PFUIComponent {
 
             // First show my computers.
             boolean firstMyComputer = true;
-            for (Member node : myComputers) {
+            for (Member node : myComputers.values()) {
                 if (firstMyComputer && multiGroup) {
                     firstMyComputer = false;
                     addSeparator(collapseMyComputers, myComputersIcon,
@@ -275,7 +274,7 @@ public class ComputersList extends PFUIComponent {
 
             // Then friends.
             boolean firstFriend = true;
-            for (Member node : friends) {
+            for (Member node : friends.values()) {
                 if (firstFriend && multiGroup) {
                     firstFriend = false;
                     addSeparator(collapseFriends, friendsIcon, friendsLabel);
@@ -287,7 +286,7 @@ public class ComputersList extends PFUIComponent {
 
             // Then others (connected on LAN).
             boolean firstLan = true;
-            for (Member node : connectedLans) {
+            for (Member node : connectedLans.values()) {
                 if (firstLan && multiGroup) {
                     firstLan = false;
                     addSeparator(collapseConnectedLans, connectedLansIcon,
