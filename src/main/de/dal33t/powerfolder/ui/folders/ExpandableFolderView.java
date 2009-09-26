@@ -254,7 +254,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateIconAndOS();
 
         upperBuilder.add(primaryButton, cc.xy(1, 1));
-        upperBuilder.add(new JLabel(folderInfo.name), cc.xy(3, 1));
+        JLabel nameLabel;
+        if (folderInfo.name.length() > 30) {
+            nameLabel = new JLabel(folderInfo.name.substring(0, 30) + "...");
+            nameLabel.setToolTipText(folderInfo.name);
+        } else {
+            nameLabel = new JLabel(folderInfo.name);
+        }
+        upperBuilder.add(nameLabel, cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
         upperBuilder.add(problemButton, cc.xy(8, 1));
