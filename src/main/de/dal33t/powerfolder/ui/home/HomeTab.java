@@ -190,6 +190,7 @@ public class HomeTab extends PFUIComponent {
         mainPanel.setOpaque(false);
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setOpaque(false);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         UIUtil.removeBorder(scrollPane);
         builder.add(scrollPane, cc.xyw(1, 6, 2));
 

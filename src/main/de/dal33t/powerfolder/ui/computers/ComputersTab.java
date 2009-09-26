@@ -93,6 +93,7 @@ public class ComputersTab extends PFUIComponent {
         builder.add(toolbar, cc.xy(1, 2));
         builder.addSeparator(null, cc.xy(1, 4));
         scrollPane = new JScrollPane(computersList.getUIComponent());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         UIUtil.removeBorder(scrollPane);
 
         // emptyLabel and scrollPane occupy the same slot.

@@ -82,6 +82,7 @@ public class FoldersTab extends PFUIComponent {
         builder.add(toolbar, cc.xy(1, 2));
         builder.addSeparator(null, cc.xy(1, 4));
         scrollPane = new JScrollPane(foldersList.getUIComponent());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         foldersList.setScroller(scrollPane);
         UIUtil.removeBorder(scrollPane);
 
