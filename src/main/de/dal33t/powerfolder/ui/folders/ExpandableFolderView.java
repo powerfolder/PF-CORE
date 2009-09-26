@@ -130,6 +130,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private OnlineStorageComponent osComponent;
     private ServerClient serverClient;
 
+    private MySyncFolderAction syncFolderAction;
     private MyOpenFilesInformationAction openFilesInformationAction;
     private MyOpenSettingsInformationAction openSettingsInformationAction;
     private MyInviteAction inviteAction;
@@ -257,7 +258,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         JLabel nameLabel;
         if (folderInfo.name.length() > 30) {
             nameLabel = new JLabel(folderInfo.name.substring(0, 30) + "...");
-            nameLabel.setToolTipText(folderInfo.name);
         } else {
             nameLabel = new JLabel(folderInfo.name);
         }
@@ -401,8 +401,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
-        MySyncFolderAction mySyncFolderAction = new MySyncFolderAction(
-            getController());
+        syncFolderAction = new MySyncFolderAction(getController());
 
         expanded = new AtomicBoolean();
 
@@ -417,7 +416,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteButton = new JButtonMini(inviteAction, true);
         problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new SyncIconButtonMini(getController());
-        syncFolderButton.addActionListener(mySyncFolderAction);
+        syncFolderButton.addActionListener(syncFolderAction);
         filesLabel = new JLabel();
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
@@ -826,6 +825,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Local folder popup
             contextMenu.add(openExplorerAction);
             contextMenu.addSeparator();
+            contextMenu.add(syncFolderAction);
             contextMenu.add(openFilesInformationAction);
             contextMenu.add(mostRecentChangesAction);
             contextMenu.addSeparator();
