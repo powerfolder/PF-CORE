@@ -911,8 +911,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             foldersCommon.remove(folder);
         }
         if (!foldersCommon.isEmpty()) {
-            logSevere("NOT JOINED: " + foldersCommon);
-            logSevere("JOINED: " + foldersJoined);
+            logWarning("NOT joined: " + foldersCommon);
+            logWarning("Joined: " + foldersJoined);
             for (Folder folder : foldersCommon) {
                 if (isPre4Client()) {
                     sendMessagesAsynchron(FileList
