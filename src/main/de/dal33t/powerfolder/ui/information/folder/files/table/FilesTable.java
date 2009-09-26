@@ -25,9 +25,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -150,6 +152,7 @@ public class FilesTable extends JTable {
                 boolean isSelected, boolean hasFocus, int row, int column) {
             DiskItem diskItem = (DiskItem) value;
             String myValue = "";
+            boolean strikethrough = false;
             if (diskItem instanceof FileInfo) {
                 FileInfo fileInfo = (FileInfo) diskItem;
                 Folder folder = controller.getFolderRepository().getFolder(
@@ -221,10 +224,10 @@ public class FilesTable extends JTable {
                             statusForTooltip = Translation.getTranslation("file_info.deleted");
 
                         } else if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
-                            // Blacklist and file filtered out by blacklist.
-                            setIcon(Icons.getIconById(Icons.BLACK_LIST));
+                            // File filtered out by blacklist.
                             statusForTooltip = replaceSpacesWithNBSP(Translation
                                     .getTranslation("file_info.ignore"));
+                            strikethrough = true;
                         } else
                         if (fileInfo.isExpected(controller.getFolderRepository())) {
                             setForeground(AVAILABLE);
@@ -336,6 +339,13 @@ public class FilesTable extends JTable {
             if (!isSelected) {
                 setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
                         : ColorUtil.ODD_TABLE_ROW_COLOR);
+            }
+
+            if (strikethrough) {
+                Font font  = c.getFont();
+                Map attribs = font.getAttributes();
+                attribs.put(TextAttribute.STRIKETHROUGH, true);
+                c.setFont(new Font(attribs));
             }
 
             return c;
