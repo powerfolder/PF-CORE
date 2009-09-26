@@ -25,6 +25,7 @@ import java.util.TimerTask;
 import javax.swing.Icon;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 
@@ -41,7 +42,7 @@ public class SyncIconButtonMini extends JButtonMini {
     private static final Icon ICON_ZERO = Icons.getIconById(Icons.SYNC_ANIMATION[0]);
 
     public SyncIconButtonMini(Controller controller) {
-        super(ICON_ZERO, "");
+        super(ICON_ZERO, Translation.getTranslation("sync_icon_button_mini.tip"));
         state = 0;
         controller.scheduleAndRepeat(new MyUpdateTask(), ROTATION_STEP_DELAY);
     }

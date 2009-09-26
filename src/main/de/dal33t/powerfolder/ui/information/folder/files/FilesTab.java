@@ -24,11 +24,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -38,6 +34,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -45,7 +43,10 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
+import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 /**
  * UI component for the folder files tab
@@ -60,6 +61,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private DirectoryFilter directoryFilter;
     private FilesTreePanel treePanel;
     private ValueModel flatMode;
+    private SyncIconButtonMini syncFolderButton;
+    private Folder folder;
+    private DelayedUpdater syncUpdater;
 
     /**
      * Constructor
@@ -68,6 +72,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      */
     public FilesTab(Controller controller) {
         super(controller);
+
+        syncUpdater = new DelayedUpdater(getController(), 1000L);
 
         flatMode = new ValueHolder();
 
@@ -86,6 +92,17 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         directoryFilter.addListener(tablePanel);
         directoryFilter.setFlatMode(flatMode);
         treePanel.addTreeSelectionListener(tablePanel);
+
+        MyTransferManagerListener myTransferManagerListener
+                = new MyTransferManagerListener();
+        getController().getTransferManager().addListener(
+                myTransferManagerListener);
+
+
+        syncFolderButton = new SyncIconButtonMini(getController());
+        MySyncFolderAction syncFolderAction
+                = new MySyncFolderAction(getController());
+        syncFolderButton.addActionListener(syncFolderAction);
 
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
             .getUIComponent(), tablePanel.getUIComponent());
@@ -116,10 +133,11 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
-        Folder folder = getController().getFolderRepository().getFolder(
+        Folder f = getController().getFolderRepository().getFolder(
             folderInfo);
-        directoryFilter.setFolder(folder);
-        tablePanel.setFolder(folder);
+        folder = f;
+        directoryFilter.setFolder(f);
+        tablePanel.setFolder(f);
     }
 
     /**
@@ -202,14 +220,15 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         });
 
         FormLayout layout = new FormLayout(
-            "pref, 3dlu:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu, pref, 3dlu:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
+        builder.add(syncFolderButton, cc.xy(1, 1));
         builder.add(new JToggleButton(new DetailsAction(getController())), cc
-            .xy(1, 1));
-        builder.add(flatViewCB, cc.xy(3, 1));
-        builder.add(filterSelectionComboBox, cc.xy(5, 1));
-        builder.add(filterTextField.getUIComponent(), cc.xy(7, 1));
+            .xy(3, 1));
+        builder.add(flatViewCB, cc.xy(5, 1));
+        builder.add(filterSelectionComboBox, cc.xy(7, 1));
+        builder.add(filterTextField.getUIComponent(), cc.xy(9, 1));
 
         return builder.getPanel();
     }
@@ -226,6 +245,22 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      */
     public void setSelection(Directory directory) {
         treePanel.setSelection(directory);
+    }
+
+    private void updateSyncButton() {
+        if (folder == null) {
+            syncFolderButton.spin(false);
+            return;
+        }
+        syncUpdater.schedule(new Runnable() {
+            public void run() {
+                if (folder == null) {
+                    syncFolderButton.spin(false);
+                } else {
+                    syncFolderButton.spin(folder.isSyncing());
+                }
+            }
+        });
     }
 
     /**
@@ -266,5 +301,87 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             tablePanel.toggleDetails();
         }
     }
+
+
+    private class MySyncFolderAction extends BaseAction {
+
+        private MySyncFolderAction(Controller controller) {
+            super("action_sync_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (folder != null) {
+                if (folder.isPreviewOnly()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            PreviewToJoinPanel panel = new PreviewToJoinPanel(
+                                getController(), folder);
+                            panel.open();
+                        }
+                    });
+                } else {
+                    getController().getUIController().syncFolder(folder);
+                }
+            }
+        }
+    }
+
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        private void updateIfRequired(TransferManagerEvent event) {
+            updateSyncButton();
+        }
+
+        public void downloadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void downloadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void downloadQueued(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void downloadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void downloadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void uploadRequested(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            updateIfRequired(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+
 
 }
