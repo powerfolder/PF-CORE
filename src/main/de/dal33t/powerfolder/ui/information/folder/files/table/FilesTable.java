@@ -105,13 +105,13 @@ public class FilesTable extends JTable {
         column.setMinWidth(20);
         column.setMaxWidth(20);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(200);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(20);
+        column.setPreferredWidth(70);
         column = getColumn(getColumnName(3));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(70);
         column = getColumn(getColumnName(4));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(60);
     }
 
     /**
