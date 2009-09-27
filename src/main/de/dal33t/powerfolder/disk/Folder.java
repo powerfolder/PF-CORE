@@ -2901,7 +2901,9 @@ public class Folder extends PFComponent {
                 for (FileInfo info : infoCollection) {
                     rootDirectory.add(getController().getMySelf(), info);
                 }
-                logInfo("Commissioned folder " + getName());
+                if (isFiner()) {
+                    logFiner("Commissioned folder " + getName());
+                }
             }
         }
     }
