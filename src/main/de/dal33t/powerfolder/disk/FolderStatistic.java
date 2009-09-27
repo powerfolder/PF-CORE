@@ -190,10 +190,10 @@ public class FolderStatistic extends PFComponent {
             lastFileChangeDate = date;
         }
 
-        if (isFine()) {
+        if (isFiner()) {
             long took = System.currentTimeMillis() - startTime;
             double perf = took != 0 ? (current.analyzedFiles / took) : 0;
-            logFine("Recalculation completed (" + current.analyzedFiles
+            logFiner("Recalculation completed (" + current.analyzedFiles
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
                 + " ana/ms");
         }
