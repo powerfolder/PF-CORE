@@ -800,6 +800,7 @@ public class UIController extends PFComponent {
         systemMonitorFrame.getUIComponent().setVisible(false);
     }
 
+    // TODO Move to ApplicationModel
     public void syncFolder(Folder folder) {
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
