@@ -433,30 +433,24 @@ public class DownloadManagersTableModel extends PFComponent implements
 
             // Update table.
             Download dl = event.getDownload();
-            boolean found = false;
+            addOrUpdateDownload(dl);
 
             // Remove existing downloads from all partners, then add a
             // single complete download. This is a temporary fix; should
             // really coalesce downloads into one line for each completely
             // identical fileinfo.
-            for (Iterator<DownloadManager> iter = downloadManagers.iterator(); iter
-                .hasNext();)
-            {
-                DownloadManager downloadManager = iter.next();
-                if (dl.getFile().isVersionDateAndSizeIdentical(
-                    downloadManager.getFileInfo()))
-                {
-                    iter.remove();
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                addOrUpdateDownload(dl);
-            } else {
-                logSevere("Download not found in model: " + dl);
-            }
+            // boolean found = false;
+            // int i = findDownloadIndex(dl);
+            // if (i >= 0) {
+            // downloadManagers.remove(i);
+            // found = true;
+            // }
+            //
+            // if (found) {
+            // addOrUpdateDownload(dl);
+            // } else {
+            // logSevere("Download not found in model: " + dl);
+            // }
             rowsUpdatedAll();
         }
 
