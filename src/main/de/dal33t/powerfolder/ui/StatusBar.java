@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -90,7 +89,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JComponent comp;
     private JButton onlineStateInfo;
     private JButton sleepButton;
-    private JButton syncButton;
+    private SyncIconButtonMini syncButton;
     private JLabel portLabel;
     private JLabel networkModeLabel;
     private JButton openAboutBoxButton;
@@ -515,6 +514,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
                 syncButton.setVisible(anySynchronizing);
+                syncButton.spin(anySynchronizing);
                 syncHelper.setVisible(anySynchronizing);
             }
         });
