@@ -182,6 +182,12 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
+        if (this.fileInfo == fileInfo
+            || this.fileInfo.isVersionDateAndSizeIdentical(fileInfo))
+        {
+            // No change. Don't spam the server with requests
+            return;
+        }
         this.fileInfo = fileInfo;
 
         if (fileInfo == null) {
