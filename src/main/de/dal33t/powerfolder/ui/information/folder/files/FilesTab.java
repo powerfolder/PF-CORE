@@ -154,6 +154,10 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
+    public void scheduleDirectoryFiltering() {
+        directoryFilter.scheduleFiltering();
+    }
+
     /**
      * Set the tab with details for a folder with local / incoming set and sort
      * date descending.

@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +103,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     /**
      * Set the directory selected in the tree.
      *
-     * @param selectedDirectory
+     * @param selectedRelativeName
      */
     public void setSelectedRelativeName(String selectedRelativeName) {
         this.selectedRelativeName = selectedRelativeName;

@@ -647,6 +647,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         .getTransferManager();
                     if (transferManager.isCompletedDownload(fileInfo)) {
                         transferManager.clearCompletedDownload(fileInfo);
+                        parent.scheduleDirectoryFiltering();
                     }
                 }
             }
