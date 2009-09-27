@@ -38,13 +38,14 @@ public class DirectoryTreeModel extends DefaultTreeModel {
 
     /**
      * Sets the model of the directory structure. Tree model is updated.
+     * 
      * @param model
      */
     public void setTree(FilteredDirectoryModel model) {
         DirectoryTreeNodeUserObject rootUO =
                 (DirectoryTreeNodeUserObject) ((DefaultMutableTreeNode) getRoot())
                         .getUserObject();
-        if (rootUO != null && rootUO.getRelativeName().equals(model.getRelativeName())) {
+        if (rootUO != null && rootUO.getDisplayName().equals(model.getRootFolder().getName())) {
             updateTree(model, (DefaultMutableTreeNode) getRoot());
         } else {
             // New tree. Node is the folder.

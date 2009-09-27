@@ -37,7 +37,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import static javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION;
 import java.awt.*;
-import java.io.File;
 
 public class FilesTreePanel extends PFUIComponent implements DirectoryFilterListener {
 
