@@ -529,8 +529,9 @@ public class Folder extends PFComponent {
 
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
+
+                // new files
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    // Add file to folder
                     currentInfo.addFile(newFileInfo);
                     if (isFiner()) {
                         logFiner("Adding " + scanResult.getNewFiles().size()
@@ -541,35 +542,49 @@ public class Folder extends PFComponent {
                 }
                 dao.store(null, scanResult.getNewFiles());
 
-                Collection<FileInfo> fiList = new LinkedList<FileInfo>();
                 // deleted files
+                Collection<FileInfo> fiList = new LinkedList<FileInfo>();
                 for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-                    fiList.add(FileInfoFactory.deletedFile(deletedFileInfo,
-                        getController().getMySelf().getInfo(), new Date()));
+                    FileInfo fileInfo = FileInfoFactory.deletedFile(deletedFileInfo,
+                            getController().getMySelf().getInfo(), new Date());
+                    fiList.add(fileInfo);
 
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(), fileInfo);
                 }
                 scanResult.deletedFiles = fiList;
                 dao.store(null, fiList);
 
-                fiList = new LinkedList<FileInfo>();
                 // restored files
+                fiList = new LinkedList<FileInfo>();
                 for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
                 {
                     File diskFile = getDiskFile(restoredFileInfo);
-                    fiList.add(FileInfoFactory.modifiedFile(restoredFileInfo,
-                        getController().getFolderRepository(), diskFile,
-                        getController().getMySelf().getInfo()));
+                    FileInfo newInfo = FileInfoFactory.modifiedFile(restoredFileInfo,
+                            getController().getFolderRepository(), diskFile,
+                            getController().getMySelf().getInfo());
+                    fiList.add(newInfo);
+                    
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(), newInfo);
                 }
                 scanResult.restoredFiles = fiList;
                 dao.store(null, fiList);
 
-                fiList = new LinkedList<FileInfo>();
                 // changed files
+                fiList = new LinkedList<FileInfo>();
                 for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
                     File diskFile = getDiskFile(changedFileInfo);
-                    fiList.add(FileInfoFactory.modifiedFile(changedFileInfo,
-                        getController().getFolderRepository(), diskFile,
-                        getController().getMySelf().getInfo()));
+                    FileInfo newInfo = FileInfoFactory.modifiedFile(changedFileInfo,
+                            getController().getFolderRepository(), diskFile,
+                            getController().getMySelf().getInfo());
+                    fiList.add(newInfo);
+
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(), newInfo);
+
+                    scanResult.restoredFiles = fiList;
+                    dao.store(null, fiList);
 
                     // DISABLED because of #644
                     // changedFileInfo.invalidateFilePartsRecord();

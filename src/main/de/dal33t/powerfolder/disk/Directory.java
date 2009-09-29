@@ -295,9 +295,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
             if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
                 FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
                 if (member.isMySelf()) {
-                    // replace, this may be a converted meta FileInfo that is
-                    // re-added.
+                    // Replace, key may be equal but different object.
+                    fileInfoHolderMap.remove(fileInfo);
                     fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+                    // Update value.
                     fileInfoHolder.setFileInfo(fileInfo);
                 }
 
