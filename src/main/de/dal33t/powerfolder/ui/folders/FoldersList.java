@@ -46,13 +46,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.ExpansionEvent;
-import de.dal33t.powerfolder.event.ExpansionListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -108,6 +104,8 @@ public class FoldersList extends PFUIComponent {
         onlineLabel.addMouseListener(new OnlineListener());
         onlineIcon.addMouseListener(new OnlineListener());
         buildUI();
+        getController().getTransferManager().addListener(
+            new MyTransferManagerListener());
     }
 
     /**
@@ -513,6 +511,34 @@ public class FoldersList extends PFUIComponent {
         public void mouseClicked(MouseEvent e) {
             collapseOnline = !collapseOnline;
             updateFolders();
+        }
+    }
+
+    private class MyTransferManagerListener extends TransferAdapter {
+
+        private void notifyView(TransferManagerEvent event) {
+            FileInfo fileInfo = event.getFile();
+            FolderInfo folderInfo = fileInfo.getFolderInfo();
+            synchronized (views) {
+                for (ExpandableFolderView view : views) {
+                    if (view.getFolderInfo().equals(folderInfo)) {
+                        view.updateNewFiles();
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void completedDownloadRemoved(TransferManagerEvent event) {
+            notifyView(event);
+        }
+
+        public void downloadCompleted(TransferManagerEvent event) {
+            notifyView(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
     }
 

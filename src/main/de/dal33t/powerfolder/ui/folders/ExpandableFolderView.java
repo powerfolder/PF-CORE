@@ -21,8 +21,7 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.Cursor;
-import java.awt.Desktop;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -31,6 +30,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -68,6 +69,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -96,6 +98,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private boolean local;
     private boolean online;
 
+    private JLabel nameLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
@@ -136,6 +139,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyInviteAction inviteAction;
     private MyOpenMembersInformationAction openMembersInformationAction;
     private MyMostRecentChangesAction mostRecentChangesAction;
+    private MyClearCompletedDownloadsAction clearCompletedDownloadsAction;
     private MyOpenExplorerAction openExplorerAction;
     private FolderRemoveAction removeFolderAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
@@ -202,7 +206,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateIconAndOS();
         updateButtons();
         updateProblems();
-
+        updateNewFiles();
+        
         registerFolderListeners();
     }
 
@@ -255,12 +260,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateIconAndOS();
 
         upperBuilder.add(primaryButton, cc.xy(1, 1));
-        JLabel nameLabel;
-        if (folderInfo.name.length() > 30) {
-            nameLabel = new JLabel(folderInfo.name.substring(0, 30) + "...");
-        } else {
-            nameLabel = new JLabel(folderInfo.name);
-        }
+        nameLabel = new JLabel();
         upperBuilder.add(nameLabel, cc.xy(3, 1));
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
@@ -394,6 +394,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
+        clearCompletedDownloadsAction = new MyClearCompletedDownloadsAction(getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
         removeFolderAction = new FolderRemoveAction(getController());
         backupOnlineStorageAction = new BackupOnlineStorageAction(
@@ -828,6 +829,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             contextMenu.add(syncFolderAction);
             contextMenu.add(openFilesInformationAction);
             contextMenu.add(mostRecentChangesAction);
+            contextMenu.add(clearCompletedDownloadsAction);
             contextMenu.addSeparator();
             contextMenu.add(inviteAction);
             contextMenu.add(openMembersInformationAction);
@@ -864,9 +866,38 @@ public class ExpandableFolderView extends PFUIComponent implements
         problemButton.setVisible(folder != null && folder.countProblems() > 0);
     }
 
-    // /////////////////
+    /**
+     * Downloads added or removed for this folder. Recalculate new files status.
+     */
+    public void updateNewFiles() {
+
+        int newCount = 0;
+        TransferManager transferManager = getController().getTransferManager();
+        List<FileInfo> infoList = folder.getDirectory().getFileInfosRecursive();
+        for (FileInfo fileInfo : infoList) {
+            newCount += transferManager.isCompletedDownload(fileInfo) ? 1 : 0;
+        }
+        String newCountString = "";
+        boolean newFiles = newCount > 0;
+        if (newFiles) {
+            newCountString = " - " + Translation.getTranslation(
+                    "exp_folder_view.new_files_text", String.valueOf(newCount)); 
+        }
+        if (folderInfo.name.length() > 25) {
+            nameLabel.setText(folderInfo.name.substring(0, 25) + "..."
+                    + newCountString);
+        } else {
+            nameLabel.setText(folderInfo.name + newCountString);
+        }
+        nameLabel.setFont(new Font(nameLabel.getFont().getName(),
+                newFiles ? Font.BOLD : Font.PLAIN,
+                nameLabel.getFont().getSize()));
+        clearCompletedDownloadsAction.setEnabled(newFiles);
+    }
+
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     private class MyNodeManagerListener extends NodeManagerAdapter {
 
@@ -1237,6 +1268,23 @@ public class ExpandableFolderView extends PFUIComponent implements
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openProblemsInformation(
                 folderInfo);
+        }
+    }
+
+    private class MyClearCompletedDownloadsAction extends BaseAction {
+
+        private MyClearCompletedDownloadsAction(Controller controller) {
+            super("action_clear_completed_downloads", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            TransferManager transferManager = getController().getTransferManager();
+            List<FileInfo> infoList = folder.getDirectory().getFileInfosRecursive();
+            for (FileInfo fileInfo : infoList) {
+                if (transferManager.isCompletedDownload(fileInfo)) {
+                    transferManager.clearCompletedDownload(fileInfo);
+                }
+            }
         }
     }
 
