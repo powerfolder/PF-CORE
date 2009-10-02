@@ -89,7 +89,7 @@ public class AboutDialog extends PFUIComponent {
     private int focusNumber;
 
     private JPanel panel;
-    private JLabel logoLabel;
+    private RippleLabel logoLabel;
 
     private JPanel team;
     private JPanel contributers;
@@ -178,7 +178,15 @@ public class AboutDialog extends PFUIComponent {
 
         pacmanPanel = new PacmanPanel();
 
-        logoLabel = buildAboutAnimation();
+        logoLabel = new RippleLabel(getController(),
+                Icons.getImageById(Icons.ABOUT_ANIMATION));
+        logoLabel.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 3) {
+                    pacmanPanel.activate();
+                }
+            }
+        });
 
         docLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.documentation"),
@@ -246,33 +254,6 @@ public class AboutDialog extends PFUIComponent {
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
         translators.setVisible(getController().getDistribution()
             .showCredentials());
-    }
-
-    /**
-     * Builds and returns the About animation
-     * 
-     * @return the link to the
-     */
-    private JLabel buildAboutAnimation() {
-        if (Icons.getIconById(Icons.ABOUT_ANIMATION) instanceof ImageIcon) {
-            ((ImageIcon) Icons.getIconById(Icons.ABOUT_ANIMATION)).getImage()
-                .flush();
-            ((ImageIcon) Icons.getIconById(Icons.ABOUT_ANIMATION)).getImage()
-                .setAccelerationPriority(0.2F);
-
-        }
-        JLabel logo = new JLabel(Icons.getIconById(Icons.ABOUT_ANIMATION));
-        logo.setSize(new Dimension(Icons.getIconById(Icons.ABOUT_ANIMATION)
-            .getIconWidth(), Icons.getIconById(Icons.ABOUT_ANIMATION)
-            .getIconHeight()));
-        logo.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 3) {
-                    pacmanPanel.activate();
-                }
-            }
-        });
-        return logo;
     }
 
     private JPanel createRightPanel() {
