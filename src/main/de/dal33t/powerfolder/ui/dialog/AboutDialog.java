@@ -25,11 +25,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -135,14 +131,21 @@ public class AboutDialog extends PFUIComponent {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
 
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
-            .getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
-            .getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() -
+                dialog.getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() -
+                dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
         dialog.setResizable(false);
         dialog.setVisible(true);
 
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                // Stop the ripple effect when closed.
+                logoLabel.deactivate();
+            }
+        });
+        
         okButton.requestFocus();
 
     }
@@ -163,7 +166,6 @@ public class AboutDialog extends PFUIComponent {
 
             panel = builder.getPanel();
             panel.setBackground(Color.WHITE);
-
         }
         return panel;
     }

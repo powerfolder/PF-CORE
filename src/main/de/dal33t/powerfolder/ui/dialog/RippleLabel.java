@@ -29,6 +29,7 @@ import java.awt.image.ImageProducer;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 /**
  * This class displays an Image in a JLabel and animates a ripple effect when
@@ -45,6 +46,8 @@ public class RippleLabel extends JLabel {
     private int[] rippleTexture;
     private int oldInd;
     private int newInd;
+
+    private volatile boolean active = true;
 
     /**
      * Constructor
@@ -85,13 +88,27 @@ public class RippleLabel extends JLabel {
 
         controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
             public void run() {
-                doRipple();
+                if (active) {
+                    doRipple();
+                }
             }
         }, 10, 10, TimeUnit.MILLISECONDS);
     }
 
+    public void deactivate() {
+        active = false;
+    }
+
     private void doRipple() {
-        //Toggle maps each frame
+
+        // Do some random drops occasionally.
+        if (Math.random() > 0.999) {
+            int x = (int) (5 + (width - 10) * Math.random());
+            int y = (int) (5 + (height - 10) * Math.random());
+            drop(x, y);
+        }
+
+        // Toggle maps each frame
         int i = oldInd;
         oldInd = newInd;
         newInd = i;
@@ -108,14 +125,14 @@ public class RippleLabel extends JLabel {
                 data -= data >> 5;
                 rippleMap[newInd + i] = data;
 
-                //where data = 0 then still, where data > 0 then wave
+                // Where data = 0 then still, where data > 0 then wave
                 data = (short) (1024 - data);
 
-                //offsets
+                // Offsets
                 int a = (x - width / 2) * data / 1024 + width / 2;
                 int b = (y - height / 2) * data / 1024 + height / 2;
 
-                //bounds check
+                // Bounds check
                 if (a >= width) {
                     a = width - 1;
                 }
@@ -146,17 +163,21 @@ public class RippleLabel extends JLabel {
         g.drawImage(createImage(source), 0, 0, width, height, this);
     }
 
+    private void drop(int x, int y) {
+        for (int j = y - 3; j < y + 3; j++) {
+            for (int k = x - 3; k < x + 3; k++) {
+                if (j >= 0 && j < height && k >= 0 && k < width) {
+                    rippleMap[oldInd + j * width + k] += 512;
+                }
+            }
+        }
+    }
+
     private class MyMouseListener extends MouseAdapter {
         public void mouseMoved(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
-            for (int j = y - 3; j < y + 3; j++) {
-                for (int k = x - 3; k < x + 3; k++) {
-                    if (j >= 0 && j < height && k >= 0 && k < width) {
-                        rippleMap[oldInd + j * width + k] += 512;
-                    }
-                }
-            }
+            drop(x, y);
         }
     }
 }
