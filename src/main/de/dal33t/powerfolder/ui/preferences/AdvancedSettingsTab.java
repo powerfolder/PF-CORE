@@ -588,27 +588,27 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             String initial = (String) locationModel.getValue();
             String newLocationName = DialogFactory.chooseDirectory(
                 getController(), initial);
-            File newLocation = new File(newLocationName);
+            if (newLocationName != null) {
+                File newLocation = new File(newLocationName);
 
-            // Make sure that the user is not setting this to the base dir of
-            // an existing folder.
-            for (Folder folder : getController().getFolderRepository()
-                .getFolders())
-            {
-                if (folder.getLocalBase().equals(newLocation)) {
-                    DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("preferences.dialog.duplicate_localbase.title"),
-                            Translation
-                                .getTranslation(
-                                    "preferences.dialog.duplicate_localbase.message",
-                                    folder.getName()), GenericDialogType.ERROR);
-                    return;
+                // Make sure that the user is not setting this to the base dir of
+                // an existing folder.
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders())
+                {
+                    if (folder.getLocalBase().equals(newLocation)) {
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "preferences.dialog.duplicate_localbase.title"),
+                                Translation.getTranslation(
+                                        "preferences.dialog.duplicate_localbase.message",
+                                        folder.getName()),
+                                GenericDialogType.ERROR);
+                        return;
+                    }
                 }
+                locationModel.setValue(newLocationName);
             }
-            locationModel.setValue(newLocationName);
         }
     }
 
