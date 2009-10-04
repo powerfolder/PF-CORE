@@ -107,6 +107,8 @@ public class UploadsInformationCard extends InformationCard
      */
     private void initialize() {
         cleanupLabel = new JLabel();
+        cleanupLabel.setToolTipText(Translation.getTranslation(
+                "uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(), clearCompletedUploadsAction);
         fileDetailsPanel = new FileDetailsPanel(getController(), true);
@@ -196,7 +198,8 @@ public class UploadsInformationCard extends InformationCard
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
-
+        cleanupSlider.setToolTipText(Translation.getTranslation(
+                "uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));

@@ -109,6 +109,8 @@ public class DownloadsInformationCard extends InformationCard
      */
     private void initialize() {
         cleanupLabel = new JLabel();
+        cleanupLabel.setToolTipText(Translation.getTranslation(
+                "downloads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(), 
                 openDownloadAction, abortDownloadsAction,
@@ -176,6 +178,8 @@ public class DownloadsInformationCard extends InformationCard
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
+        cleanupSlider.setToolTipText(Translation.getTranslation(
+                "downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
