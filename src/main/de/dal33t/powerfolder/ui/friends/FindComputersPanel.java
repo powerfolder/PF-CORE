@@ -25,21 +25,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.InetSocketAddress;
 
-import javax.swing.Action;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -88,11 +81,15 @@ public class FindComputersPanel extends PFUIPanel {
     private Action connectAction;
     /** The Thread performing the search */
     private NodeSearcher searcher;
+    /** Label to show when there are no results */
+    private JLabel noResultsLabel;
     /**
      * the toggle button that indicates if the offline users should be hidden or
      * not
      */
     private JCheckBox hideOffline;
+    /** true if there are results displayed <Boolean> */
+    private ValueModel resultsDisplayedVM;
 
     /**
      * create a FriendsPanel
@@ -103,6 +100,27 @@ public class FindComputersPanel extends PFUIPanel {
         super(controller);
         addFriendAction = new AddFriendAction();
         connectAction = new MyConnectAction(controller);
+        resultsDisplayedVM = new ValueHolder();
+        resultsDisplayedVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                Object value = evt.getNewValue();
+                if (value != null) {
+                    showResults((Boolean) value);
+                }
+            }
+        });
+        noResultsLabel = new JLabel(Translation.getTranslation(
+                "friend_search.no_computers_found"), SwingConstants.CENTER);
+        noResultsLabel.setEnabled(false);
+    }
+
+    private void showResults(final Boolean valuesDisplayed) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                searchResultScroller.setVisible(valuesDisplayed);
+                noResultsLabel.setVisible(!valuesDisplayed);
+            }
+        });
     }
 
     /**
@@ -113,6 +131,7 @@ public class FindComputersPanel extends PFUIPanel {
             initComponents();
             panel = createContentPanel();
             searchInput.requestFocus();
+            showResults(false);
         }
         return panel;
     }
@@ -125,8 +144,7 @@ public class FindComputersPanel extends PFUIPanel {
     }
 
     private void initComponents() {
-        searchInput = new FilterTextField(
-            15,
+        searchInput = new FilterTextField(15,
             Translation
                 .getTranslation("find_computers_panel.search_for_computer.hint"),
             Translation
@@ -156,7 +174,10 @@ public class FindComputersPanel extends PFUIPanel {
         CellConstraints cc = new CellConstraints();
 
         builder.add(createSearchPanel(), cc.xy(1, 1));
+
+        // searchResultScroller and noResultsLabel share the same slot.
         builder.add(searchResultScroller, cc.xy(1, 3));
+        builder.add(noResultsLabel, cc.xy(1, 3));
 
         updateActions();
 
@@ -209,7 +230,7 @@ public class FindComputersPanel extends PFUIPanel {
 
         searcher = new NodeSearcher(getController(), searchText,
             searchNodeTableModel.getListModel(), false, hideOffline
-                .isSelected());
+                        .isSelected(), resultsDisplayedVM);
         searcher.start();
     }
 
@@ -219,7 +240,8 @@ public class FindComputersPanel extends PFUIPanel {
             int[] selectedIndexes = searchResult.getSelectedRows();
             if (selectedIndexes != null && selectedIndexes.length > 0) {
 
-                boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
+                boolean askForFriendshipMessage =
+                        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
                     .getValueBoolean(getController());
                 if (askForFriendshipMessage) {
 

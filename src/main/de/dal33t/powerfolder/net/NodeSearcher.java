@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.util.Reject;
+import com.jgoodies.binding.value.ValueModel;
 
 /**
  * This class searches nodes matching a given pattern.
@@ -55,11 +56,12 @@ public class NodeSearcher extends PFComponent {
     private boolean ignoreFriends;
     /** exclude offline users from search result */
     private boolean hideOffline;
-    private Thread searchThread;
+    private final Thread searchThread;
     private NodeManagerListener nodeListener;
     private Queue<Member> canidatesFromSupernodes;
     private List<Member> searchResultListModel;
     private NodeSearchFilter nodeSearchFilter;
+    private ValueModel resultsDisplayedVM; // <Booelan>
 
     /**
      * Constructs a new node searcher with giben pattern and a result listmodel.
@@ -80,7 +82,8 @@ public class NodeSearcher extends PFComponent {
      *            hides the users that are offline
      */
     public NodeSearcher(Controller controller, String pattern,
-        List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline)
+        List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline,
+        ValueModel resultsDisplayedVM)
     {
         super(controller);
         Reject.ifNull(resultListModel, "Result list model is null");
@@ -93,10 +96,11 @@ public class NodeSearcher extends PFComponent {
         this.pattern = pattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
+        this.resultsDisplayedVM = resultsDisplayedVM;
 
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
-        this.nodeSearchFilter = new NodeSearchFilter();
+        nodeSearchFilter = new NodeSearchFilter();
     }
 
     /**
@@ -133,7 +137,7 @@ public class NodeSearcher extends PFComponent {
      * @return true if this Thread is still searching new members
      */
     public boolean isSearching() {
-        return !searchThread.getState().equals(State.TERMINATED);
+        return searchThread.getState() != State.TERMINATED;
     }
 
     // Internal code **********************************************************
@@ -164,7 +168,7 @@ public class NodeSearcher extends PFComponent {
     /**
      * Listens to the nodemanager for fresh canidates.
      */
-    private final class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {
         }
 
@@ -187,6 +191,7 @@ public class NodeSearcher extends PFComponent {
         public void nodeDisconnected(NodeManagerEvent e) {
             if (hideOffline) {
                 searchResultListModel.remove(e.getNode());
+                resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
             }
         }
 
@@ -224,6 +229,7 @@ public class NodeSearcher extends PFComponent {
     private class Searcher implements Runnable {
         public void run() {
             searchResultListModel.clear();
+            resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
 
             // Search local database first
             searchLocal();
@@ -241,6 +247,7 @@ public class NodeSearcher extends PFComponent {
             {
                 if (checkMember(member) && member.matches(pattern)) {
                     searchResultListModel.add(member);
+                    resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                 }
             }
             fetchAccountInfos(searchResultListModel);
@@ -263,6 +270,7 @@ public class NodeSearcher extends PFComponent {
                     Member node = canidatesFromSupernodes.remove();
                     if (checkMember(node) && node.matches(pattern)) {
                         searchResultListModel.add(node);
+                        resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                     }
                 }
 
@@ -299,6 +307,7 @@ public class NodeSearcher extends PFComponent {
                 Member node = nodeInfo.getNode(getController(), true);
                 if (checkMember(node)) {
                     searchResultListModel.add(node);
+                    resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                 }
             }
             fetchAccountInfos(searchResultListModel);

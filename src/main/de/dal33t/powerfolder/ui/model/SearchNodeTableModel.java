@@ -59,7 +59,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 {
 
     private List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private ObservableList<Member> members = new LinkedListModel<Member>();
+    private final ObservableList<Member> members = new LinkedListModel<Member>();
 
     /**
      * The comparators for the columns, initalized in constructor
@@ -69,7 +69,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     private int sortColumn;
     private Comparator comparator;
 
-    private static final String[] COLUMN_NAMES = new String[]{
+    private static final String[] COLUMN_NAMES = {
         Translation.getTranslation("friend_search.node_table.name"),
         Translation.getTranslation("friend_search.node_table.account"),
         Translation.getTranslation("friend_search.node_table.last_seen_online"),
@@ -218,8 +218,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
     public Object getDataAt(int rowIndex) {
 
         if (members.isEmpty()) {
-            return Translation
-                .getTranslation("friend_search.no_computers_found");
+            return "";
         }
         return members.get(rowIndex);
     }
@@ -272,12 +271,6 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         fireTableModelEvent(te);
     }
 
-    private void fireRowChanged(int row) {
-        TableModelEvent te = new TableModelEvent(this, row, row,
-            TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
-        fireTableModelEvent(te);
-    }
-
     private void fireModelStructureChanged() {
         TableModelEvent te = new TableModelEvent(this);
         fireTableModelEvent(te);
@@ -306,7 +299,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * Listens for changes on the listmodel and fires the appropriate table
      * model events.
      */
-    private final class ListModelListener implements ListDataListener {
+    private class ListModelListener implements ListDataListener {
         public void intervalAdded(ListDataEvent e) {
             fireModelStructureChanged();
         }
@@ -324,7 +317,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * Adapter between TableModel and NodeManager. Listens on changes of the
      * nodes and fires tablemodel events.
      */
-    private final class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener implements NodeManagerListener {
         public void nodeRemoved(NodeManagerEvent e) {
         }
 
