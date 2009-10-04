@@ -123,7 +123,7 @@ public class ProblemsTab extends PFUIComponent {
 
     public void setFolderInfo(FolderInfo folderInfo) {
         this.folderInfo = folderInfo;
-        this.selectedProblem = null;
+        selectedProblem = null;
         if (problemsTableModel.getRowCount() > 0) {
             problemsTable.getSelectionModel().setSelectionInterval(0, 0);
         } else {
@@ -139,11 +139,11 @@ public class ProblemsTab extends PFUIComponent {
      */
     public void updateProblems(List<Problem> problemList) {
         problemsTableModel.updateProblems(problemList);
-        if (!problemList.isEmpty()) {
-            problemsTable.getSelectionModel().setSelectionInterval(0, 0);
-        } else {
+        if (problemList.isEmpty()) {
             problemsTable.getSelectionModel().removeIndexInterval(0,
-                problemsTableModel.getRowCount());
+                    problemsTableModel.getRowCount());
+        } else {
+            problemsTable.getSelectionModel().setSelectionInterval(0, 0);
         }
         enableOnSelection();
 
@@ -161,14 +161,13 @@ public class ProblemsTab extends PFUIComponent {
             openProblemAction.setEnabled(true);
             resolveProblemAction
                 .setEnabled(selectedProblem instanceof ResolvableProblem);
+            logFine("Selected row: " + problemsTable.getSelectedRow()
+                + ". Problem: " + selectedProblem);
         } else {
             selectedProblem = null;
             openProblemAction.setEnabled(false);
             resolveProblemAction.setEnabled(false);
         }
-        logWarning("Selected row: " + problemsTable.getSelectedRow()
-            + ". Problem: " + selectedProblem);
-
     }
 
     // /////////////////
