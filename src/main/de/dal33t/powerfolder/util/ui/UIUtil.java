@@ -19,10 +19,7 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,11 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -344,6 +337,27 @@ public class UIUtil {
             log.warning(e.getMessage());
         } catch (IllegalAccessException e) {
             log.warning(e.getMessage());
+        }
+    }
+
+    /**
+     * This forces a frame to be on screen, with all of its edges visible
+     *
+     * @param frame
+     */
+    public static void putOnScreen(JFrame frame) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        if (frame.getX() < 0) {
+            frame.setLocation(0, frame.getY());
+        }
+        if (frame.getY() < 0) {
+            frame.setLocation(frame.getX(), 0);
+        }
+        if (frame.getX() > screenSize.width) {
+            frame.setLocation(screenSize.width - frame.getWidth(), frame.getY());
+        }
+        if (frame.getY() > screenSize.height) {
+            frame.setLocation(0, screenSize.height - frame.getHeight());
         }
     }
 }

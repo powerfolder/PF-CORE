@@ -671,6 +671,7 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     public void displaySystemMonitorWindow() {
+        UIUtil.putOnScreen(systemMonitorFrame.getUIComponent());
         systemMonitorFrame.getUIComponent().setVisible(true);
     }
 
@@ -682,6 +683,7 @@ public class UIController extends PFComponent {
         if (frame.getExtendedState() == Frame.ICONIFIED) {
             frame.setExtendedState(Frame.NORMAL);
         }
+        UIUtil.putOnScreen(frame);
         frame.setVisible(true);
     }
 
@@ -768,6 +770,7 @@ public class UIController extends PFComponent {
         if (frame.getExtendedState() == Frame.ICONIFIED) {
             frame.setExtendedState(Frame.NORMAL);
         }
+        UIUtil.putOnScreen(chatFrame.getUIComponent());
         chatFrame.getUIComponent().setVisible(true);
     }
 
