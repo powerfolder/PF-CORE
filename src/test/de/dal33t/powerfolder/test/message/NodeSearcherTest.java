@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.net.NodeSearcher;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import com.jgoodies.binding.value.ValueHolder;
 
 /**
  * Tests the NodeSearcher.
@@ -98,7 +99,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for a node, which cannot be found
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "xxx",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -106,7 +107,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "Bart" by nick
         searcher = new NodeSearcher(getContollerLisa(), "art",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -121,7 +122,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "Maggi" by nick
         searcher = new NodeSearcher(getContollerLisa(), "MAGGI",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -131,7 +132,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "Marge" by nick. Is invalid, but on local database = found
         searcher = new NodeSearcher(getContollerLisa(), "marge",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -149,7 +150,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "Homer" by nick
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "homer",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -160,7 +161,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "moe" by nick. Should not be found since he is invalid
         searcher = new NodeSearcher(getContollerLisa(), "MOE",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -175,7 +176,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "r"
         NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "r",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -185,7 +186,7 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         // Search for "127.0.0.1"
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
@@ -193,9 +194,9 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         // Bart, Homer, Ned Flenders
         assertEquals(3, searchResultModel.size());
 
-        // Search for hostname (NOT LONGER SUPPORTED)
+        // Search for hostname (NO LONGER SUPPORTED)
         searcher = new NodeSearcher(getContollerLisa(), "localhost",
-            searchResultModel, true, false);
+            searchResultModel, true, false, new ValueHolder());
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
