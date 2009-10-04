@@ -169,15 +169,17 @@ public class FindComputersPanel extends PFUIPanel {
 
     private JComponent createContentPanel() {
         FormLayout layout = new FormLayout("fill:600:grow",
-            "pref, 3dlu, fill:300:grow");
+            "pref, 3dlu, pref, 3dlu, fill:300:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(createSearchPanel(), cc.xy(1, 1));
 
+        builder.addSeparator(null, cc.xy(1, 3));
+
         // searchResultScroller and noResultsLabel share the same slot.
-        builder.add(searchResultScroller, cc.xy(1, 3));
-        builder.add(noResultsLabel, cc.xy(1, 3));
+        builder.add(searchResultScroller, cc.xy(1, 5));
+        builder.add(noResultsLabel, cc.xy(1, 5));
 
         updateActions();
 
