@@ -294,7 +294,7 @@ public class FilesTable extends JTable {
                         setHorizontalAlignment(LEFT);
                         break;
                     case 4: // modified date
-                        myValue = Format.formatDate(fileInfo.getModifiedDate());
+                        myValue = Format.getInstance(controller).formatDate(fileInfo.getModifiedDate());
                         setHorizontalAlignment(RIGHT);
                         break;
                 }

@@ -126,7 +126,7 @@ public class FileVersionsPanel extends PFUIComponent {
     private void initComponents() {
 
         fileVersionsTableModel = new FileVersionsTableModel(getController());
-        fileVersionsTable = new FileVersionsTable(fileVersionsTableModel);
+        fileVersionsTable = new FileVersionsTable(fileVersionsTableModel, getController());
         fileVersionsTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
@@ -202,7 +202,7 @@ public class FileVersionsPanel extends PFUIComponent {
                 Format.formatBytesShort(fileInfo.getSize())));
         currentDateLabel.setText(Translation.getTranslation(
                 "file_version_tab.date",
-                Format.formatDate(fileInfo.getModifiedDate())));
+                Format.getInstance(getController()).formatDate(fileInfo.getModifiedDate())));
         currentVersionPanel.setVisible(true);
 
         // Run this outside of EDT, in case it runs slow.

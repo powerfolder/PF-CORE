@@ -593,7 +593,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 syncDateText = Translation
                     .getTranslation("exp_folder_view.never_synchronized");
             } else {
-                String formattedDate = Format.formatDate(lastSyncDate);
+                String formattedDate = Format.getInstance(getController()).formatDate(lastSyncDate);
                 syncDateText = Translation.getTranslation(
                     "exp_folder_view.last_synchronized", formattedDate);
             }
@@ -621,7 +621,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
-                        String formattedDate = Format.formatDate(date);
+                        String formattedDate = Format.getInstance(getController()).formatDate(date);
                         syncDateText = Translation.getTranslation(
                             "exp_folder_view.estimated_synchronized",
                             formattedDate);

@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.PFComponent;
+
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -28,14 +32,27 @@ import java.util.Formatter;
 
 /**
  * Helper class for all formatting
- * 
+ *
  * @version $Revision: 1.6 $
  */
-public class Format {
+public class Format extends PFComponent {
+
+    private static Format instance;
+
+    public static Format getInstance(Controller controller) {
+        if (instance == null) {
+            instance = new Format(controller);
+        }
+        return instance;
+    }
+
+    private Format(Controller controller) {
+        super(controller);
+    }
 
     /**
      * Returns a count of bytes in a string
-     * 
+     *
      * @param bytes
      * @return
      */
@@ -61,7 +78,7 @@ public class Format {
 
     /**
      * Returns a count of bytes in a string
-     * 
+     *
      * @param bytes
      * @return
      */
@@ -84,11 +101,11 @@ public class Format {
 
     /**
      * Formats a date
-     * 
+     *
      * @param date
      * @return
      */
-    public static String formatDate(Date date) {
+    public String formatDate(Date date) {
         if (date == null) {
             return null;
         }
@@ -97,13 +114,13 @@ public class Format {
         Calendar calNow = Calendar.getInstance();
         if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
             int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
-                - calNow.get(Calendar.DAY_OF_YEAR);
+                    - calNow.get(Calendar.DAY_OF_YEAR);
             if (dayDiffer == 0) {
                 return Translation.getTranslation("general.today") + ' '
-                    + getFileDateHoursFormat().format(date);
+                        + getFileDateHoursFormat().format(date);
             } else if (dayDiffer == -1) {
                 return Translation.getTranslation("general.yesterday") + ' '
-                    + getFileDateHoursFormat().format(date);
+                        + getFileDateHoursFormat().format(date);
             }
 
         }
@@ -113,7 +130,7 @@ public class Format {
 
     /**
      * Formats numbers
-     * 
+     *
      * @param n
      * @return
      */
@@ -127,9 +144,8 @@ public class Format {
 
     /**
      * Translates a "how much time remaining" value into a string.
-     * 
-     * @param dt
-     *            The time in milliseconds
+     *
+     * @param dt The time in milliseconds
      * @return the formatted string. Examples: "102 days", "10:30:23"
      */
     public static String formatDeltaTime(long dt) {
@@ -138,24 +154,24 @@ public class Format {
         long hours = dt / 1000 / 60 / 60;
         if (days > 1) { // Two days or more
             f.format(Translation.getTranslation("general.days", String
-                .valueOf(days))
-                + ", ");
+                    .valueOf(days))
+                    + ", ");
             hours %= 24;
         }
-        long minutes = (dt / 1000 / 60) % 60;
-        long seconds = (dt / 1000) % 60;
+        long minutes = dt / 1000 / 60 % 60;
+        long seconds = dt / 1000 % 60;
         return f.format(Translation.getTranslation("general.time"), hours,
-            minutes, seconds).out().toString();
+                minutes, seconds).out().toString();
     }
 
     /**
      * @param syncPercentage
      * @return the rendered sync percentage.
      */
-    public static final String formatSyncPercentage(double syncPercentage) {
+    public static String formatSyncPercentage(double syncPercentage) {
         if (syncPercentage >= 0) {
-            return Translation.getTranslation("percent.place.holder", Format
-                .getNumberFormat().format(syncPercentage));
+            return Translation.getTranslation("percent.place.holder",
+                    getNumberFormat().format(syncPercentage));
         }
         return Translation.getTranslation("percent.place.holder", "?");
     }
@@ -169,50 +185,50 @@ public class Format {
 
     /**
      * See #692
-     * 
+     *
      * @return the TIME_ONLY_DATE_FOMRAT
      */
-    public static DateFormat getTimeOnlyDateFormat() {
+    public DateFormat getTimeOnlyDateFormat() {
         return createSimpleDateFormat("date_format.time_only_date",
-            "[HH:mm:ss]");
+                "[HH:mm:ss]");
     }
 
     /**
      * See #692
-     * 
+     *
      * @return the DETAILED_TIME_FOMRAT
      */
-    public static DateFormat getDetailedTimeFormat() {
+    public DateFormat getDetailedTimeFormat() {
         return createSimpleDateFormat("date_format.detailed_time",
-            "[HH:mm:ss:SSS]");
+                "[HH:mm:ss:SSS]");
     }
 
     /**
      * See #692
-     * 
+     *
      * @return the FULL_DATE_FOMRAT
      */
-    public static DateFormat getFullDateFormat() {
+    public DateFormat getFullDateFormat() {
         return createSimpleDateFormat("date_format.full_date",
-            "MM/dd/yyyy HH:mm:ss");
+                "MM/dd/yyyy HH:mm:ss");
     }
 
     /**
      * See #692
-     * 
+     *
      * @return the FILE_DATE_FORMAT
      */
-    public static DateFormat getFileDateFormat() {
+    public DateFormat getFileDateFormat() {
         return createSimpleDateFormat("date_format.file_date",
-            "MM/dd/yyyy HH:mm");
+                "MM/dd/yyyy HH:mm");
     }
 
     /**
      * See #692
-     * 
+     *
      * @return the FILE_DATE_FORMAT_HOURS
      */
-    private static DateFormat getFileDateHoursFormat() {
+    private DateFormat getFileDateHoursFormat() {
         return createSimpleDateFormat("date_format.file_date_hours", "HH:mm");
     }
 
@@ -225,8 +241,7 @@ public class Format {
     }
 
     private static DecimalFormat createDecimalFormat(String preferred,
-        String fallback)
-    {
+                                                     String fallback) {
         try {
             return new DecimalFormat(Translation.getTranslation(preferred));
         } catch (Exception e) {
@@ -234,13 +249,40 @@ public class Format {
         }
     }
 
-    private static SimpleDateFormat createSimpleDateFormat(String preferred,
-        String fallback)
-    {
+    private SimpleDateFormat createSimpleDateFormat(String preferred,
+                                                    String fallback) {
         try {
-            return new SimpleDateFormat(Translation.getTranslation(preferred));
+            return new SimpleDateFormat(hour24(Translation.getTranslation(preferred), getController()));
         } catch (Exception e) {
-            return new SimpleDateFormat(fallback);
+            return new SimpleDateFormat(hour24(fallback, getController()));
         }
+    }
+
+    /**
+     * Replace HH in time formats with h, and add a.
+     * So 23:59:59 becomes 11:59:59 PM, and [23:59:59] becomes [11:59:59 PM].
+     * 
+     * @param format
+     * @param controller
+     * @return
+     */
+    private static String hour24(String format, Controller controller) {
+        if (!PreferencesEntry.TIME_24_HOUR.getValueBoolean(controller)) {
+            int hh = format.indexOf("HH");
+            if (hh >= 0) {
+                StringBuilder sb = new StringBuilder(format);
+                sb.replace(hh, hh + 2, "h");
+
+                // Some date/time formats are surrounded by [...]
+                int j = sb.toString().lastIndexOf(']');
+                if (j > 0) {
+                    sb.replace(j, j + 1, " a]");
+                } else {
+                    sb.append(" a");
+                }
+                return sb.toString();
+            }
+        }
+        return format;
     }
 }

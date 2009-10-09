@@ -237,8 +237,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         text = Translation
                             .getTranslation(
                                 "folder_repository.warn_on_close_eta.text",
-                                folderslist.toString(), Format
-                                    .formatDate(syncDate));
+                                folderslist.toString(), Format.getInstance(
+                                            getController()).formatDate(syncDate));
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");

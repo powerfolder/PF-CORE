@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Controller;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -37,8 +38,11 @@ import java.awt.event.MouseEvent;
 
 public class ProblemsTable extends JTable {
 
-    public ProblemsTable(ProblemsTableModel model) {
+    private Controller controller;
+
+    public ProblemsTable(ProblemsTableModel model, Controller controller) {
         super(model);
+        this.controller = controller;
         setColumnSelectionAllowed(false);
         setShowGrid(false);
 
@@ -72,7 +76,7 @@ public class ProblemsTable extends JTable {
         column.setPreferredWidth(20);
     }
 
-    private static class ProblemTableCellRenderer extends DefaultTableCellRenderer {
+    private class ProblemTableCellRenderer extends DefaultTableCellRenderer {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected,
@@ -87,7 +91,7 @@ public class ProblemsTable extends JTable {
                 if (column == 0) {
                     setText(problem.getDescription());
                 } else if (column == 1) {
-                    setText(Format.formatDate(problem.getDate()));
+                    setText(Format.getInstance(controller).formatDate(problem.getDate()));
                 } else if (column == 2) {
                     setText(problem.getWikiLinkKey());
                 } else if (column == 3) {

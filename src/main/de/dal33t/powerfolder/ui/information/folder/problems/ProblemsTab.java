@@ -61,7 +61,7 @@ public class ProblemsTab extends PFUIComponent {
     public ProblemsTab(Controller controller) {
         super(controller);
         problemsTableModel = new ProblemsTableModel(controller);
-        problemsTable = new ProblemsTable(problemsTableModel);
+        problemsTable = new ProblemsTable(problemsTableModel, controller);
         problemsTable.getSelectionModel().setSelectionMode(
             ListSelectionModel.SINGLE_SELECTION);
         problemsTable.getSelectionModel().addListSelectionListener(

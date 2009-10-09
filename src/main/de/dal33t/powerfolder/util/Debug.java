@@ -635,22 +635,22 @@ public class Debug {
     /**
      * Writes statistics to disk
      * 
-     * @param c
+     * @param controller
      */
-    public static void writeStatistics(Controller c) {
+    public static void writeStatistics(Controller controller) {
         OutputStream fOut = null;
         try {
-            File file = new File(LoggingManager.getDebugDir(), c
+            File file = new File(LoggingManager.getDebugDir(), controller
                 .getConfigName()
                 + ".netstat.csv");
             file.getParentFile().mkdirs();
             fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
-            String statLine = Format.getFullDateFormat().format(now) + ';'
+            String statLine = Format.getInstance(controller).getFullDateFormat().format(now) + ';'
                 + now.getTime() + ';'
-                + c.getNodeManager().countConnectedNodes() + ';'
-                + c.getNodeManager().countOnlineNodes() + ';'
-                + c.getNodeManager().getNodesAsCollection().size() + '\n';
+                + controller.getNodeManager().countConnectedNodes() + ';'
+                + controller.getNodeManager().countOnlineNodes() + ';'
+                + controller.getNodeManager().getNodesAsCollection().size() + '\n';
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
             log.log(Level.WARNING, "Unable to write network statistics file", e);

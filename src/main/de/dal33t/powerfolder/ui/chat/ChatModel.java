@@ -204,7 +204,7 @@ public class ChatModel {
             String statusMessage = Translation.getTranslation(
                     "chat_panel.member_joined_folder_at_time", node.getNick(),
                     folderEvent.getFolder().getName(),
-                    Format.getTimeOnlyDateFormat().format(new Date()))
+                    Format.getInstance(controller).getTimeOnlyDateFormat().format(new Date()))
                     + '\n';
             addStatusChatLine(node, statusMessage);
         }
@@ -214,7 +214,7 @@ public class ChatModel {
             String statusMessage = Translation.getTranslation(
                     "chat_panel.member_left_folder_at_time", node.getNick(),
                     folderEvent.getFolder().getName(),
-                    Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
+                    Format.getInstance(controller).getTimeOnlyDateFormat().format(new Date())) + '\n';
             addStatusChatLine(node, statusMessage);
         }
 
@@ -234,7 +234,7 @@ public class ChatModel {
                 Member node = e.getNode();
                 String statusMessage = Translation.getTranslation(
                     "chat_panel.member_connected_at_time", node.getNick(),
-                    Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
+                    Format.getInstance(controller).getTimeOnlyDateFormat().format(new Date())) + '\n';
                 addStatusChatLine(node, statusMessage);
                 for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {
@@ -249,7 +249,7 @@ public class ChatModel {
                 Member node = e.getNode();
                 String statusMessage = Translation.getTranslation(
                     "chat_panel.member_disconnected_at_time", node.getNick(),
-                    Format.getTimeOnlyDateFormat().format(new Date())) + '\n';
+                    Format.getInstance(controller).getTimeOnlyDateFormat().format(new Date())) + '\n';
                 addStatusChatLine(node, statusMessage);
                 for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {

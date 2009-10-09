@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.friends;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
@@ -37,6 +38,13 @@ import java.awt.*;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 class MemberTableCellRenderer extends DefaultTableCellRenderer {
+
+    private Controller controller;
+
+    MemberTableCellRenderer(Controller controller) {
+        this.controller = controller;
+    }
+
     public Component getTableCellRendererComponent(JTable table, Object value,
         boolean isSelected, boolean hasFocus, int row, int column)
     {
@@ -50,16 +58,14 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
         } else if (value instanceof Member) {
             Member member = (Member) value;
             switch (actualColumn) {
-                case 0 : {
+                case 0 :
                     value = member.getNick();
                     setIcon(Icons.getIconFor(member));
                     break;
-                }
-                case 1 : {
+                case 1 :
                     value = renderAccount(member.getAccountInfo());
                     break;
-                }
-                case 2 : {
+                case 2 :
                     if (member.isCompletelyConnected()) {
                         value = Translation
                             .getTranslation("friends_panel.connected");
@@ -73,25 +79,24 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                         }
 
                     } else {
-                        value = Format.formatDate(member.getLastConnectTime());
+                        value = Format.getInstance(controller).formatDate(member.getLastConnectTime());
                     }
                     if (member.getController().isVerbose()) {
                         String lastMsg = member.getLastProblem() != null
                             ? member.getLastProblem().message
                             : "n/a";
-                        value = value + " (" + lastMsg + ")";
+                        value = value + " (" + lastMsg + ')';
                     }
                     setHorizontalAlignment(RIGHT);
                     break;
-                }
-                    // case 2 : {
+                // case 2 : {
                     // // FIXME This may cause DNS reverselookup executed in
                     // EDT!
                     // value = replaceNullWithNA(member.getHostName());
                     // setHorizontalAlignment(SwingConstants.RIGHT);
                     // break;
                     // }
-                case 3 : {
+                case 3 :
                     value = replaceNullWithNA(member.getIP());
                     int port = member.getPort();
                     if (port != 1337) {
@@ -99,15 +104,13 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                     }
                     setHorizontalAlignment(RIGHT);
                     break;
-                }
-                case 4 : {
+                case 4 :
                     JCheckBox box = new JCheckBox("", member.isOnLAN());
                     box.setBackground(row % 2 == 0
                         ? ColorUtil.EVEN_TABLE_ROW_COLOR
                         : ColorUtil.ODD_TABLE_ROW_COLOR);
                     box.setHorizontalAlignment(CENTER);
                     return box;
-                }
 
             }
         } else {
@@ -124,7 +127,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
             hasFocus, row, column);
     }
 
-    private String renderAccount(AccountInfo aInfo) {
+    private static String renderAccount(AccountInfo aInfo) {
         if (aInfo != null) {
             return aInfo.getScrabledUsername();
         } else {
@@ -132,7 +135,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
         }
     }
 
-    private static final String replaceNullWithNA(String original) {
+    private static String replaceNullWithNA(String original) {
         return original == null ? Translation
             .getTranslation("friends_panel.n_a") : original;
     }

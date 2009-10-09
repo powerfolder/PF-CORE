@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.friends;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
@@ -34,13 +35,19 @@ import java.awt.event.MouseEvent;
 
 public class FindComputersTable extends JTable {
 
+    private Controller controller;
+
+    public FindComputersTable(Controller controller) {
+        this.controller = controller;
+    }
+
     public FindComputersTable(SearchNodeTableModel tableModel) {
         super(tableModel);
         setRowHeight(Icons.getIconById(Icons.NODE_NON_FRIEND_CONNECTED)
             .getIconHeight() + 3);
         setShowGrid(false);
         setDefaultRenderer(Member.class,
-            new MemberTableCellRenderer());
+            new MemberTableCellRenderer(controller));
         getTableHeader().setReorderingAllowed(true);
         // add sorting
         getTableHeader().addMouseListener(

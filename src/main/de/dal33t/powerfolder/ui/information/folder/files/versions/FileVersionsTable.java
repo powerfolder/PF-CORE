@@ -34,19 +34,23 @@ import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Table to display file versions of a file.
  */
 public class FileVersionsTable extends JTable {
 
+    private Controller controller;
+
     /**
      * Constructor
      *
      * @param model
      */
-    public FileVersionsTable(FileVersionsTableModel model) {
+    public FileVersionsTable(FileVersionsTableModel model, Controller controller) {
         super(model);
+        this.controller = controller;
 
         setColumnSelectionAllowed(false);
         setShowGrid(false);
@@ -116,7 +120,7 @@ public class FileVersionsTable extends JTable {
         }
     }
 
-    private static class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
+    private class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
@@ -132,7 +136,7 @@ public class FileVersionsTable extends JTable {
                     setHorizontalAlignment(RIGHT);
                     break;
                 case 2:  // date
-                    myValue = Format.formatDate(info.getModifiedDate());
+                    myValue = Format.getInstance(controller).formatDate(info.getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }

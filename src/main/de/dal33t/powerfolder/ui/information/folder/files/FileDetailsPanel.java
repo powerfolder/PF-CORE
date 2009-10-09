@@ -174,7 +174,7 @@ public class FileDetailsPanel extends PFUIComponent {
         modifiedByField.setText(fileInfo.getModifiedBy().nick);
         modifiedByField.setIcon(Icons.getIconById(Icons.COMPUTER));
         modifiedDateField
-            .setText(Format.formatDate(fileInfo.getModifiedDate()));
+            .setText(Format.getInstance(getController()).formatDate(fileInfo.getModifiedDate()));
 
         versionField.setText(String.valueOf(fileInfo.getVersion()));
 

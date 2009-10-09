@@ -25,6 +25,7 @@ import java.security.Security;
 import java.util.Date;
 
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.Controller;
 
 public class TestDynDnsResolve {
     public static void main(String[] args) throws InterruptedException {
@@ -36,7 +37,7 @@ public class TestDynDnsResolve {
             + Security.getProperty("networkaddress.cache.ttl"));
         for (int i = 0; i < 25000; i++) {
             try {
-                System.out.println(Format.formatDate(new Date())
+                System.out.println(Format.getInstance(Controller.createController()).formatDate(new Date())
                     + ": "
                     + InetAddress.getByName("tot-notebook.dyndns.org")
                         .getHostAddress());
