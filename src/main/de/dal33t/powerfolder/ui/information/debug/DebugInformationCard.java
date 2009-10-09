@@ -411,39 +411,40 @@ public class DebugInformationCard extends InformationCard{
 	            FormLayout layout = new FormLayout(
 	                    //      2           4            6         8           10           12          14         16            18          20         22
 	                    "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 8dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow",
-	                    "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow");
+	                    "3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, 3dlu, pref, 3dlu");
 	            PanelBuilder builder = new PanelBuilder(layout);
 	            CellConstraints cc = new CellConstraints();
+	            
+	            builder.add(createToolBar(), cc.xywh(2, 2, 23, 1));
+	            builder.add(textPanel.getUIComponent(), cc.xywh(1, 4, 24, 1));
+	            
+	            builder.add(new JLabel("FileRequestor"), cc.xy(2, 6));
+                builder.add(shutdownFileRequestorButton, cc.xy(4, 6));
+                builder.add(startFileRequestorButton, cc.xy(6, 6));
 
-	            builder.add(new JLabel("FileRequestor"), cc.xy(2, 2));
-	            builder.add(shutdownFileRequestorButton, cc.xy(4, 2));
-	            builder.add(startFileRequestorButton, cc.xy(6, 2));
+                builder.add(new JLabel("TransferManager"), cc.xy(2, 8));
+                builder.add(shutdownTransferManagerButton, cc.xy(4, 8));
+                builder.add(startTransferManagerButton, cc.xy(6, 8));
+                builder.add(suspendEventsTransferManagerToggleButton, cc.xy(8, 8));
 
-	            builder.add(new JLabel("TransferManager"), cc.xy(2, 4));
-	            builder.add(shutdownTransferManagerButton, cc.xy(4, 4));
-	            builder.add(startTransferManagerButton, cc.xy(6, 4));
-	            builder.add(suspendEventsTransferManagerToggleButton, cc.xy(8, 4));
+                builder.add(new JLabel("NodeManager"), cc.xy(10, 6));
+                builder.add(shutdownNodeManagerButton, cc.xy(12, 6));
+                builder.add(startNodeManagerButton, cc.xy(14, 6));
+                builder.add(suspendEventsNodeManagerToggleButton, cc.xy(16, 6));
 
-	            builder.add(new JLabel("NodeManager"), cc.xy(10, 2));
-	            builder.add(shutdownNodeManagerButton, cc.xy(12, 2));
-	            builder.add(startNodeManagerButton, cc.xy(14, 2));
-	            builder.add(suspendEventsNodeManagerToggleButton, cc.xy(16, 2));
+                builder.add(new JLabel("FolderRepository"), cc.xy(10, 8));
+                builder.add(shutdownFolderRepository, cc.xy(12, 8));
+                builder.add(startFolderRepository, cc.xy(14, 8));
+                builder.add(suspendEventsFolderRepositoryToggleButton, cc.xy(16, 8));
 
-	            builder.add(new JLabel("FolderRepository"), cc.xy(10, 4));
-	            builder.add(shutdownFolderRepository, cc.xy(12, 4));
-	            builder.add(startFolderRepository, cc.xy(14, 4));
-	            builder.add(suspendEventsFolderRepositoryToggleButton, cc.xy(16, 4));
+                builder.add(new JLabel("ConnectionListener"), cc.xy(18, 6));
+                builder.add(shutdownConnectionListener, cc.xy(20, 6));
+                builder.add(startConnectionListener, cc.xy(22, 6));
 
-	            builder.add(new JLabel("ConnectionListener"), cc.xy(18, 2));
-	            builder.add(shutdownConnectionListener, cc.xy(20, 2));
-	            builder.add(startConnectionListener, cc.xy(22, 2));
-
-	            builder.add(new JLabel("BroadcastManager"), cc.xy(18, 4));
-	            builder.add(shutdownBroadcastMananger, cc.xy(20, 4));
-	            builder.add(startBroadcastMananger, cc.xy(22, 4));
-
-	            builder.add(createToolBar(), cc.xywh(2, 6, 23, 1));
-	            builder.add(textPanel.getUIComponent(), cc.xywh(1, 8, 24, 1));
+                builder.add(new JLabel("BroadcastManager"), cc.xy(18, 8));
+                builder.add(shutdownBroadcastMananger, cc.xy(20, 8));
+                builder.add(startBroadcastMananger, cc.xy(22, 8));
+                
 	            uiComponent = builder.getPanel();
 	       
 	    }
