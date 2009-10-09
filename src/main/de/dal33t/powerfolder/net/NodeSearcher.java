@@ -37,7 +37,6 @@ import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.util.Reject;
-import com.jgoodies.binding.value.ValueModel;
 
 /**
  * This class searches nodes matching a given pattern.
@@ -61,7 +60,6 @@ public class NodeSearcher extends PFComponent {
     private Queue<Member> canidatesFromSupernodes;
     private List<Member> searchResultListModel;
     private NodeSearchFilter nodeSearchFilter;
-    private ValueModel resultsDisplayedVM; // <Booelan>
 
     /**
      * Constructs a new node searcher with giben pattern and a result listmodel.
@@ -82,8 +80,7 @@ public class NodeSearcher extends PFComponent {
      *            hides the users that are offline
      */
     public NodeSearcher(Controller controller, String pattern,
-        List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline,
-        ValueModel resultsDisplayedVM)
+        List<Member> resultListModel, boolean ignoreFriends, boolean hideOffline)
     {
         super(controller);
         Reject.ifNull(resultListModel, "Result list model is null");
@@ -96,7 +93,6 @@ public class NodeSearcher extends PFComponent {
         this.pattern = pattern;
         canidatesFromSupernodes = new LinkedList<Member>();
         searchResultListModel = resultListModel;
-        this.resultsDisplayedVM = resultsDisplayedVM;
 
         this.ignoreFriends = ignoreFriends;
         this.hideOffline = hideOffline;
@@ -191,7 +187,6 @@ public class NodeSearcher extends PFComponent {
         public void nodeDisconnected(NodeManagerEvent e) {
             if (hideOffline) {
                 searchResultListModel.remove(e.getNode());
-                resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
             }
         }
 
@@ -229,7 +224,6 @@ public class NodeSearcher extends PFComponent {
     private class Searcher implements Runnable {
         public void run() {
             searchResultListModel.clear();
-            resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
 
             // Search local database first
             searchLocal();
@@ -247,7 +241,6 @@ public class NodeSearcher extends PFComponent {
             {
                 if (checkMember(member) && member.matches(pattern)) {
                     searchResultListModel.add(member);
-                    resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                 }
             }
             fetchAccountInfos(searchResultListModel);
@@ -270,7 +263,6 @@ public class NodeSearcher extends PFComponent {
                     Member node = canidatesFromSupernodes.remove();
                     if (checkMember(node) && node.matches(pattern)) {
                         searchResultListModel.add(node);
-                        resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                     }
                 }
 
@@ -307,7 +299,6 @@ public class NodeSearcher extends PFComponent {
                 Member node = nodeInfo.getNode(getController(), true);
                 if (checkMember(node)) {
                     searchResultListModel.add(node);
-                    resultsDisplayedVM.setValue(!searchResultListModel.isEmpty());
                 }
             }
             fetchAccountInfos(searchResultListModel);
@@ -315,6 +306,7 @@ public class NodeSearcher extends PFComponent {
 
         /**
          * Gives the cache a hit.
+         * 
          * @param nodes
          */
         private void fetchAccountInfos(Collection<Member> nodes) {
