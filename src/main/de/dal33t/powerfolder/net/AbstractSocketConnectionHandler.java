@@ -19,6 +19,22 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.io.InvalidObjectException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -38,22 +54,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.InvalidObjectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Date;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Abstract version of a connection handler acting upon
@@ -171,7 +171,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @throws ConnectionException
      *             if something is broken.
      */
-    @SuppressWarnings("unused")
     protected boolean receivedObject(Object obj) throws ConnectionException {
         return false;
     }
@@ -550,6 +549,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         senderSpawnLock.lock();
         try {
             messagesToSendQueue.offer(message);
+            if (messagesToSendQueue.size() > 10) {
+                logWarning("Many messages in send queue: "
+                    + messagesToSendQueue.size());
+            }
             if (sender == null) {
                 sender = new Sender();
                 getController().getIOProvider().startIO(sender);
@@ -585,7 +588,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
     }
-    
+
     public ConnectionQuality getConnectionQuality() {
         return ConnectionQuality.GOOD;
     }
@@ -911,18 +914,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         .getTotalDownloadTrafficCounter().bytesTransferred(
                             totalSize);
 
-                    // Consistency check:
-                    // if (getMember() != null
-                    // && getMember().isCompletelyConnected()
-                    // && getMember().getPeer() !=
-                    // AbstractSocketConnectionHandler.this)
-                    // {
-                    // logSevere(
-                    // "DEAD connection handler found for member: "
-                    // + getMember());
-                    // shutdown();
-                    // return;
-                    // }
                     if (isFiner()) {
                         logFiner("<- (received, "
                             + Format.formatBytes(totalSize) + ") - " + obj);
