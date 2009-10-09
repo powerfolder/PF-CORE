@@ -327,11 +327,13 @@ public class ServerClient extends PFComponent {
      * @return true if client supports register on registerURL.
      */
     public boolean supportsWebRegistration() {
-        return getRegisterURL() != null;
+        return ConfigurationEntry.SERVER_REGISTER_ENABLED
+            .getValueBoolean(getController());
     }
 
     /**
-     * Convenience method for getting login URL with preset username and password if possible
+     * Convenience method for getting login URL with preset username and
+     * password if possible
      * 
      * @return the login URL
      */
@@ -374,7 +376,7 @@ public class ServerClient extends PFComponent {
      * @return the registration URL for this server.
      */
     public String getRegisterURL() {
-        if (!getController().getDistribution().supportsWebRegistration()) {
+        if (!supportsWebRegistration()) {
             return null;
         }
         if (!hasWebURL()) {
