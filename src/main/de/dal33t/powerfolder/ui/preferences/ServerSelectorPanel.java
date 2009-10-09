@@ -88,8 +88,9 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
             } else {
                 InetSocketAddress addr = getController().getOSClient()
                     .getServer().getReconnectAddress();
-                addrStr = addr != null ? NetworkUtil
-                    .getHostAddressNoResolve(addr.getAddress()) : "n/a";
+                addrStr = addr != null && addr.getAddress() != null
+                    ? NetworkUtil.getHostAddressNoResolve(addr.getAddress())
+                    : "n/a";
                 if (addr != null
                     && addr.getPort() != ConnectionListener.DEFAULT_PORT)
                 {
