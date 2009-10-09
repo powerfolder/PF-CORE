@@ -694,7 +694,7 @@ public class FolderScanner extends PFComponent {
                 dirToScan, getController().getMySelf().getInfo());
             currentScanResult.newFiles.add(info);
             if (isFiner()) {
-                logWarning("New directory found: " + info.toDetailString());
+                logFiner("New directory found: " + info.toDetailString());
             }
         }
         return true;
