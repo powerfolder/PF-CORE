@@ -999,7 +999,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folder.getInfo());
             if (folder.getSyncProfile().isSyncDeletion()) {
-                folder.triggerSyncRemoteDeletedFiles(false);
+                folder.triggerSyncRemoteDeletedFiles(Collections
+                    .singleton(this), false);
             }
         }
 
