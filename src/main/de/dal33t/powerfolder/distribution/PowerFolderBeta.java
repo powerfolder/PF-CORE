@@ -45,10 +45,6 @@ public class PowerFolderBeta extends AbstractDistribution {
         // }
     }
 
-    public boolean supportsWebRegistration() {
-        return true;
-    }
-
     public UpdateSetting createUpdateSettings() {
         return null;
     }

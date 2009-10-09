@@ -51,12 +51,6 @@ public interface Distribution {
     boolean showCredentials();
 
     /**
-     * @return true if this client supports registration of new trial account
-     *         via activation wizard
-     */
-    boolean supportsWebRegistration();
-
-    /**
      * @return the update settings for this branded version. return null to use
      *         default location
      */

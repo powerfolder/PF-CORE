@@ -45,10 +45,6 @@ public class PowerFolderClient extends AbstractDistribution {
         }
     }
 
-    public boolean supportsWebRegistration() {
-        return true;
-    }
-
     public UpdateSetting createUpdateSettings() {
         return null;
     }
