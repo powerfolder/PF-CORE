@@ -545,8 +545,9 @@ public class Folder extends PFComponent {
                 // deleted files
                 Collection<FileInfo> fiList = new LinkedList<FileInfo>();
                 for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-                    FileInfo fileInfo = FileInfoFactory.deletedFile(deletedFileInfo,
-                            getController().getMySelf().getInfo(), new Date());
+                    FileInfo fileInfo = FileInfoFactory.deletedFile(
+                        deletedFileInfo, getController().getMySelf().getInfo(),
+                        new Date());
                     fiList.add(fileInfo);
 
                     commissionRootFolder();
@@ -560,11 +561,12 @@ public class Folder extends PFComponent {
                 for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
                 {
                     File diskFile = getDiskFile(restoredFileInfo);
-                    FileInfo newInfo = FileInfoFactory.modifiedFile(restoredFileInfo,
-                            getController().getFolderRepository(), diskFile,
-                            getController().getMySelf().getInfo());
+                    FileInfo newInfo = FileInfoFactory.modifiedFile(
+                        restoredFileInfo,
+                        getController().getFolderRepository(), diskFile,
+                        getController().getMySelf().getInfo());
                     fiList.add(newInfo);
-                    
+
                     commissionRootFolder();
                     rootDirectory.add(getController().getMySelf(), newInfo);
                 }
@@ -575,9 +577,9 @@ public class Folder extends PFComponent {
                 fiList = new LinkedList<FileInfo>();
                 for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
                     File diskFile = getDiskFile(changedFileInfo);
-                    FileInfo newInfo = FileInfoFactory.modifiedFile(changedFileInfo,
-                            getController().getFolderRepository(), diskFile,
-                            getController().getMySelf().getInfo());
+                    FileInfo newInfo = FileInfoFactory.modifiedFile(
+                        changedFileInfo, getController().getFolderRepository(),
+                        diskFile, getController().getMySelf().getInfo());
                     fiList.add(newInfo);
 
                     commissionRootFolder();
@@ -1960,7 +1962,7 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.isSyncDeletion()) {
-            triggerSyncRemoteDeletedFiles(false);
+            triggerSyncRemoteDeletedFiles(members.keySet(), false);
         }
 
         recommendScanOnNextMaintenance();
@@ -2152,29 +2154,44 @@ public class Folder extends PFComponent {
     /**
      * Triggers the deletion sync in background.
      * <p>
-     * TODO Optimize: Sync only with selected member and files
      * 
+     * @param members
+     *            selected members to sync deletions with
      * @param force
      */
-    public void triggerSyncRemoteDeletedFiles(final boolean force) {
+    public void triggerSyncRemoteDeletedFiles(final Collection<Member> members,
+        final boolean force)
+    {
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                syncRemoteDeletedFiles(force);
+                syncRemoteDeletedFiles(members, force);
             }
         });
     }
 
     /**
      * Synchronizes the deleted files with local folder
-     * <p>
-     * TODO Optimize: Sync only with selected member.
      * 
      * @param force
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
      */
     public void syncRemoteDeletedFiles(boolean force) {
-        if (getConnectedMembersCount() == 0) {
+        syncRemoteDeletedFiles(members.keySet(), force);
+    }
+
+    /**
+     * Synchronizes the deleted files with local folder
+     * 
+     * @param members
+     *            the members to sync the deletions with.
+     * @param force
+     *            true if the sync is forced with ALL connected members of the
+     *            folder. otherwise it checks the modifier.
+     */
+    public void syncRemoteDeletedFiles(Collection<Member> members, boolean force)
+    {
+        if (members.isEmpty()) {
             // Skip.
             return;
         }
@@ -2185,7 +2202,7 @@ public class Folder extends PFComponent {
 
         List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         // synchronized (scanLock) {
-        for (Member member : getMembersAsCollection()) {
+        for (Member member : members) {
             if (!member.isCompletelyConnected()) {
                 // disconected go to next member
                 continue;
@@ -2480,13 +2497,8 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (syncProfile.isSyncDeletion()) {
-            // FIXME: Is wrong, since it syncs with completely connected members
-            // only
-            // FIXME: Is called too often, should be called after finish of
-            // filelist sending only.
-            syncRemoteDeletedFiles(false);
-            // triggerSyncRemoteDeletedFiles(false);
+        if (syncProfile.isSyncDeletion() && from.isCompletelyConnected()) {
+            syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
 
         fireRemoteContentsChanged(from, newList);
@@ -2600,13 +2612,10 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (!singleFileAddMsg && syncProfile.isSyncDeletion()) {
-            // FIXME: Is wrong, since it syncs with completely connected members
-            // only
-            // FIXME: Is called too often, should be called after finish of
-            // filelist sending only.
-            syncRemoteDeletedFiles(false);
-            // triggerSyncRemoteDeletedFiles(false);
+        if (!singleFileAddMsg && syncProfile.isSyncDeletion()
+            && from.isCompletelyConnected())
+        {
+            syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
 
         // Fire event
