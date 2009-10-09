@@ -871,6 +871,9 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void updateNewFiles() {
 
+        if (folder == null) {
+            return;
+        }
         int newCount = 0;
         TransferManager transferManager = getController().getTransferManager();
         List<FileInfo> infoList = folder.getDirectory().getFileInfosRecursive();
