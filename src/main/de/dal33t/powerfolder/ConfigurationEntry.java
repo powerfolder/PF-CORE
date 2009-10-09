@@ -169,6 +169,12 @@ public enum ConfigurationEntry {
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", String
         .valueOf(Boolean.TRUE)),
 
+    /**
+     * #1715 If it should be possible to register at the server.
+     */
+    SERVER_REGISTER_ENABLED("server.register.enabled", String
+        .valueOf(Boolean.TRUE)),
+
     // General settings *******************************************************
 
     /**
