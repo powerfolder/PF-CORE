@@ -128,6 +128,11 @@ public class Format extends PFComponent {
         return getFileDateFormat().format(date);
     }
 
+    public static String formatDateLegacy(Date date) {
+        return DateFormat.getDateInstance(DateFormat.SHORT).format(date) + ' '
+            + DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
+    }
+
     /**
      * Formats numbers
      *
