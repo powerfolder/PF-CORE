@@ -1312,8 +1312,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyFilesAvailableAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
-            getController().getUIController().openFilesInformation(folderInfo,
-                DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+            getController().getUIController().openFilesInformationIncoming(
+                    folderInfo);
         }
     }
 

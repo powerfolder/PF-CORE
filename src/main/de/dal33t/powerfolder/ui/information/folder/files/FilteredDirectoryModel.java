@@ -23,7 +23,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 
-import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;

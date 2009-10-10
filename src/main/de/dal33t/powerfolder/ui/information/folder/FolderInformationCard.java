@@ -73,12 +73,11 @@ public class FolderInformationCard extends InformationCard {
      * Sets the folder in the tabs.
      * 
      * @param folderInfo
-     * @param directoryFilterMode
      */
-    public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
+    public void setFolderInfo(FolderInfo folderInfo) {
         detachProblemListener();
         this.folderInfo = folderInfo;
-        filesTab.setFolderInfo(folderInfo, directoryFilterMode);
+        filesTab.setFolderInfo(folderInfo);
         membersTab.setFolderInfo(folderInfo);
         settingsTab.setFolderInfo(folderInfo);
         problemsTab.setFolderInfo(folderInfo);
@@ -87,15 +86,31 @@ public class FolderInformationCard extends InformationCard {
     }
 
     /**
-     * Sets the folder in the tabs with local and incoming set and sort date
+     * Sets the folder in the tabs with new set and sort date
      * descending.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
         detachProblemListener();
         this.folderInfo = folderInfo;
         filesTab.setFolderInfoLatest(folderInfo);
+        membersTab.setFolderInfo(folderInfo);
+        settingsTab.setFolderInfo(folderInfo);
+        problemsTab.setFolderInfo(folderInfo);
+        atachProblemListener();
+        updateProblems();
+    }
+
+    /**
+     * Sets the folder in the tabs with incoming set.
+     *
+     * @param folderInfo
+     */
+    public void setFolderInfoIncoming(FolderInfo folderInfo) {
+        detachProblemListener();
+        this.folderInfo = folderInfo;
+        filesTab.setFolderInfoIncoming(folderInfo);
         membersTab.setFolderInfo(folderInfo);
         settingsTab.setFolderInfo(folderInfo);
         problemsTab.setFolderInfo(folderInfo);

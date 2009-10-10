@@ -78,9 +78,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         flatMode = new ValueHolder();
 
-        flatViewCB = new JCheckBox(Translation.getTranslation(
-                "files_tab.flat_view.text"));
-
         statsPanel = new FilesStatsPanel(getController());
 
         filterTextField = new FileFilterTextField(getController());
@@ -142,20 +139,12 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         folder = f;
         directoryFilter.setFolder(f);
         tablePanel.setFolder(f);
-    }
+        flatViewCB.setSelected(false);
+        flatMode.setValue(flatViewCB.isSelected());
 
-    /**
-     * Set the tab with details for a folder.
-     * 
-     * @param folderInfo
-     * @param directoryFilterMode
-     */
-    public void setFolderInfo(FolderInfo folderInfo, int directoryFilterMode) {
-        setFolderInfo(folderInfo);
-        if (directoryFilterMode >= 0) {
-            directoryFilter.setFileFilterMode(directoryFilterMode);
-            directoryFilter.scheduleFiltering();
-        }
+        // Triggers mode change and schedule filtering (MyActionListener).
+        filterSelectionComboBox.setSelectedIndex(
+                DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
     }
 
     public void scheduleDirectoryFiltering() {
@@ -165,7 +154,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     /**
      * Set the tab with details for a folder with new set and sort date
      * descending.
-     * 
+     *
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -175,10 +164,29 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         tablePanel.setFolder(f);
         tablePanel.sortLatestDate();
         flatViewCB.setSelected(true);
+        flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
         filterSelectionComboBox.setSelectedIndex(
                 DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
+    }
+
+    /**
+     * Set the tab with details for a folder with incoming files.
+     *
+     * @param folderInfo
+     */
+    public void setFolderInfoIncoming(FolderInfo folderInfo) {
+
+        Folder f = getController().getFolderRepository().getFolder(folderInfo);
+        directoryFilter.setFolder(f);
+        tablePanel.setFolder(f);
+        flatViewCB.setSelected(true);
+        flatMode.setValue(flatViewCB.isSelected());
+
+        // Triggers mode change and schedule filtering (MyActionListener).
+        filterSelectionComboBox.setSelectedIndex(
+                DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
     }
 
     /**

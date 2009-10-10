@@ -129,6 +129,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
                                             boolean flat) {
+        if (model == null) {
+            return;
+        }
         String relativeName = model.getRelativeName();
         List<DiskItem> diskItemList = new ArrayList<DiskItem>();
         diskItemList.addAll(model.getFileInfos());

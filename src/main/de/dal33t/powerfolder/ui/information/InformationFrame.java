@@ -168,11 +168,10 @@ public class InformationFrame extends MagneticFrame {
      * @param folderInfo
      * @param directoryFilterMode
      */
-    public void displayFolderFiles(FolderInfo folderInfo,
-        int directoryFilterMode)
+    public void displayFolderFiles(FolderInfo folderInfo)
     {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo, directoryFilterMode);
+        folderInformationCard.setFolderInfo(folderInfo);
         folderInformationCard.showFiles();
         displayCard(folderInformationCard);
         showingFolder = true;
@@ -180,14 +179,28 @@ public class InformationFrame extends MagneticFrame {
     }
 
     /**
-     * Displays file info for a folder with filter set to local / incoming and
+     * Displays file info for a folder with filter set to new and
      * sort set to date descending.
-     * 
+     *
      * @param folderInfo
      */
     public void displayFolderFilesLatest(FolderInfo folderInfo) {
         buildFolderInformationCard();
         folderInformationCard.setFolderInfoLatest(folderInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
+    }
+
+    /**
+     * Displays file info for a folder with filter set to incoming.
+     *
+     * @param folderInfo
+     */
+    public void displayFolderFilesIncoming(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfoIncoming(folderInfo);
         folderInformationCard.showFiles();
         displayCard(folderInformationCard);
         showingFolder = true;
@@ -201,7 +214,7 @@ public class InformationFrame extends MagneticFrame {
      */
     public void displayFolderSettings(FolderInfo folderInfo) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
+        folderInformationCard.setFolderInfo(folderInfo);
         folderInformationCard.showSettings();
         displayCard(folderInformationCard);
         showingFolder = true;
@@ -215,7 +228,7 @@ public class InformationFrame extends MagneticFrame {
      */
     public void displayFolderMembers(FolderInfo folderInfo) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
+        folderInformationCard.setFolderInfo(folderInfo);
         folderInformationCard.showMembers();
         displayCard(folderInformationCard);
         showingFolder = true;
@@ -229,7 +242,7 @@ public class InformationFrame extends MagneticFrame {
      */
     public void displayFolderProblems(FolderInfo folderInfo) {
         buildFolderInformationCard();
-        folderInformationCard.setFolderInfo(folderInfo, Integer.MIN_VALUE);
+        folderInformationCard.setFolderInfo(folderInfo);
         folderInformationCard.showProblems();
         displayCard(folderInformationCard);
         showingFolder = true;
