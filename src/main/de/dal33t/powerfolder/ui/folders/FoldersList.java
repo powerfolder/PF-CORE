@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -80,6 +81,9 @@ public class FoldersList extends PFUIComponent {
     private JLabel onlineLabel;
     private JLabel onlineIcon;
 
+    private DelayedUpdater transfersUpdater;
+
+
     /**
      * Constructor
      * 
@@ -106,6 +110,8 @@ public class FoldersList extends PFUIComponent {
         buildUI();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
+
+        transfersUpdater = new DelayedUpdater(getController());
     }
 
     /**
@@ -517,16 +523,20 @@ public class FoldersList extends PFUIComponent {
     private class MyTransferManagerListener extends TransferAdapter {
 
         private void notifyView(TransferManagerEvent event) {
-            FileInfo fileInfo = event.getFile();
-            FolderInfo folderInfo = fileInfo.getFolderInfo();
-            synchronized (views) {
-                for (ExpandableFolderView view : views) {
-                    if (view.getFolderInfo().equals(folderInfo)) {
-                        view.updateNameLabel();
-                        break;
+            final FileInfo fileInfo = event.getFile();
+            transfersUpdater.schedule(new Runnable() {
+                public void run() {
+                    FolderInfo folderInfo = fileInfo.getFolderInfo();
+                    synchronized (views) {
+                        for (ExpandableFolderView view : views) {
+                            if (view.getFolderInfo().equals(folderInfo)) {
+                                view.updateNameLabel();
+                                break;
+                            }
+                        }
                     }
                 }
-            }
+            });
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
