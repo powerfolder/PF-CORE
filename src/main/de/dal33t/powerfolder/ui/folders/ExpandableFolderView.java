@@ -874,27 +874,24 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (folder == null) {
             return;
         }
-        int newCount = 0;
-        TransferManager transferManager = getController().getTransferManager();
-        List<FileInfo> infoList = folder.getDirectory().getFileInfosRecursive();
-        for (FileInfo fileInfo : infoList) {
-            newCount += transferManager.isCompletedDownload(fileInfo) ? 1 : 0;
-        }
+        int newCount = getController().getTransferManager()
+            .countCompletedDownloads(folder);
         String newCountString = "";
         boolean newFiles = newCount > 0;
         if (newFiles) {
-            newCountString = " - " + Translation.getTranslation(
-                    "exp_folder_view.new_files_text", String.valueOf(newCount)); 
+            newCountString = " - "
+                + Translation.getTranslation("exp_folder_view.new_files_text",
+                    String.valueOf(newCount));
         }
         if (folderInfo.name.length() > 25) {
             nameLabel.setText(folderInfo.name.substring(0, 25) + "..."
-                    + newCountString);
+                + newCountString);
         } else {
             nameLabel.setText(folderInfo.name + newCountString);
         }
-        nameLabel.setFont(new Font(nameLabel.getFont().getName(),
-                newFiles ? Font.BOLD : Font.PLAIN,
-                nameLabel.getFont().getSize()));
+        nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
+            ? Font.BOLD
+            : Font.PLAIN, nameLabel.getFont().getSize()));
         clearCompletedDownloadsAction.setEnabled(newFiles);
     }
 
