@@ -147,6 +147,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
     private DelayedUpdater folderDetailsUpdater;
+    private DelayedUpdater transferUpdater;
 
     /**
      * Constructor
@@ -387,6 +388,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncUpdater = new DelayedUpdater(getController(), 1000L);
         folderDetailsUpdater = new DelayedUpdater(getController());
         folderUpdater = new DelayedUpdater(getController());
+        transferUpdater = new DelayedUpdater(getController());
 
         openFilesInformationAction = new MyOpenFilesInformationAction(
             getController());
@@ -1048,12 +1050,14 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyTransferManagerListener extends TransferAdapter {
 
         private void updateIfRequired(TransferManagerEvent event) {
-            if (folder == null
-                || !folderInfo.equals(event.getFile().getFolderInfo()))
-            {
-                return;
+            if (folder != null
+                    && folderInfo.equals(event.getFile().getFolderInfo())) {
+                transferUpdater.schedule(new Runnable() {
+                    public void run() {
+                        updateSyncButton();
+                    }
+                });
             }
-            updateSyncButton();
         }
 
         @Override
