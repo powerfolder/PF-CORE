@@ -1505,8 +1505,8 @@ public class Folder extends PFComponent {
                     dbFile));
                 ObjectInputStream in = new ObjectInputStream(fIn);
                 FileInfo[] files = (FileInfo[]) in.readObject();
-                Convert.cleanMemberInfos(getController().getNodeManager(),
-                    files);
+                // Convert.cleanMemberInfos(getController().getNodeManager(),
+                // files);
                 synchronized (dbAccessLock) {
                     for (int i = 0; i < files.length; i++) {
                         if (files[i].getRelativeName().contains(
