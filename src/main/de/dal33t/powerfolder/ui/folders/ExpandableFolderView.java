@@ -207,7 +207,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateButtons();
         updateProblems();
         updateNewFiles();
-        
+
         registerFolderListeners();
     }
 
@@ -394,7 +394,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
-        clearCompletedDownloadsAction = new MyClearCompletedDownloadsAction(getController());
+        clearCompletedDownloadsAction = new MyClearCompletedDownloadsAction(
+            getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
         removeFolderAction = new FolderRemoveAction(getController());
         backupOnlineStorageAction = new BackupOnlineStorageAction(
@@ -593,7 +594,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 syncDateText = Translation
                     .getTranslation("exp_folder_view.never_synchronized");
             } else {
-                String formattedDate = Format.getInstance(getController()).formatDate(lastSyncDate);
+                String formattedDate = Format.getInstance(getController())
+                    .formatDate(lastSyncDate);
                 syncDateText = Translation.getTranslation(
                     "exp_folder_view.last_synchronized", formattedDate);
             }
@@ -621,7 +623,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
-                        String formattedDate = Format.getInstance(getController()).formatDate(date);
+                        String formattedDate = Format.getInstance(
+                            getController()).formatDate(date);
                         syncDateText = Translation.getTranslation(
                             "exp_folder_view.estimated_synchronized",
                             formattedDate);
@@ -871,18 +874,22 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void updateNewFiles() {
 
-        if (folder == null) {
-            return;
-        }
-        int newCount = getController().getTransferManager()
-            .countCompletedDownloads(folder);
+        int newCount = 0;
+        boolean newFiles = false;
         String newCountString = "";
-        boolean newFiles = newCount > 0;
-        if (newFiles) {
-            newCountString = " - "
-                + Translation.getTranslation("exp_folder_view.new_files_text",
-                    String.valueOf(newCount));
+
+        if (folder != null) {
+            newCount = getController().getTransferManager()
+                .countCompletedDownloads(folder);
+            newFiles = newCount > 0;
+            if (newFiles) {
+                newCountString = " - "
+                    + Translation.getTranslation(
+                        "exp_folder_view.new_files_text", String
+                            .valueOf(newCount));
+            }
         }
+        
         if (folderInfo.name.length() > 25) {
             nameLabel.setText(folderInfo.name.substring(0, 25) + "..."
                 + newCountString);
@@ -1278,8 +1285,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            TransferManager transferManager = getController().getTransferManager();
-            List<FileInfo> infoList = folder.getDirectory().getFileInfosRecursive();
+            TransferManager transferManager = getController()
+                .getTransferManager();
+            List<FileInfo> infoList = folder.getDirectory()
+                .getFileInfosRecursive();
             for (FileInfo fileInfo : infoList) {
                 if (transferManager.isCompletedDownload(fileInfo)) {
                     transferManager.clearCompletedDownload(fileInfo);
