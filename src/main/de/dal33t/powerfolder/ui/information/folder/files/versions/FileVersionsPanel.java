@@ -36,9 +36,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -134,6 +132,8 @@ public class FileVersionsPanel extends PFUIComponent {
                 }
             });
         fileVersionsTable.addMouseListener(new TableMouseListener());
+
+        // SingleSelect model, so no Select All key listener
 
         emptyLabel = new JLabel(Translation
             .getTranslation("file_version_tab.no_versions_available"),
@@ -314,9 +314,9 @@ public class FileVersionsPanel extends PFUIComponent {
         }
     }
 
-    // /////////////////
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     private class RestoreAction extends BaseAction {
 

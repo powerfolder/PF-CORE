@@ -69,7 +69,6 @@ public class MembersTab extends PFUIComponent {
     private Action inviteAction;
     private Action openChatAction;
     private Action reconnectAction;
-    private Action refreshAction;
     private JButton refreshButton;
     private MembersTable membersTable;
     private Member selectedMember;
@@ -114,7 +113,7 @@ public class MembersTab extends PFUIComponent {
         inviteAction = new MyInviteAction();
         openChatAction = new MyOpenChatAction();
         reconnectAction = new MyReconnectAction();
-        refreshAction = model.getRefreshAction();
+        Action refreshAction = model.getRefreshAction();
         refreshButton = new JButton(refreshAction);
 
         refreshBar = new JProgressBar();

@@ -36,8 +36,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +85,10 @@ public class UploadsTablePanel extends PFUIComponent {
         tablePane = new JScrollPane(table);
         tableModel = (UploadsTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
+
+        table.registerKeyboardAction(new SelectAllAction(),
+		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+		JComponent.WHEN_FOCUSED);
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -258,6 +261,12 @@ public class UploadsTablePanel extends PFUIComponent {
 
         private void showContextMenu(MouseEvent evt) {
             fileMenu.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
+    private class SelectAllAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            table.selectAll();
         }
     }
 

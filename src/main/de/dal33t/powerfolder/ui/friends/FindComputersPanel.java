@@ -21,21 +21,13 @@ package de.dal33t.powerfolder.ui.friends;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.InetSocketAddress;
 
-import javax.swing.Action;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -79,7 +71,7 @@ public class FindComputersPanel extends PFUIPanel {
     private FilterTextField searchInput;
     private ValueModel searchInputVM;
     /** the ui of the list of users that matches the search. */
-    private JTable searchResult;
+    private JTable searchResultTable;
 
     private JScrollPane searchResultScroller;
     /** the table model holding the search results */
@@ -158,14 +150,19 @@ public class FindComputersPanel extends PFUIPanel {
 
         addFriendAction.setEnabled(false);
 
-        searchResult = new FindComputersTable(searchNodeTableModel);
-        searchResult.getSelectionModel().addListSelectionListener(
+        searchResultTable = new FindComputersTable(searchNodeTableModel);
+        searchResultTable.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
-        searchResult.addMouseListener(new PopupMenuOpener(createPopupMenu()));
-        searchResult.addMouseListener(new DoubleClickAction(addFriendAction));
+        searchResultTable.addMouseListener(new PopupMenuOpener(createPopupMenu()));
+        searchResultTable.addMouseListener(new DoubleClickAction(addFriendAction));
 
-        searchResultScroller = new JScrollPane(searchResult);
-        UIUtil.whiteStripTable(searchResult);
+        searchResultTable.registerKeyboardAction(new SelectAllAction(),
+		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+		JComponent.WHEN_FOCUSED);
+
+
+        searchResultScroller = new JScrollPane(searchResultTable);
+        UIUtil.whiteStripTable(searchResultTable);
         UIUtil.removeBorder(searchResultScroller);
 
         searchNodeTableModel.getListModel().addListDataListener(
@@ -257,7 +254,7 @@ public class FindComputersPanel extends PFUIPanel {
     /** called if button addFriend clicked or if selected in popupmenu */
     private void addFriend() {
         synchronized (searchNodeTableModel) {
-            int[] selectedIndexes = searchResult.getSelectedRows();
+            int[] selectedIndexes = searchResultTable.getSelectedRows();
             if (selectedIndexes != null && selectedIndexes.length > 0) {
 
                 boolean askForFriendshipMessage = PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE
@@ -344,7 +341,7 @@ public class FindComputersPanel extends PFUIPanel {
      */
     private void updateActions() {
         addFriendAction.setEnabled(false);
-        int[] selectedIndexes = searchResult.getSelectedRows();
+        int[] selectedIndexes = searchResultTable.getSelectedRows();
 
         // if at least one member selected
         for (int index : selectedIndexes) {
@@ -364,7 +361,7 @@ public class FindComputersPanel extends PFUIPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            int row = searchResult.getSelectedRow();
+            int row = searchResultTable.getSelectedRow();
             if (row >= 0) {
                 Member node = (Member) searchNodeTableModel.getValueAt(row, 0);
                 if (node != null) {
@@ -438,4 +435,11 @@ public class FindComputersPanel extends PFUIPanel {
     public Action getConnectAction() {
         return connectAction;
     }
+
+    private class SelectAllAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            searchResultTable.selectAll();
+        }
+    }
+
 }

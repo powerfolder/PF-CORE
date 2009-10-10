@@ -62,7 +62,6 @@ public class NodesSelectTable extends JTable {
         for (int i = 0; i < getRowCount(); i++) {
             if (isRowSelected(i)) {
                 Object o = getValueAt(i, 0);
-                System.out.println(o);
                 if (o instanceof Member) {
                     Member member = (Member) o;
                     selectedMembers.add(member);

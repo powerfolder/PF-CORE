@@ -19,20 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -107,6 +99,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         table.getSelectionModel().addListSelectionListener(
             new MyListSelectionListener());
         table.addMouseListener(new TableMouseListener());
+
+        table.registerKeyboardAction(new SelectAllAction(),
+		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+		JComponent.WHEN_FOCUSED);
+        
     }
 
     /**
@@ -679,4 +676,11 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
             }
         }
     }
+
+    private class SelectAllAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            table.selectAll();
+        }
+    }
+    
 }

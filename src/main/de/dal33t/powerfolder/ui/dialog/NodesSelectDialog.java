@@ -35,6 +35,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.util.Collection;
 
 /**
@@ -95,6 +97,10 @@ public class NodesSelectDialog extends BaseDialog {
         });
         nodesSelectTableModel = new NodesSelectTableModel(getController());
         nodesSelectTable = new NodesSelectTable(nodesSelectTableModel);
+
+        nodesSelectTable.registerKeyboardAction(new SelectAllAction(),
+		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+		JComponent.WHEN_FOCUSED);
 
         // Autoselect row if there is only one member.
         if (nodesSelectTableModel.getRowCount() == 1) {
@@ -159,4 +165,11 @@ public class NodesSelectDialog extends BaseDialog {
     private void doHide() {
         nodesSelectTableModel.setHideOffline(hideOffline.isSelected());
     }
+
+    private class SelectAllAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            nodesSelectTable.selectAll();
+        }
+    }
+
 }
