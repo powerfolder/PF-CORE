@@ -511,10 +511,11 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(controller, "Controller is null");
         int nNewDisabled = 0;
         for (Permission p : getPermissions()) {
-            if (!(p instanceof FolderAdminPermission)) {
+            if (!(p instanceof FolderAdminPermission || p instanceof FolderOwnerPermission))
+            {
                 continue;
             }
-            FolderAdminPermission fp = (FolderAdminPermission) p;
+            FolderPermission fp = (FolderPermission) p;
             Folder folder = fp.getFolder().getFolder(controller);
             if (folder == null) {
                 continue;
