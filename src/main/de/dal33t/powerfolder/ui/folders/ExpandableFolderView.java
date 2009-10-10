@@ -75,7 +75,6 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -206,7 +205,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateIconAndOS();
         updateButtons();
         updateProblems();
-        updateNewFiles();
+        updateNameLabel();
 
         registerFolderListeners();
     }
@@ -222,6 +221,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         expanded.set(true);
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.collapse"));
+        updateNameLabel();
         lowerOuterPanel.setVisible(true);
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
     }
@@ -233,6 +233,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         expanded.set(false);
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.expand"));
+        updateNameLabel();
         lowerOuterPanel.setVisible(false);
     }
 
@@ -260,8 +261,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateIconAndOS();
 
         upperBuilder.add(primaryButton, cc.xy(1, 1));
+        MouseAdapter ma = new MyMouseAdapter();
         nameLabel = new JLabel();
         upperBuilder.add(nameLabel, cc.xy(3, 1));
+        nameLabel.addMouseListener(ma);
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
 
         upperBuilder.add(problemButton, cc.xy(8, 1));
@@ -271,7 +274,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.expand"));
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
 
         primaryButton.addActionListener(new PrimaryButtonActionListener());
@@ -871,22 +873,32 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Downloads added or removed for this folder. Recalculate new files status.
+     * Or if expanded / collapsed - might need to change tool tip.
      */
-    public void updateNewFiles() {
+    public void updateNameLabel() {
 
-        int newCount = 0;
         boolean newFiles = false;
         String newCountString = "";
 
         if (folder != null) {
-            newCount = getController().getTransferManager()
-                .countCompletedDownloads(folder);
+            int newCount = getController().getTransferManager()
+                    .countCompletedDownloads(folder);
             newFiles = newCount > 0;
             if (newFiles) {
-                newCountString = " - "
-                    + Translation.getTranslation(
-                        "exp_folder_view.new_files_text", String
-                            .valueOf(newCount));
+                newCountString = " (" + newCount + ')';
+                nameLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.new_files_tip_text",
+                        String.valueOf(newCount)));
+            }
+        }
+
+        if (!newFiles) {
+            if (expanded.get()) {
+                nameLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.collapse"));
+            } else {
+                nameLabel.setToolTipText(Translation.getTranslation(
+                        "exp_folder_view.expand"));
             }
         }
         

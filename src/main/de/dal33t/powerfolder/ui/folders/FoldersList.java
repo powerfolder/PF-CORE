@@ -522,7 +522,7 @@ public class FoldersList extends PFUIComponent {
             synchronized (views) {
                 for (ExpandableFolderView view : views) {
                     if (view.getFolderInfo().equals(folderInfo)) {
-                        view.updateNewFiles();
+                        view.updateNameLabel();
                         break;
                     }
                 }
