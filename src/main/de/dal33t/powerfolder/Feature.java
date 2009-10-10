@@ -69,13 +69,6 @@ public enum Feature {
     DETECT_UPDATE_BY_VERSION,
 
     /**
-     * If the server should offer PowerFolder internal functions.
-     * <p>
-     * TODO Find abstraction for separated parts.
-     */
-    SERVER_INTERNAL_FUNCTIONS,
-
-    /**
      * If the internal features of the client console should be activated.
      */
     CLIENT_INTERNAL_FUNCTIONS(false),
@@ -99,12 +92,12 @@ public enum Feature {
      * #1046: If the new security checks should be enabled.
      */
     SECURITY_CHECKS(true),
-    
+
     /**
      * True if running in beta mode. Basically to identify differences.
      */
     BETA(true),
-    
+
     CONFLICT_DETECTION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
