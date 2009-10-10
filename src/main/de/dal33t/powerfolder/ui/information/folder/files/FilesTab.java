@@ -227,9 +227,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             "pref, 3dlu, pref, 3dlu:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(syncFolderButton, cc.xy(1, 1));
         builder.add(new JToggleButton(new DetailsAction(getController())), cc
-            .xy(3, 1));
+            .xy(1, 1));
+        builder.add(syncFolderButton, cc.xy(3, 1));
         builder.add(flatViewCB, cc.xy(5, 1));
         builder.add(filterSelectionComboBox, cc.xy(7, 1));
         builder.add(filterTextField.getUIComponent(), cc.xy(9, 1));
