@@ -1,28 +1,30 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util.net;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -36,6 +38,9 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author Dennis "Bytekeeper" Waldherr
  */
 public class UDTSocket {
+    private static final Logger LOG = Logger.getLogger(UDTSocket.class
+        .getName());
+
     private class UDTInputStream extends InputStream {
 
         @Override
@@ -94,6 +99,7 @@ public class UDTSocket {
     }
 
     private static boolean supported = false;
+    public static final AtomicInteger openSockets = new AtomicInteger(0);
 
     static {
         // Supported on windows only ATM.
@@ -132,6 +138,10 @@ public class UDTSocket {
      */
     public UDTSocket() {
         sock = socket();
+        if (openSockets.incrementAndGet() > 20) {
+            LOG.severe("Many open UDT sockets (" + openSockets.get() + ')');
+        }
+
     }
 
     // Used in native code!
@@ -174,6 +184,7 @@ public class UDTSocket {
         closed = true;
         connected = false;
         closeImpl();
+        openSockets.decrementAndGet();
     }
 
     /**
@@ -283,8 +294,7 @@ public class UDTSocket {
      * Sets the SO_LINGER option. Sets the time close() will wait for
      * sending/receiving before closing the connection.
      * 
-     * @param true
-     *            to linger on
+     * @param true to linger on
      * @param seconds
      *            how long to linger, if on is true
      */
