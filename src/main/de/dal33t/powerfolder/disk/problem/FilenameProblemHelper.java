@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
  * same restrictions!<BR>
  * Ref: <A HREF="http://en.wikipedia.org/wiki/Filename">Wikepedia/Filename</A>
  * <p/>
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public class FilenameProblemHelper {
@@ -43,42 +44,43 @@ public class FilenameProblemHelper {
      * All names the are not allowed on windows
      */
     private static final String[] RESERVED_WORDS = {"CON", "PRN", "AUX",
-            "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5",
-            "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3",
-            "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+        "CLOCK$", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5",
+        "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4",
+        "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
     private static final int MAX_FILENAME_LENGTH = 255;
 
     public static final String[] ILLEGAL_LINUX_CHARS = {"/"};
 
-    public static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "\\", "?",
-            "\"", "*", "<", ":", ">", "/"};
+    public static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "\\", "?", "\"",
+        "*", "<", ":", ">", "/"};
 
     public static final String[] ILLEGAL_MACOSX_CHARS = {"/", ":"};
 
     /**
      * See if there are any problems.
-     *
+     * 
      * @param filename
      * @return
      */
     public static boolean hasProblems(String filename) {
         return containsIllegalLinuxChar(filename)
-                || containsIllegalMacOSXChar(filename)
-                || containsIllegalWindowsChars(filename)
-                || endsWithIllegalWindowsChar(filename)
-                || isReservedWindowsFilename(filename) || isTooLong(filename);
+            || containsIllegalMacOSXChar(filename)
+            || containsIllegalWindowsChars(filename)
+            || endsWithIllegalWindowsChar(filename)
+            || isReservedWindowsFilename(filename) || isTooLong(filename);
     }
 
     /**
      * Create problems for the file.
-     *
+     * 
      * @param controller
      * @param fileInfo
      * @return
      */
     public static List<Problem> getProblems(Controller controller,
-                                            FileInfo fileInfo) {
+        FileInfo fileInfo)
+    {
         String filename = fileInfo.getFilenameOnly();
         List<Problem> returnValue = new ArrayList<Problem>();
 
@@ -89,11 +91,13 @@ public class FilenameProblemHelper {
             }
 
             if (containsIllegalMacOSXChar(filename)) {
-                returnValue.add(new IllegalMacosxCharsFilenameProblem(fileInfo));
+                returnValue
+                    .add(new IllegalMacosxCharsFilenameProblem(fileInfo));
             }
 
             if (containsIllegalWindowsChars(filename)) {
-                returnValue.add(new IllegalWindowsCharsFilenameProblem(fileInfo));
+                returnValue
+                    .add(new IllegalWindowsCharsFilenameProblem(fileInfo));
             }
 
             if (endsWithIllegalWindowsChar(filename)) {
@@ -135,7 +139,7 @@ public class FilenameProblemHelper {
         return filename;
     }
 
-    /**
+/**
      * |\?*<":>/ illegal in windows
      */
     public static boolean containsIllegalWindowsChars(String filename) {
@@ -187,7 +191,8 @@ public class FilenameProblemHelper {
      * problems.
      */
     public static void resolve(Controller controller, FileInfo fileInfo,
-                             String newFilename, Problem problem) {
+        String newFilename, Problem problem)
+    {
 
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
@@ -196,8 +201,8 @@ public class FilenameProblemHelper {
             return;
         }
 
-        File newFile = FileUtils.buildFileFromRelativeName(folder.getLocalBase(),
-                fileInfo.getRelativeName());
+        File newFile = FileUtils.buildFileFromRelativeName(folder
+            .getLocalBase(), fileInfo.getRelativeName());
         if (file.renameTo(newFile)) {
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
                 controller.getMySelf().getInfo());
@@ -206,13 +211,13 @@ public class FilenameProblemHelper {
             }
             folder.scanNewFile(renamedFileInfo);
             fileInfo.getFolder(controller.getFolderRepository()).removeProblem(
-                    problem);
+                problem);
 
         }
     }
 
-    public static String removeChars(String filenameArg,
-                                     String[] charsToRemove) {
+    public static String removeChars(String filenameArg, String[] charsToRemove)
+    {
         String filename = filenameArg;
         for (String c : charsToRemove) {
             while (filename.contains(c)) {
@@ -226,38 +231,58 @@ public class FilenameProblemHelper {
 
     /**
      * Unique if a file with that name does not exist
+     * 
+     * @param controller
+     * @param newName
+     *            the new name WITHOUT path!
+     * @param fileInfo
+     *            the FileInfo
+     * @return if the file with the new name (same path as FileInfo) does not
+     *         exists yet.
      */
     public static boolean isUnique(Controller controller, String newName,
-                                   FileInfo fileInfo) {
+        FileInfo fileInfo)
+    {
         Folder folder = controller.getFolderRepository().getFolder(
             fileInfo.getFolderInfo());
-        File newFile = FileUtils.buildFileFromRelativeName(folder.getLocalBase(),
-                fileInfo.getRelativeName());
+
+        String path;
+        int i = fileInfo.getRelativeName().lastIndexOf('/');
+        if (i > 0) {
+            path = fileInfo.getRelativeName().substring(i,
+                fileInfo.getRelativeName().length());
+        } else {
+            path = "/";
+        }
+        File newFile = FileUtils.buildFileFromRelativeName(folder
+            .getLocalBase(), path + newName);
         return !newFile.exists();
     }
 
     /**
      * Tries to find a shorter, unique filename in a folder for a file that has
      * a really long name.
-     *
+     * 
      * @see #isTooLong(String)
      * @see TooLongFilenameProblem
-     *
      * @param controller
      * @param fileInfo
      * @return
      */
     public static String getShorterFilename(Controller controller,
-                                           FileInfo fileInfo) {
-        int length = Math.min(MAX_FILENAME_LENGTH,
-                fileInfo.getFilenameOnly().length());
+        FileInfo fileInfo)
+    {
+        int length = Math.min(MAX_FILENAME_LENGTH, fileInfo.getFilenameOnly()
+            .length());
 
-        while (!isUnique(controller,
-                fileInfo.getFilenameOnly().substring(0, length), fileInfo)) {
+        while (!isUnique(controller, fileInfo.getFilenameOnly().substring(0,
+            length), fileInfo))
+        {
             length--;
             if (length < 1) {
-                throw new IllegalStateException("Length too small when shortening " +
-                        fileInfo.getFilenameOnly());
+                throw new IllegalStateException(
+                    "Length too small when shortening "
+                        + fileInfo.getFilenameOnly());
             }
         }
 
@@ -266,7 +291,7 @@ public class FilenameProblemHelper {
 
     /**
      * Makes a unique filename in a folder.
-     *
+     * 
      * @param controller
      * @param fileInfo
      * @return
@@ -279,10 +304,15 @@ public class FilenameProblemHelper {
             filename = filename.substring(0, filename.lastIndexOf('.'));
         }
         String extra = "-1";
-            int count = 1;
-            while (!isUnique(controller, filename + extra + extension, fileInfo)) {
-                extra = "-" + count++;
+        int count = 1;
+        while (!isUnique(controller, filename + extra + extension, fileInfo)) {
+            extra = "-" + count++;
+            if (count >= 1000) {
+                throw new IllegalStateException(
+                    "Unable to fina a unique filename. Ended at: " + filename
+                        + extra + extension);
             }
+        }
         return filename + extra + extension;
     }
 }

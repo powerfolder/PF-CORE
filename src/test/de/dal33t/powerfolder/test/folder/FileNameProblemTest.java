@@ -101,7 +101,8 @@ public class FileNameProblemTest extends ControllerTestCase {
         assertEquals(
             1,
             FilenameProblemHelper
-                .getProblems(getController(),
+                .getProblems(
+                    getController(),
                     FileInfoFactory
                         .lookupInstance(
                             folderInfo,
@@ -118,7 +119,6 @@ public class FileNameProblemTest extends ControllerTestCase {
         assertEquals(0, FilenameProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
     }
-
 
     public void testStripExtension() {
         try {
@@ -186,6 +186,14 @@ public class FileNameProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1");
         String s = FilenameProblemHelper.makeUnique(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcd"));
+        assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
+
+        // Test that abcd gets changed to abcd-2 because of other files.
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "subdir/abcd");
+        TestHelper
+            .createRandomFile(getFolder().getLocalBase(), "subdir/abcd-1");
+        s = FilenameProblemHelper.makeUnique(getController(), FileInfoFactory
+            .lookupInstance(getFolder().getInfo(), "abcd"));
         assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
     }
 
