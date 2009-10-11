@@ -2220,8 +2220,11 @@ public class Folder extends PFComponent {
                         + member.getNick() + "' has " + fileList.size()
                         + " possible files");
                 }
-                for (FileInfo remoteFile : fileList) {
-                    handleFileDeletion(remoteFile, force, member, removedFiles);
+                synchronized (scanLock) {
+                    for (FileInfo remoteFile : fileList) {
+                        handleFileDeletion(remoteFile, force, member,
+                            removedFiles);
+                    }
                 }
             }
 
@@ -2236,8 +2239,11 @@ public class Folder extends PFComponent {
                 Collections.sort(list, new ReverseComparator(DiskItemComparator
                     .getComparator(DiskItemComparator.BY_FULL_NAME)));
                 // logWarning("" + list.size());
-                for (FileInfo remoteDir : list) {
-                    handleFileDeletion(remoteDir, force, member, removedFiles);
+                synchronized (scanLock) {
+                    for (FileInfo remoteDir : list) {
+                        handleFileDeletion(remoteDir, force, member,
+                            removedFiles);
+                    }
                 }
             }
         }
