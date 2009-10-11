@@ -69,7 +69,7 @@ public class UploadsTable extends JTable {
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(transferManagerModel
             .getUploadsTableModel(), getColumnModel(),
-            UploadsTableModel.COLPROGRESS);
+            UploadsTableModel.COLPROGRESS, true);
     }
 
     // Helper methods *********************************************************

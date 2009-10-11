@@ -30,4 +30,6 @@ public interface SortedTableModel {
     boolean isSortAscending();
 
     boolean sortBy(int columnIndex);
+
+    void setAscending(boolean ascending);
 }

@@ -295,6 +295,14 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
         return sortAscending;
     }
 
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
     /**
      * Listens for changes on the listmodel and fires the appropriate table
      * model events.

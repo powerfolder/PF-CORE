@@ -95,6 +95,7 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
         if (!allSame) {
             versionInfos.clear();
             versionInfos.addAll(infos);
+            sort();
             fireModelChanged();
         }
     }
@@ -208,5 +209,9 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
             Collections.reverse(versionInfos);
         }
         fireModelChanged();
+    }
+
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
     }
 }

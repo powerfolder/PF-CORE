@@ -170,6 +170,14 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
         UIUtil.invokeLaterInEDT(runner);
     }
 
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+// ////////////////
+    // Inner classes //
+    // ////////////////
+
     private static class FolderProblemComparator implements Comparator<Problem> {
 
         private static final int TYPE_DESCRIPTION = 0;

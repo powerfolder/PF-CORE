@@ -23,7 +23,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
@@ -381,6 +380,10 @@ public class DownloadManagersTableModel extends PFComponent implements
             logSevere("Unable to remove download from tablemodel, not found: "
                 + download);
         }
+    }
+
+    public void setAscending(boolean ascending) {
+        this.sortAscending = ascending;
     }
 
     // /////////////////

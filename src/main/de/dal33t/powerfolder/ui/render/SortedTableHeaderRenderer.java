@@ -44,7 +44,7 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
     public static void associateHeaderRenderer(
             final SortedTableModel sortedTableModelArg,
             TableColumnModel columnModel,
-            final int initialSortColumn) {
+            final int initialSortColumn, final boolean ascending) {
         SortedTableHeaderRenderer uthr = new SortedTableHeaderRenderer();
 
         uthr.sortedTableModel = sortedTableModelArg;
@@ -58,6 +58,7 @@ public class SortedTableHeaderRenderer extends JLabel implements TableCellRender
         // Initialize the sorted data to match the headers.
         Runnable r = new Runnable() {
             public void run() {
+                sortedTableModelArg.setAscending(ascending); 
                 sortedTableModelArg.sortBy(initialSortColumn);
             }
         };

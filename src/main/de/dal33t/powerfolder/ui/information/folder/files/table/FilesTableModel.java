@@ -365,6 +365,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
         fireModelChanged();
     }
 
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
     private class MyPatternChangeListener implements PatternChangeListener {
 
         public void patternAdded(PatternChangedEvent e) {

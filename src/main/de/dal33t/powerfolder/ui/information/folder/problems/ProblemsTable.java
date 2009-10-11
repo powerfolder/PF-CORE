@@ -56,7 +56,7 @@ public class ProblemsTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
-                model, getColumnModel(), 0);
+                model, getColumnModel(), 0, true);
 
     }
 

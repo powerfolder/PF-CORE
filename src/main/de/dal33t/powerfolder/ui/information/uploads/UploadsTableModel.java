@@ -199,60 +199,6 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         fireModelChanged();
     }
 
-    // Listener on TransferManager ********************************************
-
-    /**
-     * Listener on Transfer manager with new event system. TODO: Consolidate
-     * removing uploads on abort/complete/broken
-     * 
-     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
-     */
-    private class UploadTransferManagerListener extends TransferAdapter {
-
-        public void uploadRequested(TransferManagerEvent event) {
-            addOrUpdateUpload(event.getUpload());
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            addOrUpdateUpload(event.getUpload());
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            int index = removeUpload(event.getUpload());
-            if (index >= 0) {
-                rowRemoved(index);
-            }
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            int index = removeUpload(event.getUpload());
-            if (index >= 0) {
-                rowRemoved(index);
-            }
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            int index = uploads.indexOf(event.getUpload());
-            if (index >= 0) {
-                rowsUpdated(index, index);
-            } else {
-                logSevere("Upload not found in model: " + event.getDownload());
-                rowsUpdatedAll();
-            }
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            int index = removeUpload(event.getUpload());
-            if (index >= 0) {
-                rowRemoved(index);
-            }
-        }
-    }
-
     // Model helper methods ***************************************************
 
     private void addOrUpdateUpload(Upload ul) {
@@ -317,35 +263,6 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         return index;
     }
 
-    // Permanent updater ******************************************************
-
-    /**
-     * Continouosly updates the ui
-     */
-    private class MyTimerTask extends TimerTask {
-        public void run() {
-            Runnable wrapper = new Runnable() {
-                public void run() {
-                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
-                    {
-                        // Always sort on a PROGRESS change, so that the table
-                        // reorders correctly.
-                        sort();
-                    }
-                    rowsUpdatedAll();
-                }
-            };
-            try {
-                SwingUtilities.invokeAndWait(wrapper);
-            } catch (InterruptedException e) {
-                logFiner("Interrupteed while updating downloadstable", e);
-
-            } catch (InvocationTargetException e) {
-                logSevere("Unable to update downloadstable", e);
-            }
-        }
-    }
-
     // TableModel interface ***************************************************
 
     public int getColumnCount() {
@@ -370,46 +287,6 @@ public class UploadsTableModel extends PFComponent implements TableModel,
                 return Translation.getTranslation("general.folder");
             case COLTO :
                 return Translation.getTranslation("transfers.to");
-        }
-        return null;
-    }
-
-    public Class getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case COLTYPE :
-            case COLFILE :
-                return FileInfo.class;
-            case COLPROGRESS :
-                return Upload.class;
-            case COLSIZE :
-                return Long.class;
-            case COLFOLDER :
-                return FolderInfo.class;
-            case COLTO :
-                return Member.class;
-        }
-        return null;
-    }
-
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        if (rowIndex >= uploads.size()) {
-            logSevere("Illegal rowIndex requested. rowIndex " + rowIndex
-                + ", uploads " + uploads.size());
-            return null;
-        }
-        Upload upload = uploads.get(rowIndex);
-        switch (columnIndex) {
-            case COLTYPE :
-            case COLFILE :
-                return upload.getFile();
-            case COLPROGRESS :
-                return upload;
-            case COLSIZE :
-                return upload.getFile().getSize();
-            case COLFOLDER :
-                return upload.getFile().getFolderInfo();
-            case COLTO :
-                return upload.getPartner();
         }
         return null;
     }
@@ -487,6 +364,133 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     public boolean isSortAscending() {
         return sortAscending;
+    }
+
+    public Class getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case COLTYPE :
+            case COLFILE :
+                return FileInfo.class;
+            case COLPROGRESS :
+                return Upload.class;
+            case COLSIZE :
+                return Long.class;
+            case COLFOLDER :
+                return FolderInfo.class;
+            case COLTO :
+                return Member.class;
+        }
+        return null;
+    }
+
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        if (rowIndex >= uploads.size()) {
+            logSevere("Illegal rowIndex requested. rowIndex " + rowIndex
+                + ", uploads " + uploads.size());
+            return null;
+        }
+        Upload upload = uploads.get(rowIndex);
+        switch (columnIndex) {
+            case COLTYPE :
+            case COLFILE :
+                return upload.getFile();
+            case COLPROGRESS :
+                return upload;
+            case COLSIZE :
+                return upload.getFile().getSize();
+            case COLFOLDER :
+                return upload.getFile().getFolderInfo();
+            case COLTO :
+                return upload.getPartner();
+        }
+        return null;
+    }
+
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+// ////////////////
+    // Inner Classes //
+    // ////////////////
+
+    /**
+     * Listener on Transfer manager with new event system. TODO: Consolidate
+     * removing uploads on abort/complete/broken
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     */
+    private class UploadTransferManagerListener extends TransferAdapter {
+
+        public void uploadRequested(TransferManagerEvent event) {
+            addOrUpdateUpload(event.getUpload());
+        }
+
+        public void uploadStarted(TransferManagerEvent event) {
+            addOrUpdateUpload(event.getUpload());
+        }
+
+        public void uploadAborted(TransferManagerEvent event) {
+            int index = removeUpload(event.getUpload());
+            if (index >= 0) {
+                rowRemoved(index);
+            }
+        }
+
+        public void uploadBroken(TransferManagerEvent event) {
+            int index = removeUpload(event.getUpload());
+            if (index >= 0) {
+                rowRemoved(index);
+            }
+        }
+
+        public void uploadCompleted(TransferManagerEvent event) {
+            int index = uploads.indexOf(event.getUpload());
+            if (index >= 0) {
+                rowsUpdated(index, index);
+            } else {
+                logSevere("Upload not found in model: " + event.getDownload());
+                rowsUpdatedAll();
+            }
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void completedUploadRemoved(TransferManagerEvent event) {
+            int index = removeUpload(event.getUpload());
+            if (index >= 0) {
+                rowRemoved(index);
+            }
+        }
+    }
+
+    /**
+     * Continouosly updates the ui
+     */
+    private class MyTimerTask extends TimerTask {
+        public void run() {
+            Runnable wrapper = new Runnable() {
+                public void run() {
+                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
+                    {
+                        // Always sort on a PROGRESS change, so that the table
+                        // reorders correctly.
+                        sort();
+                    }
+                    rowsUpdatedAll();
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(wrapper);
+            } catch (InterruptedException e) {
+                logFiner("Interrupteed while updating downloadstable", e);
+
+            } catch (InvocationTargetException e) {
+                logSevere("Unable to update downloadstable", e);
+            }
+        }
     }
 
 }

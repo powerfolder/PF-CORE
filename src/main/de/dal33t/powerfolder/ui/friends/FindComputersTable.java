@@ -57,7 +57,7 @@ public class FindComputersTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
-                        getColumnModel(), 0);
+                        getColumnModel(), 0, true);
     }
 
     /**

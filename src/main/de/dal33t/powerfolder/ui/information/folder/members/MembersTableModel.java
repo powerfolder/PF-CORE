@@ -322,7 +322,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             return folderMember.getPermission();
         } else if (columnIndex == COL_SYNC_STATUS) {
             if (member == null
-                || (!member.isCompletelyConnected() && !member.isMySelf()))
+                || !member.isCompletelyConnected() && !member.isMySelf())
             {
                 return "";
             }
@@ -330,7 +330,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             return Format.formatSyncPercentage(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
             if (member == null
-                || (!member.isCompletelyConnected() && !member.isMySelf()))
+                || !member.isCompletelyConnected() && !member.isMySelf())
             {
                 return "";
             }
@@ -698,6 +698,14 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         modelChanged(new TableModelEvent(this, 0, getRowCount(),
             TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     }
+
+    public void setAscending(boolean ascending) {
+        sortAscending = ascending;
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
 
     private class PermissionSetter extends SwingWorker<Void, Void> {
         private AccountInfo aInfo;

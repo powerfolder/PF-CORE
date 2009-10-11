@@ -65,7 +65,7 @@ public class FileVersionsTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
-                model, getColumnModel(), 1);
+                model, getColumnModel(), 0, false);
     }
 
     /**

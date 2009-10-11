@@ -62,7 +62,7 @@ public class DownloadManagersTable extends JTable {
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(transferManagerModel
             .getDownloadsTableModel(), getColumnModel(),
-            DownloadManagersTableModel.COLPROGRESS);
+            DownloadManagersTableModel.COLPROGRESS, true);
 
     }
 
