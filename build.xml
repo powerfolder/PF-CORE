@@ -262,7 +262,6 @@ For creation of the installer:
 
 		<!-- Compile tests -->
 		<javac destdir="${build.dir}" debug="${Debug}" deprecation="false" optimize="false" failonerror="true" encoding="UTF-8">
-
 			<src path="${test.src.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
@@ -275,7 +274,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2048m">
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="1024m">
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<fileset refid="libs" />
@@ -283,14 +282,13 @@ For creation of the installer:
 			</classpath>
 
 			<formatter type="xml" />
-
-
 			<batchtest fork="yes" todir="${build.reports.dir}/raw">
 				<fileset dir="${test.src.dir}">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 		</junit>
+		
 		<junitreport todir="${build.reports.dir}">
 			<fileset dir="${build.reports.dir}/raw/">
 				<include name="TEST-*.xml" />
