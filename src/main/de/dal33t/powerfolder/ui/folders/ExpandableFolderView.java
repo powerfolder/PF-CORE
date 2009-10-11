@@ -905,6 +905,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (folderInfo.name.length() > 25) {
             nameLabel.setText(folderInfo.name.substring(0, 25) + "..."
                 + newCountString);
+            // Tooltip the whole name
+            nameLabel.setToolTipText(folderInfo.name);
         } else {
             nameLabel.setText(folderInfo.name + newCountString);
         }
