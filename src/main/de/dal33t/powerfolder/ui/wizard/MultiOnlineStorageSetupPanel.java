@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
@@ -182,7 +183,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             // Suggesr user dir.
             File dirSuggestion = userDirs.get(folderInfo.name);
             if (dirSuggestion == null) {
-                dirSuggestion = new File(folderBasedir, folderInfo.name);
+                dirSuggestion = new File(folderBasedir, FileUtils
+                    .removeInvalidFilenameChars(folderInfo.name));
             }
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
             folderInfoComboModel.addElement(folderInfo.name);
