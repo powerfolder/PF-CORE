@@ -65,15 +65,15 @@ public class NodeSearcherTest extends TwoControllerTestCase {
 
         MemberInfo homer = new MemberInfo("Homer", IdGenerator.makeId(), null);
         homer.lastConnectTime = new Date();
-        homer.setConnectAddress(new InetSocketAddress("localhost", 234));
+        homer.setConnectAddress(new InetSocketAddress("127.0.0.1", 234));
         MemberInfo flenders = new MemberInfo("Ned Flenders", IdGenerator
             .makeId(), null);
         flenders.lastConnectTime = new Date();
-        flenders.setConnectAddress(new InetSocketAddress("localhost", 2314));
+        flenders.setConnectAddress(new InetSocketAddress("127.0.0.1", 2314));
         MemberInfo moe = new MemberInfo("Moe", IdGenerator.makeId(), null);
         moe.lastConnectTime = new Date(System.currentTimeMillis()
             - Constants.NODE_TIME_TO_INVALIDATE - 10000);
-        moe.setConnectAddress(new InetSocketAddress("localhost", 333));
+        moe.setConnectAddress(new InetSocketAddress("127.0.0.1", 333));
 
         getContollerBart().getNodeManager().addNode(homer);
         getContollerBart().getNodeManager().addNode(flenders);
