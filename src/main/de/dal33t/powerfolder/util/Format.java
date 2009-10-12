@@ -244,13 +244,15 @@ public class Format extends PFComponent {
 
     private static class ShortDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
-            return DateFormat.getDateInstance(DateFormat.SHORT);
+            return DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                    DateFormat.SHORT);
         }
     }
 
     private static class LongDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
-            return DateFormat.getDateInstance(DateFormat.LONG);
+            return DateFormat.getDateTimeInstance(DateFormat.LONG,
+                    DateFormat.LONG);
         }
     }
 
