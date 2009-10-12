@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DebugPanel.java 6135 2008-12-24 08:04:17Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DebugPanel.java 6135 2008-12-24 08:04:17Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.debug;
 
 import java.awt.Image;
@@ -61,9 +61,9 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
  * @version $Revision: 1.0 $
  */
 
-public class DebugInformationCard extends InformationCard{
-	
-	private JPanel uiComponent;
+public class DebugInformationCard extends InformationCard {
+
+    private JPanel uiComponent;
     private TextPanel textPanel;
 
     private JButton shutdownFileRequestorButton;
@@ -76,21 +76,21 @@ public class DebugInformationCard extends InformationCard{
     private JButton shutdownNodeManagerButton;
     private JButton startNodeManagerButton;
     private JToggleButton suspendEventsNodeManagerToggleButton;
-    
+
     private JButton shutdownFolderRepository;
     private JButton startFolderRepository;
     private JToggleButton suspendEventsFolderRepositoryToggleButton;
-    
+
     private JButton shutdownConnectionListener;
     private JButton startConnectionListener;
-        
+
     private JButton shutdownBroadcastMananger;
     private JButton startBroadcastMananger;
-    
+
     private JButton openDebugDir;
-    
+
     private JComboBox logLevelCombo;
-    
+
     private JCheckBox logToFileCheckBox;
 
     private JCheckBox scrollLockCheckBox;
@@ -98,30 +98,30 @@ public class DebugInformationCard extends InformationCard{
 
     public static final String showDebugReportsPrefKey = "Debug.showDebugReports";
 
-	public DebugInformationCard(Controller controller) {
-		super(controller);
-	}
+    public DebugInformationCard(Controller controller) {
+        super(controller);
+    }
 
-	@Override
-	public Image getCardImage() {
-		return Icons.getImageById(Icons.DEBUG);
-	}
+    @Override
+    public Image getCardImage() {
+        return Icons.getImageById(Icons.DEBUG);
+    }
 
-	@Override
-	public String getCardTitle() {
-		return Translation.getTranslation("debug_information_card.title");
-	}
+    @Override
+    public String getCardTitle() {
+        return Translation.getTranslation("debug_information_card.title");
+    }
 
-	@Override
-	public JComponent getUIComponent() {
-		 if (uiComponent == null) {
-	            initialize();
-	            buildUIComponent();
-	        }
-	        return uiComponent;
-	}
-	
-	private boolean showDebugReports() {
+    @Override
+    public JComponent getUIComponent() {
+        if (uiComponent == null) {
+            initialize();
+            buildUIComponent();
+        }
+        return uiComponent;
+    }
+
+    private boolean showDebugReports() {
         Preferences pref = getController().getPreferences();
         return pref.getBoolean(showDebugReportsPrefKey, false);
     }
@@ -130,345 +130,352 @@ public class DebugInformationCard extends InformationCard{
         Preferences pref = getController().getPreferences();
         pref.putBoolean(showDebugReportsPrefKey, show);
     }
-	
-	   private void initialize() {
-	        textPanel = new TextPanel();
-	        textPanel.setText(LoggingManager.getLogBuffer(), true);
-	        logLevelCombo = new JComboBox();
-	        logLevelCombo.addItem(Level.OFF);
-	        logLevelCombo.addItem(Level.SEVERE);
-	        logLevelCombo.addItem(Level.WARNING);
-	        logLevelCombo.addItem(Level.INFO);
-	        logLevelCombo.addItem(Level.FINE);
-	        logLevelCombo.addItem(Level.FINER);
-	        logLevelCombo.setSelectedItem(LoggingManager.getDocumentLoggingLevel());
 
-	        logToFileCheckBox = new JCheckBox("Write log files");
-	        scrollLockCheckBox = new JCheckBox("Scroll lock");
+    private void initialize() {
+        textPanel = new TextPanel();
+        textPanel.setText(LoggingManager.getLogBuffer(), true);
+        logLevelCombo = new JComboBox();
+        logLevelCombo.addItem(Level.OFF);
+        logLevelCombo.addItem(Level.SEVERE);
+        logLevelCombo.addItem(Level.WARNING);
+        logLevelCombo.addItem(Level.INFO);
+        logLevelCombo.addItem(Level.FINE);
+        logLevelCombo.addItem(Level.FINER);
+        logLevelCombo.setSelectedItem(LoggingManager.getDocumentLoggingLevel());
 
-	        showDebugReportsCheckBox = new JCheckBox("Show debug reports");
-	        showDebugReportsCheckBox
-	                .setToolTipText("Toggles between Chat and Debut reports if clicked on user in tree");
-	        updateBoxes();
+        logToFileCheckBox = new JCheckBox("Write log files");
+        scrollLockCheckBox = new JCheckBox("Scroll lock");
 
-	        ItemListener itemListener = new ItemListener() {
-	            public void itemStateChanged(ItemEvent e) {
-	                if (e.getSource() == logLevelCombo) {
-	                    Object selectedItem = logLevelCombo.getSelectedItem();
-	                    LoggingManager.setDocumentLogging((Level) selectedItem,
-                                getController());
-	                } else if (e.getSource() == logToFileCheckBox) {
-	                    if(logToFileCheckBox.isSelected()){
-	                    	LoggingManager.setFileLogging(LoggingManager.getDocumentLoggingLevel());//need to check
-	                    }
-	                } else if (e.getSource() == scrollLockCheckBox) {
-	                    textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
-	                } else if (e.getSource() == showDebugReportsCheckBox) {
-	                    setShowDebugReports(showDebugReportsCheckBox.isSelected());
-	                }
-	            }
-	        };
+        showDebugReportsCheckBox = new JCheckBox("Show debug reports");
+        showDebugReportsCheckBox
+            .setToolTipText("Toggles between Chat and Debut reports if clicked on user in tree");
+        updateBoxes();
 
-	        logLevelCombo.addItemListener(itemListener);
-	        logToFileCheckBox.addItemListener(itemListener);
-	        scrollLockCheckBox.addItemListener(itemListener);
-	        showDebugReportsCheckBox.addItemListener(itemListener);
+        ItemListener itemListener = new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getSource() == logLevelCombo) {
+                    Object selectedItem = logLevelCombo.getSelectedItem();
+                    LoggingManager.setDocumentLogging((Level) selectedItem,
+                        getController());
+                } else if (e.getSource() == logToFileCheckBox) {
+                    if (logToFileCheckBox.isSelected()) {
+                        LoggingManager.setFileLogging(LoggingManager
+                            .getDocumentLoggingLevel());// need to check
+                    }
+                } else if (e.getSource() == scrollLockCheckBox) {
+                    textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
+                } else if (e.getSource() == showDebugReportsCheckBox) {
+                    setShowDebugReports(showDebugReportsCheckBox.isSelected());
+                }
+            }
+        };
 
-	        shutdownFileRequestorButton = new JButton();
-	        shutdownFileRequestorButton.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownFileRequestorButton.setToolTipText("Shutdown FileRequestor");
+        logLevelCombo.addItemListener(itemListener);
+        logToFileCheckBox.addItemListener(itemListener);
+        scrollLockCheckBox.addItemListener(itemListener);
+        showDebugReportsCheckBox.addItemListener(itemListener);
 
-	        startFileRequestorButton = new JButton();
-	        startFileRequestorButton.setIcon(Icons.getIconById(Icons.RUN));
-	        startFileRequestorButton.setEnabled(false);
-	        startFileRequestorButton.setToolTipText("Start FileRequestor");
+        shutdownFileRequestorButton = new JButton();
+        shutdownFileRequestorButton.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownFileRequestorButton.setToolTipText("Shutdown FileRequestor");
 
-	        shutdownTransferManagerButton = new JButton();
-	        shutdownTransferManagerButton.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownTransferManagerButton.setToolTipText("Shutdown TransferManager");
+        startFileRequestorButton = new JButton();
+        startFileRequestorButton.setIcon(Icons.getIconById(Icons.RUN));
+        startFileRequestorButton.setEnabled(false);
+        startFileRequestorButton.setToolTipText("Start FileRequestor");
 
-	        startTransferManagerButton = new JButton();
-	        startTransferManagerButton.setIcon(Icons.getIconById(Icons.RUN));
-	        startTransferManagerButton.setEnabled(false);
-	        startTransferManagerButton.setToolTipText("Start TransferManager");
+        shutdownTransferManagerButton = new JButton();
+        shutdownTransferManagerButton.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownTransferManagerButton
+            .setToolTipText("Shutdown TransferManager");
 
-	        suspendEventsTransferManagerToggleButton = new JToggleButton();
-	        suspendEventsTransferManagerToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
-	        suspendEventsTransferManagerToggleButton
-	                .setToolTipText("Suspend TransferManagerListeners");
+        startTransferManagerButton = new JButton();
+        startTransferManagerButton.setIcon(Icons.getIconById(Icons.RUN));
+        startTransferManagerButton.setEnabled(false);
+        startTransferManagerButton.setToolTipText("Start TransferManager");
 
-	        shutdownNodeManagerButton = new JButton();
-	        shutdownNodeManagerButton.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownNodeManagerButton.setToolTipText("Shutdown NodeManager");
+        suspendEventsTransferManagerToggleButton = new JToggleButton();
+        suspendEventsTransferManagerToggleButton.setIcon(Icons
+            .getIconById(Icons.PAUSE));
+        suspendEventsTransferManagerToggleButton
+            .setToolTipText("Suspend TransferManagerListeners");
 
-	        startNodeManagerButton = new JButton();
-	        startNodeManagerButton.setIcon(Icons.getIconById(Icons.RUN));
-	        startNodeManagerButton.setEnabled(false);
-	        startNodeManagerButton.setToolTipText("Start NodeManager");
+        shutdownNodeManagerButton = new JButton();
+        shutdownNodeManagerButton.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownNodeManagerButton.setToolTipText("Shutdown NodeManager");
 
-	        suspendEventsNodeManagerToggleButton = new JToggleButton();
-	        suspendEventsNodeManagerToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
-	        suspendEventsNodeManagerToggleButton
-	                .setToolTipText("Suspend NodeManagerListeners");
+        startNodeManagerButton = new JButton();
+        startNodeManagerButton.setIcon(Icons.getIconById(Icons.RUN));
+        startNodeManagerButton.setEnabled(false);
+        startNodeManagerButton.setToolTipText("Start NodeManager");
 
-	        shutdownFolderRepository = new JButton();
-	        shutdownFolderRepository.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownFolderRepository.setToolTipText("Shutdown FolderRepository");
+        suspendEventsNodeManagerToggleButton = new JToggleButton();
+        suspendEventsNodeManagerToggleButton.setIcon(Icons
+            .getIconById(Icons.PAUSE));
+        suspendEventsNodeManagerToggleButton
+            .setToolTipText("Suspend NodeManagerListeners");
 
-	        startFolderRepository = new JButton();
-	        startFolderRepository.setIcon(Icons.getIconById(Icons.RUN));
-	        startFolderRepository.setEnabled(false);
-	        startFolderRepository.setToolTipText("Start FolderRepository");
+        shutdownFolderRepository = new JButton();
+        shutdownFolderRepository.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownFolderRepository.setToolTipText("Shutdown FolderRepository");
 
-	        suspendEventsFolderRepositoryToggleButton = new JToggleButton();
-	        suspendEventsFolderRepositoryToggleButton.setIcon(Icons.getIconById(Icons.PAUSE));
-	        suspendEventsFolderRepositoryToggleButton
-	                .setToolTipText("Suspend FolderRepositoryListeners");
+        startFolderRepository = new JButton();
+        startFolderRepository.setIcon(Icons.getIconById(Icons.RUN));
+        startFolderRepository.setEnabled(false);
+        startFolderRepository.setToolTipText("Start FolderRepository");
 
-	        shutdownConnectionListener = new JButton();
-	        shutdownConnectionListener.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownConnectionListener.setToolTipText("Shutdown ConnectionListener");
+        suspendEventsFolderRepositoryToggleButton = new JToggleButton();
+        suspendEventsFolderRepositoryToggleButton.setIcon(Icons
+            .getIconById(Icons.PAUSE));
+        suspendEventsFolderRepositoryToggleButton
+            .setToolTipText("Suspend FolderRepositoryListeners");
 
-	        startConnectionListener = new JButton();
-	        startConnectionListener.setIcon(Icons.getIconById(Icons.RUN));
-	        startConnectionListener.setEnabled(false);
-	        startConnectionListener.setToolTipText("Start ConnectionListener");
+        shutdownConnectionListener = new JButton();
+        shutdownConnectionListener.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownConnectionListener
+            .setToolTipText("Shutdown ConnectionListener");
 
-	        shutdownBroadcastMananger = new JButton();
-	        shutdownBroadcastMananger.setIcon(Icons.getIconById(Icons.STOP));
-	        shutdownBroadcastMananger.setToolTipText("Shutdown BroadcastMananger");
+        startConnectionListener = new JButton();
+        startConnectionListener.setIcon(Icons.getIconById(Icons.RUN));
+        startConnectionListener.setEnabled(false);
+        startConnectionListener.setToolTipText("Start ConnectionListener");
 
-	        startBroadcastMananger = new JButton();
-	        startBroadcastMananger.setIcon(Icons.getIconById(Icons.RUN));
-	        startBroadcastMananger.setEnabled(false);
-	        startBroadcastMananger.setToolTipText("Start BroadcastMananger");
-	        
-	        openDebugDir = new JButton("Send Logs");
-	        openDebugDir.setEnabled(true);
-	        openDebugDir.setToolTipText("Send log files to Support Team");
+        shutdownBroadcastMananger = new JButton();
+        shutdownBroadcastMananger.setIcon(Icons.getIconById(Icons.STOP));
+        shutdownBroadcastMananger.setToolTipText("Shutdown BroadcastMananger");
 
+        startBroadcastMananger = new JButton();
+        startBroadcastMananger.setIcon(Icons.getIconById(Icons.RUN));
+        startBroadcastMananger.setEnabled(false);
+        startBroadcastMananger.setToolTipText("Start BroadcastMananger");
 
-	        shutdownFileRequestorButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getFolderRepository().getFileRequestor()
-	                        .shutdown();
-	                shutdownFileRequestorButton.setEnabled(false);
-	                startFileRequestorButton.setEnabled(true);
-	            }
-	        });
+        openDebugDir = new JButton("Send Logs");
+        openDebugDir.setEnabled(true);
+        openDebugDir.setToolTipText("Send log files to Support Team");
 
-	        startFileRequestorButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getFolderRepository().getFileRequestor()
-	                        .start();
-	                shutdownFileRequestorButton.setEnabled(true);
-	                startFileRequestorButton.setEnabled(false);
-	            }
-	        });
+        shutdownFileRequestorButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getFolderRepository().getFileRequestor()
+                    .shutdown();
+                shutdownFileRequestorButton.setEnabled(false);
+                startFileRequestorButton.setEnabled(true);
+            }
+        });
 
-	        shutdownTransferManagerButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getTransferManager().shutdown();
-	                shutdownTransferManagerButton.setEnabled(false);
-	                startTransferManagerButton.setEnabled(true);
-	            }
-	        });
+        startFileRequestorButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getFolderRepository().getFileRequestor()
+                    .start();
+                shutdownFileRequestorButton.setEnabled(true);
+                startFileRequestorButton.setEnabled(false);
+            }
+        });
 
-	        startTransferManagerButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getTransferManager().start();
-	                shutdownTransferManagerButton.setEnabled(true);
-	                startTransferManagerButton.setEnabled(false);
-	            }
-	        });
+        shutdownTransferManagerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getTransferManager().shutdown();
+                shutdownTransferManagerButton.setEnabled(false);
+                startTransferManagerButton.setEnabled(true);
+            }
+        });
 
-	        suspendEventsTransferManagerToggleButton
-	                .addActionListener(new ActionListener() {
-	                    public void actionPerformed(ActionEvent e) {
-	                        boolean selected = suspendEventsTransferManagerToggleButton
-	                                .isSelected();
-	                        getController().getTransferManager().setSuspendFireEvents(
-	                                selected);
-	                    }
-	                });
+        startTransferManagerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getTransferManager().start();
+                shutdownTransferManagerButton.setEnabled(true);
+                startTransferManagerButton.setEnabled(false);
+            }
+        });
 
-	        shutdownNodeManagerButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getNodeManager().shutdown();
-	                shutdownNodeManagerButton.setEnabled(false);
-	                startNodeManagerButton.setEnabled(true);
-	            }
-	        });
+        suspendEventsTransferManagerToggleButton
+            .addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    boolean selected = suspendEventsTransferManagerToggleButton
+                        .isSelected();
+                    getController().getTransferManager().setSuspendFireEvents(
+                        selected);
+                }
+            });
 
-	        startNodeManagerButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getNodeManager().start();
-	                getController().getReconnectManager().buildReconnectionQueue();
-	                shutdownNodeManagerButton.setEnabled(true);
-	                startNodeManagerButton.setEnabled(false);
-	            }
-	        });
+        shutdownNodeManagerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getNodeManager().shutdown();
+                shutdownNodeManagerButton.setEnabled(false);
+                startNodeManagerButton.setEnabled(true);
+            }
+        });
 
-	        suspendEventsNodeManagerToggleButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                boolean selected = suspendEventsNodeManagerToggleButton
-	                        .isSelected();
-	                getController().getNodeManager().setSuspendFireEvents(
-	                        selected);
-	            }
-	        });
+        startNodeManagerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getNodeManager().start();
+                getController().getReconnectManager().buildReconnectionQueue();
+                shutdownNodeManagerButton.setEnabled(true);
+                startNodeManagerButton.setEnabled(false);
+            }
+        });
 
+        suspendEventsNodeManagerToggleButton
+            .addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    boolean selected = suspendEventsNodeManagerToggleButton
+                        .isSelected();
+                    getController().getNodeManager().setSuspendFireEvents(
+                        selected);
+                }
+            });
 
-	        shutdownFolderRepository.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getFolderRepository().shutdown();
-	                shutdownFolderRepository.setEnabled(false);
-	                startFolderRepository.setEnabled(true);
-	            }
-	        });
+        shutdownFolderRepository.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getFolderRepository().shutdown();
+                shutdownFolderRepository.setEnabled(false);
+                startFolderRepository.setEnabled(true);
+            }
+        });
 
-	        startFolderRepository.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getFolderRepository().init();
-	                getController().getFolderRepository().start();
-	                shutdownFolderRepository.setEnabled(true);
-	                startFolderRepository.setEnabled(false);
-	            }
-	        });
+        startFolderRepository.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getFolderRepository().init();
+                getController().getFolderRepository().start();
+                shutdownFolderRepository.setEnabled(true);
+                startFolderRepository.setEnabled(false);
+            }
+        });
 
-	        suspendEventsFolderRepositoryToggleButton.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                boolean selected = suspendEventsFolderRepositoryToggleButton
-	                        .isSelected();
-	                getController().getFolderRepository().setSuspendFireEvents(
-	                        selected);
-	            }
-	        });
+        suspendEventsFolderRepositoryToggleButton
+            .addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    boolean selected = suspendEventsFolderRepositoryToggleButton
+                        .isSelected();
+                    getController().getFolderRepository().setSuspendFireEvents(
+                        selected);
+                }
+            });
 
-	        shutdownConnectionListener.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getConnectionListener().shutdown();
-	                shutdownConnectionListener.setEnabled(false);
-	                startConnectionListener.setEnabled(true);
-	            }
-	        });
+        shutdownConnectionListener.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getConnectionListener().shutdown();
+                shutdownConnectionListener.setEnabled(false);
+                startConnectionListener.setEnabled(true);
+            }
+        });
 
-	        startConnectionListener.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                try {
-	                    getController().getConnectionListener().start();
-	                } catch (ConnectionException ce) {
-	                    logSevere("Problems starting listener "
-	                            + getController().getConnectionListener(), ce);
-	                }
-	                shutdownConnectionListener.setEnabled(true);
-	                startConnectionListener.setEnabled(false);
-	            }
-	        });
+        startConnectionListener.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    getController().getConnectionListener().start();
+                } catch (ConnectionException ce) {
+                    logSevere("Problems starting listener "
+                        + getController().getConnectionListener(), ce);
+                }
+                shutdownConnectionListener.setEnabled(true);
+                startConnectionListener.setEnabled(false);
+            }
+        });
 
-	        shutdownBroadcastMananger.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                getController().getBroadcastManager().shutdown();
-	                shutdownBroadcastMananger.setEnabled(false);
-	                startBroadcastMananger.setEnabled(true);
-	            }
-	        });
+        shutdownBroadcastMananger.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getController().getBroadcastManager().shutdown();
+                shutdownBroadcastMananger.setEnabled(false);
+                startBroadcastMananger.setEnabled(true);
+            }
+        });
 
-	        startBroadcastMananger.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                try {
-	                    getController().getBroadcastManager().start();
-	                } catch (ConnectionException ce) {
-	                    logSevere("Problems starting manager "
-	                            + getController().getBroadcastManager(), ce);
-	                }
-	                shutdownBroadcastMananger.setEnabled(true);
-	                startBroadcastMananger.setEnabled(false);
-	            }
-	        });
-	        
-	        openDebugDir.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	                try {
-	                    FileUtils.openFile(LoggingManager.getDebugDir());
-	                    BrowserLauncher
-	                        .openURL(Constants.POWERFOLDER_SUPPORT_FILE_TICKET_URL);
-	                } catch (IOException ex) {
-	                	logSevere("Problems opening debug directory ", ex);
-	                }
-	            }
-	        });
-	    }
+        startBroadcastMananger.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    getController().getBroadcastManager().start();
+                } catch (ConnectionException ce) {
+                    logSevere("Problems starting manager "
+                        + getController().getBroadcastManager(), ce);
+                }
+                shutdownBroadcastMananger.setEnabled(true);
+                startBroadcastMananger.setEnabled(false);
+            }
+        });
 
-	    private void updateBoxes() {
-	        logToFileCheckBox.setSelected(LoggingManager.isLogToFile());
-	        scrollLockCheckBox.setSelected(!textPanel.isAutoScroll());
-	        showDebugReportsCheckBox.setSelected(showDebugReports());
-	    }
-	    
-	    public void buildUIComponent() {
-	        
-	            FormLayout layout = new FormLayout(
-	                    //      2           4            6         8           10           12          14         16            18          20         22
-	                    "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 8dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow",
-	                    "3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, 3dlu, pref, 3dlu");
-	            PanelBuilder builder = new PanelBuilder(layout);
-	            CellConstraints cc = new CellConstraints();
-	            
-	            builder.add(createToolBar(), cc.xywh(2, 2, 23, 1));
-	            builder.add(textPanel.getUIComponent(), cc.xywh(1, 4, 24, 1));
-	            
-	            builder.add(new JLabel("FileRequestor"), cc.xy(2, 6));
-                builder.add(shutdownFileRequestorButton, cc.xy(4, 6));
-                builder.add(startFileRequestorButton, cc.xy(6, 6));
+        openDebugDir.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    FileUtils.openFile(LoggingManager.getDebugDir());
+                    BrowserLauncher
+                        .openURL(Constants.POWERFOLDER_SUPPORT_FILE_TICKET_URL);
+                } catch (IOException ex) {
+                    logSevere("Problems opening debug directory ", ex);
+                }
+            }
+        });
+    }
 
-                builder.add(new JLabel("TransferManager"), cc.xy(2, 8));
-                builder.add(shutdownTransferManagerButton, cc.xy(4, 8));
-                builder.add(startTransferManagerButton, cc.xy(6, 8));
-                builder.add(suspendEventsTransferManagerToggleButton, cc.xy(8, 8));
+    private void updateBoxes() {
+        logToFileCheckBox.setSelected(LoggingManager.isLogToFile());
+        scrollLockCheckBox.setSelected(!textPanel.isAutoScroll());
+        showDebugReportsCheckBox.setSelected(showDebugReports());
+    }
 
-                builder.add(new JLabel("NodeManager"), cc.xy(10, 6));
-                builder.add(shutdownNodeManagerButton, cc.xy(12, 6));
-                builder.add(startNodeManagerButton, cc.xy(14, 6));
-                builder.add(suspendEventsNodeManagerToggleButton, cc.xy(16, 6));
+    public void buildUIComponent() {
 
-                builder.add(new JLabel("FolderRepository"), cc.xy(10, 8));
-                builder.add(shutdownFolderRepository, cc.xy(12, 8));
-                builder.add(startFolderRepository, cc.xy(14, 8));
-                builder.add(suspendEventsFolderRepositoryToggleButton, cc.xy(16, 8));
+        FormLayout layout = new FormLayout(
+            // 2 4 6 8 10 12 14 16 18 20 22
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 8dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow",
+            "3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, 3dlu, pref, 3dlu");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
-                builder.add(new JLabel("ConnectionListener"), cc.xy(18, 6));
-                builder.add(shutdownConnectionListener, cc.xy(20, 6));
-                builder.add(startConnectionListener, cc.xy(22, 6));
+        builder.add(createToolBar(), cc.xywh(2, 2, 23, 1));
+        builder.add(textPanel.getUIComponent(), cc.xywh(1, 4, 24, 1));
 
-                builder.add(new JLabel("BroadcastManager"), cc.xy(18, 8));
-                builder.add(shutdownBroadcastMananger, cc.xy(20, 8));
-                builder.add(startBroadcastMananger, cc.xy(22, 8));
-                
-	            uiComponent = builder.getPanel();
-	       
-	    }
-	    
-	    private JPanel createToolBar() {
-	        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-	        bar.addFixed(openDebugDir);
-	        bar.addRelatedGap();
-	        bar.addFixed(new JLabel("Level"));
-	        bar.addRelatedGap();
-	        bar.addFixed(logLevelCombo);
-	        bar.addRelatedGap();
+        builder.add(new JLabel("FileRequestor"), cc.xy(2, 6));
+        builder.add(shutdownFileRequestorButton, cc.xy(4, 6));
+        builder.add(startFileRequestorButton, cc.xy(6, 6));
 
-	        // Only show the debug reports check box if the debug.reports ConfigurationEntry is enabled.
-	        if (ConfigurationEntry.DEBUG_REPORTS.getValueBoolean(getController())) {
-	            bar.addFixed(showDebugReportsCheckBox);
-	            bar.addRelatedGap();
-	        }
+        builder.add(new JLabel("TransferManager"), cc.xy(2, 8));
+        builder.add(shutdownTransferManagerButton, cc.xy(4, 8));
+        builder.add(startTransferManagerButton, cc.xy(6, 8));
+        builder.add(suspendEventsTransferManagerToggleButton, cc.xy(8, 8));
 
-	        bar.addFixed(logToFileCheckBox);
-	        bar.addRelatedGap();
-	        bar.addFixed(scrollLockCheckBox);
-	        bar.addRelatedGap();
-	        return bar.getPanel();
-	    }
+        builder.add(new JLabel("NodeManager"), cc.xy(10, 6));
+        builder.add(shutdownNodeManagerButton, cc.xy(12, 6));
+        builder.add(startNodeManagerButton, cc.xy(14, 6));
+        builder.add(suspendEventsNodeManagerToggleButton, cc.xy(16, 6));
+
+        builder.add(new JLabel("FolderRepository"), cc.xy(10, 8));
+        builder.add(shutdownFolderRepository, cc.xy(12, 8));
+        builder.add(startFolderRepository, cc.xy(14, 8));
+        builder.add(suspendEventsFolderRepositoryToggleButton, cc.xy(16, 8));
+
+        builder.add(new JLabel("ConnectionListener"), cc.xy(18, 6));
+        builder.add(shutdownConnectionListener, cc.xy(20, 6));
+        builder.add(startConnectionListener, cc.xy(22, 6));
+
+        builder.add(new JLabel("BroadcastManager"), cc.xy(18, 8));
+        builder.add(shutdownBroadcastMananger, cc.xy(20, 8));
+        builder.add(startBroadcastMananger, cc.xy(22, 8));
+
+        uiComponent = builder.getPanel();
+
+    }
+
+    private JPanel createToolBar() {
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addFixed(openDebugDir);
+        bar.addRelatedGap();
+        bar.addFixed(new JLabel("Level"));
+        bar.addRelatedGap();
+        bar.addFixed(logLevelCombo);
+        bar.addRelatedGap();
+
+        // Only show the debug reports check box if the debug.reports
+        // ConfigurationEntry is enabled.
+        if (getController().isDebugReports()) {
+            bar.addFixed(showDebugReportsCheckBox);
+            bar.addRelatedGap();
+        }
+
+        bar.addFixed(logToFileCheckBox);
+        bar.addRelatedGap();
+        bar.addFixed(scrollLockCheckBox);
+        bar.addRelatedGap();
+        return bar.getPanel();
+    }
 
 }
