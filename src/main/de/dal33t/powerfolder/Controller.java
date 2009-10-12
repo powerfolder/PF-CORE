@@ -440,6 +440,7 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
+            uiController.initMacOSXLogo();
         }
 
         setLoadingCompletion(10, 20);
