@@ -646,14 +646,16 @@ public class Debug {
             file.getParentFile().mkdirs();
             fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
-            String statLine = Format.formatDateLong(now) + ';'
-                + now.getTime() + ';'
-                + controller.getNodeManager().countConnectedNodes() + ';'
+            String statLine = Format.formatDateShort(now) + ';' + now.getTime()
+                + ';' + controller.getNodeManager().countConnectedNodes() + ';'
                 + controller.getNodeManager().countOnlineNodes() + ';'
-                + controller.getNodeManager().getNodesAsCollection().size() + '\n';
+                + controller.getNodeManager().getNodesAsCollection().size()
+                + '\n';
             fOut.write(statLine.getBytes());
         } catch (IOException e) {
-            log.log(Level.WARNING, "Unable to write network statistics file", e);
+            log
+                .log(Level.WARNING, "Unable to write network statistics file",
+                    e);
             // Ignore
         } finally {
             try {
