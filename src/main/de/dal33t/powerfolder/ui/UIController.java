@@ -62,6 +62,8 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import com.apple.eawt.Application;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -326,7 +328,17 @@ public class UIController extends PFComponent {
         // PFWizard.openWhatToDoWizard(getController());
         // }
         // });
+    }
 
+    public void initMacOSXLogo() {
+        if (OSUtil.isMacOS()) {
+            try {
+                Application app = Application.getApplication();
+                app.setDockIconImage(Icons.getImageById(Icons.SYSTRAY_DEFAULT));
+            } catch (Exception e) {
+                logSevere(e);
+            }
+        }
     }
 
     private void detectAndShowLimitDialog() {
@@ -689,7 +701,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
+     * 
      * @param folderInfo
      *            info of the folder to display files information for.
      */
@@ -700,7 +712,7 @@ public class UIController extends PFComponent {
 
     /**
      * Opens the Files information for a folder.
-     *
+     * 
      * @param folderInfo
      *            info of the folder to display files information for.
      */
@@ -717,8 +729,7 @@ public class UIController extends PFComponent {
      * @param directoryFilterMode
      *            the directory filter mode to be in
      */
-    public void openFilesInformation(FolderInfo folderInfo)
-    {
+    public void openFilesInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderFiles(folderInfo);
         displayInformationWindow();
     }
