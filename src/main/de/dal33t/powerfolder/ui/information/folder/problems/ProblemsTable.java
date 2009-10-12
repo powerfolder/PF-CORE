@@ -91,7 +91,7 @@ public class ProblemsTable extends JTable {
                 if (column == 0) {
                     setText(problem.getDescription());
                 } else if (column == 1) {
-                    setText(Format.getInstance(controller).formatDate(problem.getDate()));
+                    setText(Format.formatDateShort(problem.getDate()));
                 } else if (column == 2) {
                     setText(problem.getWikiLinkKey());
                 } else if (column == 3) {

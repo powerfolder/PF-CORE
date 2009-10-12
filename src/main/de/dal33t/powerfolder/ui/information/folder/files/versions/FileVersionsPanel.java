@@ -202,7 +202,7 @@ public class FileVersionsPanel extends PFUIComponent {
                 Format.formatBytesShort(fileInfo.getSize())));
         currentDateLabel.setText(Translation.getTranslation(
                 "file_version_tab.date",
-                Format.getInstance(getController()).formatDate(fileInfo.getModifiedDate())));
+                Format.formatDateShort(fileInfo.getModifiedDate())));
         currentVersionPanel.setVisible(true);
 
         // Run this outside of EDT, in case it runs slow.

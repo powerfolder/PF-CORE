@@ -70,7 +70,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
-    private JCheckBox hour24CB;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
@@ -107,11 +106,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Language selector
         languageChooser = createLanguageChooser();
-
-        boolean hour24 = PreferencesEntry.TIME_24_HOUR
-            .getValueBoolean(getController());
-        hour24CB = new JCheckBox(Translation.getTranslation(
-                "preferences.dialog.dialogs.hour24Time"), hour24);
 
         boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
             .getValueBoolean(getController());
@@ -307,7 +301,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -319,9 +313,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation
                 .getTranslation("preferences.dialog.language")), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
-
-            row += 2;
-            builder.add(hour24CB, cc.xy(3, row));
 
             row += 2;
             builder.add(skinLabel, cc.xy(1, row));
@@ -458,13 +449,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(),
                 String.valueOf(folderSyncSlider.getValue()));
-
-        if (PreferencesEntry.TIME_24_HOUR.getValueBoolean(getController())
-                ^ hour24CB.isSelected()) {
-            needsRestart = true;
-        }
-        PreferencesEntry.TIME_24_HOUR.setValue(getController(),
-                hour24CB.isSelected());
 
         getController().saveConfig();
 

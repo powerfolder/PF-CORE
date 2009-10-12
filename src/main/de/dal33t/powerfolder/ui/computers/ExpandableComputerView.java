@@ -330,7 +330,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         if (time == null) {
             lastConnectedTime = "";
         } else {
-            lastConnectedTime = Format.getInstance(getController()).formatDate(time);
+            lastConnectedTime = Format.formatDateShort(time);
         }
         lastSeenLabel.setText(Translation.getTranslation(
             "exp_computer_view.last_seen_text", lastConnectedTime));

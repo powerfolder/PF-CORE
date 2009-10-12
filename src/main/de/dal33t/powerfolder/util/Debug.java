@@ -646,7 +646,7 @@ public class Debug {
             file.getParentFile().mkdirs();
             fOut = new BufferedOutputStream(new FileOutputStream(file, true));
             Date now = new Date();
-            String statLine = Format.getInstance(controller).getFullDateFormat().format(now) + ';'
+            String statLine = Format.formatDateLong(now) + ';'
                 + now.getTime() + ';'
                 + controller.getNodeManager().countConnectedNodes() + ';'
                 + controller.getNodeManager().countOnlineNodes() + ';'

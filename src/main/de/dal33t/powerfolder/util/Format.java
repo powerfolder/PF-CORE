@@ -19,13 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.PFComponent;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
@@ -37,17 +34,13 @@ import java.util.Formatter;
  */
 public class Format extends PFComponent {
 
-    private static Format instance;
+    private static final ShortDateFormat SHORT_DATE_FORAMT = new ShortDateFormat();
+    private static final LongDateFormat LONG_DATE_FORAMT = new LongDateFormat();
+    private static final ShortTimeFormat SHORT_TIME_FORAMT = new ShortTimeFormat();
+    private static final LongTimeFormat LONG_TIME_FORAMT = new LongTimeFormat();
 
-    public static Format getInstance(Controller controller) {
-        if (instance == null) {
-            instance = new Format(controller);
-        }
-        return instance;
-    }
-
-    private Format(Controller controller) {
-        super(controller);
+    private Format() {
+        // No instance
     }
 
     /**
@@ -100,12 +93,38 @@ public class Format extends PFComponent {
     }
 
     /**
-     * Formats a date
+     * Long time format. Something like 15:45:46 PM
      *
      * @param date
      * @return
      */
-    public String formatDate(Date date) {
+    public static String formatTimeLong(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return LONG_TIME_FORAMT.get().format(date);
+    }
+
+    /**
+     * Short time format. Something like 15:45 PM
+     *
+     * @param date
+     * @return
+     */
+    public static String formatTimeShort(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return SHORT_TIME_FORAMT.get().format(date);
+    }
+
+    /**
+     * Long date format. Something like 10 October 2009
+     *
+     * @param date
+     * @return
+     */
+    public static String formatDateLong(Date date) {
         if (date == null) {
             return null;
         }
@@ -117,20 +136,44 @@ public class Format extends PFComponent {
                     - calNow.get(Calendar.DAY_OF_YEAR);
             if (dayDiffer == 0) {
                 return Translation.getTranslation("general.today") + ' '
-                        + getFileDateHoursFormat().format(date);
+                        + formatTimeLong(date);
             } else if (dayDiffer == -1) {
                 return Translation.getTranslation("general.yesterday") + ' '
-                        + getFileDateHoursFormat().format(date);
+                        + formatTimeLong(date);
             }
-
         }
-        // otherwise use default format
-        return getFileDateFormat().format(date);
+
+        // Otherwise use default format
+        return LONG_DATE_FORAMT.get().format(date);
     }
 
-    public static String formatDateLegacy(Date date) {
-        return DateFormat.getDateInstance(DateFormat.SHORT).format(date) + ' '
-            + DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
+    /**
+     * Short date format. Something like 10/10/09
+     *
+     * @param date
+     * @return
+     */
+    public static String formatDateShort(Date date) {
+        if (date == null) {
+            return null;
+        }
+        Calendar calDate = Calendar.getInstance();
+        calDate.setTime(date);
+        Calendar calNow = Calendar.getInstance();
+        if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
+            int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
+                    - calNow.get(Calendar.DAY_OF_YEAR);
+            if (dayDiffer == 0) {
+                return Translation.getTranslation("general.today") + ' '
+                        + formatTimeShort(date);
+            } else if (dayDiffer == -1) {
+                return Translation.getTranslation("general.yesterday") + ' '
+                        + formatTimeShort(date);
+            }
+        }
+
+        // Otherwise use default format
+        return SHORT_DATE_FORAMT.get().format(date);
     }
 
     /**
@@ -151,9 +194,10 @@ public class Format extends PFComponent {
      * Translates a "how much time remaining" value into a string.
      *
      * @param dt The time in milliseconds
-     * @return the formatted string. Examples: "102 days", "10:30:23"
+     * @return the formatted string. Examples: "102 days", "10:20:23"
      */
     public static String formatDeltaTime(long dt) {
+        // @TODO make this progressive as it nears zero: "102 days" or "10 hours" or "5 minutes" or "Less than one minute". "10:20:23" looks like a time (twenty past ten).
         Formatter f = new Formatter();
         long days = dt / 1000 / 60 / 60 / 24;
         long hours = dt / 1000 / 60 / 60;
@@ -181,62 +225,6 @@ public class Format extends PFComponent {
         return Translation.getTranslation("percent.place.holder", "?");
     }
 
-    /*
-     * The reason for the following methods: The javadoc of DateFormat states,
-     * that that class (and subclasses mention the same) is not thread safe.
-     * Actually they recommend to create an instance per thread. (But since this
-     * is a general purpose class, we won't do that).
-     */
-
-    /**
-     * See #692
-     *
-     * @return the TIME_ONLY_DATE_FOMRAT
-     */
-    public DateFormat getTimeOnlyDateFormat() {
-        return createSimpleDateFormat("date_format.time_only_date",
-                "[HH:mm:ss]");
-    }
-
-    /**
-     * See #692
-     *
-     * @return the DETAILED_TIME_FOMRAT
-     */
-    public DateFormat getDetailedTimeFormat() {
-        return createSimpleDateFormat("date_format.detailed_time",
-                "[HH:mm:ss:SSS]");
-    }
-
-    /**
-     * See #692
-     *
-     * @return the FULL_DATE_FOMRAT
-     */
-    public DateFormat getFullDateFormat() {
-        return createSimpleDateFormat("date_format.full_date",
-                "MM/dd/yyyy HH:mm:ss");
-    }
-
-    /**
-     * See #692
-     *
-     * @return the FILE_DATE_FORMAT
-     */
-    public DateFormat getFileDateFormat() {
-        return createSimpleDateFormat("date_format.file_date",
-                "MM/dd/yyyy HH:mm");
-    }
-
-    /**
-     * See #692
-     *
-     * @return the FILE_DATE_FORMAT_HOURS
-     */
-    private DateFormat getFileDateHoursFormat() {
-        return createSimpleDateFormat("date_format.file_date_hours", "HH:mm");
-    }
-
     public static DecimalFormat getLongFormat() {
         return createDecimalFormat("number_format.long", "#,###,###,###");
     }
@@ -254,40 +242,27 @@ public class Format extends PFComponent {
         }
     }
 
-    private SimpleDateFormat createSimpleDateFormat(String preferred,
-                                                    String fallback) {
-        try {
-            return new SimpleDateFormat(hour24(Translation.getTranslation(preferred), getController()));
-        } catch (Exception e) {
-            return new SimpleDateFormat(hour24(fallback, getController()));
+    private static class ShortDateFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return DateFormat.getDateInstance(DateFormat.SHORT);
         }
     }
 
-    /**
-     * Replace HH in time formats with h, and add a.
-     * So 23:59:59 becomes 11:59:59 PM, and [23:59:59] becomes [11:59:59 PM].
-     * 
-     * @param format
-     * @param controller
-     * @return
-     */
-    private static String hour24(String format, Controller controller) {
-        if (!PreferencesEntry.TIME_24_HOUR.getValueBoolean(controller)) {
-            int hh = format.indexOf("HH");
-            if (hh >= 0) {
-                StringBuilder sb = new StringBuilder(format);
-                sb.replace(hh, hh + 2, "h");
-
-                // Some date/time formats are surrounded by [...]
-                int j = sb.toString().lastIndexOf(']');
-                if (j > 0) {
-                    sb.replace(j, j + 1, " a]");
-                } else {
-                    sb.append(" a");
-                }
-                return sb.toString();
-            }
+    private static class LongDateFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return DateFormat.getDateInstance(DateFormat.LONG);
         }
-        return format;
+    }
+
+    private static class ShortTimeFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return DateFormat.getTimeInstance(DateFormat.SHORT);
+        }
+    }
+
+    private static class LongTimeFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return DateFormat.getTimeInstance(DateFormat.LONG);
+        }
     }
 }

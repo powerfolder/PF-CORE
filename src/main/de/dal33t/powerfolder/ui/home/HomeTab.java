@@ -634,7 +634,7 @@ public class HomeTab extends PFUIComponent {
             if (syncDate == null) {
                 synchronizationDateLabel.setVisible(false);
             } else {
-                String date = Format.getInstance(getController()).formatDate(syncDate);
+                String date = Format.formatDateShort(syncDate);
                 String syncDateText = synced ? Translation.getTranslation(
                     "home_tab.last_synced", date) : Translation.getTranslation(
                     "home_tab.sync_eta", date);

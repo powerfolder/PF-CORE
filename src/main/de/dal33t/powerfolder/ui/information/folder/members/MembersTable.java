@@ -261,14 +261,14 @@ public class MembersTable extends JTable {
                                 + " ("
                                 + Translation
                                     .getTranslation("permissions.folder.default")
-                                + ")");
+                                + ')');
                         } else {
                             setText(Translation
                                 .getTranslation("permissions.folder.no_access")
                                 + " ("
                                 + Translation
                                     .getTranslation("permissions.folder.default")
-                                + ")");
+                                + ')');
                         }
                     }
 

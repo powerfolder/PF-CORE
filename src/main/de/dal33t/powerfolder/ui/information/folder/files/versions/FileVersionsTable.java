@@ -136,7 +136,7 @@ public class FileVersionsTable extends JTable {
                     setHorizontalAlignment(RIGHT);
                     break;
                 case 2:  // date
-                    myValue = Format.getInstance(controller).formatDate(info.getModifiedDate());
+                    myValue = Format.formatDateShort(info.getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }

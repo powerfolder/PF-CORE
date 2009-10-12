@@ -62,8 +62,6 @@ public enum PreferencesEntry {
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
-    TIME_24_HOUR("time_24_hour", true),
-
     MASS_DELETE_PROTECTION("mass.delete.protection", true),
 
     MASS_DELETE_THRESHOLD("mass.delete.threshold", 75),

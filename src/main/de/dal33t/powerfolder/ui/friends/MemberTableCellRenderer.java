@@ -79,7 +79,7 @@ class MemberTableCellRenderer extends DefaultTableCellRenderer {
                         }
 
                     } else {
-                        value = Format.getInstance(controller).formatDate(member.getLastConnectTime());
+                        value = Format.formatDateShort(member.getLastConnectTime());
                     }
                     if (member.getController().isVerbose()) {
                         String lastMsg = member.getLastProblem() != null
