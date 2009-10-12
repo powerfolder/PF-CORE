@@ -29,7 +29,7 @@ import java.util.Formatter;
 
 /**
  * Helper class for all formatting
- *
+ * 
  * @version $Revision: 1.6 $
  */
 public class Format extends PFComponent {
@@ -45,7 +45,7 @@ public class Format extends PFComponent {
 
     /**
      * Returns a count of bytes in a string
-     *
+     * 
      * @param bytes
      * @return
      */
@@ -71,7 +71,7 @@ public class Format extends PFComponent {
 
     /**
      * Returns a count of bytes in a string
-     *
+     * 
      * @param bytes
      * @return
      */
@@ -94,7 +94,7 @@ public class Format extends PFComponent {
 
     /**
      * Long time format. Something like 15:45:46 PM
-     *
+     * 
      * @param date
      * @return
      */
@@ -107,7 +107,7 @@ public class Format extends PFComponent {
 
     /**
      * Short time format. Something like 15:45 PM
-     *
+     * 
      * @param date
      * @return
      */
@@ -119,56 +119,87 @@ public class Format extends PFComponent {
     }
 
     /**
-     * Long date format. Something like 10 October 2009
-     *
+     * Long date format.
+     * 
      * @param date
-     * @return
+     * @return Something like 10 October 2009
      */
     public static String formatDateLong(Date date) {
+        return formatDateLong(date, true);
+    }
+
+    /**
+     * Long date format.
+     * 
+     * @param date
+     * @param renderTodayYesterday
+     *            if today and yesterday should be rendered as actual date
+     *            string or as text "today" and "yesterday"
+     * @return Something like 10 October 2009
+     */
+    public static String formatDateLong(Date date, boolean renderTodayYesterday)
+    {
         if (date == null) {
             return null;
         }
-        Calendar calDate = Calendar.getInstance();
-        calDate.setTime(date);
-        Calendar calNow = Calendar.getInstance();
-        if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
-            int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
+        if (renderTodayYesterday) {
+            Calendar calDate = Calendar.getInstance();
+            calDate.setTime(date);
+            Calendar calNow = Calendar.getInstance();
+            if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
+                int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
                     - calNow.get(Calendar.DAY_OF_YEAR);
-            if (dayDiffer == 0) {
-                return Translation.getTranslation("general.today") + ' '
+                if (dayDiffer == 0) {
+                    return Translation.getTranslation("general.today") + ' '
                         + formatTimeLong(date);
-            } else if (dayDiffer == -1) {
-                return Translation.getTranslation("general.yesterday") + ' '
-                        + formatTimeLong(date);
+                } else if (dayDiffer == -1) {
+                    return Translation.getTranslation("general.yesterday")
+                        + ' ' + formatTimeLong(date);
+                }
             }
         }
-
         // Otherwise use default format
         return LONG_DATE_FORAMT.get().format(date);
     }
 
     /**
-     * Short date format. Something like 10/10/09
-     *
+     * Short date format.
+     * 
      * @param date
-     * @return
+     * @return Something like 10/10/09 12:12
      */
     public static String formatDateShort(Date date) {
+        return formatDateShort(date, true);
+    }
+
+    /**
+     * Short date format.
+     * 
+     * @param date
+     * @param renderTodayYesterday
+     *            if today and yesterday should be rendered as actual date
+     *            string or as text "today" and "yesterday"
+     * @return Something like 10/10/09 12:12
+     */
+    public static String formatDateShort(Date date, boolean renderTodayYesterday)
+    {
         if (date == null) {
             return null;
         }
-        Calendar calDate = Calendar.getInstance();
-        calDate.setTime(date);
-        Calendar calNow = Calendar.getInstance();
-        if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
-            int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
+        if (renderTodayYesterday) {
+            Calendar calDate = Calendar.getInstance();
+            calDate.setTime(date);
+            Calendar calNow = Calendar.getInstance();
+            if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
+                int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
                     - calNow.get(Calendar.DAY_OF_YEAR);
-            if (dayDiffer == 0) {
-                return Translation.getTranslation("general.today") + ' '
+                if (dayDiffer == 0) {
+                    return Translation.getTranslation("general.today") + ' '
                         + formatTimeShort(date);
-            } else if (dayDiffer == -1) {
-                return Translation.getTranslation("general.yesterday") + ' '
-                        + formatTimeShort(date);
+                } else if (dayDiffer == -1) {
+                    return Translation.getTranslation("general.yesterday")
+                        + ' ' + formatTimeShort(date);
+                }
             }
         }
 
@@ -178,7 +209,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats numbers
-     *
+     * 
      * @param n
      * @return
      */
@@ -192,25 +223,28 @@ public class Format extends PFComponent {
 
     /**
      * Translates a "how much time remaining" value into a string.
-     *
-     * @param dt The time in milliseconds
+     * 
+     * @param dt
+     *            The time in milliseconds
      * @return the formatted string. Examples: "102 days", "10:20:23"
      */
     public static String formatDeltaTime(long dt) {
-        // @TODO make this progressive as it nears zero: "102 days" or "10 hours" or "5 minutes" or "Less than one minute". "10:20:23" looks like a time (twenty past ten).
+        // @TODO make this progressive as it nears zero: "102 days" or
+        // "10 hours" or "5 minutes" or "Less than one minute". "10:20:23" looks
+        // like a time (twenty past ten).
         Formatter f = new Formatter();
         long days = dt / 1000 / 60 / 60 / 24;
         long hours = dt / 1000 / 60 / 60;
         if (days > 1) { // Two days or more
             f.format(Translation.getTranslation("general.days", String
-                    .valueOf(days))
-                    + ", ");
+                .valueOf(days))
+                + ", ");
             hours %= 24;
         }
         long minutes = dt / 1000 / 60 % 60;
         long seconds = dt / 1000 % 60;
         return f.format(Translation.getTranslation("general.time"), hours,
-                minutes, seconds).out().toString();
+            minutes, seconds).out().toString();
     }
 
     /**
@@ -220,7 +254,7 @@ public class Format extends PFComponent {
     public static String formatSyncPercentage(double syncPercentage) {
         if (syncPercentage >= 0) {
             return Translation.getTranslation("percent.place.holder",
-                    getNumberFormat().format(syncPercentage));
+                getNumberFormat().format(syncPercentage));
         }
         return Translation.getTranslation("percent.place.holder", "?");
     }
@@ -234,7 +268,8 @@ public class Format extends PFComponent {
     }
 
     private static DecimalFormat createDecimalFormat(String preferred,
-                                                     String fallback) {
+        String fallback)
+    {
         try {
             return new DecimalFormat(Translation.getTranslation(preferred));
         } catch (Exception e) {
@@ -245,14 +280,14 @@ public class Format extends PFComponent {
     private static class ShortDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return DateFormat.getDateTimeInstance(DateFormat.SHORT,
-                    DateFormat.SHORT);
+                DateFormat.SHORT);
         }
     }
 
     private static class LongDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return DateFormat.getDateTimeInstance(DateFormat.LONG,
-                    DateFormat.LONG);
+                DateFormat.LONG);
         }
     }
 
