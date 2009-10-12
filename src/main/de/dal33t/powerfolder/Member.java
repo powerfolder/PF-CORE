@@ -883,7 +883,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         if (!thisHandshakeCompleted) {
             String message = "not handshaked: connected? " + isConnected()
-                + ", acceptByCH?a " + acceptByConnectionHandler
+                + ", acceptByCH? " + acceptByConnectionHandler
                 + ", interesting? " + isInteresting() + ", peer " + peer;
             if (isFiner()) {
                 logFiner(message);
