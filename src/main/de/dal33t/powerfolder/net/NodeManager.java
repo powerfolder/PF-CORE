@@ -888,7 +888,7 @@ public class NodeManager extends PFComponent {
         // Create acceptor on socket
 
         if (!started) {
-            logWarning("Not accepting connection " + acceptor
+            logFine("Not accepting connection " + acceptor
                 + ". NodeManager is not started");
             acceptor.shutdown();
             return;
