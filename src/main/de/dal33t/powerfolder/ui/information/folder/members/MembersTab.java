@@ -52,9 +52,11 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -211,14 +213,16 @@ public class MembersTab extends PFUIComponent {
         refreshBar.setMaximumSize(openChatButton.getMaximumSize());
         refreshBar.setPreferredSize(openChatButton.getPreferredSize());
 
-        layout = new FormLayout("pref, 0:grow, pref, 3dlu, max(60dlu;pref)",
-            "pref");
+        layout = new FormLayout(
+            "pref, 0:grow, pref, 3dlu, pref, 3dlu, max(60dlu;pref)", "pref");
         builder = new PanelBuilder(layout);
         cc = new CellConstraints();
         builder.add(buttonBarPanel, cc.xy(1, 1));
+        builder.add(Help.createWikiLinkButton(getController(),
+            WikiLinks.SECURITY_PERMISSION), cc.xy(3, 1));
         builder.addLabel(Translation
-            .getTranslation("folder_member.default_permission"), cc.xy(3, 1));
-        builder.add(defaultPermissionBox, cc.xy(5, 1));
+            .getTranslation("folder_member.default_permission"), cc.xy(5, 1));
+        builder.add(defaultPermissionBox, cc.xy(7, 1));
 
         return builder.getPanel();
     }

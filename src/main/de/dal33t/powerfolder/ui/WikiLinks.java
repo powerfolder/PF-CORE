@@ -44,4 +44,5 @@ public interface WikiLinks {
     String DEFAULT_FOLDER = "Default_Folder";
     String INVITATIONS = "Invitations";
     String TRANSFER_MODES = "Transfer_Modes";
+    String SECURITY_PERMISSION = "Security_Permissions";
 }
