@@ -96,7 +96,7 @@ public enum Feature {
     /**
      * True if running in beta mode. Basically to identify differences.
      */
-    BETA(true),
+    BETA(false),
 
     CONFLICT_DETECTION(false);
 

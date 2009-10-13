@@ -40,7 +40,9 @@ public class PowerFolderClient extends AbstractDistribution {
         resetProviderURLs(controller);
 
         // Reset primary server if not PowerFolder server
-        if (!isPowerFolderServer(controller)) {
+        if (!isPowerFolderServer(controller)
+            || PowerFolderBeta.isBetaServer(controller))
+        {
             resetServer(controller);
         }
     }

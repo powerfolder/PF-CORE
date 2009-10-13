@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderBeta extends AbstractDistribution {
+    static final String BETA_SERVER_HOST = "relay001.node.powerfolder.com";
 
     public String getName() {
         return "4.0 Beta";
@@ -52,6 +53,11 @@ public class PowerFolderBeta extends AbstractDistribution {
     public boolean isRelay(Member node) {
         // Our public network strategy. Not very smart.
         return node.getId().contains("RELAY");
+    }
+
+    public static boolean isBetaServer(Controller c) {
+        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
+        return host.contains(BETA_SERVER_HOST);
     }
 
     // Internal ***************************************************************
