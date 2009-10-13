@@ -25,7 +25,13 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Toolkit;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -34,7 +40,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -190,19 +195,19 @@ public class AboutDialog extends PFUIComponent {
             }
         });
 
+        homeLink = new LinkLabel(getController(), Translation
+            .getTranslation("about_dialog.home_page"),
+            ConfigurationEntry.PROVIDER_URL.getValue(getController()));
+        SimpleComponentFactory.setFontSize((JLabel) homeLink.getUIComponent(),
+            SimpleComponentFactory.BIG_FONT_SIZE);
         docLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.documentation"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize((JLabel) docLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
-        homeLink = new LinkLabel(getController(), Translation
-            .getTranslation("about_dialog.home_page"),
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize((JLabel) homeLink.getUIComponent(),
-            SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.support"),
-            ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
+            ConfigurationEntry.PROVIDER_SUPPORT_URL.getValue(getController()));
         SimpleComponentFactory.setFontSize((JLabel) supportLink
             .getUIComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
 
