@@ -1,19 +1,77 @@
-PowerFolder Version 3.1.10 - http://www.powerfolder.com
+PowerFolder Version 4.0.0 - http://www.powerfolder.com
 
-Improvements:
- * Added several forward compatibilities for upcoming 4.0 version.
- * Updated to Java Runtime Environment (JRE) 6 Update 15
+= New features =
+
+ * New FREE 5+1 GB client! Sync up to 5 GB and get 1 GB online space as bonus.
+   Totally free of charge - and NOT limited to 30 days!
+ * Improved usability for faster and easier setup.
+ * New user interface: Clean and simple.
+ * File archive: Restore previously versions of a file.
+ * Improved security: Rights / Permission system.
+   http://www.powerfolder.com/wiki/Security_Permissions
+ * Mass delete protection: PowerFolder detects unintended deletions and warns the user.
+ * Play Music online / View Photos online! Share your photos and view them online as gallery.
+   https://access.powerfolder.com
+ * Easy folder join: Securely access folders of own computers without invitation file.
+ * Drag and drop support: Drag folders onto the interface to send, sync or backup these.
+ * Invite other users quicker and easier. 
+ * Nearly all important workflows have been reworked and simplified.
+ * Sync of empty directories. Now fully mirrors whole directory structures.
+ * Support for skins: Change the look of the program interface.
+ * Friendlist/Computerlist is now stored online and shared among all computers.
+ * Completely reworked and heavily improved Windows installer.
+ * Transparency of program windows.
+ * New splash screen.
+
+
+= Improvements =
+
+ * Reduced default sync speed from 5 down to 1 minute. 
+ * Displays quality of the connection to other computers.
+ * Possibility to invite multiple invitees.
+ * Better view of used Online Storage space. Warns user if space is about to exceed.
+ * Activation wizard is less intrusive.
+ * Installer does not requires include full Java runtime. Instead it downloads it on demand.
+ * Memory usage and configuration optimized: Out of memory should happen less often now.
+ * Folder statistic percentage now also considers partial transfers.
+ * Duplicate folders with the same name are now supported. Default prefix of folder names (computer name) was removed.
+ * Automatic cleanup of Up- and Downloads after X days.
+ * Several performance improvements.
+ * Online Backup only version.
+ * Always encrypts traffic, even in LAN.
+ * Quit: Now asks the first time if PowerFolder should be minimized or exited.
+ * Folder Settings: Added buttons to configure the most important options: Online backup, Preview and Remove.
+ * Moved PowerFolder configuration to Application data directory.
+ * Added Tell-a-Friend function to invite other people to PowerFolder.
+ * PowerFolders now appear under "Links" at Windows.
+ * Simplified transfer mode configuration.
+ * Shows logged in user of remote computers.
+ * Reduced number of popups to PowerFolder homepage. Now only opens on demand.
+
+
+= Bugfixes =
+
+ * A problem with the ZIP compressed transfers was resolved.
+ * Fixed a bug which caused corrupt configuration file during update.
+ * Inviter now automatically gets added to the friendlist.
+ * Uninstaller now also removes PowerFolder system service.
+
  
-Bugfixes:
- * Removed security warning caused by Online Storage certificate change.
+= Important for existing users =
+
+If you upgrade from an existing PowerFolder version keep in mind, that folders
+are now visible globally for each account, this means all users on an account
+will see all folders. Use the rights system to restrict the access to certain
+computers and users.
 
 
-Please give us feedback and request improvements at our forum:
-http://forums.powerfolder.com
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/support.html
 
 Minimum Java version is 6.0.
 
-Thanks to those who requested features in our forum and we hope to implement
+Thanks to those who requested features. We hope to implement
 even more if you keep requesting them for the next version.
 
 - The PowerFolder Team
@@ -31,13 +89,19 @@ Support    : http://www.powerfolder.com/support.html
 Development: http://www.powerfolder.com/about_us.html
 Email	   : contact (at) powerfolder.com
 
-External libraries used:
-- JGoodies looks, forms & binding (http://www.jgoodies.com). Under BSD License. (jar/jgoodies-LICENSE.txt)
-- jakarta-commons (http://jakarta.apache.org/commons).
-  Under Apache License, Version 2.0
 
+== Version History ==
 
-History:
+Version 3.1.10
+--------------
+
+Improvements:
+ * Added several forward compatibilities for upcoming 4.0 version.
+ * Updated to Java Runtime Environment (JRE) 6 Update 15
+ 
+Bugfixes:
+ * Removed security warning caused by Online Storage certificate change.
+
 
 Version 3.1.9
 -------------
