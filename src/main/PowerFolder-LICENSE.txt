@@ -1,4 +1,4 @@
-PowerFolder Free Software License
+PowerFolder Basic Software License
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
