@@ -19,7 +19,12 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,9 +32,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,8 +51,8 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Offers helper/utility method for UI related stuff.
@@ -342,7 +353,7 @@ public class UIUtil {
 
     /**
      * This forces a frame to be on screen, with all of its edges visible
-     *
+     * 
      * @param frame
      */
     public static void putOnScreen(JFrame frame) {
@@ -354,10 +365,36 @@ public class UIUtil {
             frame.setLocation(frame.getX(), 0);
         }
         if (frame.getX() > screenSize.width) {
-            frame.setLocation(screenSize.width - frame.getWidth(), frame.getY());
+            frame
+                .setLocation(screenSize.width - frame.getWidth(), frame.getY());
         }
         if (frame.getY() > screenSize.height) {
             frame.setLocation(0, screenSize.height - frame.getHeight());
         }
+    }
+
+    public static void setMacDockImage(Image img) {
+        if (!OSUtil.isMacOS()) {
+            return;
+        }
+        try {
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+            Method getApplication = appClass.getMethod("getApplication");
+            Object application = getApplication.invoke(null);
+            Method setDockIconImage = appClass.getMethod("setDockIconImage",
+                Image.class);
+            setDockIconImage.invoke(application, img);
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Unable to dock image. " + e, e);
+        }
+
+        // com.apple.eawt.Application
+        // try {
+        // Application app = Application.getApplication();
+        // app.setDockIconImage(Icons.getImageById(Icons.SYSTRAY_DEFAULT));
+        // } catch (Exception e) {
+        // logSevere(e);
+        // }
+
     }
 }
