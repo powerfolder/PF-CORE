@@ -122,9 +122,9 @@ public class Controller extends PFComponent {
         .getName());
 
     /**
-     * program version. include "dev" if its a development version. 1.0.3.4 / RC10
+     * program version. include "dev" if its a development version. 1.0.3.4 / RC12
      */
-    public static final String PROGRAM_VERSION = "4.0.0 RC10";
+    public static final String PROGRAM_VERSION = "4.0.0 RC12";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -440,7 +440,6 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
-            uiController.initMacOSXLogo();
         }
 
         setLoadingCompletion(10, 20);

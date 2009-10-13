@@ -170,7 +170,7 @@ public class Icons {
     public static final String DISCONNECTED = "connected_not.icon";
 
     // Wizard pictos from the quick info panels
-    public static final String LOGO96X96 = "picto_logo.icon";
+    public static final String LOGO128X128 = "picto_logo_128.icon";
     public static final String LOGO400UI = "power_folder_logo_400_ui.icon";
     public static final String USER_PICTO = "user_picto.icon";
     public static final String UPLOAD_PICTO = "upload_picto.icon";

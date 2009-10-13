@@ -62,8 +62,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import com.apple.eawt.Application;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -164,6 +162,10 @@ public class UIController extends PFComponent {
      */
     public UIController(Controller controller) {
         super(controller);
+
+        if (OSUtil.isMacOS()) {
+            UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
+        }
 
         folderRepositorySynchronizing = new AtomicBoolean();
 
@@ -328,17 +330,6 @@ public class UIController extends PFComponent {
         // PFWizard.openWhatToDoWizard(getController());
         // }
         // });
-    }
-
-    public void initMacOSXLogo() {
-        if (OSUtil.isMacOS()) {
-            try {
-                Application app = Application.getApplication();
-                app.setDockIconImage(Icons.getImageById(Icons.SYSTRAY_DEFAULT));
-            } catch (Exception e) {
-                logSevere(e);
-            }
-        }
     }
 
     private void detectAndShowLimitDialog() {
