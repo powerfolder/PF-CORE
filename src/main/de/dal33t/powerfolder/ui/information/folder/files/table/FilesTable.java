@@ -543,7 +543,7 @@ public class FilesTable extends JTable {
             textInHTML.append("<TD valign=top class=bold>&nbsp;"
                 + Translation.getTranslation("mp3_file_info.sample_rate")
                 + ":</TD><TD valign=top  class=" + style + " align=rigth>"
-                + Format.getNumberFormat().format(mp3FileInfo.getSamplerate())
+                + Format.formatDecimal(mp3FileInfo.getSamplerate())
                 + "&nbsp;</TD></TR>");
             String text;
             if (mp3FileInfo.isStereo()) {

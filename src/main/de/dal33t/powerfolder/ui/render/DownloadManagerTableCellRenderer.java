@@ -114,8 +114,8 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                             .getCounter().calculateEstimatedMillisToCompletion(),
                             downloadManager.isCompleted() && downloadManager.isStarted());
                     String kbs = Translation.getTranslation(
-                            "transfers.kbs", Format.getNumberFormat()
-                            .format(counter.calculateCurrentKBS()));
+                            "transfers.kbs", Format.formatDecimal(
+                                    counter.calculateCurrentKBS()));
                     String text = (et.isActive() ? et.toString()
                             + " - " : "")
                             + kbs;

@@ -2535,14 +2535,14 @@ public class TransferManager extends PFComponent {
                     logFine("Transfers: "
                         + countActiveDownloads()
                         + " download(s), "
-                        + Format.getNumberFormat().format(
+                        + Format.formatDecimal(
                             getDownloadCounter().calculateCurrentKBS())
                         + " KByte/s, "
                         + activeUploads.size()
                         + " active upload(s), "
                         + queuedUploads.size()
                         + " in queue, "
-                        + Format.getNumberFormat().format(
+                        + Format.formatDecimal(
                             getUploadCounter().calculateCurrentKBS())
                         + " KByte/s");
                 }
@@ -2749,12 +2749,10 @@ public class TransferManager extends PFComponent {
             }
         }
 
-        synchronized (Format.getNumberFormat()) {
-            logInfo((download ? "Download" : "Upload") + " completed: "
-                + Format.getNumberFormat().format(fInfo.getSize())
-                + " bytes in " + (took / 1000) + "s (" + cpsStr + " KByte/s): "
-                + fInfo + memberInfo);
-        }
+        logInfo((download ? "Download" : "Upload") + " completed: "
+            + Format.formatDecimal(fInfo.getSize())
+            + " bytes in " + (took / 1000) + "s (" + cpsStr + " KByte/s): "
+            + fInfo + memberInfo);
     }
 
     // Event/Listening code ***************************************************

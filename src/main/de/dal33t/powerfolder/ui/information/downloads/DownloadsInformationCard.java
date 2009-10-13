@@ -281,7 +281,7 @@ public class DownloadsInformationCard extends InformationCard
         double kbs = getController().getTransferManager().getDownloadCounter()
                 .calculateCurrentKBS();
         downloadCounterLabel.setText(Translation.getTranslation(
-                "status.download", Format.formatNumber(kbs)));
+                "status.download", Format.formatDecimal(kbs)));
     }
 
     ///////////////////

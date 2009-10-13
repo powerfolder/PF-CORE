@@ -327,7 +327,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
                 return "";
             }
             double sync = stats.getSyncPercentage(member);
-            return Format.formatSyncPercentage(sync);
+            return Format.formatPercent(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
             if (member == null
                 || !member.isCompletelyConnected() && !member.isMySelf())

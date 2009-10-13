@@ -944,20 +944,20 @@ public class UIController extends PFComponent {
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb", Format.getNumberFormat().format(
+                    "systray.tooltip.down.mb", Format.formatDecimal(
                         totalCPSdownKB / 1024));
             } else {
                 downText = Translation.getTranslation("systray.tooltip.down",
-                    Format.getNumberFormat().format(totalCPSdownKB));
+                    Format.formatDecimal(totalCPSdownKB));
             }
 
             String upText;
             if (totalCPSupKB > 1024) {
                 upText = Translation.getTranslation("systray.tooltip.up.mb",
-                    Format.getNumberFormat().format(totalCPSupKB / 1024));
+                    Format.formatDecimal(totalCPSupKB / 1024));
             } else {
                 upText = Translation.getTranslation("systray.tooltip.up",
-                    Format.getNumberFormat().format(totalCPSupKB));
+                    Format.formatDecimal(totalCPSupKB));
             }
 
             tooltip.append(' ' + upText + ' ' + downText);

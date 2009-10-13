@@ -647,7 +647,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     } else {
                         syncPercentText = Translation.getTranslation(
                             "exp_folder_view.synchronized", Format
-                                .formatNumber(sync));
+                                .formatDecimal(sync));
                     }
                 }
 

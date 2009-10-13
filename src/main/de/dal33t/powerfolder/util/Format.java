@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.PFComponent;
 
-import java.text.DecimalFormat;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
@@ -34,10 +34,18 @@ import java.util.Formatter;
  */
 public class Format extends PFComponent {
 
-    private static final ShortDateFormat SHORT_DATE_FORAMT = new ShortDateFormat();
-    private static final LongDateFormat LONG_DATE_FORAMT = new LongDateFormat();
-    private static final ShortTimeFormat SHORT_TIME_FORAMT = new ShortTimeFormat();
-    private static final LongTimeFormat LONG_TIME_FORAMT = new LongTimeFormat();
+    private static final ShortDateFormat SHORT_DATE_FORAMT
+            = new ShortDateFormat();
+    private static final ShortTimeFormat SHORT_TIME_FORAMT
+            = new ShortTimeFormat();
+    private static final LongTimeFormat LONG_TIME_FORAMT
+            = new LongTimeFormat();
+    private static final DoubleNumberFormat DOUBLE_NUMBER_FORAMT
+            = new DoubleNumberFormat();
+    private static final LongNumberFormat LONG_NUMBER_FORAMT
+            = new LongNumberFormat();
+    private static final PercentNumberFormat PERCENT_NUMBER_FORAMT
+            = new PercentNumberFormat();
 
     private Format() {
         // No instance
@@ -65,7 +73,7 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "GBytes";
         }
-        String str = getNumberFormat().format(number);
+        String str = formatDecimal(number);
         return str + ' ' + suffix;
     }
 
@@ -88,7 +96,7 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "GB";
         }
-        String str = getNumberFormat().format(number);
+        String str = formatDecimal(number);
         return str + ' ' + suffix;
     }
 
@@ -116,50 +124,6 @@ public class Format extends PFComponent {
             return null;
         }
         return SHORT_TIME_FORAMT.get().format(date);
-    }
-
-    /**
-     * Long date format.
-     * 
-     * @param date
-     * @return Something like 10 October 2009
-     */
-    public static String formatDateLong(Date date) {
-        return formatDateLong(date, true);
-    }
-
-    /**
-     * Long date format.
-     * 
-     * @param date
-     * @param renderTodayYesterday
-     *            if today and yesterday should be rendered as actual date
-     *            string or as text "today" and "yesterday"
-     * @return Something like 10 October 2009
-     */
-    public static String formatDateLong(Date date, boolean renderTodayYesterday)
-    {
-        if (date == null) {
-            return null;
-        }
-        if (renderTodayYesterday) {
-            Calendar calDate = Calendar.getInstance();
-            calDate.setTime(date);
-            Calendar calNow = Calendar.getInstance();
-            if (calDate.get(Calendar.YEAR) == calNow.get(Calendar.YEAR)) {
-                int dayDiffer = calDate.get(Calendar.DAY_OF_YEAR)
-                    - calNow.get(Calendar.DAY_OF_YEAR);
-                if (dayDiffer == 0) {
-                    return Translation.getTranslation("general.today") + ' '
-                        + formatTimeLong(date);
-                } else if (dayDiffer == -1) {
-                    return Translation.getTranslation("general.yesterday")
-                        + ' ' + formatTimeLong(date);
-                }
-            }
-        }
-        // Otherwise use default format
-        return LONG_DATE_FORAMT.get().format(date);
     }
 
     /**
@@ -208,17 +172,34 @@ public class Format extends PFComponent {
     }
 
     /**
-     * Formats numbers
+     * Formats decimal numbers
      * 
      * @param n
      * @return
      */
-    public static String formatNumber(double n) {
-        return getNumberFormat().format(n);
+    public static String formatDecimal(double n) {
+        return DOUBLE_NUMBER_FORAMT.get().format(n);
     }
 
+    /**
+     * Formats long numbers
+     *
+     * @param n
+     * @return
+     */
     public static String formatLong(long n) {
-        return getLongFormat().format(n);
+        return LONG_NUMBER_FORAMT.get().format(n);
+    }
+
+    /**
+     * Formats numbers as percentage.
+     * 100.0 --> 100%
+     *
+     * @param n
+     * @return
+     */
+    public static String formatPercent(double n) {
+        return PERCENT_NUMBER_FORAMT.get().format(n / 100.0);
     }
 
     /**
@@ -247,47 +228,10 @@ public class Format extends PFComponent {
             minutes, seconds).out().toString();
     }
 
-    /**
-     * @param syncPercentage
-     * @return the rendered sync percentage.
-     */
-    public static String formatSyncPercentage(double syncPercentage) {
-        if (syncPercentage >= 0) {
-            return Translation.getTranslation("percent.place.holder",
-                getNumberFormat().format(syncPercentage));
-        }
-        return Translation.getTranslation("percent.place.holder", "?");
-    }
-
-    public static DecimalFormat getLongFormat() {
-        return createDecimalFormat("number_format.long", "#,###,###,###");
-    }
-
-    public static DecimalFormat getNumberFormat() {
-        return createDecimalFormat("number_format.number", "#,###,###,###.##");
-    }
-
-    private static DecimalFormat createDecimalFormat(String preferred,
-        String fallback)
-    {
-        try {
-            return new DecimalFormat(Translation.getTranslation(preferred));
-        } catch (Exception e) {
-            return new DecimalFormat(fallback);
-        }
-    }
-
     private static class ShortDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return DateFormat.getDateTimeInstance(DateFormat.SHORT,
                 DateFormat.SHORT);
-        }
-    }
-
-    private static class LongDateFormat extends ThreadLocal<DateFormat> {
-        protected DateFormat initialValue() {
-            return DateFormat.getDateTimeInstance(DateFormat.LONG,
-                DateFormat.LONG);
         }
     }
 
@@ -300,6 +244,24 @@ public class Format extends PFComponent {
     private static class LongTimeFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return DateFormat.getTimeInstance(DateFormat.LONG);
+        }
+    }
+
+    private static class DoubleNumberFormat extends ThreadLocal<NumberFormat> {
+        protected NumberFormat initialValue() {
+            return NumberFormat.getInstance();
+        }
+    }
+
+    private static class LongNumberFormat extends ThreadLocal<NumberFormat> {
+        protected NumberFormat initialValue() {
+            return NumberFormat.getIntegerInstance();
+        }
+    }
+
+    private static class PercentNumberFormat extends ThreadLocal<NumberFormat> {
+        protected NumberFormat initialValue() {
+            return NumberFormat.getPercentInstance();
         }
     }
 }

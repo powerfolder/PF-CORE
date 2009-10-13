@@ -122,7 +122,7 @@ public class FileDetailsPanel extends PFUIComponent {
                 .getTranslation("file_details_panel.downloading"));
             if (dl != null && dl.isStarted()) {
                 status.append(" ("
-                    + Format.formatNumber(dl.getCounter()
+                    + Format.formatDecimal(dl.getCounter()
                         .calculateCompletionPercentage()) + "%)");
             }
         } else if (fileInfo.isDeleted()) {

@@ -292,7 +292,7 @@ public class UploadsInformationCard extends InformationCard
         double kbs = getController().getTransferManager().getUploadCounter()
                 .calculateCurrentKBS();
         uploadCounterLabel.setText(Translation.getTranslation(
-                "status.upload", Format.formatNumber(kbs)));
+                "status.upload", Format.formatDecimal(kbs)));
     }
 
     ///////////////////

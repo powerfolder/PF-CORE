@@ -245,9 +245,9 @@ public class Debug {
             long downBytes = c.getTransferManager()
                 .getTotalDownloadTrafficCounter().getBytesTransferred();
             b.append("\nTotal traffic: DOWN "
-                + Format.getNumberFormat().format(downKBS) + " Kbytes/s, "
+                + Format.formatDecimal(downKBS) + " Kbytes/s, "
                 + Format.formatBytes(downBytes) + " bytes total, UP "
-                + Format.getNumberFormat().format(upKBS) + " Kbytes/s, "
+                + Format.formatDecimal(upKBS) + " Kbytes/s, "
                 + Format.formatBytes(upBytes) + " bytes total");
 
             if (c.isLimitedConnectivity()) {
@@ -295,8 +295,8 @@ public class Debug {
                 b.append("\nDownloads ("
                     + downloads.size()
                     + " total, "
-                    + Format.getNumberFormat().format(
-                        tm.getDownloadCounter().calculateCurrentKBS())
+                    + Format.formatDecimal(tm.getDownloadCounter()
+                        .calculateCurrentKBS())
                     + " Kbytes/s, "
                     + Format.formatBytes(tm.getDownloadCounter()
                         .getBytesTransferred()) + " bytes total):");
@@ -321,10 +321,10 @@ public class Debug {
                     + " active, "
                     + tm.countQueuedUploads()
                     + " queued, "
-                    + Format.getNumberFormat().format(
+                    + Format.formatDecimal(
                         tm.getUploadCounter().calculateCurrentKBS())
                     + " Kbytes/s, "
-                    + Format.getNumberFormat().format(
+                    + Format.formatDecimal(
                         tm.getAllowedUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()

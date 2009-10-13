@@ -89,7 +89,7 @@ public class OnlineStorageComponent extends PFUIComponent {
         if (joined) {
             syncActionLabel.setText(Translation.getTranslation(
                     "online_storage_component.online_storage_text", Format
-                            .formatNumber(serverSync)));
+                            .formatDecimal(serverSync)));
             syncActionLabel.setForeground(warned ? Color.red : ColorUtil
                     .getTextForegroundColor());
             syncActionLabel.setToolTipText(warned ? Translation.getTranslation(

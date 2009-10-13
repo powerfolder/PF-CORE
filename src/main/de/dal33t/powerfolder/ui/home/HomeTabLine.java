@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.util.Format;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.DecimalFormat;
 
 /**
  * Class to render a value - label line in the HomeTab.
@@ -173,8 +172,7 @@ public class HomeTabLine extends PFUIComponent {
         if (castInt) {
             valueLabel.setText(String.valueOf((int) value));
         } else {
-            DecimalFormat numberFormat = Format.getNumberFormat();
-            valueLabel.setText(numberFormat.format(value));
+            valueLabel.setText(Format.formatDecimal(value));
         }
     }
 

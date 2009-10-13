@@ -975,7 +975,7 @@ public class HomeTab extends PFUIComponent {
                 uploadsLine.setNormalLabelText(Translation
                     .getTranslation("home_tab.files_uploads"));
             } else {
-                String s = Format.formatNumber(d);
+                String s = Format.formatDecimal(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
                     "home_tab.files_uploads_active", s));
             }
@@ -984,7 +984,7 @@ public class HomeTab extends PFUIComponent {
                 downloadsLine.setNormalLabelText(Translation
                     .getTranslation("home_tab.files_downloads"));
             } else {
-                String s = Format.formatNumber(d);
+                String s = Format.formatDecimal(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
                     "home_tab.files_downloads_active", s));
             }
