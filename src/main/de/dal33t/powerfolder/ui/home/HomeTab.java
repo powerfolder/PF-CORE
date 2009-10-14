@@ -75,11 +75,7 @@ import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -614,8 +610,8 @@ public class HomeTab extends PFUIComponent {
                 // Not running
                 syncStatsText = Translation
                     .getTranslation("home_tab.not_running");
-            } else if (getController().getFolderRepository().getFoldersCount() == 0)
-            {
+            } else if (getController().getFolderRepository().getFoldersCount()
+                    == 0) {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("home_tab.no_folders");
@@ -634,10 +630,17 @@ public class HomeTab extends PFUIComponent {
             if (syncDate == null) {
                 synchronizationDateLabel.setVisible(false);
             } else {
-                String date = Format.formatDateShort(syncDate);
-                String syncDateText = synced ? Translation.getTranslation(
-                    "home_tab.last_synced", date) : Translation.getTranslation(
-                    "home_tab.sync_eta", date);
+                String syncDateText;
+                if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 30)) {
+                     syncDateText = Translation.getTranslation(
+                            "home_tab.sync_unknown");
+                } else {
+                    String date = Format.formatDateShort(syncDate);
+                    syncDateText = synced ? Translation.getTranslation(
+                        "home_tab.last_synced", date) :
+                            Translation.getTranslation(
+                        "home_tab.sync_eta", date);
+                }
                 synchronizationDateLabel.setVisible(true);
                 synchronizationDateLabel.setText(syncDateText);
             }

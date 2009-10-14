@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.DateUtil;
 
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
@@ -222,7 +223,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (!existanceSync) {
             return false;
         }
-        boolean lastModificationSync = Util.equalsFileDateCrossPlattform(
+        boolean lastModificationSync = DateUtil.equalsFileDateCrossPlattform(
             diskFile.lastModified(), lastModifiedDate.getTime());
         if (!lastModificationSync) {
             return false;
@@ -432,7 +433,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
             // Directly detected by last modified
-            return Util.isNewerFileDateCrossPlattform(lastModifiedDate,
+            return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
                 ofInfo.lastModifiedDate);
         }
         if (version == ofInfo.version) {
@@ -445,7 +446,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // return Convert
             // .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
             // .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
-            return Util.isNewerFileDateCrossPlattform(lastModifiedDate,
+            return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
                 ofInfo.lastModifiedDate);
         }
         return version > ofInfo.version;

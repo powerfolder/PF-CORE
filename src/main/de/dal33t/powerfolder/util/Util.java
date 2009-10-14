@@ -70,68 +70,6 @@ public class Util {
     private Util() {
     }
 
-    /**
-     * Compares with a marge of 2000 milliseconds to solve the rounding problems
-     * or some filesystems.
-     * 
-     * @true if dates are the same within a marge of 2000 milliseconds
-     */
-    public final static boolean equalsFileDateCrossPlattform(Date date1,
-        Date date2)
-    {
-        return equalsFileDateCrossPlattform(date1.getTime(), date2.getTime());
-    }
-
-    /**
-     * Compares with a marge of 2000 milliseconds to solve the rounding problems
-     * on some filesystems.
-     * 
-     * @see Convert#convertToGlobalPrecision(long)
-     * @true if times are the same within a marge of 2000 milliseconds
-     */
-    public final static boolean equalsFileDateCrossPlattform(long time1,
-        long time2)
-    {
-        if (time1 == time2) {
-            return true;
-        }
-        long difference;
-        if (time1 > time2) {
-            difference = time1 - time2;
-        } else {
-            difference = time2 - time1;
-        }
-        return difference <= 2000;
-    }
-
-    /**
-     * Compares with a marge of 2000 milliseconds to solve the rounding problems
-     * or some filesystems.
-     * 
-     * @return true if date1 is a newer date than date2
-     */
-    public final static boolean isNewerFileDateCrossPlattform(Date date1,
-        Date date2)
-    {
-        return isNewerFileDateCrossPlattform(date1.getTime(), date2.getTime());
-    }
-
-    /**
-     * Compares with a marge of 2000 milliseconds to solve the rounding problems
-     * or some filesystems.
-     * 
-     * @return true if time1 is a newer time than time2
-     */
-    public final static boolean isNewerFileDateCrossPlattform(long time1,
-        long time2)
-    {
-        if (time1 == time2) {
-            return false;
-        }
-        long difference = time1 - time2;
-        return difference > 2000;
-    }
-
     public static final boolean equals(Object a, Object b) {
         if (a == null) {
             // a == null

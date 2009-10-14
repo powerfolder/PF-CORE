@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -857,7 +858,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getTime());
         assertTrue(
             "Last modified date mismatch of orignial file and incompleted dl file",
-            Util.equalsFileDateCrossPlattform(bartFile.lastModified(),
+            DateUtil.equalsFileDateCrossPlattform(bartFile.lastModified(),
                 incompleteFile.lastModified()));
         assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
             .lastModified());

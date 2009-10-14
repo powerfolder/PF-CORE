@@ -44,13 +44,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState;
 import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
@@ -869,7 +863,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         if (getTempFile() == null
             || !getTempFile().exists()
-            || !Util.equalsFileDateCrossPlattform(fileInfo.getModifiedDate()
+            || !DateUtil.equalsFileDateCrossPlattform(fileInfo.getModifiedDate()
                 .getTime(), getTempFile().lastModified()))
         {
             // If something's wrong with the tempfile, kill the meta data file

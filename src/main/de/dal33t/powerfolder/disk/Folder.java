@@ -88,14 +88,7 @@ import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -2671,7 +2664,7 @@ public class Folder extends PFComponent {
 
             boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                 .getSize();
-            boolean dateSame = Util.equalsFileDateCrossPlattform(localFileInfo
+            boolean dateSame = DateUtil.equalsFileDateCrossPlattform(localFileInfo
                 .getModifiedDate(), remoteFileInfo.getModifiedDate());
             boolean fileCaseSame = localFileInfo.getRelativeName().equals(
                 remoteFileInfo.getRelativeName());

@@ -39,10 +39,7 @@ import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -528,7 +525,7 @@ public class Upload extends Transfer {
         assert theFile != null;
         assert f != null;
 
-        boolean lastModificationDataMismatch = !Util
+        boolean lastModificationDataMismatch = !DateUtil
             .equalsFileDateCrossPlattform(f.lastModified(), theFile
                 .getModifiedDate().getTime());
         if (lastModificationDataMismatch) {
