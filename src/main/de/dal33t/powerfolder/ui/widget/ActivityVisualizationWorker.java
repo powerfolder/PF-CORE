@@ -213,11 +213,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
             // Step 2) Show dialog
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    try {
-                        lock.acquire();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    lock.tryAcquire();
                     initComponents();
                     lock.release();
                     if (!stopped) {
