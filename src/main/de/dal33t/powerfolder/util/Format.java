@@ -249,7 +249,9 @@ public class Format extends PFComponent {
 
     private static class DoubleNumberFormat extends ThreadLocal<NumberFormat> {
         protected NumberFormat initialValue() {
-            return NumberFormat.getInstance();
+            NumberFormat format = NumberFormat.getInstance();
+            format.setMaximumFractionDigits(2);
+            return format;
         }
     }
 
