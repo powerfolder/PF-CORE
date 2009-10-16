@@ -141,8 +141,8 @@ public class Format extends PFComponent {
      * 
      * @param date
      * @param renderTodayYesterday
-     *            if today and yesterday should be rendered as actual date
-     *            string or as text "today" and "yesterday"
+     *            if not today, tomorrow or yesterday rendered as actual date
+     *            string else as text "today", "tomorrow" and "yesterday" + time
      * @return Something like 10/10/09 12:12
      */
     public static String formatDateShort(Date date, boolean renderTodayYesterday)
@@ -162,6 +162,9 @@ public class Format extends PFComponent {
                         + formatTimeShort(date);
                 } else if (dayDiffer == -1) {
                     return Translation.getTranslation("general.yesterday")
+                        + ' ' + formatTimeShort(date);
+                } else if (dayDiffer == 1) {
+                    return Translation.getTranslation("general.tomorrow")
                         + ' ' + formatTimeShort(date);
                 }
             }
