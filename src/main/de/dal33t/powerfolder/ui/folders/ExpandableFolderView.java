@@ -960,6 +960,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         updateStatsDetails();
                         updateIconAndOS();
                         updateButtons();
+                        updateTransferMode();
                     }
                 });
             }
