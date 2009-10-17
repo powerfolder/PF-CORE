@@ -78,6 +78,7 @@ import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -97,7 +98,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private boolean local;
     private boolean online;
 
-    private JLabel nameLabel;
+    private ResizingJLabel nameLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
@@ -254,7 +255,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name space # files probs sync / join
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref, pref:grow, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
@@ -262,12 +263,12 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperBuilder.add(primaryButton, cc.xy(1, 1));
         MouseAdapter ma = new MyMouseAdapter();
-        nameLabel = new JLabel();
-        upperBuilder.add(nameLabel, cc.xy(3, 1));
-        nameLabel.addMouseListener(ma);
-        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(6, 1));
+        nameLabel = new ResizingJLabel();
+        upperBuilder.add(nameLabel.getJLabel(), cc.xy(3, 1));
+        nameLabel.getJLabel().addMouseListener(ma);
+        upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
 
-        upperBuilder.add(problemButton, cc.xy(8, 1));
+        upperBuilder.add(problemButton, cc.xy(7, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
@@ -884,7 +885,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             newFiles = newCount > 0;
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
-                nameLabel.setToolTipText(Translation.getTranslation(
+                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
                         "exp_folder_view.new_files_tip_text",
                         String.valueOf(newCount)));
             }
@@ -892,25 +893,19 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         if (!newFiles) {
             if (expanded.get()) {
-                nameLabel.setToolTipText(Translation.getTranslation(
+                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
                         "exp_folder_view.collapse"));
             } else {
-                nameLabel.setToolTipText(Translation.getTranslation(
+                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
                         "exp_folder_view.expand"));
             }
         }
         
-        if (folderInfo.name.length() > 25) {
-            nameLabel.setText(folderInfo.name.substring(0, 25) + "..."
-                + newCountString);
-            // Tooltip the whole name
-            nameLabel.setToolTipText(folderInfo.name);
-        } else {
-            nameLabel.setText(folderInfo.name + newCountString);
-        }
-        nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
-            ? Font.BOLD
-            : Font.PLAIN, nameLabel.getFont().getSize()));
+        nameLabel.getJLabel().setText(folderInfo.name + newCountString);
+        nameLabel.getJLabel().setFont(
+                new Font(nameLabel.getJLabel().getFont().getName(),
+                        newFiles ? Font.BOLD
+            : Font.PLAIN, nameLabel.getJLabel().getFont().getSize()));
         clearCompletedDownloadsAction.setEnabled(newFiles);
     }
 
