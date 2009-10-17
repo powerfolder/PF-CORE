@@ -129,26 +129,4 @@ public interface SecurityService {
     void setFolderPermission(AccountInfo aInfo, FolderInfo foInfo,
         FolderPermission newPermission);
 
-    /**
-     * Grants the given user/account the permissions.
-     * 
-     * @param aInfo
-     * @param permissions
-     * @deprecated use
-     *             {@link #setFolderPermission(AccountInfo, FolderInfo, FolderPermission)}
-     *             instead
-     */
-    void grant(AccountInfo aInfo, Permission... permissions);
-
-    /**
-     * Revokes the permission from the given account.
-     * 
-     * @param aInfo
-     * @param permissions
-     * @deprecated use
-     *             {@link #setFolderPermission(AccountInfo, FolderInfo, FolderPermission)}
-     *             instead
-     */
-    void revoke(AccountInfo aInfo, Permission... permissions);
-
 }
