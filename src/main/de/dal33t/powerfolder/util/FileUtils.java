@@ -749,6 +749,33 @@ public class FileUtils {
     }
 
     /**
+     * Methods does two things: 1. Removes all invalid characters from the raw
+     * name and 2. searches and takes care that this file is new and not yet
+     * existing. If file already exists with the same raw name it appends (1),
+     * (2), and so on until it finds an non-existing file.
+     * <p>
+     * 
+     * @param targetFile
+     * @param rawName
+     *            the raw name of the file. is it NOT guranteed that it will/can
+     *            be named like this.
+     * @return the file that is guranteed to be NOT EXISTING yet.
+     */
+    public static File findNonExistingFile(File baseDir, String rawName) {
+        Reject.ifNull(baseDir, "Base dir is null");
+        Reject.ifBlank(rawName, "Raw name is null");
+
+        String name = removeInvalidFilenameChars(rawName);
+        File candidate = new File(baseDir, name);
+        int suffix = 2;
+        while (candidate.exists()) {
+            candidate = new File(baseDir, name + " (" + suffix + ")");
+            suffix++;
+        }
+        return candidate;
+    }
+
+    /**
      * Helper method to perform hashing on a file.
      * 
      * @param file
