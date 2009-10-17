@@ -38,7 +38,6 @@ public class FolderCreateItem {
     private ArchiveMode archiveMode;
     private int archiveHistory;
 
-
     public FolderCreateItem(File localBase) {
         this.localBase = localBase;
         archiveMode = ArchiveMode.FULL_BACKUP;

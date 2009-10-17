@@ -213,6 +213,10 @@ public class WhatToDoPanel extends PFWizardPanel {
         // Reset folderinfo for disk location
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
+        // Default to Auto. User can change during the wizard process.
+        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
         // Setup choose disk location panel / default text
         getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE, null);
 

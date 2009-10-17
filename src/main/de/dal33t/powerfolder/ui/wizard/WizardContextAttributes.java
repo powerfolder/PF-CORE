@@ -56,6 +56,9 @@ public interface WizardContextAttributes {
     /** If the folder should be backed up by the Online Storage */
     String BACKUP_ONLINE_STOARGE = "folder_create.backup_by_os";
 
+    /** Count of files in directory */
+    String FILE_COUNT = "file_count";
+
     /** Determines if folder should be created as preview */
     String PREVIEW_FOLDER_ATTIRBUTE = "disklocation.preview_folder";
 

@@ -95,11 +95,18 @@ public class SyncProfile implements Serializable {
             true, true, true, true, 10));
 
     /**
-     * Backup source preset profile.
+     * Backup source preset profile - 5 minute.
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
         "backup_source", false, new SyncProfileConfiguration(false, false,
             false, false, 5));
+
+    /**
+     * Backup source preset profile - 1 hour.
+     */
+    public static final SyncProfile BACKUP_SOURCE_HOUR = new SyncProfile(
+        "backup_source_hour", false, new SyncProfileConfiguration(false, false,
+            false, false, 60));
 
     /**
      * Backup target preset profile.
@@ -116,10 +123,10 @@ public class SyncProfile implements Serializable {
             false, false, false, 0));
 
     // All preset sync profiles
-    private static final SyncProfile[] PRESET_SYNC_PROFILES = new SyncProfile[]{
+    private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, AUTOMATIC_SYNCHRONIZATION_10MIN,
-        MANUAL_SYNCHRONIZATION, BACKUP_SOURCE, BACKUP_TARGET,
-        AUTOMATIC_DOWNLOAD, HOST_FILES};
+        MANUAL_SYNCHRONIZATION, BACKUP_SOURCE, BACKUP_SOURCE_HOUR,
+            BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
@@ -310,8 +317,6 @@ public class SyncProfile implements Serializable {
      * 
      * @param id
      *            translate 'syncprofile.[id].name'
-     * @param silent
-     *            silent translation so warnings are not logged - don't care
      * @return
      */
     private static String translateId(String id) {
@@ -354,7 +359,7 @@ public class SyncProfile implements Serializable {
         }
 
         // Ensure new profile has a unique name;
-        boolean emptyName = profileNameArg.trim().equals("");
+        boolean emptyName = profileNameArg.trim().length() == 0;
         String workingProfileName = emptyName
             ? translateId("custom")
             : profileNameArg;

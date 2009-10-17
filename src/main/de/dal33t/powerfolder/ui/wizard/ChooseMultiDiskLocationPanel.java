@@ -26,8 +26,8 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CRE
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT;
 
-import java.awt.Component;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -150,6 +150,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
+        SyncProfile syncProfile = (SyncProfile) getWizardContext()
+            .getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        Reject.ifNull(syncProfile, "No default sync profile");
+
         // Check boxes
         for (String boxName : userDirectories.keySet()) {
             for (JCheckBox box : boxes) {
@@ -157,6 +161,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     if (box.isSelected()) {
                         FolderCreateItem item = new FolderCreateItem(
                             userDirectories.get(boxName));
+                        item.setSyncProfile(syncProfile);
                         item.setFolderInfo(createFolderInfo(boxName));
                         folderCreateItems.add(item);
                     }
@@ -168,7 +173,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         for (int i = 0; i < customDirectoryListModel.size(); i++) {
             String dir = (String) customDirectoryListModel.getElementAt(i);
             File file = new File(dir);
-            folderCreateItems.add(new FolderCreateItem(file));
+            FolderCreateItem item = new FolderCreateItem(file);
+            item.setSyncProfile(syncProfile);
+            folderCreateItems.add(item);
         }
 
         getWizardContext().setAttribute(FOLDER_CREATE_ITEMS, folderCreateItems);
@@ -272,17 +279,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         builder.add(osWarningLabel, cc.xyw(1, row, 6));
 
         return builder.getPanel();
-    }
-
-    private Component createAddRemoveLine() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 0:grow", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        builder.add(new JButton(addAction), cc.xy(1, 1));
-        builder.add(new JButton(removeAction), cc.xy(3, 1));
-        JPanel panel = builder.getPanel();
-        panel.setOpaque(false);
-        return panel;
     }
 
     /**
@@ -517,6 +513,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private class MySwingWorker extends SwingWorker {
 
+        private int recursiveFileCount = 0;
         private long totalDirectorySize = 0;
         private boolean valid = true;
 
@@ -529,6 +526,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         public Object construct() {
             try {
+                recursiveFileCount = 0;
                 totalDirectorySize = 0;
                 List<File> originalList = new ArrayList<File>();
                 for (String boxName : userDirectories.keySet()) {
@@ -548,9 +546,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (File file : originalList) {
+                    recursiveFileCount += FileUtils.countFilesRecursive(file);
                     totalDirectorySize += FileUtils
-                        .calculateDirectorySize(file);
+                            .calculateDirectorySize(file);
                 }
+                getWizardContext().setAttribute(FILE_COUNT, recursiveFileCount);
 
                 List<File> finalList = new ArrayList<File>();
                 for (String boxName : userDirectories.keySet()) {
@@ -587,7 +587,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 try {
                     folderSizeLabel.setText(Translation.getTranslation(
                         "wizard.choose_disk_location.total_directory_size",
-                        Format.formatBytes(totalDirectorySize)));
+                        Format.formatBytes(totalDirectorySize),
+                            Format.formatLong(recursiveFileCount)));
                     osWarningLabel.setText("");
                     osWarningLabel.setIcon(null);
                     if (backupByOnlineStorageBox.isSelected()) {

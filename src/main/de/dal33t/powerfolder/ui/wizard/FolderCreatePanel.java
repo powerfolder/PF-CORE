@@ -50,11 +50,9 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -176,10 +174,10 @@ public class FolderCreatePanel extends PFWizardPanel {
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
+                Reject.ifNull(localBase, "Local base for folder is null/not set");
                 SyncProfile syncProfile = folderCreateItem.getSyncProfile();
-                if (syncProfile == null) {
-                    syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
-                }
+                Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+                syncProfile = adjustSyncProfile(syncProfile);
                 FolderInfo folderInfo = folderCreateItem.getFolderInfo();
                 if (folderInfo == null) {
                     folderInfo = createFolderInfo(localBase);
@@ -196,11 +194,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             // FOLDERINFO_ATTRIBUTE...
             File localBase = (File) getWizardContext().getAttribute(
                 WizardContextAttributes.FOLDER_LOCAL_BASE);
+            Reject.ifNull(localBase, "Local base for folder is null/not set");
             SyncProfile syncProfile = (SyncProfile) getWizardContext()
                 .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
-            Reject.ifNull(localBase, "Local base for folder is null/not set");
-            Reject.ifNull(syncProfile,
-                "Sync profile for folder is null/not set");
+            Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+            syncProfile = adjustSyncProfile(syncProfile);
 
             // Optional
             FolderInfo folderInfo = (FolderInfo) getWizardContext()
@@ -227,6 +225,22 @@ public class FolderCreatePanel extends PFWizardPanel {
         worker.start();
 
         updateButtons();
+    }
+
+    /**
+     * If 'backup source' for lots of files, switch to 'backup source hour'.
+     *
+     * @param syncProfile
+     * @return
+     */
+    private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
+        Integer fileCount = (Integer) getWizardContext().getAttribute(
+                WizardContextAttributes.FILE_COUNT);
+        if (fileCount != null && fileCount > 10000
+                && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            syncProfile = SyncProfile.BACKUP_SOURCE_HOUR;
+        }
+        return syncProfile;
     }
 
     private static FolderInfo createFolderInfo(File localBase) {

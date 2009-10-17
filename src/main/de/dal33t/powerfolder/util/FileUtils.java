@@ -577,6 +577,39 @@ public class FileUtils {
     }
 
     /**
+     * Scans a directory and counts all files.
+     *
+     * @param directory
+     * @return the count of files in the directory
+     */
+    public static long countFilesRecursive(File directory) {
+        return countFilesRecursive0(directory, 0);
+    }
+
+    public static long countFilesRecursive0(File directory, int depth) {
+
+        // Limit evil recursive symbolic links.
+        if (depth == 100) {
+            return 0;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return 0;
+        }
+        long count = 0;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                count += countFilesRecursive0(file, depth + 1);
+            } else {
+                count++;
+            }
+        }
+        return count;
+
+    }
+
+    /**
      * Scans a directory and gets full size of all files.
      * 
      * @param directory
