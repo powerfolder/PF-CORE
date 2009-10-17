@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -187,10 +188,6 @@ public class Account extends Model implements Serializable {
 
     public Collection<Permission> getPermissions() {
         return Collections.unmodifiableCollection(permissions);
-    }
-
-    public boolean isIllegal() {
-        return permissions == null || osSubscription == null;
     }
 
     /**
@@ -376,6 +373,13 @@ public class Account extends Model implements Serializable {
     public String toString() {
         return "Account '" + username + "', " + permissions.size()
             + " permissions";
+    }
+
+    public String toDetailString() {
+        return toString() + ", pro? " + proUser + ", regdate: "
+            + Format.formatDateShort(registerDate) + ", licenses: "
+            + (licenseKeyFiles != null ? licenseKeyFiles.size() : "n/a") + ", "
+            + osSubscription;
     }
 
     // Convenience/Applogic ***************************************************
