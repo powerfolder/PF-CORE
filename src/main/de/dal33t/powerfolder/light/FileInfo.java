@@ -713,6 +713,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (hash == 0) {
             hash = hashCode0();
         }
+        
+        // TODO: "intern" FolderInfo
         // validate();
     }
 }
