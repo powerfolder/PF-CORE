@@ -47,7 +47,8 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     private static final Logger log = Logger
         .getLogger(MultiSourceDownloadManager.class.getName());
-    private final ConcurrentMap<MemberInfo, Download> downloads = new ConcurrentHashMap<MemberInfo, Download>();
+    private final ConcurrentMap<MemberInfo, Download> downloads = Util
+        .createConcurrentHashMap();
 
     private Download pendingPartRecordFrom;
 
@@ -101,7 +102,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
     /**
      * Returns the first valid completed date of a download.
-     *
+     * 
      * @return
      */
     public Date getCompletedDate() {
