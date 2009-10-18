@@ -1143,7 +1143,7 @@ public class Folder extends PFComponent {
             synchronized (dbAccessLock) {
                 // link new file to our folder
                 // TODO Remove this call
-                fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
+                //fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
                         logFiner(fInfo + ", modified by: "
@@ -1351,7 +1351,7 @@ public class Folder extends PFComponent {
      */
     private FileInfo addFile(FileInfo fInfo) {
         // Add to this folder
-        fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
+        // fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
 
         TransferPriority prio = transferPriorities.getPriority(fInfo);
 
