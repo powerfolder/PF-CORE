@@ -34,6 +34,15 @@ public class ServerInfo implements Serializable {
     private MemberInfo node;
     private String webUrl;
 
+    public ServerInfo() {
+    }
+
+    public ServerInfo(MemberInfo node, String webUrl) {
+        super();
+        this.node = node;
+        this.webUrl = webUrl;
+    }
+
     public MemberInfo getNode() {
         return node;
     }
