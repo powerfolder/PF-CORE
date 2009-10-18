@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -23,7 +24,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private boolean ignoreFileNameCase;
-    private final ConcurrentMap<String, Domain> domains = new ConcurrentHashMap<String, Domain>();
+    private final ConcurrentMap<String, Domain> domains = Util.createConcurrentHashMap();
 
     public FileInfoDAOHashMapImpl() {
         super();
