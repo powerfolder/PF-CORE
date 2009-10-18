@@ -84,7 +84,8 @@ public class Debug {
         if (!LoggingManager.isLogToFile()) {
             return;
         }
-        File file = new File(LoggingManager.getDebugDir(), "system_properties.txt");
+        File file = new File(LoggingManager.getDebugDir(),
+            "system_properties.txt");
         try {
             Properties sysprops = System.getProperties();
             PropertiesUtil.saveConfig(file, sysprops, "Current time: "
@@ -92,8 +93,7 @@ public class Debug {
         } catch (FileNotFoundException e) {
             log.severe("Unable to create SystemInfo file");
         } catch (IOException e) {
-            log.severe("Unable to Write to '"
-                + file + '\'');
+            log.severe("Unable to Write to '" + file + '\'');
         }
     }
 
@@ -106,8 +106,8 @@ public class Debug {
      * @param header
      * @return the CSV file. Or null if failed
      */
-    public static File writeFileListCSV(String folderName,
-        String memberName, Collection<FileInfo> fileInfos, String header)
+    public static File writeFileListCSV(String folderName, String memberName,
+        Collection<FileInfo> fileInfos, String header)
     {
         Reject.ifBlank(folderName, "folderName is null");
         Reject.ifBlank(memberName, "memberName is null");
@@ -138,13 +138,15 @@ public class Debug {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
             } catch (IOException e) {
-                log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
+                log.severe("Unable to write filelist to "
+                    + logFile.getAbsolutePath());
                 log.log(Level.FINER, "IOException", e);
                 return null;
             }
         }
         if (!logFile.canWrite()) {
-            log.severe("Unable to write filelist to " + logFile.getAbsolutePath());
+            log.severe("Unable to write filelist to "
+                + logFile.getAbsolutePath());
             return null;
         }
 
@@ -165,8 +167,8 @@ public class Debug {
             fOut.close();
             return logFile;
         } catch (IOException e) {
-            log.severe("Unable to write nodelist to '" + logFile.getAbsolutePath()
-                    + '\'');
+            log.severe("Unable to write nodelist to '"
+                + logFile.getAbsolutePath() + '\'');
             log.log(Level.FINER, "IOException", e);
         }
 
@@ -244,11 +246,10 @@ public class Debug {
                 .getTotalUploadTrafficCounter().getBytesTransferred();
             long downBytes = c.getTransferManager()
                 .getTotalDownloadTrafficCounter().getBytesTransferred();
-            b.append("\nTotal traffic: DOWN "
-                + Format.formatDecimal(downKBS) + " Kbytes/s, "
-                + Format.formatBytes(downBytes) + " bytes total, UP "
-                + Format.formatDecimal(upKBS) + " Kbytes/s, "
-                + Format.formatBytes(upBytes) + " bytes total");
+            b.append("\nTotal traffic: DOWN " + Format.formatDecimal(downKBS)
+                + " Kbytes/s, " + Format.formatBytes(downBytes)
+                + " bytes total, UP " + Format.formatDecimal(upKBS)
+                + " Kbytes/s, " + Format.formatBytes(upBytes) + " bytes total");
 
             if (c.isLimitedConnectivity()) {
                 b.append("\nWARNING: Has limited connectivity");
@@ -276,7 +277,8 @@ public class Debug {
 
             if (c.isStarted()) {
                 // All folders
-                Collection<Folder> folders = c.getFolderRepository().getFolders();
+                Collection<Folder> folders = c.getFolderRepository()
+                    .getFolders();
 
                 b.append("\nFolders (" + folders.size() + " joined)");
                 for (Folder folder : folders) {
@@ -321,11 +323,11 @@ public class Debug {
                     + " active, "
                     + tm.countQueuedUploads()
                     + " queued, "
-                    + Format.formatDecimal(
-                        tm.getUploadCounter().calculateCurrentKBS())
+                    + Format.formatDecimal(tm.getUploadCounter()
+                        .calculateCurrentKBS())
                     + " Kbytes/s, "
-                    + Format.formatDecimal(
-                        tm.getAllowedUploadCPSForWAN() / 1024)
+                    + Format
+                        .formatDecimal(tm.getAllowedUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
@@ -509,8 +511,8 @@ public class Debug {
         b.append(f);
         b.append(", ID: XXX-erased-XXX");
         b.append(", files: " + f.getKnownFilesCount() + ", size: "
-            + Format.formatBytes(f.getInfo().bytesTotal) + ", members: "
-            + f.getMembersCount() + ", sync: "
+            + Format.formatBytes(f.getStatistic().getLocalSize())
+            + ", members: " + f.getMembersCount() + ", sync: "
             + f.getSyncProfile().getName());
     }
 
@@ -568,8 +570,8 @@ public class Debug {
             fIn.read(buffer);
             return new String(buffer);
         } catch (IOException e) {
-            log.warning("Debug report for "
-                + node.nick + " not found (" + fileName + ')');
+            log.warning("Debug report for " + node.nick + " not found ("
+                + fileName + ')');
             // Loggable.logFinerStatic(Debug.class, e);
         }
         return null;
@@ -783,7 +785,7 @@ public class Debug {
         for (Thread thread : threads) {
             if (thread != null) {
                 log.fine(" " + thread
-                        + " --------------------------------------");
+                    + " --------------------------------------");
                 dumpStackTrace(thread);
                 log.fine("");
             }

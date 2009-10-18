@@ -88,7 +88,15 @@ import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -525,7 +533,6 @@ public class Folder extends PFComponent {
 
                 // new files
                 for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    currentInfo.addFile(newFileInfo);
                     if (isFiner()) {
                         logFiner("Adding " + scanResult.getNewFiles().size()
                             + " to directory");
@@ -1143,7 +1150,8 @@ public class Folder extends PFComponent {
             synchronized (dbAccessLock) {
                 // link new file to our folder
                 // TODO Remove this call
-                //fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
+                // fInfo = FileInfoFactory.changedFolderInfo(fInfo,
+                // currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
                         logFiner(fInfo + ", modified by: "
@@ -1352,17 +1360,7 @@ public class Folder extends PFComponent {
     private FileInfo addFile(FileInfo fInfo) {
         // Add to this folder
         // fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
-
         TransferPriority prio = transferPriorities.getPriority(fInfo);
-
-        // Remove old file from info
-        currentInfo.removeFile(fInfo);
-
-        // logWarning("Adding " + fInfo.getClass() + ", removing " + old);
-
-        // Add file to folder
-        currentInfo.addFile(fInfo);
-
         transferPriorities.setPriority(fInfo, prio);
         return fInfo;
     }
@@ -2664,8 +2662,9 @@ public class Folder extends PFComponent {
 
             boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                 .getSize();
-            boolean dateSame = DateUtil.equalsFileDateCrossPlattform(localFileInfo
-                .getModifiedDate(), remoteFileInfo.getModifiedDate());
+            boolean dateSame = DateUtil.equalsFileDateCrossPlattform(
+                localFileInfo.getModifiedDate(), remoteFileInfo
+                    .getModifiedDate());
             boolean fileCaseSame = localFileInfo.getRelativeName().equals(
                 remoteFileInfo.getRelativeName());
 
@@ -3259,6 +3258,8 @@ public class Folder extends PFComponent {
     public Invitation createInvitation() {
         Invitation inv = new Invitation(currentInfo, getController()
             .getMySelf().getInfo());
+        inv.setFilesCount(statistic.getLocalFilesCount());
+        inv.setSize(statistic.getLocalSize());
         inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);

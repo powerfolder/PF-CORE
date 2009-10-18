@@ -61,9 +61,29 @@ public class Invitation extends FolderRelatedMessage {
     private int relative;
     private FolderPermission permission;
 
+    // Since 4.0.1:
+    private long size;
+    private int filesCount;
+
     public Invitation(FolderInfo folder, MemberInfo invitor) {
         this.folder = folder;
         this.invitor = invitor;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public int getFilesCount() {
+        return filesCount;
+    }
+
+    public void setFilesCount(int filesCount) {
+        this.filesCount = filesCount;
     }
 
     public void setInvitor(MemberInfo invitor) {

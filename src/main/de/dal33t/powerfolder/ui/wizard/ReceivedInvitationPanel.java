@@ -95,8 +95,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         FolderSettings folderSettings = new FolderSettings(invitation
             .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null,
-            0);
+            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null, 0);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
@@ -278,11 +277,8 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                     : invitation.getInvitationText());
 
             estimatedSizeHintLabel.setEnabled(true);
-            estimatedSize.setText(Format
-                .formatBytes(invitation.folder.bytesTotal)
-                + " ("
-                + invitation.folder.filesCount
-                + ' '
+            estimatedSize.setText(Format.formatBytes(invitation.getSize())
+                + " (" + invitation.getFilesCount() + ' '
                 + Translation.getTranslation("general.files") + ')');
 
             syncProfileHintLabel.setEnabled(true);

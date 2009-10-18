@@ -124,7 +124,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
             // Make the invitor a friend.
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
-                    invitation.getInvitor());
+                invitation.getInvitor());
 
             File base = invitation.getSuggestedLocalBase(getController());
             if (base == null) {
@@ -148,8 +148,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         FolderSettings folderSettings = new FolderSettings(invitation
             .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true,
-            null, 0);
+            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null, 0);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
@@ -305,11 +304,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
                     : invitation.getInvitationText());
 
             estimatedSizeHintLabel.setEnabled(true);
-            estimatedSize.setText(Format
-                .formatBytes(invitation.folder.bytesTotal)
-                + " ("
-                + invitation.folder.filesCount
-                + ' '
+            estimatedSize.setText(Format.formatBytes(invitation.getSize())
+                + " (" + invitation.getFilesCount() + ' '
                 + Translation.getTranslation("general.files") + ')');
 
             syncProfileHintLabel.setEnabled(true);

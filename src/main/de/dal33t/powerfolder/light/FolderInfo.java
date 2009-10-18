@@ -37,20 +37,17 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public String name;
     public String id;
-    public int filesCount;
-    public long bytesTotal;
 
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
-        filesCount = folder.getKnownFilesCount();
     }
 
     public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -63,32 +60,6 @@ public class FolderInfo implements Serializable, Cloneable {
      */
     public Folder getFolder(Controller controller) {
         return controller.getFolderRepository().getFolder(this);
-    }
-
-    /**
-     * Updates the folderinfo with added file
-     * 
-     * @param fInfo
-     */
-    public synchronized void addFile(FileInfo fInfo) {
-        if (fInfo == null) {
-            throw new NullPointerException("File is null");
-        }
-        filesCount++;
-        bytesTotal += fInfo.getSize();
-    }
-
-    /**
-     * Updates folder info with removed files
-     * 
-     * @param fInfo
-     */
-    public synchronized void removeFile(FileInfo fInfo) {
-        if (fInfo == null) {
-            throw new NullPointerException("File is null");
-        }
-        filesCount--;
-        bytesTotal -= fInfo.getSize();
     }
 
     // Security ****************************************************************
@@ -123,10 +94,7 @@ public class FolderInfo implements Serializable, Cloneable {
      */
 
     public Object clone() {
-        FolderInfo fi = new FolderInfo(name, id);
-        fi.bytesTotal = bytesTotal;
-        fi.filesCount = filesCount;
-        return fi;
+        return new FolderInfo(name, id);
     }
 
     public int hashCode() {
