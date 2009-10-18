@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -72,7 +73,7 @@ public class FolderScanner extends PFComponent {
      * removed from this list. The files that are left in this list after
      * scanning are deleted from disk.
      */
-    private Map<FileInfo, FileInfo> remaining = new ConcurrentHashMap<FileInfo, FileInfo>();
+    private Map<FileInfo, FileInfo> remaining = Util.createConcurrentHashMap();
 
     /** DirectoryCrawler threads that are idle */
     private List<DirectoryCrawler> directoryCrawlersPool = new CopyOnWriteArrayList<DirectoryCrawler>();
@@ -235,7 +236,8 @@ public class FolderScanner extends PFComponent {
                         .hasNext();)
                     {
                         FileInfo fInfo2 = it.next();
-                        String locationInFolder = fInfo2.getLowerCaseFilenameOnly();
+                        String locationInFolder = fInfo2
+                            .getLowerCaseFilenameOnly();
                         if (dirPath.endsWith(locationInFolder)) {
                             logWarning("Found file in unreadable folder. Unable to scan: "
                                 + fInfo2);
@@ -365,12 +367,15 @@ public class FolderScanner extends PFComponent {
 
             // #836
             if (!OSUtil.isWindowsSystem()) {
-                if (lowerCaseNames.containsKey(fileInfo.getLowerCaseFilenameOnly())) {
+                if (lowerCaseNames.containsKey(fileInfo
+                    .getLowerCaseFilenameOnly()))
+                {
                     Problem problem = new DuplicateFilenameProblem(fileInfo);
                     problemList = new ArrayList<Problem>();
                     problemList.add(problem);
                 } else {
-                    lowerCaseNames.put(fileInfo.getLowerCaseFilenameOnly(), fileInfo);
+                    lowerCaseNames.put(fileInfo.getLowerCaseFilenameOnly(),
+                        fileInfo);
                 }
             }
 
@@ -559,7 +564,8 @@ public class FolderScanner extends PFComponent {
                         + fileToScan.getAbsolutePath()
                         + ", dbFile: "
                         + otherFInfo.toDetailString());
-                    if (fInfo.getRelativeName().equals(otherFInfo.getRelativeName())
+                    if (fInfo.getRelativeName().equals(
+                        otherFInfo.getRelativeName())
                         && !fInfo.equals(otherFInfo))
                     {
                         throw new RuntimeException(
@@ -651,7 +657,8 @@ public class FolderScanner extends PFComponent {
                         + dirToScan.getAbsolutePath()
                         + ", dbDir: "
                         + otherFInfo.toDetailString());
-                    if (dirInfo.getRelativeName().equals(otherFInfo.getRelativeName())
+                    if (dirInfo.getRelativeName().equals(
+                        otherFInfo.getRelativeName())
                         && !dirInfo.equals(otherFInfo)
                         && otherFInfo.isDiretory())
                     {

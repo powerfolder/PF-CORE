@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Represents a directory of files. No actual disk access from this file, build
@@ -53,14 +54,14 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = new ConcurrentHashMap<FileInfo, FileInfoHolder>(
-        2, 0.75f, 4);
+    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = Util
+        .createConcurrentHashMap();
 
     /**
      * key = dir name, value = Directory
      */
-    private final Map<String, Directory> subDirectoriesMap = new ConcurrentHashMap<String, Directory>(
-        2, 0.75f, 4);
+    private final Map<String, Directory> subDirectoriesMap = Util
+        .createConcurrentHashMap();
 
     /**
      * The name of this directory (no path elements)
@@ -96,7 +97,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * returns the absolute file for this directory.
      */
     public File getAbsoluteFile() {
-        return FileUtils.buildFileFromRelativeName(rootFolder.getLocalBase(), getRelativeName());
+        return FileUtils.buildFileFromRelativeName(rootFolder.getLocalBase(),
+            getRelativeName());
     }
 
     /**
@@ -319,7 +321,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Build a path name relative to root.
-     *
+     * 
      * @return
      */
     public String getRelativeName() {
@@ -349,11 +351,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Add a file recursive to this or correct sub Directory
-     *
+     * 
      * @param member
-     *          member to add for
+     *            member to add for
      * @param fileInfo
-     *          FileInfo to add
+     *            FileInfo to add
      */
     void add(Member member, FileInfo fileInfo) {
         add0(member, fileInfo, fileInfo.getRelativeName());
@@ -361,13 +363,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     /**
      * Add a file recursive from a point in the tree.
-     *
+     * 
      * @param member
-     *          member to add for
+     *            member to add for
      * @param fileInfo
-     *          FileInfo to add
+     *            FileInfo to add
      * @param relativePath
-     *          relative path in the tree, relative to this directory
+     *            relative path in the tree, relative to this directory
      */
     void add0(Member member, FileInfo fileInfo, String relativePath) {
         if (fileInfo.isDiretory()) {

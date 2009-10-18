@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
 /**
@@ -507,7 +508,7 @@ public class FolderStatistic extends PFComponent {
         }
         Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);
         if (memberMap == null) {
-            memberMap = new ConcurrentHashMap<FileInfo, Long>();
+            memberMap = Util.createConcurrentHashMap();
             partialSyncStatMap.put(member, memberMap);
         }
         memberMap.put(fileInfo, bytesTransferred);
