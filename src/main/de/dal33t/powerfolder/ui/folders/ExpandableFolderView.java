@@ -264,8 +264,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(primaryButton, cc.xy(1, 1));
         MouseAdapter ma = new MyMouseAdapter();
         nameLabel = new ResizingJLabel();
-        upperBuilder.add(nameLabel.getJLabel(), cc.xy(3, 1));
-        nameLabel.getJLabel().addMouseListener(ma);
+        upperBuilder.add(nameLabel, cc.xy(3, 1));
+        nameLabel.addMouseListener(ma);
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
 
         upperBuilder.add(problemButton, cc.xy(7, 1));
@@ -885,7 +885,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             newFiles = newCount > 0;
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
-                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
+                nameLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.new_files_tip_text",
                         String.valueOf(newCount)));
             }
@@ -893,19 +893,19 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         if (!newFiles) {
             if (expanded.get()) {
-                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
+                nameLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.collapse"));
             } else {
-                nameLabel.getJLabel().setToolTipText(Translation.getTranslation(
+                nameLabel.setToolTipText(Translation.getTranslation(
                         "exp_folder_view.expand"));
             }
         }
         
-        nameLabel.getJLabel().setText(folderInfo.name + newCountString);
-        nameLabel.getJLabel().setFont(
-                new Font(nameLabel.getJLabel().getFont().getName(),
+        nameLabel.setText(folderInfo.name + newCountString);
+        nameLabel.setFont(
+                new Font(nameLabel.getFont().getName(),
                         newFiles ? Font.BOLD
-            : Font.PLAIN, nameLabel.getJLabel().getFont().getSize()));
+            : Font.PLAIN, nameLabel.getFont().getSize()));
         clearCompletedDownloadsAction.setEnabled(newFiles);
     }
 

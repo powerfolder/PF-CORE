@@ -26,28 +26,22 @@ import java.awt.*;
  * Class that overrides 'get...Size()' so that text is truncated if the
  * component is too narrow.
  */
-public class ResizingJLabel {
+public class ResizingJLabel extends JLabel {
 
-    private final JLabel jLabel;
-
-    public ResizingJLabel() {
-        jLabel = new JLabel() {
-            public Dimension getPreferredSize() {
-                return new Dimension(0, super.getPreferredSize().height);
-            }
-            public Dimension getSize() {
-                return new Dimension(0, super.getSize().height);
-            }
-            public Dimension getMinimumSize() {
-                return new Dimension(0, super.getMinimumSize().height);
-            }
-            public Dimension getMaximumSize() {
-                return new Dimension(0, super.getMaximumSize().height);
-            }
-        };
+    public Dimension getPreferredSize() {
+        return new Dimension(0, super.getPreferredSize().height);
     }
 
-    public JLabel getJLabel() {
-        return jLabel;
+    public Dimension getSize() {
+        return new Dimension(0, super.getSize().height);
     }
+
+    public Dimension getMinimumSize() {
+        return new Dimension(0, super.getMinimumSize().height);
+    }
+
+    public Dimension getMaximumSize() {
+        return new Dimension(0, super.getMaximumSize().height);
+    }
+
 }
