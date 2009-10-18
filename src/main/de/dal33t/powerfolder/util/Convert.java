@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -36,6 +37,8 @@ import de.dal33t.powerfolder.net.NodeManager;
 
 /** converts various stuff */
 public class Convert {
+
+    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final Logger log = Logger.getLogger(Convert.class.getName());
 
