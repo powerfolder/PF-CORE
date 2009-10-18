@@ -140,7 +140,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      * on that folder. Might contain negativ values! means we received deltas
      * after the inital filelist.
      */
-    private Map<FolderInfo, Integer> expectedListMessages = new ConcurrentHashMap<FolderInfo, Integer>();
+    private Map<FolderInfo, Integer> expectedListMessages = Util
+        .createConcurrentHashMap();
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
