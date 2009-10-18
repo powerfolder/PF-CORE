@@ -19,13 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -118,6 +112,10 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Set folder info
         getWizardContext()
             .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
+
+        // Set folder permission
+        getWizardContext()
+            .setAttribute(FOLDER_PERMISSION_ATTRIBUTE, invitation.getPermission());
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);

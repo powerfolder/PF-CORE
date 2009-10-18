@@ -19,9 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +49,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -146,31 +145,31 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         // Mandatory
         Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
-            WizardContextAttributes.SAVE_INVITE_LOCALLY);
+            SAVE_INVITE_LOCALLY);
         Reject.ifNull(saveLocalInvite,
             "Save invite locally attribute is null/not set");
 
         // Optional
         Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
-            WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE);
+            PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
 
         createShortcut = (Boolean) getWizardContext().getAttribute(
-            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT);
+            CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(
-            WizardContextAttributes.BACKUP_ONLINE_STOARGE);
+            BACKUP_ONLINE_STOARGE);
         backupByOS = osAtt != null && osAtt;
         if (backupByOS) {
             getController().getUIController().getApplicationModel()
                 .getServerClientModel().checkAndSetupAccount();
         }
         Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
-            WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE);
+            SEND_INVIATION_AFTER_ATTRIBUTE);
         sendInvitations = sendInvsAtt == null || sendInvsAtt;
 
         // Either we have FOLDER_CREATE_ITEMS ...
         List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
-            .getAttribute(WizardContextAttributes.FOLDER_CREATE_ITEMS);
+            .getAttribute(FOLDER_CREATE_ITEMS);
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
@@ -193,10 +192,10 @@ public class FolderCreatePanel extends PFWizardPanel {
             // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
             // FOLDERINFO_ATTRIBUTE...
             File localBase = (File) getWizardContext().getAttribute(
-                WizardContextAttributes.FOLDER_LOCAL_BASE);
+                FOLDER_LOCAL_BASE);
             Reject.ifNull(localBase, "Local base for folder is null/not set");
             SyncProfile syncProfile = (SyncProfile) getWizardContext()
-                .getAttribute(WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE);
+                .getAttribute(SYNC_PROFILE_ATTRIBUTE);
             Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
             syncProfile = adjustSyncProfile(syncProfile);
 
@@ -235,7 +234,7 @@ public class FolderCreatePanel extends PFWizardPanel {
      */
     private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
         Integer fileCount = (Integer) getWizardContext().getAttribute(
-                WizardContextAttributes.FILE_COUNT);
+                FILE_COUNT);
         if (fileCount != null && fileCount > 10000
                 && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             syncProfile = SyncProfile.BACKUP_SOURCE_HOUR;
@@ -283,8 +282,13 @@ public class FolderCreatePanel extends PFWizardPanel {
         @Override
         public Object construct() {
             ServerClient client = getController().getOSClient();
-            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry : configurations
-                .entrySet())
+
+            // Folder permission override, from invitations.
+            FolderPermission folderPermissionOverride = (FolderPermission) getWizardContext()
+                .getAttribute(FOLDER_PERMISSION_ATTRIBUTE);
+
+            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry
+                    : configurations.entrySet())
             {
                 FolderSettings folderSettings = folderInfoFolderSettingsEntry
                     .getValue();
@@ -295,6 +299,11 @@ public class FolderCreatePanel extends PFWizardPanel {
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
                 }
+                
+                if (folderPermissionOverride != null) {
+                    folder.setLocalFolderPermission(folderPermissionOverride);
+                }
+
                 folders.add(folder);
                 if (configurations.size() == 1) {
                     // Set for SendInvitationsPanel

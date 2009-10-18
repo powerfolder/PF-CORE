@@ -38,6 +38,9 @@ public interface WizardContextAttributes {
     /** The folder info object for the targeted folder */
     String FOLDERINFO_ATTRIBUTE = "disklocation.folder_info";
 
+    /** The folder info object for the targeted folder */
+    String FOLDER_PERMISSION_ATTRIBUTE = "folder_permission";
+
     /** The local file location for the folder */
     String FOLDER_LOCAL_BASE = "disklocation.localbase";
 
