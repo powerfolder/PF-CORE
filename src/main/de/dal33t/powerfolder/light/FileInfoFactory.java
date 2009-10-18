@@ -114,42 +114,6 @@ public final class FileInfoFactory {
         }
     }
 
-    /**
-     * Returns a FileInfo with changed FolderInfo. No version update etc.
-     * whatsoever happens.
-     * 
-     * @param original
-     * @param fi
-     * @return the new (or existing) instance.
-     */
-    @Deprecated
-    public static FileInfo changedFolderInfo(FileInfo original, FolderInfo fi) {
-        Reject.ifNull(original, "Original FileInfo is null");
-        if (original.isTemplate()) {
-            // TODO Check if this causes problems with DirectoryInfo
-            return lookupInstance(fi, original.getRelativeName());
-        } else {
-            if (original.getFolderInfo().equals(fi)) {
-                return original;
-            }
-            if (original.isFile()) {
-                return new FileInfo(original.getRelativeName(), original
-                    .getSize(), original.getModifiedBy(), original
-                    .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi);
-            } else if (original.isDiretory()) {
-                return new DirectoryInfo(original.getRelativeName(), original
-                    .getSize(), original.getModifiedBy(), original
-                    .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi);
-            } else {
-                throw new IllegalArgumentException(
-                    "Illegal original FileInfo: " + original.getClass() + ": "
-                        + original.toDetailString());
-            }
-        }
-    }
-
     public static FileInfo modifiedFile(FileInfo original,
         FolderRepository rep, File localFile, MemberInfo modby)
     {
