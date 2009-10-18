@@ -577,68 +577,40 @@ public class FileUtils {
     }
 
     /**
-     * Scans a directory and counts all files.
-     *
+     * Scans a directory and gets full size of all files and count of files.
+     * 
      * @param directory
-     * @return the count of files in the directory
+     * @return the size in byte of the directory [0] and count of files [1].
      */
-    public static long countFilesRecursive(File directory) {
-        return countFilesRecursive0(directory, 0);
+    public static Long[] calculateDirectorySizeAndCount(File directory) {
+        return calculateDirectorySizeAndCount0(directory, 0);
     }
 
-    public static long countFilesRecursive0(File directory, int depth) {
+    private static Long[] calculateDirectorySizeAndCount0(File directory,
+                                                          int depth) {
 
         // Limit evil recursive symbolic links.
         if (depth == 100) {
-            return 0;
+            return new Long[]{0L, 0L};
         }
 
         File[] files = directory.listFiles();
         if (files == null) {
-            return 0;
+            return new Long[]{0L, 0L};
         }
+        long sum = 0;
         long count = 0;
         for (File file : files) {
             if (file.isDirectory()) {
-                count += countFilesRecursive0(file, depth + 1);
+                Long[] longs = calculateDirectorySizeAndCount0(file, depth + 1);
+                sum += longs[0];
+                count += longs[1];
             } else {
+                sum += file.length();
                 count++;
             }
         }
-        return count;
-
-    }
-
-    /**
-     * Scans a directory and gets full size of all files.
-     * 
-     * @param directory
-     * @return the size in byte of the directory
-     */
-    public static long calculateDirectorySize(File directory) {
-        return calculateDirectorySize0(directory, 0);
-    }
-
-    private static long calculateDirectorySize0(File directory, int depth) {
-
-        // Limit evil recursive symbolic links.
-        if (depth == 100) {
-            return 0;
-        }
-
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return 0;
-        }
-        long sum = 0;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                sum += calculateDirectorySize0(file, depth + 1);
-            } else {
-                sum += file.length();
-            }
-        }
-        return sum;
+        return new Long[]{sum, count};
     }
 
     /**

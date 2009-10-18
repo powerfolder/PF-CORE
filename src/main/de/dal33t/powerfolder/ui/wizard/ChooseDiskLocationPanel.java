@@ -562,7 +562,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                 } else if (checkNoWrite && !canWriteDirectory(f)) {
                     noWrite = true;
                 } else {
-                    directorySize = FileUtils.calculateDirectorySize(f);
+                    directorySize = FileUtils.calculateDirectorySizeAndCount(f)[0];
                 }
             } catch (Exception e) {
                 Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);

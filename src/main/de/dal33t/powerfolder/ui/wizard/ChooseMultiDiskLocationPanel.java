@@ -539,6 +539,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         }
                     }
                 }
+                
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
                     String dir = (String) customDirectoryListModel.elementAt(i);
                     File file = new File(dir);
@@ -546,9 +547,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (File file : originalList) {
-                    recursiveFileCount += FileUtils.countFilesRecursive(file);
-                    totalDirectorySize += FileUtils
-                            .calculateDirectorySize(file);
+                    Long[] longs = FileUtils.calculateDirectorySizeAndCount(file);
+                    totalDirectorySize += longs[0];
+                    recursiveFileCount += longs[1];
                 }
                 getWizardContext().setAttribute(FILE_COUNT, recursiveFileCount);
 
