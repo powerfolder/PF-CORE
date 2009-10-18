@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FilesTableModel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FilesTableModel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
 import de.dal33t.powerfolder.Controller;
@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -48,7 +49,8 @@ import java.util.concurrent.ConcurrentMap;
  * Class to model files selected from the tree.
  */
 public class FilesTableModel extends PFComponent implements TableModel,
-        SortedTableModel {
+    SortedTableModel
+{
 
     private String[] columns = {"",
         Translation.getTranslation("files_table_model.name"),
@@ -75,12 +77,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public FilesTableModel(Controller controller) {
         super(controller);
-        directories = new ConcurrentHashMap<String, List<DiskItem>>();
+        directories = Util.createConcurrentHashMap();
         diskItems = new ArrayList<DiskItem>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
@@ -88,12 +90,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Set the folder for the model to get details from.
-     *
+     * 
      * @param folder
      */
     public void setFolder(Folder folder) {
         if (this.folder != null) {
-            this.folder.getDiskItemFilter().removeListener(patternChangeListener);
+            this.folder.getDiskItemFilter().removeListener(
+                patternChangeListener);
         }
         this.folder = folder;
         this.folder.getDiskItemFilter().addListener(patternChangeListener);
@@ -102,7 +105,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Set the directory selected in the tree.
-     *
+     * 
      * @param selectedRelativeName
      */
     public void setSelectedRelativeName(String selectedRelativeName) {
@@ -112,11 +115,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Pass the filtered directory model to get the file infos from.
-     *
+     * 
      * @param model
      */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model,
-                                          boolean flat) {
+        boolean flat)
+    {
         directories.clear();
         walkFilteredDirectoryModel(model, flat);
         update();
@@ -124,11 +128,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     /**
      * Walk the FilteredDirectoryModel to get map of directory / FileInfos.
-     *
+     * 
      * @param model
      */
     private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
-                                            boolean flat) {
+        boolean flat)
+    {
         if (model == null) {
             return;
         }
@@ -180,11 +185,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
             public void run() {
                 synchronized (diskItems) {
 
-                    List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems.size());
+                    List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems
+                        .size());
                     tempList.addAll(diskItems);
 
-                    // Look for extra items in the selectedDiskItems list to insert.
-                    List<DiskItem> selectedDiskItems = directories.get(selectedRelativeName);
+                    // Look for extra items in the selectedDiskItems list to
+                    // insert.
+                    List<DiskItem> selectedDiskItems = directories
+                        .get(selectedRelativeName);
                     if (selectedDiskItems == null) {
                         selectedDiskItems = new ArrayList<DiskItem>();
                     }
@@ -292,15 +300,15 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public boolean sortBy(int columnIndex) {
         sortColumn = columnIndex;
         switch (columnIndex) {
-            case COL_FILE_TYPE:
+            case COL_FILE_TYPE :
                 return sortMe(DiskItemComparator.BY_FILE_TYPE);
             case COL_NAME :
                 return sortMe(DiskItemComparator.BY_NAME);
-            case COL_SIZE:
+            case COL_SIZE :
                 return sortMe(DiskItemComparator.BY_SIZE);
-            case COL_MEMBER:
+            case COL_MEMBER :
                 return sortMe(DiskItemComparator.BY_MEMBER);
-            case COL_MODIFIED_DATE:
+            case COL_MODIFIED_DATE :
                 return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
         }
 
@@ -311,7 +319,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     /**
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
-     *
+     * 
      * @param newComparatorType
      * @return if the table was freshly sorted
      */
@@ -344,12 +352,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
             DiskItemComparator comparator = new DiskItemComparator(
-                fileInfoComparatorType, folder == null ? null : folder.getDirectory());
+                fileInfoComparatorType, folder == null ? null : folder
+                    .getDirectory());
             synchronized (diskItems) {
                 if (sortAscending) {
                     Collections.sort(diskItems, comparator);
                 } else {
-                    Collections.sort(diskItems, new ReverseComparator(comparator));
+                    Collections.sort(diskItems, new ReverseComparator(
+                        comparator));
                 }
             }
             return true;

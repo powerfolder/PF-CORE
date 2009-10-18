@@ -36,9 +36,9 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -651,7 +651,6 @@ public class Util {
      * @param to
      * @return
      */
-
     public static String replace(String target, String from, String to) {
         int start = target.indexOf(from);
         if (start == -1) {
@@ -670,4 +669,21 @@ public class Util {
         buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
         return buffer.toString();
     }
+
+    /**
+     * Creates a concurrent map with lesser segements to save memory. The
+     * default concurrency of the maps are 4 (instead of 16 default).
+     * <p>
+     * 4 should be more suitable value for in-powerfolder us and procudes lesser
+     * Segements.
+     * 
+     * @param <K>
+     * @param <V>
+     * @return the concurrent hashmap
+     */
+    public static final <K, V> ConcurrentHashMap<K, V> createConcurrentHashMap()
+    {
+        return new ConcurrentHashMap<K, V>(16, 0.75f, 4);
+    }
+
 }
