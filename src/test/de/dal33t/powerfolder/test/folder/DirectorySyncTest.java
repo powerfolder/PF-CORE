@@ -237,8 +237,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     {
         int created = 0;
         for (int i = 0; i < nsubdirs; i++) {
-            File dir = FileUtils.createEmptyDirectory(baseDir, depth + "-"
-                + IdGenerator.makeId().substring(1, 5));
+            File dir = FileUtils.createEmptyDirectory(baseDir, FileUtils
+                .removeInvalidFilenameChars(depth + "-"
+                    + IdGenerator.makeId().substring(1, 5)));
             if (visitor != null) {
                 visitor.created(dir);
             }

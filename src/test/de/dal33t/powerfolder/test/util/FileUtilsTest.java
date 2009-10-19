@@ -127,8 +127,11 @@ public class FileUtilsTest extends TestCase {
         assertEquals(0, actual2.list().length);
         assertEquals("test (2)", actual2.getName());
 
-        File actual3 = FileUtils.createEmptyDirectory(baseDir,
-            "hümmers / rüttenscheiß: Wichtige Doxx|");
+        File actual3 = FileUtils
+            .createEmptyDirectory(
+                baseDir,
+                FileUtils
+                    .removeInvalidFilenameChars("hümmers / rüttenscheiß: Wichtige Doxx|"));
         assertTrue(actual3.exists());
         assertTrue(actual3.isDirectory());
         assertEquals(0, actual3.list().length);
@@ -136,17 +139,9 @@ public class FileUtilsTest extends TestCase {
     }
 
     /**
-     * Move of ...
-     *
-     * build/test/a
-     * build/test/dir/b
-     * build/test/dir/c
-     * build/test/dir/sub/d
-     *
-     * ... to ...
-     *
-     * build/move/
-     *
+     * Move of ... build/test/a build/test/dir/b build/test/dir/c
+     * build/test/dir/sub/d ... to ... build/move/
+     * 
      * @throws IOException
      */
     public void testFileMove() throws IOException {
@@ -196,17 +191,9 @@ public class FileUtilsTest extends TestCase {
     }
 
     /**
-     * Copy of ...
-     *
-     * build/test/a
-     * build/test/dir/b
-     * build/test/dir/c
-     * build/test/dir/sub/d
-     *
-     * ... to ...
-     *
-     * build/copy/
-     *
+     * Copy of ... build/test/a build/test/dir/b build/test/dir/c
+     * build/test/dir/sub/d ... to ... build/copy/
+     * 
      * @throws IOException
      */
     public void testFileCopy() throws IOException {
@@ -271,9 +258,8 @@ public class FileUtilsTest extends TestCase {
     }
 
     /**
-     * Copy build/test/a to build/test/a
-     * Should not be permitted.
-     *
+     * Copy build/test/a to build/test/a Should not be permitted.
+     * 
      * @throws IOException
      */
     public void testRecursiveCopy() throws IOException {
@@ -306,7 +292,7 @@ public class FileUtilsTest extends TestCase {
         // Copy
         copyDir = new File("build/test/sub/subsub");
         copyDir.mkdirs();
-        
+
         success = true;
         try {
             FileUtils.recursiveCopy(baseDir, copyDir);
@@ -320,9 +306,8 @@ public class FileUtilsTest extends TestCase {
     }
 
     /**
-     * Move build/test to build/test
-     * Should not be permitted.
-     *
+     * Move build/test to build/test Should not be permitted.
+     * 
      * @throws IOException
      */
     public void testRecursiveMove() throws IOException {

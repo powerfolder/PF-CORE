@@ -587,7 +587,8 @@ public class FileUtils {
     }
 
     private static Long[] calculateDirectorySizeAndCount0(File directory,
-                                                          int depth) {
+        int depth)
+    {
 
         // Limit evil recursive symbolic links.
         if (depth == 100) {
@@ -726,28 +727,33 @@ public class FileUtils {
     }
 
     /**
-     * Methods does two things: 1. Removes all invalid characters from the raw
-     * name and 2. searches and takes care that this directory is new and not
-     * yet existing. If dir already exists with the same raw name it appends
-     * (1), (2), and so on until it finds an non-existing sub directory.
+     * Searches and takes care that this directory is new and not yet existing.
+     * If dir already exists with the same raw name it appends (1), (2), and so
+     * on until it finds an non-existing sub directory. DOES NOT try to remove
+     * ILLEGAL characters from
      * <p>
      * 
      * @param baseDir
      * @param rawName
      *            the raw name of the directory. is it NOT guranteed that it
-     *            will/can be named like this.
+     *            will/can be named like this. if illegal characters should be
+     *            removed
      * @return the directory that is guranteed to be NEW and EMPTY.
      */
     public static File createEmptyDirectory(File baseDir, String rawName) {
         Reject.ifNull(baseDir, "Base dir is null");
         Reject.ifBlank(rawName, "Raw name is null");
 
-        String name = removeInvalidFilenameChars(rawName);
+        String name = rawName;
         File candidate = new File(baseDir, name);
         int suffix = 2;
         while (candidate.exists()) {
             candidate = new File(baseDir, name + " (" + suffix + ")");
             suffix++;
+            if (suffix > 1000) {
+                throw new IllegalStateException(
+                    "Unable to find empty directory. Tried " + candidate);
+            }
         }
         candidate.mkdirs();
         return candidate;
