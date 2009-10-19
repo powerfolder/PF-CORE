@@ -792,7 +792,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Make name that can be used as part of file name.
-        folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
+        // WTF? Why? Folder name is a TRUE logical name
+        // folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
 
         Folder folder;
         if (folderSettings.isPreviewOnly()) {
