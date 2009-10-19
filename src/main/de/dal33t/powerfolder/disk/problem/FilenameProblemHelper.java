@@ -202,7 +202,7 @@ public class FilenameProblemHelper {
         }
 
         File newFile = FileUtils.buildFileFromRelativeName(folder
-            .getLocalBase(), fileInfo.getRelativeName());
+                .getLocalBase(), newFilename);
         if (file.renameTo(newFile)) {
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
                 controller.getMySelf().getInfo());
