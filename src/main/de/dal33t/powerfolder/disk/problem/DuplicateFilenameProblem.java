@@ -34,7 +34,7 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
 
     public DuplicateFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.getTranslation("filename_problem.duplicate");
+        description = Translation.getTranslation("filename_problem.duplicate", fileInfo.getFilenameOnly());
     }
 
     public FileInfo getFileInfo() {

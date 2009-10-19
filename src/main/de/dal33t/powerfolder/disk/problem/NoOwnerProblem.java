@@ -98,7 +98,7 @@ public class NoOwnerProblem extends ResolvableProblem {
 
     @Override
     public String getDescription() {
-        return Translation.getTranslation("folder_problem.no_owner");
+        return Translation.getTranslation("folder_problem.no_owner", foInfo.name);
     }
 
     @Override
