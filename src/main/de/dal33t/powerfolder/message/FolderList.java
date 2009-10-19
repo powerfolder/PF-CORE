@@ -63,9 +63,10 @@ public class FolderList extends Message {
         for (FolderInfo folderInfo : allFolders) {
             // Send secret folder infos if magic id is not empty
             // Clone folderinfo
-            FolderInfo secretFolder = (FolderInfo) folderInfo.clone();
+            String secureId = folderInfo.calculateSecureId(remoteMagicId);
             // Set Id to secure Id
-            secretFolder.id = secretFolder.calculateSecureId(remoteMagicId);
+            FolderInfo secretFolder = new FolderInfo(folderInfo.getName(),
+                secureId);
             // Secret folder, encrypt folder id with magic id
             secretFos.add(secretFolder);
         }
