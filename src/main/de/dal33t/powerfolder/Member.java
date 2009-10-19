@@ -1844,18 +1844,18 @@ public class Member extends PFComponent implements Comparable<Member> {
                 return;
             }
 
-            // Process secrect folders now
+            // Process secret folders now
             if (folderList.secretFolders != null
                 && folderList.secretFolders.length > 0)
             {
                 // Step 1: Calculate secure folder ids for local secret folders
                 Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
                 for (Folder folder : localFolders) {
-                    FolderInfo secretFolderCanidate = (FolderInfo) folder
-                        .getInfo().clone();
                     // Calculate id with my magic id
-                    secretFolderCanidate.id = secretFolderCanidate
-                        .calculateSecureId(myMagicId);
+                    String secureId = folder.getInfo().calculateSecureId(
+                        myMagicId);
+                    FolderInfo secretFolderCanidate = new FolderInfo(folder
+                        .getInfo().getName(), secureId);
                     // Add to local secret folder list
                     localSecretFolders.put(secretFolderCanidate, folder);
                 }
