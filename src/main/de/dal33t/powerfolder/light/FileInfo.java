@@ -720,6 +720,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
 
         folderInfo = folderInfo.intern();
+        
+        // TODO MemberInfo.intern
+        
         // validate();
     }
 }
