@@ -83,13 +83,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /** the deleted flag */
     private final boolean deleted;
 
-    /** the folder */
-    private final FolderInfo folderInfo;
+    /**
+     * the folder.
+     * <p>
+     * Actually 'final'. Only non-final because of serialization readObject()
+     * folderInfo.intern();
+     */
+    private FolderInfo folderInfo;
 
     /**
      * The cached hash info.
      */
-    private int hash;
+    private transient int hash;
 
     /**
      * Contains some cached string.
@@ -713,8 +718,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (hash == 0) {
             hash = hashCode0();
         }
-        
-        // TODO: "intern" FolderInfo
+
+        folderInfo = folderInfo.intern();
         // validate();
     }
 }
