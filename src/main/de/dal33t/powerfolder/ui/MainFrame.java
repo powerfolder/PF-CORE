@@ -19,10 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
@@ -128,20 +125,12 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setBackground(Color.white);
         uiComponent.setResizable(true);
 
-        Preferences prefs = getController().getPreferences();
-        int width = prefs.getInt("mainframe4.width", 350);
-        int height = prefs.getInt("mainframe4.height", 700);
-        // Initial top-right corner
-        uiComponent.setLocation(prefs.getInt("mainframe4.x", Toolkit
-            .getDefaultToolkit().getScreenSize().width
-            - 50 - width), prefs.getInt("mainframe4.y", 50));
-
-        oldX.set(uiComponent.getX());
-        oldY.set(uiComponent.getY());
-
         // Pack elements
         uiComponent.pack();
 
+        Preferences prefs = getController().getPreferences();
+        int width = prefs.getInt("mainframe4.width", 350);
+        int height = prefs.getInt("mainframe4.height", 700);
         if (width < 50) {
             width = 50;
         }
@@ -149,6 +138,30 @@ public class MainFrame extends PFUIComponent {
             height = 50;
         }
         uiComponent.setSize(width, height);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        // Initial top-right corner
+        uiComponent.setLocation(prefs.getInt("mainframe4.x", screenSize.width
+            - 50 - width), prefs.getInt("mainframe4.y", 50));
+
+        // Now adjust for off-screen problems.
+        if (uiComponent.getX() < 0) {
+            uiComponent.setLocation(0, uiComponent.getY());
+        }
+        if (uiComponent.getY() < 0) {
+            uiComponent.setLocation(uiComponent.getX(), 0);
+        }
+        if (uiComponent.getX() + uiComponent.getWidth() > screenSize.width) {
+            uiComponent.setLocation((int) screenSize.getWidth()
+                    - uiComponent.getWidth(), uiComponent.getY());
+        }
+        if (uiComponent.getY() + uiComponent.getHeight() > screenSize.height) {
+            uiComponent.setLocation(uiComponent.getX(),
+                    (int) screenSize.getHeight() - uiComponent.getHeight());
+        }
+
+        oldX.set(uiComponent.getX());
+        oldY.set(uiComponent.getY());
 
         if (prefs.getBoolean("mainframe4.maximized", false)) {
             // Fix Synthetica maximization, otherwise it covers the task bar.
