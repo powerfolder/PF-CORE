@@ -50,7 +50,7 @@ import java.util.List;
 
 /**
  * Class to do folder creations for optional specified FolderCreateItems.
- *
+ * 
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
@@ -71,7 +71,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Constuctor
-     *
+     * 
      * @param controller
      */
     public MultiFolderSetupPanel(Controller controller) {
@@ -91,13 +91,14 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         // Check that all folders have names.
         for (FolderCreateItem folderCreateItem : folderCreateItems) {
             if (folderCreateItem.getFolderInfo().name == null
-                    || folderCreateItem.getFolderInfo().name.length() == 0) {
+                || folderCreateItem.getFolderInfo().name.length() == 0)
+            {
                 DialogFactory.genericDialog(getController(), Translation
-                        .getTranslation("wizard.multi_folder_setup.no_name.title"),
-                        Translation.getTranslation(
-                                "wizard.multi_folder_setup.no_name.text",
-                                folderCreateItem.getLocalBase().getAbsolutePath()),
-                        GenericDialogType.ERROR);
+                    .getTranslation("wizard.multi_folder_setup.no_name.title"),
+                    Translation.getTranslation(
+                        "wizard.multi_folder_setup.no_name.text",
+                        folderCreateItem.getLocalBase().getAbsolutePath()),
+                    GenericDialogType.ERROR);
                 return false;
             }
         }
@@ -108,40 +109,40 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setup_success"), Translation
-                        .getTranslation("wizard.success_join"));
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         getWizardContext().setAttribute(
-                WizardContextAttributes.SAVE_INVITE_LOCALLY, Boolean.TRUE);
+            WizardContextAttributes.SAVE_INVITE_LOCALLY, Boolean.TRUE);
 
         return new FolderCreatePanel(getController());
     }
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout(
-                "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
+            "right:pref, 3dlu, 140dlu, pref:grow",
+            "pref, 6dlu, pref, 6dlu, pref, 6dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.addLabel(Translation.getTranslation("general.directory"), cc
-                .xy(1, 1));
+            .xy(1, 1));
         builder.add(localBaseCombo, cc.xy(3, 1));
 
         builder.addLabel(Translation.getTranslation("general.folder_name"), cc
-                .xy(1, 3));
+            .xy(1, 3));
         builder.add(nameField, cc.xy(3, 3));
 
         builder.add(new JLabel(Translation
-                .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+            .getTranslation("general.transfer_mode")), cc.xy(1, 5));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xyw(3, 5, 2));
 
         builder.add(new JLabel(Translation
-                .getTranslation("general.archive_mode")), cc.xy(1, 7));
+            .getTranslation("general.archive_mode")), cc.xy(1, 7));
         builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3, 7, 2));
 
         return builder.getPanel();
@@ -154,7 +155,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel
-                .addModelValueChangeListener(new MyPropertyValueChangeListener());
+            .addModelValueChangeListener(new MyPropertyValueChangeListener());
 
         KeyListener myKeyListener = new MyKeyListener();
 
@@ -168,12 +169,13 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         modeModel = new ValueHolder();
         versionsModel = new ValueHolder();
-        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(getController(),
-                modeModel, versionsModel);
-        archiveModeSelectorPanel.setArchiveMode(ArchiveMode.valueOf(
-                ConfigurationEntry.DEFAULT_ARCHIVE_MODE.getValue(
-                        getController())), ConfigurationEntry
-                .DEFAULT_ARCHIVE_VERIONS.getValueInt(getController()));
+        archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
+            getController(), modeModel, versionsModel);
+        archiveModeSelectorPanel.setArchiveMode(ArchiveMode
+            .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                .getValue(getController())),
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                .getValueInt(getController()));
         PropertyChangeListener listener = new MyPropertyChangeListener();
         modeModel.addValueChangeListener(listener);
         versionsModel.addValueChangeListener(listener);
@@ -198,7 +200,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
                     }
                     folderCreateItems.add(item);
                     localBaseComboModel.addElement(item.getLocalBase()
-                            .getAbsolutePath());
+                        .getAbsolutePath());
                 }
             }
         }
@@ -232,7 +234,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     /**
      * Create folder info now if none exists, and assign to item.
-     *
+     * 
      * @param item
      * @return
      */
@@ -240,14 +242,14 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         // Default sync folder has user name...
         String name = item.getLocalBase().getName();
         FolderInfo folderInfo = new FolderInfo(name,
-                '[' + IdGenerator.makeId() + ']');
+            '[' + IdGenerator.makeId() + ']');
         item.setFolderInfo(folderInfo);
     }
 
     private void syncProfileSelectorPanelChange() {
         if (selectedItem != null) {
             selectedItem.setSyncProfile(syncProfileSelectorPanel
-                    .getSyncProfile());
+                .getSyncProfile());
         }
     }
 
@@ -285,13 +287,15 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         public void keyReleased(KeyEvent e) {
             if (selectedItem != null) {
-                selectedItem.getFolderInfo().name = nameField.getText();
+                selectedItem.setFolderInfo(new FolderInfo(nameField.getText(),
+                    selectedItem.getFolderInfo().id));
             }
         }
     }
 
     private class MyPropertyValueChangeListener implements
-            PropertyChangeListener {
+        PropertyChangeListener
+    {
 
         public void propertyChange(PropertyChangeEvent evt) {
             syncProfileSelectorPanelChange();
@@ -300,7 +304,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
     private class MyPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == modeModel || evt.getSource() == versionsModel) {
+            if (evt.getSource() == modeModel
+                || evt.getSource() == versionsModel)
+            {
                 updateModeAndVersion();
             }
         }
