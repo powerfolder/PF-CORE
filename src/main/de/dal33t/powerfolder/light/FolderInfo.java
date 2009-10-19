@@ -35,8 +35,8 @@ import de.dal33t.powerfolder.util.Util;
 public class FolderInfo implements Serializable, Cloneable {
     private static final long serialVersionUID = 102L;
 
-    public String name;
-    public String id;
+    public final String name;
+    public final String id;
 
     public FolderInfo(Folder folder) {
         name = folder.getName();
