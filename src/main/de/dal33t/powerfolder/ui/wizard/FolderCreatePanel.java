@@ -173,9 +173,11 @@ public class FolderCreatePanel extends PFWizardPanel {
         if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
             for (FolderCreateItem folderCreateItem : folderCreateItems) {
                 File localBase = folderCreateItem.getLocalBase();
-                Reject.ifNull(localBase, "Local base for folder is null/not set");
+                Reject.ifNull(localBase,
+                    "Local base for folder is null/not set");
                 SyncProfile syncProfile = folderCreateItem.getSyncProfile();
-                Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+                Reject.ifNull(syncProfile,
+                    "Sync profile for folder is null/not set");
                 syncProfile = adjustSyncProfile(syncProfile);
                 FolderInfo folderInfo = folderCreateItem.getFolderInfo();
                 if (folderInfo == null) {
@@ -196,7 +198,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             Reject.ifNull(localBase, "Local base for folder is null/not set");
             SyncProfile syncProfile = (SyncProfile) getWizardContext()
                 .getAttribute(SYNC_PROFILE_ATTRIBUTE);
-            Reject.ifNull(syncProfile, "Sync profile for folder is null/not set");
+            Reject.ifNull(syncProfile,
+                "Sync profile for folder is null/not set");
             syncProfile = adjustSyncProfile(syncProfile);
 
             // Optional
@@ -228,15 +231,16 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     /**
      * If 'backup source' for lots of files, switch to 'backup source hour'.
-     *
+     * 
      * @param syncProfile
      * @return
      */
     private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
         Integer fileCount = (Integer) getWizardContext().getAttribute(
-                FILE_COUNT);
+            FILE_COUNT);
         if (fileCount != null && fileCount > 10000
-                && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            && syncProfile.equals(SyncProfile.BACKUP_SOURCE))
+        {
             syncProfile = SyncProfile.BACKUP_SOURCE_HOUR;
         }
         return syncProfile;
@@ -246,7 +250,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         // Create new folder info
         String name = localBase.getName();
         String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId);
+        return new FolderInfo(name, folderId).intern();
     }
 
     @Override
@@ -287,8 +291,8 @@ public class FolderCreatePanel extends PFWizardPanel {
             FolderPermission folderPermissionOverride = (FolderPermission) getWizardContext()
                 .getAttribute(FOLDER_PERMISSION_ATTRIBUTE);
 
-            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry
-                    : configurations.entrySet())
+            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry : configurations
+                .entrySet())
             {
                 FolderSettings folderSettings = folderInfoFolderSettingsEntry
                     .getValue();
@@ -299,7 +303,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 if (createShortcut) {
                     folder.setDesktopShortcut(true);
                 }
-                
+
                 if (folderPermissionOverride != null) {
                     folder.setLocalFolderPermission(folderPermissionOverride);
                 }

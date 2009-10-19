@@ -129,7 +129,8 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
             if (accountFolder == null) {
                 // Default sync folder has user name...
                 String name = defaultSynchronizedFolder.getName();
-                foInfo = new FolderInfo(name, '[' + IdGenerator.makeId() + ']');
+                foInfo = new FolderInfo(name, '[' + IdGenerator.makeId() + ']')
+                    .intern();
             } else {
                 // Take from account.
                 foInfo = accountFolder;

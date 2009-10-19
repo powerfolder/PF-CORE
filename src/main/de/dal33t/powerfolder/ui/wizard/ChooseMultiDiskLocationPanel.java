@@ -539,7 +539,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         }
                     }
                 }
-                
+
                 for (int i = 0; i < customDirectoryListModel.getSize(); i++) {
                     String dir = (String) customDirectoryListModel.elementAt(i);
                     File file = new File(dir);
@@ -547,7 +547,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
 
                 for (File file : originalList) {
-                    Long[] longs = FileUtils.calculateDirectorySizeAndCount(file);
+                    Long[] longs = FileUtils
+                        .calculateDirectorySizeAndCount(file);
                     totalDirectorySize += longs[0];
                     recursiveFileCount += longs[1];
                 }
@@ -588,8 +589,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 try {
                     folderSizeLabel.setText(Translation.getTranslation(
                         "wizard.choose_disk_location.total_directory_size",
-                        Format.formatBytes(totalDirectorySize),
-                            Format.formatLong(recursiveFileCount)));
+                        Format.formatBytes(totalDirectorySize), Format
+                            .formatLong(recursiveFileCount)));
                     osWarningLabel.setText("");
                     osWarningLabel.setIcon(null);
                     if (backupByOnlineStorageBox.isSelected()) {
@@ -622,6 +623,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private static FolderInfo createFolderInfo(String name) {
         // Create new folder info
         String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId);
+        return new FolderInfo(name, folderId).intern();
     }
 }

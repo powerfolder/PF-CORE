@@ -80,7 +80,7 @@ public class FolderSetupPanel extends PFWizardPanel {
 
         // Set FolderInfo
         FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
-            .trim(), '[' + IdGenerator.makeId() + ']');
+            .trim(), '[' + IdGenerator.makeId() + ']').intern();
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
         // Set sync profile

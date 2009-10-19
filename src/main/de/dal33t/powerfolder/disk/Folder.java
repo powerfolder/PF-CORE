@@ -261,7 +261,7 @@ public class Folder extends PFComponent {
 
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
-        currentInfo = new FolderInfo(fInfo.name, fInfo.id);
+        currentInfo = new FolderInfo(fInfo.name, fInfo.id).intern();
 
         // Create listener support
         folderListenerSupport = ListenerSupportFactory

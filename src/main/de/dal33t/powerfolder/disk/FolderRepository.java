@@ -334,7 +334,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         String folderId = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V3 + folderName
                                 + FOLDER_SETTINGS_ID);
-                        FolderInfo foInfo = new FolderInfo(folderName, folderId);
+                        FolderInfo foInfo = new FolderInfo(folderName, folderId)
+                            .intern();
 
                         FolderSettings folderSettings = loadV3FolderSettings(folderName);
 
@@ -483,7 +484,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         String folderName = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
                                 + FOLDER_SETTINGS_NAME);
-                        FolderInfo foInfo = new FolderInfo(folderName, folderId);
+                        FolderInfo foInfo = new FolderInfo(folderName, folderId)
+                            .intern();
                         FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
 
                         // Do not add0 if already added

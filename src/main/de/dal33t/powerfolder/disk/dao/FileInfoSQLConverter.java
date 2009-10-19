@@ -142,10 +142,8 @@ public class FileInfoSQLConverter {
             }
         }
         if (foInfo == null) {
-            foInfo = new FolderInfo("<unknown>", folderId);
-            LOG.log(Level.WARNING,
-                "Unable to retrieve folder from controller. ID: " + folderId
-                    + " file: " + fileName);
+            // Use the intered one
+            foInfo = new FolderInfo("<unknown>", folderId).intern();
         }
 
         long size = rs.getLong(FileInfo.PROPERTYNAME_SIZE);
