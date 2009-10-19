@@ -96,10 +96,6 @@ public class FolderInfo implements Serializable, Cloneable {
      * General
      */
 
-    public Object clone() {
-        return new FolderInfo(name, id);
-    }
-
     public int hashCode() {
         return (id == null) ? 0 : id.hashCode();
     }
