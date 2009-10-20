@@ -22,7 +22,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-
 /**
  * Central constants holder for all important constants in PowerFolder.
  * 
@@ -30,7 +29,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision: 1.29 $
  */
 public class Constants {
-    
+
     // General settings *******************************************************
 
     /**
@@ -56,17 +55,17 @@ public class Constants {
      * Check for updates every hour.
      */
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
-    
+
     /**
      * Threads in threadpool of {@link Controller}
      */
     public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
- 
+
     /**
      * The maximum number of lines in a chat.
      */
     public static final int MAX_CHAT_LINES = 500;
-    
+
     /**
      * URL where bugs or tickets can be filed.
      */
@@ -223,7 +222,7 @@ public class Constants {
      * The maximun number of enqued download from a internet connected node
      */
     public static final int MAX_DLS_FROM_INET_MEMBER = 10;
-    
+
     /**
      * Start uploads until 500kb is started in uploads
      */
@@ -233,7 +232,7 @@ public class Constants {
      * The maximun number of enqued download from a lan connected node
      */
     public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
-    
+
     /**
      * Start uploads until 3mb is started in uploads
      */
@@ -262,33 +261,37 @@ public class Constants {
     public static final long ESTIMATION_WINDOW_MILLIS = 300 * 1000;
 
     public static final int ESTIMATION_MINVALUES = 5;
-    
+
     // Time constants
-    
+
     /**
      * Number of milliseconds in a standard second.
+     * 
      * @since 2.1
      */
     public static final long MILLIS_PER_SECOND = 1000;
     /**
      * Number of milliseconds in a standard minute.
+     * 
      * @since 2.1
      */
     public static final long MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
     /**
      * Number of milliseconds in a standard hour.
+     * 
      * @since 2.1
      */
     public static final long MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
     /**
      * Number of milliseconds in a standard day.
+     * 
      * @since 2.1
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
 
     /**
-     * This is half a month, so this represents whether a date is in the top
-     * or bottom half of the month.
+     * This is half a month, so this represents whether a date is in the top or
+     * bottom half of the month.
      */
     public final static int SEMI_MONTH = 1001;
 
@@ -298,8 +301,15 @@ public class Constants {
      * The classname of the ProLoader
      */
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
-    
+
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
+
+    // Web stuff **************************************************************
+
+    public static final String LOGIN_PARAM_USERNAME = "Username";
+    public static final String LOGIN_PARAM_PASSWORD = "Password";
+    public static final String LOGIN_PARAM_PASSWORD_MD5 = "PasswordMD5";
+    public static final String LOGIN_PARAM_SALT = "Salt";
 
     private Constants() {
         // No instance allowed

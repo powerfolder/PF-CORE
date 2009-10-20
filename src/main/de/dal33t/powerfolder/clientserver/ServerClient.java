@@ -344,11 +344,23 @@ public class ServerClient extends PFComponent {
         }
         String url = getWebURL() + "/login";
         if (StringUtils.isNotBlank(getUsername())) {
-            url += "?Username=";
+            url += "?";
+            url += Constants.LOGIN_PARAM_USERNAME;
+            url += "=";
             url += getUsername();
             if (StringUtils.isNotBlank(getPassword())) {
-                url += "&Password=";
-                url += getPassword();
+                String salt = IdGenerator.makeId() + IdGenerator.makeId();
+                String mix = salt + getPassword().trim() + salt;
+                String passwordMD5 = new String(Util.md5(mix
+                    .getBytes(Convert.UTF8)), Convert.UTF8);
+                url += "&";
+                url += Constants.LOGIN_PARAM_PASSWORD_MD5;
+                url += "=";
+                url += passwordMD5;
+                url += "&";
+                url += Constants.LOGIN_PARAM_SALT;
+                url += "=";
+                url += salt;
             }
         }
         return url;
