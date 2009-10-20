@@ -360,8 +360,6 @@ public class ServerClient extends PFComponent {
                 url += Constants.LOGIN_PARAM_SALT;
                 url += "=";
                 url += Util.endcodeForURL(Base64.encodeString(salt));
-                System.out.println("passMD5: "
-                    + Util.endcodeForURL(Base64.encodeBytes(passwordMD5)));
             }
         }
         return url;
