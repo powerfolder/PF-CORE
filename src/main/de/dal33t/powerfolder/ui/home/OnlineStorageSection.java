@@ -85,7 +85,6 @@ public class OnlineStorageSection extends PFUIComponent {
             "home_tab.online_storage.usage",
             Format.formatBytesShort(spaceUsed), Format
                 .formatDecimal(percentageUsed)), null);
-
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 
@@ -128,8 +127,7 @@ public class OnlineStorageSection extends PFUIComponent {
      * Initializes the components.
      */
     private void initComponents() {
-        usagePB = new JProgressBar(0, 0, 100);
-        usagePB.addMouseListener(new MouseAdapter() {
+        MouseAdapter loginMouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -139,8 +137,13 @@ public class OnlineStorageSection extends PFUIComponent {
                     logWarning(e1);
                 }
             }
-        });
+        };
+
+        usagePB = new JProgressBar(0, 0, 100);
+        usagePB.addMouseListener(loginMouseAdapter);
         usageLabel = new LinkLabel(getController(), "", "");
+        // Add own mouse listener to ensure always new URL. Set URL to null
+        usageLabel.getUIComponent().addMouseListener(loginMouseAdapter);
     }
 
 }
