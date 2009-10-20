@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -352,7 +353,7 @@ public class ServerClient extends PFComponent {
         }
         return url;
     }
-    
+
     /**
      * Convenience method for getting login URL with preset username if possible
      * 
@@ -489,25 +490,40 @@ public class ServerClient extends PFComponent {
      */
     public Account login(String theUsername, String thePassword) {
         synchronized (loginLock) {
+            password = thePassword != null ? thePassword.trim() : null;
+            String salt = IdGenerator.makeId() + IdGenerator.makeId();
+            String mix = salt + password + salt;
+            String passwordMD5 = new String(Util
+                .md5(mix.getBytes(Convert.UTF8)), Convert.UTF8);
+            return login(theUsername, passwordMD5, salt);
+        }
+    }
+
+    /**
+     * Logs into the server and saves the identity as my login.
+     * <p>
+     * If the server is not connected and invalid account is returned and the
+     * login data saved for auto-login on reconnect.
+     * 
+     * @param theUsername
+     * @param thePasswordMD5
+     * @param salt
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
+     */
+    public Account login(String theUsername, String thePasswordMD5, String salt)
+    {
+        synchronized (loginLock) {
             username = theUsername;
-            password = thePassword;
+            // TODO Save MD5/Salted password
             saveLastKnowLogin();
             if (!isConnected()) {
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
             }
-            String salt = IdGenerator.makeId() + IdGenerator.makeId();
-            String mix = salt + thePassword + salt;
-            String passwordMD5;
-            try {
-                passwordMD5 = new String(Util.md5(mix.getBytes("UTF-8")),
-                    "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("UTF-8 not found", e);
-            }
-            boolean loginOk = securityService.login(theUsername, passwordMD5,
-                salt);
+            boolean loginOk = securityService.login(theUsername,
+                thePasswordMD5, salt);
             if (!loginOk) {
                 logWarning("Login to server server "
                     + server.getReconnectAddress() + " (user " + theUsername
@@ -810,6 +826,9 @@ public class ServerClient extends PFComponent {
         accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0, 0);
     }
 
+    /**
+     * TODO Support saving password with md5/salt
+     */
     private void saveLastKnowLogin() {
         if (StringUtils.isBlank(username)) {
             getController().getPreferences().remove(
@@ -820,13 +839,9 @@ public class ServerClient extends PFComponent {
         }
 
         if (isRememberPassword() && !StringUtils.isBlank(password)) {
-            try {
-                getController().getPreferences().put(
-                    PREFS_PREFIX + '.' + server.getIP() + ".info2",
-                    Base64.encodeBytes(password.getBytes("UTF-8")));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("UTF-8 not found", e);
-            }
+            getController().getPreferences().put(
+                PREFS_PREFIX + '.' + server.getIP() + ".info2",
+                Base64.encodeBytes(password.getBytes(Convert.UTF8)));
         } else {
             getController().getPreferences().remove(
                 PREFS_PREFIX + '.' + server.getIP() + ".info2");
