@@ -320,7 +320,7 @@ public class Util {
      * compatible style
      * 
      * @param aURLFragment
-     * @return
+     * @return the string encoded for URL usage.
      */
     public static String endcodeForURL(String aURLFragment) {
         String result = null;

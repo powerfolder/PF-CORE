@@ -347,20 +347,21 @@ public class ServerClient extends PFComponent {
             url += "?";
             url += Constants.LOGIN_PARAM_USERNAME;
             url += "=";
-            url += getUsername();
+            url += Util.endcodeForURL(getUsername());
             if (StringUtils.isNotBlank(getPassword())) {
                 String salt = IdGenerator.makeId() + IdGenerator.makeId();
                 String mix = salt + getPassword().trim() + salt;
-                String passwordMD5 = new String(Util.md5(mix
-                    .getBytes(Convert.UTF8)), Convert.UTF8);
+                byte[] passwordMD5 = Util.md5(mix.getBytes(Convert.UTF8));
                 url += "&";
                 url += Constants.LOGIN_PARAM_PASSWORD_MD5;
                 url += "=";
-                url += passwordMD5;
+                url += Util.endcodeForURL(Base64.encodeBytes(passwordMD5));
                 url += "&";
                 url += Constants.LOGIN_PARAM_SALT;
                 url += "=";
-                url += salt;
+                url += Util.endcodeForURL(Base64.encodeString(salt));
+                System.out.println("passMD5: "
+                    + Util.endcodeForURL(Base64.encodeBytes(passwordMD5)));
             }
         }
         return url;

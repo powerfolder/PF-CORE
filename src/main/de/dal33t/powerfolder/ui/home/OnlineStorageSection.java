@@ -80,12 +80,12 @@ public class OnlineStorageSection extends PFUIComponent {
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 
-        String loginURL = getController().getOSClient()
-            .getLoginURLWithCredentials();
+        // Add own mouse listener to ensure always new URL. Set URL to null
         usageLabel.setTextAndURL(Translation.getTranslation(
             "home_tab.online_storage.usage",
             Format.formatBytesShort(spaceUsed), Format
-                .formatDecimal(percentageUsed)), loginURL);
+                .formatDecimal(percentageUsed)), null);
+
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
             + Format.formatBytesShort(totalStorage));
 

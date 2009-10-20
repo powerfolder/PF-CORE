@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.PFComponent;
@@ -110,6 +111,9 @@ public class LinkLabel extends PFComponent {
 
     private class MyMouseAdapter extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
+            if (StringUtils.isBlank(url)) {
+                return;
+            }
             try {
                 BrowserLauncher.openURL(url);
             } catch (IOException e1) {
