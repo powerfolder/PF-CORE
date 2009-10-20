@@ -43,8 +43,23 @@ public interface SecurityManager {
      *            the password of the login
      * @return the account if acces is possible, null if user could not be
      *         logged in.
+     * @deprecated Better use {@link #authenticate(String, String, String)}
      */
     Account authenticate(String username, String password);
+
+    /**
+     * Authenticates the user.
+     * 
+     * @param username
+     *            the username of the login
+     * @param passwordMD5
+     *            the password + salt of the login encoded with MD5
+     * @param salt
+     *            a random string used to randomize passwordMD5
+     * @return the account if acces is possible, null if user could not be
+     *         logged in.
+     */
+    Account authenticate(String username, String passwordMD5, String salt);
 
     // Core callbacks *********************************************************
 

@@ -32,8 +32,10 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
@@ -45,17 +47,20 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class SecurityManagerClient extends AbstractSecurityManager {
+public class SecurityManagerClient extends PFComponent implements SecurityManager {
 
     private static final boolean CACHE_ENABLED = true;
 
     private static final AccountInfo NULL_ACCOUNT = new AccountInfo(null, null)
     {
+        private static final long serialVersionUID = 1L;
+
         public String toString() {
             return "Anonymous";
         }
     };
 
+    private SecurityManagerListener listners;
     private ServerClient client;
     private Map<Member, Session> sessions;
     private Map<AccountInfo, PermissionsCacheSegment> permissionsCacheAccounts;
@@ -66,10 +71,17 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         this.client = client;
         this.sessions = new ConcurrentHashMap<Member, Session>();
         this.permissionsCacheAccounts = new ConcurrentHashMap<AccountInfo, PermissionsCacheSegment>();
+        this.listners = ListenerSupportFactory
+            .createListenerSupport(SecurityManagerListener.class);
     }
 
     public Account authenticate(String username, String password) {
         return client.login(username, password);
+    }
+
+    public Account authenticate(String username, String passwordMD5, String salt)
+    {
+        return client.login(username, passwordMD5, salt);
     }
 
     public boolean hasPermission(Account account, Permission permission) {
@@ -301,6 +313,22 @@ public class SecurityManagerClient extends AbstractSecurityManager {
         return node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN();
     }
 
+    // Event handling *********************************************************
+
+    protected void fireNodeAccountStateChanged(Member node) {
+        listners.nodeAccountStateChanged(new SecurityManagerEvent(node));
+    }
+
+    public void addListener(SecurityManagerListener listner) {
+        ListenerSupportFactory.addListener(listners, listner);
+    }
+
+    public void removeListener(SecurityManagerListener listner) {
+        ListenerSupportFactory.removeListener(listners, listner);
+    }
+
+    // Inner classes **********************************************************
+
     private final class DefaultRefresher implements Runnable {
         private final Member node;
 
@@ -378,5 +406,4 @@ public class SecurityManagerClient extends AbstractSecurityManager {
             return permissions.get(permission);
         }
     }
-
 }
