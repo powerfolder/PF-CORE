@@ -958,6 +958,18 @@ public class Folder extends PFComponent {
                 }
             }
         } while (scannerBusy);
+        
+        /**
+         * Check that we still have a good local base.
+         */
+        try {
+            checkBaseDir(localBase, true);
+            deviceDisconnected = false;
+        } catch (FolderException e) {
+            logFiner("invalid local base: " + e);
+            deviceDisconnected = true;
+            return false;
+        }
 
         try {
             if (result.getResultState() == ScanResult.ResultState.SCANNED) {
