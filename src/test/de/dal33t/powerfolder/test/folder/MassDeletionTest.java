@@ -40,19 +40,31 @@ public class MassDeletionTest extends TwoControllerTestCase {
         connectBartAndLisa();
     }
 
-    public void testMassDeletion() throws Exception {
+    public void testSmallMassDeletion() throws Exception {
 
         // Check with no protection
-        massDeletion(false);
+        massDeletion(false, 100);
 
         tearDown();
         setUp();
 
         // Check with protection
-        massDeletion(true);
+        massDeletion(true, 100);
     }
 
-    public void massDeletion(boolean protection) throws Exception {
+    public void testLargeMassDeletion() throws Exception {
+
+        // Check with no protection
+        massDeletion(false, 2000);
+
+        tearDown();
+        setUp();
+
+        // Check with protection
+        massDeletion(true, 2000);
+    }
+
+    public void massDeletion(boolean protection, final int size) throws Exception {
 
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -61,16 +73,15 @@ public class MassDeletionTest extends TwoControllerTestCase {
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
             .getController(), protection);
 
-        final int nFile = 1000;
-        for (int i = 0; i < nFile; i++) {
+        for (int i = 0; i < size; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
 
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownFilesCount() == nFile;
+                return getFolderAtBart().getKnownFilesCount() == size;
             }
 
             public String message() {
@@ -81,18 +92,18 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(30, new Condition() {
+        TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() == nFile;
+                return getFolderAtLisa().getKnownFilesCount() == size;
             }
         });
 
-        assertEquals(nFile, getFolderAtLisa().getKnownFiles().size());
+        assertEquals(size, getFolderAtLisa().getKnownFiles().size());
 
         // Delete all Bart's files
         for (final File file : getFolderAtBart().getLocalBase().listFiles()) {
             if (!file.isDirectory()) {
-                TestHelper.waitForCondition(10, new Condition() {
+                TestHelper.waitForCondition(40, new Condition() {
                     public boolean reached() {
                         return file.delete();
                     }
@@ -105,9 +116,9 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         if (protection) {
             // Files should survive and profile switch to HOST_FILE.
-            TestHelper.waitForCondition(200, new ConditionWithMessage() {
+            TestHelper.waitForCondition(40, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == nFile + 1; // The
+                    return getFolderAtLisa().getLocalBase().listFiles().length == size + 1; // The
                     // files
                     // +
                     // .PowerFolder
@@ -124,7 +135,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
                 + getFolderAtLisa().getSyncProfile().getName());
             System.out.println("Required sync profile: "
                 + SyncProfile.HOST_FILES.getName());
-            TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            TestHelper.waitForCondition(40, new ConditionWithMessage() {
                 public boolean reached() {
                     return getFolderAtLisa().getSyncProfile().equals(
                         SyncProfile.HOST_FILES);
@@ -138,7 +149,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
                 SyncProfile.HOST_FILES);
         } else {
             // Files should have been deleted and profile remains same.
-            TestHelper.waitForCondition(20, new Condition() {
+            TestHelper.waitForCondition(40, new Condition() {
                 public boolean reached() {
                     return getFolderAtLisa().getLocalBase().listFiles().length == 1; // The
                     // .PowerFolder
@@ -150,7 +161,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
                 + getFolderAtLisa().getSyncProfile().getName());
             System.out.println("Required sync profile: "
                 + SyncProfile.AUTOMATIC_SYNCHRONIZATION.getName());
-            TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            TestHelper.waitForCondition(40, new ConditionWithMessage() {
                 public boolean reached() {
                     return getFolderAtLisa().getSyncProfile().equals(
                         SyncProfile.AUTOMATIC_SYNCHRONIZATION);

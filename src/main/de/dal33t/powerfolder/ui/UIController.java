@@ -1290,16 +1290,27 @@ public class UIController extends PFComponent {
         }
 
         public void remoteMassDeletion(RemoteMassDeletionEvent event) {
-            WarningEvent warningEvent = new WarningEvent(
-                getController(),
-                Translation
-                    .getTranslation("uicontroller.remote_mass_delete.warning_title"),
-                Translation.getTranslation(
-                    "uicontroller.remote_mass_delete.warning_message", event
+            String message;
+            if (event.isPercentage()) {
+                message = Translation.getTranslation(
+                "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, String.valueOf(event
-                        .getDeletePercentage()), event.getFolderInfo().name,
-                    event.getOldProfile().getName(), event.getNewProfile()
-                        .getName()));
+                        .getDeleteFigure()), event.getFolderInfo().name,
+                event.getOldProfile().getName(), event.getNewProfile()
+                        .getName());
+            } else {
+                message = Translation.getTranslation(
+                "uicontroller.remote_mass_delete.warning_absolute_message",
+                event.getMemberInfo().nick, String.valueOf(event
+                        .getDeleteFigure()), event.getFolderInfo().name,
+                event.getOldProfile().getName(), event.getNewProfile()
+                        .getName());
+            }
+
+            WarningEvent warningEvent = new WarningEvent(getController(),
+                    Translation.getTranslation(
+                            "uicontroller.remote_mass_delete.warning_title"),
+                    message);
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
     }

@@ -24,25 +24,44 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
- * Notification that
+ * Notification that a mass delete event happened
  */
 public class RemoteMassDeletionEvent {
 
     private final FolderInfo folderInfo;
     private final MemberInfo memberInfo;
-    private final int deletePercentage;
+    private final int deleteFigure;
     private SyncProfile oldProfile;
     private SyncProfile newProfile;
+    private final boolean percentage;
 
+    /**
+     *
+     * @param folderInfo
+     *              folder info of affected folder
+     * @param memberInfo
+     *              offending member
+     * @param deleteFigure
+     *              the percentage of files deleted or number of files deleted
+     *              see percentage field
+     * @param oldProfile
+     *              the profile that was set before the event
+     * @param newProfile
+     *              the safe profile switched to
+     * @param percentage
+     *              true if the deleteFigure is the percentege of files deleted
+     *              false if the deleteFigure is an absolute number 
+     */
     public RemoteMassDeletionEvent(FolderInfo folderInfo,
-        MemberInfo memberInfo, int deletePercentage, SyncProfile oldProfile,
-        SyncProfile newProfile)
+        MemberInfo memberInfo, int deleteFigure, SyncProfile oldProfile,
+        SyncProfile newProfile, boolean percentage)
     {
         this.folderInfo = folderInfo;
         this.memberInfo = memberInfo;
-        this.deletePercentage = deletePercentage;
+        this.deleteFigure = deleteFigure;
         this.oldProfile = oldProfile;
         this.newProfile = newProfile;
+        this.percentage = percentage;
     }
 
     public FolderInfo getFolderInfo() {
@@ -53,8 +72,12 @@ public class RemoteMassDeletionEvent {
         return memberInfo;
     }
 
-    public int getDeletePercentage() {
-        return deletePercentage;
+    public boolean isPercentage() {
+        return percentage;
+    }
+
+    public int getDeleteFigure() {
+        return deleteFigure;
     }
 
     public SyncProfile getOldProfile() {

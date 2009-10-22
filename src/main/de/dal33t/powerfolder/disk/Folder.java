@@ -2515,7 +2515,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     * 
+     *
      * @param from
      * @param changes
      */
@@ -2527,40 +2527,54 @@ public class Folder extends PFComponent {
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
         if (changes.removed != null
-            && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
-        {
+                && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController())) {
             int delsCount = changes.removed.length;
-            int knownFilesCount = getKnownFilesCount();
-            if (knownFilesCount > 0) {
-                int delPercentage = 100 * delsCount / knownFilesCount;
-                logFine("FolderFilesChanged delete percentage " + delPercentage
-                    + '%');
-                if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
-                    .getValueInt(getController()))
-                {
-                    if (syncProfile.isSyncDeletion()) {
-                        SyncProfile original = syncProfile;
+            if (delsCount >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
 
-                        // Emergency profile switch to something safe.
-                        setSyncProfile(SyncProfile.HOST_FILES);
+                // #1786 - If deletion >= max files per message, switch.
 
-                        logWarning("Received a FolderFilesChanged message from "
+                if (syncProfile.isSyncDeletion()) {
+
+                    logWarning("Received a FolderFilesChanged message from "
                             + from.getInfo().nick
                             + " which will delete "
-                            + delPercentage
-                            + " percent of known files in folder "
+                            + delsCount
+                            + " files in folder "
                             + currentInfo.name
-                            + ". The sync profile has been switched from "
-                            + original.getName()
+                            + ". The sync profile will now be switched from "
+                            + syncProfile.getName()
                             + " to "
-                            + syncProfile.getName() + " to protect the files.");
+                            + SyncProfile.HOST_FILES.getName()
+                            + " to protect the files.");
 
-                        // Advise the controller of the problem.
-                        getController().remoteMassDeletionDetected(
-                            new RemoteMassDeletionEvent(currentInfo, from
-                                .getInfo(), delPercentage, original,
-                                syncProfile));
+                    switchToSafe(from, delsCount, false);
+                }
+            } else {
+                int knownFilesCount = getKnownFilesCount();
+                if (knownFilesCount > 0) {
+                    int delPercentage = 100 * delsCount / knownFilesCount;
+                    logFine("FolderFilesChanged delete percentage "
+                            + delPercentage + '%');
+                    if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
+                            .getValueInt(getController())) {
+
+                        if (syncProfile.isSyncDeletion()) {
+
+                            logWarning("Received a FolderFilesChanged message from "
+                                    + from.getInfo().nick
+                                    + " which will delete "
+                                    + delPercentage
+                                    + " percent of known files in folder "
+                                    + currentInfo.name
+                                    + ". The sync profile will now be switched from "
+                                    + syncProfile.getName()
+                                    + " to "
+                                    + SyncProfile.HOST_FILES.getName()
+                                    + " to protect the files.");
+
+                            switchToSafe(from, delPercentage, true);
+                        }
                     }
                 }
             }
@@ -2588,7 +2602,7 @@ public class Folder extends PFComponent {
 
         // Avoid hammering of sync remote deletion
         boolean singleFileAddMsg = changes.added != null
-            && changes.added.length == 1 && changes.removed == null;
+                && changes.added.length == 1 && changes.removed == null;
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
@@ -2599,8 +2613,7 @@ public class Folder extends PFComponent {
                 FileInfo localfileInfo = getFile(changes.added[0]);
                 FileInfo remoteFileInfo = changes.added[0];
                 if (localfileInfo != null
-                    && !remoteFileInfo.isNewerThan(localfileInfo))
-                {
+                        && !remoteFileInfo.isNewerThan(localfileInfo)) {
                     // We have this or a newer version of the file. = Dont'
                     // trigger filerequestor.
                     triggerFileRequestor = false;
@@ -2610,25 +2623,39 @@ public class Folder extends PFComponent {
             if (triggerFileRequestor) {
                 if (isFiner()) {
                     logFiner("Triggering file requestor because of remote file list change "
-                        + changes + " from " + from);
+                            + changes + " from " + from);
                 }
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(changes.folder);
+                        .triggerFileRequesting(changes.folder);
             } else if (isFiner()) {
                 logFiner("Not triggering filerequestor, no new files in remote filelist"
-                    + changes + " from " + from);
+                        + changes + " from " + from);
             }
         }
 
         // Handle remote deleted files
         if (!singleFileAddMsg && syncProfile.isSyncDeletion()
-            && from.isCompletelyConnected())
-        {
+                && from.isCompletelyConnected()) {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
 
         // Fire event
         fireRemoteContentsChanged(from, changes);
+    }
+
+    private void switchToSafe(Member from, int delsCount, boolean percentage) {
+        SyncProfile original = syncProfile;
+
+        // Emergency profile switch to something safe.
+        setSyncProfile(SyncProfile.HOST_FILES);
+
+        // Advise the controller of the problem.
+        getController().remoteMassDeletionDetected(
+                            new RemoteMassDeletionEvent(currentInfo, from
+                        .getInfo(), delsCount, original,
+                        syncProfile, percentage));
+                            
+        logWarning("Switched to " + syncProfile.getName());
     }
 
     /**
