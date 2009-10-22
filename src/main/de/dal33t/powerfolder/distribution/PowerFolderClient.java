@@ -61,33 +61,32 @@ public class PowerFolderClient extends AbstractDistribution {
     private void resetServer(Controller c) {
         logInfo("Resetting server connection to "
             + ConfigurationEntry.SERVER_HOST.getDefaultValue());
-        setDefaultValue(c, ConfigurationEntry.SERVER_NAME);
-        setDefaultValue(c, ConfigurationEntry.SERVER_WEB_URL);
-        setDefaultValue(c, ConfigurationEntry.SERVER_NODEID);
-        setDefaultValue(c, ConfigurationEntry.SERVER_HOST);
+        removeValue(c, ConfigurationEntry.SERVER_NAME);
+        removeValue(c, ConfigurationEntry.SERVER_WEB_URL);
+        removeValue(c, ConfigurationEntry.SERVER_NODEID);
+        removeValue(c, ConfigurationEntry.SERVER_HOST);
     }
 
     private static void resetNetworkID(Controller c) {
-        setDefaultValue(c, ConfigurationEntry.NETWORK_ID);
+        removeValue(c, ConfigurationEntry.NETWORK_ID);
     }
 
     private static void resetProviderURLs(Controller c) {
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_ABOUT_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_QUICKSTART_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_SUPPORT_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_BUY_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_CONTACT_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_WIKI_URL);
-        setDefaultValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_ABOUT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_QUICKSTART_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_BUY_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_CONTACT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_WIKI_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
     }
 
-    private static void setDefaultValue(Controller c, ConfigurationEntry entry)
-    {
+    private static void removeValue(Controller c, ConfigurationEntry entry) {
         if (!entry.getValue(c).equals(entry.getDefaultValue())) {
             // Change back to default
-            entry.setValue(c, entry.getDefaultValue());
+            entry.removeValue(c);
         }
     }
 }
