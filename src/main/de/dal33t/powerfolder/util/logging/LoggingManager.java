@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
 import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Class to manage logging handler. This maintains up to three handlers;
@@ -267,8 +268,22 @@ public class LoggingManager {
      * @return the directory that the file logging is written to.
      */
     public static File getDebugDir() {
+        File canidate;
+        if (!OSUtil.isWebStart() && OSUtil.isLinux()) {
+            // Never for webstart or Windows systems
+            canidate = new File(DEBUG_DIR);
+            if (canidate.exists() && canidate.isDirectory()) {
+                return canidate;
+            }
+
+            canidate.mkdirs();
+            if (canidate.exists() && canidate.isDirectory()) {
+                return canidate;
+            }
+        }
+
         // Fallback! TRAC #1087
-        File canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
+        canidate = new File(Controller.getMiscFilesLocation(), DEBUG_DIR);
         if (canidate.exists() && canidate.isDirectory()) {
             return canidate;
         }
