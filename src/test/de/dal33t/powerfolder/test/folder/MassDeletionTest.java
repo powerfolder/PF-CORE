@@ -61,27 +61,33 @@ public class MassDeletionTest extends TwoControllerTestCase {
         PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
             .getController(), protection);
 
-        for (int i = 0; i < 100; i++) {
+        final int nFile = 1000;
+        for (int i = 0; i < nFile; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
 
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownFilesCount() == 100;
+                return getFolderAtBart().getKnownFilesCount() == nFile;
+            }
+
+            public String message() {
+                return "Known files at bart: "
+                    + getFolderAtBart().getKnownFilesCount();
             }
         });
 
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(30, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() == 100;
+                return getFolderAtLisa().getKnownFilesCount() == nFile;
             }
         });
 
-        assertEquals(100, getFolderAtLisa().getKnownFiles().size());
+        assertEquals(nFile, getFolderAtLisa().getKnownFiles().size());
 
         // Delete all Bart's files
         for (final File file : getFolderAtBart().getLocalBase().listFiles()) {
@@ -99,13 +105,18 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         if (protection) {
             // Files should survive and profile switch to HOST_FILE.
-            TestHelper.waitForCondition(20, new Condition() {
+            TestHelper.waitForCondition(200, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == 101; // The
+                    return getFolderAtLisa().getLocalBase().listFiles().length == nFile + 1; // The
                     // files
                     // +
                     // .PowerFolder
                     // dir
+                }
+
+                public String message() {
+                    return "Folder at lisa has files:"
+                        + getFolderAtLisa().getLocalBase().listFiles().length;
                 }
             });
             System.out.println("Protection: " + protection);
