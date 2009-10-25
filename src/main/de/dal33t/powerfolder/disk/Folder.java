@@ -894,7 +894,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans the local directory for new files. Be carefull! This method is not
+     * Scans the local directory for new files. Be careful! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
      * 
@@ -905,33 +905,12 @@ public class Folder extends PFComponent {
     public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
 
         boolean wasDeviceDisconnected = deviceDisconnected;
-        /**
-         * Check that we still have a good local base.
-         */
-        try {
-            checkBaseDir(localBase, true);
-            deviceDisconnected = false;
-        } catch (FolderException e) {
-            logFiner("invalid local base: " + e);
-            deviceDisconnected = true;
-            return false;
-        }
+        checkIfDeviceDisconnected();
 
-        // #1249
-        if (getKnownFilesCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
-        {
-            boolean inaccessible = localBase.list() == null
-                || localBase.list().length == 0 || !localBase.exists();
-            if (inaccessible) {
-                logWarning("Local base empty on linux file system, but has known files. "
-                    + localBase);
-                deviceDisconnected = true;
-                return false;
-            }
-        }
         if (wasDeviceDisconnected && !deviceDisconnected
             && getKnownFilesCount() == 0)
         {
+            logWarning("Device reconnected. Loading folder database");
             initFileInfoDAO();
             // Try to load db from connected device now.
             loadFolderDB();
@@ -958,16 +937,9 @@ public class Folder extends PFComponent {
                 }
             }
         } while (scannerBusy);
-        
-        /**
-         * Check that we still have a good local base.
-         */
-        try {
-            checkBaseDir(localBase, true);
-            deviceDisconnected = false;
-        } catch (FolderException e) {
-            logFiner("invalid local base: " + e);
-            deviceDisconnected = true;
+
+        if (checkIfDeviceDisconnected()) {
+            logWarning("Device disconnected while scanning folder");
             return false;
         }
 
@@ -2515,7 +2487,7 @@ public class Folder extends PFComponent {
 
     /**
      * Callback method from member. Called when a filelist delta received
-     *
+     * 
      * @param from
      * @param changes
      */
@@ -2527,8 +2499,9 @@ public class Folder extends PFComponent {
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
         if (changes.removed != null
-                && PreferencesEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController())) {
+            && PreferencesEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
             int delsCount = changes.removed.length;
             if (delsCount >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
 
@@ -2537,16 +2510,12 @@ public class Folder extends PFComponent {
                 if (syncProfile.isSyncDeletion()) {
 
                     logWarning("Received a FolderFilesChanged message from "
-                            + from.getInfo().nick
-                            + " which will delete "
-                            + delsCount
-                            + " files in folder "
-                            + currentInfo.name
-                            + ". The sync profile will now be switched from "
-                            + syncProfile.getName()
-                            + " to "
-                            + SyncProfile.HOST_FILES.getName()
-                            + " to protect the files.");
+                        + from.getInfo().nick + " which will delete "
+                        + delsCount + " files in folder " + currentInfo.name
+                        + ". The sync profile will now be switched from "
+                        + syncProfile.getName() + " to "
+                        + SyncProfile.HOST_FILES.getName()
+                        + " to protect the files.");
 
                     switchToSafe(from, delsCount, false);
                 }
@@ -2555,23 +2524,24 @@ public class Folder extends PFComponent {
                 if (knownFilesCount > 0) {
                     int delPercentage = 100 * delsCount / knownFilesCount;
                     logFine("FolderFilesChanged delete percentage "
-                            + delPercentage + '%');
+                        + delPercentage + '%');
                     if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
-                            .getValueInt(getController())) {
+                        .getValueInt(getController()))
+                    {
 
                         if (syncProfile.isSyncDeletion()) {
 
                             logWarning("Received a FolderFilesChanged message from "
-                                    + from.getInfo().nick
-                                    + " which will delete "
-                                    + delPercentage
-                                    + " percent of known files in folder "
-                                    + currentInfo.name
-                                    + ". The sync profile will now be switched from "
-                                    + syncProfile.getName()
-                                    + " to "
-                                    + SyncProfile.HOST_FILES.getName()
-                                    + " to protect the files.");
+                                + from.getInfo().nick
+                                + " which will delete "
+                                + delPercentage
+                                + " percent of known files in folder "
+                                + currentInfo.name
+                                + ". The sync profile will now be switched from "
+                                + syncProfile.getName()
+                                + " to "
+                                + SyncProfile.HOST_FILES.getName()
+                                + " to protect the files.");
 
                             switchToSafe(from, delPercentage, true);
                         }
@@ -2602,7 +2572,7 @@ public class Folder extends PFComponent {
 
         // Avoid hammering of sync remote deletion
         boolean singleFileAddMsg = changes.added != null
-                && changes.added.length == 1 && changes.removed == null;
+            && changes.added.length == 1 && changes.removed == null;
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
@@ -2613,7 +2583,8 @@ public class Folder extends PFComponent {
                 FileInfo localfileInfo = getFile(changes.added[0]);
                 FileInfo remoteFileInfo = changes.added[0];
                 if (localfileInfo != null
-                        && !remoteFileInfo.isNewerThan(localfileInfo)) {
+                    && !remoteFileInfo.isNewerThan(localfileInfo))
+                {
                     // We have this or a newer version of the file. = Dont'
                     // trigger filerequestor.
                     triggerFileRequestor = false;
@@ -2623,19 +2594,20 @@ public class Folder extends PFComponent {
             if (triggerFileRequestor) {
                 if (isFiner()) {
                     logFiner("Triggering file requestor because of remote file list change "
-                            + changes + " from " + from);
+                        + changes + " from " + from);
                 }
                 getController().getFolderRepository().getFileRequestor()
-                        .triggerFileRequesting(changes.folder);
+                    .triggerFileRequesting(changes.folder);
             } else if (isFiner()) {
                 logFiner("Not triggering filerequestor, no new files in remote filelist"
-                        + changes + " from " + from);
+                    + changes + " from " + from);
             }
         }
 
         // Handle remote deleted files
         if (!singleFileAddMsg && syncProfile.isSyncDeletion()
-                && from.isCompletelyConnected()) {
+            && from.isCompletelyConnected())
+        {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
 
@@ -2651,10 +2623,9 @@ public class Folder extends PFComponent {
 
         // Advise the controller of the problem.
         getController().remoteMassDeletionDetected(
-                            new RemoteMassDeletionEvent(currentInfo, from
-                        .getInfo(), delsCount, original,
-                        syncProfile, percentage));
-                            
+            new RemoteMassDeletionEvent(currentInfo, from.getInfo(), delsCount,
+                original, syncProfile, percentage));
+
         logWarning("Switched to " + syncProfile.getName());
     }
 
@@ -2811,7 +2782,7 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
-        if (deviceDisconnected) {
+        if (checkIfDeviceDisconnected()) {
             logWarning("Unable to persist database. Device is disconnected: "
                 + localBase);
             return;
@@ -2887,6 +2858,43 @@ public class Folder extends PFComponent {
      * @return true if this folder is disconnected/not available at the moment.
      */
     public boolean isDeviceDisconnected() {
+        return deviceDisconnected;
+    }
+
+    /**
+     * Actually checks if the device is disconnected or available. Also sets the
+     * property "deviceDisconnected".
+     * 
+     * @return true if the device is disconnected. false if everything is ok.
+     */
+    public boolean checkIfDeviceDisconnected() {
+        /**
+         * Check that we still have a good local base.
+         */
+        try {
+            checkBaseDir(localBase, true);
+            deviceDisconnected = false;
+        } catch (FolderException e) {
+            logFiner("invalid local base: " + e);
+            deviceDisconnected = true;
+            return deviceDisconnected;
+        }
+
+        // #1249
+        if (getKnownFilesCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
+        {
+            boolean inaccessible = localBase.list() == null
+                || localBase.list().length == 0 || !localBase.exists();
+            if (inaccessible) {
+                logWarning("Local base empty on linux file system, but has known files. "
+                    + localBase);
+                deviceDisconnected = true;
+                return deviceDisconnected;
+            }
+        }
+
+        // Is OK!
+        deviceDisconnected = false;
         return deviceDisconnected;
     }
 
