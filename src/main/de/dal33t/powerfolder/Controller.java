@@ -124,7 +124,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.3.20";
+    public static final String PROGRAM_VERSION = "4.0.0 - 1.0.3.25";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -684,11 +684,13 @@ public class Controller extends PFComponent {
                 : Level.WARNING);
 
             // Switch on the document handler.
-            str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
-            Level uiLogLevel = LoggingManager.levelForName(str);
-            LoggingManager.setDocumentLogging(uiLogLevel != null
-                ? uiLogLevel
-                : Level.WARNING, this);
+            if (isUIEnabled()) {
+                str = PreferencesEntry.DOCUMENT_LOGGING.getValueString(this);
+                Level uiLogLevel = LoggingManager.levelForName(str);
+                LoggingManager.setDocumentLogging(uiLogLevel != null
+                    ? uiLogLevel
+                    : Level.WARNING, this);
+            }
 
             if (LoggingManager.isLogToFile()) {
                 logInfo("Running in VERBOSE mode, logging to file '"
