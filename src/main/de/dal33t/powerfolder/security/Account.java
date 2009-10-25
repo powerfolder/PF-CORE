@@ -440,8 +440,10 @@ public class Account extends Model implements Serializable {
     public int countNumberOfFolders(Controller controller) {
         int nFolders = 0;
         for (Permission p : getPermissions()) {
-            if (p instanceof FolderAdminPermission) {
-                FolderAdminPermission fp = (FolderAdminPermission) p;
+            if (p instanceof FolderAdminPermission
+                || p instanceof FolderOwnerPermission)
+            {
+                FolderPermission fp = (FolderPermission) p;
                 Folder f = fp.getFolder().getFolder(controller);
                 if (f == null) {
                     continue;
@@ -488,18 +490,19 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(controller, "Controller is null");
         int n = 0;
         for (Permission p : getPermissions()) {
-            if (!(p instanceof FolderAdminPermission || p instanceof FolderOwnerPermission))
+            if (p instanceof FolderAdminPermission
+                || p instanceof FolderOwnerPermission)
             {
-                continue;
-            }
-            FolderPermission fp = (FolderPermission) p;
-            Folder f = fp.getFolder().getFolder(controller);
-            if (f == null) {
-                continue;
-            }
-            if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
-                n++;
-                f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                FolderPermission fp = (FolderPermission) p;
+                Folder f = fp.getFolder().getFolder(controller);
+                if (f == null) {
+                    continue;
+                }
+                if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                    n++;
+                    f
+                        .setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                }
             }
         }
         return n;
@@ -516,22 +519,22 @@ public class Account extends Model implements Serializable {
         Reject.ifNull(controller, "Controller is null");
         int nNewDisabled = 0;
         for (Permission p : getPermissions()) {
-            if (!(p instanceof FolderAdminPermission || p instanceof FolderOwnerPermission))
+            if (p instanceof FolderAdminPermission
+                || p instanceof FolderOwnerPermission)
             {
-                continue;
-            }
-            FolderPermission fp = (FolderPermission) p;
-            Folder folder = fp.getFolder().getFolder(controller);
-            if (folder == null) {
-                continue;
-            }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("Disable download of new files for folder: " + folder
-                    + " for " + getUsername());
-            }
-            if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
-                folder.setSyncProfile(SyncProfile.DISABLED);
-                nNewDisabled++;
+                FolderPermission fp = (FolderPermission) p;
+                Folder folder = fp.getFolder().getFolder(controller);
+                if (folder == null) {
+                    continue;
+                }
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("Disable download of new files for folder: "
+                        + folder + " for " + getUsername());
+                }
+                if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                    folder.setSyncProfile(SyncProfile.DISABLED);
+                    nNewDisabled++;
+                }
             }
         }
         if (nNewDisabled > 0) {
