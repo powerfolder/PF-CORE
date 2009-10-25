@@ -200,7 +200,8 @@ public class HomeTab extends PFUIComponent {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
         numberOfFoldersLine = new HomeTabLine(getController(), Translation
-            .getTranslation("home_tab.folders"), null, false, true, null, null);
+            .getTranslation("home_tab.folders"), Translation
+            .getTranslation("home_tab.no_folders"), false, true, null, null);
         sizeOfFoldersLine = new HomeTabLine(getController(), Translation
             .getTranslation("home_tab.total", "KB"), null, true, false, null,
             null);
