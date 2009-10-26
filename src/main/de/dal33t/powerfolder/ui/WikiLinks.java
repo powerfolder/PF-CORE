@@ -45,4 +45,6 @@ public interface WikiLinks {
     String INVITATIONS = "Invitations";
     String TRANSFER_MODES = "Transfer_Modes";
     String SECURITY_PERMISSION = "Security_Permissions";
+    String SERVER_CLIENT_DEPLOYMENT ="Server_client_deployment";
+    String UI_LOCK ="UI-Lock";
 }
