@@ -305,7 +305,10 @@ public class Constants {
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
 
     // Web stuff **************************************************************
-
+    
+    public static final String UI_LOCK_UNLOCK_URI = "/unlock";
+    public static final String LOGIN_URI = "/login";
+    
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
     public static final String LOGIN_PARAM_PASSWORD_MD5 = "PasswordMD5";

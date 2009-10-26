@@ -342,7 +342,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        String url = getWebURL() + "/login";
+        String url = getWebURL() + Constants.LOGIN_URI;
         if (StringUtils.isNotBlank(getUsername())) {
             url += "?";
             url += Constants.LOGIN_PARAM_USERNAME;
@@ -374,9 +374,11 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        String url = getWebURL() + "/login";
+        String url = getWebURL() + Constants.LOGIN_URI;
         if (StringUtils.isNotBlank(getUsername())) {
-            url += "?Username=";
+            url += "?";
+            url += Constants.LOGIN_PARAM_USERNAME;
+            url += "=";
             url += getUsername();
         }
         return url;
