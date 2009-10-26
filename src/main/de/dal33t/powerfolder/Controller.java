@@ -108,6 +108,7 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.Updater;
 
 /**
@@ -124,7 +125,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0.28";
+    public static final String PROGRAM_VERSION = "4.0.0.29";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -411,12 +412,13 @@ public class Controller extends PFComponent {
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
 
-        // Initialize branding/preconfiguration of the client
-        initDistribution();
-
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
-        Debug.writeSystemProperties();
+        
+        // Initialize branding/preconfiguration of the client
+        initDistribution();
+        
+        Debug.writeSystemProperties();    
 
         // create node manager
         nodeManager = new NodeManager(this);
@@ -440,6 +442,13 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
+            
+            if (ConfigurationEntry.USER_INTERFACE_LOCKED
+                .getValueBoolean(this))
+            {
+                // Don't let the user pass this step.
+                new UIUnLockDialog(this).openAndWait();
+            }
         }
 
         setLoadingCompletion(10, 20);
@@ -2010,7 +2019,7 @@ public class Controller extends PFComponent {
             if (unixBaseDir.exists()) {
                 try {
                     FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
-                    log.info("Migrated unix config to window");
+                    log.warning("Migrated unix config to window");
                 } catch (IOException e) {
                     log.severe("Failed to unix config to window");
                 }
