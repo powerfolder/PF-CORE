@@ -142,7 +142,7 @@ public class UIUtil {
 
     /**
      * Executes a task in the event dispatcher thread (if swing is available).
-     * The task just gets enqued in the event queue.
+     * The task just gets queued in the event queue.
      * <p>
      * If swing is not available the task gets directly executed.
      * 
@@ -150,7 +150,7 @@ public class UIUtil {
      */
     public static void invokeLaterInEDT(Runnable task) {
         Reject.ifNull(task, "Task is null");
-        if (!isAWTAvailable() || SwingUtilities.isEventDispatchThread()) {
+        if (!isAWTAvailable()) {
             task.run();
         } else {
             SwingUtilities.invokeLater(task);
