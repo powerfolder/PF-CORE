@@ -107,6 +107,7 @@ import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.update.Updater;
 
@@ -1963,8 +1964,12 @@ public class Controller extends PFComponent {
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
         if (OSUtil.isWindowsSystem()) {
-            File windowsConfigDir = new File(System.getenv("APPDATA")
-                + "/PowerFolder");
+            String appData = Util.getAppData();
+            if (StringUtils.isBlank(appData)) {
+                // Appdata not found
+                return unixConfigDir;
+            }
+            File windowsConfigDir = new File(appData);
             base = migrateWindowsMiscLocation(unixConfigDir, windowsConfigDir);
         } else {
             base = unixConfigDir;

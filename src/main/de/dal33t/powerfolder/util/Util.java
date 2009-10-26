@@ -298,6 +298,22 @@ public class Util {
     }
 
     /**
+     * @return the APPDATA directory for placing application data.
+     */
+    public static String getAppData() {
+        String appDataname = System.getenv("APPDATA");
+        if (StringUtils.isBlank(appDataname) && WinUtils.getInstance() != null)
+        {
+            appDataname = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_APP_DATA, false);
+        }
+        if (StringUtils.isBlank(appDataname)) {
+            LOG.severe("Unable to find APPDATA directory");
+        }
+        return appDataname;
+    }
+
+    /**
      * Place a String on the clipboard
      * 
      * @param aString

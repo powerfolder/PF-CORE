@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -191,11 +192,7 @@ public class UserDirectories {
             .getTranslation("user.dir.videos"), false);
 
         if (OSUtil.isWindowsSystem()) {
-            String appDataname = System.getenv("APPDATA");
-            if (appDataname == null && WinUtils.getInstance() != null) {
-                appDataname = WinUtils.getInstance().getSystemFolderPath(
-                    WinUtils.CSIDL_APP_DATA, false);
-            }
+            String appDataname = Util.getAppData();
             if (appDataname != null) {
                 File appData = new File(appDataname);
                 addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
