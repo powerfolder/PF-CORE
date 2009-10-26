@@ -24,7 +24,7 @@
 	<classpathentry kind="lib" path="lib/synthetica/flexdock.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/swingx.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/synthetica.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/synthetica.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlackMoon.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlackStar.jar"/>
