@@ -50,6 +50,14 @@ public enum ConfigurationEntry {
      * If the GUI should be disabled (=console mode). Default: False (Show GUI).
      */
     DISABLE_GUI("disableui", Boolean.FALSE.toString()),
+    
+    /**
+     * If the user interface is locked and needs to be unlocked before starting
+     * PowerFolder.
+     * <p>
+     * TRAC #1784
+     */
+    USER_INTERFACE_LOCKED("uilock.locked", String.valueOf(Boolean.FALSE)),
 
     // Node setup *************************************************************
 
