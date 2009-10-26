@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -30,7 +32,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
@@ -48,7 +49,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -69,7 +69,8 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -881,30 +882,29 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         if (folder != null) {
             int newCount = getController().getTransferManager()
-                    .countCompletedDownloads(folder);
+                .countCompletedDownloads(folder);
             newFiles = newCount > 0;
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
                 nameLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.new_files_tip_text",
-                        String.valueOf(newCount)));
+                    "exp_folder_view.new_files_tip_text", String
+                        .valueOf(newCount)));
             }
         }
 
         if (!newFiles) {
             if (expanded.get()) {
-                nameLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.collapse"));
+                nameLabel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.collapse"));
             } else {
-                nameLabel.setToolTipText(Translation.getTranslation(
-                        "exp_folder_view.expand"));
+                nameLabel.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.expand"));
             }
         }
-        
+
         nameLabel.setText(folderInfo.name + newCountString);
-        nameLabel.setFont(
-                new Font(nameLabel.getFont().getName(),
-                        newFiles ? Font.BOLD
+        nameLabel.setFont(new Font(nameLabel.getFont().getName(), newFiles
+            ? Font.BOLD
             : Font.PLAIN, nameLabel.getFont().getSize()));
         clearCompletedDownloadsAction.setEnabled(newFiles);
     }
@@ -1295,11 +1295,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         public void actionPerformed(ActionEvent e) {
             TransferManager transferManager = getController()
                 .getTransferManager();
-            List<FileInfo> infoList = folder.getDirectory()
-                .getFileInfosRecursive();
-            for (FileInfo fileInfo : infoList) {
-                if (transferManager.isCompletedDownload(fileInfo)) {
-                    transferManager.clearCompletedDownload(fileInfo);
+            for (DownloadManager dlMan : transferManager
+                .getCompletedDownloadsCollection())
+            {
+                if (dlMan.getFileInfo().getFolderInfo()
+                    .equals(folder.getInfo()))
+                {
+                    transferManager.clearCompletedDownload(dlMan);
                 }
             }
         }
@@ -1321,7 +1323,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformationIncoming(
-                    folderInfo);
+                folderInfo);
         }
     }
 
