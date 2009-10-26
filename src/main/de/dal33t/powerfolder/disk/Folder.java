@@ -195,7 +195,7 @@ public class Folder extends PFComponent {
     private boolean hasOwnDatabase;
 
     /** Flag indicating */
-    private boolean shutdown;
+    private volatile boolean shutdown;
 
     /**
      * Indicates, that the scan of the local filesystem was forced
@@ -1614,11 +1614,10 @@ public class Folder extends PFComponent {
         // disabled this so the ui is updated (more or less) that the folders
         // are disabled from debug panel
         // ListenerSupportFactory.removeAllListeners(folderListenerSupport);
-
-        shutdown = true;
         if (dirty) {
             persist();
         }
+        shutdown = true;
         dao.stop();
         if (diskItemFilter.isDirty()) {
             diskItemFilter.savePatternsTo(getSystemSubDir());
@@ -2785,6 +2784,10 @@ public class Folder extends PFComponent {
         if (checkIfDeviceDisconnected()) {
             logWarning("Unable to persist database. Device is disconnected: "
                 + localBase);
+            return;
+        }
+        if (shutdown) {
+            logFine("Unable to persist database. Already shut down");
             return;
         }
         logFiner("Persisting settings");
