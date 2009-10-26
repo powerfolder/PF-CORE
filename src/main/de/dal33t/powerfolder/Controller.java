@@ -107,7 +107,6 @@ import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.update.Updater;
 
@@ -2001,7 +2000,8 @@ public class Controller extends PFComponent {
     private static File migrateWindowsMiscLocation(File unixBaseDir,
         File windowsBaseDir)
     {
-        if (windowsBaseDir.exists()) {
+        // Exists and not empty
+        if (windowsBaseDir.exists() && windowsBaseDir.list().length > 0) {
             return windowsBaseDir;
         }
 

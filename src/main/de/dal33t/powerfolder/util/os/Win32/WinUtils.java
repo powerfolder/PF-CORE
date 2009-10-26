@@ -19,13 +19,13 @@
 */
 package de.dal33t.powerfolder.util.os.Win32;
 
+import java.io.File;
+import java.io.IOException;
+
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.Controller;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Utilities for windows.
