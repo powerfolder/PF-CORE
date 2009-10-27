@@ -126,7 +126,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0.30";
+    public static final String PROGRAM_VERSION = "4.0.0.32";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2030,9 +2030,8 @@ public class Controller extends PFComponent {
     private static boolean migrateWindowsMiscLocation(File unixBaseDir,
         File windowsBaseDir)
     {
-        if (!windowsBaseDir.mkdirs()) {
+        if (!windowsBaseDir.exists() && windowsBaseDir.mkdirs()) {
             log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
-            return false;
         }
         try {
             FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
