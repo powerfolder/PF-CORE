@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -414,11 +415,11 @@ public class Controller extends PFComponent {
 
         // Load and set http proxy settings
         HTTPProxySettings.loadFromConfig(this);
-        
+
         // Initialize branding/preconfiguration of the client
         initDistribution();
-        
-        Debug.writeSystemProperties();    
+
+        Debug.writeSystemProperties();
 
         // create node manager
         nodeManager = new NodeManager(this);
@@ -442,9 +443,8 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
-            
-            if (ConfigurationEntry.USER_INTERFACE_LOCKED
-                .getValueBoolean(this))
+
+            if (ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(this))
             {
                 // Don't let the user pass this step.
                 new UIUnLockDialog(this).openAndWait();
@@ -1974,21 +1974,43 @@ public class Controller extends PFComponent {
         if (OSUtil.isWindowsSystem()) {
             String appData = Util.getAppData();
             if (StringUtils.isBlank(appData)) {
-                // Appdata not found
+                // Appdata not found. Fallback.
                 return unixConfigDir;
             }
-            File windowsConfigDir = new File(appData);
-            base = migrateWindowsMiscLocation(unixConfigDir, windowsConfigDir);
+
+            File windowsConfigDir = new File(appData, "PowerFolder");
+            base = windowsConfigDir;
+
+            // Check if migration is necessary
+            if (unixConfigDir.exists()) {
+                boolean migrateConfig = false;
+                if (!windowsConfigDir.exists()) {
+                    // Migrate if APPDATA/PowerFolder not existing yet OR
+                    migrateConfig = true;
+                } else {
+                    // APPDATA/PowerFolder does not yet contain a config file.
+                    migrateConfig = windowsConfigDir.list(new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            return name.endsWith("config");
+                        }
+                    }).length == 0;
+                }
+
+                if (migrateConfig) {
+                    boolean migrationOk = migrateWindowsMiscLocation(
+                        unixConfigDir, windowsConfigDir);
+                    if (!migrationOk) {
+                        // Fallback, migration failed.
+                        base = unixConfigDir;
+                    }
+                }
+            }
         } else {
             base = unixConfigDir;
         }
         if (!base.exists()) {
             if (!base.mkdirs()) {
                 log.severe("Failed to create " + base.getAbsolutePath());
-            }
-            if (OSUtil.isWindowsSystem()) {
-                // Hide on windows
-                FileUtils.makeHiddenOnWindows(base);
             }
         }
         return base;
@@ -2004,31 +2026,24 @@ public class Controller extends PFComponent {
      *            the old user.home based config directory.
      * @param windowsBaseDir
      *            the preferred APPDATA based config directory.
-     * @return windowsBaseDir, with the migrated config file.
      */
-    private static File migrateWindowsMiscLocation(File unixBaseDir,
+    private static boolean migrateWindowsMiscLocation(File unixBaseDir,
         File windowsBaseDir)
     {
-        // Exists and not empty
-        if (windowsBaseDir.exists() && windowsBaseDir.list().length > 0) {
-            return windowsBaseDir;
+        if (!windowsBaseDir.mkdirs()) {
+            log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
+            return false;
         }
-
-        if (windowsBaseDir.mkdirs()) {
-            log.info("Created " + windowsBaseDir.getAbsolutePath());
-            if (unixBaseDir.exists()) {
-                try {
-                    FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
-                    log.warning("Migrated unix config to window");
-                } catch (IOException e) {
-                    log.severe("Failed to unix config to window");
-                }
-            }
-            return windowsBaseDir;
+        try {
+            FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
+            log.warning("Migrated config from " + unixBaseDir + " to "
+                + windowsBaseDir);
+            return true;
+        } catch (IOException e) {
+            log.warning("Failed to migrate config from " + unixBaseDir + " to "
+                + windowsBaseDir + ". " + e);
+            return false;
         }
-
-        log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
-        return windowsBaseDir;
     }
 
     /**
