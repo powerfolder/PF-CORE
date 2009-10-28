@@ -590,10 +590,10 @@ public enum ConfigurationEntry {
     /**
      * TRAC #1776
      * <p>
-     * Checks and removes old folders with the same name or base dir. Duplicate
-     * folders by should be automatically prevented.
+     * Checks and avoids duplicate folders with the same name or base dir.
+     * Duplicate folders by should be automatically prevented.
      */
-    FOLDER_CREATE_OVERWRITE_OLD("create.folder.overwrite.old", String
+    FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", String
         .valueOf(false)),
 
     /**
