@@ -1971,7 +1971,18 @@ public class Controller extends PFComponent {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
-        if (OSUtil.isWindowsSystem()) {
+        if (StringUtils.isNotBlank(System.getProperty("misc.dir"))) {
+            base = new File(System.getProperty("misc.dir"));
+            log.info("Using misc/config dir: " + base);
+            if (!base.exists()) {
+                if (!base.mkdirs()) {
+                    // Fallback.
+                    log.severe("Failed to create " + base.getAbsolutePath()
+                        + ". Now using " + unixConfigDir);
+                    base = unixConfigDir;
+                }
+            }
+        } else if (OSUtil.isWindowsSystem()) {
             String appData = Util.getAppData();
             if (StringUtils.isBlank(appData)) {
                 // Appdata not found. Fallback.
