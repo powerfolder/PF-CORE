@@ -386,7 +386,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             createInvitationFile = true;
         }
 
-        if (ConfigurationEntry.FOLDER_CREATE_OVERWRITE_OLD
+        if (ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES
             .getValueBoolean(getController()))
         {
             Folder oldFolder = findExistingFolder(dir);
