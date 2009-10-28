@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.test;
 
 import java.io.File;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.RemoteCommandManager;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -38,8 +39,8 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        assertFalse("PowerFolder already running on port 3458", RemoteCommandManager
-            .hasRunningInstance(3458));
+        assertFalse("PowerFolder already running on port 3458",
+            RemoteCommandManager.hasRunningInstance(3458));
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
@@ -112,5 +113,38 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         assertEquals(
             "false,false,false,false,5,true,22,0,m,Backup daily at 2200",
             folderAtBart.getSyncProfile().getFieldList());
+
+        // Test if dupes don't appear:
+        ConfigurationEntry.FOLDER_CREATE_OVERWRITE_OLD.setValue(
+            getContollerBart(), Boolean.TRUE.toString());
+        Folder oldFolderAtBart = folderAtBart;
+        sent = RemoteCommandManager.sendCommand(3458,
+            RemoteCommandManager.MAKEFOLDER + "dir=" + oldDir.getAbsolutePath()
+                + ";name=XXX"
+                + ";syncprofile=true,true,true,true,5,false,22,0,m,Auto-sync");
+        assertTrue(sent);
+        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerBart().getFolderRepository()
+                    .getFoldersCount() == 1;
+            }
+
+            public String message() {
+                return "Expected folders at bart: 1. But got: "
+                    + getContollerBart().getFolderRepository()
+                        .getFoldersCount();
+            }
+        });
+        assertEquals(1, getFolderAtLisa().getMembersCount());
+        assertEquals(1, getContollerBart().getFolderRepository()
+            .getFoldersCount());
+        folderAtBart = getContollerBart().getFolderRepository().getFolders()
+            .iterator().next();
+        assertEquals("XXX", folderAtBart.getName());
+        assertEquals("true,true,true,true,5,false,22,0,m,Auto-sync",
+            folderAtBart.getSyncProfile().getFieldList());
+        // Should be the same
+        assertEquals(oldFolderAtBart.getId(), folderAtBart.getId());
     }
 }
