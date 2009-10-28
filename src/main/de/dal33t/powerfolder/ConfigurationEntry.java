@@ -588,6 +588,15 @@ public enum ConfigurationEntry {
     FOLDER_SYNC_WARN("sync.folder.warn", "10"),
 
     /**
+     * TRAC #1776
+     * <p>
+     * Checks and removes old folders with the same name or base dir. Duplicate
+     * folders by should be automatically prevented.
+     */
+    FOLDER_CREATE_OVERWRITE_OLD("create.folder.overwrite.old", String
+        .valueOf(false)),
+
+    /**
      * Ugly hack to make it possible to pre-configure client with
      * "ConfigurationLoaderDialog" to skip the first time wizard.
      * <p>
