@@ -126,7 +126,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.0.33";
+    public static final String PROGRAM_VERSION = "4.0.0.34";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -733,7 +733,6 @@ public class Controller extends PFComponent {
             filename += ".config";
         }
 
-        logFine("Starting from configfile '" + filename + '\'');
         configFilename = null;
         config = new Properties();
         BufferedInputStream bis = null;
@@ -741,7 +740,9 @@ public class Controller extends PFComponent {
             configFilename = filename;
             configFile = new File(getConfigLocationBase(), filename);
             if (!configFile.exists()) {
-                System.out.println("Config file does not exist!");
+                logInfo("Config file does not exist. " + configFile);
+            } else {
+                logInfo("Loading configfile " + configFile);
             }
             if (OSUtil.isWebStart()) {
                 logFine("WebStart, config file location: "
@@ -1971,19 +1972,14 @@ public class Controller extends PFComponent {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
-        if (StringUtils.isNotBlank(System.getProperty("misc.dir"))) {
-            base = new File(System.getProperty("misc.dir"));
-            log.info("Using misc/config dir: " + base);
-            if (!base.exists()) {
-                if (!base.mkdirs()) {
-                    // Fallback.
-                    log.severe("Failed to create " + base.getAbsolutePath()
-                        + ". Now using " + unixConfigDir);
-                    base = unixConfigDir;
-                }
+        if (OSUtil.isWindowsSystem()) {
+            String appData;
+            if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
+                appData = Util.getAppDataAllUsers();
+            } else {
+                appData = Util.getAppDataCurrentUser();
             }
-        } else if (OSUtil.isWindowsSystem()) {
-            String appData = Util.getAppData();
+
             if (StringUtils.isBlank(appData)) {
                 // Appdata not found. Fallback.
                 return unixConfigDir;
