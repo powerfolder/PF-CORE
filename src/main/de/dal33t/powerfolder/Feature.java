@@ -137,10 +137,11 @@ public enum Feature {
 
     public boolean isEnabled() {
         if (enabled == null) {
-            enabled = "enabled".equalsIgnoreCase(System.getProperty(
-                "powerfolder.feature." + name(), defValue
-                    ? "enabled"
-                    : "disabled"));
+            String value = System.getProperty("powerfolder.feature." + name(),
+                defValue ? "enabled" : "disabled");
+            enabled = "enabled".equalsIgnoreCase(value)
+                || "true".equalsIgnoreCase(value)
+                || "1".equalsIgnoreCase(value);
         }
         return enabled;
     }
