@@ -79,7 +79,7 @@ public class UserDirectories {
     static {
         if (WinUtils.getInstance() != null) {
             appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_LOCAL_SETTINGS_APP_DATA, false)
+                WinUtils.CSIDL_LOCAL_APP_DATA, false)
                 + File.separator + "Microsoft" + File.separator + "Outlook";
             userDirMyDocuments = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_PERSONAL, false);
@@ -191,7 +191,7 @@ public class UserDirectories {
             .getTranslation("user.dir.videos"), false);
 
         if (OSUtil.isWindowsSystem()) {
-            String appDataname = Util.getAppData();
+            String appDataname = Util.getAppDataCurrentUser();
             if (appDataname != null) {
                 File appData = new File(appDataname);
                 addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
