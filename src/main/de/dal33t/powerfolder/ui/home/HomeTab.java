@@ -336,7 +336,7 @@ public class HomeTab extends PFUIComponent {
         int row = 1;
 
         builder.addSeparator(Translation
-            .getTranslation("home_tab.synchronization"), cc.xy(1, row));
+            .getTranslation("home_tab.status"), cc.xy(1, row));
         row += 2;
         builder.add(synchronizationStatusLabel, cc.xy(1, row));
         row += 2;
