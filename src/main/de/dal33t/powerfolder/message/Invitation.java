@@ -227,7 +227,7 @@ public class Invitation extends FolderRelatedMessage {
 
     private static String getAppsDir() {
         if (OSUtil.isWindowsSystem()) {
-            return Util.getAppData();
+            return Util.getAppDataCurrentUser();
         }
 
         // Loading a Windows invitation on a Mac/Unix box:
