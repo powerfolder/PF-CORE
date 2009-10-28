@@ -37,7 +37,7 @@ public enum Feature {
      * If the configuration should be loaded from the "All users" common appdata
      * directory instead of the local user appdata directory.
      */
-    CONFIGURATION_FROM_ALL_USERS(false),
+    CONFIGURATION_ALL_USERS(false),
 
     /**
      * If the nodes of a server clusters should automatically connect.
