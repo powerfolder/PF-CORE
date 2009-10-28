@@ -115,7 +115,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             folderAtBart.getSyncProfile().getFieldList());
 
         // Test if dupes don't appear:
-        ConfigurationEntry.FOLDER_CREATE_OVERWRITE_OLD.setValue(
+        ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES.setValue(
             getContollerBart(), Boolean.TRUE.toString());
         Folder oldFolderAtBart = folderAtBart;
         sent = RemoteCommandManager.sendCommand(3458,
