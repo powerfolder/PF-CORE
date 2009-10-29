@@ -178,6 +178,12 @@ public enum ConfigurationEntry {
         .valueOf(Boolean.TRUE)),
 
     /**
+     * If the config should be update when connection to the server was
+     * established
+     */
+    SERVER_UPDATE_CONFIG("server.config.update", String.valueOf(Boolean.TRUE)),
+
+    /**
      * #1715 If it should be possible to register at the server.
      */
     SERVER_REGISTER_ENABLED("server.register.enabled", String
