@@ -237,7 +237,9 @@ public class Upload extends Transfer {
                         getTransferManager().setCompleted(Upload.this);
                     }
                 } catch (TransferException e) {
-                    closeRAF();
+                    if (raf != null) {
+                        closeRAF();
+                    }
                     // Loggable.logWarningStatic(Upload.class, "Upload broken: "
                     // + Upload.this, e);
                     getTransferManager().setBroken(Upload.this,
