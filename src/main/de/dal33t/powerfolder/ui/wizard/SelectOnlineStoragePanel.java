@@ -66,7 +66,8 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
         super(controller);
         folderMap = new HashMap<FolderInfo, Boolean>();
         for (FolderInfo possibleFolder : possibleFolders) {
-            folderMap.put(possibleFolder, false);
+            // Auto-select if only one online folder existing.
+            folderMap.put(possibleFolder, possibleFolders.size() == 1);
         }
     }
 
@@ -155,7 +156,9 @@ public class SelectOnlineStoragePanel extends PFWizardPanel {
             .hasNext();)
         {
             FolderInfo possibleFolder = iter.next();
+            Boolean selected = folderMap.get(possibleFolder);
             JCheckBox checkBox = new JCheckBox(possibleFolder.name);
+            checkBox.setSelected(selected);
             checkBox.addActionListener(myActionListener);
             builder.add(checkBox, cc.xy(1, row));
             if (iter.hasNext()) {

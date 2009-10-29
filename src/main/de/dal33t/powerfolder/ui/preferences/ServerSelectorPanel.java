@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.InetSocketAddress;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -34,12 +33,10 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 
 public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
@@ -69,37 +66,15 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
     }
 
     private void initComponent() {
-        addressField = new JTextField(getServerString());
+        addressField = new JTextField(getController().getOSClient()
+            .getServerString());
         addressField.setEditable(false);
         searchButton = new JButtonMini(Icons.getIconById(Icons.EDIT),
             Translation.getTranslation("general.search"));
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ProUtil.openConfigLoaderDialog(getController());
+                new ConfigurationLoaderDialog(getController()).openAndWait();
             }
         });
-    }
-
-    private String getServerString() {
-        String addrStr;
-        if (getController().getOSClient().getServer() != null) {
-            if (getController().getOSClient().getServer().isMySelf()) {
-                addrStr = "myself";
-            } else {
-                InetSocketAddress addr = getController().getOSClient()
-                    .getServer().getReconnectAddress();
-                addrStr = addr != null && addr.getAddress() != null
-                    ? NetworkUtil.getHostAddressNoResolve(addr.getAddress())
-                    : "n/a";
-                if (addr != null
-                    && addr.getPort() != ConnectionListener.DEFAULT_PORT)
-                {
-                    addrStr += ":" + addr.getPort();
-                }
-            }
-        } else {
-            addrStr = "n/a";
-        }
-        return addrStr;
     }
 }

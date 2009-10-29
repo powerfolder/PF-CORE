@@ -79,21 +79,6 @@ public class ProUtil {
         return true;
     }
 
-    /**
-     * Opens the configuration loader dialog for switching the server.
-     * 
-     * @param controller
-     */
-    public static final void openConfigLoaderDialog(Controller controller) {
-        try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.CD");
-            Method m = c.getMethod("openConfigLoaderDialog", Controller.class);
-            m.invoke(null, controller);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Exception. " + e, e);
-        }
-    }
-
     public static final PublicKey getPublicKey(Controller controller,
         MemberInfo node)
     {

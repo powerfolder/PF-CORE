@@ -55,11 +55,11 @@ import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.ui.preferences.ServerSelectorPanel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -195,14 +195,15 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
     // UI building ************************************************************
 
     /**
-     * Initalizes all nessesary components
+     * Initializes all necessary components
      */
+    @SuppressWarnings("serial")
     protected void initComponents() {
         serverLabel = new JLabel(Translation.getTranslation("general.server"));
         serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
-                ProUtil.openConfigLoaderDialog(getController());
+                new ConfigurationLoaderDialog(getController()).openAndWait();
             }
         });
         serverInfoLabel.setText(getServerString());

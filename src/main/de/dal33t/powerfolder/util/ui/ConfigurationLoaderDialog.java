@@ -29,67 +29,57 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
+import java.net.UnknownHostException;
+import java.util.Properties;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.StreamUtils;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 
-/**
- * #1784: For locking the user interface.
- * 
- * @author sprajc
- */
-public class UIUnLockDialog extends PFUIComponent {
+public class ConfigurationLoaderDialog extends PFUIComponent {
+    // TODO Sync with MaintenanceFolder.CLIENT_CONFIG_FILENAME
+    private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
+
+    private static final String[] SERVICE_PROVIDER_URLS = {"http://www.powerfolder.com",
+    // , "http://relay001.node.powerfolder.com:7777"
+    };
 
     private JFrame frame;
-    private JLabel serverLabel;
-    private ActionLabel serverInfoLabel;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    private JComboBox addressBox;
     private JComponent proxySettingsLabel;
     private JProgressBar progressBar;
     private JLabel infoLabel;
     private JButton okButton;
     private Object haltLock = new Object();
 
-    public UIUnLockDialog(Controller controller) {
+    public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
     }
 
@@ -117,37 +107,23 @@ public class UIUnLockDialog extends PFUIComponent {
         if (frame == null) {
             initComponents();
 
-            FormLayout layout = new FormLayout("p, 3dlu, p:g",
-                "p, 7dlu, p, 0, p, 3dlu, p, 3dlu, p, 7dlu, 12dlu, 14dlu, p");
+            FormLayout layout = new FormLayout("p:g, 3dlu, p",
+                "p, 7dlu, p, 3dlu, p, 7dlu, 12dlu, 14dlu, p");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
             CellConstraints cc = new CellConstraints();
             int row = 1;
-
-            builder.addLabel(Translation.getTranslation("uilock.dialog.info"),
-                cc.xyw(1, row, 3));
+            builder
+                .addLabel(Translation
+                    .getTranslation("config.loader.dialog.info"), cc.xyw(1,
+                    row, 3));
             row += 2;
-
-            if (!AbstractDistribution.isPowerFolderServer(getController())) {
-                serverLabel.setBorder(Borders
-                    .createEmptyBorder("0, 0, 3dlu, 0"));
-                builder.add(serverLabel, cc.xy(1, row));
-                serverInfoLabel.getUIComponent().setBorder(
-                    Borders.createEmptyBorder("0, 0, 3dlu, 0"));
-                builder.add(serverInfoLabel.getUIComponent(), cc.xy(3, row));
-            }
-            row += 2;
-            builder.addLabel(Translation
-                .getTranslation("uilock.dialog.username"), cc.xy(1, row));
-            builder.add(usernameField, cc.xy(3, row));
+            builder.add(addressBox, cc.xy(1, row));
+            builder.add(Help.createWikiLinkButton(getController(),
+                WikiLinks.SERVER_CLIENT_DEPLOYMENT), cc.xy(3, row));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("uilock.dialog.password"), cc.xy(1, row));
-            builder.add(passwordField, cc.xy(3, row));
-
-            row += 2;
-            builder.add(proxySettingsLabel, cc.xywh(3, row, 1, 1,
+            builder.add(proxySettingsLabel, cc.xywh(1, row, 1, 1,
                 "right, center"));
 
             row += 2;
@@ -186,19 +162,17 @@ public class UIUnLockDialog extends PFUIComponent {
 
     @SuppressWarnings("serial")
     private void initComponents() {
+        addressBox = new JComboBox(SERVICE_PROVIDER_URLS);
+        addressBox.setEditable(true);
+        try {
+            JTextField editorField = (JTextField) addressBox.getEditor()
+                .getEditorComponent();
+            editorField.setText("http://");
+            editorField.setCaretPosition(editorField.getText().length());
+        } catch (Exception e) {
+            // Ignore
+        }
 
-        serverLabel = new JLabel(Translation.getTranslation("general.server"));
-        serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
-        {
-            public void actionPerformed(ActionEvent e) {
-                new ConfigurationLoaderDialog(getController()).openAndWait();
-            }
-        });
-        serverInfoLabel.setText(ConfigurationEntry.SERVER_WEB_URL
-            .getValue(getController()));
-
-        usernameField = SimpleComponentFactory.createTextField(true);
-        passwordField = SimpleComponentFactory.createPasswordField();
         proxySettingsLabel = new ActionLabel(getController(),
             new AbstractAction(Translation
                 .getTranslation("general.proxy_settings"))
@@ -210,43 +184,48 @@ public class UIUnLockDialog extends PFUIComponent {
 
         progressBar = new JProgressBar();
         progressBar.setIndeterminate(true);
-        infoLabel = SimpleComponentFactory.createLabel("");
+
+        infoLabel = SimpleComponentFactory.createLabel("X");
     }
 
     private String getTitle() {
-        return Translation.getTranslation("uilock.dialog.title");
+        return Translation.getTranslation("config.loader.dialog.title");
     }
 
     private Component buildButtonBar() {
         okButton = createOKButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showProgressBar();
-                new LoadingWorking().execute();
+                new LoadingWorking().start();
 
             }
         });
 
-        JButton helpButton = new JButton(Translation
-            .getTranslation("uilock.dialog.help"));
-        helpButton.addActionListener(new ActionListener() {
+        JButton skipButton = new JButton(Translation
+            .getTranslation("config.loader.dialog.skip"));
+        skipButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    BrowserLauncher.openURL(Help.getWikiArticleURL(
-                        getController(), WikiLinks.UI_LOCK));
-                } catch (IOException ex) {
-                    logWarning(ex);
-                }
+                frame.setVisible(false);
+                frame.dispose();
+                mainProgrammContinue();
             }
         });
         JButton exitButton = new JButton(Translation
-            .getTranslation("uilock.dialog.exit"));
+            .getTranslation("config.loader.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
             }
         });
-        JComponent bar = ButtonBarFactory.buildCenteredBar(okButton,
-            helpButton, exitButton);
+        JComponent bar;
+        if (getController().isStarted()) {
+            skipButton.setText(Translation.getTranslation("general.cancel"));
+            bar = ButtonBarFactory.buildCenteredBar(okButton, skipButton);
+        } else {
+            bar = ButtonBarFactory.buildCenteredBar(okButton, skipButton,
+                exitButton);
+        }
+
         bar.setOpaque(false);
         return bar;
     }
@@ -292,91 +271,99 @@ public class UIUnLockDialog extends PFUIComponent {
         }
     }
 
-    private class LoadingWorking extends SwingWorker<Boolean, Void> {
+    private Properties loadPreConfiguration(String url) throws IOException {
+        String finalURL = Util.removeLastSlashFromURI(url);
+        if (!finalURL.startsWith("http")) {
+            finalURL = "http://" + finalURL;
+        }
+        finalURL += CLIENT_PROPERTIES_URI;
+        return ConfigurationLoader.loadPreConfiguration(new URL(finalURL));
+    }
 
+    private class LoadingWorking extends SwingWorker {
         @Override
-        protected Boolean doInBackground() throws Exception {
-            String username = usernameField.getText();
-            char[] password = passwordField.getPassword();
-
-            if (StringUtils.isBlank(username) || password == null
-                || password.length == 0)
+        public Object construct() throws IOException {
+            Properties preConfig = loadPreConfiguration((String) addressBox
+                .getSelectedItem());
+            if (!preConfig.isEmpty()
+                && preConfig.containsKey(ConfigurationEntry.SERVER_HOST
+                    .getConfigKey()))
             {
-                return false;
+                ConfigurationLoader.mergeConfigs(preConfig, getController()
+                    .getConfig(), true);
+                // Seems to be valid, store.
+                getController().saveConfig();
             }
-
-            String url;
-            if (getController().getOSClient() != null) {
-                url = getController().getOSClient().getWebURL();
-            } else {
-                // Fallback
-                url = ConfigurationEntry.SERVER_WEB_URL
-                    .getValue(getController());
-            }
-            logInfo("Trying to unlock user interface at: " + url);
-
-            String salt = IdGenerator.makeId() + IdGenerator.makeId();
-            String mix = salt + new String(password).trim() + salt;
-            byte[] passwordMD5 = Util.md5(mix.getBytes(Convert.UTF8));
-
-            url += Constants.UI_LOCK_UNLOCK_URI;
-            url += "?";
-            url += Constants.LOGIN_PARAM_USERNAME;
-            url += "=";
-            url += Util.endcodeForURL(username);
-            url += "&";
-            url += Constants.LOGIN_PARAM_PASSWORD_MD5;
-            url += "=";
-            url += Util.endcodeForURL(Base64.encodeBytes(passwordMD5));
-            url += "&";
-            url += Constants.LOGIN_PARAM_SALT;
-            url += "=";
-            url += Util.endcodeForURL(Base64.encodeString(salt));
-
-            URL u = new URL(url);
-            HttpURLConnection c = (HttpURLConnection) u.openConnection();
-            c.connect();
-
-            int resCode = c.getResponseCode();
-            if (resCode == 403) {
-                // Unauthorized
-                return false;
-            } else if (resCode == 200) {
-                // OK
-                return true;
-            }
-
-            // Actually check response.
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            StreamUtils.copyToStream(c.getInputStream(), bOut);
-            c.getInputStream().close();
-            c.disconnect();
-            String res = new String(bOut.toByteArray());
-            return res.contains("ALLOWED_TO_UNLOCK_USER_INTERFACE");
+            return preConfig;
         }
 
         @Override
-        protected void done() {
-            try {
-                boolean unlocked = get();
-                // Success
-                if (unlocked) {
-                    frame.setVisible(false);
-                    frame.dispose();
-                    mainProgrammContinue();
-                    return;
-                } else {
-                    showInfo(Translation
-                        .getTranslation("uilock.dialog.error.wronglogin"));
+        public void finished() {
+            Properties preConfig = (Properties) get();
+            Throwable t = getThrowable();
+            String errorMsg = null;
+            if (preConfig == null) {
+                errorMsg = Translation
+                    .getTranslation("config.loader.dialog.error.generic");
+                if (t != null) {
+                    if (t instanceof FileNotFoundException) {
+                        errorMsg = Translation
+                            .getTranslation("config.loader.dialog.error.config.notfound");
+                    } else if (t instanceof MalformedURLException) {
+                        errorMsg = Translation
+                            .getTranslation("config.loader.dialog.error.address.invalid");
+                    } else if (t instanceof IllegalArgumentException) {
+                        errorMsg = Translation
+                            .getTranslation("config.loader.dialog.error.address.invalid");
+                    } else if (t instanceof UnknownHostException) {
+                        errorMsg = Translation
+                            .getTranslation("config.loader.dialog.error.host.notfound");
+                    } else {
+                        errorMsg = t.getMessage();
+                    }
                 }
-            } catch (InterruptedException e) {
-                logWarning(e);
-            } catch (ExecutionException e) {
-                logWarning(e);
-                String msg = e.getCause() != null
-                    && e.getCause().getMessage() != null ? e.getCause()
-                    .getMessage() : e.toString();
-                showInfo(msg);
+            } else if (preConfig.size() == 0) {
+                errorMsg = Translation
+                    .getTranslation("config.loader.dialog.error.config.empty");
+            } else if (!preConfig.containsKey(ConfigurationEntry.SERVER_HOST
+                .getConfigKey()))
+            {
+                errorMsg = Translation
+                    .getTranslation("config.loader.dialog.error.server.missing");
+            }
+            if (errorMsg != null) {
+                showInfo(Translation.getTranslation(
+                    "config.loader.dialog.error", errorMsg));
+                return;
+            }
+
+            // Success
+            showInfo(Translation.getTranslation("config.loader.dialog.loaded",
+                String.valueOf(preConfig.size())));
+            frame.setVisible(false);
+            frame.dispose();
+            mainProgrammContinue();
+
+            if (getController().isStarted()) {
+                handleRestartRequest();
+            }
+        }
+
+        /**
+         * Asks user about restart and executes that if requested
+         */
+        private void handleRestartRequest() {
+            int result = DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("preferences.dialog.restart.title"),
+                Translation.getTranslation("preferences.dialog.restart.text"),
+                new String[]{
+                    Translation
+                        .getTranslation("preferences.dialog.restart.restart"),
+                    Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.QUESTION); // Default is restart
+
+            if (result == 0) { // Restart
+                getController().shutdownAndRequestRestart();
             }
         }
     }
