@@ -33,10 +33,32 @@ import java.util.logging.Logger;
  * @version $Revision$
  */
 public class ConfigurationLoader {
+    // TODO Sync with MaintenanceFolder.CLIENT_CONFIG_FILENAME
+    private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
+
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
 
     private ConfigurationLoader() {
+    }
+
+    /**
+     * Loads a pre-configuration from a server. Automatically adds HTTP:// and
+     * url suffix.
+     * 
+     * @param server
+     * @return the loaded config.
+     * @throws IOException
+     */
+    public static Properties loadPreConfiguration(String server)
+        throws IOException
+    {
+        String finalURL = Util.removeLastSlashFromURI(server);
+        if (!finalURL.startsWith("http")) {
+            finalURL = "http://" + finalURL;
+        }
+        finalURL += CLIENT_PROPERTIES_URI;
+        return ConfigurationLoader.loadPreConfiguration(new URL(finalURL));
     }
 
     /**
