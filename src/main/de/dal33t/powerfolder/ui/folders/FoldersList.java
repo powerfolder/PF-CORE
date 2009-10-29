@@ -176,6 +176,9 @@ public class FoldersList extends PFUIComponent {
         if (!populated) {
             return;
         }
+        if (getController().isShuttingDown()) {
+            return;
+        }
 
         // Get combined list of repo and account folders.
         List<FolderBean> localFolders = new ArrayList<FolderBean>();
