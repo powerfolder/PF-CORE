@@ -29,8 +29,8 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -50,7 +50,7 @@ public enum ConfigurationEntry {
      * If the GUI should be disabled (=console mode). Default: False (Show GUI).
      */
     DISABLE_GUI("disableui", Boolean.FALSE.toString()),
-    
+
     /**
      * If the user interface is locked and needs to be unlocked before starting
      * PowerFolder.
@@ -181,7 +181,7 @@ public enum ConfigurationEntry {
      * If the config should be update when connection to the server was
      * established
      */
-    SERVER_UPDATE_CONFIG("server.config.update", String.valueOf(Boolean.TRUE)),
+    SERVER_CONFIG_UPDATE("server.config.update", String.valueOf(Boolean.TRUE)),
 
     /**
      * #1715 If it should be possible to register at the server.
