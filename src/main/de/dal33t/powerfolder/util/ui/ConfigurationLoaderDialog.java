@@ -32,7 +32,6 @@ import java.awt.event.WindowEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
@@ -61,11 +60,8 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 
 public class ConfigurationLoaderDialog extends PFUIComponent {
-    // TODO Sync with MaintenanceFolder.CLIENT_CONFIG_FILENAME
-    private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
 
     private static final String[] SERVICE_PROVIDER_URLS = {"http://www.powerfolder.com",
     // , "http://relay001.node.powerfolder.com:7777"
@@ -271,20 +267,11 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         }
     }
 
-    private Properties loadPreConfiguration(String url) throws IOException {
-        String finalURL = Util.removeLastSlashFromURI(url);
-        if (!finalURL.startsWith("http")) {
-            finalURL = "http://" + finalURL;
-        }
-        finalURL += CLIENT_PROPERTIES_URI;
-        return ConfigurationLoader.loadPreConfiguration(new URL(finalURL));
-    }
-
     private class LoadingWorking extends SwingWorker {
         @Override
         public Object construct() throws IOException {
-            Properties preConfig = loadPreConfiguration((String) addressBox
-                .getSelectedItem());
+            Properties preConfig = ConfigurationLoader
+                .loadPreConfiguration((String) addressBox.getSelectedItem());
             if (!preConfig.isEmpty()
                 && preConfig.containsKey(ConfigurationEntry.SERVER_HOST
                     .getConfigKey()))
