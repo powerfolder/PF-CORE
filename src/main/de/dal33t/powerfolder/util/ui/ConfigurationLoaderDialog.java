@@ -45,6 +45,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -74,9 +75,15 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     private JLabel infoLabel;
     private JButton okButton;
     private Object haltLock = new Object();
+    private Trigger finishedTrigger;
 
     public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
+    }
+    
+    public ConfigurationLoaderDialog(Controller controller, Trigger finishedTrigger) {
+        super(controller);
+        this.finishedTrigger = finishedTrigger;
     }
 
     public void openAndWait() {
@@ -331,6 +338,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             frame.dispose();
             mainProgrammContinue();
 
+            if (finishedTrigger != null) {
+                finishedTrigger.triggerCommit();
+            }
             if (getController().isStarted()) {
                 handleRestartRequest();
             }

@@ -29,6 +29,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -46,6 +48,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 
+import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -88,6 +91,7 @@ public class UIUnLockDialog extends PFUIComponent {
     private JLabel infoLabel;
     private JButton okButton;
     private Object haltLock = new Object();
+    private Trigger serverReloadTrigger;
 
     public UIUnLockDialog(Controller controller) {
         super(controller);
@@ -186,12 +190,21 @@ public class UIUnLockDialog extends PFUIComponent {
 
     @SuppressWarnings("serial")
     private void initComponents() {
-
         serverLabel = new JLabel(Translation.getTranslation("general.server"));
+
+        serverReloadTrigger = new Trigger();
+        serverReloadTrigger.addValueChangeListener(new PropertyChangeListener()
+        {
+            public void propertyChange(PropertyChangeEvent evt) {
+                serverInfoLabel.setText(ConfigurationEntry.SERVER_WEB_URL
+                    .getValue(getController()));
+            }
+        });
         serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
-                new ConfigurationLoaderDialog(getController()).openAndWait();
+                new ConfigurationLoaderDialog(getController(),
+                    serverReloadTrigger).openAndWait();
             }
         });
         serverInfoLabel.setText(ConfigurationEntry.SERVER_WEB_URL
