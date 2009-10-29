@@ -113,7 +113,7 @@ public class ServerClient extends PFComponent {
             ConfigurationEntry.SERVER_HOST.getValue(controller),
             ConfigurationEntry.SERVER_NODEID.getValue(controller),
             ConfigurationEntry.SERVER_WEB_URL.getValue(controller), true,
-            ConfigurationEntry.SERVER_UPDATE_CONFIG.getValueBoolean(controller));
+            ConfigurationEntry.SERVER_CONFIG_UPDATE.getValueBoolean(controller));
     }
 
     /**
