@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +53,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.update.Updater;
 
 /**
@@ -110,7 +112,8 @@ public class ServerClient extends PFComponent {
         this(controller, ConfigurationEntry.SERVER_NAME.getValue(controller),
             ConfigurationEntry.SERVER_HOST.getValue(controller),
             ConfigurationEntry.SERVER_NODEID.getValue(controller),
-            ConfigurationEntry.SERVER_WEB_URL.getValue(controller), true, true);
+            ConfigurationEntry.SERVER_WEB_URL.getValue(controller), true,
+            ConfigurationEntry.SERVER_UPDATE_CONFIG.getValueBoolean(controller));
     }
 
     /**
@@ -433,10 +436,6 @@ public class ServerClient extends PFComponent {
         return settings;
     }
 
-    public boolean isAllowServerChange() {
-        return allowServerChange;
-    }
-
     // Login ******************************************************************
 
     /**
@@ -552,15 +551,17 @@ public class ServerClient extends PFComponent {
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
 
-                boolean configChanged;
-                if (accountDetails.getAccount().getServer() != null) {
-                    configChanged = setServerWebURLInConfig(accountDetails
-                        .getAccount().getServer().getWebUrl());
-                } else {
-                    configChanged = setServerWebURLInConfig(null);
-                }
-                if (configChanged) {
-                    getController().saveConfig();
+                if (updateConfig) {
+                    boolean configChanged;
+                    if (accountDetails.getAccount().getServer() != null) {
+                        configChanged = setServerWebURLInConfig(accountDetails
+                            .getAccount().getServer().getWebUrl());
+                    } else {
+                        configChanged = setServerWebURLInConfig(null);
+                    }
+                    if (configChanged) {
+                        getController().saveConfig();
+                    }
                 }
 
                 // Fire login success
@@ -780,6 +781,7 @@ public class ServerClient extends PFComponent {
 
     public boolean setServerWebURLInConfig(String newWebUrl) {
         this.webURL = newWebUrl;
+        logWarning("Setting new web url:" + newWebUrl);
         String oldWebUrl = ConfigurationEntry.SERVER_WEB_URL
             .getValue(getController());
         if (Util.equals(oldWebUrl, newWebUrl)) {
@@ -916,6 +918,31 @@ public class ServerClient extends PFComponent {
     }
 
     // General ****************************************************************
+
+    /**
+     * @return the string representing the server address
+     */
+    public String getServerString() {
+        String addrStr;
+        if (server != null) {
+            if (server.isMySelf()) {
+                addrStr = "myself";
+            } else {
+                InetSocketAddress addr = server.getReconnectAddress();
+                addrStr = addr != null && addr.getAddress() != null
+                    ? NetworkUtil.getHostAddressNoResolve(addr.getAddress())
+                    : "n/a";
+                if (addr != null
+                    && addr.getPort() != ConnectionListener.DEFAULT_PORT)
+                {
+                    addrStr += ":" + addr.getPort();
+                }
+            }
+        } else {
+            addrStr = "n/a";
+        }
+        return addrStr;
+    }
 
     public String toString() {
         return "ServerClient to " + (server != null ? server : "n/a");
