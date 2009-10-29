@@ -1,5 +1,25 @@
+/*
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -10,8 +30,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -25,6 +45,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.AddFriendNotification;
+import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileHistoryReply;
@@ -69,6 +90,7 @@ import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Profiling;
@@ -1693,6 +1715,28 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (asc.isAlive()) {
                     // Continue broadcast.
                     getController().getNodeManager().broadcastMessage(asc);
+                }
+            } else if (message instanceof ConfigurationLoadRequest) {
+                if (isServer()) {
+                    ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
+                    try {
+                        Properties preConfig = ConfigurationLoader
+                            .loadPreConfiguration(clr.getConfigURL());
+                        ConfigurationLoader.mergeConfigs(preConfig,
+                            getController().getConfig(), clr
+                                .isReplaceExisting());
+                        // Seems to be valid, store.
+                        getController().saveConfig();
+                        if (clr.isRestartRequired()) {
+                            getController().shutdownAndRequestRestart();
+                        }
+                    } catch (IOException e) {
+                        logSevere("Unable to reload configuration: " + clr
+                            + ". " + e, e);
+                    }
+                } else {
+                    logWarning("Ingnoring reload config request from non server: "
+                        + message);
                 }
             } else {
                 logFiner("Message not known to message handling code, "
