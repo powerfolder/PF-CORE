@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
@@ -170,8 +171,8 @@ public class FileDetailsPanel extends PFUIComponent {
         statusField.setText(status.toString());
         statusField.setIcon(statusIcon);
 
-        Member node = fileInfo.getModifiedBy().getNode(getController(), true);
-        modifiedByField.setText(fileInfo.getModifiedBy().nick);
+        MemberInfo modifiedBy = fileInfo.getModifiedBy();
+        modifiedByField.setText(modifiedBy == null ? "-" : modifiedBy.nick);
         modifiedByField.setIcon(Icons.getIconById(Icons.COMPUTER));
         modifiedDateField
             .setText(Format.formatDateShort(fileInfo.getModifiedDate()));

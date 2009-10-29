@@ -1132,10 +1132,6 @@ public class Folder extends PFComponent {
         // actual instance if available on nodemanager
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
-                // link new file to our folder
-                // TODO Remove this call
-                // fInfo = FileInfoFactory.changedFolderInfo(fInfo,
-                // currentInfo);
                 if (!isKnown(fInfo)) {
                     if (isFiner()) {
                         logFiner(fInfo + ", modified by: "
@@ -1190,16 +1186,22 @@ public class Folder extends PFComponent {
                     return fInfo;
                 }
 
-                // Now process/check existing files
+                if (isFiner()) {
+                    logFiner("File already known: " + fInfo);
+                }
+
+                // Process/check existing files
                 FileInfo dbFile = getFile(fInfo);
                 FileInfo syncFile = dbFile.syncFromDiskIfRequired(
                     getController(), file);
                 if (syncFile != null) {
                     dao.store(null, syncFile);
                 }
-                if (isFiner()) {
-                    logFiner("File already known: " + fInfo);
-                }
+
+                // update directory
+                commissionRootFolder();
+                rootDirectory.add(getController().getMySelf(), fInfo);
+
                 return syncFile != null ? syncFile : dbFile;
             }
         }
