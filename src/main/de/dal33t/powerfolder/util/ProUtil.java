@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.PublicKey;
 import java.util.logging.Level;
