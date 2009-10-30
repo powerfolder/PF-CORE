@@ -29,9 +29,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.TransferStatus;
-
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -40,7 +38,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.12 $
  */
-public class MemberComparator implements Comparator {
+public class MemberComparator implements Comparator<Member> {
     private static final Logger LOG = Logger.getLogger(MemberComparator.class
         .getName());
 
@@ -81,129 +79,118 @@ public class MemberComparator implements Comparator {
         this.type = type;
     }
 
-    public int compare(Object o1, Object o2) {
-        if (o1 instanceof Member && o2 instanceof Member) {
-            Member member1 = (Member) o1;
-            Member member2 = (Member) o2;
-            int result = 0;
-
-            if (type == 0) {
-                // Sort, used in the gui
-                // myself at top
-                if (member1.isMySelf()) {
-                    result -= 2000;
-                }
-                if (member2.isMySelf()) {
-                    result += 2000;
-                }
-                // friends then
-                if (member1.isFriend()) {
-                    result -= 1000;
-                }
-                if (member2.isFriend()) {
-                    result += 1000;
-                }
-                // then connected members
-                if (member1.isCompletelyConnected()) {
-                    result -= 500;
-                }
-                if (member2.isCompletelyConnected()) {
-                    result += 500;
-                }
-                // then connected to networked
-                if (member1.isConnectedToNetwork()) {
-                    result -= 100;
-                }
-                if (member2.isConnectedToNetwork()) {
-                    result += 100;
-                }
-
-                // otherwise sort after nick
-                result += member1.getNick().toLowerCase().compareTo(
-                    member2.getNick().toLowerCase());
-            } else if (type == 1) {
-                // Sort by last connect time
-                result = compareDates(member1.getInfo().lastConnectTime,
-                    member2.getInfo().lastConnectTime);
-            } else if (type == 2) {
-                // Sort by connection type
-                result -= member1.isOnLAN() ? 100 : 0;
-                result += member2.isOnLAN() ? 100 : 0;
-            } else if (type == 3) {
-                // Sort by reconn priority
-                result = compareDates(member1.getLastNetworkConnectTime(),
-                    member2.getLastNetworkConnectTime());
-
-                if (member1.isFriend()) {
-                    result -= 8;
-                }
-                if (member2.isFriend()) {
-                    result += 8;
-                }
-                if (member1.isSupernode()) {
-                    result -= 4;
-                }
-                if (member2.isSupernode()) {
-                    result += 4;
-                }
-                if (member1.isConnectedToNetwork()) {
-                    result -= 2;
-                }
-                if (member2.isConnectedToNetwork()) {
-                    result += 2;
-                }
-            } else if (type == 4) {
-                // Check lan connection
-                result += member1.isOnLAN() ? 10000 : 0;
-                result -= member2.isOnLAN() ? 10000 : 0;
-
-                // Compare by upload availibility
-                long tsresult = compareTransferStatus(member1
-                    .getLastTransferStatus(), member2.getLastTransferStatus());
-
-                result += tsresult;
-
-                // logWarning("TS Result between " + member1.getNick() + " and "
-                // + member2.getNick() +": " + tsresult);
-            } else if (type == 5) { // nickname
-                return member1.getNick().toLowerCase().compareTo(
-                    member2.getNick().toLowerCase());
-            } else if (type == 6) { // hostname
-                return member1.getHostName().toLowerCase().compareTo(
-                    member2.getHostName().toLowerCase());
-            } else if (type == 7) { // ip
-                String ip1 = member1.getIP();
-                if (ip1 == null) {
-                    ip1 = "";
-                }
-                String ip2 = member2.getIP();
-                if (ip2 == null) {
-                    ip2 = "";
-                }
-                return compareIPs(ip1, ip2);
-            } else if (type == 8) {
-                AccountInfo a1 = member1.getAccountInfo();
-                AccountInfo a2 = member2.getAccountInfo();
-                if (a1 == null) {
-                    return a2 == null ? 0 : 1;
-                }
-                if (a2 == null) {
-                    return -1;
-                }
-                return a1.getUsername().compareTo(a2.getUsername());
-            } else {
-                LOG.severe("Unknow comparing type: " + type);
+    public int compare(Member member1, Member member2) {
+        int result = 0;
+        if (type == 0) {
+            // Sort, used in the gui
+            // myself at top
+            if (member1.isMySelf()) {
+                result -= 2000;
+            }
+            if (member2.isMySelf()) {
+                result += 2000;
+            }
+            // friends then
+            if (member1.isFriend()) {
+                result -= 1000;
+            }
+            if (member2.isFriend()) {
+                result += 1000;
+            }
+            // then connected members
+            if (member1.isCompletelyConnected()) {
+                result -= 500;
+            }
+            if (member2.isCompletelyConnected()) {
+                result += 500;
+            }
+            // then connected to networked
+            if (member1.isConnectedToNetwork()) {
+                result -= 100;
+            }
+            if (member2.isConnectedToNetwork()) {
+                result += 100;
             }
 
-            return result;
-        } else if (o1 instanceof MemberInfo && o2 instanceof MemberInfo) {
-            if (type == 1) {
-                // Sort by last connect time
-                return compareDates(((MemberInfo) o1).lastConnectTime,
-                    ((MemberInfo) o1).lastConnectTime);
+            // otherwise sort after nick
+            result += member1.getNick().toLowerCase().compareTo(
+                member2.getNick().toLowerCase());
+        } else if (type == 1) {
+            // Sort by last connect time
+            result = compareDates(member1.getInfo().lastConnectTime, member2
+                .getInfo().lastConnectTime);
+        } else if (type == 2) {
+            // Sort by connection type
+            result -= member1.isOnLAN() ? 100 : 0;
+            result += member2.isOnLAN() ? 100 : 0;
+        } else if (type == 3) {
+            // Sort by reconn priority
+            result = compareDates(member1.getLastNetworkConnectTime(), member2
+                .getLastNetworkConnectTime());
+
+            if (member1.isFriend()) {
+                result -= 8;
             }
+            if (member2.isFriend()) {
+                result += 8;
+            }
+            if (member1.isSupernode()) {
+                result -= 4;
+            }
+            if (member2.isSupernode()) {
+                result += 4;
+            }
+            if (member1.isConnectedToNetwork()) {
+                result -= 2;
+            }
+            if (member2.isConnectedToNetwork()) {
+                result += 2;
+            }
+        } else if (type == 4) {
+            // Check lan connection
+            result += member1.isOnLAN() ? 10000 : 0;
+            result -= member2.isOnLAN() ? 10000 : 0;
+
+            // Compare by upload availibility
+            long tsresult = compareTransferStatus(member1
+                .getLastTransferStatus(), member2.getLastTransferStatus());
+
+            result += tsresult;
+
+            // logWarning("TS Result between " + member1.getNick() + " and "
+            // + member2.getNick() +": " + tsresult);
+        } else if (type == 5) { // nickname
+            return member1.getNick().toLowerCase().compareTo(
+                member2.getNick().toLowerCase());
+        } else if (type == 6) { // hostname
+            return member1.getHostName().toLowerCase().compareTo(
+                member2.getHostName().toLowerCase());
+        } else if (type == 7) { // ip
+            String ip1 = member1.getIP();
+            if (ip1 == null) {
+                ip1 = "";
+            }
+            String ip2 = member2.getIP();
+            if (ip2 == null) {
+                ip2 = "";
+            }
+            return compareIPs(ip1, ip2);
+        } else if (type == 8) {
+            AccountInfo a1 = member1.getAccountInfo();
+            AccountInfo a2 = member2.getAccountInfo();
+            if (a1 == null) {
+                return a2 == null ? 0 : 1;
+            }
+            if (a2 == null) {
+                return -1;
+            }
+            return a1.getUsername().compareTo(a2.getUsername());
+        } else {
+            LOG.severe("Unknow comparing type: " + type);
         }
-        return 0;
+
+        return result;
+
     }
 
     /**
@@ -296,4 +283,5 @@ public class MemberComparator implements Comparator {
         }
         return 0;
     }
+
 }
