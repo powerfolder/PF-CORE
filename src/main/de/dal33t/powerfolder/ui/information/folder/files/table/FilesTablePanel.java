@@ -347,15 +347,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     // selected one in the tree.
                     parent.setSelection(directory);
                 } else if (diskItem instanceof FileInfo) {
-                    // Default to open if possible, else try download.
-                    if (openFileAction.isEnabled()) {
+                    // Default to download if possible, else try open.
+                    if (downloadFileAction.isEnabled()) {
                         ActionEvent ae = new ActionEvent(this, 0,
-                            openFileAction.getName());
-                        openFileAction.actionPerformed(ae);
-                    } else if (downloadFileAction.isEnabled()) {
-                        ActionEvent ae = new ActionEvent(this, 0,
-                            openFileAction.getName());
+                                downloadFileAction.getName());
                         downloadFileAction.actionPerformed(ae);
+                    } else if (openFileAction.isEnabled()) {
+                        ActionEvent ae = new ActionEvent(this, 0,
+                                openFileAction.getName());
+                        openFileAction.actionPerformed(ae);
                     }
                 }
             }
