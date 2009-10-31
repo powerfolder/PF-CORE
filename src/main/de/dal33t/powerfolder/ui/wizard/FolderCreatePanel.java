@@ -142,7 +142,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     @Override
     protected void afterDisplay() {
-
+        System.out.println("hghg ee");
         // Mandatory
         Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
             SAVE_INVITE_LOCALLY);
@@ -191,6 +191,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
+
+            System.out.println("hghg tt");
             // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
             // FOLDERINFO_ATTRIBUTE...
             File localBase = (File) getWizardContext().getAttribute(
@@ -231,7 +233,8 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     /**
      * If 'backup source' for lots of files, switch to 'backup source hour'.
-     * 
+     * If 'auto sync' for lots of files, switch to 'auto sync 10min'.
+     *
      * @param syncProfile
      * @return
      */
@@ -242,6 +245,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             && syncProfile.equals(SyncProfile.BACKUP_SOURCE))
         {
             syncProfile = SyncProfile.BACKUP_SOURCE_HOUR;
+        }
+        if (fileCount != null && fileCount > 10000
+            && syncProfile.equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION))
+        {
+            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
         }
         return syncProfile;
     }
