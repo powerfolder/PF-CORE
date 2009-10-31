@@ -289,7 +289,7 @@ public class FilesTable extends JTable {
                         break;
                     case 3:  // member nick
                         MemberInfo member = fileInfo.getModifiedBy();
-                        myValue = member == null ? "-" : member.nick;
+                        myValue = member.nick;
                       //  setIcon(Icons.getSimpleIconFor(member.getNode(controller, false)));
                         setHorizontalAlignment(LEFT);
                         break;

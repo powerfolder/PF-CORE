@@ -220,7 +220,7 @@ public class FileVersionsPanel extends PFUIComponent {
                     List<FileInfo> consolidatedFileInfos
                             = new ArrayList<FileInfo>();
                     consolidatedFileInfos.addAll(fileArchiver
-                            .getArchivedFilesInfos(fileInfo));
+                            .getArchivedFilesInfos(fileInfo, getController().getMySelf().getInfo()));
                     logFine("Local versions " + consolidatedFileInfos.size());
 
                     // Also try getting versions from OnlineStorage.
@@ -236,6 +236,7 @@ public class FileVersionsPanel extends PFUIComponent {
                                         .getArchivedFilesInfos(fileInfo);
                                 logFine("Online versions " + infoList.size());
                                 for (FileInfo info : infoList) {
+
                                     boolean gotIt = false;
                                     for (FileInfo consolidatedFileInfo
                                             : consolidatedFileInfos) {

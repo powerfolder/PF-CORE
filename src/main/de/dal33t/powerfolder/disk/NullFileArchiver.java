@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
@@ -43,7 +44,8 @@ public class NullFileArchiver implements FileArchiver {
         return ArchiveMode.NO_BACKUP;
     }
 
-    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo,
+                                                MemberInfo selfMemberInfo) {
         return Collections.emptyList();
     }
 

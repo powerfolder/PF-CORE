@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
@@ -257,7 +258,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
-    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo, MemberInfo selfMemberInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         File subdirectory = FileUtils.buildFileFromRelativeName(archiveDirectory,
@@ -279,7 +280,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             Date modDate = new Date(file.lastModified());
             String name = getFileInfoName(file);
             FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo, name,
-                file.length(), null, modDate, version);
+                file.length(), selfMemberInfo, modDate, version);
             list.add(archiveFile);
         }
         return list;

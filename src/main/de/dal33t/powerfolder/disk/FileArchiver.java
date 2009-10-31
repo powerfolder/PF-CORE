@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
@@ -61,7 +62,7 @@ public interface FileArchiver {
      *            fileInfo of the file to get archived versions for.
      * @return list of archived {@link FileInfo}.
      */
-    List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
+    List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo, MemberInfo selfMemberInfo);
 
     /**
      * Restores/Copies a file version from the archive to the target location.
