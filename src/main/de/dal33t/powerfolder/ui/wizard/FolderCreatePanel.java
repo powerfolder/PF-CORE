@@ -142,7 +142,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     @Override
     protected void afterDisplay() {
-        System.out.println("hghg ee");
         // Mandatory
         Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
             SAVE_INVITE_LOCALLY);
@@ -192,7 +191,6 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
         } else {
 
-            System.out.println("hghg tt");
             // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
             // FOLDERINFO_ATTRIBUTE...
             File localBase = (File) getWizardContext().getAttribute(
