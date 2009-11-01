@@ -205,7 +205,7 @@ public class FilenameProblemHelper {
                 .getLocalBase(), newFilename);
         if (file.renameTo(newFile)) {
             FileInfo renamedFileInfo = FileInfoFactory.newFile(folder, newFile,
-                controller.getMySelf().getInfo());
+                controller.getMySelf().getInfo(), false);
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);
             }
