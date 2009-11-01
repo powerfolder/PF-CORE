@@ -157,68 +157,55 @@ public class ComputersList extends PFUIComponent {
             return;
         }
 
-        // Create a working copy of the node manager's nodes.
-        Set<Member> nodes = new TreeSet<Member>();
-        nodes.addAll(nodeManagerModel.getNodes());
+        Map<Integer, Set<Member>> map = nodeManagerModel.getNodesMap();
 
         // Split nodes into three groups:
         // 1) My Computers,
         // 2) Friends and
         // 3) Connected LAN
         // Use maps to sort by name.
-        Map<String, Member> myComputers = new TreeMap<String, Member>();
-        Map<String, Member> friends = new TreeMap<String, Member>();
-        Map<String, Member> connectedLans = new TreeMap<String, Member>();
+        Map<String, Member> myComputersMap = new TreeMap<String, Member>();
+        Map<String, Member> friendsMap = new TreeMap<String, Member>();
+        Map<String, Member> connectedLansMap = new TreeMap<String, Member>();
 
-        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
-        {
-            Member member = iterator.next();
-            // My computers should get automatically friends by
-            // ServerClient.updateFriendsList(..)
-            if (member.isFriend() && member.isMyComputer()) {
-                myComputers.put(member.getNick().toLowerCase(),member);
-                iterator.remove();
-            }
+        Set<Member> myComputersSet = map.get(NodeManagerModel.MY_COMPUTERS_INDEX);
+        for (Member member : myComputersSet) {
+            myComputersMap.put(member.getNick().toLowerCase(), member);
         }
 
-        for (Iterator<Member> iterator = nodes.iterator(); iterator.hasNext();)
-        {
-            Member member = iterator.next();
-            if (member.isOnLAN() && member.isCompletelyConnected()) {
-                connectedLans.put(member.getNick().toLowerCase(),member);
-                iterator.remove();
-            }
+        Set<Member> friendsSet = map.get(NodeManagerModel.FRIENDS_INDEX);
+        for (Member member : friendsSet) {
+            friendsMap.put(member.getNick().toLowerCase(), member);
         }
 
-        for (Member member : nodes) {
-            if (member.isFriend()) {
-                friends.put(member.getNick().toLowerCase(),member);
-            }
+        Set<Member> connectedLanSet = map.get(NodeManagerModel.CONNECTED_LAN);
+        for (Member member : connectedLanSet) {
+            connectedLansMap.put(member.getNick().toLowerCase(), member);
         }
 
         synchronized (viewList) {
 
             // Are the nodes same as current views?
             boolean different = expCol;
-            if (previousConnectedLans.size() == connectedLans.size()
-                && previousFriends.size() == connectedLans.size()
-                && previousMyComputers.size() == myComputers.size())
+            if (previousConnectedLans.size() == connectedLansMap.size()
+                && previousFriends.size() == connectedLansMap.size()
+                && previousMyComputers.size() == myComputersMap.size())
             {
-                for (Member member : myComputers.values()) {
+                for (Member member : myComputersMap.values()) {
                     if (!previousMyComputers.contains(member)) {
                         different = true;
                         break;
                     }
                 }
                 if (!different) {
-                    for (Member member : connectedLans.values()) {
+                    for (Member member : connectedLansMap.values()) {
                         if (!previousConnectedLans.contains(member)) {
                             different = true;
                             break;
                         }
                     }
                     if (!different) {
-                        for (Member member : friends.values()) {
+                        for (Member member : friendsMap.values()) {
                             if (!previousFriends.contains(member)) {
                                 different = true;
                                 break;
@@ -238,9 +225,9 @@ public class ComputersList extends PFUIComponent {
             previousConnectedLans.clear();
             previousFriends.clear();
             previousMyComputers.clear();
-            previousConnectedLans.addAll(connectedLans.values());
-            previousMyComputers.addAll(myComputers.values());
-            previousFriends.addAll(friends.values());
+            previousConnectedLans.addAll(connectedLansMap.values());
+            previousMyComputers.addAll(myComputersMap.values());
+            previousFriends.addAll(friendsMap.values());
 
             // Clear view listeners
             Member expandedNode = null;
@@ -255,13 +242,13 @@ public class ComputersList extends PFUIComponent {
             computerListPanel.removeAll();
 
             // If there is only one group, do not bother with separators
-            multiGroup = (myComputers.isEmpty() ? 0 : 1)
-                + (connectedLans.isEmpty() ? 0 : 1)
-                + (friends.isEmpty() ? 0 : 1) > 1;
+            multiGroup = (myComputersMap.isEmpty() ? 0 : 1)
+                + (connectedLansMap.isEmpty() ? 0 : 1)
+                + (friendsMap.isEmpty() ? 0 : 1) > 1;
 
             // First show my computers.
             boolean firstMyComputer = true;
-            for (Member node : myComputers.values()) {
+            for (Member node : myComputersMap.values()) {
                 if (firstMyComputer && multiGroup) {
                     firstMyComputer = false;
                     addSeparator(collapseMyComputers, myComputersIcon,
@@ -274,7 +261,7 @@ public class ComputersList extends PFUIComponent {
 
             // Then friends.
             boolean firstFriend = true;
-            for (Member node : friends.values()) {
+            for (Member node : friendsMap.values()) {
                 if (firstFriend && multiGroup) {
                     firstFriend = false;
                     addSeparator(collapseFriends, friendsIcon, friendsLabel);
@@ -286,7 +273,7 @@ public class ComputersList extends PFUIComponent {
 
             // Then others (connected on LAN).
             boolean firstLan = true;
-            for (Member node : connectedLans.values()) {
+            for (Member node : connectedLansMap.values()) {
                 if (firstLan && multiGroup) {
                     firstLan = false;
                     addSeparator(collapseConnectedLans, connectedLansIcon,

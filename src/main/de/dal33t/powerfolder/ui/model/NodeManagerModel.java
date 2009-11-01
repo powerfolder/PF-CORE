@@ -21,11 +21,7 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.swing.ListModel;
@@ -57,6 +53,10 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * @version $Revision: 1.5 $
  */
 public class NodeManagerModel extends PFUIComponent {
+
+    public static final int MY_COMPUTERS_INDEX = 0;
+    public static final int FRIENDS_INDEX = 1;
+    public static final int CONNECTED_LAN = 2;
 
     private ValueModel showOfflineModel;
     private ArrayListModel<Member> friendsListModel;
@@ -178,12 +178,74 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Gets a read-only set of filtered nodes.
+     * Returns a Map of Members.
+     * Map 0 is My Computers
+     * Map 1 is Friends
+     * Map 2 is Connected LAN
      * 
      * @return
      */
-    public Set<Member> getNodes() {
-        return Collections.unmodifiableSet(nodes);
+    public Map<Integer, Set<Member>> getNodesMap() {
+
+        // Split nodes into three groups:
+        // 1) My Computers,
+        // 2) Friends and
+        // 3) Connected LAN
+        // Use maps to sort by name.
+        Set<Member> myComputers = new HashSet<Member>();
+        Set<Member> friends = new HashSet<Member>();
+        Set<Member> connectedLans = new HashSet<Member>();
+
+        // Make a copy, so nodes are not affected.
+        Set<Member> copy = new HashSet<Member>();
+        copy.addAll(nodes);
+
+        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();)
+        {
+            Member member = iterator.next();
+            // My computers should get automatically friends by
+            // ServerClient.updateFriendsList(..)
+            if (member.isFriend() && member.isMyComputer()) {
+                myComputers.add(member);
+                iterator.remove();
+            }
+        }
+
+        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();)
+        {
+            Member member = iterator.next();
+            if (member.isOnLAN() && member.isCompletelyConnected()) {
+                connectedLans.add(member);
+                iterator.remove();
+            }
+        }
+
+        for (Member member : copy) {
+            if (member.isFriend()) {
+                friends.add(member);
+            }
+        }
+
+        Map<Integer, Set<Member>> resultsMap = new TreeMap<Integer, Set<Member>>();
+        resultsMap.put(MY_COMPUTERS_INDEX, myComputers);
+        resultsMap.put(FRIENDS_INDEX, friends);
+        resultsMap.put(CONNECTED_LAN, connectedLans);
+
+        return resultsMap;
+    }
+
+    /**
+     * Returns a count of the nodes in the three groups.
+     *
+     * @return
+     */
+    public int getSize() {
+        int count = 0;
+        Map<Integer, Set<Member>> map = getNodesMap();
+        for (Set<Member> members : map.values()) {
+            count += members.size();
+        }
+        return count;
     }
 
     /**
@@ -287,8 +349,8 @@ public class NodeManagerModel extends PFUIComponent {
 
     private class MySecurityManagerListener implements SecurityManagerListener {
 
-        public void nodeAccountStateChanged(SecurityManagerEvent e) {
-            updateNode(e.getNode());
+        public void nodeAccountStateChanged(SecurityManagerEvent event) {
+            updateNode(event.getNode());
         }
 
         public boolean fireInEventDispatchThread() {
