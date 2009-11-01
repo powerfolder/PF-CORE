@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.disk.ScanResult.ResultState;
 import de.dal33t.powerfolder.disk.problem.DuplicateFilenameProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -72,7 +71,7 @@ public class FolderScanner extends PFComponent {
      * removed from this list. The files that are left in this list after
      * scanning are deleted from disk.
      */
-    private Map<FileInfo, FileInfo> remaining = Util.createConcurrentHashMap();
+    private Map<String, FileInfo> remaining = Util.createConcurrentHashMap();
 
     /** DirectoryCrawler threads that are idle */
     private List<DirectoryCrawler> directoryCrawlersPool = new CopyOnWriteArrayList<DirectoryCrawler>();
@@ -196,10 +195,10 @@ public class FolderScanner extends PFComponent {
             File base = currentScanningFolder.getLocalBase();
             remaining.clear();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
-                remaining.put(fInfo, fInfo);
+                remaining.put(fInfo.getRelativeName(), fInfo);
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
-                remaining.put(fInfo, fInfo);
+                remaining.put(fInfo.getRelativeName(), fInfo);
             }
             if (!scan(base) || failure) {
                 // if false there was an IOError
@@ -221,7 +220,7 @@ public class FolderScanner extends PFComponent {
                 File file = unableToScanFiles.get(i);
                 FileInfo fInfo = FileInfoFactory.lookupInstance(
                     currentScanningFolder, file);
-                remaining.remove(fInfo);
+                remaining.remove(fInfo.getRelativeName());
                 // TRAC #523
                 if (file.isDirectory()) {
                     String dirPath = file.getAbsolutePath().replace(
@@ -412,10 +411,17 @@ public class FolderScanner extends PFComponent {
             if (abort) {
                 break;
             }
-            if (currentScanningFolder.isSystemSubDir(file)) {
-                continue;
-            }
-            if (file.isDirectory()) {
+            if (file.isFile()) { // the files in the root
+                if (allowFile(file)) {
+                    if (!scanFile(file, "")) {
+                        failure = true;
+                        return false;
+                    }
+                }
+            } else if (file.isDirectory()) {
+                if (currentScanningFolder.isSystemSubDir(file)) {
+                    continue;
+                }
                 while (directoryCrawlersPool.isEmpty()) {
                     synchronized (this) {
                         try {
@@ -431,14 +437,6 @@ public class FolderScanner extends PFComponent {
                     crawler.scan(file);
                 }
 
-            } else if (file.isFile()) { // the files in the root
-                // ignore incomplete (downloading) files
-                if (allowFile(file)) {
-                    if (!scanFile(file, "")) {
-                        failure = true;
-                        return false;
-                    }
-                }
             } else {
                 boolean deviceDisconnected = currentScanningFolder
                     .checkIfDeviceDisconnected();
@@ -468,16 +466,18 @@ public class FolderScanner extends PFComponent {
 
     /**
      * allow all files but temp download, temp copy file and "powerfolder.db"
+     * <p>
+     * #1411
      * 
      * @return true if file is allowed
      */
     private static boolean allowFile(File file) {
-        return !(FileUtils.isTempDownloadFile(file)
-            || FileUtils.isDownloadMetaFile(file)
-            || file.getName().equalsIgnoreCase(Folder.DB_FILENAME)
-            || file.getName().equalsIgnoreCase(Folder.DB_BACKUP_FILENAME) || file
-            .getAbsolutePath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR));
-        // #1411
+        String path = file.getPath();
+        return !(path.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)
+            || path.contains(FileUtils.DOWNLOAD_TEMP_FILE)
+            || path.contains(FileUtils.DOWNLOAD_META_FILE)
+            || path.contains(Folder.DB_FILENAME) || path
+            .contains(Folder.DB_BACKUP_FILENAME));
     }
 
     /** @return true if all directory Crawler are idle. */
@@ -499,7 +499,7 @@ public class FolderScanner extends PFComponent {
         if (Feature.CORRECT_MOVEMENT_DETECTION.isDisabled()) {
             return;
         }
-        for (FileInfo deletedFile : remaining.keySet()) {
+        for (FileInfo deletedFile : remaining.values()) {
             long size = deletedFile.getSize();
             long modificationDate = deletedFile.getModifiedDate().getTime();
             for (FileInfo newFile : currentScanResult.newFiles) {
@@ -534,10 +534,10 @@ public class FolderScanner extends PFComponent {
             "currentScanningFolder must not be null");
 
         // logWarning("Scanning " + fileToScan.getAbsolutePath());
-        if (!fileToScan.exists()) {
-            // hardware no longer available
-            return false;
-        }
+        // if (!fileToScan.exists()) {
+        // hardware no longer available
+        // return false;
+        // }
 
         // logFiner(
         // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
@@ -551,11 +551,11 @@ public class FolderScanner extends PFComponent {
 
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
-        FileInfo fInfo = FileInfoFactory.lookupInstance(currentScanningFolder
-            .getInfo(), filename);
+        // FileInfo fInfo = FileInfoFactory.lookupInstance(currentScanningFolder
+        // .getInfo(), filename);
 
-        // #1531
-        FileInfo exists = remaining.remove(fInfo);
+        // #1531 / #1804
+        FileInfo exists = remaining.remove(filename);
         if (exists == null && OSUtil.isWindowsSystem()) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
@@ -564,17 +564,17 @@ public class FolderScanner extends PFComponent {
                         + fileToScan.getAbsolutePath()
                         + ", dbFile: "
                         + otherFInfo.toDetailString());
-                    if (fInfo.getRelativeName().equals(
-                        otherFInfo.getRelativeName())
-                        && !fInfo.equals(otherFInfo))
-                    {
-                        throw new RuntimeException(
-                            "Bad failure: FileInfos not equal. "
-                                + fInfo.toDetailString() + " and "
-                                + otherFInfo.toDetailString()
-                                + " Probably FolderInfo objects are not equal?");
-                    }
-                    remaining.remove(otherFInfo);
+                    // if (fInfo.getRelativeName().equals(
+                    // otherFInfo.getRelativeName())
+                    // && !fInfo.equals(otherFInfo))
+                    // {
+                    // throw new RuntimeException(
+                    // "Bad failure: FileInfos not equal. "
+                    // + fInfo.toDetailString() + " and "
+                    // + otherFInfo.toDetailString()
+                    // + " Probably FolderInfo objects are not equal?");
+                    // }
+                    remaining.remove(otherFInfo.getRelativeName());
                     exists = otherFInfo;
                 }
             }
@@ -584,25 +584,30 @@ public class FolderScanner extends PFComponent {
             if (exists.isDeleted()) {
                 // file restored
                 if (!exists.inSyncWithDisk(fileToScan)) {
-                    logFine("File restored detected: "
-                        + exists.toDetailString() + ". On disk: size: "
-                        + fileToScan.length() + ", lastMod: "
-                        + fileToScan.lastModified());
+                    if (isInfo()) {
+                        logInfo("File restored detected: "
+                            + exists.toDetailString() + ". On disk: size: "
+                            + fileToScan.length() + ", lastMod: "
+                            + fileToScan.lastModified());
+                    }
                     currentScanResult.restoredFiles.add(exists);
                 }
             } else {
                 boolean changed = !exists.inSyncWithDisk(fileToScan);
                 if (changed) {
-                    logFine("Changed file detected: " + exists.toDetailString()
-                        + ". On disk: size: " + fileToScan.length()
-                        + ", lastMod: " + fileToScan.lastModified());
+                    if (isInfo()) {
+                        logInfo("Changed file detected: "
+                            + exists.toDetailString() + ". On disk: size: "
+                            + fileToScan.length() + ", lastMod: "
+                            + fileToScan.lastModified());
+                    }
                     currentScanResult.changedFiles.add(exists);
                 }
             }
         } else {
             // file is new
             FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                fileToScan, getController().getMySelf().getInfo());
+                fileToScan, getController().getMySelf().getInfo(), false);
             currentScanResult.newFiles.add(info);
             if (isFiner()) {
                 logFiner("New file found: " + info.toDetailString());
@@ -630,10 +635,10 @@ public class FolderScanner extends PFComponent {
             logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
         }
         // logWarning("Scanning " + fileToScan.getAbsolutePath());
-        if (!dirToScan.exists()) {
-            // hardware no longer available
-            return false;
-        }
+        // if (!dirToScan.exists()) {
+        // // hardware no longer available
+        // return false;
+        // }
 
         // logFiner(
         // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
@@ -642,11 +647,12 @@ public class FolderScanner extends PFComponent {
 
         // this is a incomplete fileinfo just find one fast in the remaining
         // list
-        DirectoryInfo dirInfo = DirectoryInfo.getTemplate(currentScanningFolder
-            .getInfo(), pathname);
+        // DirectoryInfo dirInfo =
+        // DirectoryInfo.getTemplate(currentScanningFolder
+        // .getInfo(), pathname);
 
-        // #1531
-        FileInfo exists = remaining.remove(dirInfo);
+        // #1531 / #1804
+        FileInfo exists = remaining.remove(pathname);
         // logWarning("Existing dir for " + dirInfo + ": " + exists +
         // " remaining: " + remaining);
         if (exists == null && OSUtil.isWindowsSystem()) {
@@ -657,19 +663,19 @@ public class FolderScanner extends PFComponent {
                         + dirToScan.getAbsolutePath()
                         + ", dbDir: "
                         + otherFInfo.toDetailString());
-                    if (dirInfo.getRelativeName().equals(
-                        otherFInfo.getRelativeName())
-                        && !dirInfo.equals(otherFInfo)
-                        && otherFInfo.isDiretory())
-                    {
-                        throw new RuntimeException(
-                            "Bad failure: DirectoryInfos not equal. "
-                                + dirInfo.toDetailString()
-                                + " and "
-                                + otherFInfo.toDetailString()
-                                + " Probably FolderInfo objects or type are not equal?");
-                    }
-                    remaining.remove(otherFInfo);
+                    // if (pathname.equals(
+                    // otherFInfo.getRelativeName())
+                    // && !dirInfo.equals(otherFInfo)
+                    // && otherFInfo.isDiretory())
+                    // {
+                    // throw new RuntimeException(
+                    // "Bad failure: DirectoryInfos not equal. "
+                    // + dirInfo.toDetailString()
+                    // + " and "
+                    // + otherFInfo.toDetailString()
+                    // + " Probably FolderInfo objects or type are not equal?");
+                    // }
+                    remaining.remove(otherFInfo.getRelativeName());
                     exists = otherFInfo;
                 }
             }
@@ -679,26 +685,30 @@ public class FolderScanner extends PFComponent {
             if (exists.isDeleted()) {
                 // file restored
                 if (!exists.inSyncWithDisk(dirToScan)) {
-                    logWarning("Directory restored detected: "
-                        + exists.toDetailString() + ". On disk: size: "
-                        + dirToScan.length() + ", lastMod: "
-                        + dirToScan.lastModified());
+                    if (isInfo()) {
+                        logInfo("Directory restored detected: "
+                            + exists.toDetailString() + ". On disk: size: "
+                            + dirToScan.length() + ", lastMod: "
+                            + dirToScan.lastModified());
+                    }
                     currentScanResult.restoredFiles.add(exists);
                 }
             } else {
                 boolean changed = !exists.inSyncWithDisk(dirToScan);
                 if (changed) {
-                    logWarning("Changed directory detected: "
-                        + exists.toDetailString() + ". On disk: size: "
-                        + dirToScan.length() + ", lastMod: "
-                        + dirToScan.lastModified());
+                    if (isInfo()) {
+                        logInfo("Changed directory detected: "
+                            + exists.toDetailString() + ". On disk: size: "
+                            + dirToScan.length() + ", lastMod: "
+                            + dirToScan.lastModified());
+                    }
                     currentScanResult.changedFiles.add(exists);
                 }
             }
         } else {
             // is new
             FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                dirToScan, getController().getMySelf().getInfo());
+                dirToScan, getController().getMySelf().getInfo(), true);
             currentScanResult.newFiles.add(info);
             if (isFiner()) {
                 logFiner("New directory found: " + info.toDetailString());
@@ -719,7 +729,7 @@ public class FolderScanner extends PFComponent {
                 throw new NullPointerException(
                     "Local file seems not to be in a subdir of the local powerfolder copy");
             }
-            fileName = parent.getName() + "/" + fileName;
+            fileName = parent.getName() + '/' + fileName;
             parent = parent.getParentFile();
         }
         return fileName;
