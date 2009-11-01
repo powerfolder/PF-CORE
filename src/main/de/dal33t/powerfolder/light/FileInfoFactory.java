@@ -94,23 +94,21 @@ public final class FileInfoFactory {
      * @param folder
      * @param localFile
      * @param creator
+     * @param directory if the given file is a directory.
      * @return the new file
      */
     public static FileInfo newFile(Folder folder, File localFile,
-        MemberInfo creator)
+        MemberInfo creator, boolean directory)
     {
-        if (localFile.isFile()) {
-            return new FileInfo(
-                buildFileName(folder.getLocalBase(), localFile), localFile
-                    .length(), creator, new Date(localFile.lastModified()), 0,
-                false, folder.getInfo());
-        } else if (localFile.isDirectory()) {
+        if (directory) {
             return new DirectoryInfo(buildFileName(folder.getLocalBase(),
                 localFile), creator, new Date(localFile.lastModified()), 0,
                 false, folder.getInfo());
         } else {
-            throw new IllegalArgumentException("File not Directory nor File: "
-                + localFile);
+            return new FileInfo(
+                buildFileName(folder.getLocalBase(), localFile), localFile
+                    .length(), creator, new Date(localFile.lastModified()), 0,
+                false, folder.getInfo());
         }
     }
 
