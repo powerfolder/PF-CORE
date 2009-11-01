@@ -781,7 +781,6 @@ public class ServerClient extends PFComponent {
 
     public boolean setServerWebURLInConfig(String newWebUrl) {
         this.webURL = newWebUrl;
-        logWarning("Setting new web url:" + newWebUrl);
         String oldWebUrl = ConfigurationEntry.SERVER_WEB_URL
             .getValue(getController());
         if (Util.equals(oldWebUrl, newWebUrl)) {
