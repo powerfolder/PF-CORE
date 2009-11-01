@@ -50,6 +50,7 @@ public class FileUtils {
     private static final int BYTE_CHUNK_SIZE = 8192;
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
+    public static final String DOWNLOAD_TEMP_FILE = "(incomplete) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
 
     // no instances
@@ -76,7 +77,7 @@ public class FileUtils {
             throw new NullPointerException("File is null");
         }
         String fileName = file.getName();
-        return fileName.startsWith("(incomplete) ");
+        return fileName.startsWith(DOWNLOAD_TEMP_FILE);
     }
 
     /**
