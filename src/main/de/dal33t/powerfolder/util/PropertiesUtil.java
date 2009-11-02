@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.util.MathUtil;
@@ -75,12 +75,12 @@ public class PropertiesUtil {
             Collections.sort(confKeys);
             for (String key : confKeys) {
                 String val = (String) props.get(key);
-                key = saveConvert(key, true, escUnicode);
+                key = saveConvert(key, true, true, escUnicode);
                 /*
                  * No need to escape embedded and trailing spaces for value,
                  * hence pass false to flag.
                  */
-                val = saveConvert(val, false, escUnicode);
+                val = saveConvert(val, false, false, escUnicode);
                 bw.write(key + '=' + val);
                 bw.newLine();
             }
@@ -93,7 +93,7 @@ public class PropertiesUtil {
      * with a preceding slash
      */
     private static String saveConvert(String theString, boolean escapeSpace,
-        boolean escapeUnicode)
+        boolean escapeSpecials, boolean escapeUnicode)
     {
         int len = theString.length();
         int bufLen = len * 2;
@@ -142,17 +142,21 @@ public class PropertiesUtil {
                 case ':' : // Fall through
                 case '#' : // Fall through
                 case '!' :
-                    outBuffer.append('\\');
+                    if (escapeSpecials) {
+                        outBuffer.append('\\');
+                    }
                     outBuffer.append(aChar);
                     break;
                 default :
-                    if ((aChar < 0x0020 || aChar > 0x007e) & escapeUnicode)
-                    {
+                    if ((aChar < 0x0020 || aChar > 0x007e) & escapeUnicode) {
                         outBuffer.append('\\');
                         outBuffer.append('u');
-                        outBuffer.append(MathUtil.toHexNibble(aChar >> 12 & 0xF));
-                        outBuffer.append(MathUtil.toHexNibble(aChar >> 8 & 0xF));
-                        outBuffer.append(MathUtil.toHexNibble(aChar >> 4 & 0xF));
+                        outBuffer.append(MathUtil
+                            .toHexNibble(aChar >> 12 & 0xF));
+                        outBuffer
+                            .append(MathUtil.toHexNibble(aChar >> 8 & 0xF));
+                        outBuffer
+                            .append(MathUtil.toHexNibble(aChar >> 4 & 0xF));
                         outBuffer.append(MathUtil.toHexNibble(aChar & 0xF));
                     } else {
                         outBuffer.append(aChar);
@@ -191,8 +195,10 @@ public class PropertiesUtil {
                     {
                         current++;
                     }
-                    if (current == len - 1 || comments.charAt(current + 1) != '#'
-                            && comments.charAt(current + 1) != '!') {
+                    if (current == len - 1
+                        || comments.charAt(current + 1) != '#'
+                        && comments.charAt(current + 1) != '!')
+                    {
                         bw.write("#");
                     }
                 }
