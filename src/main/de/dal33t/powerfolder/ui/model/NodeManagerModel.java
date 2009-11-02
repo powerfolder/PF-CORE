@@ -54,9 +54,11 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  */
 public class NodeManagerModel extends PFUIComponent {
 
-    public static final int MY_COMPUTERS_INDEX = 0;
-    public static final int FRIENDS_INDEX = 1;
-    public static final int CONNECTED_LAN = 2;
+    public enum Type {
+        MY_COMPUTERS_INDEX,
+        FRIENDS_INDEX,
+        CONNECTED_LAN;
+    }
 
     private ValueModel showOfflineModel;
     private ArrayListModel<Member> friendsListModel;
@@ -185,7 +187,7 @@ public class NodeManagerModel extends PFUIComponent {
      * 
      * @return
      */
-    public Map<Integer, Set<Member>> getNodesMap() {
+    public Map<Type, Set<Member>> getNodesMap() {
 
         // Split nodes into three groups:
         // 1) My Computers,
@@ -226,10 +228,10 @@ public class NodeManagerModel extends PFUIComponent {
             }
         }
 
-        Map<Integer, Set<Member>> resultsMap = new TreeMap<Integer, Set<Member>>();
-        resultsMap.put(MY_COMPUTERS_INDEX, myComputers);
-        resultsMap.put(FRIENDS_INDEX, friends);
-        resultsMap.put(CONNECTED_LAN, connectedLans);
+        Map<Type, Set<Member>> resultsMap = new TreeMap<Type, Set<Member>>();
+        resultsMap.put(Type.MY_COMPUTERS_INDEX, myComputers);
+        resultsMap.put(Type.FRIENDS_INDEX, friends);
+        resultsMap.put(Type.CONNECTED_LAN, connectedLans);
 
         return resultsMap;
     }
@@ -241,7 +243,7 @@ public class NodeManagerModel extends PFUIComponent {
      */
     public int getSize() {
         int count = 0;
-        Map<Integer, Set<Member>> map = getNodesMap();
+        Map<Type, Set<Member>> map = getNodesMap();
         for (Set<Member> members : map.values()) {
             count += members.size();
         }

@@ -67,7 +67,7 @@ public class NoRecycleTest extends ControllerTestCase {
 
         // Not expecting the bin to have the removed copy.
         assertEquals(0, getFolder().getFileArchiver().getArchivedFilesInfos(
-            testfile).size());
+            testfile, getController().getMySelf().getInfo()).size());
     }
 
 }

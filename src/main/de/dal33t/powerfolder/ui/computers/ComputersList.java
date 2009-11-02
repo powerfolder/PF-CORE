@@ -157,7 +157,7 @@ public class ComputersList extends PFUIComponent {
             return;
         }
 
-        Map<Integer, Set<Member>> map = nodeManagerModel.getNodesMap();
+        Map<NodeManagerModel.Type, Set<Member>> map = nodeManagerModel.getNodesMap();
 
         // Split nodes into three groups:
         // 1) My Computers,
@@ -168,17 +168,17 @@ public class ComputersList extends PFUIComponent {
         Map<String, Member> friendsMap = new TreeMap<String, Member>();
         Map<String, Member> connectedLansMap = new TreeMap<String, Member>();
 
-        Set<Member> myComputersSet = map.get(NodeManagerModel.MY_COMPUTERS_INDEX);
+        Set<Member> myComputersSet = map.get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
         for (Member member : myComputersSet) {
             myComputersMap.put(member.getNick().toLowerCase(), member);
         }
 
-        Set<Member> friendsSet = map.get(NodeManagerModel.FRIENDS_INDEX);
+        Set<Member> friendsSet = map.get(NodeManagerModel.Type.FRIENDS_INDEX);
         for (Member member : friendsSet) {
             friendsMap.put(member.getNick().toLowerCase(), member);
         }
 
-        Set<Member> connectedLanSet = map.get(NodeManagerModel.CONNECTED_LAN);
+        Set<Member> connectedLanSet = map.get(NodeManagerModel.Type.CONNECTED_LAN);
         for (Member member : connectedLanSet) {
             connectedLansMap.put(member.getNick().toLowerCase(), member);
         }
