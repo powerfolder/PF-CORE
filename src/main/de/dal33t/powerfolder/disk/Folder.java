@@ -2998,11 +2998,7 @@ public class Folder extends PFComponent {
         try {
             archiver.archive(fileInfo, file, false);
         } catch (IOException e) {
-            logSevere("Unable to move file to recycle bin" + file + ". " + e, e);
-        }
-        if (isFine()) {
-            logFine("Deleting file " + file
-                + " NOT moving to recycle bin (disabled)");
+            logSevere("Unable to move file to archive: " + file + ". " + e, e);
         }
         if (file.exists() && !file.delete()) {
             logSevere("Unable to delete file " + file);
