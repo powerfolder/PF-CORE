@@ -1727,6 +1727,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .isReplaceExisting());
                         // Seems to be valid, store.
                         getController().saveConfig();
+                        if (clr.isModifyWinINIConfigCentral()) {
+                            ConfigurationLoadRequest
+                                .modifyWinINIConfigCentral();
+                        }
                         if (clr.isRestartRequired()) {
                             getController().shutdownAndRequestRestart();
                         }
