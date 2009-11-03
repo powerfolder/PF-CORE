@@ -1,24 +1,25 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -36,9 +37,9 @@ import java.util.logging.Logger;
  */
 public class MemoryMonitor implements Runnable {
 
-    private static final Logger log = Logger.getLogger(MemoryMonitor.class.getName());
+    private static final Logger log = Logger.getLogger(MemoryMonitor.class
+        .getName());
 
-    private static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
     private Controller controller;
     private boolean runAlready;
 
@@ -57,7 +58,7 @@ public class MemoryMonitor implements Runnable {
         long maxMemory = runtime.maxMemory();
         long totalMemory = runtime.totalMemory();
         log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
-                + ", Total Memory: " + Format.formatBytesShort(totalMemory));
+            + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
         if (maxMemory == totalMemory) {
             addWarning();
@@ -72,11 +73,15 @@ public class MemoryMonitor implements Runnable {
         WarningEvent event = new WarningEvent(new Runnable() {
             public void run() {
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
-                    int response = DialogFactory.genericDialog(controller, Translation
+                    int response = DialogFactory
+                        .genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
-                            .getTranslation("low_memory.text"), new String[]{
-                            Translation.getTranslation("low_memory.increase"),
-                            Translation.getTranslation("low_memory.do_nothing")},
+                            .getTranslation("low_memory.text"),
+                            new String[]{
+                                Translation
+                                    .getTranslation("low_memory.increase"),
+                                Translation
+                                    .getTranslation("low_memory.do_nothing")},
                             0, GenericDialogType.WARN);
                     if (response == 0) { // Increase memory
                         increaseAvailableMemory();
@@ -84,10 +89,10 @@ public class MemoryMonitor implements Runnable {
                 } else {
                     // No ini - Can only warn user.
                     DialogFactory.genericDialog(controller, Translation
-                            .getTranslation("low_memory.title"), Translation
-                            .getTranslation("low_memory.warn"),
-                            new String[]{Translation.getTranslation("general.ok")},
-                            0, GenericDialogType.WARN);
+                        .getTranslation("low_memory.title"), Translation
+                        .getTranslation("low_memory.warn"),
+                        new String[]{Translation.getTranslation("general.ok")},
+                        0, GenericDialogType.WARN);
                 }
             }
         });
@@ -103,23 +108,25 @@ public class MemoryMonitor implements Runnable {
         boolean wroteNewIni = false;
         PrintWriter pw = null;
         try {
-            //log.fine("Looking for ini...");
+            // log.fine("Looking for ini...");
             // br = new BufferedReader(new FileReader("PowerFolder.ini"));
-            //Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
+            // Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
             // String line;
             // boolean found = false;
             // while ((line = br.readLine()) != null) {
             // if (line.startsWith("-Xmx")) {
             // // Found default ini.
             // found = true;
-            // Loggable.logFineStatic(MemoryMonitor.class, "Found maximum memory line...");
+            // Loggable.logFineStatic(MemoryMonitor.class,
+            // "Found maximum memory line...");
             // }
             // }
 
             boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 500;
             // Write a new one if found.
             if (!alreadyMax) {
-                pw = new PrintWriter(new FileWriter(POWERFOLDER_INI_FILE));
+                pw = new PrintWriter(new FileWriter(
+                    Constants.POWERFOLDER_INI_FILE));
                 log.fine("Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
@@ -147,14 +154,14 @@ public class MemoryMonitor implements Runnable {
         // Show a response
         if (wroteNewIni) {
             DialogFactory.genericDialog(controller, Translation
-                    .getTranslation("low_memory.title"), Translation
-                    .getTranslation("low_memory.configure_success"),
-                    GenericDialogType.INFO);
+                .getTranslation("low_memory.title"), Translation
+                .getTranslation("low_memory.configure_success"),
+                GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(controller, Translation
-                    .getTranslation("low_memory.title"), Translation
-                    .getTranslation("low_memory.configure_failure"),
-                    GenericDialogType.WARN);
+                .getTranslation("low_memory.title"), Translation
+                .getTranslation("low_memory.configure_failure"),
+                GenericDialogType.WARN);
         }
     }
 }
