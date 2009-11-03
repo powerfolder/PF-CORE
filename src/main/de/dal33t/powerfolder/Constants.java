@@ -52,6 +52,11 @@ public class Constants {
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
 
     /**
+     * Name of the INI file on windows installations.
+     */
+    public static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
+    
+    /**
      * Check for updates every hour.
      */
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
@@ -65,11 +70,6 @@ public class Constants {
      * The maximum number of lines in a chat.
      */
     public static final int MAX_CHAT_LINES = 500;
-
-    /**
-     * URL where bugs or tickets can be filed.
-     */
-    public static final String POWERFOLDER_SUPPORT_FILE_TICKET_URL = "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4";
 
     // Network architecture contants ******************************************
 
