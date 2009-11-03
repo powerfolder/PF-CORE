@@ -21,8 +21,10 @@ package de.dal33t.powerfolder.util.os.Win32;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -34,6 +36,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @version $Revision$
  */
 public class WinUtils extends Loggable {
+    private static final Logger LOG = Logger
+        .getLogger(WinUtils.class.getName());
 
     public static final String SHORTCUTNAME = "PowerFolder.lnk";
 
@@ -76,7 +80,7 @@ public class WinUtils extends Loggable {
     // Application Data of current user. Roaming and Local
     public static final int CSIDL_APP_DATA = 0x001A;
     public static final int CSIDL_LOCAL_APP_DATA = 0x001C;
-    
+
     // Application Data of ALL USERs.
     public static final int CSIDL_COMMON_APP_DATA = 0x0023;
 
@@ -177,5 +181,21 @@ public class WinUtils extends Loggable {
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             SHORTCUTNAME);
         return pflnk.exists();
+    }
+
+    /**
+     * It returns the default location where the PowerFolder installer installs
+     * the program.
+     * 
+     * @return the path on a Windows installation or null if unable to resolve.
+     */
+    public static File getProgramInstallationPath() {
+        String programFiles = System.getenv("PROGRAMFILES");
+        if (StringUtils.isBlank(programFiles)) {
+            LOG
+                .severe("Unable to update Windows installation of PowerFolder. Program files directory not found");
+            return null;
+        }
+        return new File(programFiles + "/PowerFolder.com/PowerFolder");
     }
 }
