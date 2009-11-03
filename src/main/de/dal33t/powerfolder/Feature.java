@@ -121,14 +121,18 @@ public enum Feature {
 
     public void disable() {
         log.fine(name() + " disabled");
-        System.setProperty("powerfolder.feature." + name(), "disabled");
+        System.setProperty(getSystemPropertyKey(), "disabled");
         enabled = false;
     }
 
     public void enable() {
         log.fine(name() + " enabled");
-        System.setProperty("powerfolder.feature." + name(), "enabled");
+        System.setProperty(getSystemPropertyKey(), "enabled");
         enabled = true;
+    }
+
+    public String getSystemPropertyKey() {
+        return "powerfolder.feature." + name();
     }
 
     public boolean isDisabled() {
