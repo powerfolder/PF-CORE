@@ -48,8 +48,7 @@ public class ConfigurationLoadRequest extends Message {
     private String configURL;
     private boolean replaceExisting;
     private boolean restartRequired;
-    // TRUE For bolloré. Remove after
-    private boolean modifyWinINIConfigCentral = true;
+    private boolean modifyWinINIConfigCentral;
 
     public ConfigurationLoadRequest(String configURL, boolean replaceExisting,
         boolean restartRequired, boolean modifyWinINIConfigCentral)
