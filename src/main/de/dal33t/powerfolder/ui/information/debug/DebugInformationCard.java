@@ -398,7 +398,8 @@ public class DebugInformationCard extends InformationCard {
                 try {
                     FileUtils.openFile(LoggingManager.getDebugDir());
                     BrowserLauncher
-                        .openURL(Constants.POWERFOLDER_SUPPORT_FILE_TICKET_URL);
+                        .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
+                            .getValue(getController()));
                 } catch (IOException ex) {
                     logSevere("Problems opening debug directory ", ex);
                 }
