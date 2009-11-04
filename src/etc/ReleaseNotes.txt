@@ -1,4 +1,67 @@
-PowerFolder Version 4.0.0 - http://www.powerfolder.com
+PowerFolder Version 4.0.1 - http://www.powerfolder.com
+
+= New features =
+ * User interface can now be locked. Unlock with PowerFolder account email and password.
+
+= Improvements =
+ * Added less I/O and CPU intense transfer mode "Backup Source (once a hour)".
+ * Automatic chooses less I/O and CPU intensive transfer modes on large folders (>10.000 files).
+ * Slightly reduced I/O and CPU while scanning folders for changes.
+ * System service auto-update now also tries to update windows installation path of PowerFolder.
+ * Configuration can now be the same for ALL users on a computer.
+ * Added Spanish installer texts. 
+ * Slightly changed license texts.
+ * Update splash screen.
+
+= Bugfixes =
+ * Now correctly migrates configuration/settings from 3.X version on upgrade to version 4.
+ * Installer does not longer remove program shortcuts on upgrade.
+ * Correctly detects disconnected drives (again) for example external HDDs, NAS or USB sticks.
+ * Fixed mass delete protection detection.
+ * Fixed wrong "Unsynchronized folder" problem although folders were actually in sync.
+ * Fixed memory leak on big file lists.
+ * Filename problems now show the affected filename.
+ * Corrected logo in about box.
+ * Minor other bugfixes.
+
+
+= Important for 3.X users =
+
+If you upgrade from an existing PowerFolder version keep in mind, that folders
+are now visible globally for each account, this means all users on an account
+will see all folders. Use the rights system to restrict the access to certain
+computers and users. You might need to register new accounts per user at
+https://www.powerfolder.com/storage_register.html 
+
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/support.html
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features. We hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/contact.html
+Support    : http://www.powerfolder.com/support.html
+Development: http://www.powerfolder.com/about_us.html
+Email	   : contact (at) powerfolder.com
+
+
+== Version History ==
+
+Version 4.0.0
+-------------
 
 = New features =
 
@@ -56,41 +119,6 @@ PowerFolder Version 4.0.0 - http://www.powerfolder.com
  * Inviter now automatically gets added to the friendlist.
  * Uninstaller now also removes PowerFolder system service.
 
- 
-= Important for existing users =
-
-If you upgrade from an existing PowerFolder version keep in mind, that folders
-are now visible globally for each account, this means all users on an account
-will see all folders. Use the rights system to restrict the access to certain
-computers and users.
-
-
-
-Please give us feedback and request improvements:
-http://www.powerfolder.com/support.html
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features. We hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-Homepage   : http://www.powerfolder.com
-Contact    : http://www.powerfolder.com/contact.html
-Support    : http://www.powerfolder.com/support.html
-Development: http://www.powerfolder.com/about_us.html
-Email	   : contact (at) powerfolder.com
-
-
-== Version History ==
 
 Version 3.1.10
 --------------
