@@ -3525,7 +3525,19 @@ public class Folder extends PFComponent {
         cal.add(Calendar.DATE, -syncWarnDays);
         Date warningDate = cal.getTime();
 
-        if (lastSyncDate != null && lastSyncDate.before(warningDate)) {
+        // If others are in sync, do not warn because I can sync up with them.
+        boolean othersInSync = false;
+        Member me = getController().getMySelf();
+        for (Member member : members.values()) {
+            double memberSync = statistic.getSyncPercentage(member);
+            if (!member.equals(me) && Double.compare(memberSync, 100.0) == 0) {
+                othersInSync = true;
+                break;
+            }
+        }
+
+        if (lastSyncDate != null && lastSyncDate.before(warningDate)
+                && !othersInSync) {
 
             // Only need one of these.
             UnsynchronizedFolderProblem ufp = null;
