@@ -398,7 +398,11 @@ public class FileRequestor extends PFComponent {
                     for (Iterator<Folder> it = folderQueue.iterator(); it
                         .hasNext();)
                     {
-                        requestMissingFilesForAutodownload(it.next());
+                        try {
+                            requestMissingFilesForAutodownload(it.next());
+                        } catch (RuntimeException e) {
+                            logSevere("RuntimeException: " + e.toString(), e);
+                        }
                         it.remove();
                     }
                     if (isFiner()) {
@@ -413,8 +417,6 @@ public class FileRequestor extends PFComponent {
                     logFine("Stopped");
                     logFiner(e);
                     break;
-                } catch (RuntimeException e) {
-                    logSevere("RuntimeException: " + e.toString(), e);
                 }
             }
         }
