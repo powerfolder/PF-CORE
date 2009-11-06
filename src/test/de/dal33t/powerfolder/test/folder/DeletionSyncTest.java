@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 /**
  * Tests the correct synchronization of file deletions.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @version $Revision: 1.5 $
  */

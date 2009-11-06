@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * <p>
  * TODO Test scan of folder which already has a database.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class ScanFolderTest extends ControllerTestCase {
