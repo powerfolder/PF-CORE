@@ -108,6 +108,7 @@ import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.Updater;
@@ -126,7 +127,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.1"; // - 1.0.3.43";
+    public static final String PROGRAM_VERSION = "4.0.1 - 1.0.3.44"; // - 1.0.3.43";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -1975,9 +1976,9 @@ public class Controller extends PFComponent {
         if (OSUtil.isWindowsSystem()) {
             String appData;
             if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
-                appData = Util.getAppDataAllUsers();
+                appData = WinUtils.getAppDataAllUsers();
             } else {
-                appData = Util.getAppDataCurrentUser();
+                appData = WinUtils.getAppDataCurrentUser();
             }
 
             if (StringUtils.isBlank(appData)) {
