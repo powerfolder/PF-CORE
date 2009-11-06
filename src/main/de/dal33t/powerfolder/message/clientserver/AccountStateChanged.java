@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
  * <P>
  * This event triggers for example the refresh of the account data of that node.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class AccountStateChanged extends Message {
