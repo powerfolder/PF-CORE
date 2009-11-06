@@ -47,7 +47,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
  * Model for the node manager. Create filtered list of nodes based on friend and
  * lan values.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @author <a href="mailto:schaatser@powerfolder.com">Jan van Oosterom</a>
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.5 $
