@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileHistory.Conflict;
 import de.dal33t.powerfolder.message.FileHistoryReply;
 import de.dal33t.powerfolder.message.FileHistoryRequest;
-import de.dal33t.powerfolder.util.FileInfoFilter;
 import de.dal33t.powerfolder.util.ProblemUtil;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -153,11 +152,7 @@ public class FileRequestor extends PFComponent {
 
         // TODO: Detect conflicts. Raise problem.
         Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false);
-        retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
-            public boolean accept(FileInfo fInfo) {
-                return true;
-            }
-        }, autoDownload);
+        retrieveNewestVersions(folder, incomingFiles, autoDownload);
     }
 
     /**
@@ -207,11 +202,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-        retrieveNewestVersions(folder, incomingFiles, new FileInfoFilter() {
-            public boolean accept(FileInfo info) {
-                return true;
-            }
-        }, true);
+        retrieveNewestVersions(folder, incomingFiles, true);
     }
 
     /**
@@ -220,12 +211,10 @@ public class FileRequestor extends PFComponent {
      * 
      * @param folder
      * @param fInfos
-     * @param dlFilter
      * @param autoDownload
      */
     private void retrieveNewestVersions(Folder folder,
-        Collection<FileInfo> fInfos, FileInfoFilter dlFilter,
-        boolean autoDownload)
+        Collection<FileInfo> fInfos, boolean autoDownload)
     {
         TransferManager tm = getController().getTransferManager();
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
@@ -244,13 +233,11 @@ public class FileRequestor extends PFComponent {
                 }
             }
 
-            if (dlFilter.accept(fInfo)) {
-                if (fInfo.isFile()) {
-                    filesToDownload.add(fInfo);
-                } else if (fInfo.isDiretory()) {
-                    // TODO Move this into a extra thread?
-                    createDirectory((DirectoryInfo) fInfo);
-                }
+            if (fInfo.isFile()) {
+                filesToDownload.add(fInfo);
+            } else if (fInfo.isDiretory()) {
+                // TODO Move this into a extra thread?
+                createDirectory((DirectoryInfo) fInfo);
             }
         }
         if (filesToDownload.isEmpty()) {
