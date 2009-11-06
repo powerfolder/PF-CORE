@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.net.UDTSocket;
  * of the remote node. Fully relayed connections for exampled don't require a
  * physical TCP address, but require that logical peer address.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class ConnectionHandlerFactory extends PFComponent {

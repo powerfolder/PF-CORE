@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
  * Interface defines a callback to something that can decide if a node should be
  * added to the internal database.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public interface NodeFilter {

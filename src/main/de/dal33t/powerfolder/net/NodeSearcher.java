@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.Reject;
  * TODO Check if search request should really send to LAN nodes.
  * 
  * @author Dennis "Dante" Waldherr
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  */
 public class NodeSearcher extends PFComponent {
 

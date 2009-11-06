@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.message.Message;
 /**
  * Base interface for all connection handlers doing basic I/O communication.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public interface ConnectionHandler {
