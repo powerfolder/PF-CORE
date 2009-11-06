@@ -2506,15 +2506,19 @@ public class Folder extends PFComponent {
         }
 
         // Correct FolderInfo in case it differs.
-        for (int i = 0; i < changes.added.length; i++) {
-            FileInfo fInfo = changes.added[i];
-            changes.added[i] = FileInfoFactory.changedFolderInfo(fInfo,
-                currentInfo);
+        if (changes.added != null) {
+            for (int i = 0; i < changes.added.length; i++) {
+                FileInfo fInfo = changes.added[i];
+                changes.added[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                    currentInfo);
+            }
         }
-        for (int i = 0; i < changes.removed.length; i++) {
-            FileInfo fInfo = changes.removed[i];
-            changes.removed[i] = FileInfoFactory.changedFolderInfo(fInfo,
-                currentInfo);
+        if (changes.removed != null) {
+            for (int i = 0; i < changes.removed.length; i++) {
+                FileInfo fInfo = changes.removed[i];
+                changes.removed[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                    currentInfo);
+            }
         }
 
         // #1022 - Mass delete detection. Switch to a safe profile if
