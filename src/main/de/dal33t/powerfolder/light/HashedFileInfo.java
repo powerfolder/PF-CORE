@@ -35,7 +35,7 @@ public class HashedFileInfo implements Serializable {
     public HashedFileInfo(FileInfo fileInfo, byte[] md5) {
         super();
         Reject.ifNull(fileInfo, "FileInfo is null!");
-        Reject.ifTrue(fileInfo.isTemplate(), "FileInfo must not be template!");
+        Reject.ifTrue(fileInfo.isLookupInstance(), "FileInfo must not be template!");
         Reject.ifNull(md5, "MD5 is null!");
         Reject.ifTrue(md5.length != 16, "Invalid MD5 of length: " + md5.length);
         this.fileInfo = fileInfo;

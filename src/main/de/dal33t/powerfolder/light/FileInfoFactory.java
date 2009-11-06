@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.light;
 
 import java.io.File;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -32,6 +33,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  */
 public final class FileInfoFactory {
+    private static final Logger LOG = Logger.getLogger(FileInfoFactory.class.getName());
+    
     private FileInfoFactory() {
         // No instance allowed
     }
@@ -64,6 +67,45 @@ public final class FileInfoFactory {
     public static FileInfo lookupInstance(Folder folder, File file) {
         String fn = buildFileName(folder.getLocalBase(), file);
         return lookupInstance(folder.getInfo(), fn, file.isDirectory());
+    }
+    
+    /**
+     * Returns a FileInfo with changed FolderInfo. No version update etc.
+     * whatsoever happens.
+     * 
+     * @param original
+     * @param fi
+     * @return the new (or existing) instance.
+     */
+    public static FileInfo changedFolderInfo(FileInfo original, FolderInfo fi) {
+        Reject.ifNull(original, "Original FileInfo is null");
+        if (original.isLookupInstance()) {
+            // TODO Check if this causes problems with DirectoryInfo
+            return lookupInstance(fi, original.getRelativeName());
+        } else {
+            if (original.getFolderInfo().equals(fi)) {
+                return original;
+            }
+            if (original.isFile()) {
+                LOG.severe("Corrected FolderInfo on "
+                    + original.toDetailString());
+                return new FileInfo(original.getRelativeName(), original
+                    .getSize(), original.getModifiedBy(), original
+                    .getModifiedDate(), original.getVersion(), original
+                    .isDeleted(), fi);
+            } else if (original.isDiretory()) {
+                LOG.severe("Corrected DirectoryInfo on "
+                    + original.toDetailString());
+                return new DirectoryInfo(original.getRelativeName(), original
+                    .getSize(), original.getModifiedBy(), original
+                    .getModifiedDate(), original.getVersion(), original
+                    .isDeleted(), fi);
+            } else {
+                throw new IllegalArgumentException(
+                    "Illegal original FileInfo: " + original.getClass() + ": "
+                        + original.toDetailString());
+            }
+        }
     }
 
     public static FileInfo unmarshallExistingFile(FolderInfo fi,
@@ -117,7 +159,7 @@ public final class FileInfoFactory {
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject
-            .ifTrue(original.isTemplate(), "Cannot modify template FileInfo!");
+            .ifTrue(original.isLookupInstance(), "Cannot modify template FileInfo!");
         String fn = buildFileName(original.getFolder(rep).getLocalBase(),
             localFile);
         if (original.getRelativeName().equals(fn)) {
@@ -143,7 +185,7 @@ public final class FileInfoFactory {
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject
-            .ifTrue(original.isTemplate(), "Cannot delete template FileInfo!");
+            .ifTrue(original.isLookupInstance(), "Cannot delete template FileInfo!");
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), 0L, delby, delDate,
                 original.getVersion() + 1, true, original.getFolderInfo());
@@ -167,7 +209,7 @@ public final class FileInfoFactory {
     public static FileInfo updatedVersion(FileInfo original, int newVersion) {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject
-            .ifTrue(original.isTemplate(), "Cannot update template FileInfo!");
+            .ifTrue(original.isLookupInstance(), "Cannot update template FileInfo!");
         Reject.ifTrue(original instanceof DirectoryInfo,
             "Possible problem. Unable to perform on dirInfo:"
                 + original.toDetailString());

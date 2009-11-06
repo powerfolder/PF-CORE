@@ -1343,9 +1343,10 @@ public class Folder extends PFComponent {
      * 
      * @param fInfo
      */
-    private FileInfo addFile(FileInfo fInfo) {
+    private FileInfo addFile(FileInfo theFInfo) {
         // Add to this folder
-        // fInfo = FileInfoFactory.changedFolderInfo(fInfo, currentInfo);
+        FileInfo fInfo = FileInfoFactory.changedFolderInfo(theFInfo,
+            currentInfo);
         TransferPriority prio = transferPriorities.getPriority(fInfo);
         transferPriorities.setPriority(fInfo, prio);
         return fInfo;
@@ -2448,6 +2449,13 @@ public class Folder extends PFComponent {
             return;
         }
 
+        // Correct FolderInfo in case it differs.
+        for (int i = 0; i < newList.files.length; i++) {
+            FileInfo fInfo = newList.files[i];
+            newList.files[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                currentInfo);
+        }
+
         // Update DAO
         synchronized (dbAccessLock) {
             dao.deleteDomain(from.getId());
@@ -2495,6 +2503,18 @@ public class Folder extends PFComponent {
     public void fileListChanged(Member from, FolderFilesChanged changes) {
         if (shutdown) {
             return;
+        }
+
+        // Correct FolderInfo in case it differs.
+        for (int i = 0; i < changes.added.length; i++) {
+            FileInfo fInfo = changes.added[i];
+            changes.added[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                currentInfo);
+        }
+        for (int i = 0; i < changes.removed.length; i++) {
+            FileInfo fInfo = changes.removed[i];
+            changes.removed[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                currentInfo);
         }
 
         // #1022 - Mass delete detection. Switch to a safe profile if

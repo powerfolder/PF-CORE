@@ -398,7 +398,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return version;
     }
 
-    public boolean isTemplate() {
+    public boolean isLookupInstance() {
         return size == null;
     }
 
