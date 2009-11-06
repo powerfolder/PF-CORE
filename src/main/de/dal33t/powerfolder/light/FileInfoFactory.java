@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.light;
 
 import java.io.File;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,8 +34,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  */
 public final class FileInfoFactory {
-    private static final Logger LOG = Logger.getLogger(FileInfoFactory.class.getName());
-    
+    private static final Logger LOG = Logger.getLogger(FileInfoFactory.class
+        .getName());
+
     private FileInfoFactory() {
         // No instance allowed
     }
@@ -68,7 +70,7 @@ public final class FileInfoFactory {
         String fn = buildFileName(folder.getLocalBase(), file);
         return lookupInstance(folder.getInfo(), fn, file.isDirectory());
     }
-    
+
     /**
      * Returns a FileInfo with changed FolderInfo. No version update etc.
      * whatsoever happens.
@@ -87,15 +89,19 @@ public final class FileInfoFactory {
                 return original;
             }
             if (original.isFile()) {
-                LOG.severe("Corrected FolderInfo on "
-                    + original.toDetailString());
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.warning("Corrected FolderInfo on "
+                        + original.toDetailString());
+                }
                 return new FileInfo(original.getRelativeName(), original
                     .getSize(), original.getModifiedBy(), original
                     .getModifiedDate(), original.getVersion(), original
                     .isDeleted(), fi);
             } else if (original.isDiretory()) {
-                LOG.severe("Corrected DirectoryInfo on "
-                    + original.toDetailString());
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.warning("Corrected DirectoryInfo on "
+                        + original.toDetailString());
+                }
                 return new DirectoryInfo(original.getRelativeName(), original
                     .getSize(), original.getModifiedBy(), original
                     .getModifiedDate(), original.getVersion(), original
@@ -136,7 +142,8 @@ public final class FileInfoFactory {
      * @param folder
      * @param localFile
      * @param creator
-     * @param directory if the given file is a directory.
+     * @param directory
+     *            if the given file is a directory.
      * @return the new file
      */
     public static FileInfo newFile(Folder folder, File localFile,
@@ -158,8 +165,8 @@ public final class FileInfoFactory {
         FolderRepository rep, File localFile, MemberInfo modby)
     {
         Reject.ifNull(original, "Original FileInfo is null");
-        Reject
-            .ifTrue(original.isLookupInstance(), "Cannot modify template FileInfo!");
+        Reject.ifTrue(original.isLookupInstance(),
+            "Cannot modify template FileInfo!");
         String fn = buildFileName(original.getFolder(rep).getLocalBase(),
             localFile);
         if (original.getRelativeName().equals(fn)) {
@@ -184,8 +191,8 @@ public final class FileInfoFactory {
         Date delDate)
     {
         Reject.ifNull(original, "Original FileInfo is null");
-        Reject
-            .ifTrue(original.isLookupInstance(), "Cannot delete template FileInfo!");
+        Reject.ifTrue(original.isLookupInstance(),
+            "Cannot delete template FileInfo!");
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), 0L, delby, delDate,
                 original.getVersion() + 1, true, original.getFolderInfo());
@@ -208,8 +215,8 @@ public final class FileInfoFactory {
     @Deprecated
     public static FileInfo updatedVersion(FileInfo original, int newVersion) {
         Reject.ifNull(original, "Original FileInfo is null");
-        Reject
-            .ifTrue(original.isLookupInstance(), "Cannot update template FileInfo!");
+        Reject.ifTrue(original.isLookupInstance(),
+            "Cannot update template FileInfo!");
         Reject.ifTrue(original instanceof DirectoryInfo,
             "Possible problem. Unable to perform on dirInfo:"
                 + original.toDetailString());

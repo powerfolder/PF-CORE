@@ -2450,10 +2450,12 @@ public class Folder extends PFComponent {
         }
 
         // Correct FolderInfo in case it differs.
-        for (int i = 0; i < newList.files.length; i++) {
-            FileInfo fInfo = newList.files[i];
-            newList.files[i] = FileInfoFactory.changedFolderInfo(fInfo,
-                currentInfo);
+        if (newList.files != null) {
+            for (int i = 0; i < newList.files.length; i++) {
+                FileInfo fInfo = newList.files[i];
+                newList.files[i] = FileInfoFactory.changedFolderInfo(fInfo,
+                    currentInfo);
+            }
         }
 
         // Update DAO
