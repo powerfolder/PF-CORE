@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * A Invitation to a folder
@@ -227,7 +228,7 @@ public class Invitation extends FolderRelatedMessage {
 
     private static String getAppsDir() {
         if (OSUtil.isWindowsSystem()) {
-            return Util.getAppDataCurrentUser();
+            return WinUtils.getAppDataCurrentUser();
         }
 
         // Loading a Windows invitation on a Mac/Unix box:

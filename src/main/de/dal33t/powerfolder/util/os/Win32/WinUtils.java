@@ -198,4 +198,34 @@ public class WinUtils extends Loggable {
         }
         return new File(programFiles + "/PowerFolder.com/PowerFolder");
     }
+
+    /**
+     * @return the APPDATA directory for placing application data (Current
+     *         user).
+     */
+    public static String getAppDataCurrentUser() {
+        String appDataname = System.getenv("APPDATA");
+        if (StringUtils.isBlank(appDataname) && WinUtils.getInstance() != null)
+        {
+            appDataname = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_APP_DATA, false);
+        }
+        if (StringUtils.isBlank(appDataname)) {
+            LOG.severe("Unable to find APPDATA (current user) directory");
+        }
+        return appDataname;
+    }
+
+    /**
+     * @return the APPDATA directory for placing application data (All users).
+     */
+    public static String getAppDataAllUsers() {
+        if (WinUtils.getInstance() != null) {
+            return WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_COMMON_APP_DATA, false);
+        } else {
+            LOG.severe("Unable to find APPDATA (all users) directory");
+            return null;
+        }
+    }
 }
