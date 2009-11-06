@@ -27,6 +27,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -694,7 +695,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             validate();
             return true;
         } catch (Exception e) {
-            log.severe("Invalid: " + toDetailString());
+            log
+                .log(Level.WARNING, "Invalid: " + toDetailString() + ". " + e,
+                    e);
             return false;
         }
     }
