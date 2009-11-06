@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.clientserver;
 /**
  * Exception that occoured while invoking the remove service.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class RemoteCallException extends RuntimeException {
