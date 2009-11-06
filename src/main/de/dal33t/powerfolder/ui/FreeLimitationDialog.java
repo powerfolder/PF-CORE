@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
 /**
  * A dialog that gets displayed when the free version hits its limits.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class FreeLimitationDialog extends BaseDialog {
