@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * <p>
  * By default ALL features are enabled.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public enum Feature {
