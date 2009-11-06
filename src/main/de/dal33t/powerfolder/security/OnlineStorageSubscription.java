@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 /**
  * Capsulates all the account information for the Online Storage.
  * 
- * @author <a href="mailto:sprajc@riege.com">Christian Sprajc</a>
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
 public class OnlineStorageSubscription extends Model implements Serializable {
