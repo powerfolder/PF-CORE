@@ -686,6 +686,20 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
+     * @return true if this instance is valud. false if is broken,e.g. Negative
+     *         Time
+     */
+    public boolean isValid() {
+        try {
+            validate();
+            return true;
+        } catch (Exception e) {
+            log.severe("Invalid: " + toDetailString());
+            return false;
+        }
+    }
+
+    /**
      * Validates the state of the FileInfo. This should actually not be public -
      * checks should be made while constructing this class (by
      * constructor/deserialization).
@@ -720,9 +734,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
 
         folderInfo = folderInfo.intern();
-        
+
         // TODO MemberInfo.intern
-        
+
         // validate();
     }
 }

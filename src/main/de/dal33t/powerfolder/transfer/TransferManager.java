@@ -1620,6 +1620,10 @@ public class TransferManager extends PFComponent {
                 return null;
             }
 
+            if (!fInfo.isValid()) {
+                return null;
+            }
+
             // Now walk through all sources and get the best one
             // Member bestSource = null;
             FileInfo newestVersionFile = fInfo.getNewestVersion(getController()

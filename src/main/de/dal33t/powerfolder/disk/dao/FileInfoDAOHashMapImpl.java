@@ -115,6 +115,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (candidateFile == null) {
                 continue;
             }
+            if (!candidateFile.isValid()) {
+                continue;
+            }
             // Check if remote file in newer
             if (newestVersion == null
                 || candidateFile.isNewerThan(newestVersion))
