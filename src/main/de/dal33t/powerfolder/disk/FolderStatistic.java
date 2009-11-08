@@ -259,7 +259,7 @@ public class FolderStatistic extends PFComponent {
             FileInfo myFileInfo = folder.getFile(fileInfo);
 
             if (newestFileInfo == null) {
-                logSevere("Newest version not found for "
+                logWarning("Newest version not found for "
                     + fileInfo.toDetailString());
                 // newestFileInfo = fileInfo;
                 continue;
