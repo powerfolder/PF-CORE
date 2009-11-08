@@ -41,7 +41,6 @@ import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentMap;
 
@@ -352,8 +351,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
             DiskItemComparator comparator = new DiskItemComparator(
-                fileInfoComparatorType, folder == null ? null : folder
-                    .getDirectory());
+                fileInfoComparatorType);
             synchronized (diskItems) {
                 if (sortAscending) {
                     Collections.sort(diskItems, comparator);

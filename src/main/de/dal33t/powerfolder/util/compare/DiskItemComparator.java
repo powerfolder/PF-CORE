@@ -23,7 +23,6 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -49,7 +48,6 @@ public class DiskItemComparator extends Loggable implements
     private static final int BEFORE = -1;
     private static final int AFTER = 1;
 
-    private Directory directory;
     private int sortBy;
     private static final DiskItemComparator[] comparators;
 
@@ -67,11 +65,6 @@ public class DiskItemComparator extends Loggable implements
 
     public DiskItemComparator(int sortBy) {
         this.sortBy = sortBy;
-    }
-
-    public DiskItemComparator(int sortBy, Directory directory) {
-        this.sortBy = sortBy;
-        this.directory = directory;
     }
 
     public static DiskItemComparator getComparator(int sortByArg) {

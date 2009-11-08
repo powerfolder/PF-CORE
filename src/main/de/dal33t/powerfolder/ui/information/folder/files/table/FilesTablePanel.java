@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -47,6 +48,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -81,6 +84,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     private RemoveIgnoreAction removeIgnoreAction;
     private UnmarkAction unmarkAction;
     private SingleFileTransferAction singleFileTransferAction;
+    private RestoreArchiveAction restoreArchiveAction;
     private JPopupMenu fileMenu;
     private JScrollPane tableScroller;
     private JLabel emptyLabel;
@@ -173,6 +177,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         unmarkAction.setEnabled(false);
         singleFileTransferAction = new SingleFileTransferAction(getController());
         singleFileTransferAction.setEnabled(false);
+        restoreArchiveAction = new RestoreArchiveAction(getController());
+        restoreArchiveAction.setEnabled(false);
     }
 
     /**
@@ -189,6 +195,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         fileMenu.add(addIgnoreAction);
         fileMenu.add(removeIgnoreAction);
         fileMenu.add(unmarkAction);
+        fileMenu.add(restoreArchiveAction);
         // fileMenu.add(singleFileTransferAction);
     }
 
@@ -509,6 +516,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                     singleFileTransferAction.setEnabled(true);
 
+                    restoreArchiveAction.setEnabled(fileInfo.isDeleted());
+
                     done = true;
                 } else if (diskItem != null && diskItem instanceof Directory) {
                     Directory diretory = (Directory) diskItem;
@@ -534,6 +543,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 removeIgnoreAction.setEnabled(false);
                 unmarkAction.setEnabled(false);
                 singleFileTransferAction.setEnabled(false);
+                restoreArchiveAction.setEnabled(false);
             }
         }
     }
@@ -606,6 +616,30 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                         directory.getRelativeName() + "/*");
                 }
             }
+        }
+    }
+
+    private class RestoreArchiveAction extends BaseAction {
+
+        private RestoreArchiveAction(Controller controller) {
+            super("action_restore_archive", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
+            for (DiskItem diskItem : getSelectedRows()) {
+                if (diskItem != null && diskItem instanceof FileInfo) {
+                    FileInfo fileInfo = (FileInfo) diskItem;
+                    fileInfosToRestore.add(fileInfo);
+                }
+            }
+
+            PFWizard wizard = new PFWizard(getController());
+
+            MultiFileRestorePanel panel = new MultiFileRestorePanel(
+                    getController(), tableModel.getFolder(),
+                    fileInfosToRestore);
+            wizard.open(panel);
         }
     }
 
