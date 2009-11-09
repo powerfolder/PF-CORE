@@ -88,30 +88,25 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder homepage
      */
-    PROVIDER_URL(
-        "provider.url.main",
-        "http://www.powerfolder.com/?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_URL("provider.url.main", "http://www.powerfolder.com"),
 
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL(
-        "provider.url.about",
-        "http://www.powerfolder.com/wiki/Online_Storage?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_ABOUT_URL("provider.url.about",
+        "http://www.powerfolder.com/wiki/Online_Storage"),
 
     /**
      * Quickstart guides to PowerFolder
      */
-    PROVIDER_QUICKSTART_URL(
-        "provider.url.quickstart",
-        "http://www.powerfolder.com/quickstart.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_QUICKSTART_URL("provider.url.quickstart",
+        "http://www.powerfolder.com/quickstart.html"),
 
     /**
      * URL of the PowerFolder Support
      */
-    PROVIDER_SUPPORT_URL(
-        "provider.url.support",
-        "http://www.powerfolder.com/support.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_SUPPORT_URL("provider.url.support",
+        "http://www.powerfolder.com/support.html"),
 
     /**
      * URL where bugs or tickets can be filed.
@@ -123,16 +118,14 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Pro page
      */
-    PROVIDER_BUY_URL(
-        "provider.url.buy",
-        "http://www.powerfolder.com/buynow.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_BUY_URL("provider.url.buy",
+        "http://www.powerfolder.com/buynow.html"),
 
     /**
      * URL where the contact form resides
      */
-    PROVIDER_CONTACT_URL(
-        "provider.url.contact",
-        "http://www.powerfolder.com/contact.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_CONTACT_URL("provider.url.contact",
+        "http://www.powerfolder.com/contact.html"),
 
     /**
      * URL of the PowerFolder Wiki. ATTENTION: This URL gets extended by article
