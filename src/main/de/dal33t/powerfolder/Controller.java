@@ -63,8 +63,9 @@ import org.apache.commons.cli.CommandLine;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
+import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderBeta;
-import de.dal33t.powerfolder.distribution.PowerFolderClient;
+import de.dal33t.powerfolder.distribution.PowerFolderPro;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -127,7 +128,8 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.1 - 1.0.3.44"; // - 1.0.3.43";
+    public static final String PROGRAM_VERSION = "4.0.1 - 1.0.3.49"; // -
+    // 1.0.3.49";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -188,11 +190,6 @@ public class Controller extends PFComponent {
      * If running is silent mode
      */
     private volatile boolean silentMode;
-
-    /**
-     * Contains the configuration for the update check
-     */
-    private Updater.UpdateSetting updateSettings;
 
     /**
      * cache the networking mode in a field so we dont heve to do all this
@@ -355,8 +352,6 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
-        // Default updatesettings
-        updateSettings = new Updater.UpdateSetting();
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
@@ -1569,14 +1564,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * @return the currently configured update settings
+     * @return the configured update settings for the current distribution
      */
     public Updater.UpdateSetting getUpdateSettings() {
-        return updateSettings;
-    }
-
-    public void setUpdateSettings(Updater.UpdateSetting someSettings) {
-        updateSettings = someSettings;
+        return distribution.createUpdateSettings();
     }
 
     /**
@@ -2127,11 +2118,8 @@ public class Controller extends PFComponent {
                 distribution = br;
             }
             if (distribution == null) {
-                if (Feature.BETA.isEnabled()) {
-                    distribution = new PowerFolderBeta();
-                } else {
-                    distribution = new PowerFolderClient();
-                }
+                logWarning("Distributon not found. Falling back to PowerFolder Basic");
+                distribution = new PowerFolderBasic();
             }
             logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
