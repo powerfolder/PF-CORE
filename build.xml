@@ -56,17 +56,20 @@ For creation of the installer:
 		</tstamp>
 
 		<!-- set global properties for this build -->
-		<property name="InstallerScriptName" value="script.nsi" />
+		<property name="skins.src.dir" location="src/skins" />
+
+		<property name="distribution.dir" location="src/distribution/PowerFolderBasic" />
+		<property name="distribution.installer.dir" location="${distribution.dir}/installer" />
 
 		<!-- Source dirs -->
 		<property name="src.dir" location="src" />
 		<property name="main.src.dir" location="src/main" />
 		<property name="jwf.src.dir" location="src/jwf" />
-        <property name="etc.dir" location="src/etc" />
-        <property name="applet.dir" location="src/applet" />
-        <property name="demo.src.dir" location="src/demo" />
+		<property name="etc.dir" location="src/etc" />
+		<property name="applet.dir" location="src/applet" />
+		<property name="demo.src.dir" location="src/demo" />
 		<property name="test.src.dir" location="src/test" />
-        <property name="skins.src.dir" location="src/skins" />
+		<property name="skins.src.dir" location="src/skins" />
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
@@ -83,23 +86,23 @@ For creation of the installer:
 			<include name="ehcache-1.6.0.jar" />
 			<include name="l2fprod-common-directorychooser.jar" />
 
-            <include name="synthetica/commons-logging-1.1.jar" />
-            <include name="synthetica/flexdock.jar" />
-            <include name="synthetica/swing-worker-1.1.jar" />
-            <include name="synthetica/swingx.jar" />
-            <include name="synthetica/synthetica.jar" />
-            <include name="synthetica/syntheticaAddons.jar" />
-            <include name="synthetica/syntheticaBlackMoon.jar" />
-            <include name="synthetica/syntheticaBlackStar.jar" />
-            <include name="synthetica/syntheticaBlueIce.jar" />
-            <include name="synthetica/syntheticaBlueMoon.jar" />
-            <include name="synthetica/syntheticaBlueSteel.jar" />
-            <include name="synthetica/syntheticaGreenDream.jar" />
-            <include name="synthetica/syntheticaMauveMetallic.jar" />
-            <include name="synthetica/syntheticaOrangeMetallic.jar" />
-            <include name="synthetica/syntheticaSilverMoon.jar" />
-            <include name="synthetica/syntheticaSkyMetallic.jar" />
-            <include name="synthetica/syntheticaWhiteVision.jar" />
+			<include name="synthetica/commons-logging-1.1.jar" />
+			<include name="synthetica/flexdock.jar" />
+			<include name="synthetica/swing-worker-1.1.jar" />
+			<include name="synthetica/swingx.jar" />
+			<include name="synthetica/synthetica.jar" />
+			<include name="synthetica/syntheticaAddons.jar" />
+			<include name="synthetica/syntheticaBlackMoon.jar" />
+			<include name="synthetica/syntheticaBlackStar.jar" />
+			<include name="synthetica/syntheticaBlueIce.jar" />
+			<include name="synthetica/syntheticaBlueMoon.jar" />
+			<include name="synthetica/syntheticaBlueSteel.jar" />
+			<include name="synthetica/syntheticaGreenDream.jar" />
+			<include name="synthetica/syntheticaMauveMetallic.jar" />
+			<include name="synthetica/syntheticaOrangeMetallic.jar" />
+			<include name="synthetica/syntheticaSilverMoon.jar" />
+			<include name="synthetica/syntheticaSkyMetallic.jar" />
+			<include name="synthetica/syntheticaWhiteVision.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
@@ -119,7 +122,8 @@ For creation of the installer:
 		<property name="build.reports.dir" location="${output.dir}/test-reports" />
 		<property name="dist.dir" location="${output.dir}/dist" />
 		<property name="javadoc.dir" location="${output.dir}/api-docs" />
-	    <property name="debug.dir" location="${output.dir}/debug" />
+		<property name="debug.dir" location="${output.dir}/debug" />
+		<property name="dist.installer.dir" location="${InstallerFilesLocation}/dist" />
 
 		<property name="javadoc.packages" value="de.dal33t" />
 		<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
@@ -144,7 +148,7 @@ For creation of the installer:
 
 			<src path="${main.src.dir}" />
 			<src path="${jwf.src.dir}" />
-            <src path="${skins.src.dir}" />
+			<src path="${skins.src.dir}" />
 		</javac>
 
 		<!-- copy files from etc to include in jar -->
@@ -154,7 +158,7 @@ For creation of the installer:
 		</copy>
 		<copy todir="${build.dir}">
 			<fileset dir="${skins.src.dir}">
-				<exclude name="**/*.java"/>
+				<exclude name="**/*.java" />
 			</fileset>
 		</copy>
 	</target>
@@ -177,7 +181,7 @@ For creation of the installer:
 			<fileset file="${main.src.dir}/PowerFolder-LICENSE.txt" />
 		</copy>
 	</target>
-	
+
 	<target name="jar-unsigned" depends="compile, dist-misc">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
@@ -196,7 +200,7 @@ For creation of the installer:
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true" duplicate="preserve">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -204,6 +208,10 @@ For creation of the installer:
 				<attribute name="Sealed" value="true" />
 				<attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
 			</manifest>
+			<fileset dir="${distribution.dir}">
+				<include name="**/*" />
+				<exclude name="installer**/*" />
+			</fileset>
 			<zipgroupfileset refid="libs" />
 		</jar>
 
@@ -211,26 +219,21 @@ For creation of the installer:
 	</target>
 
 	<!-- generate an installer  -->
-	<target name="prepare-installer" depends="init">
+	<target name="prepare-installer" depends="jar">
+		<mkdir dir="${dist.installer.dir}" />
+		<copy file="${distribution.installer.dir}\settings.nsh" todir="${InstallerFilesLocation}" overwrite="true" />
 		<copy todir="${InstallerFilesLocation}\images" overwrite="true">
-			<fileset dir="${InstallerFilesLocation}\resources-free\images" />
+			<fileset dir="${distribution.installer.dir}\images" />
 		</copy>
 		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
-			<fileset dir="${InstallerFilesLocation}\resources-free\files" />
+			<fileset dir="${distribution.installer.dir}\files" />
 		</copy>
-		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
-			<fileset file="${dist.dir}\PowerFolder.jar" />
-		</copy>
-		<copy todir="${InstallerFilesLocation}\files" overwrite="true">
-			<fileset file="${etc.dir}\ReleaseNotes.txt" />
-		</copy>
-		<copy file="${main.src.dir}\PowerFolder-LICENSE.txt"
-			tofile="${InstallerFilesLocation}\files\License.txt"
-			overwrite="true" />
+		<copy file="${dist.dir}\PowerFolder.jar" todir="${InstallerFilesLocation}\files" overwrite="true" />
+		<copy file="${etc.dir}\ReleaseNotes.txt" todir="${InstallerFilesLocation}\files" overwrite="true" />
 	</target>
 
-	<target name="installer" depends="jar, prepare-installer" description="Generate the installer for the free-version">
-		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 script.nsi -->
+	<target name="installer" depends="prepare-installer" description="Generate the installer for the free-version">
+		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 installer-pro.nsi -->
 		<property name="versionString" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
 		<exec dir="${InstallerFilesLocation}" executable="${InstallerGeneratorProgram}">
 			<arg value="/DAPPVERSION=v${versionString}" />
@@ -239,11 +242,25 @@ For creation of the installer:
 			<arg value="/DVER_REVISION=${RevisionVersion}" />
 			<!-- FIXME: maybe add a build number (or date:time) here? -->
 			<arg value="/DVER_BUILD=0" />
-			<arg value="${InstallerScriptName}" />
+			<arg value="/DJRE_VERSION=${JRE_VERSION}" />
+			<arg value="/DJRE_URL=${JRE_URL}" />
+			<arg value="installer-pro.nsi" />
 		</exec>
 		<copy todir="${dist.dir}">
-			<fileset file="${InstallerFilesLocation}\PowerFolder_*_Win32_Installer.exe" />
+			<fileset file="${dist.installer.dir}\**.*" />
 		</copy>
+
+		<available file="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Win32_Installer.exe" property="installer.exe" value="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Win32_Installer.exe" />
+
+		<!-- #1497: Sign installer EXE -->
+		<exec executable="${InstallerSignProgram}">
+			<arg value="sign" />
+			<arg value="/f" />
+			<arg value="${KeystoreLocation}" />
+			<arg value="/p" />
+			<arg value="${SignPassword}" />
+			<arg value="${installer.exe}" />
+		</exec>
 	</target>
 
 	<!-- clean the working dirs -->
@@ -288,7 +305,7 @@ For creation of the installer:
 				</fileset>
 			</batchtest>
 		</junit>
-		
+
 		<junitreport todir="${build.reports.dir}">
 			<fileset dir="${build.reports.dir}/raw/">
 				<include name="TEST-*.xml" />
@@ -317,33 +334,33 @@ For creation of the installer:
 
 			<doctitle>
 				<![CDATA[<h1>PowerFolder API Documentation</h1>]]></doctitle>
-		    <!-- J2SE API. -->
-		    <link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-	    </javadoc>
-    </target>
+		<!-- J2SE API. -->
+		<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
+	</javadoc>
+</target>
 
-    <!-- Build the download applet. -->
-    <target name="jar-applet" depends="init">
+<!-- Build the download applet. -->
+<target name="jar-applet" depends="init">
 
-        <mkdir dir="${dist.dir}" />
-        <mkdir dir="${build.dir}" />
+	<mkdir dir="${dist.dir}" />
+	<mkdir dir="${build.dir}" />
 
-        <javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
-            <compilerarg value="-Xlint:${Unchecked}" />
-            <compilerarg value="-Xlint:${Fallthrough}" />
+	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+		<compilerarg value="-Xlint:${Unchecked}" />
+		<compilerarg value="-Xlint:${Fallthrough}" />
 
-            <src path="${applet.dir}" />
-        </javac>
+		<src path="${applet.dir}" />
+	</javac>
 
-        <!-- copy files from etc to include in jar -->
-        <copy todir="${dist.dir}">
-            <fileset dir="${applet.dir}">
-            	<include name="**/*.html" />
-            </fileset>
-        </copy>
+	<!-- copy files from etc to include in jar -->
+	<copy todir="${dist.dir}">
+		<fileset dir="${applet.dir}">
+			<include name="**/*.html" />
+		</fileset>
+	</copy>
 
 
-       <!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
             <manifest>
                 <attribute name="Built-By" value="${BuildBy}" />
                 <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -352,56 +369,54 @@ For creation of the installer:
                 <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
             </manifest>
         </jar>-->
-    </target>
+</target>
 
-    <target name="demo" depends="init" description="Builds a pair of demo Skins">
+<target name="demo" depends="init" description="Builds a pair of demo Skins">
 
-        <delete dir="${build.dir}"/>
-        <delete dir="${dist.dir}"/>
+	<delete dir="${build.dir}" />
+	<delete dir="${dist.dir}" />
 
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${dist.dir}"/>
+	<mkdir dir="${build.dir}" />
+	<mkdir dir="${dist.dir}" />
 
-        <javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}"
-               debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+	<javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
 
-            <!-- javac 1.5 specific warnings -->
-            <compilerarg value="-Xlint:${Unchecked}"/>
-            <compilerarg value="-Xlint:${Fallthrough}"/>
+		<!-- javac 1.5 specific warnings -->
+		<compilerarg value="-Xlint:${Unchecked}" />
+		<compilerarg value="-Xlint:${Fallthrough}" />
 
-            <classpath>
-                <fileset refid="libs"/>
-                <fileset refid="testlibs"/>
-            </classpath>
+		<classpath>
+			<fileset refid="libs" />
+			<fileset refid="testlibs" />
+		</classpath>
 
-            <src path="${demo.src.dir}"/>
-            <src path="${main.src.dir}"/>
-            <src path="${jwf.src.dir}"/>
+		<src path="${demo.src.dir}" />
+		<src path="${main.src.dir}" />
+		<src path="${jwf.src.dir}" />
 
-        </javac>
+	</javac>
 
-        <copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo"/>
-        <copy file="${demo.src.dir}/demo/synth2.xml" todir="${build.dir}/demo"/>
-        <copy file="${demo.src.dir}/CustomIcons.properties" todir="${build.dir}"/>
-        <copy file="${demo.src.dir}/OtherIcons.properties" todir="${build.dir}"/>
-        <copy file="${demo.src.dir}/icons/PowerFolderDemo.png" todir="${build.dir}/icons"/>
-        <copy file="${demo.src.dir}/icons/PowerFolderDemo2.png" todir="${build.dir}/icons"/>
-        <copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin"
-              todir="${build.dir}/META-INF/services"/>
+	<copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo" />
+	<copy file="${demo.src.dir}/demo/synth2.xml" todir="${build.dir}/demo" />
+	<copy file="${demo.src.dir}/CustomIcons.properties" todir="${build.dir}" />
+	<copy file="${demo.src.dir}/OtherIcons.properties" todir="${build.dir}" />
+	<copy file="${demo.src.dir}/icons/PowerFolderDemo.png" todir="${build.dir}/icons" />
+	<copy file="${demo.src.dir}/icons/PowerFolderDemo2.png" todir="${build.dir}/icons" />
+	<copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin" todir="${build.dir}/META-INF/services" />
 
-        <jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
-            <include name="demo/**"/>
-            <include name="icons/**"/>
-            <include name="META-INF/**"/>
-            <include name="CustomIcons.properties"/>
-            <include name="OtherIcons.properties"/>
-            <manifest>
-                <attribute name="Built-By" value="${BuildBy}"/>
-                <attribute name="BuildDateTime" value="${BuildDateTime}"/>
-                <attribute name="Sealed" value="false"/>
-            </manifest>
-        </jar>
+	<jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
+		<include name="demo/**" />
+		<include name="icons/**" />
+		<include name="META-INF/**" />
+		<include name="CustomIcons.properties" />
+		<include name="OtherIcons.properties" />
+		<manifest>
+			<attribute name="Built-By" value="${BuildBy}" />
+			<attribute name="BuildDateTime" value="${BuildDateTime}" />
+			<attribute name="Sealed" value="false" />
+		</manifest>
+	</jar>
 
-    </target>
+</target>
 
 </project>
