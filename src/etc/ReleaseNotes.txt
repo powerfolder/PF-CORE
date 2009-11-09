@@ -1,29 +1,13 @@
-PowerFolder Version 4.0.1 - http://www.powerfolder.com
+PowerFolder Version 4.0.2 - http://www.powerfolder.com
 
 = New features =
- * User interface can now be locked. Unlock with PowerFolder account email and password.
-
-= Improvements =
- * Added less I/O and CPU intense transfer mode "Backup Source (once a hour)".
- * Automatic chooses less I/O and CPU intensive transfer modes on large folders (>10.000 files).
- * Slightly reduced I/O and CPU while scanning folders for changes.
- * System service auto-update now also tries to update windows installation path of PowerFolder.
- * Configuration can now be the same for ALL users on a computer.
- * Added Spanish installer texts. 
- * Slightly changed license texts.
- * Update splash screen.
-
+ * PowerFolder is now again available as open source version at sourceforge.net.
+   Please keep in mind that the open source version don't contain important features
+   like transfer encryption and secure computer verification.
+   
 = Bugfixes =
- * Now correctly migrates configuration/settings from 3.X version on upgrade to version 4.
- * Installer does not longer remove program shortcuts on upgrade.
- * Correctly detects disconnected drives (again) for example external HDDs, NAS or USB sticks.
- * Fixed mass delete protection detection.
- * Fixed wrong "Unsynchronized folder" problem although folders were actually in sync.
- * Fixed memory leak on big file lists.
- * Filename problems now show the affected filename.
- * Corrected logo in about box.
- * Minor other bugfixes.
-
+ * Corrected problem that sometimes arises when setting up folders twice.
+ * Several other minor bugfixes.
 
 = Important for 3.X users =
 
@@ -59,6 +43,34 @@ Email	   : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.0.1
+-------------
+
+= New features =
+ * User interface can now be locked. Unlock with PowerFolder account email and password.
+
+= Improvements =
+ * Added less I/O and CPU intense transfer mode "Backup Source (once a hour)".
+ * Automatic chooses less I/O and CPU intensive transfer modes on large folders (>10.000 files).
+ * Slightly reduced I/O and CPU while scanning folders for changes.
+ * System service auto-update now also tries to update windows installation path of PowerFolder.
+ * Configuration can now be the same for ALL users on a computer.
+ * Added Spanish installer texts. 
+ * Slightly changed license texts.
+ * Update splash screen.
+
+= Bugfixes =
+ * Now correctly migrates configuration/settings from 3.X version on upgrade to version 4.
+ * Installer does not longer remove program shortcuts on upgrade.
+ * Correctly detects disconnected drives (again) for example external HDDs, NAS or USB sticks.
+ * Fixed mass delete protection detection.
+ * Fixed wrong "Unsynchronized folder" problem although folders were actually in sync.
+ * Fixed memory leak on big file lists.
+ * Filename problems now show the affected filename.
+ * Corrected logo in about box.
+ * Minor other bugfixes.
+
 
 Version 4.0.0
 -------------
