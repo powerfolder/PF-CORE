@@ -335,8 +335,8 @@ public class HomeTab extends PFUIComponent {
 
         int row = 1;
 
-        builder.addSeparator(Translation
-            .getTranslation("home_tab.status"), cc.xy(1, row));
+        builder.addSeparator(Translation.getTranslation("home_tab.status"), cc
+            .xy(1, row));
         row += 2;
         builder.add(synchronizationStatusLabel, cc.xy(1, row));
         row += 2;
@@ -509,6 +509,12 @@ public class HomeTab extends PFUIComponent {
             licenseInfoSection.setDaysValid(-1);
         }
 
+        if (!ProUtil.isRunningProVersion()) {
+            showBuyNowLink(Translation
+                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+            return;
+        }
+
         // Display buynow link: If is trial or about to expire or not allowed to
         // run
         boolean trial = ProUtil.isTrial(getController());
@@ -611,8 +617,8 @@ public class HomeTab extends PFUIComponent {
                 // Not running
                 syncStatsText = Translation
                     .getTranslation("home_tab.not_running");
-            } else if (getController().getFolderRepository().getFoldersCount()
-                    == 0) {
+            } else if (getController().getFolderRepository().getFoldersCount() == 0)
+            {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("home_tab.no_folders");
@@ -633,14 +639,13 @@ public class HomeTab extends PFUIComponent {
             } else {
                 String syncDateText;
                 if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 30)) {
-                     syncDateText = Translation.getTranslation(
-                            "home_tab.sync_unknown");
+                    syncDateText = Translation
+                        .getTranslation("home_tab.sync_unknown");
                 } else {
                     String date = Format.formatDateShort(syncDate);
                     syncDateText = synced ? Translation.getTranslation(
-                        "home_tab.last_synced", date) :
-                            Translation.getTranslation(
-                        "home_tab.sync_eta", date);
+                        "home_tab.last_synced", date) : Translation
+                        .getTranslation("home_tab.sync_eta", date);
                 }
                 synchronizationDateLabel.setVisible(true);
                 synchronizationDateLabel.setText(syncDateText);

@@ -168,6 +168,10 @@ public enum PreferencesEntry {
         return controller.getPreferences().get(preferencesKey,
             (String) defaultValue);
     }
+    
+    public String getDefaultValue() {
+        return (String) defaultValue;
+    }
 
     /**
      * the preferences entry if its a Integer.

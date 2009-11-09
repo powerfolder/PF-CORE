@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderBasic extends AbstractDistribution {
@@ -43,6 +45,11 @@ public class PowerFolderBasic extends AbstractDistribution {
             || PowerFolderBeta.isBetaServer(controller))
         {
             resetServer(controller);
+        }
+
+        String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
+        if (skinName.equals(PreferencesEntry.SKIN_NAME.getDefaultValue())) {
+            PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
         }
 
         // Load different Provider URLs
