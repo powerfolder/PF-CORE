@@ -19,15 +19,14 @@
  */
 package de.dal33t.powerfolder.distribution;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
-public class PowerFolderClient extends AbstractDistribution {
+public class PowerFolderPro extends AbstractDistribution {
 
     public String getName() {
-        return "PowerFolder";
+        return "PowerFolderPro";
     }
 
     public void init(Controller controller) {
@@ -48,45 +47,16 @@ public class PowerFolderClient extends AbstractDistribution {
     }
 
     public UpdateSetting createUpdateSettings() {
-        return null;
+        // Pro URLs
+        UpdateSetting settings = new UpdateSetting();
+        settings.versionCheckURL = "http://checkversion.powerfolder.com/PowerFolderPro_LatestVersion.txt";
+        settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolderPro_DownloadLocation.txt";
+        settings.releaseExeURL = "http://download.powerfolder.com/pro/win/PowerFolder_Latest_Win32_Installer.exe";
+        return settings;
     }
 
     public boolean isRelay(Member node) {
         // Our public network strategy. Not very smart.
         return node.getId().contains("RELAY");
-    }
-
-    // Internal ***************************************************************
-
-    private void resetServer(Controller c) {
-        logInfo("Resetting server connection to "
-            + ConfigurationEntry.SERVER_HOST.getDefaultValue());
-        removeValue(c, ConfigurationEntry.SERVER_NAME);
-        removeValue(c, ConfigurationEntry.SERVER_WEB_URL);
-        removeValue(c, ConfigurationEntry.SERVER_NODEID);
-        removeValue(c, ConfigurationEntry.SERVER_HOST);
-    }
-
-    private static void resetNetworkID(Controller c) {
-        removeValue(c, ConfigurationEntry.NETWORK_ID);
-    }
-
-    private static void resetProviderURLs(Controller c) {
-        removeValue(c, ConfigurationEntry.PROVIDER_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_ABOUT_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_QUICKSTART_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_BUY_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_CONTACT_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_WIKI_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
-    }
-
-    private static void removeValue(Controller c, ConfigurationEntry entry) {
-        if (!entry.getValue(c).equals(entry.getDefaultValue())) {
-            // Change back to default
-            entry.removeValue(c);
-        }
     }
 }

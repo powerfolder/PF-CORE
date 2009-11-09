@@ -19,22 +19,17 @@
  */
 package de.dal33t.powerfolder.distribution;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
-public class PowerFolderBeta extends AbstractDistribution {
-    static final String BETA_SERVER_HOST = "relay001.node.powerfolder.com";
-
-    private Controller controller;
+public class PowerFolderBasic extends AbstractDistribution {
 
     public String getName() {
-        return "4.0 Beta";
+        return "PowerFolderBasic";
     }
 
     public void init(Controller controller) {
-        this.controller = controller;
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
         // distribution
@@ -44,34 +39,25 @@ public class PowerFolderBeta extends AbstractDistribution {
         resetProviderURLs(controller);
 
         // Reset primary server if not PowerFolder server
-        // if (!isPowerFolderServer(controller)) {
-        resetToBetaServer(controller);
-        // }
+        if (!isPowerFolderServer(controller)
+            || PowerFolderBeta.isBetaServer(controller))
+        {
+            resetServer(controller);
+        }
     }
 
     public UpdateSetting createUpdateSettings() {
-        return controller.getOSClient().createUpdateSettings();
+        // Use standard URLs
+        UpdateSetting settings = new UpdateSetting();
+        settings.versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
+        settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
+        settings.releaseExeURL = "http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.exe";
+        return settings;
     }
 
     public boolean isRelay(Member node) {
-        // Server also acts as relay. #1488
-        return controller.getOSClient().isServer(node);
+        // Our public network strategy. Not very smart.
+        return node.getId().contains("RELAY");
     }
 
-    public static boolean isBetaServer(Controller c) {
-        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
-        return host.contains(BETA_SERVER_HOST);
-    }
-
-    // Internal ***************************************************************
-
-    private void resetToBetaServer(Controller c) {
-        logInfo("Setting beta server connect");
-        ConfigurationEntry.SERVER_HOST.setValue(c,
-            "relay001.node.powerfolder.com");
-        ConfigurationEntry.SERVER_NODEID.setValue(c, "RELAY001");
-        ConfigurationEntry.SERVER_NAME.setValue(c, "Online Storage Beta");
-        ConfigurationEntry.SERVER_WEB_URL.setValue(c,
-            "https://access.powerfolder.com/node/beta");
-    }
 }

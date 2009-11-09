@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
-    
+
     /**
      * @return true if the credentials in the about box should be shown.
      */
@@ -97,11 +97,36 @@ public abstract class AbstractDistribution extends Loggable implements
             return false;
         }
     }
-    
-    protected static void removeValue(Controller c, ConfigurationEntry entry) {
+
+    protected static final void removeValue(Controller c,
+        ConfigurationEntry entry)
+    {
         if (!entry.getValue(c).equals(entry.getDefaultValue())) {
             // Change back to default
             entry.removeValue(c);
         }
+    }
+
+    protected static final void resetServer(Controller c) {
+        removeValue(c, ConfigurationEntry.SERVER_NAME);
+        removeValue(c, ConfigurationEntry.SERVER_WEB_URL);
+        removeValue(c, ConfigurationEntry.SERVER_NODEID);
+        removeValue(c, ConfigurationEntry.SERVER_HOST);
+    }
+
+    protected static final void resetNetworkID(Controller c) {
+        removeValue(c, ConfigurationEntry.NETWORK_ID);
+    }
+
+    protected static final void resetProviderURLs(Controller c) {
+        removeValue(c, ConfigurationEntry.PROVIDER_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_ABOUT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_QUICKSTART_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_BUY_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_CONTACT_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_WIKI_URL);
+        removeValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
     }
 }
