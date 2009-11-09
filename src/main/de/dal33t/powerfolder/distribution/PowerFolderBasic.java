@@ -44,6 +44,9 @@ public class PowerFolderBasic extends AbstractDistribution {
         {
             resetServer(controller);
         }
+
+        // Load different Provider URLs
+        loadPreConfigFromClasspath(controller.getConfig());
     }
 
     public UpdateSetting createUpdateSettings() {
