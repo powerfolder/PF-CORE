@@ -1,27 +1,29 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.render;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
@@ -59,21 +61,23 @@ public class SysTrayBlinkManager extends PFUIComponent {
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
-        uiController.getApplicationModel().getChatModel()
-                .addChatModelListener(new MyChatModelListener());
+        uiController.getApplicationModel().getChatModel().addChatModelListener(
+            new MyChatModelListener());
         uiController.getApplicationModel().getWarningsModel()
-                .getWarningsCountVM().addValueChangeListener(
+            .getWarningsCountVM().addValueChangeListener(
                 new MyWarningsCountListener());
         uiController.getApplicationModel().getReceivedInvitationsModel()
-                .getReceivedInvitationsCountVM().addValueChangeListener(
+            .getReceivedInvitationsCountVM().addValueChangeListener(
                 new MyInvitationsCountListener());
         uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
             .getReceivedAskForFriendshipCountVM().addValueChangeListener(
                 new MyFriendshipCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
             new MyWindowListener());
-        uiController.getController().getFolderRepository().addProblemListenerToAllFolders(
+        getController().getFolderRepository().addProblemListenerToAllFolders(
             new MyProblemListener());
+        getController().getNodeManager().addNodeManagerListener(
+            new MyNodeManagerListener());
     }
 
     /**
@@ -92,11 +96,12 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
     /**
      * Sets the icon flashing.
-     *
+     * 
      * @param flash
      */
     private void flashTrayIcon(boolean flash) {
         flashSysTray.set(flash);
+        update();
     }
 
     /* ------------- */
@@ -111,12 +116,12 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void chatChanged(ChatModelEvent event) {
 
             // Ignore status updates or if ui not iconified
-            if (event.isStatus() ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+            if (event.isStatus()
+                || !uiController.getMainFrame().isIconifiedOrHidden())
+            {
                 return;
             }
             flashTrayIcon(true);
-            update();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -144,7 +149,6 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
         public void windowDeiconified(WindowEvent e) {
             flashTrayIcon(false);
-            update();
         }
 
         /**
@@ -155,7 +159,6 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void windowActivated(WindowEvent e) {
             if (!uiController.getMainFrame().isIconifiedOrHidden()) {
                 flashTrayIcon(false);
-                update();
             }
         }
     }
@@ -168,15 +171,15 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getWarningsModel().getWarningsCountVM().getValue();
+                .getWarningsModel().getWarningsCountVM().getValue();
 
-            if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+            if (count == null || count == 0
+                || !uiController.getMainFrame().isIconifiedOrHidden())
+            {
                 return;
             }
 
             flashTrayIcon(true);
-            update();
         }
     }
 
@@ -188,16 +191,16 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getReceivedInvitationsModel()
-                    .getReceivedInvitationsCountVM().getValue();
+                .getReceivedInvitationsModel().getReceivedInvitationsCountVM()
+                .getValue();
 
-            if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+            if (count == null || count == 0
+                || !uiController.getMainFrame().isIconifiedOrHidden())
+            {
                 return;
             }
 
             flashTrayIcon(true);
-            update();
         }
     }
 
@@ -209,16 +212,16 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                    .getReceivedAskedForFriendshipModel()
-                    .getReceivedAskForFriendshipCountVM().getValue();
+                .getReceivedAskedForFriendshipModel()
+                .getReceivedAskForFriendshipCountVM().getValue();
 
-            if (count == null || count == 0 ||
-                    !uiController.getMainFrame().isIconifiedOrHidden()) {
+            if (count == null || count == 0
+                || !uiController.getMainFrame().isIconifiedOrHidden())
+            {
                 return;
             }
 
             flashTrayIcon(true);
-            update();
         }
     }
 
@@ -228,9 +231,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
             if (!uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
-
             flashTrayIcon(true);
-            update();
         }
 
         public void problemRemoved(Problem problem) {
@@ -240,5 +241,44 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+
+    private class MyNodeManagerListener implements NodeManagerListener {
+
+        public void friendAdded(NodeManagerEvent e) {
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+        }
+
+        public void nodeRemoved(NodeManagerEvent e) {
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            flashTrayIcon(!getController().getNodeManager().isStarted());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
     }
 }

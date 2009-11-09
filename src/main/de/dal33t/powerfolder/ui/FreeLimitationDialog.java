@@ -85,7 +85,7 @@ public class FreeLimitationDialog extends BaseDialog {
             .xy(1, row));
         row += 2;
         builder.addLabel(Translation.getTranslation("free_limit_dialog.reason",
-            "3", "10"), cc.xy(1, row));
+            "3", "5"), cc.xy(1, row));
         row += 2;
         builder
             .addLabel(Translation

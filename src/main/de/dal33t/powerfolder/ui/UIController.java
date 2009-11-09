@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -116,7 +117,7 @@ public class UIController extends PFComponent {
 
     private static final Logger log = Logger.getLogger(UIController.class
         .getName());
-    private static final long TEN_GIG = 10L << 30;
+    private static final long FIVE_GIG = 5L << 30;
 
     public static final int MAIN_FRAME_ID = 0;
     public static final int INFO_FRAME_ID = 1;
@@ -154,6 +155,8 @@ public class UIController extends PFComponent {
     private Skin[] skins;
 
     private Skin activeSkin;
+
+    private boolean limitDialogShown = false;
 
     /**
      * Initializes a new UI controller. open UI with #start
@@ -226,6 +229,7 @@ public class UIController extends PFComponent {
     /**
      * Starts the UI
      */
+    @SuppressWarnings("serial")
     public void start() {
         if (getController().isVerbose()) {
             // EventDispatchThreadHangMonitor.initMonitoring();
@@ -311,9 +315,6 @@ public class UIController extends PFComponent {
             });
         }
 
-        // Check limits
-        detectAndShowLimitDialog();
-
         // Start the blinkers later, so the UI is fully displayed first.
         UIUtil.invokeLaterInEDT(new Runnable() {
             public void run() {
@@ -325,6 +326,22 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
+        // Check limits
+        if (!ProUtil.isRunningProVersion()) {
+            getController().scheduleAndRepeat(new TimerTask() {
+                @Override
+                public void run() {
+                    checkLimits(false);
+                }
+            }, 30L * 1000);
+            getApplicationModel().getLicenseModel().setActivationAction(
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        checkLimits(true);
+                    }
+                });
+        }
+
         // UIUtil.invokeLaterInEDT(new Runnable() {
         // public void run() {
         // PFWizard.openWhatToDoWizard(getController());
@@ -332,19 +349,22 @@ public class UIController extends PFComponent {
         // });
     }
 
-    private void detectAndShowLimitDialog() {
-        if (ProUtil.isRunningProVersion()) {
-            return;
-        }
+    private void checkLimits(boolean forceOpen) {
         long totalFolderSize = calculateTotalLocalSharedSize();
         logFine("Local shared folder size: "
             + Format.formatBytes(totalFolderSize));
-        boolean limitHit = totalFolderSize > TEN_GIG
+        boolean limitHit = totalFolderSize > FIVE_GIG
             || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
             getController().getNodeManager().shutdown();
-            getController().getIOProvider().shutdown();
-            new FreeLimitationDialog(getController()).open();
+            if (!limitDialogShown || forceOpen) {
+                limitDialogShown = true;
+                new FreeLimitationDialog(getController()).open();
+            }
+        } else {
+            if (!getController().getNodeManager().isStarted()) {
+                getController().getNodeManager().start();
+            }
         }
     }
 
@@ -944,8 +964,8 @@ public class UIController extends PFComponent {
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb", Format.formatDecimal(
-                        totalCPSdownKB / 1024));
+                    "systray.tooltip.down.mb", Format
+                        .formatDecimal(totalCPSdownKB / 1024));
             } else {
                 downText = Translation.getTranslation("systray.tooltip.down",
                     Format.formatDecimal(totalCPSdownKB));
@@ -1293,24 +1313,25 @@ public class UIController extends PFComponent {
             String message;
             if (event.isPercentage()) {
                 message = Translation.getTranslation(
-                "uicontroller.remote_mass_delete.warning_message", event
+                    "uicontroller.remote_mass_delete.warning_message", event
                         .getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo().name,
-                event.getOldProfile().getName(), event.getNewProfile()
+                        .getDeleteFigure()), event.getFolderInfo().name, event
+                        .getOldProfile().getName(), event.getNewProfile()
                         .getName());
             } else {
                 message = Translation.getTranslation(
-                "uicontroller.remote_mass_delete.warning_absolute_message",
-                event.getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo().name,
-                event.getOldProfile().getName(), event.getNewProfile()
+                    "uicontroller.remote_mass_delete.warning_absolute_message",
+                    event.getMemberInfo().nick, String.valueOf(event
+                        .getDeleteFigure()), event.getFolderInfo().name, event
+                        .getOldProfile().getName(), event.getNewProfile()
                         .getName());
             }
 
-            WarningEvent warningEvent = new WarningEvent(getController(),
-                    Translation.getTranslation(
-                            "uicontroller.remote_mass_delete.warning_title"),
-                    message);
+            WarningEvent warningEvent = new WarningEvent(
+                getController(),
+                Translation
+                    .getTranslation("uicontroller.remote_mass_delete.warning_title"),
+                message);
             applicationModel.getWarningsModel().pushWarning(warningEvent);
         }
     }
