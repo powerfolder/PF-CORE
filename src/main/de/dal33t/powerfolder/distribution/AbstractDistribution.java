@@ -97,4 +97,11 @@ public abstract class AbstractDistribution extends Loggable implements
             return false;
         }
     }
+    
+    protected static void removeValue(Controller c, ConfigurationEntry entry) {
+        if (!entry.getValue(c).equals(entry.getDefaultValue())) {
+            // Change back to default
+            entry.removeValue(c);
+        }
+    }
 }
