@@ -44,6 +44,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.skin.Skin;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -280,6 +281,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             if (selected > -1) {
                 skinCombo.setSelectedIndex(selected);
             }
+            skinLabel.setVisible(ProUtil.isRunningProVersion());
+            skinCombo.setVisible(ProUtil.isRunningProVersion());
         }
     }
 
