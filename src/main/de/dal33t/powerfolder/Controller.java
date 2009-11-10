@@ -64,8 +64,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
-import de.dal33t.powerfolder.distribution.PowerFolderBeta;
-import de.dal33t.powerfolder.distribution.PowerFolderPro;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -2129,8 +2127,8 @@ public class Controller extends PFComponent {
             // Fallback
             try {
                 if (distribution == null) {
-                    // distribution = new PowerFolderClient();
-                    distribution = new PowerFolderBeta();
+                    distribution = new PowerFolderBasic();
+                   // distribution = new PowerFolderBeta();
                 }
                 logInfo("Running distribution: " + distribution.getName());
                 distribution.init(this);
