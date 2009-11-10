@@ -302,7 +302,6 @@ public class Folder extends PFComponent {
         {
             // Empty folder... no scan required for database
             hasOwnDatabase = true;
-            setDBDirty();
         }
 
         diskItemFilter = new DiskItemFilter();
@@ -1493,7 +1492,14 @@ public class Folder extends PFComponent {
                             // Skip #1411
                             continue;
                         }
-                        files[i] = addFile(files[i]);
+                        FileInfo fInfo = files[i];
+                        files[i] = addFile(fInfo);
+                        if (fInfo != files[i]) {
+                            logWarning("Instance has changed!"
+                                + fInfo.toDetailString());
+                            // Instance has changes.
+                            setDBDirty();
+                        }
                     }
                     dao.store(null, files);
                 }
@@ -1652,11 +1658,20 @@ public class Folder extends PFComponent {
         File dbFile = new File(getSystemSubDir(), DB_FILENAME);
         File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
         try {
-            FileInfo[] files;
+            FileInfo[] diskItems;
             synchronized (dbAccessLock) {
-                Collection<FileInfo> infoCollection = dao.findAllFiles(null);
-                files = infoCollection.toArray(new FileInfo[infoCollection
-                    .size()]);
+                Collection<FileInfo> files = dao.findAllFiles(null);
+                Collection<DirectoryInfo> dirs = dao.findAllDirectories(null);
+                diskItems = new FileInfo[files.size() + dirs.size()];
+                int i = 0;
+                for (FileInfo fileInfo : files) {
+                    diskItems[i] = fileInfo;
+                    i++;
+                }
+                for (DirectoryInfo dirInfo : dirs) {
+                    diskItems[i] = dirInfo;
+                    i++;
+                }
             }
             if (dbFile.exists()) {
                 if (!dbFile.delete()) {
@@ -1670,7 +1685,7 @@ public class Folder extends PFComponent {
                 dbFile));
             ObjectOutputStream oOut = new ObjectOutputStream(fOut);
             // Store files
-            oOut.writeObject(files);
+            oOut.writeObject(diskItems);
             // Store members
             oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
                 .toArray(new Member[getMembersAsCollection().size()])));
@@ -1706,7 +1721,7 @@ public class Folder extends PFComponent {
 
             if (isFine()) {
                 logFine("Successfully wrote folder database file ("
-                    + files.length + " files)");
+                    + diskItems.length + " disk items)");
             }
 
             // Make backup
@@ -1780,7 +1795,7 @@ public class Folder extends PFComponent {
             }
         }
         if (expired > 0) {
-            dirty = true;
+            setDBDirty();
 
             logInfo("Maintained folder db, " + nFilesBefore + " known files, "
                 + expired
@@ -3424,7 +3439,7 @@ public class Folder extends PFComponent {
         boolean oldInSync = inSyncWithOthers.getAndSet(newInSync);
         if (newInSync && !oldInSync) {
             lastSyncDate = new Date();
-            dirty = true;
+            setDBDirty();
         }
     }
 
@@ -3563,7 +3578,8 @@ public class Folder extends PFComponent {
         }
 
         if (lastSyncDate != null && lastSyncDate.before(warningDate)
-                && !othersInSync) {
+            && !othersInSync)
+        {
 
             // Only need one of these.
             UnsynchronizedFolderProblem ufp = null;
