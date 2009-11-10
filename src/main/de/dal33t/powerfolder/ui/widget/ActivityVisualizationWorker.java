@@ -57,7 +57,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
      * @param uiController
      *            the UI Controller
      */
-    public ActivityVisualizationWorker(UIController uiController) {
+    protected ActivityVisualizationWorker(UIController uiController) {
         this(uiController, true);
     }
 
@@ -68,7 +68,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
      *            the UI Controller
      * @param indeterminate
      */
-    public ActivityVisualizationWorker(UIController uiController,
+    protected ActivityVisualizationWorker(UIController uiController,
         boolean indeterminate)
     {
         this(uiController.getActiveFrame());
@@ -77,7 +77,7 @@ public abstract class ActivityVisualizationWorker extends SwingWorker {
         }
     }
 
-    public ActivityVisualizationWorker(Window theParent) {
+    protected ActivityVisualizationWorker(Window theParent) {
         this();
         dialog = new JDialog(theParent);
     }

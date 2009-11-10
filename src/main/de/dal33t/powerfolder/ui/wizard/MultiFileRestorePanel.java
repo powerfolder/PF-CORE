@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -54,20 +55,22 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             .class.getName());
 
     private final Folder folder;
-    private final List<FileInfo> fileInfos;
+    private final List<FileInfo> deletedFileInfos;
     private JProgressBar bar;
     private final JLabel infoLabel;
     private boolean hasNext;
     private JScrollPane scrollPane;
     private final RestoreFilesTableModel tableModel;
+    private final List<FileInfo> fileInfosToRestore;
 
     public MultiFileRestorePanel(Controller controller, Folder folder,
-                                 List<FileInfo> fileInfos) {
+                                 List<FileInfo> deletedFileInfos) {
         super(controller);
         infoLabel = new JLabel();
         this.folder = folder;
-        this.fileInfos = fileInfos;
+        this.deletedFileInfos = deletedFileInfos;
         tableModel = new RestoreFilesTableModel(controller);
+        fileInfosToRestore = new ArrayList<FileInfo>();
     }
 
     protected JComponent buildContent() {
@@ -124,7 +127,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return null;
+        return new MultiFileRestoringPanel(getController(), folder,
+                fileInfosToRestore);
     }
 
     private class MyFolderCreateWorker extends SwingWorker {
@@ -146,11 +150,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 }
 
                 int count = 1;
-                for (FileInfo fileInfo : fileInfos) {
+                for (FileInfo fileInfo : deletedFileInfos) {
                     infoLabel.setText(Translation.getTranslation(
                             "wizard.multi_file_restore_panel.retrieving",
-                            String.valueOf(count++),
-                            String.valueOf(fileInfos.size())));
+                            Format.formatLong(count++),
+                            Format.formatLong(deletedFileInfos.size())));
 
                     List<FileInfo> infoList = fileArchiver
                             .getArchivedFilesInfos(fileInfo, myInfo);
@@ -193,6 +197,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             return versions;
         }
 
+        @SuppressWarnings({"unchecked"})
         protected void afterConstruct() {
             final List<FileInfo> versions = (List<FileInfo>) getValue();
             if (versions != null) {
@@ -204,6 +209,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         hasNext = true;
                         infoLabel.setText(Translation.getTranslation(
                                 "wizard.multi_file_restore_panel.retrieving_success"));
+                        fileInfosToRestore.clear();
+                        fileInfosToRestore.addAll(versions);
                         updateButtons();
                     }
                 });
