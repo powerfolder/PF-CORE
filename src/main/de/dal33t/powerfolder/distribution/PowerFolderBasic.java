@@ -19,10 +19,14 @@
  */
 package de.dal33t.powerfolder.distribution;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderBasic extends AbstractDistribution {
@@ -47,13 +51,24 @@ public class PowerFolderBasic extends AbstractDistribution {
             resetServer(controller);
         }
 
-        String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
-        if (skinName.equals(PreferencesEntry.SKIN_NAME.getDefaultValue())) {
-            PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
-        }
+        // Switch to basic skin
+        // String skinName =
+        // PreferencesEntry.SKIN_NAME.getValueString(controller);
+        // if (skinName.equals(PreferencesEntry.SKIN_NAME.getDefaultValue())) {
+        PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
+        // }
 
         // Load different Provider URLs
-        loadPreConfigFromClasspath(controller.getConfig());
+        try {
+            Properties preConfig = ConfigurationLoader
+                .loadPreConfigFromClasspath("config/Basic.config");
+            ConfigurationLoader.mergeConfigs(preConfig, controller.getConfig(),
+                true);
+            logInfo("Loaded preconfiguration file config/Basic.config from jar file");
+        } catch (IOException e) {
+            logSevere("Error while loading config/Basic.config from jar file",
+                e);
+        }
     }
 
     public UpdateSetting createUpdateSettings() {
