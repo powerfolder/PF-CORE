@@ -1165,6 +1165,11 @@ public class Member extends PFComponent implements Comparable<Member> {
         lastTransferStatus = null;
         expectedListMessages.clear();
         messageListenerSupport = null;
+        
+        // Remove filelist to save memory.
+        for (Folder folder : getJoinedFolders()) {
+            folder.getDAO().deleteDomain(getId());
+        }
 
         if (wasHandshaked) {
             // Inform security manager to update account state.
