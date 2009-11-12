@@ -141,7 +141,7 @@ public class FileUtils {
                 + from.getAbsolutePath());
         }
         if (from.equals(to)) {
-            throw new IllegalArgumentException("cannot copy onto itself");
+            throw new IOException("cannot copy onto itself");
         }
         copyFromStreamToFile(new FileInputStream(from), to);
     }
