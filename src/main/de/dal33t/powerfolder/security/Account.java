@@ -127,8 +127,6 @@ public class Account extends Model implements Serializable {
 
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
-        LOG.fine("Granted permission to " + this + ": "
-            + Arrays.asList(newPermissions));
         for (Permission p : newPermissions) {
             if (hasPermission(p)) {
                 // Skip
@@ -139,24 +137,25 @@ public class Account extends Model implements Serializable {
             }
             permissions.add(p);
         }
+        LOG.fine("Granted permission to " + this + ": "
+            + Arrays.asList(newPermissions));
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
-        LOG.fine("Revoked permission from " + this + ": "
-            + Arrays.asList(revokePermissions));
         for (Permission p : revokePermissions) {
-            permissions.remove(p);
+            if (permissions.remove(p)) {
+                LOG.fine("Revoked permission from " + this + ": " + p);
+            }
         }
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public void revokeAllFolderPermission(FolderInfo foInfo) {
-        revoke(new FolderReadPermission(foInfo));
-        revoke(new FolderReadWritePermission(foInfo));
-        revoke(new FolderAdminPermission(foInfo));
-        revoke(new FolderOwnerPermission(foInfo));
+        revoke(new FolderReadPermission(foInfo), new FolderReadWritePermission(
+            foInfo), new FolderAdminPermission(foInfo),
+            new FolderOwnerPermission(foInfo));
     }
 
     public void revokeAllPermissions() {
