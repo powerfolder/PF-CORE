@@ -83,4 +83,9 @@ public interface FileArchiver {
     void setVersionsPerFile(int versionsPerFile);
 
     int getVersionsPerFile();
+    
+    /**
+     * @return the total size in bytes occupied by this archive.
+     */
+    long getSize();
 }
