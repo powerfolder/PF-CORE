@@ -45,12 +45,14 @@ public class NullFileArchiver implements FileArchiver {
     }
 
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo,
-                                                MemberInfo selfMemberInfo) {
+        MemberInfo selfMemberInfo)
+    {
         return Collections.emptyList();
     }
 
     public boolean restore(FileInfo versionInfo, File target)
-            throws IOException {
+        throws IOException
+    {
         // Not available.
         throw new IOException("No archive. Unable to restore file "
             + versionInfo.toDetailString());
@@ -60,6 +62,10 @@ public class NullFileArchiver implements FileArchiver {
     }
 
     public int getVersionsPerFile() {
+        return 0;
+    }
+
+    public long getSize() {
         return 0;
     }
 }
