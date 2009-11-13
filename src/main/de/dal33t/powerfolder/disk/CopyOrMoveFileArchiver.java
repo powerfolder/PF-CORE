@@ -258,11 +258,13 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
-    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo, MemberInfo selfMemberInfo) {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo,
+        MemberInfo selfMemberInfo)
+    {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
-        File subdirectory = FileUtils.buildFileFromRelativeName(archiveDirectory,
-                fileInfo.getRelativeName()).getParentFile();
+        File subdirectory = FileUtils.buildFileFromRelativeName(
+            archiveDirectory, fileInfo.getRelativeName()).getParentFile();
         if (!subdirectory.exists()) {
             return Collections.emptyList();
         }
@@ -297,13 +299,14 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     /**
      * Restore a file version.
-     *
+     * 
      * @param versionInfo
      *            the FileInfo of the archived file.
      * @param target
      */
     public boolean restore(FileInfo versionInfo, File target)
-            throws IOException {
+        throws IOException
+    {
 
         File archiveFile = getArchiveTarget(versionInfo);
         if (archiveFile.exists()) {
@@ -325,5 +328,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         this.versionsPerFile = versionsPerFile;
     }
 
+    public long getSize() {
+        return FileUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
+    }
 
 }
