@@ -414,6 +414,10 @@ public class ChatPanel extends PFUIComponent {
 
         private void updateOnNodeChange(NodeManagerEvent e) {
             if (e.getNode().equals(chatPartner)) {
+                // #1816 intermittant bug, possibly caused by accessing fields
+                // before they are initialized ? So ensure UI exists first.
+                getUiComponent();
+                
                 updateInputField();
                 configureAddRemoveAction();
             }
