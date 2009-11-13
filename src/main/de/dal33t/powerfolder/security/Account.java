@@ -435,6 +435,27 @@ public class Account extends Model implements Serializable {
 
     /**
      * @param controller
+     * @return the total size of recycle bin
+     */
+    public long calulateArchiveSize(Controller controller) {
+        long size = 0;
+        for (Permission p : getPermissions()) {
+            if (p instanceof FolderOwnerPermission
+                || p instanceof FolderAdminPermission)
+            {
+                FolderPermission fp = (FolderPermission) p;
+                Folder f = fp.getFolder().getFolder(controller);
+                if (f == null) {
+                    continue;
+                }
+                size += f.getFileArchiver().getSize();
+            }
+        }
+        return size;
+    }
+
+    /**
+     * @param controller
      * @return the mirrored # of folders by this user
      */
     public int countNumberOfFolders(Controller controller) {
