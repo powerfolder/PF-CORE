@@ -1648,13 +1648,6 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private void storeFolderDB() {
-        if (!shutdown) {
-            if (!getController().isStarted()) {
-                // Not storing
-                return;
-            }
-        }
-
         File dbFile = new File(getSystemSubDir(), DB_FILENAME);
         File dbFileBackup = new File(getSystemSubDir(), DB_BACKUP_FILENAME);
         try {
