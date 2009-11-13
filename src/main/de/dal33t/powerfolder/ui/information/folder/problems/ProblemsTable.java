@@ -72,8 +72,6 @@ public class ProblemsTable extends JTable {
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(20);
-        column = getColumn(getColumnName(3));
-        column.setPreferredWidth(20);
     }
 
     private class ProblemTableCellRenderer extends DefaultTableCellRenderer {
@@ -93,8 +91,6 @@ public class ProblemsTable extends JTable {
                 } else if (column == 1) {
                     setText(Format.formatDateShort(problem.getDate()));
                 } else if (column == 2) {
-                    setText(problem.getWikiLinkKey());
-                } else if (column == 3) {
                     if (problem instanceof ResolvableProblem) {
                         ResolvableProblem solvableProblem = (ResolvableProblem) problem;
                         setText(solvableProblem.getResolutionDescription());
