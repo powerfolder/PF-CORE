@@ -422,7 +422,8 @@ public class UIController extends PFComponent {
                 }
             }
         };
-        MenuItem item = menu.add(new MenuItem("PowerFolder.com"));
+        MenuItem item = menu.add(new MenuItem(Translation
+            .getTranslation("general.application.name")));
         item.setActionCommand("gotohp");
         item.addActionListener(systrayActionHandler);
 
@@ -470,7 +471,7 @@ public class UIController extends PFComponent {
             });
 
         sysTrayFoldersMenu = new Menu(Translation
-            .getTranslation("general.application.name"));
+            .getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
             menu.add(sysTrayFoldersMenu);
