@@ -1,29 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.util;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -36,7 +39,8 @@ import java.util.prefs.Preferences;
  */
 public class Translation {
 
-    private static final Logger log = Logger.getLogger(Translation.class.getName());
+    private static final Logger log = Logger.getLogger(Translation.class
+        .getName());
 
     // Useful locales, which are not already included in Locale
     public static final Locale DUTCH = new Locale("nl");
@@ -50,6 +54,10 @@ public class Translation {
     /** List of all supported locales */
     private static Locale[] supportedLocales;
 
+    private static Map<String, String> placeHolders = new ConcurrentHashMap<String, String>();
+    static {
+        setPlaceHolder("APPNAME", "PowerFolder");
+    }
     // The resource bundle, initalized lazy
     private static ResourceBundle resourceBundle;
 
@@ -84,7 +92,8 @@ public class Translation {
         Arrays.sort(supportedLocales, new Comparator<Locale>() {
             public int compare(Locale o1, Locale o2) {
                 return o1.getDisplayName(o1).compareTo(o2.getDisplayName(o2));
-            }});
+            }
+        });
         return supportedLocales;
     }
 
@@ -104,7 +113,8 @@ public class Translation {
      * @return true if a custom (non-standard) locale is currently active.
      */
     public static boolean isCustomLocale() {
-        return !Arrays.asList(getSupportedLocales()).contains(getActiveLocale());
+        return !Arrays.asList(getSupportedLocales())
+            .contains(getActiveLocale());
     }
 
     /**
@@ -171,7 +181,7 @@ public class Translation {
 
                 log.warning("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
-                    + "', in config '" + confLang + '\'') ;
+                    + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
                 log.log(Level.SEVERE, "Unable to load translation file", e);
             }
@@ -194,6 +204,14 @@ public class Translation {
         try {
             String translation = rb.getString(id);
             // log.warning("Translation for '" + id + "': " + translation);
+            for (Entry<String, String> placeHolderEntry : placeHolders
+                .entrySet())
+            {
+                if (translation.contains(placeHolderEntry.getKey())) {
+                    translation = translation.replace(
+                        placeHolderEntry.getKey(), placeHolderEntry.getValue());
+                }
+            }
             return translation;
         } catch (MissingResourceException e) {
             if (id != null && !id.startsWith("date_format.")) {
@@ -210,7 +228,8 @@ public class Translation {
     /**
      * Returns a paramterized translation for this id.
      * <p>
-     * Use <code>{0}</code> <code>{1}</code> etc as placeholders in property files
+     * Use <code>{0}</code> <code>{1}</code> etc as placeholders in property
+     * files
      * 
      * @param id
      * @param params
@@ -229,5 +248,13 @@ public class Translation {
             }
         }
         return translation;
+    }
+
+    public static void setPlaceHolder(String id, String text) {
+        if (text == null) {
+            placeHolders.remove('{' + id + '}');
+        } else {
+            placeHolders.put('{' + id + '}', text);
+        }
     }
 }
