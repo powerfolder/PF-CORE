@@ -63,6 +63,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private final RestoreFilesTableModel tableModel;
     private final List<FileInfo> fileInfosToRestore;
 
+    private JRadioButton latestVersionButton;
+    private JRadioButton dateVersionButton;
     public MultiFileRestorePanel(Controller controller, Folder folder,
                                  List<FileInfo> deletedFileInfos) {
         super(controller);
@@ -75,7 +77,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout("140dlu, 3dlu, pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -83,12 +85,19 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
+        builder.add(latestVersionButton, cc.xy(1, row));
+
+        row += 2;
+
+        builder.add(dateVersionButton, cc.xy(1, row));
+
+        row += 2;
+
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
 
         row += 2;
 
-        bar = new JProgressBar();
         bar.setIndeterminate(true);
         builder.add(bar, cc.xy(1, row));
 
@@ -120,6 +129,18 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected void initComponents() {
+        bar = new JProgressBar();
+        latestVersionButton = new JRadioButton(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_latest"));
+        latestVersionButton.setSelected(true);
+        dateVersionButton = new JRadioButton(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_date"));
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(latestVersionButton);
+        bg.add(dateVersionButton);
+
+        latestVersionButton.setOpaque(false);
+        dateVersionButton.setOpaque(false);
     }
 
     public boolean hasNext() {

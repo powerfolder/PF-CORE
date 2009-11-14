@@ -54,6 +54,9 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     private JLabel statusLabel;
     private final Folder folder;
 
+    private long successCount;
+    private long totalCount;
+
     public MultiFileRestoringPanel(Controller controller, Folder folder,
                                  List<FileInfo> fileInfosToRestore) {
         super(controller);
@@ -99,13 +102,28 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return new TextPanelPanel(getController(), Translation.getTranslation(
-                "wizard.multi_file_restoring_panel.success_title"), Translation
-                .getTranslation("wizard.multi_file_restoring_panel.success_text"
-        ));
+        if (successCount == totalCount) {
+            return new TextPanelPanel(getController(), Translation.getTranslation(
+                    "wizard.multi_file_restoring_panel.success_title"), Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.success_text"
+            ));
+        } else if (successCount > 0) {
+            return new TextPanelPanel(getController(), Translation.getTranslation(
+                    "wizard.multi_file_restoring_panel.success_title"), Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.partial_text",
+                    Format.formatLong(successCount),
+                    Format.formatLong(totalCount)
+            ));
+        } else {
+            return new TextPanelPanel(getController(), Translation.getTranslation(
+                    "wizard.multi_file_restoring_panel.fail_title"), Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.fail_text"
+            ));
+        }
     }
-
+    
     private class MyFolderCreateWorker extends SwingWorker {
+
         public Object construct() {
             int i = 1;
             for (FileInfo fileInfoToRestore : fileInfosToRestore) {
@@ -159,8 +177,11 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                     throw new IOException("Restore of " + fileInfoToRestore
                             .getFilenameOnly() + " failed");
                 }
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "IOException", e);
+                successCount++;
+            } catch (Exception e) {
+                log.log(Level.SEVERE, "Exception", e);
+            } finally {
+                totalCount++;
             }
         }
 
