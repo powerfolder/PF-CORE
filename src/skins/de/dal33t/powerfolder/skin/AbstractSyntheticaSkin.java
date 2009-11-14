@@ -38,6 +38,14 @@ public abstract class AbstractSyntheticaSkin implements Skin {
 
     public abstract String getSynthXMLFileName();
 
+    protected String getSynthXMLFileName0() {
+        String fn = getSynthXMLFileName();
+        if (!fn.startsWith("/")) {
+            fn = '/' + fn;
+        }
+        return fn;
+    }
+
     public final LookAndFeel getLookAndFeel() throws ParseException {
         return new LookAndFeel();
     }
@@ -46,7 +54,7 @@ public abstract class AbstractSyntheticaSkin implements Skin {
         private static final long serialVersionUID = 1L;
 
         public LookAndFeel() throws ParseException {
-            super(AbstractSyntheticaSkin.this.getSynthXMLFileName());
+            super(AbstractSyntheticaSkin.this.getSynthXMLFileName0());
         }
 
         @Override
