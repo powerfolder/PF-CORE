@@ -64,6 +64,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
+import de.dal33t.powerfolder.distribution.PowerFolderPro;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
 import de.dal33t.powerfolder.event.InvitationHandler;
@@ -126,7 +127,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.2";  // 1.0.3.49";
+    public static final String PROGRAM_VERSION = "4.0.2 - 1.0.3.53"; // 1.0.3.52";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2115,8 +2116,13 @@ public class Controller extends PFComponent {
                 distribution = br;
             }
             if (distribution == null) {
-                logWarning("Distributon not found. Falling back to PowerFolder Basic");
-                distribution = new PowerFolderBasic();
+                if (ProUtil.isRunningProVersion()) {
+                    distribution = new PowerFolderPro();
+                } else {
+                    distribution = new PowerFolderBasic();
+                }
+                logWarning("Distributon not found. Falling back to "
+                    + distribution.getName());
             }
             logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
@@ -2127,8 +2133,11 @@ public class Controller extends PFComponent {
             // Fallback
             try {
                 if (distribution == null) {
-                    distribution = new PowerFolderBasic();
-                   // distribution = new PowerFolderBeta();
+                    if (ProUtil.isRunningProVersion()) {
+                        distribution = new PowerFolderPro();
+                    } else {
+                        distribution = new PowerFolderBasic();
+                    }
                 }
                 logInfo("Running distribution: " + distribution.getName());
                 distribution.init(this);
