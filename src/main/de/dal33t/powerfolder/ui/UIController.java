@@ -470,7 +470,7 @@ public class UIController extends PFComponent {
             });
 
         sysTrayFoldersMenu = new Menu(Translation
-            .getTranslation("general.powerfolder"));
+            .getTranslation("general.application.name"));
         sysTrayFoldersMenu.setEnabled(false);
         if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
             menu.add(sysTrayFoldersMenu);
@@ -946,7 +946,7 @@ public class UIController extends PFComponent {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
 
-            tooltip.append(Translation.getTranslation("general.powerfolder"));
+            tooltip.append(Translation.getTranslation("general.application.name"));
             tooltip.append(' ');
             if (folderRepositorySynchronizing.get()) {
                 tooltip.append(Translation
