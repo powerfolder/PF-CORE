@@ -809,7 +809,9 @@ public class Folder extends PFComponent {
                 try {
                     FileInfo oldLocalFileInfo = fInfo
                         .getLocalFileInfo(getController().getFolderRepository());
-                    arch.archive(oldLocalFileInfo, targetFile, false);
+                    if (oldLocalFileInfo != null) {
+                        arch.archive(oldLocalFileInfo, targetFile, false);
+                    }
                 } catch (IOException e) {
                     // Same behavior as below, on failure drop out
                     // TODO Maybe raise folder-problem....
@@ -3024,15 +3026,19 @@ public class Folder extends PFComponent {
      * @param file
      */
     private boolean deleteFile(FileInfo newFileInfo, File file) {
+        Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
         if (isFine()) {
             logFine("Deleting file " + fileInfo.toDetailString()
                 + " moving to archive");
         }
-        try {
-            archiver.archive(fileInfo, file, false);
-        } catch (IOException e) {
-            logSevere("Unable to move file to archive: " + file + ". " + e, e);
+        if (fileInfo != null) {
+            try {
+                archiver.archive(fileInfo, file, false);
+            } catch (IOException e) {
+                logSevere("Unable to move file to archive: " + file + ". " + e,
+                    e);
+            }
         }
         if (file.exists() && !file.delete()) {
             logSevere("Unable to delete file " + file);
