@@ -39,7 +39,7 @@ public class Snowland extends AbstractSyntheticaSkin {
 
     @Override
     public String getSynthXMLFileName() {
-        return "/de/dal33t/powerfolder/skin/powerfolder1/synth.xml";
+        return "de/dal33t/powerfolder/skin/powerfolder1/synth.xml";
     }
 
 }
