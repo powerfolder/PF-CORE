@@ -212,7 +212,7 @@ public class AboutDialog extends PFUIComponent {
             .getUIComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
-            .getTranslation("general.powerfolder"), Translation.getTranslation(
+            .getTranslation("general.application.name"), Translation.getTranslation(
             "about_dialog.power_folder.text", Controller.PROGRAM_VERSION)
             + '\n'
             + Translation.getTranslation(
