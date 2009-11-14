@@ -281,8 +281,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             if (selected > -1) {
                 skinCombo.setSelectedIndex(selected);
             }
-            skinLabel.setVisible(ProUtil.isRunningProVersion());
-            skinCombo.setVisible(ProUtil.isRunningProVersion());
+            skinLabel.setVisible(getController().getDistribution()
+                .allowSkinChange());
+            skinCombo.setVisible(getController().getDistribution()
+                .allowSkinChange());
         }
     }
 
