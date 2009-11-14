@@ -66,51 +66,50 @@ public class MainTabbedPane extends PFUIComponent {
         if (uiComponent == null) {
             // Initalize components
             initComponents();
-        }
-
-        uiComponent.add(Translation
-            .getTranslation("main_tabbed_pane.home.name"), homeTab
-            .getUIComponent());
-
-        uiComponent.add(Translation
-            .getTranslation("main_tabbed_pane.folders.name"), foldersTab
-            .getUIComponent());
-
-        if (getController().isBackupOnly()) {
-            // Do not display computers tab in backup only mode, BUT
-            // need to create it anyways to prevent UI events breaking.
-            computersTab.getUIComponent();
-        } else {
             uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.computers.name"),
-                computersTab.getUIComponent());
-        }
+                .getTranslation("main_tabbed_pane.home.name"), homeTab
+                .getUIComponent());
 
-        String key = Translation.getTranslation("main_tabbed_pane.home.key");
-        uiComponent.setMnemonicAt(HOME_INDEX, (int) Character.toUpperCase(key
-            .charAt(0)));
-        uiComponent.setToolTipTextAt(HOME_INDEX, Translation
-            .getTranslation("main_tabbed_pane.home.description"));
-        uiComponent.setIconAt(HOME_INDEX, Icons.getIconById(Icons.HOME));
+            uiComponent.add(Translation
+                .getTranslation("main_tabbed_pane.folders.name"), foldersTab
+                .getUIComponent());
 
-        key = Translation.getTranslation("main_tabbed_pane.folders.key");
-        uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
-            .toUpperCase(key.charAt(0)));
-        uiComponent.setToolTipTextAt(FOLDERS_INDEX, Translation
-            .getTranslation("main_tabbed_pane.folders.description"));
-        uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
+            if (getController().isBackupOnly()) {
+                // Do not display computers tab in backup only mode, BUT
+                // need to create it anyways to prevent UI events breaking.
+                computersTab.getUIComponent();
+            } else {
+                uiComponent.add(Translation
+                    .getTranslation("main_tabbed_pane.computers.name"),
+                    computersTab.getUIComponent());
+            }
 
-        if (!getController().isBackupOnly()) {
-            key = Translation.getTranslation("main_tabbed_pane.computers.key");
-            uiComponent.setMnemonicAt(COMPUTERS_INDEX, (int) Character
+            String key = Translation.getTranslation("main_tabbed_pane.home.key");
+            uiComponent.setMnemonicAt(HOME_INDEX, (int) Character.toUpperCase(key
+                .charAt(0)));
+            uiComponent.setToolTipTextAt(HOME_INDEX, Translation
+                .getTranslation("main_tabbed_pane.home.description"));
+            uiComponent.setIconAt(HOME_INDEX, Icons.getIconById(Icons.HOME));
+
+            key = Translation.getTranslation("main_tabbed_pane.folders.key");
+            uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
                 .toUpperCase(key.charAt(0)));
-            uiComponent.setToolTipTextAt(COMPUTERS_INDEX, Translation
-                .getTranslation("main_tabbed_pane.computers.description"));
-            uiComponent.setIconAt(COMPUTERS_INDEX, Icons
-                .getIconById(Icons.COMPUTER));
-        }
+            uiComponent.setToolTipTextAt(FOLDERS_INDEX, Translation
+                .getTranslation("main_tabbed_pane.folders.description"));
+            uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
 
-        uiComponent.addChangeListener(new MyChagelistener());
+            if (!getController().isBackupOnly()) {
+                key = Translation.getTranslation("main_tabbed_pane.computers.key");
+                uiComponent.setMnemonicAt(COMPUTERS_INDEX, (int) Character
+                    .toUpperCase(key.charAt(0)));
+                uiComponent.setToolTipTextAt(COMPUTERS_INDEX, Translation
+                    .getTranslation("main_tabbed_pane.computers.description"));
+                uiComponent.setIconAt(COMPUTERS_INDEX, Icons
+                    .getIconById(Icons.COMPUTER));
+            }
+
+            uiComponent.addChangeListener(new MyChagelistener());
+        }
 
         return uiComponent;
     }

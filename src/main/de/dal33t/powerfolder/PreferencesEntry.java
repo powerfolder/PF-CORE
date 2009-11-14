@@ -123,6 +123,9 @@ public enum PreferencesEntry {
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 
+    /** Show the information tab inline with the mainframe */
+    INLINE_INFO_MODE("inline.info", false),
+
     FILE_SEARCH_MODE("file.search.mode", DirectoryFilter
             .SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
 
@@ -134,25 +137,25 @@ public enum PreferencesEntry {
 
     // Methods/Constructors ***************************************************
 
-    private PreferencesEntry(String aPreferencesKey, boolean theDefaultValue) {
+    PreferencesEntry(String aPreferencesKey, boolean theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        this.type = Boolean.class;
-        this.preferencesKey = aPreferencesKey;
-        this.defaultValue = theDefaultValue;
+        type = Boolean.class;
+        preferencesKey = aPreferencesKey;
+        defaultValue = theDefaultValue;
     }
 
-    private PreferencesEntry(String aPreferencesKey, int theDefaultValue) {
+    PreferencesEntry(String aPreferencesKey, int theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        this.type = Integer.class;
-        this.preferencesKey = aPreferencesKey;
-        this.defaultValue = theDefaultValue;
+        type = Integer.class;
+        preferencesKey = aPreferencesKey;
+        defaultValue = theDefaultValue;
     }
 
-    private PreferencesEntry(String aPreferencesKey, String theDefaultValue) {
+    PreferencesEntry(String aPreferencesKey, String theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        this.type = String.class;
-        this.preferencesKey = aPreferencesKey;
-        this.defaultValue = theDefaultValue;
+        type = String.class;
+        preferencesKey = aPreferencesKey;
+        defaultValue = theDefaultValue;
     }
 
     /**

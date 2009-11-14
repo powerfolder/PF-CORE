@@ -436,6 +436,7 @@ public class Controller extends PFComponent {
         reconnectManager = new ReconnectManager(this);
 
         if (isUIEnabled()) {
+
             uiController = new UIController(this);
 
             if (ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(this))

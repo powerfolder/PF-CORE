@@ -57,11 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -147,7 +143,7 @@ public class UIController extends PFComponent {
 
     private final AtomicBoolean folderRepositorySynchronizing;
 
-    private final AtomicInteger activeFrame = new AtomicInteger();
+    private final AtomicInteger activeFrame;
 
     /**
      * The UI distribution running.
@@ -171,6 +167,8 @@ public class UIController extends PFComponent {
         }
 
         folderRepositorySynchronizing = new AtomicBoolean();
+
+        activeFrame = new AtomicInteger();
 
         configureOomeHandler();
 
@@ -334,7 +332,7 @@ public class UIController extends PFComponent {
                     checkLimits(false);
                 }
             }, 30L * 1000);
-            getApplicationModel().getLicenseModel().setActivationAction(
+            applicationModel.getLicenseModel().setActivationAction(
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         checkLimits(true);
@@ -703,12 +701,19 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        JFrame frame = informationFrame.getUIComponent();
-        if (frame.getExtendedState() == Frame.ICONIFIED) {
-            frame.setExtendedState(Frame.NORMAL);
+        boolean inline = PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
+                getController());
+        if (inline) {
+            mainFrame.showInlineInfoPanel((JPanel) informationFrame
+                    .getUIComponent().getContentPane(), informationFrame.getUIComponent().getTitle());
+        } else {
+            JFrame frame = informationFrame.getUIComponent();
+            if (frame.getExtendedState() == Frame.ICONIFIED) {
+                frame.setExtendedState(Frame.NORMAL);
+            }
+            UIUtil.putOnScreen(frame);
+            frame.setVisible(true);
         }
-        UIUtil.putOnScreen(frame);
-        frame.setVisible(true);
     }
 
     /**

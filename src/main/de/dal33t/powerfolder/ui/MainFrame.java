@@ -20,27 +20,14 @@
 package de.dal33t.powerfolder.ui;
 
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
+import java.awt.event.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 
-import javax.swing.Icon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -52,6 +39,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -72,10 +60,15 @@ public class MainFrame extends PFUIComponent {
     private final AtomicBoolean controlKeyDown = new AtomicBoolean();
     private final AtomicInteger oldX = new AtomicInteger();
     private final AtomicInteger oldY = new AtomicInteger();
+    private boolean packWidthNext;
 
     private JFrame uiComponent;
-
+    private JPanel centralPanel;
     private MainTabbedPane mainTabbedPane;
+    private JPanel inlineInfoPanel;
+    private JLabel inlineInfoLabel;
+    private JButton inlineInfoCloseButton;
+
 
     /**
      * The menu bar that handles F5 for sync, etc. This is not visible in the
@@ -107,18 +100,24 @@ public class MainFrame extends PFUIComponent {
     private void buildUI() {
         initComponents();
 
-        FormLayout layout = new FormLayout("fill:pref:grow",
+        FormLayout layout = new FormLayout("fill:pref:grow, pref, 3dlu, pref",
             "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
         // menu head body footer
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("3dlu, 2dlu, 2dlu, 2dlu"));
         CellConstraints cc = new CellConstraints();
 
-        builder.add(menuBar, cc.xy(1, 1));
+        builder.add(menuBar, cc.xyw(1, 1, 4));
+
         builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI),
             SwingConstants.LEFT), cc.xy(1, 2));
-        builder.add(mainTabbedPane.getUIComponent(), cc.xy(1, 4));
-        builder.add(statusBar.getUIComponent(), cc.xy(1, 6));
+        builder.add(inlineInfoLabel, cc.xy(2, 2, CellConstraints.DEFAULT,
+                CellConstraints.BOTTOM));
+        builder.add(inlineInfoCloseButton, cc.xy(4, 2, CellConstraints.DEFAULT,
+                CellConstraints.BOTTOM));
+
+        builder.add(centralPanel, cc.xyw(1, 4, 4));
+        builder.add(statusBar.getUIComponent(), cc.xyw(1, 6, 4));
 
         uiComponent.getContentPane().add(
             GradientPanel.create(builder.getPanel()));
@@ -229,6 +228,8 @@ public class MainFrame extends PFUIComponent {
 
         uiComponent.addComponentListener(new MyComponentAdapter());
         uiComponent.addMouseMotionListener(new MyMouseAdapter());
+
+        configureInlineInfo();
     }
 
     /**
@@ -307,13 +308,26 @@ public class MainFrame extends PFUIComponent {
 
         createMenuBar();
 
+        centralPanel = new JPanel(new BorderLayout(0, 0));
+
         mainTabbedPane = new MainTabbedPane(getController());
 
         statusBar = new StatusBar(getController());
 
         updateTitle();
+
+        inlineInfoCloseButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
+                Translation.getTranslation(
+                "main_frame.inline_info_close.tip"));
+        inlineInfoCloseButton.addActionListener(new MyActionListener());
+
+        inlineInfoLabel = new JLabel();
     }
 
+    /**
+     * Menu is not visible, it just holds the SyncAll action, so it reacts to
+     * key press.
+     */
     private void createMenuBar() {
         menuBar = new JMenuBar();
         JMenuItem syncAllMenuItem = new JMenuItem(new SyncAllFoldersAction(
@@ -484,9 +498,59 @@ public class MainFrame extends PFUIComponent {
         statusBar.setNetworkingModeStatus(networkingMode);
     }
 
-    // /////////////////
+    public void showInlineInfoPanel(final JPanel panel, final String title) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                packWidthNext = inlineInfoPanel == null;
+                inlineInfoPanel = panel;
+                inlineInfoLabel.setText(title);
+                configureInlineInfo();
+            }
+        });
+    }
+
+    private void closeInlineInfoPanel() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                packWidthNext = true;
+                inlineInfoPanel = null;
+                configureInlineInfo();
+            }
+        });
+    }
+
+    private void configureInlineInfo() {
+        boolean inline = PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
+                getController());
+        boolean displaying = inlineInfoPanel != null;
+        inlineInfoCloseButton.setVisible(inline && displaying);
+
+        centralPanel.removeAll();
+        if (inline && displaying) {
+            JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            split.setOneTouchExpandable(false);
+            split.setLeftComponent(mainTabbedPane.getUIComponent());
+            split.setRightComponent(inlineInfoPanel);
+            centralPanel.add(split, BorderLayout.CENTER);
+        } else {
+            centralPanel.add(mainTabbedPane.getUIComponent(), BorderLayout.CENTER);
+            inlineInfoPanel = null;
+            inlineInfoLabel.setText("");
+        }
+        if (packWidthNext) {
+            packWidth();
+        }
+    }
+
+    private void packWidth() {
+        uiComponent.setSize(new Dimension(uiComponent.getPreferredSize()
+                .width, uiComponent.getHeight()));
+        packWidthNext = false;
+    }
+
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     /**
      * Listen for control key, to use in MyComponentAdapter. // todo - This is
@@ -532,6 +596,19 @@ public class MainFrame extends PFUIComponent {
                 getUIController().mainFrameMoved(controlKeyDown.get(), diffX,
                     diffY);
             }
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            final Object source = e.getSource();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (source == inlineInfoCloseButton) {
+                        closeInlineInfoPanel();
+                    }
+                }
+            });
         }
     }
 }

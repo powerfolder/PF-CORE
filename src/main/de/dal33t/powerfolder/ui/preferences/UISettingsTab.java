@@ -44,7 +44,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.skin.Skin;
-import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -63,6 +62,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
+    private JCheckBox inlineInfoCB;
     private JCheckBox translucentMainFrameCB;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
@@ -153,6 +153,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         magneticFrameBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(mfModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.magnetic_frame"));
+
+        ValueModel iiModel = new ValueHolder(
+            PreferencesEntry.INLINE_INFO_MODE
+                .getValueBoolean(getController()));
+        inlineInfoCB = BasicComponentFactory.createCheckBox(
+            new BufferedValueModel(iiModel, writeTrigger), Translation
+                .getTranslation("preferences.dialog.inline_info"));
 
         ValueModel transModel = new ValueHolder(
             PreferencesEntry.TRANSLUCENT_MAIN_FRAME
@@ -317,7 +324,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -354,6 +361,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(inlineInfoCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(autoExpandCB, cc.xyw(3, row, 2));
@@ -446,6 +456,15 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         // Use magnetic frames
         PreferencesEntry.USE_MAGNETIC_FRAMES.setValue(getController(),
             magneticFrameBox.isSelected());
+
+        if (PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(getController()) !=
+                inlineInfoCB.isSelected()) {
+            needsRestart = true;
+        }
+
+        // Use inline info
+        PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
+            inlineInfoCB.isSelected());
 
         PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
             translucentMainFrameCB.isSelected());
