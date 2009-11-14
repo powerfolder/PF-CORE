@@ -67,4 +67,8 @@ public class PowerFolderPro extends AbstractDistribution {
         // Our public network strategy. Not very smart.
         return node.getId().contains("RELAY");
     }
+
+    public boolean allowSkinChange() {
+        return true;
+    }
 }

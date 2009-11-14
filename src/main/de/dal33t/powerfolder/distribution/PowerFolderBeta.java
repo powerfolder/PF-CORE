@@ -63,6 +63,10 @@ public class PowerFolderBeta extends AbstractDistribution {
         return host.contains(BETA_SERVER_HOST);
     }
 
+    public boolean allowSkinChange() {
+        return true;
+    }
+
     // Internal ***************************************************************
 
     private void resetToBetaServer(Controller c) {
@@ -74,4 +78,5 @@ public class PowerFolderBeta extends AbstractDistribution {
         ConfigurationEntry.SERVER_WEB_URL.setValue(c,
             "https://access.powerfolder.com/node/beta");
     }
+
 }

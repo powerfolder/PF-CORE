@@ -85,4 +85,8 @@ public class PowerFolderBasic extends AbstractDistribution {
         return node.getId().contains("RELAY");
     }
 
+    public boolean allowSkinChange() {
+        return false;
+    }
+
 }

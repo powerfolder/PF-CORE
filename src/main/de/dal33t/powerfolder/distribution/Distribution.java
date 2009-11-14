@@ -44,11 +44,17 @@ public interface Distribution {
      *            the controller this branding is loaded on
      */
     void init(Controller controller);
-    
+
     /**
      * @return true if the credentials in the about box should be shown.
      */
     boolean showCredentials();
+
+    /**
+     * @return true if this distribution is allowed to choose from different
+     *         skins.
+     */
+    boolean allowSkinChange();
 
     /**
      * @return the update settings for this branded version. return null to use
