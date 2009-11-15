@@ -204,12 +204,14 @@ public class Translation {
         try {
             String translation = rb.getString(id);
             // log.warning("Translation for '" + id + "': " + translation);
-            for (Entry<String, String> placeHolderEntry : placeHolders
-                .entrySet())
-            {
-                if (translation.contains(placeHolderEntry.getKey())) {
-                    translation = translation.replace(
-                        placeHolderEntry.getKey(), placeHolderEntry.getValue());
+            if (translation.contains("{")) {
+                for (Entry<String, String> placeHolderEntry : placeHolders
+                    .entrySet())
+                {
+                    if (translation.contains(placeHolderEntry.getKey())) {
+                        translation = translation.replace(placeHolderEntry
+                            .getKey(), placeHolderEntry.getValue());
+                    }
                 }
             }
             return translation;
