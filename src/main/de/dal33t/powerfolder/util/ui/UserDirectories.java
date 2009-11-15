@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  */
 public class UserDirectories {
 
-    private static Map<String, File> userDirectories = new TreeMap<String, File>();
+    private static final Map<String, File> userDirectories = new TreeMap<String, File>();
 
     // Some standard user directory names from various OS.
     private static final String USER_DIR_CONTACTS = "Contacts";
@@ -56,7 +56,6 @@ public class UserDirectories {
     private static final String USER_DIR_MOVIES = "Movies";
     private static final String USER_DIR_DOWNLOADS = "Downloads";
     private static final String USER_DIR_PUBLIC = "Public";
-    private static final String USER_DIR_LIBRARY = "Library";
     private static final String USER_DIR_SITES = "Sites";
 
     // Vista has issues with these, so instantiate separately
@@ -65,6 +64,7 @@ public class UserDirectories {
     private static String userDirMyPictures;
     private static String userDirMyVideos;
     private static String appsDirOutlook;
+    private static String appsDirWindowsMail;
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
@@ -88,6 +88,9 @@ public class UserDirectories {
                 WinUtils.CSIDL_MYPICTURES, false);
             userDirMyVideos = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_MYVIDEO, false);
+            appsDirWindowsMail = WinUtils.getInstance().getSystemFolderPath(
+                WinUtils.CSIDL_LOCAL_APP_DATA, false)
+                + File.separator + "Microsoft" + File.separator + "Windows Mail";
         }
     }
 
@@ -115,7 +118,7 @@ public class UserDirectories {
             getUserDirectories());
         for (Iterator<File> it = filteredDirs.values().iterator(); it.hasNext();)
         {
-            File directory = (File) it.next();
+            File directory = it.next();
 
             // See if any folders already exists for this directory.
             // No reason to show if already subscribed.
@@ -200,8 +203,12 @@ public class UserDirectories {
                 addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
                     .getTranslation("apps.dir.thunderbird"), false);
                 if (appsDirOutlook != null) {
-                    addTargetDirectory(appData, appsDirOutlook, Translation
+                    addTargetDirectory(new File(appsDirOutlook), Translation
                         .getTranslation("apps.dir.outlook"), false);
+                }
+                if (appsDirWindowsMail != null) {
+                    addTargetDirectory(new File(appsDirWindowsMail), Translation
+                        .getTranslation("apps.dir.windows_mail"), false);
                 }
             } else {
                 Logger.getAnonymousLogger().severe(
