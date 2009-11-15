@@ -39,7 +39,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -316,10 +316,14 @@ public class MainFrame extends PFUIComponent {
 
         updateTitle();
 
-        inlineInfoCloseButton = new JButtonMini(Icons.getIconById(Icons.DELETE),
-                Translation.getTranslation(
+        inlineInfoCloseButton = new JButton3Icons(Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
+            .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
+        inlineInfoCloseButton.setToolTipText(Translation.getTranslation(
                 "main_frame.inline_info_close.tip"));
         inlineInfoCloseButton.addActionListener(new MyActionListener());
+        inlineInfoCloseButton.setContentAreaFilled(false);
 
         inlineInfoLabel = new JLabel();
     }
