@@ -376,6 +376,13 @@ public class UIUnLockDialog extends PFUIComponent {
                 if (unlocked) {
                     frame.setVisible(false);
                     frame.dispose();
+
+                    // Switch login
+                    String username = usernameField.getText();
+                    char[] password = passwordField.getPassword();
+                    getController().getOSClient().login(username,
+                        new String(password));
+                    
                     mainProgrammContinue();
                     return;
                 } else {

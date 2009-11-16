@@ -127,7 +127,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.0.2.53"; // 1.0.3.52";
+    public static final String PROGRAM_VERSION = "4.0.2.55"; // 1.0.3.55";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -434,11 +434,11 @@ public class Controller extends PFComponent {
         }
 
         reconnectManager = new ReconnectManager(this);
-
+        // Create os client
+        osClient = new ServerClient(this);
+        
         if (isUIEnabled()) {
-
             uiController = new UIController(this);
-
             if (ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(this))
             {
                 // Don't let the user pass this step.
@@ -474,8 +474,6 @@ public class Controller extends PFComponent {
             nodeManager.start();
         }
 
-        // Create os client
-        osClient = new ServerClient(this);
         setLoadingCompletion(35, 60);
         securityManager = new SecurityManagerClient(getController(), osClient);
 
