@@ -162,10 +162,6 @@ public class UIController extends PFComponent {
     public UIController(Controller controller) {
         super(controller);
 
-        if (OSUtil.isMacOS()) {
-            UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
-        }
-
         folderRepositorySynchronizing = new AtomicBoolean();
 
         activeFrame = new AtomicInteger();
@@ -174,6 +170,10 @@ public class UIController extends PFComponent {
 
         // Initialize look and feel / icon set
         initSkin();
+        
+        if (OSUtil.isMacOS()) {
+            UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
+        }
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
 
