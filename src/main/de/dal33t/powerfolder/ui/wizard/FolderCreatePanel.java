@@ -19,7 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PERMISSION_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,22 +58,25 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.Win32.ShellLink;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
@@ -83,7 +98,7 @@ public class FolderCreatePanel extends PFWizardPanel {
     private final Map<FolderInfo, FolderSettings> configurations;
     private boolean backupByOS;
     private boolean sendInvitations;
-    private boolean createShortcut;
+    private boolean createDesktopShortcut;
 
     private final List<Folder> folders;
 
@@ -153,7 +168,7 @@ public class FolderCreatePanel extends PFWizardPanel {
             PREVIEW_FOLDER_ATTIRBUTE);
         boolean previewFolder = prevAtt != null && prevAtt;
 
-        createShortcut = (Boolean) getWizardContext().getAttribute(
+        createDesktopShortcut = (Boolean) getWizardContext().getAttribute(
             CREATE_DESKTOP_SHORTCUT);
         Boolean osAtt = (Boolean) getWizardContext().getAttribute(
             BACKUP_ONLINE_STOARGE);
@@ -230,9 +245,9 @@ public class FolderCreatePanel extends PFWizardPanel {
     }
 
     /**
-     * If 'backup source' for lots of files, switch to 'backup source hour'.
-     * If 'auto sync' for lots of files, switch to 'auto sync 10min'.
-     *
+     * If 'backup source' for lots of files, switch to 'backup source hour'. If
+     * 'auto sync' for lots of files, switch to 'auto sync 10min'.
+     * 
      * @param syncProfile
      * @return
      */
@@ -305,10 +320,13 @@ public class FolderCreatePanel extends PFWizardPanel {
                 Folder folder = getController().getFolderRepository()
                     .createFolder(folderInfoFolderSettingsEntry.getKey(),
                         folderSettings);
+
                 folder.addDefaultExcludes();
-                if (createShortcut) {
+                if (createDesktopShortcut) {
                     folder.setDesktopShortcut(true);
                 }
+                createShortcutToFolder(folderInfoFolderSettingsEntry.getKey(),
+                    folderInfoFolderSettingsEntry.getValue());
 
                 if (folderPermissionOverride != null) {
                     folder.setLocalFolderPermission(folderPermissionOverride);
@@ -381,6 +399,48 @@ public class FolderCreatePanel extends PFWizardPanel {
             stringBuilder.append(problem);
             errorArea.setText(stringBuilder.toString());
             errorPane.setVisible(true);
+        }
+
+        private void createShortcutToFolder(FolderInfo folderInfo,
+            FolderSettings folderSettings)
+        {
+            FolderRepository folderRepo = getController().getFolderRepository();
+            File baseDir = new File(folderRepo.getFoldersBasedir());
+            if (!baseDir.exists()) {
+
+                log.info(String.format("Creating basedir: %s", baseDir
+                    .getAbsolutePath()));
+                baseDir.mkdirs();
+            }
+
+            File existingFolder = new File(baseDir, folderInfo.name);
+            if (existingFolder.exists()) {
+                log.info("Folder is already a subdirectory of basedir");
+                return;
+            }
+
+            File shortcutFile = new File(baseDir, folderInfo.getName().concat(
+                ".lnk"));
+            String shortcutPath = shortcutFile.getAbsolutePath();
+            String filePath = folderSettings.getLocalBaseDir()
+                .getAbsolutePath();
+
+            if (!WinUtils.isSupported() ) {
+                log.warning("WinUtils not supported");
+                return;
+            }
+            WinUtils winUtils = WinUtils.getInstance();
+            ShellLink shellLink = new ShellLink(null, null, filePath, null);
+            try {
+                log.info(String.format(
+                    "Attempting to create shortcut %s to %s", shortcutPath,
+                    filePath));
+                winUtils.createLink(shellLink, shortcutPath);
+            } catch (IOException e) {
+                log.warning(String.format(
+                    "An exception was thrown when creating shortcut %s to %s",
+                    shortcutPath, filePath));
+            }
         }
 
         private void createDefaultFolderHelpFile(Folder folder) {
