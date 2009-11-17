@@ -95,6 +95,7 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -403,6 +404,11 @@ public class Controller extends PFComponent {
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory = runtime.maxMemory();
+        long totalMemory = runtime.totalMemory();
+        logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
+            + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
