@@ -209,7 +209,7 @@ public class FilenameProblemHelper {
             if (folder.isKnown(fileInfo)) {
                 folder.removeFilesLocal(fileInfo);
             }
-            folder.scanNewFile(renamedFileInfo);
+            folder.scanChangedFile(renamedFileInfo);
             fileInfo.getFolder(controller.getFolderRepository()).removeProblem(
                 problem);
 
