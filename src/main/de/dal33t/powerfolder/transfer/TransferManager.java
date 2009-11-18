@@ -1191,11 +1191,14 @@ public class TransferManager extends PFComponent {
         boolean fileInSyncWithDisk = diskFile != null
             && dl.file.inSyncWithDisk(diskFile);
         if (!fileInSyncWithDisk) {
-            // This should free up an otherwise waiting for download partner
-            folder.recommendScanOnNextMaintenance();
             logWarning("File not in sync with disk: '"
                 + dl.file.toDetailString() + "', should be modified at "
                 + diskFile.lastModified());
+            // This should free up an otherwise waiting for download partner
+            if (folder.scanAllowedNow()) {
+                folder.scanChangedFile(dl.file);
+            }
+            // folder.recommendScanOnNextMaintenance();
             return null;
         }
 
