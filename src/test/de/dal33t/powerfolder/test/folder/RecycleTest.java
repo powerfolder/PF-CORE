@@ -75,7 +75,7 @@ public class RecycleTest extends ControllerTestCase {
 
         archiver.restore(origFile, file);
 
-        getFolder().scanRestoredFile(origFile);
+        getFolder().scanChangedFile(origFile);
         fileInfo = getFolder().getKnownFiles().iterator().next();
 
         assertTrue(file.exists());
