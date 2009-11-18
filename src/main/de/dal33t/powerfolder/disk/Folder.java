@@ -743,13 +743,15 @@ public class Folder extends PFComponent {
      * 
      * @param fileInfo
      *            the file to scan
+     * @return the new {@link FileInfo} or null if could not be scanned
      */
-    public void scanChangedFile(FileInfo fileInfo) {
+    public FileInfo scanChangedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         FileInfo localFileInfo = scanFile(fileInfo);
         if (localFileInfo != null) {
             fileChanged(localFileInfo);
         }
+        return localFileInfo;
     }
 
     /**
@@ -2282,10 +2284,11 @@ public class Folder extends PFComponent {
                 + localCopy.getAbsolutePath());
 
             if (scanAllowedNow()) {
-                scanChangedFile(localFile);
-                // Scan an trigger a sync of deletions later (again).
-                triggerSyncRemoteDeletedFiles(Collections.singleton(member),
-                    force);
+                if (scanChangedFile(localFile) != null) {
+                    // Scan an trigger a sync of deletions later (again).
+                    triggerSyncRemoteDeletedFiles(
+                        Collections.singleton(member), force);
+                }
             }
             // recommendScanOnNextMaintenance();
             return;
