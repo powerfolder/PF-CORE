@@ -1725,6 +1725,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (isServer()) {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
                     try {
+                        logInfo("Processing message: " + clr);
                         Properties preConfig = ConfigurationLoader
                             .loadPreConfiguration(clr.getConfigURL());
                         ConfigurationLoader.mergeConfigs(preConfig,
