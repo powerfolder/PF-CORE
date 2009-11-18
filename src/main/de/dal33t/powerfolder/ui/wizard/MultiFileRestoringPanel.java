@@ -151,7 +151,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                 if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
                     log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
                             " from local archive");
-                    folder.scanRestoredFile(fileInfoToRestore);
+                    folder.scanChangedFile(fileInfoToRestore);
                     restored = true;
                 } else {
                     // Not local. OnlineStorage perhaps?
