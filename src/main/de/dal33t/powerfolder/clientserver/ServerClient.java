@@ -459,12 +459,8 @@ public class ServerClient extends PFComponent {
             PREFS_PREFIX + '.' + server.getIP() + ".username", null);
         String pw = getController().getPreferences().get(
             PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
-        if (!StringUtils.isBlank(pw)) {
-            try {
-                pw = new String(Base64.decode(pw), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+        if (StringUtils.isNotBlank(pw)) {
+            pw = new String(Base64.decode(pw), Convert.UTF8);
         } else {
             // Fallback (TRAC #1291)
             pw = getController().getPreferences().get(
