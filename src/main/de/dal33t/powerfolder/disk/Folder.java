@@ -739,30 +739,16 @@ public class Folder extends PFComponent {
      */
 
     /**
-     * Scans a new File, eg from (drag and) drop.
+     * Scans a new, deleted or restored File, eg from (drag and) drop.
      * 
      * @param fileInfo
      *            the file to scan
      */
-    public void scanNewFile(FileInfo fileInfo) {
+    public void scanChangedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        fileInfo = scanFile(fileInfo);
-        if (fileInfo != null) {
-            fileChanged(fileInfo);
-        }
-    }
-
-    /**
-     * Scans a file that was restored from the recyle bin
-     * 
-     * @param fileInfo
-     *            the file to scan
-     */
-    public void scanRestoredFile(FileInfo fileInfo) {
-        Reject.ifNull(fileInfo, "FileInfo is null");
-        fileInfo = scanFile(fileInfo);
-        if (fileInfo != null) {
-            fileChanged(fileInfo);
+        FileInfo localFileInfo = scanFile(fileInfo);
+        if (localFileInfo != null) {
+            fileChanged(localFileInfo);
         }
     }
 
@@ -1964,9 +1950,7 @@ public class Folder extends PFComponent {
      * or scheduled sync is setup.
      */
     public void recommendScanOnNextMaintenance() {
-        if (!syncProfile.isAutoDetectLocalChanges()
-            || syncProfile.getConfiguration().isDailySync())
-        {
+        if (!scanAllowedNow()) {
             return;
         }
         if (isFiner()) {
@@ -1977,10 +1961,18 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return true if auto scanning files on the fly is allowed now.
+     */
+    public boolean scanAllowedNow() {
+        return syncProfile.isAutoDetectLocalChanges()
+            && !syncProfile.getConfiguration().isDailySync();
+    }
+
+    /**
      * Runs the maintenance on this folder. This means the folder gets synced
      * with remotesides.
      */
-    public void maintain() {
+    void maintain() {
         logFiner("Maintaining '" + getName() + '\'');
 
         // local files
@@ -2288,7 +2280,14 @@ public class Folder extends PFComponent {
                 + ", local file not in sync with disk: "
                 + localFile.toDetailString() + " at "
                 + localCopy.getAbsolutePath());
-            recommendScanOnNextMaintenance();
+
+            if (scanAllowedNow()) {
+                scanChangedFile(localFile);
+                // Scan an trigger a sync of deletions later (again).
+                triggerSyncRemoteDeletedFiles(Collections.singleton(member),
+                    force);
+            }
+            // recommendScanOnNextMaintenance();
             return;
         }
 
