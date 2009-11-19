@@ -49,7 +49,7 @@ public enum ConfigurationEntry {
     /**
      * If the GUI should be disabled (=console mode). Default: False (Show GUI).
      */
-    DISABLE_GUI("disableui", Boolean.FALSE.toString()),
+    DISABLE_GUI("disableui", false),
 
     /**
      * If the user interface is locked and needs to be unlocked before starting
@@ -57,7 +57,7 @@ public enum ConfigurationEntry {
      * <p>
      * TRAC #1784
      */
-    USER_INTERFACE_LOCKED("uilock.locked", String.valueOf(Boolean.FALSE)),
+    USER_INTERFACE_LOCKED("uilock.locked", false),
 
     // Node setup *************************************************************
 
@@ -167,20 +167,18 @@ public enum ConfigurationEntry {
     /**
      * #1687: How this computer should behave when the server is not connected.
      */
-    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", String
-        .valueOf(Boolean.TRUE)),
+    SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", true),
 
     /**
      * If the config should be update when connection to the server was
      * established
      */
-    SERVER_CONFIG_UPDATE("server.config.update", String.valueOf(Boolean.TRUE)),
+    SERVER_CONFIG_UPDATE("server.config.update", true),
 
     /**
      * #1715 If it should be possible to register at the server.
      */
-    SERVER_REGISTER_ENABLED("server.register.enabled", String
-        .valueOf(Boolean.TRUE)),
+    SERVER_REGISTER_ENABLED("server.register.enabled", true),
 
     // General settings *******************************************************
 
@@ -206,90 +204,76 @@ public enum ConfigurationEntry {
      * If true, powerfolder tries to open it's ports on the firewall. (It also
      * will try to close them when exiting)
      */
-    NET_FIREWALL_OPENPORT("net.openport", Boolean.TRUE.toString()),
+    NET_FIREWALL_OPENPORT("net.openport", true),
 
     /**
      * If relayed or tunnel connections should be tried for LAN based computers.
      * Usually this does not make sense. Only for special scenarios. e.g.
      * ILY-570834
      */
-    NET_USE_RELAY_TUNNEL_ON_LAN("net.relaytunnel.lan.enabled", String
-        .valueOf(Boolean.FALSE)),
+    NET_USE_RELAY_TUNNEL_ON_LAN("net.relaytunnel.lan.enabled", false),
 
     /**
      * If the {@link RemoteCommandManager} should be started or not.
      */
-    NET_RCON_MANAGER("net.rcon", Boolean.TRUE.toString()) {
-        @Override
-        public String getValue(Controller controller) {
-            // Backward compatibility
-            if (controller.getConfig().getProperty("disablercon") != null) {
-                return String.valueOf(!Boolean.valueOf(controller.getConfig()
-                    .getProperty("disablercon")));
-            }
-            // Defaults to TRUE.
-            return super.getValue(controller);
-        }
-    },
+    NET_RCON_MANAGER("net.rcon", true),
 
     /**
      * The TCP port for the {@link RemoteCommandManager}
      */
-    NET_RCON_PORT("net.rcon.port", String.valueOf(1338)),
+    NET_RCON_PORT("net.rcon.port", 1338),
 
     /**
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
-    NET_BIND_RANDOM_PORT("random-port", Boolean.TRUE.toString()),
+    NET_BIND_RANDOM_PORT("random-port", true),
 
     /**
      * The TCP/IP socket buffer size for TCP/UDT connections over Internet.
      */
-    NET_SOCKET_INTERNET_BUFFER_SIZE("net.socket.internet.buffer.size", String
-        .valueOf(16 * 1024)),
+    NET_SOCKET_INTERNET_BUFFER_SIZE("net.socket.internet.buffer.size",
+        16 * 1024),
 
     /**
      * The TCP/IP socket buffer size for TCP/UDT connections in LAN.
      */
-    NET_SOCKET_LAN_BUFFER_SIZE("net.socket.lan.buffer.size", String
-        .valueOf(64 * 1024)),
+    NET_SOCKET_LAN_BUFFER_SIZE("net.socket.lan.buffer.size", 64 * 1024),
 
     /**
      * The TCP/IP socket buffer size limit for UDT connections over Internet.
      */
-    NET_SOCKET_INTERNET_BUFFER_LIMIT("net.socket.internet.buffer.limit", String
-        .valueOf(256 * 1024)),
+    NET_SOCKET_INTERNET_BUFFER_LIMIT("net.socket.internet.buffer.limit",
+        256 * 1024),
 
     /**
      * The TCP/IP socket buffer size limit for UDT connections in LAN.
      */
-    NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", String
-        .valueOf(1024 * 1024)),
+    NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
 
     /**
      * The maximum number of concurrent uploads.
      */
-    UPLOADS_MAX_CONCURRENT("uploads", "10"),
+    UPLOADS_MAX_CONCURRENT("uploads", 10),
 
     /**
      * The upload limit for WAN (Internet) connections in KB/s
      */
-    UPLOADLIMIT_WAN("uploadlimit", "0"),
+    UPLOADLIMIT_WAN("uploadlimit", 0),
 
     /**
      * The download limit for WAN (Internet) connections in KB/s
      */
-    DOWNLOADLIMIT_WAN("downloadlimit", "0"),
+    DOWNLOADLIMIT_WAN("downloadlimit", 0),
 
     /**
      * The upload limit for LAN connections in KB/s
      */
-    UPLOADLIMIT_LAN("lanuploadlimit", "0"),
+    UPLOADLIMIT_LAN("lanuploadlimit", 0),
 
     /**
      * The download limit for LAN connections in KB/s
      */
-    DOWNLOADLIMIT_LAN("landownloadlimit", "0"),
+    DOWNLOADLIMIT_LAN("landownloadlimit", 0),
 
     /**
      * The percentage to throttle the uploadlimits in silentmode.
@@ -300,14 +284,12 @@ public enum ConfigurationEntry {
      * The maximum size (in bytes) of an {@link FileChunk} used for file
      * transfers
      */
-    TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", String
-        .valueOf(32 * 1024)),
+    TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", 32 * 1024),
 
     /**
      * The maximum number of queued request for {@link FileChunk}s
      */
-    TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", String
-        .valueOf(15)),
+    TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 15),
 
     /**
      * My dynamic dns hostname or fix ip.
@@ -340,25 +322,25 @@ public enum ConfigurationEntry {
     /**
      * Setting to enable/disable zip compression on LAN
      */
-    USE_ZIP_ON_LAN("use_zip_on_lan", Boolean.FALSE.toString()),
+    USE_ZIP_ON_LAN("use_zip_on_lan", false),
 
     /**
      * Setting to enable/disable swarming in an LAN environment. If swarming
      * below is set to false, this is ignored!
      */
-    USE_SWARMING_ON_LAN("swarming.lan.enabled", "false"),
+    USE_SWARMING_ON_LAN("swarming.lan.enabled", false),
 
     /**
      * Delta-sync: Enable/Disable it.
      */
-    USE_DELTA_ON_INTERNET("deltasync.internet.enabled", Boolean.TRUE.toString()),
+    USE_DELTA_ON_INTERNET("deltasync.internet.enabled", true),
 
-    USE_DELTA_ON_LAN("deltasync.lan.enabled", Boolean.FALSE.toString()),
+    USE_DELTA_ON_LAN("deltasync.lan.enabled", false),
 
     /**
      * Setting to enable/disable swarming.
      */
-    USE_SWARMING_ON_INTERNET("swarming.internet.enabled", "true"),
+    USE_SWARMING_ON_INTERNET("swarming.internet.enabled", true),
 
     /**
      * The basedir for all powerfolder.
@@ -383,6 +365,59 @@ public enum ConfigurationEntry {
         }
     },
 
+    MASS_DELETE_PROTECTION("mass.delete.protection", true) {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                value = PreferencesEntry.MASS_DELETE_PROTECTION
+                    .getValueString(controller);
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            PreferencesEntry.MASS_DELETE_PROTECTION.removeValue(controller);
+        }
+
+    },
+
+    MASS_DELETE_THRESHOLD("mass.delete.threshold", 75) {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                value = PreferencesEntry.MASS_DELETE_THRESHOLD
+                    .getValueString(controller);
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
+        }
+    },
+
     /**
      * Contains a comma-separated list of all plugins to load.
      */
@@ -396,7 +431,7 @@ public enum ConfigurationEntry {
     /**
      * Flag if update at start should performed.
      */
-    DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", Boolean.FALSE.toString()) {
+    DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", false) {
 
         @Override
         public String getValue(Controller controller) {
@@ -432,28 +467,17 @@ public enum ConfigurationEntry {
     /**
      * Whether to use the PowerFolder icon in Windows Explorer folders.
      */
-    USE_PF_ICON("use.pf.icon", Boolean.TRUE.toString()),
+    USE_PF_ICON("use.pf.icon", true),
 
     /**
      * Whether to set PowerFolders as a Favorite Link.
      */
-    USE_PF_LINK("use.pf.link", Boolean.FALSE.toString()),
-
-    /**
-     * Whether to show chat notifications when minimized.
-     */
-    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", Boolean.TRUE.toString()),
-
-    /**
-     * Whether to show system notifications when minimized.
-     */
-    SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", Boolean.TRUE
-        .toString()),
+    USE_PF_LINK("use.pf.link", false),
 
     /**
      * Whether to log verbose.
      */
-    VERBOSE("verbose", Boolean.FALSE.toString()),
+    VERBOSE("verbose", false),
 
     /**
      * The loglevel to write to debug file when verbose=true
@@ -470,23 +494,23 @@ public enum ConfigurationEntry {
      * 
      * @see de.dal33t.powerfolder.message.RequestNodeInformation
      */
-    DEBUG_REPORTS("debug.reports", Boolean.FALSE.toString()),
+    DEBUG_REPORTS("debug.reports", false),
 
     /**
      * Whether to do auto-cleanup for downloads.
      */
-    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", Boolean.TRUE.toString()),
+    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", true),
 
     /**
      * Whether to do auto-cleanup for uploads.
      */
-    UPLOADS_AUTO_CLEANUP("uploads.auto.cleanup", Boolean.TRUE.toString()),
+    UPLOADS_AUTO_CLEANUP("uploads.auto.cleanup", true),
 
     /**
      * If it should be automatically connected to other nodes. FIX: Currently
      * only affects ReconnectManager.
      */
-    AUTO_CONNECT("auto.connect", Boolean.TRUE.toString()),
+    AUTO_CONNECT("auto.connect", true),
 
     /**
      * The number of seconds to go on idle between connection tries per
@@ -497,33 +521,32 @@ public enum ConfigurationEntry {
     /**
      * Enable/Disable relayed connections.
      */
-    RELAYED_CONNECTIONS_ENABLED("connections.relayed", Boolean.TRUE.toString()),
+    RELAYED_CONNECTIONS_ENABLED("connections.relayed", true),
 
     /**
      * Enable/Disable relayed connections.
      */
-    UDT_CONNECTIONS_ENABLED("connections.udt", Boolean.TRUE.toString()),
+    UDT_CONNECTIONS_ENABLED("connections.udt", true),
 
     /**
      * Enable/Disable node manager (for debugging only)
      */
-    NODEMANAGER_ENABLED("nodemanager.enabled", Boolean.TRUE.toString()),
+    NODEMANAGER_ENABLED("nodemanager.enabled", true),
 
     /**
      * Enable/Disable transfermanager (for debugging only)
      */
-    TRANSFER_MANAGER_ENABLED("transfermanager.enabled", Boolean.TRUE.toString()),
+    TRANSFER_MANAGER_ENABLED("transfermanager.enabled", true),
 
     /**
      * Enable/Disable folder repo (for debugging only)
      */
-    FOLDER_REPOSITORY_ENABLED("folderepository.enabled", Boolean.TRUE
-        .toString()),
+    FOLDER_REPOSITORY_ENABLED("folderepository.enabled", true),
 
     /**
      * Whether to show preview folders in nav / folders panles.
      */
-    HIDE_PREVIEW_FOLDERS("show.preview.folders", Boolean.FALSE.toString()),
+    HIDE_PREVIEW_FOLDERS("show.preview.folders", false),
 
     /**
      * The number of seconds to wait to recalc a {@link FolderStatistic} when a
@@ -581,7 +604,7 @@ public enum ConfigurationEntry {
     DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", "5"),
 
     /** Warning about unsyned folders. */
-    FOLDER_SYNC_USE("sync.folder.use", Boolean.TRUE.toString()),
+    FOLDER_SYNC_USE("sync.folder.use", true),
 
     /** Days before warning about unsynced folders. */
     FOLDER_SYNC_WARN("sync.folder.warn", "10"),
@@ -592,8 +615,7 @@ public enum ConfigurationEntry {
      * Checks and avoids duplicate folders with the same name or base dir.
      * Duplicate folders by should be automatically prevented.
      */
-    FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", String
-        .valueOf(false)),
+    FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", false),
 
     /**
      * Ugly hack to make it possible to pre-configure client with
@@ -601,11 +623,10 @@ public enum ConfigurationEntry {
      * <p>
      * TODO Make Preferences pre-configurable too.
      */
-    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", String
-        .valueOf(Boolean.TRUE)),
+    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", true),
 
     /** Online storage only client. */
-    BACKUP_ONLY_CLIENT("backup.only.client", Boolean.FALSE.toString()),
+    BACKUP_ONLY_CLIENT("backup.only.client", false),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERIONS("default.archive.versions", "5"),
@@ -634,6 +655,14 @@ public enum ConfigurationEntry {
             // Try harder. Use getter. might have been overridden
             defaultValue = getDefaultValue();
         }
+    }
+
+    ConfigurationEntry(String aConfigKey, boolean theDefaultValue) {
+        this(aConfigKey, String.valueOf(theDefaultValue));
+    }
+
+    ConfigurationEntry(String aConfigKey, int theDefaultValue) {
+        this(aConfigKey, String.valueOf(theDefaultValue));
     }
 
     /**
@@ -728,6 +757,31 @@ public enum ConfigurationEntry {
     public void setValue(Controller controller, String value) {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().setProperty(configKey, value);
+    }
+
+    /**
+     * Sets the value of this config entry.
+     * 
+     * @param controller
+     *            the controller of the config
+     * @param value
+     *            the value to set
+     */
+    public void setValue(Controller controller, boolean value) {
+        setValue(controller, String.valueOf(value));
+    }
+    
+
+    /**
+     * Sets the value of this config entry.
+     * 
+     * @param controller
+     *            the controller of the config
+     * @param value
+     *            the value to set
+     */
+    public void setValue(Controller controller, int value) {
+        setValue(controller, String.valueOf(value));
     }
 
     /**
