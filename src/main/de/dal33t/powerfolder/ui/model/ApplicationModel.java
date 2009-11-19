@@ -73,33 +73,33 @@ public class ApplicationModel extends PFUIComponent {
             getController().getOSClient());
         receivedInvitationsModel = new ReceivedInvitationsModel(getController());
         receivedInvitationsModel.getReceivedInvitationsCountVM()
-                .addValueChangeListener(new MyReceivedInvitationListener());
+            .addValueChangeListener(new MyReceivedInvitationListener());
         receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel(
             getController());
         receivedAskedForFriendshipModel.getReceivedAskForFriendshipCountVM()
-                .addValueChangeListener(new MyReceivedFrendshipListener());
+            .addValueChangeListener(new MyReceivedFrendshipListener());
         receivedSingleFileOffersModel = new ReceivedSingleFileOffersModel(
             getController());
         warningsModel = new WarningModel(getController());
 
         chatNotificationsValueModel = new ValueHolder(
-            ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS
+            PreferencesEntry.SHOW_CHAT_NOTIFICATIONS
                 .getValueBoolean(controller));
         chatNotificationsValueModel
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    ConfigurationEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
+                    PreferencesEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
                     controller.saveConfig();
                 }
             });
         systemNotificationsValueModel = new ValueHolder(
-            ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+            PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
                 .getValueBoolean(controller));
         systemNotificationsValueModel
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
+                    PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
                         controller, evt.getNewValue().toString());
                     controller.saveConfig();
                 }
@@ -187,9 +187,9 @@ public class ApplicationModel extends PFUIComponent {
                 // Ignore status updates
                 return;
             }
-            getController().getUIController().notifyMessage(Translation
-                    .getTranslation("chat.notification.title"), Translation
-                    .getTranslation("chat.notification.message"), true);
+            getController().getUIController().notifyMessage(
+                Translation.getTranslation("chat.notification.title"),
+                Translation.getTranslation("chat.notification.message"), true);
         }
 
         public boolean fireInEventDispatchThread() {
@@ -197,26 +197,37 @@ public class ApplicationModel extends PFUIComponent {
         }
     }
 
-    private class MyReceivedInvitationListener implements PropertyChangeListener {
+    private class MyReceivedInvitationListener implements
+        PropertyChangeListener
+    {
         public void propertyChange(PropertyChangeEvent evt) {
             Integer newValue = (Integer) evt.getNewValue();
             Integer oldValue = (Integer) evt.getOldValue();
             if (newValue != null && oldValue != null && newValue > oldValue) {
-                getController().getUIController().notifyMessage(Translation
-                        .getTranslation("invitation.notification.title"), Translation
-                        .getTranslation("invitation.notification.message"), false);
+                getController().getUIController()
+                    .notifyMessage(
+                        Translation
+                            .getTranslation("invitation.notification.title"),
+                        Translation
+                            .getTranslation("invitation.notification.message"),
+                        false);
             }
         }
     }
 
-    private class MyReceivedFrendshipListener implements PropertyChangeListener {
+    private class MyReceivedFrendshipListener implements PropertyChangeListener
+    {
         public void propertyChange(PropertyChangeEvent evt) {
             Integer newValue = (Integer) evt.getNewValue();
             Integer oldValue = (Integer) evt.getOldValue();
             if (newValue != null && oldValue != null && newValue > oldValue) {
-                getController().getUIController().notifyMessage(Translation
-                        .getTranslation("friendship.notification.title"), Translation
-                        .getTranslation("friendship.notification.message"), false);
+                getController().getUIController()
+                    .notifyMessage(
+                        Translation
+                            .getTranslation("friendship.notification.title"),
+                        Translation
+                            .getTranslation("friendship.notification.message"),
+                        false);
             }
         }
     }
