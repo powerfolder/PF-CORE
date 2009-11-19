@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.File;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
@@ -29,6 +33,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -42,6 +47,7 @@ public class FolderWatcher extends PFComponent {
     private Folder folder;
     private int watchID = -1;
     private NotifyListener listener;
+    private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
 
     FolderWatcher(Folder folder) {
         super(folder.getController());
@@ -104,6 +110,45 @@ public class FolderWatcher extends PFComponent {
         }
     }
 
+    private ReentrantLock scannerLock = new ReentrantLock();
+
+    private class DirtyFilesScanner implements Runnable {
+
+        public void run() {
+            synchronized (scannerLock) {
+                if (scannerLock.isLocked()) {
+                    // Already locked
+                    return;
+                }
+                if (dirtyFiles.isEmpty()) {
+                    return;
+                }
+                scannerLock.lock();
+            }
+            FileInfo dirtyFile = null;
+            try {
+                for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
+                    dirtyFile = entry.getValue();
+                    FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
+                    if (fileInfo == null) {
+                        logWarning("Was not able to scan file: "
+                            + dirtyFile.toDetailString());
+                    } else {
+                        logWarning("Scaned file: " + fileInfo.toDetailString());
+                    }
+                }
+                logWarning("Scanned " + dirtyFiles.size() + " dirty files");
+                dirtyFiles.clear();
+            } catch (Exception e) {
+                logSevere("Unable to scan changed file: " + dirtyFile + ". "
+                    + e, e);
+            } finally {
+                scannerLock.unlock();
+            }
+        }
+
+    }
+
     private class NotifyListener implements JNotifyListener {
         public void fileRenamed(int wd, String rootPath, String oldName,
             String newName)
@@ -129,26 +174,29 @@ public class FolderWatcher extends PFComponent {
                 // Ignore
                 return;
             }
-            Runnable r = new Runnable() {
-                public void run() {
-                    try {
-
-                        FileInfo lookup = lookupInstance(rootPath, name);
-                        FileInfo fileInfo = folder.scanChangedFile(lookup);
-                        if (fileInfo == null) {
-                            logWarning("Was not able to scan file: "
-                                + lookup.toDetailString());
-                        } else {
-                            logWarning("Scaned file: "
-                                + fileInfo.toDetailString());
-                        }
-                    } catch (Exception e) {
-                        logSevere("Unable to scan changed file: " + rootPath
-                            + ", " + name + ". " + e, e);
+            if (dirtyFiles.containsKey(name)) {
+                // Skipping already dirty file
+                return;
+            }
+            try {
+                FileInfo lookup = lookupInstance(rootPath, name);
+                dirtyFiles.put(name, lookup);
+                synchronized (scannerLock) {
+                    if (!scannerLock.isLocked()) {
+                        getController().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                getController().getIOProvider().startIO(
+                                    new DirtyFilesScanner());
+                            }
+                        }, 500);
                     }
                 }
-            };
-            getController().getIOProvider().startIO(r);
+
+            } catch (Exception e) {
+                logSevere("Unable to enqueue changed file for scan: "
+                    + rootPath + ", " + name + ". " + e, e);
+            }
         }
 
         private FileInfo lookupInstance(String rootPath, String rawName) {

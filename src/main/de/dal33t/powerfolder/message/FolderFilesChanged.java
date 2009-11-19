@@ -76,7 +76,11 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         Reject.ifNull(fileInfo, "Fileinfo is null");
 
         folder = fileInfo.getFolderInfo();
-        added = new FileInfo[]{fileInfo};
+        if (fileInfo.isDeleted()) {
+            removed = new FileInfo[]{fileInfo};
+        } else {
+            added = new FileInfo[]{fileInfo};
+        }
     }
 
     /**
@@ -127,7 +131,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             if (fileInfo.isDiretory()) {
                 nDirs++;
             }
-            messageFiles[curMsgIndex] = fileInfo; 
+            messageFiles[curMsgIndex] = fileInfo;
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 nDeltas++;
