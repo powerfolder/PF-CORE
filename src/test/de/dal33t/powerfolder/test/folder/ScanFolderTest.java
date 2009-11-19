@@ -50,6 +50,42 @@ public class ScanFolderTest extends ControllerTestCase {
         setupTestFolder(SyncProfile.HOST_FILES);
     }
 
+    public void testScanChangedFileMethod() {
+        File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
+            10 + (int) (Math.random() * 100));
+
+        FileInfo lookup = FileInfoFactory.lookupInstance(getFolder(), file);
+        FileInfo fileInfo = getFolder().scanChangedFile(lookup);
+        assertNotNull(fileInfo);
+        assertNotSame(lookup, fileInfo);
+        assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
+        assertFalse(fileInfo.toDetailString(), lookup
+            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFileMatch(file, fileInfo);
+        assertEquals(0, fileInfo.getVersion());
+
+        TestHelper.changeFile(file);
+        fileInfo = getFolder().scanChangedFile(lookup);
+        assertNotNull(fileInfo);
+        assertNotSame(lookup, fileInfo);
+        assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
+        assertFalse(fileInfo.toDetailString(), lookup
+            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFileMatch(file, fileInfo);
+        assertEquals(1, fileInfo.getVersion());
+
+        assertTrue(file.delete());
+        fileInfo = getFolder().scanChangedFile(lookup);
+        assertNotNull(fileInfo);
+        assertNotSame(lookup, fileInfo);
+        assertTrue(fileInfo.toDetailString(), lookup.equals(fileInfo));
+        assertFalse(fileInfo.toDetailString(), lookup
+            .isVersionDateAndSizeIdentical(fileInfo));
+        assertFileMatch(file, fileInfo);
+        assertEquals(2, fileInfo.getVersion());
+        assertTrue(fileInfo.isDeleted());
+    }
+
     public void testScanSingleFileMulti() throws Exception {
         for (int i = 0; i < 40; i++) {
             testScanSingleFile();
@@ -528,7 +564,8 @@ public class ScanFolderTest extends ControllerTestCase {
      * @return the fileinfo in the test folder for this file.
      */
     private FileInfo retrieveFileInfo(File file) {
-        return getFolder().getFile(FileInfoFactory.lookupInstance(getFolder(), file));
+        return getFolder().getFile(
+            FileInfoFactory.lookupInstance(getFolder(), file));
     }
 
     private void scanFolder() {
