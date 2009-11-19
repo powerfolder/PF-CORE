@@ -414,10 +414,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             mInfoRes = mInfoWorker.call();
 
             // logFine("Records: " + record.getInfos().length);
-            logFine("Matches: " + mInfoRes.size() + " which are "
-                + (remotePartRecord.getPartLength() * mInfoRes.size())
-                + " bytes (bit less maybe).");
-
+            if (isFine()) {
+                logFine("Matches: "
+                    + mInfoRes.size()
+                    + " which are "
+                    + Format.formatBytes(remotePartRecord.getPartLength()
+                        * mInfoRes.size()) + " bytes (bit less maybe) on "
+                    + fileInfo.toDetailString());
+            }
             setTransferState(TransferState.COPYING);
             Callable<FilePartsState> pStateWorker = new MatchCopyWorker(src,
                 getTempFile(), remotePartRecord, mInfoRes, transferObs);
@@ -1017,7 +1021,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     {
         switch (state) {
             case WAITING_FOR_FILEPARTSRECORD :
-                logFine("Matching and copying...");
+                if (isFine()) {
+                    logFine("Matching and copying..."
+                        + fileInfo.toDetailString());
+                }
                 setState(InternalState.MATCHING_AND_COPYING);
                 remotePartRecord = record;
 
