@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * TRAC #711: Automatic change detection by watching the filesystem.
