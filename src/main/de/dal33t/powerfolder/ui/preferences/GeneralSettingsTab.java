@@ -19,15 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.Dictionary;
+import java.util.Hashtable;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
@@ -40,13 +45,16 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -129,14 +137,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel massDeleteModel = new ValueHolder(
-            PreferencesEntry.MASS_DELETE_PROTECTION
+            ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()));
         massDeleteBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(massDeleteModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.use_mass_delete"));
         massDeleteBox.addItemListener(new MassDeleteItemListener());
         massDeleteSlider = new JSlider(20, 100,
-            PreferencesEntry.MASS_DELETE_THRESHOLD.getValueInt(getController()));
+            ConfigurationEntry.MASS_DELETE_THRESHOLD
+                .getValueInt(getController()));
         massDeleteSlider.setMajorTickSpacing(20);
         massDeleteSlider.setMinorTickSpacing(5);
         massDeleteSlider.setPaintTicks(true);
@@ -349,9 +358,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .toString(usePowerFolderLink.isSelected()));
         }
 
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getController(),
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
             massDeleteBox.isSelected());
-        PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
+        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
             massDeleteSlider.getValue());
 
         ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
