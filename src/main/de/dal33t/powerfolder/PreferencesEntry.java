@@ -38,13 +38,12 @@ public enum PreferencesEntry {
     /**
      * Show offline members
      */
-    NODE_MANAGER_MODEL_SHOW_OFFLINE("node_manager_model_show_offline",
-        true),
+    NODE_MANAGER_MODEL_SHOW_OFFLINE("node_manager_model_show_offline", true),
     /** find offline users */
     FRIEND_SEARCH_HIDE_OFFLINE("FriendsSearch_HideOfflineUsers", false),
 
     QUIT_ON_X("quitonx", false),
-    
+
     ASK_FOR_QUIT_ON_X("AskForQuitOnX", true),
 
     WARN_ON_CLOSE("WarnOnClose", true),
@@ -62,8 +61,20 @@ public enum PreferencesEntry {
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
+    /**
+     * Whether to show chat notifications when minimized.
+     */
+    SHOW_CHAT_NOTIFICATIONS("show.chat.notifications", true),
+
+    /**
+     * Whether to show system notifications when minimized.
+     */
+    SHOW_SYSTEM_NOTIFICATIONS("show.system.notifications", true),
+
+    @Deprecated
     MASS_DELETE_PROTECTION("mass.delete.protection", true),
 
+    @Deprecated
     MASS_DELETE_THRESHOLD("mass.delete.threshold", 75),
 
     /**
@@ -126,8 +137,8 @@ public enum PreferencesEntry {
     /** Show the information tab inline with the mainframe */
     INLINE_INFO_MODE("inline.info", false),
 
-    FILE_SEARCH_MODE("file.search.mode", DirectoryFilter
-            .SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
+    FILE_SEARCH_MODE("file.search.mode",
+        DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
 
     /** String, Boolean, Integer */
     private Class type;
@@ -171,7 +182,7 @@ public enum PreferencesEntry {
         return controller.getPreferences().get(preferencesKey,
             (String) defaultValue);
     }
-    
+
     public String getDefaultValue() {
         return (String) defaultValue;
     }
