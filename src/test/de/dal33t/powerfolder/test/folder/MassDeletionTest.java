@@ -20,7 +20,8 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
-import de.dal33t.powerfolder.PreferencesEntry;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -68,9 +69,9 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        PreferencesEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa()
+        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa()
             .getController(), 80);
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
             .getController(), protection);
 
         for (int i = 0; i < size; i++) {
