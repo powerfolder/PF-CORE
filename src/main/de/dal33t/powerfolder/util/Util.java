@@ -175,22 +175,13 @@ public class Util {
      * @param altLocation
      *            possible alternative (root is tried first) location (directory
      *            structure like etc/files)
-     * @param destination
-     *            Directory where to create the file (must exists and must be a
-     *            directory))
-     * @param deleteOnExit
-     *            indicates if this file must be deleted on program exit
+     * @param destinationFile
+     *            The file to create
      */
     public static File copyResourceTo(String resource, String altLocation,
-        File destination, boolean deleteOnExit)
+        File destinationFile)
     {
-        if (!destination.exists()) {
-            throw new IllegalArgumentException("destination must exists");
-        }
-        if (!destination.isDirectory()) {
-            throw new IllegalArgumentException(
-                "destination must be a directory");
-        }
+        destinationFile.mkdirs();
         InputStream in = Thread.currentThread().getContextClassLoader()
             .getResourceAsStream(resource);
         if (in == null) {
@@ -204,18 +195,15 @@ public class Util {
                 return null;
             }
         }
-        File target = new File(destination, resource);
-        if (deleteOnExit) {
-            target.deleteOnExit();
-        }
         try {
-            FileUtils.copyFromStreamToFile(in, target);
+            FileUtils.copyFromStreamToFile(in, destinationFile);
         } catch (IOException ioe) {
-            LOG.warning("Unable to create target for resource: " + target);
+            LOG.warning("Unable to create target for resource: "
+                + destinationFile);
             return null;
         }
-        LOG.finer("created target for resource: " + target);
-        return target;
+        LOG.finer("created target for resource: " + destinationFile);
+        return destinationFile;
     }
 
     /**
