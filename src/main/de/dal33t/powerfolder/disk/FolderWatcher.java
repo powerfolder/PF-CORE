@@ -65,7 +65,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void remove() {
-        if (!LIB_LOADED) {
+        if (!isLibLoaded()) {
             return;
         }
         if (watchID >= 0) {
@@ -80,7 +80,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void reconfigure(SyncProfile syncProfile) {
-        if (!LIB_LOADED) {
+        if (!isLibLoaded()) {
             return;
         }
         if (!syncProfile.isAutoDetectLocalChanges()) {
