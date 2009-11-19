@@ -405,7 +405,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             newState = DISCONNECTED;
         }
 
-        if (!ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+        if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
             .getValueBoolean(getController()))
         {
             return;
