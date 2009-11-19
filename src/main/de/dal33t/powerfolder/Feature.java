@@ -104,7 +104,12 @@ public enum Feature {
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false);
+    CONFLICT_DETECTION(false),
+
+    /**
+     * TRAC #711: Automatic change detection by watching the filesystem.
+     */
+    WATCH_FILESYSTEM(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
