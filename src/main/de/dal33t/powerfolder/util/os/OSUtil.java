@@ -169,8 +169,14 @@ public class OSUtil {
         }
 
         String file = System.mapLibraryName(lib);
-        File fLib = Util.copyResourceTo(file, dir, Controller
-            .getTempFilesLocation(), true);
+        File targetFile = new File(Controller.getTempFilesLocation(), file);
+        targetFile.deleteOnExit();
+        File fLib = Util.copyResourceTo(file, dir, targetFile);
+        if (fLib == null) {
+            targetFile = new File(Controller.getTempFilesLocation(), file
+                + "-1");
+            fLib = Util.copyResourceTo(file, dir, targetFile);
+        }
 
         if (fLib == null) {
             log.severe(clazz.getName() + " --> Completely failed to load "
