@@ -173,6 +173,7 @@ public class OSUtil {
         targetFile.deleteOnExit();
         File fLib = Util.copyResourceTo(file, dir, targetFile);
         if (fLib == null) {
+            // Try harder
             targetFile = new File(Controller.getTempFilesLocation(), file
                 + "-1");
             fLib = Util.copyResourceTo(file, dir, targetFile);
