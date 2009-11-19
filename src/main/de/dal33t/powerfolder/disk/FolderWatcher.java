@@ -24,6 +24,7 @@ import java.io.File;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
 import net.contentobjects.jnotify.JNotifyListener;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -132,6 +133,10 @@ public class FolderWatcher extends PFComponent {
         }
 
         private void fileChanged(final String rootPath, final String name) {
+            if (rootPath.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                // Ignore
+                return;
+            }
             Runnable r = new Runnable() {
                 public void run() {
                     try {
