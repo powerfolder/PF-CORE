@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,6 +47,7 @@ public class FolderWatcher extends PFComponent {
     private int watchID = -1;
     private NotifyListener listener;
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
+    private ReentrantLock scannerLock = new ReentrantLock();
 
     FolderWatcher(Folder folder) {
         super(folder.getController());
@@ -109,8 +109,6 @@ public class FolderWatcher extends PFComponent {
             watchID = -1;
         }
     }
-
-    private ReentrantLock scannerLock = new ReentrantLock();
 
     private class DirtyFilesScanner implements Runnable {
 
