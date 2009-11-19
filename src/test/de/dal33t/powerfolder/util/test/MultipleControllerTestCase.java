@@ -31,7 +31,11 @@ import java.util.UUID;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -131,7 +135,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             + "' could not be opened", controller.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controller);
         controller.getPreferences().putBoolean("createdesktopshortcuts", false);
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
         // Clean up on completion.
         controllers.put(id, controller);
         return controller;

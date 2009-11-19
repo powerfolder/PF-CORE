@@ -27,7 +27,12 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PowerFolder;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -167,7 +172,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(controllerBart, false);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerBart, false);
     }
 
     protected void startControllerLisa() {
@@ -179,7 +184,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        PreferencesEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa, false);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa, false);
     }
 
     /**
