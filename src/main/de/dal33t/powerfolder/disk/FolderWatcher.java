@@ -108,43 +108,39 @@ public class FolderWatcher extends PFComponent {
         public void fileRenamed(int wd, String rootPath, String oldName,
             String newName)
         {
-            System.out.println("JNotifyTest.fileRenamed() : wd #" + wd
-                + " root = " + rootPath + ", " + oldName + " -> " + newName);
             fileChanged(rootPath, oldName);
             fileChanged(rootPath, newName);
         }
 
         public void fileModified(int wd, String rootPath, String name) {
-            System.out.println("JNotifyTest.fileModified() : wd #" + wd
-                + " root = " + rootPath + ", " + name);
             fileChanged(rootPath, name);
         }
 
         public void fileDeleted(int wd, String rootPath, String name) {
-            System.out.println("JNotifyTest.fileDeleted() : wd #" + wd
-                + " root = " + rootPath + ", " + name);
             fileChanged(rootPath, name);
         }
 
         public void fileCreated(int wd, String rootPath, String name) {
-            System.out.println("JNotifyTest.fileCreated() : wd #" + wd
-                + " root = " + rootPath + ", " + name);
             fileChanged(rootPath, name);
         }
 
         private void fileChanged(final String rootPath, final String name) {
-            if (rootPath.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+            if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
                 // Ignore
                 return;
             }
             Runnable r = new Runnable() {
                 public void run() {
                     try {
+
                         FileInfo lookup = lookupInstance(rootPath, name);
                         FileInfo fileInfo = folder.scanChangedFile(lookup);
                         if (fileInfo == null) {
                             logWarning("Was not able to scan file: "
                                 + lookup.toDetailString());
+                        } else {
+                            logWarning("Scaned file: "
+                                + fileInfo.toDetailString());
                         }
                     } catch (Exception e) {
                         logSevere("Unable to scan changed file: " + rootPath
@@ -156,8 +152,9 @@ public class FolderWatcher extends PFComponent {
         }
 
         private FileInfo lookupInstance(String rootPath, String name) {
-            File file = new File(rootPath + File.separatorChar + name);
-            return FileInfoFactory.lookupInstance(folder, file);
+            return FileInfoFactory.lookupInstance(folder.getInfo(), name);
+            // File file = new File(rootPath + File.separatorChar + name);
+            // return FileInfoFactory.lookupInstance(folder, file);
         }
     }
 

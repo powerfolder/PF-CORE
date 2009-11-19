@@ -78,7 +78,7 @@ public class JNotifyAdapterWin32 implements IJNotify
 		{
 			if (_id2Data.containsKey(new Integer(wd)))
 			{
-				System.out.println("JNotifyAdapterWin32: removeWatch(" + wd + ")");
+				//System.out.println("JNotifyAdapterWin32: removeWatch(" + wd + ")");
 				_id2Data.remove(new Integer(wd));
 				JNotify_win32.removeWatch(wd);
 				return true;

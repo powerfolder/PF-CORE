@@ -1133,8 +1133,17 @@ public class Folder extends PFComponent {
                         modifiedBy = getController().getMySelf().getInfo();
                     }
                     Member from = modifiedBy.getNode(getController(), true);
-                    Date modDate = fInfo.getModifiedDate();
-                    long size = fInfo.isLookupInstance() ? 0 : fInfo.getSize();
+                    Date modDate;
+                    long size;
+
+                    if (fInfo.isLookupInstance()) {
+                        size = 0;
+                        modDate = new Date();
+                    } else {
+                        size = fInfo.getSize();
+                        modDate = fInfo.getModifiedDate();
+                    }
+
                     if (from != null) {
                         modifiedBy = from.getInfo();
                     }
