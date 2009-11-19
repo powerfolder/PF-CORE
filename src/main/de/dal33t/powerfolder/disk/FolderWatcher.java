@@ -136,14 +136,15 @@ public class FolderWatcher extends PFComponent {
             Runnable r = new Runnable() {
                 public void run() {
                     try {
-                        TestHelper.waitMilliSeconds(500);
-                        FileInfo fileInfo = lookupInstance(rootPath, name);
-                        fileInfo = folder.scanChangedFile(fileInfo);
-                        if (fileInfo != null) {
-                            logWarning(fileInfo.toDetailString());
+                        FileInfo lookup = lookupInstance(rootPath, name);
+                        FileInfo fileInfo = folder.scanChangedFile(lookup);
+                        if (fileInfo == null) {
+                            logWarning("Was not able to scan file: "
+                                + lookup.toDetailString());
                         }
                     } catch (Exception e) {
-                        logSevere(e);
+                        logSevere("Unable to scan changed file: " + rootPath
+                            + ", " + name + ". " + e, e);
                     }
                 }
             };
