@@ -1184,7 +1184,7 @@ public class UIController extends PFComponent {
 
             // Disabled popup of sync start.
             if (changed
-                && ConfigurationEntry.SHOW_SYSTEM_NOTIFICATIONS
+                && PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
                     .getValueBoolean(getController()))
             {
                 String text2 = Translation.getTranslation(
