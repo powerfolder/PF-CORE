@@ -151,7 +151,11 @@ public class FolderWatcher extends PFComponent {
             getController().getIOProvider().startIO(r);
         }
 
-        private FileInfo lookupInstance(String rootPath, String name) {
+        private FileInfo lookupInstance(String rootPath, String rawName) {
+            String name = rawName;
+            if (name.contains("\\")) {
+                name = name.replace('\\', '/');
+            }
             return FileInfoFactory.lookupInstance(folder.getInfo(), name);
             // File file = new File(rootPath + File.separatorChar + name);
             // return FileInfoFactory.lookupInstance(folder, file);
