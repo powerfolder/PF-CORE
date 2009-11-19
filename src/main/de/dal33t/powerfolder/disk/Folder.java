@@ -218,6 +218,11 @@ public class Folder extends PFComponent {
 
     private volatile FileArchiver archiver;
 
+    /**
+     * TRAC #711: Automatic change detection by watching the filesystem.
+     */
+    private FolderWatcher watcher;
+
     private final FolderListener folderListenerSupport;
     private final FolderMembershipListener folderMembershipListenerSupport;
     /**
@@ -377,6 +382,10 @@ public class Folder extends PFComponent {
                 FileUtils.removeInvalidFilenameChars(inv.folder.name)
                     + ".invitation"));
         }
+
+        if (Feature.WATCH_FILESYSTEM.isEnabled()) {
+            watcher = new FolderWatcher(this);
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -515,7 +524,7 @@ public class Folder extends PFComponent {
             && getKnownFilesCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
             && scanResult.getTotalFilesCount() == 0
-            && PreferencesEntry.MASS_DELETE_PROTECTION
+            && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
 
@@ -1069,8 +1078,6 @@ public class Folder extends PFComponent {
     /**
      * Scans one file
      * <p>
-     * Package protected because used by Recylcebin to tell, that file was
-     * restored.
      * 
      * @param fInfo
      *            the file to be scanned
@@ -1081,12 +1088,6 @@ public class Folder extends PFComponent {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
         File file = getDiskFile(fInfo);
-
-        if (!file.canRead()) {
-            // ignore not readable
-            logWarning("File not readable: " + file);
-            return null;
-        }
 
         // ignore our database file
         if (file.getName().equals(DB_FILENAME)
@@ -1133,7 +1134,7 @@ public class Folder extends PFComponent {
                     }
                     Member from = modifiedBy.getNode(getController(), true);
                     Date modDate = fInfo.getModifiedDate();
-                    long size = fInfo.getSize();
+                    long size = fInfo.isLookupInstance() ? 0 : fInfo.getSize();
                     if (from != null) {
                         modifiedBy = from.getInfo();
                     }
@@ -1613,6 +1614,11 @@ public class Folder extends PFComponent {
         // disabled this so the ui is updated (more or less) that the folders
         // are disabled from debug panel
         // ListenerSupportFactory.removeAllListeners(folderListenerSupport);
+
+        if (watcher != null) {
+            watcher.remove();
+        }
+
         if (dirty) {
             persist();
         }
@@ -1939,7 +1945,9 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion()) {
             triggerSyncRemoteDeletedFiles(members.keySet(), false);
         }
-
+        if (watcher != null) {
+            watcher.reconfigure(syncProfile);
+        }
         recommendScanOnNextMaintenance();
         fireSyncProfileChanged();
     }
@@ -2538,7 +2546,7 @@ public class Folder extends PFComponent {
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
         if (changes.removed != null
-            && PreferencesEntry.MASS_DELETE_PROTECTION
+            && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
             int delsCount = changes.removed.length;
@@ -2564,7 +2572,7 @@ public class Folder extends PFComponent {
                     int delPercentage = 100 * delsCount / knownFilesCount;
                     logFine("FolderFilesChanged delete percentage "
                         + delPercentage + '%');
-                    if (delPercentage >= PreferencesEntry.MASS_DELETE_THRESHOLD
+                    if (delPercentage >= ConfigurationEntry.MASS_DELETE_THRESHOLD
                         .getValueInt(getController()))
                     {
 
