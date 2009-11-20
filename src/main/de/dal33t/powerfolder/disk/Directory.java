@@ -389,7 +389,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         String theRest = relativePath.substring(index + 1);
 
         if (StringUtils.isBlank(dirName) || StringUtils.isBlank(theRest)) {
-            log.warning("Got empty directory " + this + ", dirname: " + dirName
+            log.severe("Got empty directory " + this + ", dirname: " + dirName
                 + ", rest: " + theRest + ", relpath: " + relativePath + " "
                 + fileInfo.toDetailString());
         }
