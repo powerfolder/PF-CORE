@@ -870,6 +870,10 @@ public class Folder extends PFComponent {
                     // File new, scan
                     FileInfo fileInfo = scanFile(fInfo);
                     if (fileInfo != null) {
+                        // update directory
+                        commissionRootFolder();
+                        rootDirectory.removeFileInfo(fileInfo);
+                        rootDirectory.add(getController().getMySelf(), fileInfo);
                         fileChanged(fInfo);
                     } else {
                         return false;
