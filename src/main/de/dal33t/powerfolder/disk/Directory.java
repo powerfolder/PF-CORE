@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
 /**
@@ -386,6 +387,12 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
         String dirName = relativePath.substring(0, index);
         String theRest = relativePath.substring(index + 1);
+
+        if (StringUtils.isBlank(dirName) || StringUtils.isBlank(theRest)) {
+            log.warning("Got empty directory " + this + ", dirname: " + dirName
+                + ", rest: " + theRest + ", relpath: " + relativePath + " "
+                + fileInfo.toDetailString());
+        }
 
         synchronized (subDirectoriesMap) {
             Directory dir = subDirectoriesMap.get(dirName);
