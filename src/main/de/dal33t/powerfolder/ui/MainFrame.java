@@ -226,10 +226,16 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
+        configureInlineInfo();
+    }
+
+    /**
+     * Must do this AFTER mainFrame is constructed else info frame may nudge
+     * and not have a reference to mainframe ui component.
+     */
+    public void attachListeners() {
         uiComponent.addComponentListener(new MyComponentAdapter());
         uiComponent.addMouseMotionListener(new MyMouseAdapter());
-
-        configureInlineInfo();
     }
 
     /**
@@ -465,7 +471,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Set the Icon for the folders tab.
      * 
-     * @param homeIcon
+     * @param foldersIcon
      */
     public void setFoldersTabIcon(Icon foldersIcon) {
         mainTabbedPane.setFoldersIcon(foldersIcon);
@@ -474,7 +480,7 @@ public class MainFrame extends PFUIComponent {
     /**
      * Set the Icon for the computers tab.
      * 
-     * @param homeIcon
+     * @param computersIcon
      */
     public void setComputersTabIcon(Icon computersIcon) {
         mainTabbedPane.setComputersIcon(computersIcon);

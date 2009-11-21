@@ -248,6 +248,8 @@ public class UIController extends PFComponent {
 
         // create the Frame
         mainFrame = new MainFrame(getController());
+        // attach listeners after construct so they can back-reference mainFrame
+        mainFrame.attachListeners();
 
         // create the models
         getController().getFolderRepository().addFolderRepositoryListener(

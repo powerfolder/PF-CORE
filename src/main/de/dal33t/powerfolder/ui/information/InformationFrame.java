@@ -24,7 +24,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.prefs.Preferences;
 
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
@@ -166,7 +165,6 @@ public class InformationFrame extends MagneticFrame {
      * Displays file info for a folder.
      * 
      * @param folderInfo
-     * @param directoryFilterMode
      */
     public void displayFolderFiles(FolderInfo folderInfo)
     {
