@@ -184,51 +184,55 @@ public class FilesTableModel extends PFComponent implements TableModel,
             public void run() {
                 synchronized (diskItems) {
 
-                    List<DiskItem> tempList = new ArrayList<DiskItem>(diskItems
-                        .size());
-                    tempList.addAll(diskItems);
-
-                    // Look for extra items in the selectedDiskItems list to
-                    // insert.
                     List<DiskItem> selectedDiskItems = directories
                         .get(selectedRelativeName);
                     if (selectedDiskItems == null) {
                         selectedDiskItems = new ArrayList<DiskItem>();
                     }
-                    boolean changed = false;
-                    for (DiskItem selectedDiskItem : selectedDiskItems) {
-                        boolean b = false;
-                        for (DiskItem diskItem : tempList) {
-                            if (diskItem.equals(selectedDiskItem)) {
-                                b = true;
-                                break;
-                            }
-                        }
-                        if (!b) {
-                            diskItems.add(selectedDiskItem);
-                            changed = true;
-                        }
-                    }
 
-                    // Look for extra items in the diskItem list to remove.
-                    for (DiskItem diskItem : tempList) {
-                        boolean b = false;
-                        for (DiskItem selectedDiskItem : selectedDiskItems) {
-                            if (diskItem.equals(selectedDiskItem)) {
-                                b = true;
-                                break;
-                            }
-                        }
-                        if (!b) {
-                            diskItems.remove(diskItem);
-                            changed = true;
-                        }
-                    }
-
-                    if (changed) {
+                    if (diskItems.size() != selectedDiskItems.size()) {
+                        // There are structural differences - reload.
+                        diskItems.clear();
+                        diskItems.addAll(selectedDiskItems);
                         sort();
                         fireModelChanged();
+                        return;
                     }
+
+                    // Same size sets.
+                    boolean allSame = true;
+                    for (DiskItem selectedDiskItem : selectedDiskItems) {
+                        boolean found = false;
+                        for (DiskItem diskItem : diskItems) {
+                            if (selectedDiskItem instanceof FileInfo
+                                    && diskItem instanceof FileInfo) {
+                                if (((FileInfo) selectedDiskItem)
+                                        .isVersionDateAndSizeIdentical(
+                                                (FileInfo) diskItem)) {
+                                    found = true;
+                                    break;
+                                }
+                            } else {
+                                if (selectedDiskItem.equals(diskItem)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            allSame = false;
+                            break;
+                        }
+                    }
+                    if (allSame) {
+                        return;
+                    }
+
+                    // There are differences - reload.
+                    diskItems.clear();
+                    diskItems.addAll(selectedDiskItems);
+                    sort();
+                    fireModelChanged();
                 }
             }
         };
@@ -348,6 +352,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
             DiskItemComparator comparator = new DiskItemComparator(

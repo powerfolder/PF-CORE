@@ -140,9 +140,6 @@ public class TransferManager extends PFComponent {
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
 
-    /** The currently calculated transferstatus */
-    private TransferStatus transferStatus;
-
     /** The maximum concurrent uploads */
     private final int allowedUploads;
 
@@ -449,7 +446,7 @@ public class TransferManager extends PFComponent {
      * @return the current status
      */
     public TransferStatus getStatus() {
-        transferStatus = new TransferStatus();
+        TransferStatus transferStatus = new TransferStatus();
 
         // Upload status
         transferStatus.activeUploads = activeUploads.size();
