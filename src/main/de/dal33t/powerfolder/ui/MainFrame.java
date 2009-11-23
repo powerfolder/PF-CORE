@@ -418,7 +418,11 @@ public class MainFrame extends PFUIComponent {
             prefs.putBoolean("mainframe4.maximized", true);
         } else {
             prefs.putInt("mainframe4.x", uiComponent.getX());
-            if (uiComponent.getWidth() > 0) {
+            // If info is inline and info is showing, do not store width because
+            // info will not show at start up and the frame will be W-I-D-E.
+            if (uiComponent.getWidth() > 0 
+                    && (!PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
+                    getController()) || inlineInfoPanel == null)) {
                 prefs.putInt("mainframe4.width", uiComponent.getWidth());
             }
             prefs.putInt("mainframe4.y", uiComponent.getY());
