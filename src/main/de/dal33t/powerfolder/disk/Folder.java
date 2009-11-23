@@ -873,7 +873,8 @@ public class Folder extends PFComponent {
                         // update directory
                         commissionRootFolder();
                         rootDirectory.removeFileInfo(fileInfo);
-                        rootDirectory.add(getController().getMySelf(), fileInfo);
+                        rootDirectory
+                            .add(getController().getMySelf(), fileInfo);
                         fileChanged(fInfo);
                     } else {
                         return false;
@@ -1532,7 +1533,7 @@ public class Folder extends PFComponent {
                         }
                     }
                 } catch (EOFException e) {
-                    logFiner("Ignore nothing for " + this);
+                    logFiner("No ignore list");
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
@@ -1547,7 +1548,7 @@ public class Folder extends PFComponent {
                     }
                 } catch (EOFException e) {
                     // ignore nothing available for ignore
-                    logFine("ignore nothing for " + this);
+                    logFine("No last scan date");
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
@@ -1560,7 +1561,7 @@ public class Folder extends PFComponent {
                     }
                 } catch (EOFException e) {
                     // ignore nothing available for ignore
-                    logFine("ignore nothing for " + this);
+                    logFine("no last sync date");
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
@@ -1574,7 +1575,7 @@ public class Folder extends PFComponent {
                     }
                 } catch (EOFException e) {
                     // ignore nothing available for ignore
-                    logFine("ignore nothing for " + this);
+                    logFiner("no local default permission");
                 } catch (Exception e) {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
