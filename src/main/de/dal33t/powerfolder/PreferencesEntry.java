@@ -135,7 +135,7 @@ public enum PreferencesEntry {
     SHOW_OFFLINE("show.offline", true),
 
     /** Show the information tab inline with the mainframe */
-    INLINE_INFO_MODE("inline.info", false),
+    INLINE_INFO_MODE("inline.info", true),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);

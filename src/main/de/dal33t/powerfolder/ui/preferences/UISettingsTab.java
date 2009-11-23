@@ -349,6 +349,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(minToSysTrayCB, cc.xy(3, row));
+            
+            row += 2;
+            builder.add(inlineInfoCB, cc.xyw(3, row, 2));
+            
+            row += 2;
+            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
@@ -358,12 +364,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(underlineLinkBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(inlineInfoCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(autoExpandCB, cc.xyw(3, row, 2));
