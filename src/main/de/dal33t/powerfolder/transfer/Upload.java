@@ -94,7 +94,7 @@ public class Upload extends Transfer {
             }
         } catch (TransferException e) {
             logSevere("TransferException", e);
-            getTransferManager().setBroken(this,
+            getTransferManager().uploadBroken(this,
                 TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
         }
     }
@@ -113,7 +113,7 @@ public class Upload extends Transfer {
             || pr.getRange().getLength() <= 0)
         {
             logSevere("Received invalid part request!");
-            getTransferManager().setBroken(this, TransferProblem.INVALID_PART);
+            getTransferManager().uploadBroken(this, TransferProblem.INVALID_PART);
             return;
         }
         if (pr.getRange().getLength() > getTransferManager()
@@ -137,7 +137,7 @@ public class Upload extends Transfer {
         if (getFile().getSize() < Constants.MIN_SIZE_FOR_PARTTRANSFERS) {
             logWarning("Remote side requested invalid PartsRecordRequest!");
 
-            getTransferManager().setBroken(this,
+            getTransferManager().uploadBroken(this,
                 TransferProblem.GENERAL_EXCEPTION,
                 "Remote side requested invalid PartsRecordRequest!");
             return;
@@ -242,7 +242,7 @@ public class Upload extends Transfer {
                     }
                     // Loggable.logWarningStatic(Upload.class, "Upload broken: "
                     // + Upload.this, e);
-                    getTransferManager().setBroken(Upload.this,
+                    getTransferManager().uploadBroken(Upload.this,
                         TransferProblem.TRANSFER_EXCEPTION, e.getMessage());
                 } finally {
                     debugState = "DONE";
@@ -304,11 +304,11 @@ public class Upload extends Transfer {
             transferState.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
             logSevere("FileNotFoundException", e);
-            getTransferManager().setBroken(Upload.this,
+            getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e.getMessage());
         } catch (IOException e) {
             logSevere("IOException", e);
-            getTransferManager().setBroken(Upload.this,
+            getTransferManager().uploadBroken(Upload.this,
                 TransferProblem.IO_EXCEPTION, e.getMessage());
         }
         return true;

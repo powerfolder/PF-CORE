@@ -356,7 +356,7 @@ public class Download extends Transfer {
             p.sendMessageAsynchron(new AbortDownload(getFile()), null);
         }
         shutdown();
-        getTransferManager().downloadbroken(Download.this, problem, message);
+        getTransferManager().downloadBroken(Download.this, problem, message);
     }
 
     /**
@@ -372,13 +372,14 @@ public class Download extends Transfer {
         }
         // timeout is, when dl is not enqued at remote side,
         // and has timeout. Don't check timeout during filehasing of UPLOADER
-        if (getState() != TransferState.FILERECORD_REQUEST) {
+        // and DOWNLOADER (#1829)
+        if (stateCanTimeout()) {
             boolean timedOut = System.currentTimeMillis()
                 - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch
                 .getTime()
                 && !queued;
             if (timedOut) {
-                logFine("Break cause: Timeout.");
+                logFine("Break cause: Timeout. " + getFile().toDetailString());
                 return true;
             }
         }
@@ -412,6 +413,13 @@ public class Download extends Transfer {
         }
 
         return false;
+    }
+
+    private boolean stateCanTimeout() {
+        TransferState state = getState();
+        return state != TransferState.FILERECORD_REQUEST
+            && state != TransferState.VERIFYING
+            && state != TransferState.MATCHING;
     }
 
     /**

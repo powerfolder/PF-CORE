@@ -545,11 +545,11 @@ public class TransferManager extends PFComponent {
      * @param transferProblem
      *            the problem that broke the transfer
      */
-    void setBroken(Upload upload, TransferProblem transferProblem) {
-        setBroken(upload, transferProblem, null);
+    void uploadBroken(Upload upload, TransferProblem transferProblem) {
+        uploadBroken(upload, transferProblem, null);
     }
 
-    void downloadbroken(Download download, TransferProblem problem,
+    void downloadBroken(Download download, TransferProblem problem,
         String problemInfo)
     {
         logWarning("Download broken: " + download + ' '
@@ -575,7 +575,7 @@ public class TransferManager extends PFComponent {
      * @param problemInformation
      *            specific information about the problem
      */
-    void setBroken(Upload upload, TransferProblem transferProblem,
+    void uploadBroken(Upload upload, TransferProblem transferProblem,
         String problemInformation)
     {
         // Ensure shutdown
@@ -619,7 +619,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
-                    setBroken(upload, TransferProblem.FOLDER_REMOVED,
+                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
                         foInfo.name);
                 }
             }
@@ -628,7 +628,7 @@ public class TransferManager extends PFComponent {
         if (!activeUploads.isEmpty()) {
             for (Upload upload : activeUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
-                    setBroken(upload, TransferProblem.FOLDER_REMOVED,
+                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
                         foInfo.name);
                 }
             }
@@ -654,7 +654,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (node.equals(upload.getPartner())) {
-                    setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
                 }
             }
@@ -663,7 +663,7 @@ public class TransferManager extends PFComponent {
         if (!activeUploads.isEmpty()) {
             for (Upload upload : activeUploads) {
                 if (node.equals(upload.getPartner())) {
-                    setBroken(upload, TransferProblem.NODE_DISCONNECTED, node
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node
                         .getNick());
                 }
             }
@@ -691,7 +691,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (fInfo.equals(upload.getFile())) {
-                    setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo
                         .getRelativeName());
                 }
             }
@@ -701,7 +701,7 @@ public class TransferManager extends PFComponent {
             for (Upload upload : activeUploads) {
                 if (fInfo.equals(upload.getFile())) {
                     upload.abort();
-                    setBroken(upload, TransferProblem.FILE_CHANGED, fInfo
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo
                         .getRelativeName());
                 }
             }
@@ -1251,7 +1251,7 @@ public class TransferManager extends PFComponent {
             // Stop former upload request
             oldUpload.abort();
             oldUpload.shutdown();
-            setBroken(oldUpload, TransferProblem.OLD_UPLOAD, from.getNick());
+            uploadBroken(oldUpload, TransferProblem.OLD_UPLOAD, from.getNick());
         }
 
         // Trigger working thread on upload enqueued
@@ -2617,7 +2617,7 @@ public class TransferManager extends PFComponent {
             try {
                 if (upload.isBroken()) {
                     // Broken
-                    setBroken(upload, TransferProblem.BROKEN_UPLOAD);
+                    uploadBroken(upload, TransferProblem.BROKEN_UPLOAD);
                     uploadsBroken++;
                 } else if (hasFreeUploadSlots()
                     || upload.getPartner().isOnLAN())
