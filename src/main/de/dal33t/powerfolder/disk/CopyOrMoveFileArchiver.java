@@ -164,13 +164,13 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
                 File vf = new File(dir, baseName);
                 if (!checked.contains(vf)) {
                     checked.add(vf);
-                    Collection<File> files = fileMap.get(baseName);
-                    if (files == null) {
-                        files = new LinkedList<File>();
-                        fileMap.put(baseName, files);
-                    }
-                    files.add(f);
                 }
+                Collection<File> files = fileMap.get(baseName);
+                if (files == null) {
+                    files = new LinkedList<File>();
+                    fileMap.put(baseName, files);
+                }
+                files.add(f);
             }
         }
         for (Collection<File> files : fileMap.values()) {
