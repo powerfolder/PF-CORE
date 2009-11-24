@@ -30,6 +30,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -529,6 +530,11 @@ public class ReconnectManager extends PFComponent {
                             logFine("Skipping: " + currentNode);
                         }
                         continue;
+                    } else {
+                        if (isFiner()) {
+                            logFiner("Picked node for reconnect: "
+                                + currentNode);
+                        }
                     }
                 }
 
@@ -539,7 +545,11 @@ public class ReconnectManager extends PFComponent {
                     if (!ServerClient.isTempServerNode(currentNode.getInfo())) {
                         try {
                             // Reconnect, Don't mark connecting. already done.
-                            currentNode.reconnect(false);
+                            ConnectResult res = currentNode.reconnect(false);
+                            if (isFiner()) {
+                                logFiner("Reconnect to " + currentNode + ": "
+                                    + res);
+                            }
                         } catch (InvalidIdentityException e) {
                             Identity otherNodeId = e.getFrom().getIdentity();
                             MemberInfo otherNodeInfo = otherNodeId != null
