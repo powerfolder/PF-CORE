@@ -40,7 +40,8 @@ public class FileArchiverTest extends TwoControllerTestCase {
         }
 
         File expected = new File(fb.getSystemSubDir(), "archive");
-        expected = new File(expected, fib.getRelativeName() + "_K_" + fib.getVersion());
+        expected = new File(expected, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
         assertTrue(expected.exists());
         assertEquals(expected.lastModified(), fib.getModifiedDate().getTime());
     }
@@ -62,9 +63,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         FileInfo fib = fb.getKnowFilesAsArray()[0];
         File eBart = new File(fb.getSystemSubDir(), "archive");
-        eBart = new File(eBart, fib.getRelativeName() + "_K_" + fib.getVersion());
+        eBart = new File(eBart, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
         File eLisa = new File(fl.getSystemSubDir(), "archive");
-        eLisa = new File(eLisa, fib.getRelativeName() + "_K_" + fib.getVersion());
+        eLisa = new File(eLisa, fib.getRelativeName() + "_K_"
+            + fib.getVersion());
 
         modLisaFile(tl, fib);
 
@@ -75,7 +78,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
     public void testLimitedVersions() {
         final Folder fb = getFolderAtBart();
         fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
-        ((CopyOrMoveFileArchiver) fb.getFileArchiver()).setVersionsPerFile(3);
+        fb.setArchiveVersions(3);
 
         Folder fl = getFolderAtLisa();
         File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
@@ -106,7 +109,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertFalse(ver[1].exists());
         assertTrue(ver[2].exists());
 
-        ((CopyOrMoveFileArchiver) fb.getFileArchiver()).setVersionsPerFile(5);
+        fb.setArchiveVersions(5);
         modLisaFile(tl, fib);
         assertTrue(ver[2].exists());
 
@@ -116,6 +119,46 @@ public class FileArchiverTest extends TwoControllerTestCase {
         modLisaFile(tl, fib);
         assertFalse(ver[2].exists());
         assertTrue(ver[3].exists());
+    }
+
+    public void testChangeVersionsPerFile() {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveMode(ArchiveMode.FULL_BACKUP);
+        fb.setArchiveVersions(3);
+
+        Folder fl = getFolderAtLisa();
+        File tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                return fb.getKnowFilesAsArray().length > 0;
+            }
+        });
+        FileInfo fib = fb.getKnowFilesAsArray()[0];
+
+        File ver[] = new File[5];
+        for (int i = 0; i < ver.length; i++) {
+            modLisaFile(tl, fib);
+        }
+        File archdir = new File(fb.getSystemSubDir(), "archive");
+        for (int i = 0; i < ver.length; i++) {
+            ver[i] = new File(archdir, fib.getRelativeName() + "_K_" + i);
+        }
+        assertFalse(ver[0].exists());
+        assertFalse(ver[1].exists());
+        assertTrue(ver[2].exists());
+        assertTrue(ver[3].exists());
+        assertTrue(ver[4].exists());
+
+        fb.setArchiveVersions(1);
+        assertTrue(((CopyOrMoveFileArchiver) fb.getFileArchiver()).maintain());
+        assertFalse(ver[0].exists());
+        assertFalse(ver[1].exists());
+        assertFalse(ver[2].exists());
+        assertFalse(ver[3].exists());
+        assertTrue(ver[4].exists());
     }
 
     private void modLisaFile(File file, final FileInfo fInfo) {
