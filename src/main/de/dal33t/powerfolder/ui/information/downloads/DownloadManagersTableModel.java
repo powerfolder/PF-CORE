@@ -371,11 +371,19 @@ public class DownloadManagersTableModel extends PFComponent implements
      * 
      * @param download
      */
-    private void removeDownload(Download download) {
+    private void removeDownload(Download download,
+        boolean forceRemoveDownloadManager)
+    {
         int index = downloadManagers.indexOf(download.getDownloadManager());
         if (index >= 0) {
-            downloadManagers.remove(index);
-            rowRemoved(index);
+            if (!download.getDownloadManager().hasSources()
+                || forceRemoveDownloadManager)
+            {
+                downloadManagers.remove(index);
+                rowRemoved(index);
+            } else {
+                rowsUpdated(index, index);
+            }
         } else {
             logSevere("Unable to remove download from tablemodel, not found: "
                 + download);
@@ -415,7 +423,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             if (event.getDownload().isCompleted()) {
                 return;
             }
-            removeDownload(event.getDownload());
+            removeDownload(event.getDownload(), false);
         }
 
         public void downloadBroken(TransferManagerEvent event) {
@@ -428,7 +436,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             if (shouldShowProblem(event.getDownload().getTransferProblem())) {
                 addOrUpdateDownload(event.getDownload());
             } else if (event.getDownload().isRequestedAutomatic()) {
-                removeDownload(event.getDownload());
+                removeDownload(event.getDownload(), false);
             }
         }
 
@@ -458,7 +466,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
-            removeDownload(event.getDownload());
+            removeDownload(event.getDownload(), true);
         }
 
         public void pendingDownloadEnqueud(TransferManagerEvent event) {
