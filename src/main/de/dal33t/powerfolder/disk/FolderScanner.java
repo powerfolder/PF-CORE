@@ -606,12 +606,18 @@ public class FolderScanner extends PFComponent {
             }
         } else {
             // file is new
-            FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                fileToScan, getController().getMySelf().getInfo(), false);
-            currentScanResult.newFiles.add(info);
-            if (isFiner()) {
-                logFiner("New file found: " + info.toDetailString());
+            try {
+                FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
+                    fileToScan, getController().getMySelf().getInfo(), false);
+                currentScanResult.newFiles.add(info);
+                if (isFiner()) {
+                    logFiner("New file found: " + info.toDetailString());
+                }
+            } catch (Exception e) {
+                logWarning("Unable to scan file: " + fileToScan + ". " + e, e);
+                unableToScanFiles.add(fileToScan);
             }
+        
         }
         return true;
     }
