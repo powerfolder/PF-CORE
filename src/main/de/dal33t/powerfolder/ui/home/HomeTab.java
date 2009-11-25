@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.home;
 
+import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -250,7 +251,8 @@ public class HomeTab extends PFUIComponent {
             Borders.createEmptyBorder("0, 0, 3dlu, 0"));
         licenseInfoSection = new LicenseInfoSection(getController());
         buyNowLabel = new LinkLabel(getController(), "", "");
-        UIUtil.convertToBigLabel((JLabel) buyNowLabel.getUIComponent());
+        buyNowLabel.convertToBigLabel();
+        buyNowLabel.setFontStyle(Font.BOLD);
         buyNowLabel.getUIComponent().setVisible(false);
         buyNowLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("20dlu, 0, 0, 0"));
