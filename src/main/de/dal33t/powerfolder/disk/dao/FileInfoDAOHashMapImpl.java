@@ -24,7 +24,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private boolean ignoreFileNameCase;
-    private final ConcurrentMap<String, Domain> domains = Util.createConcurrentHashMap();
+    private final ConcurrentMap<String, Domain> domains = Util
+        .createConcurrentHashMap();
 
     public FileInfoDAOHashMapImpl() {
         super();
@@ -202,11 +203,13 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return null;
     }
 
-    public Collection<FileInfo> findInDirectory(String path, String domainStr) {
+    public Collection<FileInfo> findInDirectory(String path, String domainStr,
+        boolean recursive)
+    {
         List<FileInfo> files = new ArrayList<FileInfo>();
         Domain domain = getDomain(domainStr);
         for (FileInfo fInfo : domain.files.values()) {
-            if (isInSubDir(fInfo, path, false)) {
+            if (isInSubDir(fInfo, path, recursive)) {
                 // In subdir, do not consider
                 continue;
             }

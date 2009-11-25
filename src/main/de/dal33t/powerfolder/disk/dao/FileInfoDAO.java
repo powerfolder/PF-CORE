@@ -122,9 +122,12 @@ public interface FileInfoDAO {
      *            the path to search for
      * @param domain
      *            the domain to check.
+     * @param recursive
+     *            true to recursivly add all files from subdirectory too.
      * @return the
      */
-    Collection<FileInfo> findInDirectory(String path, String domain);
+    Collection<FileInfo> findInDirectory(String path, String domain,
+        boolean recursive);
 
     /**
      * All directories in the given base directory. optionally adds ALL

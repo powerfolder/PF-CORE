@@ -177,7 +177,8 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
     public FileInfo find(FileInfo info, String domain) {
         Connection c = openConnection();
         try {
-            PreparedStatement ps = createCaseQuery(c, SQL_FIND, info.getRelativeName());
+            PreparedStatement ps = createCaseQuery(c, SQL_FIND, info
+                .getRelativeName());
             ps.setString(2, dn(domain));
             ps.execute();
             ResultSet rs = ps.getResultSet();
@@ -419,7 +420,9 @@ public class FileInfoDAOSQLImpl extends PFComponent implements FileInfoDAO {
         }
     }
 
-    public Collection<FileInfo> findInDirectory(String path, String domain) {
+    public Collection<FileInfo> findInDirectory(String path, String domain,
+        boolean recursive)
+    {
         throw new UnsupportedOperationException("Not implemented");
     }
 }
