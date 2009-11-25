@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -83,7 +85,18 @@ public class LinkLabel extends PFComponent {
     }
 
     public void setFontSize(int fontSize) {
-        SimpleComponentFactory.setFontSize(uiComponent, fontSize);
+        SimpleComponentFactory.setFont(uiComponent, fontSize, uiComponent
+            .getFont().getStyle());
+    }
+
+    public void setFontStyle(int style) {
+        SimpleComponentFactory.setFont(uiComponent, uiComponent.getFont()
+            .getSize(), style);
+    }
+
+    public void convertToBigLabel() {
+        uiComponent.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
+        setFontSize(UIUtil.MED_FONT_SIZE);
     }
 
     public JComponent getUIComponent() {

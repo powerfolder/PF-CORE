@@ -155,7 +155,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             LinkLabel signupLabel = new LinkLabel(getController(), Translation
                 .getTranslation("pro.wizard.activation.register_now"), client
                 .getRegisterURL());
-            UIUtil.convertToBigLabel((JLabel) signupLabel.getUIComponent());
+            signupLabel.convertToBigLabel();
             builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
         }
         row += 2;
@@ -167,8 +167,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         LinkLabel recoverPasswordLabel = new LinkLabel(getController(),
             Translation.getTranslation("wizard.webservice.recover_password"),
             client.getRecoverPasswordURL());
-        UIUtil
-            .convertToBigLabel((JLabel) recoverPasswordLabel.getUIComponent());
+        recoverPasswordLabel.convertToBigLabel();
         builder.add(recoverPasswordLabel.getUIComponent(), cc.xy(5, row));
         row += 2;
 

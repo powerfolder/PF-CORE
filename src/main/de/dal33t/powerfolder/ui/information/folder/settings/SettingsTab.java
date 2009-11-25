@@ -266,7 +266,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         ActionLabel label = new ActionLabel(getController(), removeFolderAction);
         builder.add(label.getUIComponent(), cc.xy(1, 1));
-        UIUtil.convertToBigLabel((JLabel) label.getUIComponent());
+        label.convertToBigLabel();
         return builder.getPanel();
     }
 
@@ -276,7 +276,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         confOSActionLabel = new ActionLabel(getController(),
             new FolderOnlineStorageAction(getController()));
-        UIUtil.convertToBigLabel((JLabel) confOSActionLabel.getUIComponent());
+        confOSActionLabel.convertToBigLabel();
         builder.add(confOSActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
@@ -287,8 +287,7 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
         previewFolderActionLabel = new ActionLabel(getController(),
             new PreviewFolderAction(getController()));
-        UIUtil.convertToBigLabel((JLabel) previewFolderActionLabel
-            .getUIComponent());
+        previewFolderActionLabel.convertToBigLabel();
         builder.add(previewFolderActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
@@ -666,9 +665,9 @@ public class SettingsTab extends PFUIComponent {
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
                 .getSyncProfile(), false, folder.getFileArchiver()
-                .getArchiveMode(), folder.isPreviewOnly(),
-                    folder.getDownloadScript(), folder
-                    .getFileArchiver().getVersionsPerFile());
+                .getArchiveMode(), folder.isPreviewOnly(), folder
+                .getDownloadScript(), folder.getFileArchiver()
+                .getVersionsPerFile());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();

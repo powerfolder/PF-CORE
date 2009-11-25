@@ -344,7 +344,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             .getTranslation("wizard.send_invitations.add_message.text"));
         addMessageLink.setToolTipText(Translation
             .getTranslation("wizard.send_invitations.add_message.tip"));
-        UIUtil.convertToBigLabel((JLabel) addMessageLink.getUIComponent());
+        addMessageLink.convertToBigLabel();
 
         locationModel = new ValueHolder("");
         locationModel.addValueChangeListener(new MyPropertyChangeListener());

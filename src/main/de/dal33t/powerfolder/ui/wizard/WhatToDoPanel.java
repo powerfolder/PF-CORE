@@ -354,49 +354,49 @@ public class WhatToDoPanel extends PFWizardPanel {
                 synchronizedOption, decision));
         synchronizedLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.synchronized_folder.tip"));
-        UIUtil.convertToBigLabel((JLabel) synchronizedLink.getUIComponent());
+        synchronizedLink.convertToBigLabel();
 
         backupLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.backup_folder"),
             backupOption, decision));
         backupLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.backup_folder.tip"));
-        UIUtil.convertToBigLabel((JLabel) backupLink.getUIComponent());
+        backupLink.convertToBigLabel();
 
         hostLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.host_work"),
             hostOption, decision));
         hostLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.host_work.tip"));
-        UIUtil.convertToBigLabel((JLabel) hostLink.getUIComponent());
+        hostLink.convertToBigLabel();
 
         customLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.custom_sync"),
             customOption, decision));
         customLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.custom_sync.tip"));
-        UIUtil.convertToBigLabel((JLabel) customLink.getUIComponent());
+        customLink.convertToBigLabel();
 
         onlineLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.join_online"),
             onlineOption, decision));
         onlineLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.join_online.tip"));
-        UIUtil.convertToBigLabel((JLabel) onlineLink.getUIComponent());
+        onlineLink.convertToBigLabel();
 
         inviteLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.load_invite"),
             inviteOption, decision));
         inviteLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.load_invite.tip"));
-        UIUtil.convertToBigLabel((JLabel) inviteLink.getUIComponent());
+        inviteLink.convertToBigLabel();
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
             Translation
                 .getTranslation("wizard.what_to_do.open_online_documentation"));
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
-        UIUtil.convertToBigLabel((JLabel) documentationLink.getUIComponent());
+        documentationLink.convertToBigLabel();
     }
 
     protected String getTitle() {
