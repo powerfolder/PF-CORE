@@ -258,6 +258,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         chatAction = new MyOpenChatAction(getController());
         chatButton = new JButtonMini(chatAction, true);
         pictoLabel = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
+        pictoLabel.addActionListener(chatAction);
         updateDetails();
         configureAddRemoveButton();
         registerListeners();
