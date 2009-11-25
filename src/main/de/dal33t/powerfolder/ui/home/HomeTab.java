@@ -76,7 +76,12 @@ import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
