@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
@@ -33,8 +32,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 
@@ -121,23 +120,24 @@ public class Directory implements Comparable<Directory>, DiskItem {
     /**
      * Answers if all files in this dir and in subdirs are expected.
      * 
-     * @param folderRepository
      * @return if the directory is expected
      */
-    public boolean isExpected(FolderRepository folderRepository) {
+    public boolean isExpected() {
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
             FileInfo fileInfo = holder.getFileInfo();
             if (fileInfo.isDeleted()) {
                 // Don't consider deleted
                 continue;
             }
-            if (!fileInfo.isExpected(folderRepository)) {
+            if (!fileInfo.isExpected(rootFolder.getController()
+                .getFolderRepository()))
+            {
                 return false;
             }
         }
 
         for (Directory dir : subDirectoriesMap.values()) {
-            if (!dir.isExpected(folderRepository)) {
+            if (!dir.isExpected()) {
                 return false;
             }
         }
