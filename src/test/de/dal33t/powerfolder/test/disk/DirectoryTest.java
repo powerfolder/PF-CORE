@@ -19,29 +19,33 @@
  */
 package de.dal33t.powerfolder.test.disk;
 
-import de.dal33t.powerfolder.util.test.ControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
+import java.io.File;
+
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 /**
  * Test cases for the Directory class.
  */
-public class DirectoryTest extends ControllerTestCase {
+public class DirectoryTest extends TwoControllerTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        connectBartAndLisa();
+    }
 
     /**
      * Test that constuctors have enough information.
      */
     public void testConstructor() {
-        setupTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
-        Folder folder = getFolder();
+        joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
+        Folder folder = getFolderAtBart();
         new Directory(folder, null, "test");
 
         try {
@@ -58,14 +62,13 @@ public class DirectoryTest extends ControllerTestCase {
     }
 
     /**
-     * Check that we can get directories by relative name,
-     * and that a directory only gets created when there is a file in it.
-     *
-     * Also does a remove and checks the empty directory goes.
+     * Check that we can get directories by relative name, and that a directory
+     * only gets created when there is a file in it. Also does a remove and
+     * checks the empty directory goes.
      */
     public void testGetSubDirectory() {
-        setupTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
-        File base = getFolder().getLocalBase();
+        joinTestFolder(SyncProfile.BACKUP_SOURCE);
+        File base = getFolderAtBart().getLocalBase();
         // ./a/b/
         File a = new File(base, "a");
         a.mkdir();
@@ -79,17 +82,47 @@ public class DirectoryTest extends ControllerTestCase {
         c.mkdirs();
         // No files in c
 
-        scanFolder(getFolder());
-        Directory d = getFolder().getDirectory();
+        scanFolder(getFolderAtBart());
+        final Directory d = getFolderAtBart().getDirectory();
+        assertFalse(d.getSubDirectory("a").isExpected());
         assertEquals("Wrong number of files", 1, d.getSubdirectories().size());
         assertNotNull(d.getSubDirectory("a"));
         assertNotNull(d.getSubDirectory("a/b"));
         assertNull(d.getSubDirectory("a/c"));
         assertNull(d.getSubDirectory("no"));
 
+        // Add stuff at lisa
+        File x = new File(getFolderAtLisa().getLocalBase(), "x");
+        x.mkdir();
+        TestHelper.createRandomFile(x);
+        File y = new File(a, "y");
+        y.mkdirs();
+        TestHelper.createRandomFile(y);
+        File z = new File(a, "z");
+        z.mkdirs();
+        scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Wrong number of dirs: " + d.getSubdirectories().size();
+            }
+
+            public boolean reached() {
+                Directory d = getFolderAtBart().getDirectory();
+                return 2 == d.getSubdirectories().size();
+            }
+        });
+        assertTrue(d.getSubDirectory("x").isExpected());
+        FileInfo xFile = d.getSubDirectory("x").getFileInfosRecursive()
+            .iterator().next();
+        assertFalse(getFolderAtBart().isKnown(xFile));
+        assertTrue(xFile.toDetailString(), xFile.isExpected(getContollerBart()
+            .getFolderRepository()));
+
         // Remove 'a/x.txt'
-        FileInfo fileInfo = getFolder().getDirectory().getSubdirectories()
-                .iterator().next().getFileInfosRecursive().get(0);
+        FileInfo fileInfo = getFolderAtBart().getDirectory()
+            .getSubdirectories().iterator().next().getFileInfosRecursive()
+            .iterator().next();
         d.removeFileInfo(fileInfo);
 
         // a should be gone because it is empty.
@@ -97,8 +130,8 @@ public class DirectoryTest extends ControllerTestCase {
     }
 
     public void testGetFileInfos() {
-        setupTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
-        File base = getFolder().getLocalBase();
+        joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
+        File base = getFolderAtBart().getLocalBase();
         // ./a/b/
         File a = new File(base, "a");
         a.mkdir();
@@ -112,22 +145,22 @@ public class DirectoryTest extends ControllerTestCase {
         c.mkdirs();
         // No files in c
 
-        scanFolder(getFolder());
-        Directory d = getFolder().getDirectory();
+        scanFolder(getFolderAtBart());
+        Directory d = getFolderAtBart().getDirectory();
 
         // None in root
         assertEquals("Wrong number of directories", 0, d.getFileInfos().size());
         // Two in subdirectories
-        assertEquals("Wrong number of recursive directories", 2,
-                d.getFileInfosRecursive().size());
+        assertEquals("Wrong number of recursive directories", 2, d
+            .getFileInfosRecursive().size());
     }
 
     /**
      * Test that filenameOnly and relativeNAme are correct.
      */
     public void testNames() {
-        setupTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
-        File base = getFolder().getLocalBase();
+        joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
+        File base = getFolderAtBart().getLocalBase();
         // ./a/b/
         File a = new File(base, "a");
         a.mkdir();
@@ -137,9 +170,9 @@ public class DirectoryTest extends ControllerTestCase {
         b.mkdirs();
         TestHelper.createRandomFile(b);
 
-        scanFolder(getFolder());
+        scanFolder(getFolderAtBart());
 
-        Directory d = getFolder().getDirectory();
+        Directory d = getFolderAtBart().getDirectory();
         Directory da = d.getSubDirectory("a");
         Directory dB = da.getSubDirectory("B");
 
@@ -152,12 +185,12 @@ public class DirectoryTest extends ControllerTestCase {
 
         // Check a file.
         FileInfo fileInfo = dB.getFileInfosRecursive().get(0);
-        assertTrue("Bad file name",
-                fileInfo.getRelativeName().startsWith("a/B/"));
+        assertTrue("Bad file name", fileInfo.getRelativeName().startsWith(
+            "a/B/"));
 
         assertEquals("Bad toString", "B", dB.toString());
-        assertEquals("Bad lowerCaseFilenameOnly", "b",
-                dB.getLowerCaseFilenameOnly());
+        assertEquals("Bad lowerCaseFilenameOnly", "b", dB
+            .getLowerCaseFilenameOnly());
 
     }
 
