@@ -57,7 +57,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -170,7 +175,7 @@ public class UIController extends PFComponent {
 
         // Initialize look and feel / icon set
         initSkin();
-        
+
         if (OSUtil.isMacOS()) {
             UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
         }
@@ -326,6 +331,7 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
+        gotoHPIfRequired();
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
             getController().scheduleAndRepeat(new TimerTask() {
@@ -341,12 +347,6 @@ public class UIController extends PFComponent {
                     }
                 });
         }
-
-        // UIUtil.invokeLaterInEDT(new Runnable() {
-        // public void run() {
-        // PFWizard.openWhatToDoWizard(getController());
-        // }
-        // });
     }
 
     private void checkLimits(boolean forceOpen) {
@@ -376,6 +376,27 @@ public class UIController extends PFComponent {
                 getController().getMySelf());
         }
         return totalSize;
+    }
+
+    private void gotoHPIfRequired() {
+        if (ProUtil.isRunningProVersion() && !ProUtil.isTrial(getController()))
+        {
+            return;
+        }
+        String prefKey = "startCount" + Controller.PROGRAM_VERSION;
+        int thisVersionStartCount = getController().getPreferences().getInt(
+            prefKey, 0);
+        // Go to HP every 5 starts
+        if (thisVersionStartCount % 5 == 2) {
+            try {
+                BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_BUY_URL
+                    .getValue(getController()));
+            } catch (IOException e1) {
+                logWarning("Unable to goto homepage", e1);
+            }
+        }
+        thisVersionStartCount++;
+        getController().getPreferences().putInt(prefKey, thisVersionStartCount);
     }
 
     private void initalizeSystray() {
@@ -703,11 +724,12 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        boolean inline = PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
-                getController());
+        boolean inline = PreferencesEntry.INLINE_INFO_MODE
+            .getValueBoolean(getController());
         if (inline) {
             mainFrame.showInlineInfoPanel((JPanel) informationFrame
-                    .getUIComponent().getContentPane(), informationFrame.getUIComponent().getTitle());
+                .getUIComponent().getContentPane(), informationFrame
+                .getUIComponent().getTitle());
         } else {
             JFrame frame = informationFrame.getUIComponent();
             if (frame.getExtendedState() == Frame.ICONIFIED) {
@@ -954,7 +976,8 @@ public class UIController extends PFComponent {
         public void run() {
             StringBuilder tooltip = new StringBuilder();
 
-            tooltip.append(Translation.getTranslation("general.application.name"));
+            tooltip.append(Translation
+                .getTranslation("general.application.name"));
             tooltip.append(' ');
             if (folderRepositorySynchronizing.get()) {
                 tooltip.append(Translation
