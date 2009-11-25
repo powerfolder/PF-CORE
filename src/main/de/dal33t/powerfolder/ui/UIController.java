@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.AWTException;
 import java.awt.CheckboxMenuItem;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Image;
@@ -36,12 +38,16 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,8 +64,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -92,6 +101,7 @@ import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
+import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -203,6 +213,22 @@ public class UIController extends PFComponent {
         systemMonitorFrame = new SystemMonitorFrame(getController());
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
+
+        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
+        {
+            gotoHPIfRequired();
+            // Show promo after 5 seconds
+            getController().scheduleAndRepeat(new TimerTask() {
+                @Override
+                public void run() {
+                    UIUtil.invokeLaterInEDT(new Runnable() {
+                        public void run() {
+                            showPromoGFX();
+                        }
+                    });
+                }
+            }, 0, 1000L * 60 * 60);
+        }
     }
 
     /**
@@ -331,7 +357,6 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        gotoHPIfRequired();
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
             getController().scheduleAndRepeat(new TimerTask() {
@@ -378,11 +403,33 @@ public class UIController extends PFComponent {
         return totalSize;
     }
 
-    private void gotoHPIfRequired() {
-        if (ProUtil.isRunningProVersion() && !ProUtil.isTrial(getController()))
-        {
-            return;
+    private void showPromoGFX() {
+        try {
+            JLabel promoLabel = new JLabel(
+                new ImageIcon(
+                    new URL(
+                        "http://www.powerfolder.com/fileadmin/clientimages/clientpromo.gif")));
+            promoLabel.setSize(new Dimension(200, 200));
+            promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            promoLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        BrowserLauncher
+                            .openURL(ConfigurationEntry.PROVIDER_BUY_URL
+                                .getValue(getController()));
+                    } catch (IOException e1) {
+                        logWarning("Unable to goto homepage", e1);
+                    }
+                }
+            });
+            notifyComponent(promoLabel);
+        } catch (MalformedURLException e) {
+            logWarning("Unable to show promo gfx. " + e, e);
         }
+    }
+
+    private void gotoHPIfRequired() {
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
@@ -1274,12 +1321,24 @@ public class UIController extends PFComponent {
      *            Task to do if user selects 'accept' option or if UI is not
      *            minimized.
      */
-    public void notifyMessage(String title, String message, TimerTask task) {
-        if (started && !getController().isShuttingDown()) {
+    public void notifyMessage(String title, String message, Runnable task) {
+        if (started
+            && !getController().isShuttingDown()
+            && (Boolean) applicationModel.getSystemNotificationsValueModel()
+                .getValue())
+        {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
             notificationHandler.show();
         }
+    }
+
+    public void notifyComponent(JComponent content) {
+        final Slider slider = new Slider(content,
+            PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()));
+        slider.show();
     }
 
     /**
