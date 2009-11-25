@@ -219,6 +219,9 @@ public class FileRequestor extends PFComponent {
         TransferManager tm = getController().getTransferManager();
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
         for (FileInfo fInfo : fInfos) {
+            if (myThread.isInterrupted()) {
+                return;
+            }
             if (fInfo.isDeleted()) {
                 // Dont retrieve deleted. done in a different place:
                 // Folder.syncRemoteDeletions.
