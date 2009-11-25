@@ -37,7 +37,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -50,7 +49,6 @@ import javax.swing.tree.TreePath;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.Sizes;
 
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -68,7 +66,7 @@ public class UIUtil {
     private static final Logger log = Logger.getLogger(UIUtil.class.getName());
 
     // The size of a medium sized font, e.g. the big subpoints on a wizard
-    private static final int MED_FONT_SIZE = 15;
+    public static final int MED_FONT_SIZE = 15;
 
     /** Flag if awt is available */
     private static boolean AWTAvailable;
@@ -235,16 +233,6 @@ public class UIUtil {
         dims.width = 0;
         comp.setPreferredSize(dims);
         return comp;
-    }
-
-    /**
-     * Converts the given label to a big arrow label.
-     * 
-     * @param label
-     */
-    public static void convertToBigLabel(JLabel label) {
-        label.setIcon(Icons.getIconById(Icons.ARROW_RIGHT));
-        SimpleComponentFactory.setFontSize(label, MED_FONT_SIZE);
     }
 
     /**

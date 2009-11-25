@@ -123,6 +123,19 @@ public class SimpleComponentFactory {
     }
 
     /**
+     * Sets the fontsize and style on of label
+     * 
+     * @param label
+     * @param fontSize
+     * @param style
+     *            the style
+     */
+    public static void setFont(JLabel label, int fontSize, int style) {
+        Font font = new Font(label.getFont().getFontName(), style, fontSize);
+        label.setFont(font);
+    }
+
+    /**
      * Creates a checkbox with a title
      * 
      * @param title
