@@ -1,13 +1,20 @@
-PowerFolder Version 4.0.2 - http://www.powerfolder.com
+PowerFolder Version 4.0.3 - http://www.powerfolder.com
 
 = New features =
- * PowerFolder is now again available as open source version at sourceforge.net.
-   Please keep in mind that the open source version don't contain important features
-   like transfer encryption and secure computer verification.
+ * Information tabs (Folder, Files, Transfers, etc.) can now be displayed in
+   same window with main tabs.
+ * Added support for Windows Live Mail.
+ 
+= Improvements =
+ * Added bulk restore from file archive.
+ * Reduced memory usage.
    
 = Bugfixes =
- * Corrected problem that sometimes arises when setting up folders twice.
+ * Made file detection more robust: Not longer crashes on invalid file timestamps. 
+ * System service did not start after GUI was closed sometimes.
+ * Download of large files not longer occasionally timeout.
  * Several other minor bugfixes.
+
 
 = Important for 3.X users =
 
@@ -43,6 +50,19 @@ Email	   : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.0.2
+-------------
+
+= New features =
+ * PowerFolder is now again available as open source version at sourceforge.net.
+   Please keep in mind that the open source version don't contain important features
+   like transfer encryption and secure computer verification.
+   
+= Bugfixes =
+ * Corrected problem that sometimes arises when setting up folders twice.
+ * Several other minor bugfixes.
+ 
 
 Version 4.0.1
 -------------
