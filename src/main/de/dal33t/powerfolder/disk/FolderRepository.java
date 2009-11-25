@@ -612,8 +612,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Defer 30 seconds, so it is not 'in-your-face' at start up.
         // Also run this each day, for long-running installations.
-        getController().scheduleAndRepeat(new OldSyncWarningCheckTask(), 30000,
-            24 * 3600 * 1000);
+        getController().scheduleAndRepeat(new OldSyncWarningCheckTask(),
+            1000 * 60 * 2, 24L * 60 * 60 * 1000);
 
         started = true;
     }
