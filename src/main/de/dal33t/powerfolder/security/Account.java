@@ -409,6 +409,10 @@ public class Account extends Model implements Serializable {
      * @return the total size of recycle bin
      */
     public long calulateArchiveSize(Controller controller) {
+        if (true) {
+            // Disabled till #1744 fully supported.
+            return 0;
+        }
         long start = System.currentTimeMillis();
         long size = 0;
         for (Permission p : getPermissions()) {
