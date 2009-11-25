@@ -398,7 +398,7 @@ public class Account extends Model implements Serializable {
                 if (f == null) {
                     continue;
                 }
-                totalSize += f.getStatistic().getSize(controller.getMySelf());
+                totalSize += f.getStatistic().getLocalSize();
             }
         }
         return totalSize;
@@ -408,35 +408,8 @@ public class Account extends Model implements Serializable {
      * @param controller
      * @return the total size of recycle bin
      */
-    public long calulateTotalRecycleBinSize(Controller controller) {
-        long recycleSize = 0;
-        for (Permission p : getPermissions()) {
-            if (p instanceof FolderOwnerPermission
-                || p instanceof FolderAdminPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder f = fp.getFolder().getFolder(controller);
-                if (f == null) {
-                    continue;
-                }
-                // TODO Calculate Archive size
-                // for (FileInfo fInfo : controller.getRecycleBin()
-                // .getAllRecycledFiles())
-                // {
-                // if (fInfo.getFolderInfo().equals(f.getInfo())) {
-                // recycleSize += fInfo.getSize();
-                // }
-                // }
-            }
-        }
-        return recycleSize;
-    }
-
-    /**
-     * @param controller
-     * @return the total size of recycle bin
-     */
     public long calulateArchiveSize(Controller controller) {
+        long start = System.currentTimeMillis();
         long size = 0;
         for (Permission p : getPermissions()) {
             if (p instanceof FolderOwnerPermission
@@ -449,6 +422,11 @@ public class Account extends Model implements Serializable {
                 }
                 size += f.getFileArchiver().getSize();
             }
+        }
+        long took = System.currentTimeMillis() - start;
+        if (took > 1000L * 20) {
+            LOG.severe("Calculating archive size for " + this + " took " + took
+                + "ms");
         }
         return size;
     }
