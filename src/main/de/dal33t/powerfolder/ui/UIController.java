@@ -213,22 +213,6 @@ public class UIController extends PFComponent {
         systemMonitorFrame = new SystemMonitorFrame(getController());
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
-
-        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
-        {
-            gotoHPIfRequired();
-            // Show promo after 5 seconds
-            getController().scheduleAndRepeat(new TimerTask() {
-                @Override
-                public void run() {
-                    UIUtil.invokeLaterInEDT(new Runnable() {
-                        public void run() {
-                            showPromoGFX();
-                        }
-                    });
-                }
-            }, 0, 1000L * 60 * 60);
-        }
     }
 
     /**
@@ -357,6 +341,23 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
+        // #1838 Ads in trial
+        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
+        {
+            gotoHPIfRequired();
+            // Show promo after 5 seconds
+            getController().scheduleAndRepeat(new TimerTask() {
+                @Override
+                public void run() {
+                    UIUtil.invokeLaterInEDT(new Runnable() {
+                        public void run() {
+                            showPromoGFX();
+                        }
+                    });
+                }
+            }, 0, 1000L * 60 * 60);
+        }
+        
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
             getController().scheduleAndRepeat(new TimerTask() {
