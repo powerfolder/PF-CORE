@@ -1224,6 +1224,19 @@ public class UIController extends PFComponent {
     }
 
     /**
+     * Only use this for preview from the DialogSettingsTab. It by-passes all
+     * the usual safty checks.
+     * 
+     * @param title
+     * @param message
+     */
+    public void previewMessage(String title, String message) {
+        NotificationHandler notificationHandler = new NotificationHandler(
+            getController(), title, message, false);
+        notificationHandler.show();
+    }
+
+    /**
      * Shows a notification message only if the UI is minimized.
      * 
      * @param title
@@ -1250,23 +1263,8 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Only use this for preview from the DialogSettingsTab. It by-passes all
-     * the usual safty checks.
-     * 
-     * @param title
-     * @param message
-     */
-    public void previewMessage(String title, String message) {
-
-        NotificationHandler notificationHandler = new NotificationHandler(
-            getController(), title, message, false);
-        notificationHandler.show();
-    }
-
-    /**
-     * Run a task via the notification system. If the UI is minimized, a
-     * notification message will appear. If the user selects the accept button,
-     * the task runs. If the UI is not minimized, the task runs anyway.
+     * Run a task via the notification system. A notification message will
+     * appear. If the user selects the accept button, the task runs.
      * 
      * @param title
      *            The title to display under 'PowerFolder'.
@@ -1275,25 +1273,12 @@ public class UIController extends PFComponent {
      * @param task
      *            Task to do if user selects 'accept' option or if UI is not
      *            minimized.
-     * @param runIfShown
-     *            Whether to run the task if PF is already shown.
      */
-    public void notifyMessage(String title, String message, TimerTask task,
-        boolean runIfShown)
-    {
-        if (started
-            && mainFrame.isIconifiedOrHidden()
-            && !getController().isShuttingDown()
-            && (Boolean) applicationModel.getSystemNotificationsValueModel()
-                .getValue())
-        {
+    public void notifyMessage(String title, String message, TimerTask task) {
+        if (started && !getController().isShuttingDown()) {
             NotificationHandler notificationHandler = new NotificationHandler(
                 getController(), title, message, task);
             notificationHandler.show();
-        } else {
-            if (runIfShown) {
-                task.run();
-            }
         }
     }
 
