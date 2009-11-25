@@ -98,7 +98,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertIdenticalTestFolder();
     }
 
-    public void xtestMixedCaseSubdirs() throws IOException {
+    public void testMixedCaseSubdirs() throws IOException {
         // Emulate Windows.
         ((FileInfoDAOHashMapImpl) getFolderAtBart().getDAO())
             .setIgnoreFileNameCase(false);
