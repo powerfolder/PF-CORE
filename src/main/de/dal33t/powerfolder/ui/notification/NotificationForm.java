@@ -99,6 +99,8 @@ public class NotificationForm extends JPanel {
             }
             cols = new int[]{2, 3, 4, 5, 6};
         }
+        
+        // 
 
         jPanel.add(createHeaderPanel(titleText), cc.xywh(2, 1, internalWidth, 1));
 

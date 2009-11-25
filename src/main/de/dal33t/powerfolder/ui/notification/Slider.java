@@ -19,10 +19,15 @@
  */
 package de.dal33t.powerfolder.ui.notification;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.JComponent;
+import javax.swing.JWindow;
+import javax.swing.Timer;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -56,7 +61,6 @@ public class Slider {
     private int showX;
     private int startY;
     private Dimension contentsSize;
-    private AnimatingSheet animatingSheet;
     private int translucencyPercentage;
 
     /**
@@ -96,20 +100,21 @@ public class Slider {
             return;
         }
         window = new JWindow();
-        animatingSheet = new AnimatingSheet();
-        animatingSheet.setSource(contents);
         window.setAlwaysOnTop(true);
         if (Constants.OPACITY_SUPPORTED) {
             UIUtil.applyTranslucency(window, 0.0f);
         }
-
-        window.setVisible(true);
 
         // Initial boundaries.
         contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
         showX = desktopBounds.width - contentsSize.width - 10;
         startY = desktopBounds.y + desktopBounds.height - 10;
+
+        window.getContentPane().add(contents);
+        window.pack();
+        window.setLocation(showX, startY - window.getHeight());
+        window.setVisible(true);
 
         // Timer to animate the sheet down.
         animateDownTimer = new Timer(ANIMATION_DELAY, new ActionListener() {
@@ -176,41 +181,14 @@ public class Slider {
      * @param percentage
      */
     public void animate(long percentage) {
-
         if (window == null) {
             // Huh?
             return;
         }
-
-        if (percentage >= 100) {
-            // Put real contents in window and show
-            window.getContentPane().removeAll();
-            window.getContentPane().add(contents);
-            window.pack();
-            window.setLocation(showX, startY - window.getHeight());
-        } else if (percentage <= 0) {
-            // Nothing to show
-            window.dispose();
-        } else {
-            int animatingHeight;
-            if (Constants.OPACITY_SUPPORTED) {
-                // Do not animate, just fade in / out full-size window.
-                animatingHeight = contentsSize.height;
-            } else {
-              //  animatingHeight = (int) (percentage * contentsSize.height / 100.0);
-                animatingHeight = contentsSize.height;
-            }
-            animatingHeight = Math.max(animatingHeight, 1);
-            animatingSheet.setAnimatingHeight(animatingHeight);
-            window.getContentPane().removeAll();
-            window.getContentPane().add(animatingSheet);
-            window.pack();
-            window.setLocation(showX, startY - window.getHeight());
-            if (Constants.OPACITY_SUPPORTED) {
-                // Opacity = 1 - translucency.
-                float opacity = 1.0f - translucencyPercentage / 100.0f;
-                UIUtil.applyTranslucency(window, opacity * percentage / 100.0f);
-            }
+        if (Constants.OPACITY_SUPPORTED) {
+            // Opacity = 1 - translucency.
+            float opacity = 1.0f - translucencyPercentage / 100.0f;
+            UIUtil.applyTranslucency(window, opacity * percentage / 100.0f);
         }
     }
 }

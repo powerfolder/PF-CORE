@@ -1,23 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.notification;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JWindow;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -26,15 +35,10 @@ import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.TimerTask;
-
 /**
- * This class handles the display of notification messages.
- * These are displayed when powerFolder is minimized,
- * giving the user a chance to 'Accept' the message and perform an action.
+ * This class handles the display of notification messages. These are displayed
+ * when powerFolder is minimized, giving the user a chance to 'Accept' the
+ * message and perform an action.
  */
 public class NotificationHandler extends PFComponent {
 
@@ -45,7 +49,7 @@ public class NotificationHandler extends PFComponent {
     private final String message;
 
     /** The task to perform if the notification is accepted */
-    private final TimerTask task;
+    private final Runnable task;
 
     /** The label for the Accept button */
     private final String acceptOptionLabel;
@@ -57,13 +61,15 @@ public class NotificationHandler extends PFComponent {
 
     /**
      * Constructor. Shows a message with an okay button.
-     *
+     * 
      * @param controller
      * @param title
      * @param message
+     * @param showAccept
      */
     public NotificationHandler(Controller controller, String title,
-                               String message, boolean showAccept) {
+        String message, boolean showAccept)
+    {
         super(controller);
         Reject.ifNull(title, "Title must not be null");
         Reject.ifNull(message, "Message must not be null");
@@ -76,16 +82,17 @@ public class NotificationHandler extends PFComponent {
     }
 
     /**
-     * Constructor. Shows a message with accept and cancel buttons.
-     * If the accept button is clicked, the task runs.
-     *
+     * Constructor. Shows a message with accept and cancel buttons. If the
+     * accept button is clicked, the task runs.
+     * 
      * @param controller
      * @param title
      * @param message
      * @param task
      */
     public NotificationHandler(Controller controller, String title,
-                               String message, TimerTask task) {
+        String message, Runnable task)
+    {
         super(controller);
         Reject.ifNull(title, "Title must not be null");
         Reject.ifNull(message, "Message must not be null");
@@ -93,27 +100,24 @@ public class NotificationHandler extends PFComponent {
         this.title = title;
         this.message = message;
         this.task = task;
-        acceptOptionLabel = Translation.getTranslation(
-                "notification_handler.display.text");
-        cancelOptionLabel = Translation.getTranslation(
-                "notification_handler.ignore.text");
+        acceptOptionLabel = Translation
+            .getTranslation("notification_handler.display.text");
+        cancelOptionLabel = Translation
+            .getTranslation("notification_handler.ignore.text");
         showAccept = true;
     }
 
     /**
      * Show the message using Slider
-     *
-     * @param message
      */
     public void show() {
         JWindow dialog = new JWindow();
         Container contentPane = dialog.getContentPane();
         contentPane.setLayout(new BorderLayout());
         final Slider slider = new Slider((JComponent) contentPane,
-                PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(
-                        getController()),
-                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
-                        getController()));
+            PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()));
 
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -122,7 +126,7 @@ public class NotificationHandler extends PFComponent {
                 // If task exists, deiconify and run.
                 if (task != null) {
                     MainFrame mainFrame = getController().getUIController()
-                            .getMainFrame();
+                        .getMainFrame();
                     if (mainFrame.isIconifiedOrHidden()) {
                         mainFrame.deiconify();
                     }
@@ -138,9 +142,9 @@ public class NotificationHandler extends PFComponent {
         };
 
         // Show it.
-        NotificationForm notificationForm = new NotificationForm(
-                title, message, acceptOptionLabel, acceptAction,
-                cancelOptionLabel, cancelAction, showAccept);
+        NotificationForm notificationForm = new NotificationForm(title,
+            message, acceptOptionLabel, acceptAction, cancelOptionLabel,
+            cancelAction, showAccept);
         contentPane.add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();
