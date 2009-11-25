@@ -337,17 +337,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * @param controller
-     * @return if this file was modified by a friend
-     */
-    public boolean isModifiedByFriend(Controller controller) {
-        if (controller == null) {
-            throw new NullPointerException("Controller is null");
-        }
-        return modifiedBy != null && modifiedBy.isFriend(controller);
-    }
-
-    /**
-     * @param controller
      * @return if this file is currently downloading
      */
     public boolean isDownloading(Controller controller) {
