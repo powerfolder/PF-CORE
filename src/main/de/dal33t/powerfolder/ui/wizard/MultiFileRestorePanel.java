@@ -85,13 +85,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
-        builder.add(latestVersionButton, cc.xy(1, row));
-
-        row += 2;
-
-        builder.add(dateVersionButton, cc.xy(1, row));
-
-        row += 2;
+//        builder.add(latestVersionButton, cc.xy(1, row));
+//
+//        row += 2;
+//
+//        builder.add(dateVersionButton, cc.xy(1, row));
+//
+//        row += 2;
 
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
@@ -124,7 +124,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         updateButtons();
         scrollPane.setVisible(false);
 
-        SwingWorker worker = new MyFolderCreateWorker();
+        SwingWorker worker = new RestoreWorker();
         worker.start();
     }
 
@@ -152,7 +152,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 fileInfosToRestore);
     }
 
-    private class MyFolderCreateWorker extends SwingWorker {
+    private class RestoreWorker extends SwingWorker {
         public Object construct() {
             List<FileInfo> versions = new ArrayList<FileInfo>();
             try {
