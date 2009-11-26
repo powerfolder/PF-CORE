@@ -14,7 +14,6 @@ import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * A {@link FileInfoDAO} implementation based on fast, in-memory
@@ -23,23 +22,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author sprajc
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
-    private boolean ignoreFileNameCase;
     private final ConcurrentMap<String, Domain> domains = Util
         .createConcurrentHashMap();
 
     public FileInfoDAOHashMapImpl() {
         super();
-        ignoreFileNameCase = OSUtil.isWindowsSystem();
-        // ignoreFileNameCase = false;
-    }
-
-    /**
-     * FOR TESTS ONLY!!!.
-     * 
-     * @param ignoreFileNameCase
-     */
-    public void setIgnoreFileNameCase(boolean ignoreFileNameCase) {
-        this.ignoreFileNameCase = ignoreFileNameCase;
     }
 
     public int count(String domain) {
@@ -48,20 +35,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void delete(String domain, FileInfo info) {
-        if (ignoreFileNameCase) {
-            if (info.isFile()) {
-                getDomain(domain).files.remove(info);
-            } else {
-                logWarning("Deleting directory: " + info.toDetailString());
-                getDomain(domain).directories.remove(info);
-            }
+        if (info.isFile()) {
+            getDomain(domain).files.remove(info);
         } else {
-            if (info.isFile()) {
-                getDomain(domain).files.remove(info);
-            } else {
-                logWarning("Deleting directory: " + info.toDetailString());
-                getDomain(domain).directories.remove(info);
-            }
+            logWarning("Deleting directory: " + info.toDetailString());
+            getDomain(domain).directories.remove(info);
         }
     }
 
@@ -70,18 +48,10 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public FileInfo find(FileInfo info, String domain) {
-        if (ignoreFileNameCase) {
-            if (info.isFile()) {
-                return getDomain(domain).files.get(info);
-            } else {
-                return getDomain(domain).directories.get(info);
-            }
+        if (info.isFile()) {
+            return getDomain(domain).files.get(info);
         } else {
-            if (info.isFile()) {
-                return getDomain(domain).files.get(info);
-            } else {
-                return getDomain(domain).directories.get(info);
-            }
+            return getDomain(domain).directories.get(info);
         }
     }
 
@@ -101,18 +71,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             Domain d = getDomain(domain);
 
             // Get remote file
-            FileInfo candidateFile;
-            if (ignoreFileNameCase) {
-                candidateFile = d.files.get(info);
-                if (candidateFile == null) {
-                    candidateFile = d.directories.get(info);
-                }
-            } else {
-                candidateFile = d.files.get(info);
-                if (candidateFile == null) {
-                    candidateFile = d.directories.get(info);
-                }
+            FileInfo candidateFile = d.files.get(info);
+            if (candidateFile == null) {
+                candidateFile = d.directories.get(info);
             }
+
             if (candidateFile == null) {
                 continue;
             }
@@ -141,29 +104,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public void store(String domain, Collection<FileInfo> infos) {
         Domain d = getDomain(domain);
         for (FileInfo fileInfo : infos) {
-            if (ignoreFileNameCase) {
-                // TODO Might produce a lot extra strings in RAM
-                if (fileInfo.isFile()) {
-                    d.files.put(fileInfo, fileInfo);
-                } else {
-                    if (isFiner()) {
-                        logFiner("Storing directory: "
-                            + fileInfo.toDetailString());
-                    }
-                    d.directories.put((DirectoryInfo) fileInfo,
-                        (DirectoryInfo) fileInfo);
-                }
+            if (fileInfo.isFile()) {
+                d.files.put(fileInfo, fileInfo);
             } else {
-                if (fileInfo.isFile()) {
-                    d.files.put(fileInfo, fileInfo);
-                } else {
-                    if (isFiner()) {
-                        logFiner("Storing directory: "
-                            + fileInfo.toDetailString());
-                    }
-                    d.directories.put((DirectoryInfo) fileInfo,
-                        (DirectoryInfo) fileInfo);
+                if (isFiner()) {
+                    logFiner("Storing directory: " + fileInfo.toDetailString());
                 }
+                d.directories.put((DirectoryInfo) fileInfo,
+                    (DirectoryInfo) fileInfo);
             }
         }
     }
