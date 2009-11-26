@@ -99,7 +99,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
     public void testMixedCaseSubdirs() throws IOException {
         // Emulate Windows.
-        FileInfo.IGNORE_CASE = true;
+        //FileInfo.IGNORE_CASE = true;
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
