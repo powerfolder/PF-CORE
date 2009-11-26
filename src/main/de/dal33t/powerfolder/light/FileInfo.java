@@ -55,7 +55,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * #1531: If this system should ignore cases of files in
      * {@link #equals(Object)} and {@link #hashCode()}
      */
-    protected static final boolean IGNORE_CASE = OSUtil.isWindowsSystem();
+    protected static final boolean IGNORE_CASE = true;
+  //  protected static final boolean IGNORE_CASE = OSUtil.isWindowsSystem();
 
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
