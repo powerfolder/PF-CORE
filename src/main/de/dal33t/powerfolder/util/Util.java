@@ -85,6 +85,13 @@ public class Util {
         return a.equals(b);
     }
 
+    public static final boolean equalsIgnoreCase(String a, String b) {
+        if (equals(a, b)) {
+            return true;
+        }
+        return a.equalsIgnoreCase(b);
+    }
+
     /**
      * @param email
      *            the email string to check.

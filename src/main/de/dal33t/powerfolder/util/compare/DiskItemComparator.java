@@ -38,7 +38,7 @@ public class DiskItemComparator extends Loggable implements
     // All the available file comparators
     public static final int BY_FILE_TYPE = 0;
     public static final int BY_NAME = 1;
-    public static final int BY_FULL_NAME = 2;
+    public static final int BY_RELATIVE_NAME = 2;
     public static final int BY_SIZE = 3;
     public static final int BY_MEMBER = 4;
     public static final int BY_MODIFIED_DATE = 5;
@@ -55,7 +55,7 @@ public class DiskItemComparator extends Loggable implements
         comparators = new DiskItemComparator[8];
         comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
         comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
-        comparators[BY_FULL_NAME] = new DiskItemComparator(BY_FULL_NAME);
+        comparators[BY_RELATIVE_NAME] = new DiskItemComparator(BY_RELATIVE_NAME);
         comparators[BY_SIZE] = new DiskItemComparator(BY_SIZE);
         comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
         comparators[BY_MODIFIED_DATE] = new DiskItemComparator(BY_MODIFIED_DATE);
@@ -95,7 +95,7 @@ public class DiskItemComparator extends Loggable implements
                 return x;
             case BY_NAME :
                 return sortByFileName(o1, o2, false);
-            case BY_FULL_NAME :
+            case BY_RELATIVE_NAME :
                 return sortByFileName(o1, o2, true);
             case BY_SIZE :
 

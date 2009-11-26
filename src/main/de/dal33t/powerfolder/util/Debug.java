@@ -510,7 +510,7 @@ public class Debug {
         }
         b.append(f);
         b.append(", ID: XXX-erased-XXX");
-        b.append(", files: " + f.getKnownFilesCount() + ", size: "
+        b.append(", files: " + f.getKnownItemCount() + ", size: "
             + Format.formatBytes(f.getStatistic().getLocalSize())
             + ", members: " + f.getMembersCount() + ", sync: "
             + f.getSyncProfile().getName());

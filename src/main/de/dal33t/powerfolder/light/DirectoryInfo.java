@@ -96,13 +96,8 @@ public class DirectoryInfo extends FileInfo {
         Reject.ifNull(diskFile, "Diskfile is null");
         return super.inSyncWithDisk0(diskFile, true);
     }
-
-    @Override
-    public int hashCode() {
-        int hash = getRelativeName().hashCode();
-        hash += getFolderInfo().hashCode();
-        return hash;
-    }
+    
+    // hashCode() is used from FileInfo
 
     @Override
     public boolean equals(Object other) {
@@ -111,8 +106,10 @@ public class DirectoryInfo extends FileInfo {
         }
         if (other instanceof DirectoryInfo) {
             DirectoryInfo otherInfo = (DirectoryInfo) other;
-            return Util.equals(this.getRelativeName(), otherInfo
-                .getRelativeName())
+            boolean caseMatch = IGNORE_CASE ? Util.equalsIgnoreCase(this
+                .getRelativeName(), otherInfo.getRelativeName()) : Util.equals(
+                this.getRelativeName(), otherInfo.getRelativeName());
+            return caseMatch
                 && Util.equals(this.getFolderInfo(), otherInfo.getFolderInfo());
         }
 

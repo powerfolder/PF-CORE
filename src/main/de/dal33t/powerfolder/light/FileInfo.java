@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
@@ -49,6 +50,12 @@ import de.dal33t.powerfolder.util.DateUtil;
  * @version $Revision: 1.33 $
  */
 public class FileInfo implements Serializable, DiskItem, Cloneable {
+
+    /**
+     * #1531: If this system should ignore cases of files in
+     * {@link #equals(Object)} and {@link #hashCode()}
+     */
+    protected static final boolean IGNORE_CASE = OSUtil.isWindowsSystem();
 
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
@@ -612,7 +619,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     private int hashCode0() {
-        int hash = fileName.hashCode();
+        int hash = IGNORE_CASE ? fileName.toLowerCase().hashCode() : fileName
+            .hashCode();
         hash += folderInfo.hashCode();
         return hash;
     }
@@ -624,11 +632,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
-            if (!otherInfo.isFile()) {
-                return false;
-            }
-            return Util.equals(fileName, otherInfo.fileName)
-                && Util.equals(folderInfo, otherInfo.folderInfo);
+            boolean caseMatch = IGNORE_CASE ? Util.equalsIgnoreCase(fileName,
+                otherInfo.fileName) : Util.equals(fileName, otherInfo.fileName);
+            return caseMatch && Util.equals(folderInfo, otherInfo.folderInfo);
         }
 
         return false;

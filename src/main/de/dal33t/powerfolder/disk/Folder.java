@@ -521,7 +521,7 @@ public class Folder extends PFComponent {
 
         // See if everything has been deleted.
         if (!ignoreLocalMassDeletions
-            && getKnownFilesCount() > 0
+            && getKnownItemCount() > 0
             && !scanResult.getDeletedFiles().isEmpty()
             && scanResult.getTotalFilesCount() == 0
             && ConfigurationEntry.MASS_DELETE_PROTECTION
@@ -911,7 +911,7 @@ public class Folder extends PFComponent {
         checkIfDeviceDisconnected();
 
         if (wasDeviceDisconnected && !deviceDisconnected
-            && getKnownFilesCount() == 0)
+            && getKnownItemCount() == 0)
         {
             logWarning("Device reconnected. Loading folder database");
             initFileInfoDAO();
@@ -1751,7 +1751,7 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-        if (getKnownFilesCount() == 0) {
+        if (getKnownItemCount() == 0) {
             return false;
         }
         if (lastDBMaintenance == null) {
@@ -1773,7 +1773,7 @@ public class Folder extends PFComponent {
             - 1000L
             * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
                 .getValueInt(getController());
-        int nFilesBefore = getKnownFilesCount();
+        int nFilesBefore = getKnownItemCount();
         if (isFiner()) {
             logFiner("Maintaining folder db, known files: " + nFilesBefore
                 + ". Expiring deleted files older than "
@@ -2240,7 +2240,7 @@ public class Folder extends PFComponent {
                 }
                 List<FileInfo> list = new ArrayList<FileInfo>(dirList);
                 Collections.sort(list, new ReverseComparator(DiskItemComparator
-                    .getComparator(DiskItemComparator.BY_FULL_NAME)));
+                    .getComparator(DiskItemComparator.BY_RELATIVE_NAME)));
                 // logWarning("" + list.size());
                 synchronized (scanLock) {
                     for (FileInfo remoteDir : list) {
@@ -2581,7 +2581,7 @@ public class Folder extends PFComponent {
                     switchToSafe(from, delsCount, false);
                 }
             } else {
-                int knownFilesCount = getKnownFilesCount();
+                int knownFilesCount = getKnownItemCount();
                 if (knownFilesCount > 0) {
                     int delPercentage = 100 * delsCount / knownFilesCount;
                     logFine("FolderFilesChanged delete percentage "
@@ -2946,7 +2946,7 @@ public class Folder extends PFComponent {
         }
 
         // #1249
-        if (getKnownFilesCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
+        if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
         {
             boolean inaccessible = localBase.list() == null
                 || localBase.list().length == 0 || !localBase.exists();
@@ -2967,7 +2967,7 @@ public class Folder extends PFComponent {
         return currentInfo.name;
     }
 
-    public int getKnownFilesCount() {
+    public int getKnownItemCount() {
         return dao.count(null);
     }
 
@@ -3097,7 +3097,7 @@ public class Folder extends PFComponent {
         // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
         // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
-            new DiskItemComparator(DiskItemComparator.BY_FULL_NAME));
+            new DiskItemComparator(DiskItemComparator.BY_RELATIVE_NAME));
         // add0 expeced files
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
