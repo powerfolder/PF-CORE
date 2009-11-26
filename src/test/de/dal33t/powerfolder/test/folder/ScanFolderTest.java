@@ -29,6 +29,8 @@ import java.util.Set;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -161,6 +163,9 @@ public class ScanFolderTest extends ControllerTestCase {
      * #1531 -Mixed case names of filenames and sub directories cause problems
      */
     public void testScanChangedSubdirName() {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
         File file = TestHelper.createRandomFile(new File(getFolder()
             .getLocalBase(), "subdir"), 10 + (int) (Math.random() * 100));
         File sameName = new File(getFolder().getLocalBase(), "SUBDIR/"
