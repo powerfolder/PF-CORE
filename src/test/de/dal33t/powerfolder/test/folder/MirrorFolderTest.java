@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -99,7 +100,10 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
     public void testMixedCaseSubdirs() throws IOException {
         // Emulate Windows.
-        //FileInfo.IGNORE_CASE = true;
+        // FileInfo.IGNORE_CASE = true;
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
