@@ -10,7 +10,8 @@ PowerFolder Version 4.0.3 - http://www.powerfolder.com
  * Reduced memory usage.
    
 = Bugfixes =
- * Made file detection more robust: Not longer crashes on invalid file timestamps. 
+ * Made file detection more robust: Not longer crashes on invalid file timestamps.
+ * Fixed rare bug that caused files be marked as deleted and moved into the archive.
  * System service did not start after GUI was closed sometimes.
  * Download of large files not longer occasionally timeout.
  * Several other minor bugfixes.
