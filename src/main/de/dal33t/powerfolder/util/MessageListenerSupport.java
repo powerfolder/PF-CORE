@@ -63,10 +63,10 @@ public class MessageListenerSupport {
         if (this.source == null) {
             throw new NullPointerException("Source in null");
         }
-        messageListenersNotInDispatchThread = new ConcurrentHashMap<Class<?>,
-                CopyOnWriteArrayList<MessageListener>>(2, 0.75f, 8);
-        messageListenersInDispatchThread = new ConcurrentHashMap<Class<?>,
-                CopyOnWriteArrayList<MessageListener>>(2, 0.75f, 8);
+        messageListenersNotInDispatchThread = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
+            2, 0.75f, 8);
+        messageListenersInDispatchThread = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
+            2, 0.75f, 8);
     }
 
     // Message listener de-/registering ***************************************
@@ -119,15 +119,17 @@ public class MessageListenerSupport {
     public void removeMessageListener(MessageListener aListener) {
         if (aListener.fireInEventDispatchThread()) {
             synchronized (messageListenersInDispatchThread) {
-                for (Collection<MessageListener> listeners :
-                        messageListenersInDispatchThread.values()) {
+                for (Collection<MessageListener> listeners : messageListenersInDispatchThread
+                    .values())
+                {
                     listeners.remove(aListener);
                 }
             }
         } else {
             synchronized (messageListenersNotInDispatchThread) {
-                for (Collection<MessageListener> listeners :
-                        messageListenersNotInDispatchThread.values()) {
+                for (Collection<MessageListener> listeners : messageListenersNotInDispatchThread
+                    .values())
+                {
                     listeners.remove(aListener);
                 }
             }
@@ -139,14 +141,16 @@ public class MessageListenerSupport {
      */
     public void removeAllListeners() {
         synchronized (messageListenersInDispatchThread) {
-            for (Collection<MessageListener> listeners :
-                    messageListenersInDispatchThread.values()) {
+            for (Collection<MessageListener> listeners : messageListenersInDispatchThread
+                .values())
+            {
                 listeners.clear();
             }
         }
         synchronized (messageListenersNotInDispatchThread) {
-            for (Collection<MessageListener> listeners :
-                    messageListenersNotInDispatchThread.values()) {
+            for (Collection<MessageListener> listeners : messageListenersNotInDispatchThread
+                .values())
+            {
                 listeners.clear();
             }
         }
@@ -173,8 +177,8 @@ public class MessageListenerSupport {
 
         // Fire general listener
         final AtomicInteger lGenCount = new AtomicInteger();
-        Collection<MessageListener> generalListeners =
-                messageListenersNotInDispatchThread.get(All.class);
+        Collection<MessageListener> generalListeners = messageListenersNotInDispatchThread
+            .get(All.class);
         if (generalListeners != null && !generalListeners.isEmpty()) {
             for (MessageListener genListener : generalListeners) {
                 genListener.handleMessage(theSource, message);
@@ -183,8 +187,8 @@ public class MessageListenerSupport {
         }
 
         // Fire special listeners
-        Collection<MessageListener> specialListeners =
-                messageListenersNotInDispatchThread.get(message.getClass());
+        Collection<MessageListener> specialListeners = messageListenersNotInDispatchThread
+            .get(message.getClass());
         final AtomicInteger lSpcCount = new AtomicInteger();
         if (specialListeners != null && !specialListeners.isEmpty()) {
             for (MessageListener specListener : specialListeners) {
@@ -193,24 +197,36 @@ public class MessageListenerSupport {
             }
         }
 
-        Runnable inEDTRunner = new Runnable() {
+        boolean excuteEDT = messageListenersInDispatchThread.get(All.class) != null
+            && !messageListenersInDispatchThread.get(All.class).isEmpty()
+            && messageListenersInDispatchThread.get(message.getClass()) != null
+            && !messageListenersInDispatchThread.get(message.getClass())
+                .isEmpty();
+
+        if (!excuteEDT) {
+            // SKIP EDT executing.
+            return;
+        }
+
+        Runnable edtRunner = new Runnable() {
             public void run() {
-                Collection<MessageListener> innerGeneralListeners = 
-                        messageListenersInDispatchThread.get(All.class);
-                if (innerGeneralListeners != null && !innerGeneralListeners.isEmpty()) {
+                Collection<MessageListener> innerGeneralListeners = messageListenersInDispatchThread
+                    .get(All.class);
+                if (innerGeneralListeners != null
+                    && !innerGeneralListeners.isEmpty())
+                {
                     for (MessageListener genListener : innerGeneralListeners) {
                         genListener.handleMessage(theSource, message);
                         lGenCount.incrementAndGet();
                     }
                 }
-            }
-        };
-        Runnable exEDTRunner = new Runnable() {
-            public void run() {
+
                 // Fire special listeners
-                Collection<MessageListener> innerSpecialListeners =
-                        messageListenersInDispatchThread.get(message.getClass());
-                if (innerSpecialListeners != null && !innerSpecialListeners.isEmpty()) {
+                Collection<MessageListener> innerSpecialListeners = messageListenersInDispatchThread
+                    .get(message.getClass());
+                if (innerSpecialListeners != null
+                    && !innerSpecialListeners.isEmpty())
+                {
                     for (MessageListener specListener : innerSpecialListeners) {
                         specListener.handleMessage(theSource, message);
                         lSpcCount.incrementAndGet();
@@ -221,22 +237,20 @@ public class MessageListenerSupport {
         if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
             // No awt system ? do not put in swing thread
             // Already in swing thread ? also don't wrap
-            exEDTRunner.run();
-            inEDTRunner.run();
+            edtRunner.run();
         } else {
             // Put runner in swingthread
-            exEDTRunner.run();
-            SwingUtilities.invokeLater(inEDTRunner);
+            SwingUtilities.invokeLater(edtRunner);
         }
 
-//        if (lSpcCount > 0 || lGenCount > 0) {
-            // theSource.getLogger().verbose(
-            // "Deligated message (" + message.getClass().getRelativeName() + ") to "
-            // + lGenCount + " general and " + lSpcCount
-            // + " special message listener");
-//        }
+        // if (lSpcCount > 0 || lGenCount > 0) {
+        // theSource.getLogger().verbose(
+        // "Deligated message (" + message.getClass().getRelativeName() +
+        // ") to "
+        // + lGenCount + " general and " + lSpcCount
+        // + " special message listener");
+        // }
     }
-
 
     private static class All {
     }
