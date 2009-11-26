@@ -125,9 +125,12 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         getContollerBart().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
         TestHelper.waitMilliSeconds(5);
 
-        assertEquals(0, getFolderAtBart().getIncomingFiles(true).size());
+        assertEquals("" + getFolderAtBart().getIncomingFiles(true), 0,
+            getFolderAtBart().getIncomingFiles(true).size());
         assertEquals(0, getFolderAtLisa().getIncomingFiles(true).size());
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);
@@ -147,8 +150,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(0, getContollerLisa().getTransferManager()
             .getCompletedDownloadsCollection().size());
 
-        assertEquals(1, getFolderAtBart().getKnownFilesCount());
-        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(3, getFolderAtBart().getKnownItemCount());
+        assertEquals(3, getFolderAtLisa().getKnownItemCount());
         FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
 

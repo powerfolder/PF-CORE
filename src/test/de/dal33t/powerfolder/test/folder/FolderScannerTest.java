@@ -92,7 +92,7 @@ public class FolderScannerTest extends ControllerTestCase {
         }
         System.out.println();
         // old Scan should find 4 + 20 dirs
-        assertEquals(4 + 20, getFolder().getKnownFilesCount());
+        assertEquals(4 + 20, getFolder().getKnownItemCount());
 
         // delete a file
         file1.delete();

@@ -69,7 +69,7 @@ public class FolderExpireTest extends ControllerTestCase {
     public void testFolderExpire() {
 
         // Start with two files...
-        assertEquals(2, getFolder().getKnownFilesCount());
+        assertEquals(2, getFolder().getKnownItemCount());
 
         File localBase = getFolder().getLocalBase();
 
@@ -85,7 +85,7 @@ public class FolderExpireTest extends ControllerTestCase {
         scanFolder(getFolder());
 
         // Expiry time is default 3 months. Nothing changed.
-        assertEquals(getFolder().getKnownFilesCount(), 2);
+        assertEquals(getFolder().getKnownItemCount(), 2);
 
         // Change expiry from 3 monthes to 10 seconds.
         ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS.setValue(
@@ -100,7 +100,7 @@ public class FolderExpireTest extends ControllerTestCase {
         scanFolder(getFolder());
 
         // deleted.txt should be removed from known files.
-        assertEquals(1, getFolder().getKnownFilesCount());
+        assertEquals(1, getFolder().getKnownItemCount());
 
         // Check: Look for:-
         // 'Successfully wrote folder database file (1 files)'

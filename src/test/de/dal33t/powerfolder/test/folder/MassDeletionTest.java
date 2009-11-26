@@ -82,12 +82,12 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownFilesCount() == size;
+                return getFolderAtBart().getKnownItemCount() == size;
             }
 
             public String message() {
                 return "Known files at bart: "
-                    + getFolderAtBart().getKnownFilesCount();
+                    + getFolderAtBart().getKnownItemCount();
             }
         });
 
@@ -95,7 +95,7 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() == size;
+                return getFolderAtLisa().getKnownItemCount() == size;
             }
         });
 

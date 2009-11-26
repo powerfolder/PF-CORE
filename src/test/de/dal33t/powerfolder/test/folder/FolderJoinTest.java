@@ -180,7 +180,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             }
         });
 
-        assertEquals(3, folderLisa.getKnownFilesCount());
+        assertEquals(3, folderLisa.getKnownItemCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
     }
 
@@ -223,7 +223,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
             }
         });
 
-        assertEquals(3, folderLisa.getKnownFilesCount());
+        assertEquals(3, folderLisa.getKnownItemCount());
         assertEquals(4, folderLisa.getLocalBase().list().length);
     }
 

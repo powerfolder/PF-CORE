@@ -65,8 +65,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().triggerMaintenance();
 
         // Should not be scanned
-        assertEquals(0, getFolderAtBart().getKnownFilesCount());
-        assertEquals(0, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(0, getFolderAtBart().getKnownItemCount());
+        assertEquals(0, getFolderAtLisa().getKnownItemCount());
     }
 
     /**
@@ -94,10 +94,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
 
         assertEquals(expectedFilesAtBart, getFolderAtBart()
-            .getKnownFilesCount());
+            .getKnownItemCount());
 
         // List should still don't know any files
-        assertEquals(0, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(0, getFolderAtLisa().getKnownItemCount());
 
         // Wait for filelist from bart
         TestHelper.waitForCondition(5, new Condition() {
@@ -113,15 +113,15 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Copy
         TestHelper.waitForCondition(50, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() >= expectedFilesAtBart;
+                return getFolderAtLisa().getKnownItemCount() >= expectedFilesAtBart;
             }
         });
 
         // Both should have the files now
         assertEquals(expectedFilesAtBart, getFolderAtBart()
-            .getKnownFilesCount());
+            .getKnownItemCount());
         assertEquals(expectedFilesAtBart, getFolderAtLisa()
-            .getKnownFilesCount());
+            .getKnownItemCount());
     }
 
     /**
@@ -147,8 +147,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
-        assertEquals(3, getFolderAtBart().getKnownFilesCount());
-        assertEquals(2, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(3, getFolderAtBart().getKnownItemCount());
+        assertEquals(2, getFolderAtLisa().getKnownItemCount());
         getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
@@ -173,18 +173,18 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         // Copy
         TestHelper.waitForCondition(25, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() >= 5;
+                return getFolderAtLisa().getKnownItemCount() >= 5;
             }
         });
         TestHelper.waitForCondition(25, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getKnownFilesCount() >= 5;
+                return getFolderAtBart().getKnownItemCount() >= 5;
             }
         });
 
         // Both should have 5 files now
-        assertEquals(5, getFolderAtBart().getKnownFilesCount());
-        assertEquals(5, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(5, getFolderAtBart().getKnownItemCount());
+        assertEquals(5, getFolderAtLisa().getKnownItemCount());
 
         // Delete
         assertTrue(rndFile1.delete());

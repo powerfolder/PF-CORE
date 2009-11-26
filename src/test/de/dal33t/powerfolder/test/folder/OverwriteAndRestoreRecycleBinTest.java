@@ -60,7 +60,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownFilesCount() == 1;
+                return getFolderAtLisa().getKnownItemCount() == 1;
             }
         });
         FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()

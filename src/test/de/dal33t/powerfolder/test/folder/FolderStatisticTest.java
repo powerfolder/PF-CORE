@@ -305,7 +305,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         // MANUAL DOWNLOAD)
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 500);
         scanFolder(getFolderAtBart());
-        assertEquals(2, getFolderAtBart().getKnownFilesCount());
+        assertEquals(2, getFolderAtBart().getKnownItemCount());
         waitForFileListOnTestFolder();
         forceStatsCals();
 
@@ -365,7 +365,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
         assertEquals(4, getContollerMarge().getNodeManager()
             .getConnectedNodes().size());
-        assertEquals(1, getFolderAtMarge().getKnownFilesCount());
+        assertEquals(1, getFolderAtMarge().getKnownItemCount());
         assertTrue(getFolderAtMarge().getKnownFiles().iterator().next()
             .isDeleted());
         assertAllInSync(0, 0);

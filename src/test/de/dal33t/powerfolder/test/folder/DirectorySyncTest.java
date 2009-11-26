@@ -77,12 +77,12 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
 
-        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
         DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirBart, infoBart, getContollerBart());
 
-        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
@@ -199,19 +199,19 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     {
         TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public String message() {
-                return folder + " known: " + folder.getKnownFilesCount()
+                return folder + " known: " + folder.getKnownItemCount()
                     + " expected dirs: " + expectedDirs + " expected file: "
                     + expectedFiles;
             }
 
             public boolean reached() {
-                return folder.getKnownFilesCount() == expectedDirs
+                return folder.getKnownItemCount() == expectedDirs
                     + expectedFiles;
             }
         });
         int subdirs = countSubDirs(folder.getLocalBase());
         assertEquals(expectedActualSubdirs, subdirs);
-        assertEquals(expectedDirs + expectedFiles, folder.getKnownFilesCount());
+        assertEquals(expectedDirs + expectedFiles, folder.getKnownItemCount());
         assertEquals(expectedDirs, folder.getKnownDirectories().size());
         assertEquals(expectedFiles, folder.getKnownFiles().size());
     }
@@ -260,7 +260,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         File dirBart = new File(getFolderAtBart().getLocalBase(), "testDir");
         assertTrue(dirBart.mkdir());
         scanFolder(getFolderAtBart());
-        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
         DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirBart, infoBart, getContollerBart());
@@ -275,10 +275,10 @@ public class DirectorySyncTest extends FiveControllerTestCase {
 
             public boolean reached() {
                 return dirLisa.exists() && dirLisa.isDirectory()
-                    && getFolderAtLisa().getKnownFilesCount() == 1;
+                    && getFolderAtLisa().getKnownItemCount() == 1;
             }
         });
-        assertEquals(1, getFolderAtLisa().getKnownFilesCount());
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
@@ -288,7 +288,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertTrue(dirLisa.delete());
         scanFolder(getFolderAtLisa());
         assertEquals(getFolderAtLisa().getKnownFiles().toString(), 1,
-            getFolderAtLisa().getKnownFilesCount());
+            getFolderAtLisa().getKnownItemCount());
         infoLisa = getFolderAtLisa().getKnownDirectories().iterator().next();
         assertTrue("Dir should have been detected as deleted: "
             + infoLisa.toDetailString(), infoLisa.isDeleted());
@@ -305,7 +305,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
 
             public boolean reached() {
                 return !dirHomer.exists()
-                    && getFolderAtHomer().getKnownFilesCount() == 1
+                    && getFolderAtHomer().getKnownItemCount() == 1
                     && getFolderAtHomer().getKnownDirectories().iterator()
                         .next().isDeleted();
             }
