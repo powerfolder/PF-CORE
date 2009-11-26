@@ -158,6 +158,47 @@ public class ScanFolderTest extends ControllerTestCase {
     }
 
     /**
+     * #1531 -Mixed case names of filenames and sub directories cause problems
+     */
+    public void testScanChangedSubdirName() {
+        File file = TestHelper.createRandomFile(new File(getFolder()
+            .getLocalBase(), "subdir"), 10 + (int) (Math.random() * 100));
+        File sameName = new File(getFolder().getLocalBase(), "SUBDIR/"
+            + file.getName());
+
+        scanFolder();
+        // File + dir
+        assertEquals(2, getFolder().getKnownItemCount());
+        assertEquals(0, getFolder().getKnownFiles().iterator().next()
+            .getVersion());
+        assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertFileMatch(sameName, getFolder().getKnownFiles().iterator().next());
+        
+        assertTrue(file.renameTo(sameName));
+        scanFolder();
+
+        assertEquals(2, getFolder().getKnownItemCount());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertEquals(0, getFolder().getKnownFiles().iterator().next()
+            .getVersion());
+        assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertFileMatch(sameName, getFolder().getKnownFiles().iterator().next());
+
+        TestHelper.changeFile(sameName);
+        scanFolder();
+
+        assertEquals(2, getFolder().getKnownItemCount());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertEquals(1, getFolder().getKnownFiles().iterator().next()
+            .getVersion());
+        assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
+        assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
+        assertFileMatch(sameName, getFolder().getKnownFiles().iterator().next());
+    }
+
+    /**
      * Tests scanning of a file that only changes the last modification date,
      * but not the size.
      */
