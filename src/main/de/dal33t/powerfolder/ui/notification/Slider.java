@@ -190,5 +190,8 @@ public class Slider {
             float opacity = 1.0f - translucencyPercentage / 100.0f;
             UIUtil.applyTranslucency(window, opacity * percentage / 100.0f);
         }
+        if (percentage <= 0) {
+            close();
+        }
     }
 }
