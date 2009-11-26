@@ -74,7 +74,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 for (Controller c : getControllers()) {
-                    if (getFolderOf(c).getKnownFilesCount() != 1) {
+                    if (getFolderOf(c).getKnownItemCount() != 1) {
                         return false;
                     }
                 }
@@ -117,7 +117,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public boolean reached() {
                 for (Controller c : getControllers()) {
                     if (c.getFolderRepository().getFolders().iterator().next()
-                        .getKnownFilesCount() != 1)
+                        .getKnownItemCount() != 1)
                     {
                         return false;
                     }
@@ -131,7 +131,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     b.append(c.getMySelf().getNick());
                     b.append('=');
                     b.append(c.getFolderRepository().getFolders().iterator()
-                        .next().getKnownFilesCount());
+                        .next().getKnownItemCount());
                     b.append(", ");
                 }
                 return b.toString();
@@ -291,7 +291,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
                 for (int i = 1; i < 5; i++) {
-                    if (getFolderOf("" + i).getKnownFilesCount() != 1) {
+                    if (getFolderOf("" + i).getKnownItemCount() != 1) {
                         return false;
                     }
                 }
@@ -313,14 +313,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderOf("5").getKnownFilesCount() == 1
+                return getFolderOf("5").getKnownItemCount() == 1
                     && getFolderOf("5").getKnownFiles().iterator().next()
                         .getVersion() == 1;
             }
 
             public String message() {
                 int ver = -1;
-                if (getFolderOf("5").getKnownFilesCount() > 0) {
+                if (getFolderOf("5").getKnownItemCount() > 0) {
                     ver = getFolderOf("5").getKnownFiles().iterator().next()
                         .getVersion();
                 }
@@ -381,7 +381,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         }
         scanFolder(getFolderOf("0"));
 
-        assertEquals(10, getFolderOf("0").getKnownFilesCount());
+        assertEquals(10, getFolderOf("0").getKnownItemCount());
 
         for (int tries = 0; tries < 4; tries++) {
 
@@ -495,7 +495,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(numC, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
-                    if (getFolderOf("" + i).getKnownFilesCount() != 10) {
+                    if (getFolderOf("" + i).getKnownItemCount() != 10) {
                         return false;
                     }
                 }
@@ -505,14 +505,14 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public String message() {
                 StringBuilder b = new StringBuilder();
                 for (int i = 0; i < numC; i++) {
-                    if (getFolderOf("" + i).getKnownFilesCount() == 10) {
+                    if (getFolderOf("" + i).getKnownItemCount() == 10) {
                         continue;
                     }
                     if (b.length() > 0) {
                         b.append("\n\n");
                     }
                     b.append(i).append(": ").append(
-                        getFolderOf("" + i).getKnownFilesCount());
+                        getFolderOf("" + i).getKnownItemCount());
                     b.append(", ").append(
                         getContoller("" + i).getTransferManager()
                             .getActiveDownloads());
@@ -589,7 +589,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 new ConditionWithMessage() {
                     public boolean reached() {
                         for (int i = 0; i < numC; i++) {
-                            if (getFolderOf("" + i).getKnownFilesCount() != 1) {
+                            if (getFolderOf("" + i).getKnownItemCount() != 1) {
                                 return false;
                             }
                         }
@@ -603,7 +603,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                                 b.append("\n");
                             }
                             b.append(i).append(": ").append(
-                                getFolderOf("" + i).getKnownFilesCount());
+                                getFolderOf("" + i).getKnownItemCount());
                             b.append(", ").append(
                                 getContoller("" + i).getTransferManager()
                                     .getActiveDownloads());

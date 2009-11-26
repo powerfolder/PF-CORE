@@ -75,8 +75,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         scanFolder(getFolderAtLisa());
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return getFolderAtBart().getKnownFilesCount() == 1
-                    && getFolderAtLisa().getKnownFilesCount() == 1;
+                return getFolderAtBart().getKnownItemCount() == 1
+                    && getFolderAtLisa().getKnownItemCount() == 1;
             }
         });
 
@@ -128,7 +128,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .getLocalBase(), TEST_FILENAME, LONG_FILE_CONTENTS);
         // Scan the file
         scanFolder(getFolderAtBart());
-        assertEquals(1, getFolderAtBart().getKnownFilesCount());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
 
         // Change the file on disk. make it shorter.
         fileAtBart = TestHelper.createTestFile(
