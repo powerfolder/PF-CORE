@@ -2492,6 +2492,16 @@ public class Folder extends PFComponent {
             }
         }
 
+        // #1022 - Mass delete detection. Switch to a safe profile if
+        // a large percent of files would get deleted by another node.
+        if (newList.files != null
+            && syncProfile.isSyncDeletion()
+            && ConfigurationEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
+            checkForMassDeletion(from, newList.files);
+        }
+
         // Update DAO
         synchronized (dbAccessLock) {
             dao.deleteDomain(from.getId());
@@ -2560,55 +2570,11 @@ public class Folder extends PFComponent {
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
         if (changes.removed != null
+            && syncProfile.isSyncDeletion()
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
-            int delsCount = changes.removed.length;
-            if (delsCount >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
-
-                // #1786 - If deletion >= max files per message, switch.
-
-                if (syncProfile.isSyncDeletion()) {
-
-                    logWarning("Received a FolderFilesChanged message from "
-                        + from.getInfo().nick + " which will delete "
-                        + delsCount + " files in folder " + currentInfo.name
-                        + ". The sync profile will now be switched from "
-                        + syncProfile.getName() + " to "
-                        + SyncProfile.HOST_FILES.getName()
-                        + " to protect the files.");
-
-                    switchToSafe(from, delsCount, false);
-                }
-            } else {
-                int knownFilesCount = getKnownItemCount();
-                if (knownFilesCount > 0) {
-                    int delPercentage = 100 * delsCount / knownFilesCount;
-                    logFine("FolderFilesChanged delete percentage "
-                        + delPercentage + '%');
-                    if (delPercentage >= ConfigurationEntry.MASS_DELETE_THRESHOLD
-                        .getValueInt(getController()))
-                    {
-
-                        if (syncProfile.isSyncDeletion()) {
-
-                            logWarning("Received a FolderFilesChanged message from "
-                                + from.getInfo().nick
-                                + " which will delete "
-                                + delPercentage
-                                + " percent of known files in folder "
-                                + currentInfo.name
-                                + ". The sync profile will now be switched from "
-                                + syncProfile.getName()
-                                + " to "
-                                + SyncProfile.HOST_FILES.getName()
-                                + " to protect the files.");
-
-                            switchToSafe(from, delPercentage, true);
-                        }
-                    }
-                }
-            }
+            checkForMassDeletion(from, changes.removed);
         }
 
         // Try to find same files
@@ -2676,7 +2642,47 @@ public class Folder extends PFComponent {
         fireRemoteContentsChanged(from, changes);
     }
 
+    private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
+        int delsCount = 0;
+        for (FileInfo remoteFile : fileInfos) {
+            if (!remoteFile.isDeleted()) {
+                continue;
+            }
+            // #1842: Actually check if these files have just been deleted.
+            FileInfo localFile = getFile(remoteFile);
+            if (localFile != null && !localFile.isDeleted()
+                && remoteFile.isNewerThan(localFile))
+            {
+                delsCount++;
+            }
+        }
+
+        if (delsCount >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
+            // #1786 - If deletion >= max files per message, switch.
+            switchToSafe(from, delsCount, false);
+        } else {
+            int knownFilesCount = getKnownItemCount();
+            if (knownFilesCount > 1) {
+                int delPercentage = 100 * delsCount / knownFilesCount;
+                logFine("FolderFilesChanged delete percentage " + delPercentage
+                    + '%');
+                if (delPercentage >= ConfigurationEntry.MASS_DELETE_THRESHOLD
+                    .getValueInt(getController()))
+                {
+                    switchToSafe(from, delPercentage, true);
+                }
+            }
+        }
+    }
+
     private void switchToSafe(Member from, int delsCount, boolean percentage) {
+        logWarning("Received a FolderFilesChanged message from "
+            + from.getInfo().nick + " which will delete " + delsCount
+            + " files in folder " + currentInfo.name
+            + ". The sync profile will now be switched from "
+            + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
+            + " to protect the files.");
+
         SyncProfile original = syncProfile;
 
         // Emergency profile switch to something safe.
@@ -2946,8 +2952,7 @@ public class Folder extends PFComponent {
         }
 
         // #1249
-        if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux()))
-        {
+        if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
             boolean inaccessible = localBase.list() == null
                 || localBase.list().length == 0 || !localBase.exists();
             if (inaccessible) {
