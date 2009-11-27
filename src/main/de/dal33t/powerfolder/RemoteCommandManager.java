@@ -363,6 +363,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
         String dirStr = config.get(FOLDER_SCRIPT_CONFIG_DIR);
         File dir = StringUtils.isBlank(dirStr) ? null : new File(dirStr);
+        logFine("Remove folder command received. Config: " + folderConfig);
         if (StringUtils.isBlank(id) && StringUtils.isBlank(name) && dir == null)
         {
             logSevere("Unable to remove folder. Wrong parameters: "

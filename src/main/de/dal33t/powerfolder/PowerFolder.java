@@ -184,7 +184,8 @@ public class PowerFolder {
         // Parsing of command line completed
 
         boolean commandContainsRemoteCommands = files != null
-            && files.length >= 1 || commandLine.hasOption("p");
+            && files.length >= 1 || commandLine.hasOption("p")
+            || commandLine.hasOption("r");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
@@ -228,7 +229,7 @@ public class PowerFolder {
         }
 
         // Begin monitoring memory usage.
-        if (controller.isUIEnabled()) {
+        if (controller.isStarted() && controller.isUIEnabled()) {
             ScheduledExecutorService service = controller.getThreadPool();
             service.scheduleAtFixedRate(new MemoryMonitor(controller), 1, 1,
                 TimeUnit.MINUTES);
