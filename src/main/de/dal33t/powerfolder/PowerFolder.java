@@ -56,31 +56,50 @@ public class PowerFolder {
     static {
         // Command line parsing
         Options options = new Options();
-        options.addOption("c", "config", true,
+        options
+            .addOption(
+                "c",
+                "config",
+                true,
                 "<config file>. Sets the configuration file to start. Default: PowerFolder.config");
         options.addOption("m", "minimized", false,
-                "Start PowerFolder minimized");
-        options.addOption("s", "server", false,
+            "Start PowerFolder minimized");
+        options
+            .addOption("s", "server", false,
                 "Start PowerFolder in console mode. Graphical user interface will be disabled");
-        options.addOption("d", "dns", true,
+        options
+            .addOption("d", "dns", true,
                 "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "nick", true, "<nickname> Sets the nickname");
-        options.addOption("b", "data", true, "Set the base data directory for PowerFolder");
+        options.addOption("b", "data", true,
+            "Set the base data directory for PowerFolder");
         options.addOption("k", "kill", false,
-                "Shuts down a running PowerFolder instance");
-        options.addOption("l", "log", true,
+            "Shuts down a running PowerFolder instance");
+        options
+            .addOption(
+                "l",
+                "log",
+                true,
                 "<level> Sets console logging to severe, warning, info, fine or finer level (e.g. \"--log info\", sets info level and above");
-        options.addOption("f", "langfile", true,
+        options
+            .addOption(
+                "f",
+                "langfile",
+                true,
                 "<path\\file> Sets the language file to use (e.g. \"--langfile c:\\powerfolder\\translation\\translation_XX.properties\", forces PowerFolder to load this file as language file)");
-        options.addOption("g", "language", true,
+        options
+            .addOption(
+                "g",
+                "language",
+                true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
-                "<createfolder> Creates a new Folder");
+            "<createfolder> Creates a new Folder");
         options.addOption("r", "removefolder", true,
-                "<removefolder> Removes a existing Folder");
+            "<removefolder> Removes a existing Folder");
         options.addOption("z", "nowarn", false,
-                "Do not warn if already running");
+            "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
     }
 
@@ -164,8 +183,8 @@ public class PowerFolder {
         String[] files = commandLine.getArgs();
         // Parsing of command line completed
 
-        boolean commandContainsRemoteCommands = files != null && files.length >= 1
-                || commandLine.hasOption("p");
+        boolean commandContainsRemoteCommands = files != null
+            && files.length >= 1 || commandLine.hasOption("p");
         // Try to start controller
         boolean startController = !commandContainsRemoteCommands
             || !runningInstanceFound;
@@ -181,7 +200,7 @@ public class PowerFolder {
             if (files != null && files.length > 0) {
                 // Parse filenames and build remote command
                 StringBuilder openFilesRCommand = new StringBuilder(
-                        RemoteCommandManager.OPEN);
+                    RemoteCommandManager.OPEN);
 
                 for (String file : files) {
                     openFilesRCommand.append(file);
@@ -197,6 +216,11 @@ public class PowerFolder {
                     .sendCommand(RemoteCommandManager.MAKEFOLDER
                         + commandLine.getOptionValue("p"));
             }
+            if (commandLine.hasOption("r")) {
+                RemoteCommandManager
+                    .sendCommand(RemoteCommandManager.REMOVEFOLDER
+                        + commandLine.getOptionValue("r"));
+            }
         } catch (Throwable t) {
             t.printStackTrace();
             log.log(Level.SEVERE, "Throwable", t);
@@ -207,7 +231,7 @@ public class PowerFolder {
         if (controller.isUIEnabled()) {
             ScheduledExecutorService service = controller.getThreadPool();
             service.scheduleAtFixedRate(new MemoryMonitor(controller), 1, 1,
-                    TimeUnit.MINUTES);
+                TimeUnit.MINUTES);
         }
 
         // Not go into console mode if ui is open
