@@ -88,4 +88,11 @@ public interface FileArchiver {
      * @return the total size in bytes occupied by this archive.
      */
     long getSize();
+
+    /**
+     * Do any required maintenance on the versions kept
+     * @return
+     */
+    boolean maintain();
+
 }

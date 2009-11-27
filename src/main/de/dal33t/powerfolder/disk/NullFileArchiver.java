@@ -68,4 +68,8 @@ public class NullFileArchiver implements FileArchiver {
     public long getSize() {
         return 0;
     }
+
+    public boolean maintain() {
+        return false;
+    }
 }

@@ -28,17 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -150,9 +140,9 @@ public class SettingsTab extends PFUIComponent {
         membershipListner = new MyFolderMembershipListener();
         scriptModel = new ValueHolder(null, false);
         MyValueChangeListener listener = new MyValueChangeListener();
-        modeModel = new ValueHolder();
+        modeModel = new ValueHolder(); // <ArchiveMode>
         modeModel.addValueChangeListener(listener);
-        versionModel = new ValueHolder();
+        versionModel = new ValueHolder(); // <Integer>
         versionModel.addValueChangeListener(listener);
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
             modeModel, versionModel);
@@ -748,7 +738,7 @@ public class SettingsTab extends PFUIComponent {
         previewFolderActionLabel.setEnabled(enabled);
     }
 
-    private void updateArchiveMode() {
+    private void updateArchiveMode(Object oldValue, Object newValue) {
         ArchiveMode am = (ArchiveMode) modeModel.getValue();
         if (am == ArchiveMode.NO_BACKUP) {
             folder.setArchiveMode(ArchiveMode.NO_BACKUP);
@@ -756,6 +746,32 @@ public class SettingsTab extends PFUIComponent {
             folder.setArchiveMode(ArchiveMode.FULL_BACKUP);
             Integer versions = (Integer) versionModel.getValue();
             folder.setArchiveVersions(versions);
+
+            // If the versions is reduced, offer to delete excess.
+            if (newValue != null && oldValue != null
+                    && newValue instanceof Integer
+                    && oldValue instanceof Integer 
+                    && (Integer) newValue < (Integer) oldValue) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        int i = DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "settings_tab.offer_maintenance.title"),
+                                Translation.getTranslation(
+                                        "settings_tab.offer_maintenance.text"),
+                                new String[]{Translation.getTranslation("general.delete"),
+                                        Translation.getTranslation("general.cancel")},
+                                0, GenericDialogType.QUESTION);
+                        if (i == 0) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    folder.getFileArchiver().maintain();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -1034,7 +1050,7 @@ public class SettingsTab extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == modeModel || evt.getSource() == versionModel)
             {
-                updateArchiveMode();
+                updateArchiveMode(evt.getOldValue(), evt.getNewValue());
             }
         }
     }
