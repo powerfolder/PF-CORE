@@ -339,8 +339,9 @@ public class FilesTable extends JTable {
                     case 1 : // dir name
                         myValue = dir.getFilenameOnly();
                         if (folder.getDiskItemFilter().isExcluded(dir)) {
-                            setIcon(Icons.getIconById(Icons.BLACK_LIST));
                             setForeground(NORMAL);
+                            // File filtered out by blacklist.
+                            strikethrough = true;
                         } else if (dir.isExpected()) {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
