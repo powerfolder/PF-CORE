@@ -65,7 +65,33 @@ public class MassDeletionTest extends TwoControllerTestCase {
         massDeletion(true, 2000);
     }
 
-    public void massDeletion(boolean protection, final int size) throws Exception {
+    /**
+     * #1842
+     * 
+     * @throws Exception
+     */
+    public void testNotTriggerOnHistoricDeletion() throws Exception {
+
+        // Check with no protection
+        massDeletion(false, 1000);
+
+        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getFolderAtLisa()
+            .getController(), 10);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
+            .getController(), true);
+
+        disconnectBartAndLisa();
+        connectBartAndLisa();
+
+        // Should be STILL correct sync profile. Mass deletion should not have
+        // been triggered.
+        assertEquals(getFolderAtLisa().getSyncProfile(),
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+    }
+
+    public void massDeletion(boolean protection, final int nFiles)
+        throws Exception
+    {
 
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -74,41 +100,25 @@ public class MassDeletionTest extends TwoControllerTestCase {
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getFolderAtLisa()
             .getController(), protection);
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
-
         scanFolder(getFolderAtBart());
-
-        TestHelper.waitForCondition(40, new ConditionWithMessage() {
-            public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == size;
-            }
-
-            public String message() {
-                return "Known files at bart: "
-                    + getFolderAtBart().getKnownItemCount();
-            }
-        });
-
+        assertEquals("Known files at bart: "
+            + getFolderAtBart().getKnownItemCount(), nFiles, getFolderAtBart()
+            .getKnownItemCount());
         scanFolder(getFolderAtLisa());
-
         TestHelper.waitForCondition(100, new Condition() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() == size;
+                return getFolderAtLisa().getKnownItemCount() == nFiles;
             }
         });
-
-        assertEquals(size, getFolderAtLisa().getKnownFiles().size());
+        assertEquals(nFiles, getFolderAtLisa().getKnownFiles().size());
 
         // Delete all Bart's files
         for (final File file : getFolderAtBart().getLocalBase().listFiles()) {
             if (!file.isDirectory()) {
-                TestHelper.waitForCondition(40, new Condition() {
-                    public boolean reached() {
-                        return file.delete();
-                    }
-                });
+                assertTrue(file.delete());
             }
         }
 
@@ -117,9 +127,9 @@ public class MassDeletionTest extends TwoControllerTestCase {
 
         if (protection) {
             // Files should survive and profile switch to HOST_FILE.
-            TestHelper.waitForCondition(40, new ConditionWithMessage() {
+            TestHelper.waitForCondition(20, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == size + 1; // The
+                    return getFolderAtLisa().getLocalBase().listFiles().length == nFiles + 1; // The
                     // files
                     // +
                     // .PowerFolder
