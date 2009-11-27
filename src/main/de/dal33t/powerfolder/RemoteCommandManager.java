@@ -80,6 +80,16 @@ import de.dal33t.powerfolder.util.StringUtils;
  */
 public class RemoteCommandManager extends PFComponent implements Runnable {
 
+    // Parameters according to
+    // http://www.powerfolder.com/wiki/Script_configuration
+    private static final String FOLDER_SCRIPT_CONFIG_ID = "id";
+    private static final String FOLDER_SCRIPT_CONFIG_NAME = "name";
+    private static final String FOLDER_SCRIPT_CONFIG_DIR = "dir";
+    private static final String FOLDER_SCRIPT_CONFIG_BACKUP_BY_SERVER = "backup_by_server";
+    private static final String FOLDER_SCRIPT_CONFIG_SYNC_PROFILE = "syncprofile";
+    private static final String FOLDER_SCRIPT_CONFIG_SILENT = "silent";
+    private static final String FOLDER_SCRIPT_CONFIG_DL_SCRIPT = "dlscript";
+
     private static final Logger log = Logger
         .getLogger(RemoteCommandManager.class.getName());
 
@@ -92,6 +102,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static final String QUIT = "QUIT";
     public static final String OPEN = "OPEN;";
     public static final String MAKEFOLDER = "MAKEFOLDER;";
+    public static final String REMOVEFOLDER = "REMOVEFOLDER;";
 
     // Private vars
     private ServerSocket serverSocket;
@@ -311,6 +322,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // dir=%BASE_DIR%\IPAKI\BACKUP;name=IPAKI/BACKUP/%COMPUTERNAME%;syncprofile=true,true,true,true,5,false,12,0,m,Auto-sync;backup_by_server=true
             makeFolder(folderConfig);
 
+        } else if (command.startsWith(REMOVEFOLDER)) {
+            String folderConfig = command.substring(REMOVEFOLDER.length());
+            removeFolder(folderConfig);
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
@@ -343,43 +357,83 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
-    private void makeFolder(String folderConfig) {
-        Map<String, String> config = new HashMap<String, String>();
-        StringTokenizer nizer = new StringTokenizer(folderConfig, ";");
-        while (nizer.hasMoreTokens()) {
-            String keyValuePair = nizer.nextToken();
-            int equal = keyValuePair.indexOf('=');
-            if (equal <= 0) {
-                logSevere("Unable to parse make folder command: '"
-                    + folderConfig + '\'');
-                continue;
-            }
-            String key = keyValuePair.substring(0, equal);
-            String value = keyValuePair.substring(equal + 1);
-            config.put(key, value);
+    private void removeFolder(String folderConfig) {
+        Map<String, String> config = parseFolderConfig(folderConfig);
+        String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
+        String name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
+        String dirStr = config.get(FOLDER_SCRIPT_CONFIG_DIR);
+        File dir = StringUtils.isBlank(dirStr) ? null : new File(dirStr);
+        if (StringUtils.isBlank(id) && StringUtils.isBlank(name) && dir == null)
+        {
+            logSevere("Unable to remove folder. Wrong parameters: "
+                + folderConfig);
+            return;
         }
 
+        for (Folder candidate : getController().getFolderRepository()
+            .getFolders())
+        {
+            if (StringUtils.isNotBlank(id)) {
+                if (!candidate.getId().equals(id)) {
+                    // ID given, but no match. Skip
+                    continue;
+                }
+            }
+            if (StringUtils.isNotBlank(name)) {
+                if (!candidate.getName().equalsIgnoreCase(name)) {
+                    // name given, but no match. Skip
+                    continue;
+                }
+            }
+            if (dir != null) {
+                try {
+                    if (!candidate.getLocalBase().equals(dir)
+                        && !candidate.getLocalBase().getCanonicalPath().equals(
+                            dir.getCanonicalPath()))
+                    {
+                        logWarning("Can: " + candidate.getLocalBase().getCanonicalPath());
+                        logWarning("Dir: " + dir.getCanonicalPath());
+                        // path given, but no match. Skip
+                        continue;
+                    }
+                } catch (Exception e) {
+                    logWarning("Unable to check by directory: " + candidate
+                        + ". Dir: " + dir + ". " + e, e);
+                }
+            }
+
+            logInfo("Removing folder: " + candidate + ". Matched by: "
+                + folderConfig);
+            // Ok this candiate matches! Remove it.
+            getController().getFolderRepository().removeFolder(candidate, true);
+        }
+    }
+
+    private void makeFolder(String folderConfig) {
+        Map<String, String> config = parseFolderConfig(folderConfig);
+
         // Directory
-        if (StringUtils.isBlank(config.get("dir"))) {
+        if (StringUtils.isBlank(config.get(FOLDER_SCRIPT_CONFIG_DIR))) {
             logSevere("Unable to parse make folder command. directory missing. "
                 + folderConfig);
             return;
         }
-        File dir = new File(config.get("dir"));
+        File dir = new File(config.get(FOLDER_SCRIPT_CONFIG_DIR));
 
         // Show user?
-        boolean silent = "true".equalsIgnoreCase(config.get("silent"));
+        boolean silent = "true".equalsIgnoreCase(config
+            .get(FOLDER_SCRIPT_CONFIG_SILENT));
 
         // Name
         String name;
-        if (StringUtils.isNotBlank(config.get("name"))) {
-            name = config.get("name");
+        if (StringUtils.isNotBlank(config.get(FOLDER_SCRIPT_CONFIG_NAME))) {
+            name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
         } else {
             name = dir.getName();
         }
 
         // ID
-        String id = config.get("id");
+        String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
         boolean createInvitationFile = false;
         if (StringUtils.isEmpty(id)) {
             id = '[' + IdGenerator.makeId() + ']';
@@ -404,14 +458,16 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
         }
 
-        String syncProfileFieldList = config.get("syncprofile");
+        String syncProfileFieldList = config
+            .get(FOLDER_SCRIPT_CONFIG_SYNC_PROFILE);
         SyncProfile syncProfile = syncProfileFieldList != null ? SyncProfile
             .getSyncProfileByFieldList(syncProfileFieldList) : null;
-        boolean backupByServer = "true".equals(config.get("backup_by_server"));
+        boolean backupByServer = "true".equals(config
+            .get(FOLDER_SCRIPT_CONFIG_BACKUP_BY_SERVER));
 
         FolderInfo foInfo = new FolderInfo(name, id);
 
-        String dlScript = config.get("dlscript");
+        String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 
         if (!silent && getController().isUIEnabled()) {
             PFWizard wizard = new PFWizard(getController());
@@ -450,6 +506,24 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
             }
         }
+    }
+
+    private Map<String, String> parseFolderConfig(String folderConfig) {
+        Map<String, String> config = new HashMap<String, String>();
+        StringTokenizer nizer = new StringTokenizer(folderConfig, ";");
+        while (nizer.hasMoreTokens()) {
+            String keyValuePair = nizer.nextToken();
+            int equal = keyValuePair.indexOf('=');
+            if (equal <= 0) {
+                logSevere("Unable to parse make folder command: '"
+                    + folderConfig + '\'');
+                continue;
+            }
+            String key = keyValuePair.substring(0, equal);
+            String value = keyValuePair.substring(equal + 1);
+            config.put(key, value);
+        }
+        return config;
     }
 
     /**

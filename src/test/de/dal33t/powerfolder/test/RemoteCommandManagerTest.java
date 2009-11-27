@@ -147,4 +147,37 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         // Should be the same
         assertEquals(oldFolderAtBart.getId(), folderAtBart.getId());
     }
+
+    public void testRemoveFolder() {
+        assertEquals(1, getFolderAtLisa().getMembersCount());
+
+        assertTrue(RemoteCommandManager.sendCommand(1155,
+            RemoteCommandManager.REMOVEFOLDER));
+        assertTrue(RemoteCommandManager.sendCommand(1155,
+            RemoteCommandManager.REMOVEFOLDER + "dir=C:\\Dir"));
+        assertTrue(RemoteCommandManager.sendCommand(1155,
+            RemoteCommandManager.REMOVEFOLDER + "name=Folder"));
+        assertTrue(RemoteCommandManager.sendCommand(1155,
+            RemoteCommandManager.REMOVEFOLDER + "id=theid"));
+
+        // Wrong commands. Should be still there.
+        assertEquals(1, getContollerLisa().getFolderRepository()
+            .getFoldersCount());
+
+        assertTrue(RemoteCommandManager.sendCommand(1155,
+            RemoteCommandManager.REMOVEFOLDER + "dir="
+                + getFolderAtLisa().getLocalBase() + ";id="
+                + getFolderAtLisa().getId() + ";name="
+                + getFolderAtLisa().getName()));
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Lisa did not remove the folder: " + getFolderAtLisa();
+            }
+
+            public boolean reached() {
+                return getFolderAtLisa() == null;
+            }
+        });
+    }
 }

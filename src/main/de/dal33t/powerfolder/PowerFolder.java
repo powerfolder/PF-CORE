@@ -76,7 +76,9 @@ public class PowerFolder {
         options.addOption("g", "language", true,
                 "<language> Sets the language to use (e.g. \"--language de\", sets language to german)");
         options.addOption("p", "createfolder", true,
-                "<createfolder> Creates a new PowerFolder");
+                "<createfolder> Creates a new Folder");
+        options.addOption("r", "removefolder", true,
+                "<removefolder> Removes a existing Folder");
         options.addOption("z", "nowarn", false,
                 "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;
