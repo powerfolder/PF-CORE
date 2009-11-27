@@ -391,8 +391,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                         && !candidate.getLocalBase().getCanonicalPath().equals(
                             dir.getCanonicalPath()))
                     {
-                        logWarning("Can: " + candidate.getLocalBase().getCanonicalPath());
-                        logWarning("Dir: " + dir.getCanonicalPath());
                         // path given, but no match. Skip
                         continue;
                     }
