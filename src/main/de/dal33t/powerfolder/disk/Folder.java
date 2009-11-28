@@ -1322,7 +1322,8 @@ public class Folder extends PFComponent {
                     dao.store(null, syncFile);
                 }
                 if (isFiner()) {
-                    logFiner("Directory already known: " + dirInfo.toDetailString());
+                    logFiner("Directory already known: "
+                        + dirInfo.toDetailString());
                 }
                 return syncFile != null ? syncFile : dbFile;
             }
@@ -3378,7 +3379,9 @@ public class Folder extends PFComponent {
         inv.setFilesCount(statistic.getLocalFilesCount());
         inv.setSize(statistic.getLocalSize());
         inv.setSuggestedSyncProfile(syncProfile);
-        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)
+            || syncProfile.equals(SyncProfile.BACKUP_SOURCE_HOUR))
+        {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
         } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_SOURCE);
