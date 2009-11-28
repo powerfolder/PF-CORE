@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -383,6 +384,14 @@ public class Account extends Model implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
+    public AccountDetails calulcateDetails(Controller controller) {
+        Reject.ifNull(controller, "Controller");
+        long used = calulateTotalFoldersSize(controller);
+        int nFolders = countNumberOfFolders(controller);
+        long archiveSize = calulateArchiveSize(controller);
+        return new AccountDetails(this, used, nFolders, archiveSize);
+    }
+
     /**
      * @param controller
      * @return the total size used by this user
@@ -409,10 +418,6 @@ public class Account extends Model implements Serializable {
      * @return the total size of recycle bin
      */
     public long calulateArchiveSize(Controller controller) {
-        if (true) {
-            // Disabled till #1744 fully supported.
-            return 0;
-        }
         long start = System.currentTimeMillis();
         long size = 0;
         for (Permission p : getPermissions()) {
