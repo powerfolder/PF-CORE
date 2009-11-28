@@ -31,26 +31,24 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * Table to display file versions of a file.
  */
 public class FileVersionsTable extends JTable {
 
-    private Controller controller;
-
     /**
      * Constructor
      *
      * @param model
      */
-    public FileVersionsTable(FileVersionsTableModel model, Controller controller) {
+    public FileVersionsTable(FileVersionsTableModel model) {
         super(model);
-        this.controller = controller;
 
         setColumnSelectionAllowed(false);
         setShowGrid(false);
@@ -59,13 +57,13 @@ public class FileVersionsTable extends JTable {
 
         setupColumns();
 
-        setDefaultRenderer(FileInfo.class, new MyDefaultTreeCellRenderer());
+        setDefaultRenderer(FileInfoVersionTypeHolder.class, new MyDefaultTreeCellRenderer());
 
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(
-                model, getColumnModel(), 0, false);
+                model, getColumnModel(), 1, false);
     }
 
     /**
@@ -76,12 +74,18 @@ public class FileVersionsTable extends JTable {
 
         // Otherwise the table header is not visible:
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
+        Icon icon = Icons.getIconById(Icons.ONLINE_FOLDER);
+        setRowHeight(icon.getIconHeight() + 2);
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(40);
+        column.setPreferredWidth(icon.getIconWidth() + 2);
+        column.setMinWidth(icon.getIconWidth() + 2);
+        column.setMaxWidth(icon.getIconWidth() + 2);
         column = getColumn(getColumnName(1));
         column.setPreferredWidth(40);
         column = getColumn(getColumnName(2));
+        column.setPreferredWidth(40);
+        column = getColumn(getColumnName(3));
         column.setPreferredWidth(40);
     }
 
@@ -89,7 +93,7 @@ public class FileVersionsTable extends JTable {
         int row = getSelectedRow();
         if (row >= 0) {
             FileVersionsTableModel model = (FileVersionsTableModel) getModel();
-            return (FileInfo) model.getValueAt(row, 0);
+            return ((FileInfoVersionTypeHolder) model.getValueAt(row, 0)).getFileInfo();
         }
         return null;
     }
@@ -124,26 +128,36 @@ public class FileVersionsTable extends JTable {
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-            FileInfo info = (FileInfo) value;
+            FileInfoVersionTypeHolder info = (FileInfoVersionTypeHolder) value;
+            setIcon(null);
             String myValue = "";
+            String toolTip = null;
             switch (column) {
-                case 0:  // version
-                    myValue = String.valueOf(info.getVersion());
+                case 0:  // version type
+                    setIcon(Icons.getIconById(info.isOnline() ?
+                            Icons.ONLINE_FOLDER : Icons.LOCAL_FOLDER));
+                    toolTip = info.isOnline() ? Translation.getTranslation(
+                            "file_versions_table_model.online") : Translation
+                            .getTranslation("file_versions_table_model.local");
+                    break;
+                case 1:  // version
+                    myValue = String.valueOf(info.getFileInfo().getVersion());
                     setHorizontalAlignment(RIGHT);
                     break;
-                case 1:  // size
-                    myValue = Format.formatBytesShort(info.getSize());
+                case 2:  // size
+                    myValue = Format.formatBytesShort(info.getFileInfo().getSize());
                     setHorizontalAlignment(RIGHT);
                     break;
-                case 2:  // date
-                    myValue = Format.formatDateShort(info.getModifiedDate());
+                case 3:  // date
+                    myValue = Format.formatDateShort(info.getFileInfo().getModifiedDate());
                     setHorizontalAlignment(RIGHT);
                     break;
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
                     isSelected, hasFocus, row, column);
-
+            ((JLabel) c).setToolTipText(toolTip);
+            
             if (!isSelected) {
                 setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
                         : ColorUtil.ODD_TABLE_ROW_COLOR);

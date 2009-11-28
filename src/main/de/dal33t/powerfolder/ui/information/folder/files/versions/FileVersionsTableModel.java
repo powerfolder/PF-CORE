@@ -21,11 +21,10 @@ package de.dal33t.powerfolder.ui.information.folder.files.versions;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoVersionTypeComparator;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -41,16 +40,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FileVersionsTableModel extends PFComponent implements TableModel,
         SortedTableModel {
 
-    private String[] columns = {Translation.getTranslation(
-            "file_versions_table_model.version"),
+    private String[] columns = {"",
+            Translation.getTranslation("file_versions_table_model.version"),
             Translation.getTranslation("file_versions_table_model.size"),
             Translation.getTranslation("file_versions_table_model.date")};
 
-    private static final int COL_VERSION = 0;
-    private static final int COL_SIZE = 1;
-    public static final int COL_DATE = 2;
-
-    private final List<FileInfo> versionInfos;
+    private final List<FileInfoVersionTypeHolder> versionInfos;
     private int comparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
@@ -63,7 +58,7 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
      */
     public FileVersionsTableModel(Controller controller) {
         super(controller);
-        versionInfos = new ArrayList<FileInfo>();
+        versionInfos = new ArrayList<FileInfoVersionTypeHolder>();
         listeners = new CopyOnWriteArrayList<TableModelListener>();
     }
 
@@ -72,13 +67,13 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
      *
      * @param infos
      */
-    public void setVersionInfos(List<FileInfo> infos) {
+    public void setVersionInfos(List<FileInfoVersionTypeHolder> infos) {
         boolean allSame = true;
         if (versionInfos.size() == infos.size()) {
-            for (FileInfo info : infos) {
+            for (FileInfoVersionTypeHolder info : infos) {
                 boolean thisSame = false;
-                for (FileInfo versionInfo : versionInfos) {
-                    if (info.isVersionDateAndSizeIdentical(versionInfo)) {
+                for (FileInfoVersionTypeHolder versionInfo : versionInfos) {
+                    if (info.getFileInfo().isVersionDateAndSizeIdentical(versionInfo.getFileInfo())) {
                         thisSame = true;
                         break;
                     }
@@ -101,7 +96,7 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
     }
 
     public Class<?> getColumnClass(int columnIndex) {
-        return FileInfo.class;
+        return FileInfoVersionTypeHolder.class;
     }
 
     public int getColumnCount() {
@@ -147,12 +142,14 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
     public boolean sortBy(int columnIndex) {
         sortColumn = columnIndex;
         switch (columnIndex) {
-            case COL_VERSION:
-                return sortMe(DiskItemComparator.BY_VERSION);
-            case COL_SIZE :
-                return sortMe(DiskItemComparator.BY_SIZE);
-            case COL_DATE:
-                return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
+            case FileInfoVersionTypeComparator.BY_VERSION_TYPE:
+                return sortMe(FileInfoVersionTypeComparator.BY_VERSION_TYPE);
+            case FileInfoVersionTypeComparator.BY_VERSION:
+                return sortMe(FileInfoVersionTypeComparator.BY_VERSION);
+            case FileInfoVersionTypeComparator.BY_SIZE :
+                return sortMe(FileInfoVersionTypeComparator.BY_SIZE);
+            case FileInfoVersionTypeComparator.BY_MODIFIED_DATE:
+                return sortMe(FileInfoVersionTypeComparator.BY_MODIFIED_DATE);
         }
 
         sortColumn = -1;
@@ -189,8 +186,8 @@ public class FileVersionsTableModel extends PFComponent implements TableModel,
 
     private boolean sort() {
         if (comparatorType != -1) {
-            DiskItemComparator comparator =
-                    DiskItemComparator.getComparator(comparatorType);
+            FileInfoVersionTypeComparator comparator =
+                    FileInfoVersionTypeComparator.getComparator(comparatorType);
             synchronized (versionInfos) {
                 if (sortAscending) {
                     Collections.sort(versionInfos, comparator);

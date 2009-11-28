@@ -124,7 +124,7 @@ public class FileVersionsPanel extends PFUIComponent {
     private void initComponents() {
 
         fileVersionsTableModel = new FileVersionsTableModel(getController());
-        fileVersionsTable = new FileVersionsTable(fileVersionsTableModel, getController());
+        fileVersionsTable = new FileVersionsTable(fileVersionsTableModel);
         fileVersionsTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
@@ -217,10 +217,14 @@ public class FileVersionsPanel extends PFUIComponent {
                     FileArchiver fileArchiver = folder.getFileArchiver();
 
                     // Get local versions.
-                    List<FileInfo> consolidatedFileInfos
-                            = new ArrayList<FileInfo>();
-                    consolidatedFileInfos.addAll(fileArchiver
-                            .getArchivedFilesInfos(fileInfo, getController().getMySelf().getInfo()));
+                    List<FileInfoVersionTypeHolder> consolidatedFileInfos
+                            = new ArrayList<FileInfoVersionTypeHolder>();
+                    for (FileInfo consolidatedFileInfo : fileArchiver
+                            .getArchivedFilesInfos(fileInfo,
+                                    getController().getMySelf().getInfo())) {
+                        consolidatedFileInfos.add(new FileInfoVersionTypeHolder(
+                                consolidatedFileInfo, false));
+                    }
                     logFine("Local versions " + consolidatedFileInfos.size());
 
                     // Also try getting versions from OnlineStorage.
@@ -238,16 +242,16 @@ public class FileVersionsPanel extends PFUIComponent {
                                 for (FileInfo info : infoList) {
 
                                     boolean gotIt = false;
-                                    for (FileInfo consolidatedFileInfo
+                                    for (FileInfoVersionTypeHolder consolidatedFileInfo
                                             : consolidatedFileInfos) {
                                         if (info.isVersionDateAndSizeIdentical(
-                                                consolidatedFileInfo)) {
+                                                consolidatedFileInfo.getFileInfo())) {
                                             gotIt = true;
                                             break;
                                         }
                                     }
                                     if (!gotIt) {
-                                        consolidatedFileInfos.add(info);
+                                        consolidatedFileInfos.add(new FileInfoVersionTypeHolder(info, true));
                                     }
                                 }
 
