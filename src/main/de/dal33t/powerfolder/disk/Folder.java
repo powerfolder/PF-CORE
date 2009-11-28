@@ -485,6 +485,20 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Purges / deletes ALL files in the currently selected file archiver.
+     * 
+     * @return true if succeeded
+     * @see FileArchiver#maintain()
+     */
+    public boolean purgeFileArchive() {
+        int version = archiver.getVersionsPerFile();
+        archiver.setVersionsPerFile(0);
+        boolean worked = archiver.maintain();
+        archiver.setVersionsPerFile(version);
+        return worked;
+    }
+
+    /**
      * @return the local default permission. null if not yet set.
      */
     public FolderPermission getLocalDefaultPermission() {
