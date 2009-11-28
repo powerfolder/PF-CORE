@@ -32,6 +32,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -96,6 +97,47 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         waitForCompletedDownloads(50, 0, 50, 50, 50);
         assertIdenticalTestFolder();
+    }
+
+    public void testMixedCaseSubdirs2() {
+        // Emulate Windows.
+        // FileInfo.IGNORE_CASE = true;
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
+        getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
+        getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
+        disconnectAll();
+
+        File testDirBart = new File(getFolderAtBart().getLocalBase(), "testdir");
+        assertTrue(testDirBart.mkdirs());
+        scanFolder(getFolderAtBart());
+
+        File testDirLisa = new File(getFolderAtLisa().getLocalBase(), "TESTDIR");
+        assertTrue(testDirLisa.mkdirs());
+
+        connectAll();
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
+            public boolean reached() {
+                return getFolderAtLisa().getKnownDirectories().size() == 1;
+            }
+
+            public String message() {
+                return "Items at lisa: "
+                    + getFolderAtLisa().getKnownDirectories();
+            }
+        });
+        DirectoryInfo testDirInfoLisa = getFolderAtLisa().getKnownDirectories()
+            .iterator().next();
+        assertEquals("testdir", testDirInfoLisa.getRelativeName());
+        // null = IN SYNC
+        assertNull(testDirInfoLisa.syncFromDiskIfRequired(getContollerLisa(),
+            testDirLisa));
     }
 
     public void testMixedCaseSubdirs() throws IOException {

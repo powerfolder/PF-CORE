@@ -178,8 +178,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             throw new NullPointerException("diskFile is null");
         }
 
+        System.err.println("Diskfile: " + diskFile.getName());
+        System.err.println("Filename: " + getFilenameOnly());
+        boolean nameMatch = IGNORE_CASE ? diskFile.getName().equalsIgnoreCase(
+            getFilenameOnly()) : diskFile.getName().equals(getFilenameOnly());
         // Check if files match
-        if (!diskFile.getName().equals(getFilenameOnly())) {
+        if (!nameMatch) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
                     + "', details: " + this.toDetailString()

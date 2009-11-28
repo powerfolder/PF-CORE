@@ -1308,7 +1308,7 @@ public class Folder extends PFComponent {
                     // fireEvent(new FolderChanged());
 
                     if (isFiner()) {
-                        logFiner(toString() + ": Local file scanned: "
+                        logFiner(toString() + ": Local directory scanned: "
                             + dirInfo.toDetailString());
                     }
                     return dirInfo;
@@ -1322,7 +1322,7 @@ public class Folder extends PFComponent {
                     dao.store(null, syncFile);
                 }
                 if (isFiner()) {
-                    logFiner("File already known: " + dirInfo.toDetailString());
+                    logFiner("Directory already known: " + dirInfo.toDetailString());
                 }
                 return syncFile != null ? syncFile : dbFile;
             }
