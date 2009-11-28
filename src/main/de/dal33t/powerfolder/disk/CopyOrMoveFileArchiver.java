@@ -59,6 +59,11 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     private volatile int versionsPerFile;
 
     /**
+     * Cached size of this file archive.
+     */
+    private Long size;
+
+    /**
      * Constructs a new FileArchiver which stores backups in the given
      * directory.
      * 
@@ -93,6 +98,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
         if (target.getParentFile().exists() || target.getParentFile().mkdirs())
         {
+            // Reset cache
+            size = null;
             boolean tryCopy = forceKeepSource;
             if (!tryCopy) {
                 if (!source.renameTo(target)) {
@@ -144,8 +151,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * @return true the maintenance worked successfully for all files, false if
      *         it failed for at least one file
      */
-    public boolean maintain() {
-        return checkRecursive(archiveDirectory, new HashSet<File>());
+    public synchronized boolean maintain() {
+        boolean check = checkRecursive(archiveDirectory, new HashSet<File>());
+        size = null;
+        return check;
     }
 
     private boolean checkRecursive(File dir, Set<File> checked) {
@@ -328,8 +337,11 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         this.versionsPerFile = versionsPerFile;
     }
 
-    public long getSize() {
-        return FileUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
+    public synchronized long getSize() {
+        if (size == null) {
+            size = FileUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
+        }
+        return size;
     }
 
 }
