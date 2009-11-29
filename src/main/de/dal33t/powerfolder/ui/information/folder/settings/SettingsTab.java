@@ -79,6 +79,7 @@ import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
@@ -763,11 +764,8 @@ public class SettingsTab extends PFUIComponent {
                                         Translation.getTranslation("general.cancel")},
                                 0, GenericDialogType.QUESTION);
                         if (i == 0) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    folder.getFileArchiver().maintain();
-                                }
-                            });
+                            MySwingWorker worker = new MySwingWorker();
+                            worker.start();
                         }
                     }
                 });
@@ -1054,4 +1052,16 @@ public class SettingsTab extends PFUIComponent {
             }
         }
     }
+
+    private class MySwingWorker extends SwingWorker {
+        public Object construct() {
+            try {
+                return folder.getFileArchiver().maintain();
+            } catch (Exception e) {
+                logSevere(e);
+                return null;
+            }
+        }
+    }
+
 }
