@@ -57,7 +57,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
@@ -331,8 +330,7 @@ public class Folder extends PFComponent {
         // Check desktop ini in Windows environments
         FileUtils.maintainDesktopIni(getController(), localBase);
 
-        // Force the next time scan if autodetect is set
-        // and in regular sync mode (not daily sync).
+        // Force the next time scan.
         recommendScanOnNextMaintenance();
 
         // // maintain desktop shortcut if wanted
@@ -1985,18 +1983,34 @@ public class Folder extends PFComponent {
      * or scheduled sync is setup.
      */
     public void recommendScanOnNextMaintenance() {
-        if (!scanAllowedNow()) {
-            return;
-        }
-        if (isFiner()) {
-            logFiner("recommendScanOnNextMaintenance");
-        }
-        scanForced = true;
-        lastScan = null;
+        recommendScanOnNextMaintenance(false);
     }
 
     /**
-     * @return true if auto scanning files on the fly is allowed now.
+     * Recommends the scan of the local filesystem on the next maintenace run.
+     * Useful when files are detected that have been changed.
+     * <p>
+     * ATTENTION: Does not force a scan if continuous auto-detection is disabled
+     * or scheduled sync is setup unless manual.
+     *
+     * 'manual' sould only be true if the user actually requests a scan from
+     * the local UI, like clicks the scan button.
+     *
+     * @param manual
+     *              user actually requested scan, override scanAllowedNow
+     */
+    public void recommendScanOnNextMaintenance(boolean manual) {
+        if (scanAllowedNow() || manual) {
+            if (isFiner()) {
+                logFiner("recommendScanOnNextMaintenance");
+            }
+            scanForced = true;
+            lastScan = null;
+        }
+    }
+
+    /**
+     * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
         return syncProfile.isAutoDetectLocalChanges()

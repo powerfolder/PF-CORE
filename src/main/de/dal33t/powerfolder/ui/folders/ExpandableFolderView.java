@@ -50,8 +50,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -124,7 +122,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
 
-    private MyServerClientListener myServerClientListener;
+//    private MyServerClientListener myServerClientListener;
     private MyTransferManagerListener myTransferManagerListener;
     private MyFolderRepositoryListener myFolderRepositoryListener;
     private MyNodeManagerListener myNodeManagerListener;
@@ -489,9 +487,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void registerListeners() {
-        myServerClientListener = new MyServerClientListener();
-        getController().getOSClient().addListener(myServerClientListener);
-
+//        myServerClientListener = new MyServerClientListener();
+//        getController().getOSClient().addListener(myServerClientListener);
+//
         myNodeManagerListener = new MyNodeManagerListener();
         getController().getNodeManager().addNodeManagerListener(
             myNodeManagerListener);
@@ -510,10 +508,10 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
-        if (myServerClientListener != null) {
-            getController().getOSClient().addListener(myServerClientListener);
-            myServerClientListener = null;
-        }
+//        if (myServerClientListener != null) {
+//            getController().getOSClient().addListener(myServerClientListener);
+//            myServerClientListener = null;
+//        }
         if (myNodeManagerListener != null) {
             getController().getNodeManager().removeNodeManagerListener(
                 myNodeManagerListener);
@@ -1217,29 +1215,29 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private class MyServerClientListener implements ServerClientListener {
-
-        public void login(ServerClientEvent event) {
-            // updateIconAndOS();
-        }
-
-        public void accountUpdated(ServerClientEvent event) {
-            // updateIconAndOS();
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            // updateIconAndOS();
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            // updateIconAndOS();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
-
+//    private class MyServerClientListener implements ServerClientListener {
+//
+//        public void login(ServerClientEvent event) {
+//            // updateIconAndOS();
+//        }
+//
+//        public void accountUpdated(ServerClientEvent event) {
+//            // updateIconAndOS();
+//        }
+//
+//        public void serverConnected(ServerClientEvent event) {
+//            // updateIconAndOS();
+//        }
+//
+//        public void serverDisconnected(ServerClientEvent event) {
+//            // updateIconAndOS();
+//        }
+//
+//        public boolean fireInEventDispatchThread() {
+//            return true;
+//        }
+//    }
+//
     private class MySyncFolderAction extends BaseAction {
 
         private MySyncFolderAction(Controller controller) {

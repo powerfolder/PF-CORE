@@ -1070,7 +1070,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return;
             }
         }
-
         List<Folder> scanningFolders = new ArrayList<Folder>();
         Controller controller = getController();
 

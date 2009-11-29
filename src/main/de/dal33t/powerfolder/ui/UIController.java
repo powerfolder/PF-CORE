@@ -914,8 +914,8 @@ public class UIController extends PFComponent {
             // Let other nodes scan now!
             folder.broadcastScanCommand();
 
-            // Recommend scan on this
-            folder.recommendScanOnNextMaintenance();
+            // Recommend scan on this. User request, so recommend with true.
+            folder.recommendScanOnNextMaintenance(true);
 
             // Now trigger the scan
             getController().getFolderRepository().triggerMaintenance();

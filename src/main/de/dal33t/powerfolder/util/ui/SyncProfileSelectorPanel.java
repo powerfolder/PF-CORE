@@ -197,7 +197,7 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         int iconHeight = configureButton.getIcon().getIconHeight();
         FormLayout layout = new FormLayout(
             "140dlu, 3dlu, pref, pref, pref, pref:grow", "max(pref;"
-                + iconHeight + ")");
+                + iconHeight + ')');
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
