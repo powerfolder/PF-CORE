@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -47,6 +48,7 @@ public class FolderWatcher extends PFComponent {
     private int watchID = -1;
     private NotifyListener listener;
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
+    private Map<String, FileInfo> ignoreFiles = Util.createConcurrentHashMap();
     private ReentrantLock scannerLock = new ReentrantLock();
 
     FolderWatcher(Folder folder) {
@@ -58,6 +60,47 @@ public class FolderWatcher extends PFComponent {
 
     public static boolean isSupported() {
         return Feature.WATCH_FILESYSTEM.isEnabled() && isLibLoaded();
+    }
+
+    /**
+     * Adds a file to the ingore list. Files won't get scanned by FolderWatcher
+     * until they get removed.
+     * 
+     * @param fInfo
+     */
+    void addIgnoreFile(FileInfo fInfo) {
+        if (!isSupported()) {
+            return;
+        }
+        Reject.ifNull(fInfo, "FileInfo");
+        ignoreFiles.put(fInfo.getRelativeName(), fInfo);
+        if (isFiner()) {
+            logFiner("Added to ignore: " + fInfo.toDetailString());
+        }
+    }
+
+    /**
+     * Removes a file from the ignore list. Files afterwards get automatically
+     * scanned if a file system change event occurs.
+     * 
+     * @param fInfo
+     */
+    void removeIgnoreFile(final FileInfo fInfo) {
+        if (!isSupported()) {
+            return;
+        }
+        Reject.ifNull(fInfo, "FileInfo");
+        // Delay the removal by ~500 ms because file system events occur
+        // delayed.
+        getController().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                ignoreFiles.remove(fInfo.getRelativeName());
+                if (isFiner()) {
+                    logFiner("Removed from ignore: " + fInfo.toDetailString());
+                }
+            }
+        }, 500);
     }
 
     private synchronized static boolean isLibLoaded() {
@@ -72,7 +115,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void remove() {
-        if (!isLibLoaded()) {
+        if (!isSupported()) {
             return;
         }
         if (watchID >= 0) {
@@ -87,7 +130,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void reconfigure(SyncProfile syncProfile) {
-        if (!isLibLoaded()) {
+        if (!isSupported()) {
             return;
         }
         if (!syncProfile.isAutoDetectLocalChanges()) {
@@ -113,29 +156,32 @@ public class FolderWatcher extends PFComponent {
     private class DirtyFilesScanner implements Runnable {
 
         public void run() {
-            synchronized (scannerLock) {
-                if (scannerLock.isLocked()) {
-                    // Already locked
-                    return;
-                }
-                if (dirtyFiles.isEmpty()) {
-                    return;
-                }
-                scannerLock.lock();
+            if (!scannerLock.tryLock()) {
+                // Already locked
+                return;
+            }
+            if (dirtyFiles.isEmpty()) {
+                return;
             }
             FileInfo dirtyFile = null;
             try {
+                int scanned = 0;
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
+                    if (ignoreFiles.containsKey(dirtyFile.getRelativeName())) {
+                        // Ignore.
+                        continue;
+                    }
                     FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
                     if (fileInfo == null) {
                         logWarning("Was not able to scan file: "
                             + dirtyFile.toDetailString());
                     } else {
+                        scanned++;
                         logWarning("Scaned file: " + fileInfo.toDetailString());
                     }
                 }
-                logWarning("Scanned " + dirtyFiles.size() + " dirty files");
+                logWarning("Scanned " + scanned + " dirty files");
                 dirtyFiles.clear();
             } catch (Exception e) {
                 logSevere("Unable to scan changed file: " + dirtyFile + ". "
@@ -172,6 +218,10 @@ public class FolderWatcher extends PFComponent {
                 // Ignore
                 return;
             }
+            if (ignoreFiles.containsKey(name)) {
+                // Skipping already dirty file
+                return;
+            }
             if (dirtyFiles.containsKey(name)) {
                 // Skipping already dirty file
                 return;
@@ -179,18 +229,15 @@ public class FolderWatcher extends PFComponent {
             try {
                 FileInfo lookup = lookupInstance(rootPath, name);
                 dirtyFiles.put(name, lookup);
-                synchronized (scannerLock) {
-                    if (!scannerLock.isLocked()) {
-                        getController().schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                getController().getIOProvider().startIO(
-                                    new DirtyFilesScanner());
-                            }
-                        }, 500);
-                    }
+                if (!scannerLock.isLocked()) {
+                    getController().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            getController().getIOProvider().startIO(
+                                new DirtyFilesScanner());
+                        }
+                    }, 1000);
                 }
-
             } catch (Exception e) {
                 logSevere("Unable to enqueue changed file for scan: "
                     + rootPath + ", " + name + ". " + e, e);
@@ -203,8 +250,6 @@ public class FolderWatcher extends PFComponent {
                 name = name.replace('\\', '/');
             }
             return FileInfoFactory.lookupInstance(folder.getInfo(), name);
-            // File file = new File(rootPath + File.separatorChar + name);
-            // return FileInfoFactory.lookupInstance(folder, file);
         }
     }
 

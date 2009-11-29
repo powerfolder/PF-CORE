@@ -383,9 +383,7 @@ public class Folder extends PFComponent {
                     + ".invitation"));
         }
 
-        if (Feature.WATCH_FILESYSTEM.isEnabled()) {
-            watcher = new FolderWatcher(this);
-        }
+        watcher = new FolderWatcher(this);
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -778,8 +776,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans a downloaded file, renames tempfile to real name Moves possible
-     * existing file to PowerFolder recycle bin.
+     * Scans a downloaded file, renames tempfile to real name moves possible
+     * existing file to file archive.
      * 
      * @param fInfo
      * @param tempFile
@@ -787,6 +785,15 @@ public class Folder extends PFComponent {
      *         false if any problem happend.
      */
     public boolean scanDownloadFile(FileInfo fInfo, File tempFile) {
+        try {
+            watcher.addIgnoreFile(fInfo);
+            return scanDownloadFile0(fInfo, tempFile);
+        } finally {
+            watcher.removeIgnoreFile(fInfo);
+        }
+    }
+
+    private boolean scanDownloadFile0(FileInfo fInfo, File tempFile) {
         // FIXME What happens if the file was locally modified before the
         // download finished? There should be a check here if the current local
         // version differs from the version when the download began. In that
@@ -1638,16 +1645,7 @@ public class Folder extends PFComponent {
      */
     public void shutdown() {
         logFine("shutting down folder " + this);
-
-        // Remove listeners, not bothering them by boring shutdown events
-        // disabled this so the ui is updated (more or less) that the folders
-        // are disabled from debug panel
-        // ListenerSupportFactory.removeAllListeners(folderListenerSupport);
-
-        if (watcher != null) {
-            watcher.remove();
-        }
-
+        watcher.remove();
         if (dirty) {
             persist();
         }
@@ -1974,9 +1972,7 @@ public class Folder extends PFComponent {
         if (syncProfile.isSyncDeletion()) {
             triggerSyncRemoteDeletedFiles(members.keySet(), false);
         }
-        if (watcher != null) {
-            watcher.reconfigure(syncProfile);
-        }
+        watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
         fireSyncProfileChanged();
     }
@@ -3076,20 +3072,24 @@ public class Folder extends PFComponent {
             logFine("Deleting file " + fileInfo.toDetailString()
                 + " moving to archive");
         }
-        if (fileInfo != null) {
-            try {
-                archiver.archive(fileInfo, file, false);
-            } catch (IOException e) {
-                logSevere("Unable to move file to archive: " + file + ". " + e,
-                    e);
+        try {
+            watcher.addIgnoreFile(newFileInfo);
+            if (fileInfo != null) {
+                try {
+                    archiver.archive(fileInfo, file, false);
+                } catch (IOException e) {
+                    logSevere("Unable to move file to archive: " + file + ". "
+                        + e, e);
+                }
             }
+            if (file.exists() && !file.delete()) {
+                logSevere("Unable to delete file " + file);
+                return false;
+            }
+            return true;
+        } finally {
+            watcher.removeIgnoreFile(newFileInfo);
         }
-        if (file.exists() && !file.delete()) {
-            logSevere("Unable to delete file " + file);
-            return false;
-        }
-        return true;
-
     }
 
     /**

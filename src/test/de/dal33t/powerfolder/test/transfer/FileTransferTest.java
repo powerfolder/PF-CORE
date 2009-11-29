@@ -27,17 +27,19 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -429,6 +431,88 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
+    public void testMultipleFilesCopyWithFolderWatcher() {
+        // Register listeners
+        Feature.WATCH_FILESYSTEM.enable();
+        LoggingManager.setConsoleLogging(Level.WARNING);
+        getFolderAtLisa().setSyncProfile(
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
+        final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
+        getContollerBart().getTransferManager().addListener(bartsListener);
+        final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
+        getContollerLisa().getTransferManager().addListener(lisasListener);
+
+        final int nFiles = 35;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        }
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtBart().getKnownItemCount() == 35;
+            }
+
+            public String message() {
+                return "Known files at bart: "
+                    + getFolderAtBart().getKnownItemCount();
+            }
+        });
+        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
+        assertEquals("Connected nodes at bart: "
+            + getContollerBart().getNodeManager().getConnectedNodes(), 1,
+            getContollerBart().getNodeManager().getConnectedNodes().size());
+        assertEquals("Connected nodes at lisa: "
+            + getContollerLisa().getNodeManager().getConnectedNodes(), 1,
+            getContollerLisa().getNodeManager().getConnectedNodes().size());
+
+        // Wait for copy (timeout 50)
+        TestHelper.waitForCondition(200, new ConditionWithMessage() {
+            public boolean reached() {
+                return lisasListener.downloadRequested >= nFiles
+                    && lisasListener.downloadCompleted >= nFiles
+                    && bartsListener.uploadCompleted >= nFiles;
+            }
+
+            public String message() {
+                return "lisa dl req: " + lisasListener.downloadRequested
+                    + ", lisa dl comp: " + lisasListener.downloadCompleted
+                    + ", bart ul comp: " + bartsListener.uploadCompleted
+                    + " should be " + nFiles;
+            }
+        });
+
+        // Check correct event fireing
+        assertEquals(0, bartsListener.uploadAborted);
+        assertEquals(0, bartsListener.uploadBroken);
+        assertEquals(nFiles, bartsListener.uploadRequested);
+        assertEquals(nFiles, bartsListener.uploadStarted);
+        assertEquals(nFiles, bartsListener.uploadCompleted);
+
+        // Check correct event fireing
+        assertEquals(nFiles, lisasListener.downloadRequested);
+        // We can't rely on that all downloads have been queued.
+        // Might be started fast! So now queued message is sent
+        // assertEquals(nFiles, tm2Listener.downloadQueued);
+        assertEquals(nFiles, lisasListener.downloadStarted);
+        assertEquals(nFiles, lisasListener.downloadCompleted);
+        assertEquals(0, lisasListener.downloadAborted);
+        assertEquals(0, lisasListener.downloadBroken);
+        assertEquals(0, lisasListener.downloadsCompletedRemoved);
+
+        // Test ;)
+        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
+        // test physical files (1 + 1 system dir)
+        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().list().length);
+
+        // No active downloads?!
+        assertEquals(0, getContollerLisa().getTransferManager()
+            .countActiveDownloads());
+
+        clearCompletedDownloadsAtLisa();
+        assertEquals(nFiles, lisasListener.downloadsCompletedRemoved);
+
+        TestHelper.assertIncompleteFilesGone(this);
+    }
+
     public void testMultipleMultipleFilesCopy() throws Exception {
         for (int i = 0; i < 10; i++) {
             testMultipleFilesCopy();
@@ -563,7 +647,8 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testMultipleManPow2() throws Exception {
-        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
+        // Logger l =
+        // Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
         // l.setFilter(null);
         // l.setLevel(Level.ALL);
         // ConsoleHandler ch = new ConsoleHandler();
@@ -740,7 +825,8 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void xtestMultipleResumeTransfer() throws Exception {
-        // Logger l = Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
+        // Logger l =
+        // Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
         // l.setFilter(null);
         // l.setLevel(Level.ALL);
         // ConsoleHandler ch = new ConsoleHandler();
