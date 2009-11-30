@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -126,7 +127,7 @@ public class SyncProfile implements Serializable {
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, AUTOMATIC_SYNCHRONIZATION_10MIN,
         MANUAL_SYNCHRONIZATION, BACKUP_SOURCE, BACKUP_SOURCE_HOUR,
-            BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
@@ -533,6 +534,33 @@ public class SyncProfile implements Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * If 'backup source' for lots of files, switch to 'backup source hour'. If
+     * 'auto sync' for lots of files, switch to 'auto sync 10min'.
+     * 
+     * @param syncProfile
+     * @param fileCount
+     *            the number of files
+     * @param useFilesystemWatch
+     *            if file system watchting is enabled.
+     * @return the new sync profile or the original one if now adjustment has
+     *         been made.
+     */
+    public static SyncProfile adjust(SyncProfile syncProfile, int fileCount,
+        boolean useFilesystemWatch)
+    {
+        boolean slowDetection = fileCount > 10000 || useFilesystemWatch;
+        if (slowDetection && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            return SyncProfile.BACKUP_SOURCE_HOUR;
+        }
+        if (slowDetection
+            && syncProfile.equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION))
+        {
+            return SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
+        }
+        return syncProfile;
     }
 
     /**

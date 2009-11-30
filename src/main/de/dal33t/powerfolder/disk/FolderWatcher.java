@@ -105,7 +105,7 @@ public class FolderWatcher extends PFComponent {
         }, 500);
     }
 
-    private synchronized static boolean isLibLoaded() {
+    public synchronized static boolean isLibLoaded() {
         if (LIB_LOADED == null) {
             try {
                 LIB_LOADED = OSUtil.loadLibrary(JNotify.class, "jnotify");
