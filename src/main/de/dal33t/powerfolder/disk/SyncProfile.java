@@ -551,7 +551,7 @@ public class SyncProfile implements Serializable {
     public static SyncProfile adjust(SyncProfile syncProfile, int fileCount,
         boolean useFilesystemWatch)
     {
-        boolean slowDetection = fileCount > 10000 || useFilesystemWatch;
+        boolean slowDetection = fileCount > 5000 || useFilesystemWatch;
         if (slowDetection && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             return SyncProfile.BACKUP_SOURCE_HOUR;
         }
