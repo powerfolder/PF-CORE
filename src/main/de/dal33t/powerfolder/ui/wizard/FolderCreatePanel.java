@@ -254,15 +254,16 @@ public class FolderCreatePanel extends PFWizardPanel {
     private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
         Integer fileCount = (Integer) getWizardContext().getAttribute(
             FILE_COUNT);
-        if (fileCount != null && fileCount > 10000
-            && syncProfile.equals(SyncProfile.BACKUP_SOURCE))
-        {
-            syncProfile = SyncProfile.BACKUP_SOURCE_HOUR;
+        boolean slowDetection = (fileCount != null && fileCount > 10000)
+            || ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
+                .getValueBoolean(getController());
+        if (slowDetection && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
+            return SyncProfile.BACKUP_SOURCE_HOUR;
         }
-        if (fileCount != null && fileCount > 10000
+        if (slowDetection
             && syncProfile.equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION))
         {
-            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
+            return SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
         }
         return syncProfile;
     }
@@ -425,7 +426,7 @@ public class FolderCreatePanel extends PFWizardPanel {
             String filePath = folderSettings.getLocalBaseDir()
                 .getAbsolutePath();
 
-            if (!WinUtils.isSupported() ) {
+            if (!WinUtils.isSupported()) {
                 log.warning("WinUtils not supported");
                 return;
             }
