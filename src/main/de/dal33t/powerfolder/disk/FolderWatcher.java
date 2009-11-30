@@ -48,7 +48,8 @@ public class FolderWatcher extends PFComponent {
     private int watchID = -1;
     private NotifyListener listener;
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
-    private Map<String, FileInfo> ignoreFiles = Util.createConcurrentHashMap();
+    private Map<FileInfo, FileInfo> ignoreFiles = Util
+        .createConcurrentHashMap();
     private ReentrantLock scannerLock = new ReentrantLock();
 
     FolderWatcher(Folder folder) {
@@ -75,7 +76,7 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         Reject.ifNull(fInfo, "FileInfo");
-        ignoreFiles.put(fInfo.getRelativeName(), fInfo);
+        ignoreFiles.put(fInfo, fInfo);
         if (isFiner()) {
             logFiner("Added to ignore: " + fInfo.toDetailString());
         }
@@ -170,7 +171,7 @@ public class FolderWatcher extends PFComponent {
                 int scanned = 0;
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
-                    if (ignoreFiles.containsKey(dirtyFile.getRelativeName())) {
+                    if (ignoreFiles.containsKey(dirtyFile)) {
                         // Ignore.
                         continue;
                     }
@@ -220,16 +221,16 @@ public class FolderWatcher extends PFComponent {
                 // Ignore
                 return;
             }
-            if (ignoreFiles.containsKey(name)) {
-                // Skipping already dirty file
-                return;
-            }
             if (dirtyFiles.containsKey(name)) {
                 // Skipping already dirty file
                 return;
             }
             try {
                 FileInfo lookup = lookupInstance(rootPath, name);
+                if (ignoreFiles.containsKey(lookup)) {
+                    // Skipping ignored file
+                    return;
+                }
                 dirtyFiles.put(name, lookup);
                 if (!scannerLock.isLocked()) {
                     getController().schedule(new TimerTask() {
