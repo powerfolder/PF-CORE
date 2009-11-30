@@ -38,10 +38,9 @@ import java.util.Map;
 import java.util.Collection;
 
 /**
- * Holds all Chat data. A ChatBox per Member.
- * A ChatBox is a collection of ChatLine s.
- * A ChatLine has a fromMember and a text.
- *
+ * Holds all Chat data. A ChatBox per Member. A ChatBox is a collection of
+ * ChatLine s. A ChatLine has a fromMember and a text.
+ * 
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  * @version $Revision: 1.1 $
  */
@@ -55,12 +54,14 @@ public class ChatModel {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public ChatModel(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         this.controller = controller;
+        chatModelListeners = ListenerSupportFactory
+            .createListenerSupport(ChatModelListener.class);
         repository = controller.getFolderRepository();
         NodeManager nodeManager = controller.getNodeManager();
         MessageListener messageListener = new MyMessageListener();
@@ -68,20 +69,23 @@ public class ChatModel {
         nodeManager.addNodeManagerListener(new MyNodeManagerListener());
         folderMembershipListener = new MyFolderMembershipListener();
         addListenerToExsistingFolders();
-        repository.addFolderRepositoryListener(new MyFolderRepositoryListener());
-        chatModelListeners = ListenerSupportFactory.createListenerSupport(
-                ChatModelListener.class);
+        repository
+            .addFolderRepositoryListener(new MyFolderRepositoryListener());
 
     }
 
     /**
      * Adds a message to a ChatBox about with member from a member
-     *
-     * @param toMember The other Member that is chatted with
-     * @param fromMember The member that typed the message (myself or the other member)
-     * @param message The actual line of text
+     * 
+     * @param toMember
+     *            The other Member that is chatted with
+     * @param fromMember
+     *            The member that typed the message (myself or the other member)
+     * @param message
+     *            The actual line of text
      */
-    public void addChatLine(Member toMember, Member fromMember, String message) {
+    public void addChatLine(Member toMember, Member fromMember, String message)
+    {
         ChatBox chat = getChatBox(toMember);
         ChatLine chatLine = new ChatLine(fromMember, message);
         chat.addLine(chatLine);
@@ -90,7 +94,7 @@ public class ChatModel {
 
     /**
      * Adds a status line about a member.
-     *
+     * 
      * @param member
      * @param message
      */
@@ -103,8 +107,9 @@ public class ChatModel {
 
     /**
      * Returns true if there is a chat session with the given member.
-     *
-     * @param other the other member that is chatted with
+     * 
+     * @param other
+     *            the other member that is chatted with
      * @return true if there is a chat
      */
     public boolean hasChatBoxWith(Member other) {
@@ -113,8 +118,9 @@ public class ChatModel {
 
     /**
      * Get all chatlines from a chat with a member
-     *
-     * @param member Which member to get the chat lines for
+     * 
+     * @param member
+     *            Which member to get the chat lines for
      * @return A array of all chat lines, first item is the oldest chat line.
      */
     public ChatLine[] getChatText(Member member) {
@@ -138,7 +144,7 @@ public class ChatModel {
 
     /**
      * Add a listener that will receive events if chatlines are received
-     *
+     * 
      * @param cmListener
      */
     public void addChatModelListener(ChatModelListener cmListener) {
@@ -147,13 +153,13 @@ public class ChatModel {
 
     /**
      * Calls all listeners
-     *
+     * 
      * @param source
      * @param line
      */
     private void fireChatModelChanged(Member source, ChatLine line) {
-        chatModelListeners.chatChanged(new ChatModelEvent(source, line.getText(),
-                line.isStatus()));
+        chatModelListeners.chatChanged(new ChatModelEvent(source, line
+            .getText(), line.isStatus()));
     }
 
     /**
@@ -169,7 +175,8 @@ public class ChatModel {
     // Our listner to all folder creation/removing event, adds and removes our
     // listener if one is created of removed.
     private class MyFolderRepositoryListener implements
-            FolderRepositoryListener {
+        FolderRepositoryListener
+    {
 
         public void folderCreated(FolderRepositoryEvent e) {
             Folder folder = e.getFolder();
@@ -197,24 +204,24 @@ public class ChatModel {
      * messages in the chat
      */
     private class MyFolderMembershipListener implements
-            FolderMembershipListener {
+        FolderMembershipListener
+    {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
             Member node = folderEvent.getMember();
             String statusMessage = Translation.getTranslation(
-                    "chat_panel.member_joined_folder_at_time", node.getNick(),
-                    folderEvent.getFolder().getName(),
-                    Format.formatTimeShort(new Date()))
-                    + '\n';
+                "chat_panel.member_joined_folder_at_time", node.getNick(),
+                folderEvent.getFolder().getName(), Format
+                    .formatTimeShort(new Date())) + '\n';
             addStatusChatLine(node, statusMessage);
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
             Member node = folderEvent.getMember();
             String statusMessage = Translation.getTranslation(
-                    "chat_panel.member_left_folder_at_time", node.getNick(),
-                    folderEvent.getFolder().getName(),
-                    Format.formatTimeShort(new Date())) + '\n';
+                "chat_panel.member_left_folder_at_time", node.getNick(),
+                folderEvent.getFolder().getName(), Format
+                    .formatTimeShort(new Date())) + '\n';
             addStatusChatLine(node, statusMessage);
         }
 
@@ -285,9 +292,8 @@ public class ChatModel {
     private class MyMessageListener implements MessageListener {
 
         /**
-         * Called if a message is received from a remote Member.
-         * This can be any type of message.
-         * We only handle chat messages.
+         * Called if a message is received from a remote Member. This can be any
+         * type of message. We only handle chat messages.
          */
         public void handleMessage(Member source, Message message) {
             if (message instanceof MemberChatMessage) {
