@@ -1993,14 +1993,14 @@ public class Folder extends PFComponent {
      * ATTENTION: Does not force a scan if continuous auto-detection is disabled
      * or scheduled sync is setup unless manual.
      *
-     * 'manual' sould only be true if the user actually requests a scan from
+     * 'force' should only be true if the user actually requests a scan from
      * the local UI, like clicks the scan button.
      *
-     * @param manual
+     * @param force
      *              user actually requested scan, override scanAllowedNow
      */
-    public void recommendScanOnNextMaintenance(boolean manual) {
-        if (scanAllowedNow() || manual) {
+    public void recommendScanOnNextMaintenance(boolean force) {
+        if (scanAllowedNow() || force) {
             if (isFiner()) {
                 logFiner("recommendScanOnNextMaintenance");
             }
