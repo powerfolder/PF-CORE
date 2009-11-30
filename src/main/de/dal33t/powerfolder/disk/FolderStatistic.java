@@ -457,12 +457,15 @@ public class FolderStatistic extends PFComponent {
         }
 
         if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
-            .getSyncProfile()))
+            .getSyncProfile())
+            || SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN.equals(folder
+                .getSyncProfile()))
         {
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();
         } else if (SyncProfile.HOST_FILES.equals(folder.getSyncProfile())
-            || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile()))
+            || SyncProfile.BACKUP_SOURCE.equals(folder.getSyncProfile())
+            || SyncProfile.BACKUP_SOURCE_HOUR.equals(folder.getSyncProfile()))
         {
             // In these cases only remote sides matter.
             // Calc maximum sync % of remote sides.
