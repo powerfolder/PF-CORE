@@ -125,7 +125,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
                 // No
                 continue;
             }
-            if (!fileInfoFilter.isRetained(fileInfo)) {
+            if (fileInfoFilter.isExcluded(fileInfo)) {
                 continue;
             }
             if (fileInfo.isDiretory()) {
