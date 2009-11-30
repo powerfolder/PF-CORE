@@ -41,7 +41,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -1151,7 +1150,8 @@ public class Folder extends PFComponent {
                                 .isDirectory());
                     }
 
-                    dao.store(null, addFile(fInfo));
+                    fInfo = addFile(fInfo);
+                    dao.store(null, fInfo);
 
                     // update directory
                     commissionRootFolder();
@@ -1182,11 +1182,10 @@ public class Folder extends PFComponent {
                     getController(), file);
                 if (syncFile != null) {
                     dao.store(null, syncFile);
+                    // update directory
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(), syncFile);
                 }
-
-                // update directory
-                commissionRootFolder();
-                rootDirectory.add(getController().getMySelf(), fInfo);
 
                 return syncFile != null ? syncFile : dbFile;
             }
@@ -1202,7 +1201,7 @@ public class Folder extends PFComponent {
      *            the directory
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    public FileInfo scanDirectory(DirectoryInfo dirInfo, File dir) {
+    public FileInfo scanDirectory(FileInfo dirInfo, File dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
         if (isFiner()) {
             logFiner("Scanning dir: " + dirInfo.toDetailString());
@@ -1287,7 +1286,8 @@ public class Folder extends PFComponent {
                     // .getVersion());
                     // }
 
-                    dao.store(null, addFile(dirInfo));
+                    dirInfo = addFile(dirInfo);
+                    dao.store(null, dirInfo);
 
                     // update directory
                     commissionRootFolder();
@@ -1413,7 +1413,16 @@ public class Folder extends PFComponent {
      * @param fInfos
      */
     public void removeFilesLocal(FileInfo... fInfos) {
-        if (fInfos == null || fInfos.length < 0) {
+        removeFilesLocal(Arrays.asList(fInfos));
+    }
+
+    /**
+     * Removes files from the local disk
+     * 
+     * @param fInfos
+     */
+    public void removeFilesLocal(Collection<FileInfo> fInfos) {
+        if (fInfos == null || fInfos.size() <= 0) {
             throw new IllegalArgumentException("Files to delete are empty");
         }
 
@@ -2270,6 +2279,9 @@ public class Folder extends PFComponent {
     {
         if (!remoteFile.isDeleted()) {
             // Not interesting...
+            return;
+        }
+        if (diskItemFilter.isExcluded(remoteFile)) {
             return;
         }
         boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
@@ -3133,6 +3145,9 @@ public class Folder extends PFComponent {
             if (memberFiles != null) {
                 for (FileInfo remoteFile : memberFiles) {
                     if (remoteFile.isDeleted() && !includeDeleted) {
+                        continue;
+                    }
+                    if (diskItemFilter.isExcluded(remoteFile)) {
                         continue;
                     }
 
