@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -314,7 +315,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
     }
 
-    public void addAll(Member member, FileInfo[] fileInfos) {
+    public void addAll(Member member, FileInfo... fileInfos) {
+        addAll(member, Arrays.asList(fileInfos));
+    }
+
+    public void addAll(Member member, Collection<FileInfo> fileInfos) {
         for (FileInfo fileInfo : fileInfos) {
             add(member, fileInfo);
         }

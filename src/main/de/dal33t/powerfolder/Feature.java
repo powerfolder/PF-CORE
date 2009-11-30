@@ -162,7 +162,7 @@ public enum Feature {
         Feature.SECURITY_CHECKS.enable();
         Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
-        Feature.WATCH_FILESYSTEM.enable();
+   //     Feature.WATCH_FILESYSTEM.enable();
 
     }
 }

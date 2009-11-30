@@ -288,6 +288,7 @@ public class ScanFolderTest extends ControllerTestCase {
 
         scanFolder();
         assertEquals(3, getFolder().getKnownItemCount());
+        assertEquals(1, getFolder().getKnownFiles().size());
         assertEquals(0, getFolder().getKnownFiles().iterator().next()
             .getVersion());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());

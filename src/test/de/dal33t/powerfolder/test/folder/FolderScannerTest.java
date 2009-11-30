@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.File;
 import java.util.Collection;
 
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -129,7 +130,9 @@ public class FolderScannerTest extends ControllerTestCase {
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
 
         // Find a file rename and movement!
-        assertEquals(2, result.getMovedFiles().size());
+        if (Feature.CORRECT_MOVEMENT_DETECTION.isEnabled()) {
+            assertEquals(2, result.getMovedFiles().size());
+        }
     }
 
     private ScanResult scanFolderWaitIfBusy(final FolderScanner folderScanner) {

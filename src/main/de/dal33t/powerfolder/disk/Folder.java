@@ -549,68 +549,31 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
 
+                commissionRootFolder();
+
                 // new files
-                for (FileInfo newFileInfo : scanResult.getNewFiles()) {
-                    if (isFiner()) {
-                        logFiner("Adding " + scanResult.getNewFiles().size()
-                            + " to directory");
-                    }
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), newFileInfo);
+                if (isFiner()) {
+                    logFiner("Adding " + scanResult.getNewFiles().size()
+                        + " to directory");
                 }
-                dao.store(null, scanResult.getNewFiles());
+                rootDirectory.addAll(getController().getMySelf(),
+                    scanResult.newFiles);
+                dao.store(null, scanResult.newFiles);
 
                 // deleted files
-                Collection<FileInfo> fiList = new LinkedList<FileInfo>();
-                for (FileInfo deletedFileInfo : scanResult.getDeletedFiles()) {
-                    FileInfo fileInfo = FileInfoFactory.deletedFile(
-                        deletedFileInfo, getController().getMySelf().getInfo(),
-                        new Date());
-                    fiList.add(fileInfo);
-
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), fileInfo);
-                }
-                scanResult.deletedFiles = fiList;
-                dao.store(null, fiList);
+                rootDirectory.addAll(getController().getMySelf(),
+                    scanResult.deletedFiles);
+                dao.store(null, scanResult.deletedFiles);
 
                 // restored files
-                fiList = new LinkedList<FileInfo>();
-                for (FileInfo restoredFileInfo : scanResult.getRestoredFiles())
-                {
-                    File diskFile = getDiskFile(restoredFileInfo);
-                    FileInfo newInfo = FileInfoFactory.modifiedFile(
-                        restoredFileInfo,
-                        getController().getFolderRepository(), diskFile,
-                        getController().getMySelf().getInfo());
-                    fiList.add(newInfo);
-
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), newInfo);
-                }
-                scanResult.restoredFiles = fiList;
-                dao.store(null, fiList);
+                rootDirectory.addAll(getController().getMySelf(),
+                    scanResult.restoredFiles);
+                dao.store(null, scanResult.restoredFiles);
 
                 // changed files
-                fiList = new LinkedList<FileInfo>();
-                for (FileInfo changedFileInfo : scanResult.getChangedFiles()) {
-                    File diskFile = getDiskFile(changedFileInfo);
-                    FileInfo newInfo = FileInfoFactory.modifiedFile(
-                        changedFileInfo, getController().getFolderRepository(),
-                        diskFile, getController().getMySelf().getInfo());
-                    fiList.add(newInfo);
-
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), newInfo);
-
-                    scanResult.restoredFiles = fiList;
-                    dao.store(null, fiList);
-
-                    // DISABLED because of #644
-                    // changedFileInfo.invalidateFilePartsRecord();
-                }
-                scanResult.changedFiles = fiList;
-                dao.store(null, fiList);
+                rootDirectory.addAll(getController().getMySelf(),
+                    scanResult.changedFiles);
+                dao.store(null, scanResult.changedFiles);
             }
         }
 
@@ -1991,13 +1954,12 @@ public class Folder extends PFComponent {
      * Useful when files are detected that have been changed.
      * <p>
      * ATTENTION: Does not force a scan if continuous auto-detection is disabled
-     * or scheduled sync is setup unless manual.
-     *
-     * 'force' should only be true if the user actually requests a scan from
-     * the local UI, like clicks the scan button.
-     *
+     * or scheduled sync is setup unless manual. 'force' should only be true if
+     * the user actually requests a scan from the local UI, like clicks the scan
+     * button.
+     * 
      * @param force
-     *              user actually requested scan, override scanAllowedNow
+     *            user actually requested scan, override scanAllowedNow
      */
     public void recommendScanOnNextMaintenance(boolean force) {
         if (scanAllowedNow() || force) {

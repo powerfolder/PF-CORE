@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -274,13 +275,17 @@ public class FolderScanner extends PFComponent {
             }
 
             // Build scanresult
-            // result.setChangedFiles(changedFiles);
-            // result.setNewFiles(newFiles);
-            // FIX for Mac OS X. empty keyset causes problems.
-            synchronized (remaining) {
-                currentScanResult.deletedFiles.addAll(!remaining.values()
-                    .isEmpty() ? remaining.values() : Collections.EMPTY_LIST);
+
+            for (FileInfo fileInfo : remaining.values()) {
+                // Do not perform FileInfo.syncFromDiskIfRequired
+                // This would leave to extra I/O for all files that had been
+                // deleted in the past on every scan.
+                FileInfo deletedFileInfo = FileInfoFactory
+                    .deletedFile(fileInfo, getController().getMySelf()
+                        .getInfo(), new Date());
+                currentScanResult.deletedFiles.add(deletedFileInfo);
             }
+
             // result.setMovedFiles(moved);
             // result.setProblemFiles(problemFiles);
             // result.setRestoredFiles(restoredFiles);
@@ -532,15 +537,6 @@ public class FolderScanner extends PFComponent {
     private boolean scanFile(File fileToScan, String currentDirName) {
         Reject.ifNull(currentScanningFolder,
             "currentScanningFolder must not be null");
-
-        // logWarning("Scanning " + fileToScan.getAbsolutePath());
-        // if (!fileToScan.exists()) {
-        // hardware no longer available
-        // return false;
-        // }
-
-        // logFiner(
-        // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
         currentScanResult.incrementTotalFilesCount();
         String filename;
         if (currentDirName.length() == 0) {
@@ -548,15 +544,52 @@ public class FolderScanner extends PFComponent {
         } else {
             filename = currentDirName + '/' + fileToScan.getName();
         }
+        return scanDiskItem(fileToScan, filename, false);
+    }
 
-        // this is a incomplete fileinfo just find one fast in the remaining
-        // list
-        // FileInfo fInfo = FileInfoFactory.lookupInstance(currentScanningFolder
-        // .getInfo(), filename);
+    /**
+     * scans a single directory.
+     * 
+     * @param dirToScan
+     *            the disk directory to examine.
+     * @param currentDirName
+     *            The location the use when creating a FileInfo. This is that
+     *            same for each file in the same directory and so not neccesary
+     *            to "calculate" this per file.
+     * @return true on success and false on IOError (disk failure or file
+     *         removed in the meantime)
+     */
+    private boolean scanDirectory(File dirToScan, String currentDirName) {
+        Reject.ifNull(currentScanningFolder,
+            "currentScanningFolder must not be null");
+        if (isFiner()) {
+            logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
+        }
+        currentScanResult.incrementTotalFilesCount();
+        return scanDiskItem(dirToScan, currentDirName, true);
+    }
+
+    /**
+     * scans a single file.
+     * 
+     * @param fileToScan
+     *            the disk file to examine.
+     * @param currentDirName
+     *            The location the use when creating a FileInfo. This is that
+     *            same for each file in the same directory and so not neccesary
+     *            to "calculate" this per file.
+     * @return true on success and false on IOError (disk failure or file
+     *         removed in the meantime)
+     */
+    private boolean scanDiskItem(File fileToScan, String filename,
+        boolean directory)
+    {
+        Reject.ifNull(currentScanningFolder,
+            "currentScanningFolder must not be null");
 
         // #1531 / #1804
         FileInfo exists = remaining.remove(filename);
-        if (exists == null && OSUtil.isWindowsSystem()) {
+        if (exists == null && FileInfo.IGNORE_CASE) {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
                 if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
@@ -579,146 +612,47 @@ public class FolderScanner extends PFComponent {
                 }
             }
         }
-
-        if (exists != null) {// file was known
-            if (exists.isDeleted()) {
-                // file restored
-                if (!exists.inSyncWithDisk(fileToScan)) {
-                    if (isInfo()) {
-                        logInfo("File restored detected: "
-                            + exists.toDetailString() + ". On disk: size: "
-                            + fileToScan.length() + ", lastMod: "
-                            + fileToScan.lastModified());
+        try {
+            if (exists != null) {// file was known
+                if (exists.isDeleted()) {
+                    // file restored
+                    FileInfo restoredFile = exists.syncFromDiskIfRequired(
+                        getController(), fileToScan);
+                    if (restoredFile != null) {
+                        if (isInfo()) {
+                            logInfo("Restored detected: "
+                                + exists.toDetailString() + ". On disk: size: "
+                                + fileToScan.length() + ", lastMod: "
+                                + fileToScan.lastModified());
+                        }
+                        currentScanResult.restoredFiles.add(restoredFile);
                     }
-                    currentScanResult.restoredFiles.add(exists);
+                } else {
+                    FileInfo changedFile = exists.syncFromDiskIfRequired(
+                        getController(), fileToScan);
+                    if (changedFile != null) {
+                        if (isInfo()) {
+                            logInfo("Change detected: "
+                                + exists.toDetailString() + ". On disk: size: "
+                                + fileToScan.length() + ", lastMod: "
+                                + fileToScan.lastModified());
+                        }
+                        currentScanResult.changedFiles.add(changedFile);
+                    }
                 }
             } else {
-                boolean changed = !exists.inSyncWithDisk(fileToScan);
-                if (changed) {
-                    if (isInfo()) {
-                        logInfo("Changed file detected: "
-                            + exists.toDetailString() + ". On disk: size: "
-                            + fileToScan.length() + ", lastMod: "
-                            + fileToScan.lastModified());
-                    }
-                    currentScanResult.changedFiles.add(exists);
-                }
-            }
-        } else {
-            // file is new
-            try {
+                // file is new
                 FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                    fileToScan, getController().getMySelf().getInfo(), false);
+                    fileToScan, getController().getMySelf().getInfo(),
+                    directory);
                 currentScanResult.newFiles.add(info);
                 if (isFiner()) {
-                    logFiner("New file found: " + info.toDetailString());
-                }
-            } catch (Exception e) {
-                logWarning("Unable to scan file: " + fileToScan + ". " + e, e);
-                unableToScanFiles.add(fileToScan);
-            }
-        
-        }
-        return true;
-    }
-
-    /**
-     * scans a single directory.
-     * 
-     * @param dirToScan
-     *            the disk directory to examine.
-     * @param currentDirName
-     *            The location the use when creating a FileInfo. This is that
-     *            same for each file in the same directory and so not neccesary
-     *            to "calculate" this per file.
-     * @return true on success and false on IOError (disk failure or file
-     *         removed in the meantime)
-     */
-    private boolean scanDirectory(File dirToScan, String currentDirName) {
-        Reject.ifNull(currentScanningFolder,
-            "currentScanningFolder must not be null");
-        if (isFiner()) {
-            logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
-        }
-        // logWarning("Scanning " + fileToScan.getAbsolutePath());
-        // if (!dirToScan.exists()) {
-        // // hardware no longer available
-        // return false;
-        // }
-
-        // logFiner(
-        // "scanFile: " + fileToScan + " curdirname: " + currentDirName);
-        currentScanResult.incrementTotalFilesCount();
-        String pathname = currentDirName;
-
-        // this is a incomplete fileinfo just find one fast in the remaining
-        // list
-        // DirectoryInfo dirInfo =
-        // DirectoryInfo.getTemplate(currentScanningFolder
-        // .getInfo(), pathname);
-
-        // #1531 / #1804
-        FileInfo exists = remaining.remove(pathname);
-        // logWarning("Existing dir for " + dirInfo + ": " + exists +
-        // " remaining: " + remaining);
-        if (exists == null && OSUtil.isWindowsSystem()) {
-            // Try harder, same file with the
-            for (FileInfo otherFInfo : remaining.values()) {
-                if (otherFInfo.getRelativeName().equalsIgnoreCase(pathname)) {
-                    logWarning("Found local file/dir with diffrent name-case in db. file: "
-                        + dirToScan.getAbsolutePath()
-                        + ", dbDir: "
-                        + otherFInfo.toDetailString());
-                    // if (pathname.equals(
-                    // otherFInfo.getRelativeName())
-                    // && !dirInfo.equals(otherFInfo)
-                    // && otherFInfo.isDiretory())
-                    // {
-                    // throw new RuntimeException(
-                    // "Bad failure: DirectoryInfos not equal. "
-                    // + dirInfo.toDetailString()
-                    // + " and "
-                    // + otherFInfo.toDetailString()
-                    // + " Probably FolderInfo objects or type are not equal?");
-                    // }
-                    remaining.remove(otherFInfo.getRelativeName());
-                    exists = otherFInfo;
+                    logFiner("New found: " + info.toDetailString());
                 }
             }
-        }
-
-        if (exists != null) {// file was known
-            if (exists.isDeleted()) {
-                // file restored
-                if (!exists.inSyncWithDisk(dirToScan)) {
-                    if (isInfo()) {
-                        logInfo("Directory restored detected: "
-                            + exists.toDetailString() + ". On disk: size: "
-                            + dirToScan.length() + ", lastMod: "
-                            + dirToScan.lastModified());
-                    }
-                    currentScanResult.restoredFiles.add(exists);
-                }
-            } else {
-                boolean changed = !exists.inSyncWithDisk(dirToScan);
-                if (changed) {
-                    if (isInfo()) {
-                        logInfo("Changed directory detected: "
-                            + exists.toDetailString() + ". On disk: size: "
-                            + dirToScan.length() + ", lastMod: "
-                            + dirToScan.lastModified());
-                    }
-                    currentScanResult.changedFiles.add(exists);
-                }
-            }
-        } else {
-            // is new
-            FileInfo info = FileInfoFactory.newFile(currentScanningFolder,
-                dirToScan, getController().getMySelf().getInfo(), true);
-            currentScanResult.newFiles.add(info);
-            if (isFiner()) {
-                logFiner("New directory found: " + info.toDetailString());
-            }
+        } catch (Exception e) {
+            logWarning("Unable to scan: " + fileToScan + ". " + e, e);
+            unableToScanFiles.add(fileToScan);
         }
         return true;
     }
