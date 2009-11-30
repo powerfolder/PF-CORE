@@ -55,6 +55,8 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderWatcher;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -82,7 +84,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
-    private JCheckBox useFileSystemWatchBox;
+    private JCheckBox useWatchFileSystemBox;
 
     private JTextField locationTF;
     private ValueModel locationModel;
@@ -219,14 +221,16 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
                 .getValueBoolean(getController()));
 
-        useFileSystemWatchBox = SimpleComponentFactory
+        useWatchFileSystemBox = SimpleComponentFactory
             .createCheckBox(Translation
                 .getTranslation("preferences.dialog.filesystem.watch"));
-        useFileSystemWatchBox.setToolTipText(Translation
+        useWatchFileSystemBox.setToolTipText(Translation
             .getTranslation("preferences.dialog.filesystem.watch.tooltip"));
-        useFileSystemWatchBox
+        useWatchFileSystemBox
             .setSelected(ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
-                .getValueBoolean(getController()));
+                .getValueBoolean(getController())
+                && FolderWatcher.isLibLoaded());
+        useWatchFileSystemBox.setEnabled(FolderWatcher.isLibLoaded());
 
         lanList = new LANList(getController());
         lanList.load();
@@ -384,8 +388,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(useFileSystemWatchBox, cc.xyw(3, row, 2));
-            
+            builder.add(useWatchFileSystemBox, cc.xyw(3, row, 2));
+
             row += 2;
             builder.add(verboseBox, cc.xyw(3, row, 2));
 
@@ -504,10 +508,25 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
 
         current = ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
             .getValueBoolean(getController());
-        if (current != useFileSystemWatchBox.isSelected()) {
+        boolean selected = useWatchFileSystemBox.isSelected();
+        if (current != useWatchFileSystemBox.isSelected()) {
             ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(
-                getController(), Boolean.toString(useFileSystemWatchBox
-                    .isSelected()));
+                getController(), useWatchFileSystemBox.isSelected());
+            if (FolderWatcher.isLibLoaded()) {
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders())
+                {
+                    SyncProfile newProfile = SyncProfile.adjust(folder
+                        .getSyncProfile(), folder.getKnownFiles().size(),
+                        useWatchFileSystemBox.isSelected());
+
+                    if (!newProfile.equals(folder.getSyncProfile())) {
+                        folder.setSyncProfile(newProfile);
+                        logWarning("Adjusted sync profile for " + folder
+                            + " to " + folder.getSyncProfile());
+                    }
+                }
+            }
             needsRestart = true;
         }
 
@@ -612,16 +631,20 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             if (newLocationName != null) {
                 File newLocation = new File(newLocationName);
 
-                // Make sure that the user is not setting this to the base dir of
+                // Make sure that the user is not setting this to the base dir
+                // of
                 // an existing folder.
                 for (Folder folder : getController().getFolderRepository()
                     .getFolders())
                 {
                     if (folder.getLocalBase().equals(newLocation)) {
-                        DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation(
-                                        "preferences.dialog.duplicate_localbase.title"),
-                                Translation.getTranslation(
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("preferences.dialog.duplicate_localbase.title"),
+                                Translation
+                                    .getTranslation(
                                         "preferences.dialog.duplicate_localbase.message",
                                         folder.getName()),
                                 GenericDialogType.ERROR);
