@@ -244,28 +244,15 @@ public class FolderCreatePanel extends PFWizardPanel {
         updateButtons();
     }
 
-    /**
-     * If 'backup source' for lots of files, switch to 'backup source hour'. If
-     * 'auto sync' for lots of files, switch to 'auto sync 10min'.
-     * 
-     * @param syncProfile
-     * @return
-     */
     private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
         Integer fileCount = (Integer) getWizardContext().getAttribute(
             FILE_COUNT);
-        boolean slowDetection = (fileCount != null && fileCount > 10000)
-            || ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
-                .getValueBoolean(getController());
-        if (slowDetection && syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
-            return SyncProfile.BACKUP_SOURCE_HOUR;
+        if (fileCount == null) {
+            fileCount = 0;
         }
-        if (slowDetection
-            && syncProfile.equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION))
-        {
-            return SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
-        }
-        return syncProfile;
+        return SyncProfile.adjust(syncProfile, fileCount,
+            ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
+                .getValueBoolean(getController()));
     }
 
     private static FolderInfo createFolderInfo(File localBase) {
