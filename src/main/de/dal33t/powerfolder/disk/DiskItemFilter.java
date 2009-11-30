@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.DiskItem;
@@ -35,16 +35,17 @@ import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Class to hold a number of patterns to filter DiskItems with.
- * The class has two modes:
- * excludeByDefault - DiskItems will be excluded unless they match a pattern (a white list).
- * retainByDefault - DiskItems will be retained unless they match a pattern (a black list).
+ * Class to hold a number of patterns to filter DiskItems with. The class has
+ * two modes: excludeByDefault - DiskItems will be excluded unless they match a
+ * pattern (a white list). retainByDefault - DiskItems will be retained unless
+ * they match a pattern (a black list).
  */
 public class DiskItemFilter {
 
     private PatternChangeListener listenerSupport;
 
-    private static final Logger log = Logger.getLogger(DiskItemFilter.class.getName());
+    private static final Logger log = Logger.getLogger(DiskItemFilter.class
+        .getName());
 
     /**
      * Patterns file name.
@@ -54,8 +55,7 @@ public class DiskItemFilter {
     /**
      * The patterns that will be used to match DiskItems with.
      */
-    private final List<CompilingPatternMatch> patterns =
-            new CopyOnWriteArrayList<CompilingPatternMatch>();
+    private final List<CompilingPatternMatch> patterns = new CopyOnWriteArrayList<CompilingPatternMatch>();
 
     /**
      * Whether the pattens have been modified since the last save.
@@ -67,7 +67,7 @@ public class DiskItemFilter {
      */
     public DiskItemFilter() {
         listenerSupport = ListenerSupportFactory
-                .createListenerSupport(PatternChangeListener.class);
+            .createListenerSupport(PatternChangeListener.class);
     }
 
     public void addListener(PatternChangeListener listener) {
@@ -80,7 +80,7 @@ public class DiskItemFilter {
 
     /**
      * Loads patterns from file.
-     *
+     * 
      * @param directory
      */
     public void loadPatternsFrom(File directory) {
@@ -97,15 +97,15 @@ public class DiskItemFilter {
                     }
                 }
             } catch (IOException ioe) {
-                log.log(Level.SEVERE,
-                        "Problem loading pattern from " + directory, ioe);
+                log.log(Level.SEVERE, "Problem loading pattern from "
+                    + directory, ioe);
             } finally {
                 if (reader != null) {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        log.log(Level.SEVERE,
-                                "Problem loading pattern from " + directory, e);
+                        log.log(Level.SEVERE, "Problem loading pattern from "
+                            + directory, e);
                     }
                 }
             }
@@ -114,7 +114,7 @@ public class DiskItemFilter {
 
     /**
      * Saves patterns to a directory.
-     *
+     * 
      * @param directory
      */
     public void savePatternsTo(File directory) {
@@ -135,15 +135,14 @@ public class DiskItemFilter {
             }
             dirty = false;
         } catch (IOException e) {
-            log.log(Level.SEVERE,
-                    "Problem saving pattern to " + directory, e);
+            log.log(Level.SEVERE, "Problem saving pattern to " + directory, e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    log.log(Level.SEVERE,
-                            "Problem saving pattern to " + directory, e);
+                    log.log(Level.SEVERE, "Problem saving pattern to "
+                        + directory, e);
                 }
             }
         }
@@ -151,37 +150,31 @@ public class DiskItemFilter {
 
     /**
      * Add a patterns to the list for filtering.
-     *
-     * NOTE: This should probably be called through the Folder.removePattern method,
-     * so that the folder becomes dirty and persists the change.
-     *
+     * 
      * @param patternText
      */
     public void addPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
-        CompilingPatternMatch pattern =
-                new CompilingPatternMatch(patternText.toLowerCase());
+        CompilingPatternMatch pattern = new CompilingPatternMatch(patternText
+            .replace('\\', '/').toLowerCase());
         if (patterns.contains(pattern)) {
             // Already contained
             return;
         }
         try {
             patterns.add(pattern);
-            listenerSupport.patternAdded(
-                    new PatternChangedEvent(this, patternText, true));
+            listenerSupport.patternAdded(new PatternChangedEvent(this,
+                patternText, true));
         } catch (PatternSyntaxException e) {
-            log.log(Level.SEVERE,
-                    "Problem adding pattern " + pattern.getRealPatternText(), e);
+            log.log(Level.SEVERE, "Problem adding pattern "
+                + pattern.getRealPatternText(), e);
         }
         dirty = true;
     }
 
     /**
      * Remove a pattern from the list.
-     *
-     * NOTE: This should probably be called through the Folder.removePattern method,
-     * so that the folder becomes dirty and persists the change.
-     *
+     * 
      * @param patternText
      */
     public void removePattern(String patternText) {
@@ -191,14 +184,14 @@ public class DiskItemFilter {
                 patterns.remove(patternMatch);
             }
         }
-        listenerSupport.patternRemoved(
-                new PatternChangedEvent(this, patternText, false));
+        listenerSupport.patternRemoved(new PatternChangedEvent(this,
+            patternText, false));
         dirty = true;
     }
 
     /**
      * True if patterns have been changed.
-     *
+     * 
      * @return
      */
     public boolean isDirty() {
@@ -206,9 +199,9 @@ public class DiskItemFilter {
     }
 
     /**
-     * Pattern matches diskItem against patterns.
-     * Note that Directories have "/*" appended for matching.
-     *
+     * Pattern matches diskItem against patterns. Note that Directories have
+     * "/*" appended for matching.
+     * 
      * @param diskItem
      * @return
      */
@@ -283,7 +276,7 @@ public class DiskItemFilter {
 
     /**
      * Returns true if the item is excluded by this filter (is filtered out).
-     *
+     * 
      * @param diskItem
      * @return
      */
@@ -292,8 +285,9 @@ public class DiskItemFilter {
     }
 
     /**
-     * Returns true if the item is retained by this filter (is not filtered out).
-     *
+     * Returns true if the item is retained by this filter (is not filtered
+     * out).
+     * 
      * @param diskItem
      * @return
      */
