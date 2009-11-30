@@ -104,12 +104,7 @@ public enum Feature {
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false),
-
-    /**
-     * TRAC #711: Automatic change detection by watching the filesystem.
-     */
-    WATCH_FILESYSTEM(false);
+    CONFLICT_DETECTION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
@@ -162,7 +157,5 @@ public enum Feature {
         Feature.SECURITY_CHECKS.enable();
         Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
-   //     Feature.WATCH_FILESYSTEM.enable();
-
     }
 }

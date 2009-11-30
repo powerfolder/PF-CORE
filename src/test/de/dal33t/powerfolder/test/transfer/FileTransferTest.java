@@ -433,8 +433,11 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleFilesCopyWithFolderWatcher() {
         // Register listeners
-        Feature.WATCH_FILESYSTEM.enable();
+        ConfigurationEntry.WATCH_FILESYSTEM.setValue(getContollerLisa(), true);
+        ConfigurationEntry.WATCH_FILESYSTEM.setValue(getContollerBart(), true);
         LoggingManager.setConsoleLogging(Level.WARNING);
+        getFolderAtBart().setSyncProfile(
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
         getFolderAtLisa().setSyncProfile(
             SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();

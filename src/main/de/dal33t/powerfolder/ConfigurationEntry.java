@@ -88,24 +88,29 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder homepage
      */
-    PROVIDER_URL("provider.url.main", "http://www.powerfolder.com/?utm_source=client&utm_medium=client&utm_campaign=Client"),
+    PROVIDER_URL(
+        "provider.url.main",
+        "http://www.powerfolder.com/?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL("provider.url.about",
+    PROVIDER_ABOUT_URL(
+        "provider.url.about",
         "http://www.powerfolder.com/wiki/Online_Storage?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * Quickstart guides to PowerFolder
      */
-    PROVIDER_QUICKSTART_URL("provider.url.quickstart",
+    PROVIDER_QUICKSTART_URL(
+        "provider.url.quickstart",
         "http://www.powerfolder.com/quickstart.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL of the PowerFolder Support
      */
-    PROVIDER_SUPPORT_URL("provider.url.support",
+    PROVIDER_SUPPORT_URL(
+        "provider.url.support",
         "http://www.powerfolder.com/support.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
@@ -118,13 +123,15 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Pro page
      */
-    PROVIDER_BUY_URL("provider.url.buy",
+    PROVIDER_BUY_URL(
+        "provider.url.buy",
         "http://www.powerfolder.com/buynow.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
      * URL where the contact form resides
      */
-    PROVIDER_CONTACT_URL("provider.url.contact",
+    PROVIDER_CONTACT_URL(
+        "provider.url.contact",
         "http://www.powerfolder.com/contact.html?utm_source=client&utm_medium=client&utm_campaign=Client"),
 
     /**
@@ -417,6 +424,12 @@ public enum ConfigurationEntry {
             PreferencesEntry.MASS_DELETE_THRESHOLD.removeValue(controller);
         }
     },
+
+    /**
+     * #711: Watch for changes on the filesystem for auto-detecting sync
+     * profiles.
+     */
+    WATCH_FILESYSTEM("filesystem.watch", false),
 
     /**
      * Contains a comma-separated list of all plugins to load.
@@ -770,7 +783,6 @@ public enum ConfigurationEntry {
     public void setValue(Controller controller, boolean value) {
         setValue(controller, String.valueOf(value));
     }
-    
 
     /**
      * Sets the value of this config entry.
