@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -189,12 +190,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * 
      * @return the list of files
      */
-    public List<FileInfo> getFileInfos() {
-        List<FileInfo> files = new ArrayList<FileInfo>();
-        for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
-            files.add(fileInfo);
-        }
-        return files;
+    public Collection<FileInfo> getFileInfos() {
+        return Collections.unmodifiableCollection(fileInfoHolderMap.keySet());
     }
 
     /**
