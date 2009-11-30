@@ -1121,13 +1121,16 @@ public class Folder extends PFComponent {
                     Member from = modifiedBy.getNode(getController(), true);
                     Date modDate;
                     long size;
+                    boolean deleted;
 
                     if (fInfo.isLookupInstance()) {
                         size = 0;
                         modDate = new Date();
+                        deleted = !file.exists();
                     } else {
                         size = fInfo.getSize();
                         modDate = fInfo.getModifiedDate();
+                        deleted = fInfo.isDeleted();
                     }
 
                     if (from != null) {
@@ -1139,7 +1142,7 @@ public class Folder extends PFComponent {
                         size = file.length();
                     }
 
-                    if (fInfo.isDeleted()) {
+                    if (deleted) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
                             currentInfo, fInfo.getRelativeName(), modifiedBy,
                             modDate, fInfo.getVersion(), file.isDirectory());

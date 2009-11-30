@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -409,6 +410,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
     public Collection<Directory> getSubdirectories() {
         return subDirectoriesMap.values();
+    }
+
+    public FileInfo getDirectoryInfo() {
+        return rootFolder.getFile(FileInfoFactory.lookupInstance(rootFolder
+            .getInfo(), getRelativeName(), true));
     }
 
     // ////////////////////////////

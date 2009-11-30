@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.contentobjects.jnotify.JNotify;
@@ -50,6 +51,7 @@ public class FolderWatcher extends PFComponent {
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
     private Map<FileInfo, FileInfo> ignoreFiles = Util
         .createConcurrentHashMap();
+    private AtomicBoolean scheduled = new AtomicBoolean(false);
     private ReentrantLock scannerLock = new ReentrantLock();
 
     FolderWatcher(Folder folder) {
@@ -233,13 +235,16 @@ public class FolderWatcher extends PFComponent {
                 }
                 dirtyFiles.put(name, lookup);
                 if (!scannerLock.isLocked()) {
-                    getController().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            getController().getIOProvider().startIO(
-                                new DirtyFilesScanner());
-                        }
-                    }, 1000);
+                    if (scheduled.compareAndSet(false, true)) {
+                        getController().schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                getController().getIOProvider().startIO(
+                                    new DirtyFilesScanner());
+                                scheduled.set(false);
+                            }
+                        }, 1000);
+                    }
                 }
             } catch (Exception e) {
                 logSevere("Unable to enqueue changed file for scan: "
