@@ -82,6 +82,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useDeltaSyncOnInternetCheckBox;
     private JCheckBox useSwarmingOnLanCheckBox;
     private JCheckBox useSwarmingOnInternetCheckBox;
+    private JCheckBox useFileSystemWatchBox;
 
     private JTextField locationTF;
     private ValueModel locationModel;
@@ -218,6 +219,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             .setSelected(ConfigurationEntry.USE_SWARMING_ON_INTERNET
                 .getValueBoolean(getController()));
 
+        useFileSystemWatchBox = SimpleComponentFactory
+            .createCheckBox(Translation
+                .getTranslation("preferences.dialog.filesystem.watch"));
+        useFileSystemWatchBox.setToolTipText(Translation
+            .getTranslation("preferences.dialog.filesystem.watch.tooltip"));
+        useFileSystemWatchBox
+            .setSelected(ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
+                .getValueBoolean(getController()));
+
         lanList = new LANList(getController());
         lanList.load();
 
@@ -294,7 +304,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     public JPanel getUIPanel() {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref";
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
             if (FirewallUtil.isFirewallAccessible()) {
                 rows = "pref, 3dlu, " + rows;
             }
@@ -373,6 +383,9 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             swarmingBar.addGridded(useSwarmingOnLanCheckBox);
             builder.add(swarmingBar.getPanel(), cc.xyw(3, row, 2));
 
+            row += 2;
+            builder.add(useFileSystemWatchBox, cc.xyw(3, row, 2));
+            
             row += 2;
             builder.add(verboseBox, cc.xyw(3, row, 2));
 
@@ -485,6 +498,15 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (current != useSwarmingOnInternetCheckBox.isSelected()) {
             ConfigurationEntry.USE_SWARMING_ON_INTERNET.setValue(
                 getController(), Boolean.toString(useSwarmingOnInternetCheckBox
+                    .isSelected()));
+            needsRestart = true;
+        }
+
+        current = ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
+            .getValueBoolean(getController());
+        if (current != useFileSystemWatchBox.isSelected()) {
+            ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(
+                getController(), Boolean.toString(useFileSystemWatchBox
                     .isSelected()));
             needsRestart = true;
         }
