@@ -426,12 +426,6 @@ public enum ConfigurationEntry {
     },
 
     /**
-     * #711: Watch for changes on the filesystem for auto-detecting sync
-     * profiles.
-     */
-    WATCH_FILESYSTEM("filesystem.watch", false),
-
-    /**
      * Contains a comma-separated list of all plugins to load.
      */
     PLUGINS("plugins"),
@@ -629,6 +623,12 @@ public enum ConfigurationEntry {
      * Duplicate folders by should be automatically prevented.
      */
     FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", false),
+    
+    /**
+     * #711: Watch for changes on the filesystem for auto-detecting sync
+     * profiles.
+     */
+    FOLDER_WATCH_FILESYSTEM("folder.filesystem.watch", false),
 
     /**
      * Ugly hack to make it possible to pre-configure client with
