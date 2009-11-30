@@ -59,7 +59,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     public boolean isSupported() {
-        return ConfigurationEntry.WATCH_FILESYSTEM
+        return ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
             .getValueBoolean(getController())
             && isLibLoaded();
     }
