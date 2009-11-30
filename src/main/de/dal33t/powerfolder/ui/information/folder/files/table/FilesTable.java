@@ -342,6 +342,9 @@ public class FilesTable extends JTable {
                             setForeground(NORMAL);
                             // File filtered out by blacklist.
                             strikethrough = true;
+                        } else if (dir.isDeleted()) {
+                            setForeground(DELETED);
+                            setIcon(null);
                         } else if (dir.isExpected()) {
                             setForeground(AVAILABLE);
                             setIcon(Icons.getIconById(Icons.EXPECTED));
