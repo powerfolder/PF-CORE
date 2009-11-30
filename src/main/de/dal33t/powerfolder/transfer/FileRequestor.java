@@ -275,8 +275,7 @@ public class FileRequestor extends PFComponent {
                 + dirInfo.toDetailString());
             return;
         }
-        dirFile.mkdirs();
-        folder.scanDirectory(dirInfo);
+        folder.scanDirectory(dirInfo, dirFile);
     }
 
     private void prepareDownload(FileInfo fInfo, boolean autoDownload) {

@@ -1194,16 +1194,15 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans one directory
-     * <p>
-     * Package protected because used by Recylcebin to tell, that file was
-     * restored.
+     * Creates/Deletes and scans one directory.
      * 
      * @param dirInfo
-     *            the file to be scanned
+     *            the dir to be scanned.
+     * @param dir
+     *            the directory
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    public FileInfo scanDirectory(DirectoryInfo dirInfo) {
+    public FileInfo scanDirectory(DirectoryInfo dirInfo, File dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
         if (isFiner()) {
             logFiner("Scanning dir: " + dirInfo.toDetailString());
@@ -1215,7 +1214,20 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        File dir = getDiskFile(dirInfo);
+        watcher.addIgnoreFile(dirInfo);
+        try {
+            if (dirInfo.isDeleted()) {
+                if (!dir.delete()) {
+                    logSevere("Unable to deleted directory: " + dir + ". "
+                        + dirInfo.toDetailString());
+                    return null;
+                }
+            } else {
+                dir.mkdirs();
+            }
+        } finally {
+            watcher.removeIgnoreFile(dirInfo);
+        }
 
         if (!dir.canRead()) {
             // ignore not readable
@@ -2320,6 +2332,7 @@ public class Folder extends PFComponent {
                     logFine("Deleting directory from remote: "
                         + localFile.toDetailString());
                 }
+                watcher.addIgnoreFile(localFile);
                 if (!localCopy.delete()) {
                     if (isWarning()) {
                         String[] content = localCopy.list();
@@ -2331,6 +2344,7 @@ public class Folder extends PFComponent {
                             + contentStr);
                     }
                 }
+                watcher.removeIgnoreFile(localFile);
             } else if (localFile.isFile()) {
                 if (!deleteFile(localFile, localCopy)) {
                     logWarning("Unable to deleted. was not able to move old file to recycle bin "
