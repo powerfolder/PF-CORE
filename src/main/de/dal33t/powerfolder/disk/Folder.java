@@ -2000,7 +2000,8 @@ public class Folder extends PFComponent {
      */
     public boolean scanAllowedNow() {
         return syncProfile.isAutoDetectLocalChanges()
-            && !syncProfile.getConfiguration().isDailySync();
+            && !syncProfile.getConfiguration().isDailySync()
+            && !getController().isSilentMode();
     }
 
     /**

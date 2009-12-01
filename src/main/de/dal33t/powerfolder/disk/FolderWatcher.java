@@ -219,6 +219,10 @@ public class FolderWatcher extends PFComponent {
         }
 
         private void fileChanged(final String rootPath, final String name) {
+            if (!folder.scanAllowedNow()) {
+                // Not allowed
+                return;
+            }
             if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
                 // Ignore
                 return;
