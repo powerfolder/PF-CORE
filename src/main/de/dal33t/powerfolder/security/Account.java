@@ -384,19 +384,28 @@ public class Account extends Model implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
-    public AccountDetails calulcateDetails(Controller controller) {
+    public AccountDetails calculcateDetails(Controller controller) {
         Reject.ifNull(controller, "Controller");
-        long used = calulateTotalFoldersSize(controller);
+        long used = calculateTotalUsage(controller);
         int nFolders = countNumberOfFolders(controller);
-        long archiveSize = calulateArchiveSize(controller);
+        long archiveSize = calculateArchiveSize(controller);
         return new AccountDetails(this, used, nFolders, archiveSize);
+    }
+
+    /**
+     * @param controller
+     * @return the total used online storage size
+     */
+    public long calculateTotalUsage(Controller controller) {
+        return calculateTotalFoldersSize(controller)
+            + calculateArchiveSize(controller);
     }
 
     /**
      * @param controller
      * @return the total size used by this user
      */
-    public long calulateTotalFoldersSize(Controller controller) {
+    public long calculateTotalFoldersSize(Controller controller) {
         long totalSize = 0;
         for (Permission p : getPermissions()) {
             if (p instanceof FolderOwnerPermission
@@ -417,7 +426,7 @@ public class Account extends Model implements Serializable {
      * @param controller
      * @return the total size of recycle bin
      */
-    public long calulateArchiveSize(Controller controller) {
+    public long calculateArchiveSize(Controller controller) {
         long start = System.currentTimeMillis();
         long size = 0;
         for (Permission p : getPermissions()) {
