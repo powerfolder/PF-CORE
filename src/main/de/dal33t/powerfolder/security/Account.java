@@ -384,7 +384,7 @@ public class Account extends Model implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
-    public AccountDetails calculcateDetails(Controller controller) {
+    public AccountDetails calculateDetails(Controller controller) {
         Reject.ifNull(controller, "Controller");
         long used = calculateTotalUsage(controller);
         int nFolders = countNumberOfFolders(controller);
