@@ -35,12 +35,13 @@ public class ChatModelEvent extends EventObject {
     /**
      * Constructor, creating the event.
      * 
-     * @param source
+     * @param fromMember
+     *          member who sent the message
      * @param message
      * @param flag
      */
-    ChatModelEvent(Member source, String message, boolean flag) {
-        super(source);
+    ChatModelEvent(Member fromMember, String message, boolean flag) {
+        super(fromMember);
         this.message = message;
         isStatus = flag;
     }

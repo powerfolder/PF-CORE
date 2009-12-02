@@ -89,20 +89,20 @@ public class ChatModel {
         ChatBox chat = getChatBox(toMember);
         ChatLine chatLine = new ChatLine(fromMember, message);
         chat.addLine(chatLine);
-        fireChatModelChanged(toMember, chatLine);
+        fireChatModelChanged(fromMember, chatLine);
     }
 
     /**
      * Adds a status line about a member.
      * 
-     * @param member
+     * @param fromMember
      * @param message
      */
-    public void addStatusChatLine(Member member, String message) {
-        ChatBox chat = getChatBox(member);
-        ChatLine chatLine = new ChatLine(member, message, true);
+    public void addStatusChatLine(Member fromMember, String message) {
+        ChatBox chat = getChatBox(fromMember);
+        ChatLine chatLine = new ChatLine(fromMember, message, true);
         chat.addLine(chatLine);
-        fireChatModelChanged(member, chatLine);
+        fireChatModelChanged(fromMember, chatLine);
     }
 
     /**
@@ -154,11 +154,11 @@ public class ChatModel {
     /**
      * Calls all listeners
      * 
-     * @param source
+     * @param fromMember
      * @param line
      */
-    private void fireChatModelChanged(Member source, ChatLine line) {
-        chatModelListeners.chatChanged(new ChatModelEvent(source, line
+    private void fireChatModelChanged(Member fromMember, ChatLine line) {
+        chatModelListeners.chatChanged(new ChatModelEvent(fromMember, line
             .getText(), line.isStatus()));
     }
 
@@ -266,24 +266,6 @@ public class ChatModel {
             }
         }
 
-        public void friendAdded(NodeManagerEvent e) {
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-        }
-
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
-        }
-
         public boolean fireInEventDispatchThread() {
             return false;
         }
@@ -298,7 +280,7 @@ public class ChatModel {
         public void handleMessage(Member source, Message message) {
             if (message instanceof MemberChatMessage) {
                 MemberChatMessage mcMessage = (MemberChatMessage) message;
-                addChatLine(source, source, mcMessage.text);
+                addChatLine(controller.getMySelf(), source, mcMessage.text);
             }
         }
 

@@ -183,8 +183,9 @@ public class ApplicationModel extends PFUIComponent {
     private class ChatNotificationManager implements ChatModelListener {
 
         public void chatChanged(ChatModelEvent event) {
-            if (event.isStatus()) {
-                // Ignore status updates
+            if (event.isStatus()
+                    || event.getSource().equals(getController().getMySelf())) {
+                // Ignore status updates and own messages
                 return;
             }
             getController().getUIController().notifyMessage(
