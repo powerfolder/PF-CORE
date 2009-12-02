@@ -120,7 +120,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void remove() {
-        if (!isSupported()) {
+        if (!isLibLoaded()) {
             return;
         }
         if (watchID >= 0) {
@@ -219,6 +219,10 @@ public class FolderWatcher extends PFComponent {
         }
 
         private void fileChanged(final String rootPath, final String name) {
+            if (!isSupported()) {
+                // No supported
+                return;
+            }
             if (!folder.scanAllowedNow()) {
                 // Not allowed
                 return;
