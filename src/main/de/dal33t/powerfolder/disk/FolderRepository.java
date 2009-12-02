@@ -234,10 +234,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     } else {
                         Date syncDate = getController().getFolderRepository()
                             .getSynchronizationDate();
-                        text = Translation
-                            .getTranslation(
-                                "folder_repository.warn_on_close_eta.text",
-                                folderslist.toString(), Format.formatDateShort(syncDate));
+                        text = Translation.getTranslation(
+                            "folder_repository.warn_on_close_eta.text",
+                            folderslist.toString(), Format
+                                .formatDateShort(syncDate));
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
@@ -430,9 +430,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
         return new FolderSettings(new File(folderDir), syncProfile, false,
             ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                    .getValue(getController())), preview, dlScript,
-                        ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                                .getValueInt(getController()));
+                .getValue(getController())), preview, dlScript,
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                .getValueInt(getController()));
     }
 
     /**
@@ -1269,6 +1269,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
             {
+                if (folder.isPreviewOnly()) {
+                    continue;
+                }
                 folder.processUnsyncFolder();
             }
         }
