@@ -1,25 +1,23 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.plugin;
-
-import javax.swing.JDialog;
 
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
@@ -39,20 +37,41 @@ import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
 public interface Plugin {
-    /** the name of the plugin */
-    public String getName();
+    /**
+     * @return the name of the plugin
+     */
+    String getName();
 
-    /** the description of the plugin */
-    public String getDescription();
+    /**
+     * @return the description of the plugin
+     */
+    String getDescription();
 
-    /** called to (re) start the plugin. */
-    public void start();
+    /**
+     * Called before start on every plugin (enabled and disabled)
+     */
+    void init();
 
-    /** called to stop the plugin (e.g. on program exit) */
-    public void stop();
+    /** called to (re) start the plugin. Only for enabled plugins */
+    void start();
 
-    /** does this plugin has an options dialog? */
-    public boolean hasOptionsDialog();
+    /**
+     * called to stop the plugin (e.g. on program exit). Only for enabled
+     * plugins
+     */
+    void stop();
+
+    /**
+     * called before the plugin and pluginmanager are shutdown.
+     */
+    void destroy();
+
+    /**
+     * does this plugin has an options dialog?
+     * 
+     * @return true if options are available
+     */
+    boolean hasOptionsDialog();
 
     /**
      * should show an options dialog

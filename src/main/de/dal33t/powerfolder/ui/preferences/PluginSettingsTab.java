@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.preferences;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -47,9 +47,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
-    PluginManagerListener
-{
+public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private final static int PLUGIN_NAME_COL = 0;
     private final static int PLUGIN_DESCR_COL = 1;
@@ -152,7 +150,8 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
                 }
             }
         });
-        getController().getPluginManager().addPluginManagerListener(this);
+        getController().getPluginManager().addPluginManagerListener(
+            new MyPluginManagerListener());
     }
 
     private Component getButtonBar() {
@@ -165,14 +164,12 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
     private class PluginTableModel extends AbstractTableModel {
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             return Plugin.class;
         }
 
         @Override
-        public String getColumnName(int column)
-        {
+        public String getColumnName(int column) {
             switch (column) {
                 case PLUGIN_NAME_COL : {
                     return Translation
@@ -372,10 +369,18 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab,
         }
     }
 
-    public void pluginStatusChanged(PluginEvent pluginEvent) {
-        ((PluginTableModel) pluginJTable.getModel()).fireTableRowsUpdated(-1,
-            -1);
-        settingsButton.setEnabled(false);
-        enableButton.setEnabled(false);
+    private class MyPluginManagerListener implements PluginManagerListener {
+
+        public void pluginStatusChanged(PluginEvent pluginEvent) {
+            ((PluginTableModel) pluginJTable.getModel()).fireTableRowsUpdated(
+                -1, -1);
+            settingsButton.setEnabled(false);
+            enableButton.setEnabled(false);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
+
 }

@@ -1,28 +1,26 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.plugin;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,6 +30,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -43,14 +42,14 @@ public class PluginManager extends PFComponent {
     private static final String OLD_WEBINTERFACE_PLUGIN_CLASS_NAME = "de.dal33t.powerfolder.AB";
     private List<Plugin> plugins;
     private List<Plugin> disabledPlugins;
-    private List<PluginManagerListener> listeners;
+    private PluginManagerListener listeners;
 
     public PluginManager(Controller controller) {
         super(controller);
         plugins = new CopyOnWriteArrayList<Plugin>();
         disabledPlugins = new CopyOnWriteArrayList<Plugin>();
-        listeners = Collections
-            .synchronizedList(new ArrayList<PluginManagerListener>());
+        listeners = ListenerSupportFactory
+            .createListenerSupport(PluginManagerListener.class);
     }
 
     // Start / Stop ***********************************************************
@@ -70,28 +69,55 @@ public class PluginManager extends PFComponent {
             for (Plugin plugin : plugins) {
                 try {
                     plugin.stop();
+                    plugin.destroy();
                 } catch (Exception e) {
-                    logSevere("Exception while stopping plugin: " + plugin + ". "
-                        + e, e);
+                    logSevere("Exception while stopping/destroying plugin: "
+                        + plugin + ". " + e, e);
                 }
-                logFine(plugin.getName() + " stopped");
+                logFine(plugin.getName() + " stopped and destroyed");
             }
+            plugins.clear();
         }
-        plugins.clear();
-        disabledPlugins.clear();
+        if (disabledPlugins != null) {
+            for (Plugin plugin : disabledPlugins) {
+                try {
+                    plugin.destroy();
+                } catch (Exception e) {
+                    logSevere("Exception while destroying plugin: " + plugin
+                        + ". " + e, e);
+                }
+                logFine(plugin.getName() + " destroyed");
+            }
+            disabledPlugins.clear();
+        }
+
     }
 
     /**
      * Initializes all plugins
      */
     private void readEnabledPlugins() {
+        readAndInitPlugins(
+            ConfigurationEntry.PLUGINS.getValue(getController()), plugins,
+            "enabled");
+    }
+
+    /**
+     * reads disabled plugins
+     */
+    private void readDisabledPlugins() {
+        readAndInitPlugins(ConfigurationEntry.PLUGINS_DISABLED
+            .getValue(getController()), disabledPlugins, "disabled");
+    }
+
+    private void readAndInitPlugins(String pluginsStr, List<Plugin> plugins,
+        String typeInfo)
+    {
         plugins.clear();
-        String pluginsStr = ConfigurationEntry.PLUGINS
-            .getValue(getController());
         if (StringUtils.isBlank(pluginsStr)) {
             return;
         }
-        logInfo("Initalizing plugins: " + pluginsStr);
+        logInfo("Initalizing (" + typeInfo + ") plugins: " + pluginsStr);
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
@@ -101,46 +127,6 @@ public class PluginManager extends PFComponent {
             Plugin plugin = initalizePlugin(pluginClassName);
             if (plugin != null) {
                 plugins.add(plugin);
-            }
-        }
-    }
-
-    /**
-     * Starts the enabled plugins
-     */
-    private void startEnabledPlugins() {
-        for (Plugin plugin : plugins) {
-            logInfo("Starting plugin: " + plugin.getName());
-            try {
-                plugin.start();
-            } catch (Exception e) {
-                logSevere("Exception while starting plugin: " + plugin + ". "
-                    + e, e);
-            }
-        }
-    }
-
-    /**
-     * reads disabled plugins
-     */
-    private void readDisabledPlugins() {
-        disabledPlugins.clear();
-        String pluginsStr = ConfigurationEntry.PLUGINS_DISABLED
-            .getValue(getController());
-        if (StringUtils.isBlank(pluginsStr)) {
-            return;
-        }
-        logFine("Read disabled plugins: " + pluginsStr);
-        StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
-        while (nizer.hasMoreElements()) {
-            String pluginClassName = nizer.nextToken();
-            if (alreadyLoaded(pluginClassName)) {
-                continue;
-            }
-            Plugin plugin = initalizePlugin(pluginClassName);
-            if (plugin != null) {
-                logFine("Found disabled plugin: " + plugin.getName());
-                disabledPlugins.add(plugin);
             }
         }
     }
@@ -167,12 +153,12 @@ public class PluginManager extends PFComponent {
             logFine("Initializing plugin: " + pluginClassName);
         }
         try {
-            Class pluginClass = Class.forName(pluginClassName);
+            Class<?> pluginClass = Class.forName(pluginClassName);
             Plugin plugin;
             try {
                 // NoSuchMethodException
                 // try to instantiate AbstractPFPlugin
-                Constructor constr = pluginClass
+                Constructor<?> constr = pluginClass
                     .getConstructor(Controller.class);
                 plugin = (Plugin) constr.newInstance(getController());
             } catch (NoSuchMethodException e) {
@@ -181,7 +167,9 @@ public class PluginManager extends PFComponent {
                     plugin = (Plugin) pluginClass.newInstance();
                 } catch (ClassCastException e2) {
                     // failed, not a Plugin to...!
-                    log.log(Level.SEVERE,
+                    log
+                        .log(
+                            Level.SEVERE,
                             "failed to load: "
                                 + pluginClassName
                                 + "does not extends AbstractPFPlugin or implements Plugin",
@@ -189,24 +177,36 @@ public class PluginManager extends PFComponent {
                     return null;
                 }
             }
+            plugin.init();
             return plugin;
-        } catch (ClassNotFoundException e) {
-            log.log(Level.SEVERE,
-                "Unable to find plugin class '" + pluginClassName + '\'', e);
-        } catch (InstantiationException e) {
-            log.log(Level.SEVERE,
-                "Unable to find plugin class '" + pluginClassName + '\'', e);
-        } catch (InvocationTargetException e) {
-            log.log(Level.SEVERE,
-                "Unable to find plugin class '" + pluginClassName + '\'', e);
-        } catch (IllegalAccessException e) {
-            log.log(Level.SEVERE,
-                "Unable to find plugin class '" + pluginClassName + '\'', e);
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Exception while initializing plugin '"
+                + pluginClassName + '\'', e);
         }
         return null;
     }
 
-    /** is this plugin enabled ? */
+    /**
+     * Starts the enabled plugins
+     */
+    private void startEnabledPlugins() {
+        for (Plugin plugin : plugins) {
+            logInfo("Starting plugin: " + plugin.getName());
+            try {
+                plugin.start();
+            } catch (Exception e) {
+                logSevere("Exception while starting plugin: " + plugin + ". "
+                    + e, e);
+            }
+        }
+    }
+
+    /**
+     * is this plugin enabled ?
+     * 
+     * @param plugin
+     * @return true if yes
+     */
     public boolean isEnabled(Plugin plugin) {
         if (plugin == null) {
             return false;
@@ -226,6 +226,7 @@ public class PluginManager extends PFComponent {
     }
 
     /**
+     * @param plugin
      * @param enabled
      *            new status of the plugin
      */
@@ -280,7 +281,11 @@ public class PluginManager extends PFComponent {
         getController().saveConfig();
     }
 
-    /** returns all installed plugins */
+    /**
+     * returns all installed plugins
+     * 
+     * @return the list of all plugins
+     */
     public List<Plugin> getPlugins() {
         List<Plugin> pluginsAll = new ArrayList<Plugin>();
         pluginsAll.addAll(plugins);
@@ -288,7 +293,11 @@ public class PluginManager extends PFComponent {
         return pluginsAll;
     }
 
-    /** the total number of installed plugins */
+    /**
+     * the total number of installed plugins
+     * 
+     * @return the number of plugins
+     */
     public int countPlugins() {
         return plugins.size() + disabledPlugins.size();
     }
@@ -321,19 +330,17 @@ public class PluginManager extends PFComponent {
     public void addPluginManagerListener(
         PluginManagerListener pluginManagerListener)
     {
-        listeners.add(pluginManagerListener);
+        ListenerSupportFactory.addListener(listeners, pluginManagerListener);
     }
 
     public void removePluginManagerListener(
         PluginManagerListener pluginManagerListener)
     {
-        listeners.remove(pluginManagerListener);
+        ListenerSupportFactory.removeListener(listeners, pluginManagerListener);
     }
 
     private void firePluginStatusChange(Plugin plugin) {
-        for (PluginManagerListener listener : listeners) {
-            listener.pluginStatusChanged(new PluginEvent(this, plugin));
-        }
+        listeners.pluginStatusChanged(new PluginEvent(this, plugin));
     }
 
     private boolean alreadyLoaded(String pluginClassName) {
