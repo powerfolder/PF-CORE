@@ -268,8 +268,8 @@ public class Icons {
         if (id.equals(UNKNOWN_FILE_GRAY)) {
             icon = getGrayIcon(getIconById(UNKNOWN_FILE));
             if (icon != null) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Cached icon " + id);
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("Cached icon " + id);
                 }
                 ID_ICON_MAP.put(id, icon);
             }
@@ -277,8 +277,8 @@ public class Icons {
         } else if (id.equals(UNKNOWN_FILE_RED)) {
             icon = convertToRed(getGrayIcon(getIconById(UNKNOWN_FILE)));
             if (icon != null) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Cached icon " + id);
+                if (log.isLoggable(Level.FINER)) {
+                    log.finer("Cached icon " + id);
                 }
                 ID_ICON_MAP.put(id, icon);
             }
