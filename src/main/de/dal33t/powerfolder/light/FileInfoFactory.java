@@ -96,7 +96,7 @@ public final class FileInfoFactory {
                 return new FileInfo(original.getRelativeName(), original
                     .getSize(), original.getModifiedBy(), original
                     .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi);
+                    .isDeleted(), fi.intern());
             } else if (original.isDiretory()) {
                 if (LOG.isLoggable(Level.WARNING)) {
                     LOG.warning("Corrected DirectoryInfo on "
@@ -105,7 +105,7 @@ public final class FileInfoFactory {
                 return new DirectoryInfo(original.getRelativeName(), original
                     .getSize(), original.getModifiedBy(), original
                     .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi);
+                    .isDeleted(), fi.intern());
             } else {
                 throw new IllegalArgumentException(
                     "Illegal original FileInfo: " + original.getClass() + ": "
