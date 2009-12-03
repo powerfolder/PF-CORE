@@ -2349,18 +2349,25 @@ public class Folder extends PFComponent {
                         + localFile.toDetailString());
                 }
                 watcher.addIgnoreFile(localFile);
-                if (!localCopy.delete()) {
-                    if (isWarning()) {
-                        String[] content = localCopy.list();
-                        String contentStr = content != null ? Arrays.asList(
-                            content).toString() : "(unable to access)";
-                        logWarning("Unable to delete directory locally: "
-                            + localCopy + ". Info: "
-                            + localFile.toDetailString() + ". contents: "
-                            + contentStr);
+                try {
+                    if (!localCopy.delete()) {
+                        if (isWarning()) {
+                            String[] content = localCopy.list();
+                            String contentStr = content != null
+                                ? Arrays.asList(content).toString()
+                                : "(unable to access)";
+                            logWarning("Unable to delete directory locally: "
+                                + localCopy + ". Info: "
+                                + localFile.toDetailString() + ". contents: "
+                                + contentStr);
+                        }
+                        // Skip. Dir was not actually deleted / could not sync
+                        return;
                     }
+                } finally {
+                    watcher.removeIgnoreFile(localFile);
                 }
-                watcher.removeIgnoreFile(localFile);
+
             } else if (localFile.isFile()) {
                 if (!deleteFile(localFile, localCopy)) {
                     logWarning("Unable to deleted. was not able to move old file to recycle bin "
@@ -2523,19 +2530,15 @@ public class Folder extends PFComponent {
         synchronized (dbAccessLock) {
             dao.deleteDomain(from.getId());
             if (newList.isNull()) {
+                rootDirectory.removeFilesOfMember(from);
                 // Do nothing.
                 return;
             }
             dao.store(from.getId(), newList.files);
         }
 
-        // logFine(
-        // "New Filelist received from " + from + " #files: "
-        // + newList.files.length);
-
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
-
         commissionRootFolder();
         rootDirectory.addAll(from, newList.files);
 
@@ -2598,18 +2601,12 @@ public class Folder extends PFComponent {
         if (changes.added != null) {
             dao.store(from.getId(), changes.added);
             findSameFiles(from, Arrays.asList(changes.added));
-        }
-        if (changes.removed != null) {
-            dao.store(from.getId(), changes.removed);
-            findSameFiles(from, Arrays.asList(changes.removed));
-        }
-
-        // don't do this in the server version
-        if (changes.added != null) {
             commissionRootFolder();
             rootDirectory.addAll(from, changes.added);
         }
         if (changes.removed != null) {
+            dao.store(from.getId(), changes.removed);
+            findSameFiles(from, Arrays.asList(changes.removed));
             commissionRootFolder();
             rootDirectory.addAll(from, changes.removed);
         }

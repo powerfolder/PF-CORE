@@ -433,7 +433,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
      * @param controller
      *            the controller to use.
      */
-    protected void assertDirMatch(File diskFile, DirectoryInfo fInfo,
+    protected void assertDirMatch(File diskFile, FileInfo fInfo,
         Controller controller)
     {
         boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());

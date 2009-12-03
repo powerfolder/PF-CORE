@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -254,6 +255,70 @@ public class DirectorySyncTest extends FiveControllerTestCase {
 
     private interface DirVisitor {
         void created(File dir);
+    }
+
+    /**
+     * TRAC #1854
+     */
+    public void testUnableToDeleteDirectory() {
+        File dirBart = new File(getFolderAtBart().getLocalBase(), "testDir");
+        assertTrue(dirBart.mkdir());
+        scanFolder(getFolderAtBart());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirBart, infoBart, getContollerBart());
+        // Check remote syncs
+        final File dirLisa = new File(getFolderAtLisa().getLocalBase(), dirBart
+            .getName());
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public String message() {
+                return "Dir at lisa not existing: " + dirLisa;
+            }
+
+            public boolean reached() {
+                return dirLisa.exists() && dirLisa.isDirectory()
+                    && getFolderAtLisa().getKnownItemCount() == 1;
+            }
+        });
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirLisa, infoLisa, getContollerLisa());
+
+        // Create a random file at lisa
+        TestHelper.createRandomFile(dirLisa);
+        assertTrue(dirBart.delete());
+
+        // Now sync to lisa. SHOULD STILL EXISTS!
+        scanFolder(getFolderAtBart());
+        FileInfo dirInfoAtBart = getFolderAtBart().getKnownDirectories()
+            .iterator().next();
+        assertTrue(dirInfoAtBart.toDetailString(), dirInfoAtBart.isDeleted());
+        assertEquals(dirInfoAtBart.toDetailString(), 1, dirInfoAtBart
+            .getVersion());
+        assertDirMatch(dirBart, dirInfoAtBart, getContollerBart());
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public String message() {
+                return "Dir at lisa not existing: " + dirLisa;
+            }
+
+            public boolean reached() {
+                return dirLisa.exists() && dirLisa.isDirectory();
+            }
+        });
+
+        TestHelper.waitMilliSeconds(1000);
+
+        FileInfo dirInfoAtLisa = getFolderAtLisa().getKnownDirectories()
+            .iterator().next();
+        // SHOULD STILL be version 0 = could not sync version 1 (=deleted) from
+        // bart.
+        assertEquals(dirInfoAtLisa.toDetailString(), 0, dirInfoAtLisa
+            .getVersion());
+        assertFalse(dirInfoAtLisa.toDetailString(), dirInfoAtLisa.isDeleted());
+        assertDirMatch(dirLisa, dirInfoAtLisa, getContollerLisa());
     }
 
     public void testSyncSingleDir() {
