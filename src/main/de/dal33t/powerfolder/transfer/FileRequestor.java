@@ -239,7 +239,6 @@ public class FileRequestor extends PFComponent {
             if (fInfo.isFile()) {
                 filesToDownload.add(fInfo);
             } else if (fInfo.isDiretory()) {
-                // TODO Move this into a extra thread?
                 createDirectory((DirectoryInfo) fInfo);
             }
         }
@@ -262,7 +261,7 @@ public class FileRequestor extends PFComponent {
     }
 
     private void createDirectory(DirectoryInfo dirInfo) {
-        if (isFiner()) {
+        if (isFine()) {
             logFine("Creating/Taking over direcory: "
                 + dirInfo.toDetailString());
         }
