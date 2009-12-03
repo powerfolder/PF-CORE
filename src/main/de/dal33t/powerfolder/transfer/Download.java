@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
@@ -61,7 +61,7 @@ public class Download extends Transfer {
     private boolean queued;
     private boolean markedBroken;
 
-    private Queue<RequestPart> pendingRequests = new LinkedList<RequestPart>();
+    private Queue<RequestPart> pendingRequests = new ConcurrentLinkedQueue<RequestPart>();
 
     private transient DownloadManager dlManager;
 
@@ -187,32 +187,27 @@ public class Download extends Transfer {
         requestCheckState();
 
         RequestPart rp;
-        synchronized (pendingRequests) {
-            if (pendingRequests.size() >= getTransferManager()
-                .getMaxRequestsQueued())
-            {
-                return false;
-            }
-
-            try {
-                rp = new RequestPart(getFile(), range, Math.max(0,
-                    transferState.getProgress()));
-            } catch (IllegalArgumentException e) {
-                // I need to do this because FileInfos are NOT immutable...
-                logWarning("Concurrent file change while requesting:" + e);
-                throw new BrokenDownloadException(
-                    "Concurrent file change while requesting: " + e);
-            }
-            pendingRequests.add(rp);
+        if (pendingRequests.size() >= getTransferManager()
+            .getMaxRequestsQueued())
+        {
+            return false;
         }
+        try {
+            rp = new RequestPart(getFile(), range, Math.max(0, transferState
+                .getProgress()));
+        } catch (IllegalArgumentException e) {
+            // I need to do this because FileInfos are NOT immutable...
+            logWarning("Concurrent file change while requesting:" + e);
+            throw new BrokenDownloadException(
+                "Concurrent file change while requesting: " + e);
+        }
+        pendingRequests.add(rp);
         getPartner().sendMessagesAsynchron(rp);
         return true;
     }
 
     public Collection<RequestPart> getPendingRequests() {
-        synchronized (pendingRequests) {
-            return Collections.unmodifiableCollection(pendingRequests);
-        }
+        return Collections.unmodifiableCollection(pendingRequests);
     }
 
     /**
@@ -241,16 +236,15 @@ public class Download extends Transfer {
         // Remove pending requests for the received chunk since
         // the manager below might want to request new parts.
         Range range = Range.getRangeByLength(chunk.offset, chunk.data.length);
-        synchronized (pendingRequests) {
-            // Maybe the sender merged requests from us, so check all
-            // requests
-            for (Iterator<RequestPart> ip = pendingRequests.iterator(); ip
-                .hasNext();)
-            {
-                RequestPart p = ip.next();
-                if (p.getRange().contains(range)) {
-                    ip.remove();
-                }
+
+        // Maybe the sender merged requests from us, so check all
+        // requests
+        for (Iterator<RequestPart> ip = pendingRequests.iterator(); ip
+            .hasNext();)
+        {
+            RequestPart p = ip.next();
+            if (p.getRange().contains(range)) {
+                ip.remove();
             }
         }
 

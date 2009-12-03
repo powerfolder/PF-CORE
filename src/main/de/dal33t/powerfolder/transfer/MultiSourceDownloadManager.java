@@ -244,7 +244,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         long p = filePartsState.countPartStates(filePartsState.getRange(),
             PartState.PENDING);
         if (p > 0) {
-            for (Download d : getSources()) {
+            for (Download d : downloads.values()) {
                 if (d.isStarted() && !d.isBroken()) {
                     for (RequestPart rp : d.getPendingRequests()) {
                         p -= rp.getRange().getLength();
