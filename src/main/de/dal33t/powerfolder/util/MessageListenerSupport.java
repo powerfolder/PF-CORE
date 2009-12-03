@@ -197,11 +197,10 @@ public class MessageListenerSupport {
             }
         }
 
-        boolean executeEDT = messageListenersInDispatchThread.get(All.class) != null
-            && !messageListenersInDispatchThread.get(All.class).isEmpty()
-            || messageListenersInDispatchThread.get(message.getClass()) != null
-            && !messageListenersInDispatchThread.get(message.getClass())
-                .isEmpty();
+        boolean executeEDT = (messageListenersInDispatchThread.get(All.class) != null && !messageListenersInDispatchThread
+            .get(All.class).isEmpty())
+            || (messageListenersInDispatchThread.get(message.getClass()) != null && !messageListenersInDispatchThread
+                .get(message.getClass()).isEmpty());
 
         if (!executeEDT) {
             // SKIP EDT executing.
