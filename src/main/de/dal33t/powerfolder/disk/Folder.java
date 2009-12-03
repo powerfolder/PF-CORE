@@ -1403,6 +1403,8 @@ public class Folder extends PFComponent {
                 folderChanged = synced != null;
                 if (folderChanged) {
                     dao.store(null, synced);
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(), synced);
                 }
             }
         }
@@ -2305,6 +2307,8 @@ public class Folder extends PFComponent {
         if (localFile == null) {
             remoteFile = addFile(remoteFile);
             dao.store(null, remoteFile);
+            commissionRootFolder();
+            rootDirectory.add(getController().getMySelf(), remoteFile);
             localFile = getFile(remoteFile);
             // File has been marked as removed at our side
             removedFiles.add(localFile);
@@ -2386,6 +2390,8 @@ public class Folder extends PFComponent {
         // Changed localFile -> remoteFile
         removedFiles.add(remoteFile);
         dao.store(null, remoteFile);
+        commissionRootFolder();
+        rootDirectory.add(getController().getMySelf(), remoteFile);
     }
 
     /**
@@ -2530,6 +2536,7 @@ public class Folder extends PFComponent {
         synchronized (dbAccessLock) {
             dao.deleteDomain(from.getId());
             if (newList.isNull()) {
+                commissionRootFolder();
                 rootDirectory.removeFilesOfMember(from);
                 // Do nothing.
                 return;
@@ -2624,7 +2631,8 @@ public class Folder extends PFComponent {
                 FileInfo localfileInfo = getFile(changes.added[0]);
                 FileInfo remoteFileInfo = changes.added[0];
                 if (localfileInfo != null
-                    && !remoteFileInfo.isNewerThan(localfileInfo))
+                    && !remoteFileInfo.isNewerThan(localfileInfo)
+                    && !remoteFileInfo.isDeleted())
                 {
                     // We have this or a newer version of the file. = Dont'
                     // trigger filerequestor.
@@ -2774,6 +2782,9 @@ public class Folder extends PFComponent {
                     }
                     // localFileInfo.copyFrom(remoteFileInfo);
                     dao.store(null, remoteFileInfo);
+                    commissionRootFolder();
+                    rootDirectory.add(getController().getMySelf(),
+                        remoteFileInfo);
                     // FIXME That might produce a LOT of traffic! Single update
                     // message per file! This also might intefere with FileList
                     // exchange at beginning of communication
@@ -2814,14 +2825,11 @@ public class Folder extends PFComponent {
                     }
 
                     synchronized (dbAccessLock) {
-                        // FIXME: Ugly. FileInfo needs to be removed add0
-                        // re-added to Map since filename is the key and
-                        // this is diffrent in this case
-                        // knownFiles.remove(localFileInfo);
-                        // Copy over
-                        // localFileInfo.copyFrom(remoteFileInfo);
-                        // Re-Add and index
-                        dao.store(null, addFile(remoteFileInfo));
+                        remoteFileInfo = addFile(remoteFileInfo);
+                        dao.store(null, remoteFileInfo);
+                        commissionRootFolder();
+                        rootDirectory.add(getController().getMySelf(),
+                            remoteFileInfo);
                     }
 
                     // FIXME That might produce a LOT of traffic! Single
@@ -3050,10 +3058,8 @@ public class Folder extends PFComponent {
         }
         synchronized (rootDirectoryLock) {
             if (!rootDirectoryLock.getAndSet(true)) {
-                Collection<FileInfo> infoCollection = dao.findAllFiles(null);
-                for (FileInfo info : infoCollection) {
-                    rootDirectory.add(getController().getMySelf(), info);
-                }
+                rootDirectory.addAll(getController().getMySelf(), dao
+                    .findAllFiles(null));
                 if (isFiner()) {
                     logFiner("Commissioned folder " + getName());
                 }
