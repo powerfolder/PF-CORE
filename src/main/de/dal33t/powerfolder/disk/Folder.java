@@ -1226,15 +1226,10 @@ public class Folder extends PFComponent {
                 }
             } else {
                 dir.mkdirs();
+                dir.setLastModified(dirInfo.getModifiedDate().getTime());
             }
         } finally {
             watcher.removeIgnoreFile(dirInfo);
-        }
-
-        if (!dir.canRead()) {
-            // ignore not readable
-            logWarning("File not readable: " + dir);
-            return null;
         }
 
         if (dir.equals(getSystemSubDir())) {
@@ -1242,89 +1237,7 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        // ignore our database file
-        if (dir.getName().equals(DB_FILENAME)
-            || dir.getName().equals(DB_BACKUP_FILENAME))
-        {
-            if (!dir.isHidden()) {
-                FileUtils.makeHiddenOnWindows(dir);
-            }
-            logFiner("Ignoring folder database file: " + dir);
-            return null;
-        }
-
-        checkFileName(dirInfo);
-
-        synchronized (scanLock) {
-            synchronized (dbAccessLock) {
-                if (!isKnown(dirInfo)) {
-                    if (isFiner()) {
-                        logFiner(dirInfo + ", modified by: "
-                            + dirInfo.getModifiedBy());
-                    }
-                    // Update last - modified data
-                    MemberInfo modifiedBy = dirInfo.getModifiedBy();
-                    if (modifiedBy == null) {
-                        modifiedBy = getController().getMySelf().getInfo();
-                    }
-                    Member from = modifiedBy.getNode(getController(), true);
-
-                    // if (from != null) {
-                    // modifiedBy = from.getInfo();
-                    // }
-                    // Date modDate = dirInfo.getModifiedDate();
-                    // long size = dirInfo.getSize();
-                    // if (dir.exists()) {
-                    // modDate = new Date(dir.lastModified());
-                    // size = dir.length();
-                    // }
-
-                    // if (dirInfo.isDeleted()) {
-                    // fInfo = FileInfo.unmarshallDelectedFile(currentInfo,
-                    // fInfo.getRelativeName(), modifiedBy, modDate, fInfo
-                    // .getVersion());
-                    // } else {
-                    // fInfo = FileInfo.unmarshallExistingFile(currentInfo,
-                    // fInfo.getRelativeName(), size, modifiedBy, modDate, fInfo
-                    // .getVersion());
-                    // }
-
-                    dirInfo = addFile(dirInfo);
-                    dao.store(null, dirInfo);
-
-                    // update directory
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), dirInfo);
-
-                    // get folder icon info and set it
-                    if (FileUtils.isDesktopIni(dir)) {
-                        makeFolderIcon(dir);
-                    }
-
-                    // Fire folder change event
-                    // fireEvent(new FolderChanged());
-
-                    if (isFiner()) {
-                        logFiner(toString() + ": Local directory scanned: "
-                            + dirInfo.toDetailString());
-                    }
-                    return dirInfo;
-                }
-
-                // Now process/check existing files
-                FileInfo dbFile = getFile(dirInfo);
-                FileInfo syncFile = dbFile.syncFromDiskIfRequired(
-                    getController(), dir);
-                if (syncFile != null) {
-                    dao.store(null, syncFile);
-                }
-                if (isFiner()) {
-                    logFiner("Directory already known: "
-                        + dirInfo.toDetailString());
-                }
-                return syncFile != null ? syncFile : dbFile;
-            }
-        }
+        return scanFile(dirInfo);
     }
 
     /**
@@ -3194,7 +3107,7 @@ public class Folder extends PFComponent {
                     FileInfo alreadyIncoming = incomingFiles.get(remoteDir);
                     boolean notLocal = localFile == null;
                     boolean newerThanLocal = localFile != null
-                        && remoteDir.isNewerThan(localFile);
+                        && remoteDir.isNewerThan(localFile);              
                     // Check if this remote file is newer than one we may
                     // already have.
                     boolean newestRemote = alreadyIncoming == null

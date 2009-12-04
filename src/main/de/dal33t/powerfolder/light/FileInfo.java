@@ -408,28 +408,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @param repo
-     *            the folder repository.
-     * @return if this file is newer on local disk than in folder.
-     */
-    public boolean isNewerOnDisk(FolderRepository repo) {
-        if (repo == null) {
-            throw new NullPointerException("FolderRepo is null");
-        }
-        File diskFile = getDiskFile(repo);
-        if (diskFile == null) {
-            return false;
-        }
-        return lastModifiedDate.getTime() < diskFile.lastModified();
-    }
-
-    /**
      * @param ofInfo
      *            the other fileinfo.
      * @return if this file is newer than the other one. By file version, or
      *         file modification date if version of both =0
      */
     public boolean isNewerThan(FileInfo ofInfo) {
+        return isNewerThan(ofInfo, false);
+    }
+
+    protected boolean isNewerThan(FileInfo ofInfo, boolean ignoreLastModified) {
         if (ofInfo == null) {
             throw new NullPointerException("Other file is null");
         }
@@ -439,15 +427,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 ofInfo.lastModifiedDate);
         }
         if (version == ofInfo.version) {
-            // /if (logEnabled) {
-            // log()
-            // .verbose(
-            // "Inital version of two files detected, the one with newer
-            // modification date is newer");
-            // }
-            // return Convert
-            // .convertToGlobalPrecision(getModifiedDate().getTime()) > Convert
-            // .convertToGlobalPrecision(ofInfo.getModifiedDate().getTime());
+            if (ignoreLastModified) {
+                return false;
+            }
             return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
                 ofInfo.lastModifiedDate);
         }

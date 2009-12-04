@@ -68,6 +68,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
     }
 
     public void testInitialSync() {
+        disconnectAll();
+        LoggingManager.setConsoleLogging(Level.WARNING);
         File dirBart = new File(getFolderAtBart().getLocalBase(), "testDir");
         assertTrue(dirBart.mkdir());
         TestHelper.waitMilliSeconds(3000);
@@ -78,15 +80,19 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
 
+        connectAll();
         assertEquals(1, getFolderAtBart().getKnownItemCount());
         DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirBart, infoBart, getContollerBart());
+        assertEquals(getFolderAtBart().getIncomingFiles().toString(), 0,
+            getFolderAtBart().getIncomingFiles().size());
 
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
+        assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
     }
 
     public void testSyncMixedStrucutre() throws IOException {
@@ -347,8 +353,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
+        assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
 
-        LoggingManager.setConsoleLogging(Level.FINE);
         // Now delete at Lisa
         assertTrue(dirLisa.delete());
         scanFolder(getFolderAtLisa());

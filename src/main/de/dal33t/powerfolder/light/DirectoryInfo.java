@@ -88,6 +88,15 @@ public class DirectoryInfo extends FileInfo {
     }
 
     /**
+     * @param ofInfo
+     *            the other fileinfo.
+     * @return if this file is newer than the other one. By file version ONLY.
+     */
+    public boolean isNewerThan(FileInfo ofInfo) {
+        return super.isNewerThan(ofInfo, true);
+    }
+
+    /**
      * @param diskFile
      *            the file on disk.
      * @return true if the fileinfo is in sync with the file on disk.
@@ -96,7 +105,7 @@ public class DirectoryInfo extends FileInfo {
         Reject.ifNull(diskFile, "Diskfile is null");
         return super.inSyncWithDisk0(diskFile, true);
     }
-    
+
     // hashCode() is used from FileInfo
 
     @Override
