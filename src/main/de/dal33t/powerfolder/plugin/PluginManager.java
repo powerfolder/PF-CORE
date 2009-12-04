@@ -226,11 +226,12 @@ public class PluginManager extends PFComponent {
     }
 
     /**
-     * @param plugin
+     * @param thePlugin
      * @param enabled
      *            new status of the plugin
      */
-    public void setEnabled(Plugin plugin, boolean enabled) {
+    public void setEnabled(Plugin thePlugin, boolean enabled) {
+        Plugin plugin = findPlugin(thePlugin);
         logFine("enable: " + enabled + ' ' + plugin);
         if (enabled) {
             disabledPlugins.remove(plugin);
@@ -300,6 +301,37 @@ public class PluginManager extends PFComponent {
      */
     public int countPlugins() {
         return plugins.size() + disabledPlugins.size();
+    }
+
+    /**
+     * @param searchPlugin
+     * @return the first plugin with the given instance or it's wrapper.
+     */
+    public Plugin findPlugin(Plugin searchPlugin) {
+        Reject.ifNull(searchPlugin, "searchPlugin");
+        for (Plugin plugin : plugins) {
+            if (searchPlugin.equals(plugin)) {
+                return plugin;
+            }
+            if (plugin instanceof PluginWrapper) {
+                if (((PluginWrapper) plugin).getDeligate().equals(searchPlugin))
+                {
+                    return plugin;
+                }
+            }
+        }
+        for (Plugin plugin : disabledPlugins) {
+            if (searchPlugin.equals(plugin)) {
+                return plugin;
+            }
+            if (plugin instanceof PluginWrapper) {
+                if (((PluginWrapper) plugin).getDeligate().equals(searchPlugin))
+                {
+                    return plugin;
+                }
+            }
+        }
+        return searchPlugin;
     }
 
     /**

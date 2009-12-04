@@ -71,4 +71,5 @@ public abstract class PluginWrapper implements Plugin {
     public void showOptionsDialog(PreferencesDialog prefDialog) {
         deligate.showOptionsDialog(prefDialog);
     }
+
 }
