@@ -175,6 +175,8 @@ public class WinUtils extends Loggable {
         logFiner("Found " + pfile.getAbsolutePath());
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             SHORTCUTNAME);
+        File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+            false), SHORTCUTNAME);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized", Translation
                 .getTranslation("winutils.shortcut.description"), pfile
@@ -184,13 +186,16 @@ public class WinUtils extends Loggable {
         } else {
             logFiner("Deleting startup link.");
             pflnk.delete();
+            pflnkAll.delete();
         }
     }
 
     public boolean isPFStartup() {
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             SHORTCUTNAME);
-        return pflnk.exists();
+        File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+            false), SHORTCUTNAME);
+        return pflnk.exists() || pflnkAll.exists();
     }
 
     /**
