@@ -60,6 +60,21 @@ public class Help {
     }
 
     /**
+     * Opens the quickstart guides
+     * 
+     * @param controller
+     * @param article
+     */
+    public static void openWikiArticle(Controller controller, String article) {
+        LOG.fine("Opening wiki article '" + article + "'");
+        try {
+            BrowserLauncher.openURL(getWikiArticleURL(controller, article));
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Unable to open quickstart guides", e);
+        }
+    }
+
+    /**
      * Creates a linklabel, which links to a help topic on the PowerFolder
      * homepage.
      * 
@@ -74,7 +89,7 @@ public class Help {
         String labelText)
     {
         return new LinkLabel(controller, labelText,
-           ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
+            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
     }
 
     /**
@@ -105,7 +120,7 @@ public class Help {
         String article)
     {
         String toolTips = Translation.getTranslation("general.what_is_this");
-        return new LinkJButton(Icons.getIconById(Icons.QUESTION), toolTips, getWikiArticleURL(
-            controller, article));
+        return new LinkJButton(Icons.getIconById(Icons.QUESTION), toolTips,
+            getWikiArticleURL(controller, article));
     }
 }
