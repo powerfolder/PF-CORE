@@ -88,14 +88,14 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
-        builder.add(latestVersionButton, cc.xy(1, row));
-
-        row += 2;
-
-        builder.add(dateVersionButton, cc.xy(1, row));
-        builder.add(dateChooser, cc.xy(3, row));
-
-        row += 2;
+//        builder.add(latestVersionButton, cc.xy(1, row));
+//
+//        row += 2;
+//
+//        builder.add(dateVersionButton, cc.xy(1, row));
+//        builder.add(dateChooser, cc.xy(3, row));
+//
+//        row += 2;
 
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
