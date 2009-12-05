@@ -38,11 +38,14 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import jwf.WizardPanel;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
 
@@ -62,7 +65,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JScrollPane scrollPane;
     private final RestoreFilesTableModel tableModel;
     private final List<FileInfo> fileInfosToRestore;
-
+    private JDateChooser dateChooser;
     private JRadioButton latestVersionButton;
     private JRadioButton dateVersionButton;
     public MultiFileRestorePanel(Controller controller, Folder folder,
@@ -76,7 +79,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout("140dlu, 3dlu, pref:grow",
+        FormLayout layout = new FormLayout("140dlu, 3dlu, pref, 3dlu, pref:grow",
                 "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -85,13 +88,14 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
-//        builder.add(latestVersionButton, cc.xy(1, row));
-//
-//        row += 2;
-//
-//        builder.add(dateVersionButton, cc.xy(1, row));
-//
-//        row += 2;
+        builder.add(latestVersionButton, cc.xy(1, row));
+
+        row += 2;
+
+        builder.add(dateVersionButton, cc.xy(1, row));
+        builder.add(dateChooser, cc.xy(3, row));
+
+        row += 2;
 
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
@@ -107,7 +111,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         scrollPane.setVisible(false);
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroWidth(scrollPane);
-        builder.add(scrollPane, cc.xyw(1, row, 3));
+        builder.add(scrollPane, cc.xyw(1, row, 5));
 
         return builder.getPanel();
     }
@@ -124,7 +128,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         updateButtons();
         scrollPane.setVisible(false);
 
-        SwingWorker worker = new RestoreWorker();
+        SwingWorker worker = new MyFolderCreateWorker();
         worker.start();
     }
 
@@ -139,8 +143,16 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
 
+        dateChooser = new JDateChooser();
+
+        MyActionListener actionListener = new MyActionListener();
+        latestVersionButton.addActionListener(actionListener);
+        dateVersionButton.addActionListener(actionListener);
+
         latestVersionButton.setOpaque(false);
         dateVersionButton.setOpaque(false);
+        
+        updateDateChooser();
     }
 
     public boolean hasNext() {
@@ -152,7 +164,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 fileInfosToRestore);
     }
 
-    private class RestoreWorker extends SwingWorker {
+    private class MyFolderCreateWorker extends SwingWorker {
         public Object construct() {
             List<FileInfo> versions = new ArrayList<FileInfo>();
             try {
@@ -235,6 +247,23 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         updateButtons();
                     }
                 });
+            }
+        }
+    }
+
+    private void updateDateChooser() {
+        dateChooser.setVisible(dateVersionButton.isSelected());
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == latestVersionButton ||
+                    e.getSource() == dateVersionButton) {
+                updateDateChooser();
             }
         }
     }
