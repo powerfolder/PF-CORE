@@ -57,4 +57,15 @@ public class DateUtilTest extends TestCase {
         // Twenty days in the future is more than 15 days ahead.
         assertTrue("Future date fault 20", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
     }
+
+    public void testBeforeEndOfDate() {
+        Calendar cal = new GregorianCalendar();
+        cal.add(Calendar.DATE, -1);
+        assertTrue("Yesterday is before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+        cal.add(Calendar.DATE, 1);
+        assertTrue("Today is before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+        cal.add(Calendar.DATE, 1);
+        assertFalse("Tomorrow is not before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+    }
+
 }

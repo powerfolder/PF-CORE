@@ -30,16 +30,20 @@ import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.ui.*;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import jwf.WizardPanel;
 import com.jgoodies.forms.layout.FormLayout;
@@ -88,14 +92,14 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         int row = 1;
 
-//        builder.add(latestVersionButton, cc.xy(1, row));
-//
-//        row += 2;
-//
-//        builder.add(dateVersionButton, cc.xy(1, row));
-//        builder.add(dateChooser, cc.xy(3, row));
-//
-//        row += 2;
+        builder.add(latestVersionButton, cc.xy(1, row));
+
+        row += 2;
+
+        builder.add(dateVersionButton, cc.xy(1, row));
+        builder.add(dateChooser, cc.xy(3, row));
+
+        row += 2;
 
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
@@ -103,7 +107,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         row += 2;
 
         bar.setIndeterminate(true);
-        builder.add(bar, cc.xy(1, row));
 
         RestoreFilesTable table = new RestoreFilesTable(tableModel);
         scrollPane = new JScrollPane(table);
@@ -111,6 +114,9 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         scrollPane.setVisible(false);
         UIUtil.removeBorder(scrollPane);
         UIUtil.setZeroWidth(scrollPane);
+
+        // bar and scrollPane share the same slot.
+        builder.add(bar, cc.xy(1, row));
         builder.add(scrollPane, cc.xyw(1, row, 5));
 
         return builder.getPanel();
@@ -123,13 +129,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     protected void afterDisplay() {
 
         // In case user comes back from next screen.
-        bar.setVisible(true);
-        hasNext = false;
         updateButtons();
-        scrollPane.setVisible(false);
-
-        SwingWorker worker = new MyFolderCreateWorker();
-        worker.start();
+        loadVersions();
     }
 
     protected void initComponents() {
@@ -148,11 +149,20 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         MyActionListener actionListener = new MyActionListener();
         latestVersionButton.addActionListener(actionListener);
         dateVersionButton.addActionListener(actionListener);
+        dateChooser.addPropertyChangeListener("date", new MyPropertyChangeListener());
 
         latestVersionButton.setOpaque(false);
         dateVersionButton.setOpaque(false);
         
         updateDateChooser();
+    }
+
+    public boolean validateNext() {
+        if (dateChooser.getDate().after(new Date())) {
+            DialogFactory.genericDialog(getController(), "x", "y", GenericDialogType.ERROR);
+            return false;
+        }
+        return true;
     }
 
     public boolean hasNext() {
@@ -163,6 +173,23 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         return new MultiFileRestoringPanel(getController(), folder,
                 fileInfosToRestore);
     }
+
+    private void updateDateChooser() {
+        dateChooser.setVisible(dateVersionButton.isSelected());
+    }
+
+    private void loadVersions() {
+        hasNext = false;
+        updateButtons();
+        bar.setVisible(true);
+        scrollPane.setVisible(false);
+        SwingWorker worker = new MyFolderCreateWorker();
+        worker.start();
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
 
     private class MyFolderCreateWorker extends SwingWorker {
         public Object construct() {
@@ -182,6 +209,12 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     }
                 }
 
+                // Get target date.
+                Date targetDate = null;
+                if (dateVersionButton.isSelected()) {
+                    targetDate = dateChooser.getDate();
+                }
+
                 int count = 1;
                 for (FileInfo fileInfo : deletedFileInfos) {
                     infoLabel.setText(Translation.getTranslation(
@@ -193,8 +226,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                             .getArchivedFilesInfos(fileInfo, myInfo);
                     FileInfo mostRecent = null;
                     for (FileInfo info : infoList) {
-                        if (mostRecent == null || mostRecent.getVersion()
-                                < info.getVersion()) {
+                        if (isBetterVersion(mostRecent, info, targetDate)) {
                             mostRecent = info;
                         }
                     }
@@ -203,8 +235,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         List<FileInfo> serviceList = service
                                 .getArchivedFilesInfos(fileInfo);
                         for (FileInfo info : serviceList) {
-                            if (mostRecent == null || mostRecent.getVersion()
-                                    < info.getVersion()) {
+                            if (isBetterVersion(mostRecent, info, targetDate)) {
                                 mostRecent = info;
                             }
                         }
@@ -214,14 +245,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         versions.add(mostRecent);
                     }
                 }
-
                 bar.setVisible(false);
 
-                if (versions.isEmpty()) {
-                    infoLabel.setText(Translation.getTranslation(
-                            "wizard.multi_file_restore_panel.retrieving_none"));
-                    return null;
-                }
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Exception", e);
                 infoLabel.setText(Translation.getTranslation(
@@ -230,41 +255,55 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             return versions;
         }
 
+        private boolean isBetterVersion(FileInfo mostRecent, FileInfo info,
+                                   Date targetDate) {
+            if (mostRecent == null || mostRecent.getVersion()
+                    < info.getVersion()) {
+                return targetDate == null || DateUtil.isBeforeEndOfDate(
+                        info.getModifiedDate(), targetDate);
+            }
+            return false;
+        }
+
         @SuppressWarnings({"unchecked"})
         protected void afterConstruct() {
             final List<FileInfo> versions = (List<FileInfo>) getValue();
-            if (versions != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        scrollPane.setVisible(true);
-                        bar.setVisible(false);
-                        tableModel.setVersions(versions);
-                        hasNext = true;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    scrollPane.setVisible(true);
+                    bar.setVisible(false);
+                    tableModel.setVersions(versions);
+                    hasNext = !versions.isEmpty();
+                    if (versions.isEmpty()) {
+                        infoLabel.setText(Translation.getTranslation(
+                                "wizard.multi_file_restore_panel.retrieving_none"));
+                    } else {
                         infoLabel.setText(Translation.getTranslation(
                                 "wizard.multi_file_restore_panel.retrieving_success"));
-                        fileInfosToRestore.clear();
-                        fileInfosToRestore.addAll(versions);
-                        updateButtons();
                     }
-                });
+                    fileInfosToRestore.clear();
+                    fileInfosToRestore.addAll(versions);
+                    bar.setVisible(false);
+                    scrollPane.setVisible(true);
+                    updateButtons();
+                }
+            });
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(latestVersionButton) ||
+                    e.getSource().equals(dateVersionButton)) {
+                updateDateChooser();
+                loadVersions();
             }
         }
     }
 
-    private void updateDateChooser() {
-        dateChooser.setVisible(dateVersionButton.isSelected());
-    }
-
-    // ////////////////
-    // Inner Classes //
-    // ////////////////
-
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == latestVersionButton ||
-                    e.getSource() == dateVersionButton) {
-                updateDateChooser();
-            }
+    private class MyPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            loadVersions();
         }
     }
 }

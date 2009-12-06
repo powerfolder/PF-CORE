@@ -100,5 +100,26 @@ public class DateUtil {
         cal.add(Calendar.DATE, n);
         return date.after(cal.getTime());
     }
+
+    /**
+     * Is the subject date before the end of the predicate date?
+     * '5 December 2009 21:15:45' is before end of '5 December 2009'.
+     * Actually tests that subject is before day-after-predicate.
+     *
+     * @param subject
+     * @param predicate
+     * @return
+     */
+    public static boolean isBeforeEndOfDate(Date subject, Date predicate) {
+
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(predicate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.add(Calendar.DATE, 1);
+        return subject.before(cal.getTime());
+    }
     
 }
