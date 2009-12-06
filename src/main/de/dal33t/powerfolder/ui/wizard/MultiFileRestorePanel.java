@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTable;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -72,6 +73,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JDateChooser dateChooser;
     private JRadioButton latestVersionButton;
     private JRadioButton dateVersionButton;
+    private JRadioButton redownloadButton;
     public MultiFileRestorePanel(Controller controller, Folder folder,
                                  List<FileInfo> deletedFileInfos) {
         super(controller);
@@ -84,7 +86,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     protected JComponent buildContent() {
         FormLayout layout = new FormLayout("140dlu, 3dlu, pref, 3dlu, pref:grow",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -99,8 +101,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         builder.add(dateVersionButton, cc.xy(1, row));
         builder.add(dateChooser, cc.xy(3, row));
 
-        row += 2;
+        if (Feature.REDOWNLOAD.isEnabled()) {
+            row += 2;
 
+            builder.add(redownloadButton, cc.xy(1, row));
+        }
+
+        row += 2;
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
                 CellConstraints.DEFAULT));
 
@@ -137,32 +144,35 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         bar = new JProgressBar();
         latestVersionButton = new JRadioButton(Translation.getTranslation(
                 "wizard.multi_file_restore_panel.button_latest"));
+        latestVersionButton.setToolTipText(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_latest.tip"));
         latestVersionButton.setSelected(true);
         dateVersionButton = new JRadioButton(Translation.getTranslation(
                 "wizard.multi_file_restore_panel.button_date"));
+        dateVersionButton.setToolTipText(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_date.tip"));
+        redownloadButton = new JRadioButton(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_redownload"));
+        redownloadButton.setToolTipText(Translation.getTranslation(
+                "wizard.multi_file_restore_panel.button_redownload.tip"));
         ButtonGroup bg = new ButtonGroup();
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
+        bg.add(redownloadButton);
 
         dateChooser = new JDateChooser();
 
         MyActionListener actionListener = new MyActionListener();
         latestVersionButton.addActionListener(actionListener);
         dateVersionButton.addActionListener(actionListener);
+        redownloadButton.addActionListener(actionListener);
         dateChooser.addPropertyChangeListener("date", new MyPropertyChangeListener());
 
         latestVersionButton.setOpaque(false);
         dateVersionButton.setOpaque(false);
-        
-        updateDateChooser();
-    }
+        redownloadButton.setOpaque(false);
 
-    public boolean validateNext() {
-        if (dateChooser.getDate().after(new Date())) {
-            DialogFactory.genericDialog(getController(), "x", "y", GenericDialogType.ERROR);
-            return false;
-        }
-        return true;
+        updateDateChooser();
     }
 
     public boolean hasNext() {
@@ -171,7 +181,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     public WizardPanel next() {
         return new MultiFileRestoringPanel(getController(), folder,
-                fileInfosToRestore);
+                fileInfosToRestore, redownloadButton.isSelected());
     }
 
     private void updateDateChooser() {
@@ -181,8 +191,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private void loadVersions() {
         hasNext = false;
         updateButtons();
-        bar.setVisible(true);
-        scrollPane.setVisible(false);
         SwingWorker worker = new MyFolderCreateWorker();
         worker.start();
     }
@@ -193,6 +201,9 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     private class MyFolderCreateWorker extends SwingWorker {
         public Object construct() {
+            bar.setVisible(true);
+            scrollPane.setVisible(false);
+            infoLabel.setVisible(true);
             List<FileInfo> versions = new ArrayList<FileInfo>();
             try {
                 FileArchiver fileArchiver = folder.getFileArchiver();
@@ -284,7 +295,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     fileInfosToRestore.clear();
                     fileInfosToRestore.addAll(versions);
                     bar.setVisible(false);
-                    scrollPane.setVisible(true);
+                    scrollPane.setVisible(!redownloadButton.isSelected());
+                    infoLabel.setVisible(!redownloadButton.isSelected());
                     updateButtons();
                 }
             });
@@ -297,6 +309,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     e.getSource().equals(dateVersionButton)) {
                 updateDateChooser();
                 loadVersions();
+            } else if (e.getSource().equals(redownloadButton)) {
+                updateDateChooser();
+                scrollPane.setVisible(false);
+                infoLabel.setVisible(false);
+                bar.setVisible(false);
             }
         }
     }

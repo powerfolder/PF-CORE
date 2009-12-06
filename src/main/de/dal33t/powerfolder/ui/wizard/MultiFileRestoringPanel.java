@@ -50,18 +50,21 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     private static final Logger log = Logger.getLogger(MultiFileRestoringPanel
             .class.getName());
 
-    private List<FileInfo> fileInfosToRestore;
-    private JLabel statusLabel;
+    private final List<FileInfo> fileInfosToRestore;
     private final Folder folder;
+    private final boolean redownload;
 
+    private JLabel statusLabel;
     private long successCount;
     private long totalCount;
 
     public MultiFileRestoringPanel(Controller controller, Folder folder,
-                                 List<FileInfo> fileInfosToRestore) {
+                                 List<FileInfo> fileInfosToRestore,
+                                 boolean redownload) {
         super(controller);
         this.fileInfosToRestore = fileInfosToRestore;
         this.folder = folder;
+        this.redownload = redownload;
     }
 
     protected JComponent buildContent() {
@@ -148,26 +151,31 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                         .getFolderRepository());
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
-                if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
-                    log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
-                            " from local archive");
-                    folder.scanChangedFile(fileInfoToRestore);
+                if (redownload) {
+                    // now what???
                     restored = true;
                 } else {
-                    // Not local. OnlineStorage perhaps?
-                    boolean online = folder.hasMember(getController()
-                            .getOSClient().getServer());
-                    if (online) {
-                        ServerClient client = getController().getOSClient();
-                        if (client != null && client.isConnected()
-                                && client.isLoggedIn()) {
-                            FolderService service = client.getFolderService();
-                            if (service != null) {
-                                service.restore(fileInfoToRestore, true);
-                                log.info("Restored " + fileInfoToRestore
-                                        .getFilenameOnly()
-                                        + " from OS archive");
-                                restored = true;
+                    if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
+                        log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
+                                " from local archive");
+                        folder.scanChangedFile(fileInfoToRestore);
+                        restored = true;
+                    } else {
+                        // Not local. OnlineStorage perhaps?
+                        boolean online = folder.hasMember(getController()
+                                .getOSClient().getServer());
+                        if (online) {
+                            ServerClient client = getController().getOSClient();
+                            if (client != null && client.isConnected()
+                                    && client.isLoggedIn()) {
+                                FolderService service = client.getFolderService();
+                                if (service != null) {
+                                    service.restore(fileInfoToRestore, true);
+                                    log.info("Restored " + fileInfoToRestore
+                                            .getFilenameOnly()
+                                            + " from OS archive");
+                                    restored = true;
+                                }
                             }
                         }
                     }
