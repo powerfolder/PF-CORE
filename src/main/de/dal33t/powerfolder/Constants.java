@@ -303,6 +303,8 @@ public class Constants {
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
+    
+    public static final String SESSIONS_SUB_DIR = "sessions";
 
     // Web stuff **************************************************************
     
