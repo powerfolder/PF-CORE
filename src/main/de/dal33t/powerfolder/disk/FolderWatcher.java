@@ -179,7 +179,7 @@ public class FolderWatcher extends PFComponent {
                     }
                     FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
                     if (fileInfo == null) {
-                        logWarning("Was not able to scan file: "
+                        logWarning("No change of file: "
                             + dirtyFile.toDetailString());
                     } else {
                         scanned++;
