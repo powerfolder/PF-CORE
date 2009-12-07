@@ -87,7 +87,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     }
 
     protected void afterDisplay() {
-        SwingWorker worker = new MyFolderCreateWorker();
+        SwingWorker worker = new RestoreWorker();
         worker.start();
     }
 
@@ -125,7 +125,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
         }
     }
     
-    private class MyFolderCreateWorker extends SwingWorker {
+    private class RestoreWorker extends SwingWorker {
 
         public Object construct() {
             int i = 1;
