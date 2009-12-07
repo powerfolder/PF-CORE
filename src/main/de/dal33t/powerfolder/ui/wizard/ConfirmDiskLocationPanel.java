@@ -141,20 +141,10 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
                 .getTranslation("wizard.choose_disk_location.backup_by_online_storage"));
         // Is backup suggested?
         if (backupByOS) {
-
-            // Remember last preference...
-            Boolean buos = PreferencesEntry.BACKUP_OS
-                .getValueBoolean(getController());
-            if (buos == null) {
-                // .. or default to if last os client login ok.
-                buos = getController().getOSClient().isLoggedIn();
-            }
-            backupByOnlineStorageBox.setSelected(buos);
+            backupByOnlineStorageBox.setSelected(true);
         }
         backupByOnlineStorageBox.getModel().addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                PreferencesEntry.BACKUP_OS.setValue(getController(),
-                    backupByOnlineStorageBox.isSelected());
                 if (backupByOnlineStorageBox.isSelected()) {
                     getController().getUIController().getApplicationModel()
                         .getServerClientModel().checkAndSetupAccount();

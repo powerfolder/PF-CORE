@@ -107,14 +107,6 @@ public class ApplicationModel extends PFUIComponent {
 
         useOSModel = PreferencesEntry.USE_ONLINE_STORAGE
             .getModel(getController());
-        useOSModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // User will not want to back up to OS.
-                PreferencesEntry.BACKUP_OS.setValue(getController(),
-                    (Boolean) evt.getNewValue());
-            }
-        });
-
         licenseModel = new LicenseModel();
     }
 
@@ -184,7 +176,8 @@ public class ApplicationModel extends PFUIComponent {
 
         public void chatChanged(ChatModelEvent event) {
             if (event.isStatus()
-                    || event.getSource().equals(getController().getMySelf())) {
+                || event.getSource().equals(getController().getMySelf()))
+            {
                 // Ignore status updates and own messages
                 return;
             }
