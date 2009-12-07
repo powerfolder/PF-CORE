@@ -192,6 +192,7 @@ public class Debug {
             b.append("(del) ");
         }
         b.append(f.getRelativeName());
+        b.append(f.isDiretory() ? " (D)" : "");
         b.append(';');
 
         b.append(f.getModifiedBy().nick);
