@@ -547,32 +547,19 @@ public class Folder extends PFComponent {
 
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
-
-                commissionRootFolder();
-
                 // new files
                 if (isFiner()) {
                     logFiner("Adding " + scanResult.getNewFiles().size()
                         + " to directory");
                 }
-                rootDirectory.addAll(getController().getMySelf(),
-                    scanResult.newFiles);
-                dao.store(null, scanResult.newFiles);
-
+                // New files
+                store(getController().getMySelf(), scanResult.newFiles);
                 // deleted files
-                rootDirectory.addAll(getController().getMySelf(),
-                    scanResult.deletedFiles);
-                dao.store(null, scanResult.deletedFiles);
-
+                store(getController().getMySelf(), scanResult.deletedFiles);
                 // restored files
-                rootDirectory.addAll(getController().getMySelf(),
-                    scanResult.restoredFiles);
-                dao.store(null, scanResult.restoredFiles);
-
+                store(getController().getMySelf(), scanResult.restoredFiles);
                 // changed files
-                rootDirectory.addAll(getController().getMySelf(),
-                    scanResult.changedFiles);
-                dao.store(null, scanResult.changedFiles);
+                store(getController().getMySelf(), scanResult.changedFiles);
             }
         }
 
@@ -720,22 +707,6 @@ public class Folder extends PFComponent {
      */
 
     /**
-     * Scans a new, deleted or restored File, eg from (drag and) drop.
-     * 
-     * @param fileInfo
-     *            the file to scan
-     * @return the new {@link FileInfo} or null if could not be scanned
-     */
-    public FileInfo scanChangedFile(FileInfo fileInfo) {
-        Reject.ifNull(fileInfo, "FileInfo is null");
-        FileInfo localFileInfo = scanFile(fileInfo);
-        if (localFileInfo != null) {
-            fileChanged(localFileInfo);
-        }
-        return localFileInfo;
-    }
-
-    /**
      * Scans a downloaded file, renames tempfile to real name moves possible
      * existing file to file archive.
      * 
@@ -837,30 +808,8 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
                 // Update internal database
-                FileInfo dbFile = getFile(fInfo);
-                if (dbFile != null) {
-                    // Update database
-                    // dbFile.copyFrom(fInfo);
-                    dao.store(null, fInfo);
-                    // update directory
-                    commissionRootFolder();
-                    rootDirectory.removeFileInfo(fInfo);
-                    rootDirectory.add(getController().getMySelf(), fInfo);
-                    fileChanged(dbFile);
-                } else {
-                    // File new, scan
-                    FileInfo fileInfo = scanFile(fInfo);
-                    if (fileInfo != null) {
-                        // update directory
-                        commissionRootFolder();
-                        rootDirectory.removeFileInfo(fileInfo);
-                        rootDirectory
-                            .add(getController().getMySelf(), fileInfo);
-                        fileChanged(fInfo);
-                    } else {
-                        return false;
-                    }
-                }
+                store(getController().getMySelf(), correctFolderInfo(fInfo));
+                fileChanged(fInfo);
             }
         }
         return true;
@@ -1062,14 +1011,30 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans one file
+     * Scans a new, deleted or restored File.
+     * 
+     * @param fileInfo
+     *            the file to scan
+     * @return the new {@link FileInfo} or null if file was not actually changed
+     */
+    public FileInfo scanChangedFile(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        FileInfo localFileInfo = scanChangedFile0(fileInfo);
+        if (localFileInfo != null) {
+            fileChanged(localFileInfo);
+        }
+        return localFileInfo;
+    }
+
+    /**
+     * Scans one file and updates the internal db if required.
      * <p>
      * 
      * @param fInfo
      *            the file to be scanned
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    private FileInfo scanFile(FileInfo fInfo) {
+    private FileInfo scanChangedFile0(FileInfo fInfo) {
         if (isFiner()) {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
@@ -1108,10 +1073,10 @@ public class Folder extends PFComponent {
         // actual instance if available on nodemanager
         synchronized (scanLock) {
             synchronized (dbAccessLock) {
-                if (!isKnown(fInfo)) {
+                FileInfo localFile = getFile(fInfo);
+                if (localFile == null) {
                     if (isFiner()) {
-                        logFiner(fInfo + ", modified by: "
-                            + fInfo.getModifiedBy());
+                        logFiner("Scan new file: " + fInfo.toDetailString());
                     }
                     // Update last - modified data
                     MemberInfo modifiedBy = fInfo.getModifiedBy();
@@ -1153,12 +1118,7 @@ public class Folder extends PFComponent {
                                 .isDirectory());
                     }
 
-                    fInfo = addFile(fInfo);
-                    dao.store(null, fInfo);
-
-                    // update directory
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), fInfo);
+                    store(getController().getMySelf(), fInfo);
 
                     // get folder icon info and set it
                     if (FileUtils.isDesktopIni(file)) {
@@ -1175,22 +1135,17 @@ public class Folder extends PFComponent {
                     return fInfo;
                 }
 
-                if (isFiner()) {
-                    logFiner("File already known: " + fInfo);
-                }
+                // if (isFiner()) {
+                logWarning("File already known: " + localFile.toDetailString());
+                logWarning("File already known: " + fInfo.toDetailString());
+                // }
 
-                // Process/check existing files
-                FileInfo dbFile = getFile(fInfo);
-                FileInfo syncFile = dbFile.syncFromDiskIfRequired(
+                FileInfo syncFile = localFile.syncFromDiskIfRequired(
                     getController(), file);
                 if (syncFile != null) {
-                    dao.store(null, syncFile);
-                    // update directory
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), syncFile);
+                    store(getController().getMySelf(), syncFile);
                 }
-
-                return syncFile != null ? syncFile : dbFile;
+                return syncFile;
             }
         }
     }
@@ -1202,9 +1157,8 @@ public class Folder extends PFComponent {
      *            the dir to be scanned.
      * @param dir
      *            the directory
-     * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    public FileInfo scanDirectory(FileInfo dirInfo, File dir) {
+    public void scanDirectory(FileInfo dirInfo, File dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
         if (isFiner()) {
             logFiner("Scanning dir: " + dirInfo.toDetailString());
@@ -1213,7 +1167,12 @@ public class Folder extends PFComponent {
         if (!dirInfo.getFolderInfo().equals(currentInfo)) {
             logSevere("Unable to scan of directory. not on folder: "
                 + dirInfo.toDetailString());
-            return null;
+            return;
+        }
+
+        if (dir.equals(getSystemSubDir())) {
+            logWarning("Ignoring system subdirectory: " + dir);
+            return;
         }
 
         watcher.addIgnoreFile(dirInfo);
@@ -1222,7 +1181,7 @@ public class Folder extends PFComponent {
                 if (!dir.delete()) {
                     logSevere("Unable to deleted directory: " + dir + ". "
                         + dirInfo.toDetailString());
-                    return null;
+                    return;
                 }
             } else {
                 dir.mkdirs();
@@ -1232,12 +1191,7 @@ public class Folder extends PFComponent {
             watcher.removeIgnoreFile(dirInfo);
         }
 
-        if (dir.equals(getSystemSubDir())) {
-            logWarning("Ignoring scan of folder system subdirectory: " + dir);
-            return null;
-        }
-
-        return scanFile(dirInfo);
+        store(getController().getMySelf(), correctFolderInfo(dirInfo));
     }
 
     /**
@@ -1254,11 +1208,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Adds a file to the internal database, does NOT store the DB
+     * Corrects the folder info
      * 
      * @param fInfo
      */
-    private FileInfo addFile(FileInfo theFInfo) {
+    private FileInfo correctFolderInfo(FileInfo theFInfo) {
         // Add to this folder
         FileInfo fInfo = FileInfoFactory.changedFolderInfo(theFInfo,
             currentInfo);
@@ -1315,9 +1269,7 @@ public class Folder extends PFComponent {
                     getController(), diskFile);
                 folderChanged = synced != null;
                 if (folderChanged) {
-                    dao.store(null, synced);
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(), synced);
+                    store(getController().getMySelf(), synced);
                 }
             }
         }
@@ -1420,7 +1372,7 @@ public class Folder extends PFComponent {
                             continue;
                         }
                         FileInfo fInfo = files[i];
-                        files[i] = addFile(fInfo);
+                        files[i] = correctFolderInfo(fInfo);
                         if (fInfo != files[i]) {
                             logWarning("Instance has changed!"
                                 + fInfo.toDetailString());
@@ -2218,10 +2170,8 @@ public class Folder extends PFComponent {
 
         // Add to local file to database if was deleted on remote
         if (localFile == null) {
-            remoteFile = addFile(remoteFile);
-            dao.store(null, remoteFile);
-            commissionRootFolder();
-            rootDirectory.add(getController().getMySelf(), remoteFile);
+            remoteFile = correctFolderInfo(remoteFile);
+            store(getController().getMySelf(), remoteFile);
             localFile = getFile(remoteFile);
             // File has been marked as removed at our side
             removedFiles.add(localFile);
@@ -2302,9 +2252,7 @@ public class Folder extends PFComponent {
         // File has been removed
         // Changed localFile -> remoteFile
         removedFiles.add(remoteFile);
-        dao.store(null, remoteFile);
-        commissionRootFolder();
-        rootDirectory.add(getController().getMySelf(), remoteFile);
+        store(getController().getMySelf(), remoteFile);
     }
 
     /**
@@ -2454,13 +2402,11 @@ public class Folder extends PFComponent {
                 // Do nothing.
                 return;
             }
-            dao.store(from.getId(), newList.files);
+            store(from, newList.files);
         }
 
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
-        commissionRootFolder();
-        rootDirectory.addAll(from, newList.files);
 
         if (syncProfile.isAutodownload() && from.isCompletelyConnected()) {
             // Trigger file requestor
@@ -2478,6 +2424,18 @@ public class Folder extends PFComponent {
         }
 
         fireRemoteContentsChanged(from, newList);
+    }
+
+    private void store(Member member, FileInfo... fileInfos) {
+        store(member, Arrays.asList(fileInfos));
+    }
+
+    private void store(Member member, Collection<FileInfo> fileInfos) {
+        synchronized (dbAccessLock) {
+            dao.store(member.isMySelf() ? null : member.getId(), fileInfos);
+        }
+        commissionRootFolder();
+        rootDirectory.addAll(member, fileInfos);
     }
 
     /**
@@ -2519,16 +2477,12 @@ public class Folder extends PFComponent {
 
         // Try to find same files
         if (changes.added != null) {
-            dao.store(from.getId(), changes.added);
+            store(from, changes.added);
             findSameFiles(from, Arrays.asList(changes.added));
-            commissionRootFolder();
-            rootDirectory.addAll(from, changes.added);
         }
         if (changes.removed != null) {
-            dao.store(from.getId(), changes.removed);
+            store(from, changes.removed);
             findSameFiles(from, Arrays.asList(changes.removed));
-            commissionRootFolder();
-            rootDirectory.addAll(from, changes.removed);
         }
 
         // Avoid hammering of sync remote deletion
@@ -2694,10 +2648,7 @@ public class Folder extends PFComponent {
                             + ". Taking over modification infos");
                     }
                     // localFileInfo.copyFrom(remoteFileInfo);
-                    dao.store(null, remoteFileInfo);
-                    commissionRootFolder();
-                    rootDirectory.add(getController().getMySelf(),
-                        remoteFileInfo);
+                    store(getController().getMySelf(), remoteFileInfo);
                     // FIXME That might produce a LOT of traffic! Single update
                     // message per file! This also might intefere with FileList
                     // exchange at beginning of communication
@@ -2737,20 +2688,15 @@ public class Folder extends PFComponent {
                             + ". Taking over all infos");
                     }
 
-                    synchronized (dbAccessLock) {
-                        remoteFileInfo = addFile(remoteFileInfo);
-                        dao.store(null, remoteFileInfo);
-                        commissionRootFolder();
-                        rootDirectory.add(getController().getMySelf(),
-                            remoteFileInfo);
-                    }
+                    remoteFileInfo = correctFolderInfo(remoteFileInfo);
+                    store(getController().getMySelf(), remoteFileInfo);
 
                     // FIXME That might produce a LOT of traffic! Single
                     // update
                     // message per file! This also might intefere with
                     // FileList
                     // exchange at beginning of communication
-                    fileChanged(localFileInfo);
+                    fileChanged(remoteFileInfo);
                 }
             }
         }
@@ -3107,7 +3053,7 @@ public class Folder extends PFComponent {
                     FileInfo alreadyIncoming = incomingFiles.get(remoteDir);
                     boolean notLocal = localFile == null;
                     boolean newerThanLocal = localFile != null
-                        && remoteDir.isNewerThan(localFile);              
+                        && remoteDir.isNewerThan(localFile);
                     // Check if this remote file is newer than one we may
                     // already have.
                     boolean newestRemote = alreadyIncoming == null
