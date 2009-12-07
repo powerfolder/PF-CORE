@@ -109,7 +109,7 @@ public class FileVersionsPanel extends PFUIComponent {
 
         builder.add(new JButton(restoreAction), cc.xy(1, 1));
         builder.add(currentVersionPanel, cc.xy(3, 1, CellConstraints.DEFAULT,
-                CellConstraints.BOTTOM));
+            CellConstraints.BOTTOM));
         return builder.getPanel();
     }
 
@@ -153,8 +153,8 @@ public class FileVersionsPanel extends PFUIComponent {
     private JPanel createCurrentVersionPanel() {
 
         FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, fill:0:grow",
-                "pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, fill:0:grow",
+            "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -167,7 +167,7 @@ public class FileVersionsPanel extends PFUIComponent {
         builder.add(currentSizeLabel, cc.xy(5, 1));
 
         JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
-        sep2.setPreferredSize(new Dimension(2, 12));        
+        sep2.setPreferredSize(new Dimension(2, 12));
         builder.add(sep2, cc.xy(7, 1));
 
         builder.add(currentDateLabel, cc.xy(9, 1));
@@ -193,16 +193,16 @@ public class FileVersionsPanel extends PFUIComponent {
             currentVersionPanel.setVisible(false);
             return;
         }
-        
+
         currentVersionLabel.setText(Translation.getTranslation(
-                "file_version_tab.current_version",
-                String.valueOf(fileInfo.getVersion())));
+            "file_version_tab.current_version", String.valueOf(fileInfo
+                .getVersion())));
         currentSizeLabel.setText(Translation.getTranslation(
-                "file_version_tab.size",
-                Format.formatBytesShort(fileInfo.getSize())));
+            "file_version_tab.size", Format
+                .formatBytesShort(fileInfo.getSize())));
         currentDateLabel.setText(Translation.getTranslation(
-                "file_version_tab.date",
-                Format.formatDateShort(fileInfo.getModifiedDate())));
+            "file_version_tab.date", Format.formatDateShort(fileInfo
+                .getModifiedDate())));
         currentVersionPanel.setVisible(true);
 
         // Run this outside of EDT, in case it runs slow.
@@ -217,46 +217,51 @@ public class FileVersionsPanel extends PFUIComponent {
                     FileArchiver fileArchiver = folder.getFileArchiver();
 
                     // Get local versions.
-                    List<FileInfoVersionTypeHolder> consolidatedFileInfos
-                            = new ArrayList<FileInfoVersionTypeHolder>();
+                    List<FileInfoVersionTypeHolder> consolidatedFileInfos = new ArrayList<FileInfoVersionTypeHolder>();
                     for (FileInfo consolidatedFileInfo : fileArchiver
-                            .getArchivedFilesInfos(fileInfo,
-                                    getController().getMySelf().getInfo())) {
-                        consolidatedFileInfos.add(new FileInfoVersionTypeHolder(
+                        .getArchivedFilesInfos(fileInfo))
+                    {
+                        consolidatedFileInfos
+                            .add(new FileInfoVersionTypeHolder(
                                 consolidatedFileInfo, false));
                     }
                     logFine("Local versions " + consolidatedFileInfos.size());
 
                     // Also try getting versions from OnlineStorage.
                     boolean online = folder.hasMember(getController()
-                            .getOSClient().getServer());
+                        .getOSClient().getServer());
                     if (online) {
                         ServerClient client = getController().getOSClient();
                         if (client != null && client.isConnected()
-                                && client.isLoggedIn()) {
+                            && client.isLoggedIn())
+                        {
                             FolderService service = client.getFolderService();
                             if (service != null) {
                                 List<FileInfo> infoList = service
-                                        .getArchivedFilesInfos(fileInfo);
+                                    .getArchivedFilesInfos(fileInfo);
                                 logFine("Online versions " + infoList.size());
                                 for (FileInfo info : infoList) {
 
                                     boolean gotIt = false;
-                                    for (FileInfoVersionTypeHolder consolidatedFileInfo
-                                            : consolidatedFileInfos) {
-                                        if (info.isVersionDateAndSizeIdentical(
-                                                consolidatedFileInfo.getFileInfo())) {
+                                    for (FileInfoVersionTypeHolder consolidatedFileInfo : consolidatedFileInfos)
+                                    {
+                                        if (info
+                                            .isVersionDateAndSizeIdentical(consolidatedFileInfo
+                                                .getFileInfo()))
+                                        {
                                             gotIt = true;
                                             break;
                                         }
                                     }
                                     if (!gotIt) {
-                                        consolidatedFileInfos.add(new FileInfoVersionTypeHolder(info, true));
+                                        consolidatedFileInfos
+                                            .add(new FileInfoVersionTypeHolder(
+                                                info, true));
                                     }
                                 }
 
                                 logFine("Consolidated versions "
-                                        + consolidatedFileInfos.size());
+                                    + consolidatedFileInfos.size());
                             }
                         }
                     }
@@ -293,8 +298,9 @@ public class FileVersionsPanel extends PFUIComponent {
                 if (state == STATE_LOADING) {
                     emptyLabel.setText("");
                 } else if (state == STATE_EMPTY) {
-                    emptyLabel.setText(Translation
-                        .getTranslation("file_version_tab.no_versions_available"));
+                    emptyLabel
+                        .setText(Translation
+                            .getTranslation("file_version_tab.no_versions_available"));
                 }
 
                 enableRestoreAction();

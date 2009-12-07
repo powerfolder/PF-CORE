@@ -26,7 +26,8 @@ public enum ArchiveMode {
                     .warning("Failed to create archive directory in system subdirectory: "
                         + archive);
             }
-            return new CopyOrMoveFileArchiver(archive);
+            return new CopyOrMoveFileArchiver(archive, f.getController()
+                .getMySelf().getInfo());
         }
 
     };

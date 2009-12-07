@@ -348,8 +348,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileInfo : getFolderAtBart().getKnownFiles()) {
             assertEquals(0, fileInfo.getVersion());
             List<FileInfo> archivedVersions = getFolderAtLisa()
-                .getFileArchiver().getArchivedFilesInfos(fileInfo,
-                            getContollerBart().getMySelf().getInfo());
+                .getFileArchiver().getArchivedFilesInfos(fileInfo);
             assertEquals(0, archivedVersions.size());
         }
 
@@ -357,8 +356,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
             assertEquals(0, fileInfo.getVersion());
             List<FileInfo> archivedVersions = getFolderAtLisa()
-                .getFileArchiver().getArchivedFilesInfos(fileInfo,
-                            getContollerLisa().getMySelf().getInfo());
+                .getFileArchiver().getArchivedFilesInfos(fileInfo);
             assertEquals(0, archivedVersions.size());
         }
 
@@ -389,8 +387,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             File file = getFolderAtLisa().getDiskFile(fileInfo);
             assertFalse(file.exists());
             List<FileInfo> archivedVersions = getFolderAtLisa()
-                .getFileArchiver().getArchivedFilesInfos(fileInfo,
-                            getContollerLisa().getMySelf().getInfo());
+                .getFileArchiver().getArchivedFilesInfos(fileInfo);
             assertEquals(
                 "Not in archive at lisa: " + fileInfo.toDetailString(), 1,
                 archivedVersions.size());
@@ -404,10 +401,10 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         for (FileInfo fileAtLisa : filesAtLisa) {
             if (fileAtLisa.isDeleted()) {
                 List<FileInfo> versions = archiver
-                    .getArchivedFilesInfos(fileAtLisa,
-                            getContollerLisa().getMySelf().getInfo());
+                    .getArchivedFilesInfos(fileAtLisa);
                 FileInfo inArchive = versions.get(0);
-                assertEquals(fileAtLisa.getRelativeName(), inArchive.getRelativeName());
+                assertEquals(fileAtLisa.getRelativeName(), inArchive
+                    .getRelativeName());
                 archiver.restore(versions.get(0), fileAtLisa
                     .getDiskFile(getContollerLisa().getFolderRepository()));
             }

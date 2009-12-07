@@ -57,6 +57,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     private final File archiveDirectory;
     private volatile int versionsPerFile;
+    private MemberInfo mySelf;
 
     /**
      * Cached size of this file archive.
@@ -68,14 +69,18 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
      * directory.
      * 
      * @param archiveDirectory
+     * @param mySelf
+     *            myself
      */
-    public CopyOrMoveFileArchiver(File archiveDirectory) {
+    public CopyOrMoveFileArchiver(File archiveDirectory, MemberInfo mySelf) {
         Reject.notNull(archiveDirectory, "archiveDirectory");
         Reject.ifFalse(archiveDirectory.isDirectory(),
             "archiveDirectory not a directory!");
+        Reject.ifNull(mySelf, "Myself");
         this.archiveDirectory = archiveDirectory;
         // Default: Store unlimited # of files
         versionsPerFile = Integer.MAX_VALUE;
+        this.mySelf = mySelf;
     }
 
     /**
@@ -267,9 +272,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
-    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo,
-        MemberInfo selfMemberInfo)
-    {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         File subdirectory = FileUtils.buildFileFromRelativeName(
@@ -291,7 +294,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             Date modDate = new Date(file.lastModified());
             String name = getFileInfoName(file);
             FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo, name,
-                file.length(), selfMemberInfo, modDate, version);
+                file.length(), mySelf, modDate, version);
             list.add(archiveFile);
         }
         return list;

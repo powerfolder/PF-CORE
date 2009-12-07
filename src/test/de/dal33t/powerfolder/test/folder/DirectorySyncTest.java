@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -95,6 +96,68 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
         assertEquals(0, infoLisa.getVersion());
         assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
+    }
+
+    public void testDisconnectedHighVersion() {
+        File dirBart = new File(getFolderAtBart().getLocalBase(), "testDir");
+        assertTrue(dirBart.mkdir());
+        final File dirLisa = new File(getFolderAtLisa().getLocalBase(), dirBart
+            .getName());
+        scanFolder(getFolderAtBart());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return dirLisa.exists();
+            }
+        });
+        DirectoryInfo dirInfoBart = getFolderAtBart().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirBart, dirInfoBart, getContollerBart());
+        assertEquals(0, dirInfoBart.getVersion());
+
+        assertTrue(dirBart.delete());
+        scanFolder(getFolderAtBart());
+        dirInfoBart = getFolderAtBart().getKnownDirectories().iterator().next();
+        assertDirMatch(dirBart, dirInfoBart, getContollerBart());
+        assertEquals(1, dirInfoBart.getVersion());
+        assertTrue(dirInfoBart.isDeleted());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return !dirLisa.exists();
+            }
+        });
+        DirectoryInfo dirInfoLisa = getFolderAtLisa().getKnownDirectories()
+            .iterator().next();
+        assertDirMatch(dirLisa, dirInfoLisa, getContollerLisa());
+        assertEquals(1, dirInfoLisa.getVersion());
+        assertTrue(dirInfoLisa.isDeleted());
+        // Now disconnect
+
+        disconnectAll();
+
+        assertTrue(dirBart.mkdir());
+        scanFolder(getFolderAtBart());
+        assertTrue(dirBart.delete());
+        scanFolder(getFolderAtBart());
+        assertTrue(dirBart.mkdir());
+        scanFolder(getFolderAtBart());
+
+        // Version 4 at bart. Version 1 at lisa
+        dirInfoBart = getFolderAtBart().getKnownDirectories().iterator().next();
+        assertDirMatch(dirBart, dirInfoBart, getContollerBart());
+        assertEquals(4, dirInfoBart.getVersion());
+        assertFalse(dirInfoBart.isDeleted());
+
+        connectAll();
+        // Now lisa should synced up to version 4
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return dirLisa.exists();
+            }
+        });
+        dirInfoLisa = getFolderAtLisa().getKnownDirectories().iterator().next();
+        assertDirMatch(dirLisa, dirInfoLisa, getContollerLisa());
+        assertEquals(4, dirInfoLisa.getVersion());
+        assertFalse(dirInfoLisa.isDeleted());
     }
 
     public void testSyncMixedStrucutre() throws IOException {

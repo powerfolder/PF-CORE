@@ -44,9 +44,7 @@ public class NullFileArchiver implements FileArchiver {
         return ArchiveMode.NO_BACKUP;
     }
 
-    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo,
-        MemberInfo selfMemberInfo)
-    {
+    public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         return Collections.emptyList();
     }
 

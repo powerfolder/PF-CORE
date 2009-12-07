@@ -101,10 +101,8 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
             .getSize());
 
         FileArchiver archiveAtLisa = getFolderAtLisa().getFileArchiver();
-        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa,
-                            getContollerLisa().getMySelf().getInfo()).size());
-        FileInfo infoAtLisa = archiveAtLisa.getArchivedFilesInfos(fInfoLisa,
-                            getContollerLisa().getMySelf().getInfo())
+        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
+        FileInfo infoAtLisa = archiveAtLisa.getArchivedFilesInfos(fInfoLisa)
             .get(0);
 
         // Restore
@@ -113,8 +111,7 @@ public class OverwriteAndRestoreRecycleBinTest extends TwoControllerTestCase {
 
         scanFolder(getFolderAtLisa());
         // File should be still in archive
-        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa,
-                            getContollerLisa().getMySelf().getInfo()).size());
+        assertEquals(1, archiveAtLisa.getArchivedFilesInfos(fInfoLisa).size());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {

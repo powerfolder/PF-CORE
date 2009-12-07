@@ -19,40 +19,46 @@
 */
 package de.dal33t.powerfolder.ui.wizard;
 
-import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTableModel;
-import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTable;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.clientserver.FolderService;
-import de.dal33t.powerfolder.disk.FileArchiver;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.ui.*;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-
-import java.util.List;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.logging.Logger;
+import java.util.List;
 import java.util.logging.Level;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.util.logging.Logger;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import jwf.WizardPanel;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
+
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import com.toedter.calendar.JDateChooser;
 
-import javax.swing.*;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTable;
+import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTableModel;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Dialog for selecting a number of users.
@@ -191,7 +197,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private void loadVersions() {
         hasNext = false;
         updateButtons();
-        SwingWorker worker = new MyFolderCreateWorker();
+        SwingWorker worker = new VersionLoaderWorker();
         worker.start();
     }
 
@@ -199,7 +205,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     // Inner Classes //
     // ////////////////
 
-    private class MyFolderCreateWorker extends SwingWorker {
+    private class VersionLoaderWorker extends SwingWorker {
         public Object construct() {
             bar.setVisible(true);
             scrollPane.setVisible(false);
@@ -207,7 +213,6 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             List<FileInfo> versions = new ArrayList<FileInfo>();
             try {
                 FileArchiver fileArchiver = folder.getFileArchiver();
-                MemberInfo myInfo = getController().getMySelf().getInfo();
                 // Also try getting versions from OnlineStorage.
                 boolean online = folder.hasMember(getController()
                         .getOSClient().getServer());
@@ -234,7 +239,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                             Format.formatLong(deletedFileInfos.size())));
 
                     List<FileInfo> infoList = fileArchiver
-                            .getArchivedFilesInfos(fileInfo, myInfo);
+                            .getArchivedFilesInfos(fileInfo);
                     FileInfo mostRecent = null;
                     for (FileInfo info : infoList) {
                         if (isBetterVersion(mostRecent, info, targetDate)) {
