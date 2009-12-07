@@ -19,15 +19,14 @@
  */
 package de.dal33t.powerfolder;
 
+import java.util.logging.Level;
+
 import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.skin.Snowland;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
-
-import java.util.logging.Level;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Refelects an entry setting in the preferences. Provides basic method for
@@ -100,9 +99,6 @@ public enum PreferencesEntry {
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
 
     AUTO_EXPAND("auto.expand", false),
-
-    /** Whether the backup os check box is checked. */
-    BACKUP_OS("backup.os", true),
 
     /** Whether the user uses OS. If not, don't show OS stuff. */
     USE_ONLINE_STORAGE("use.os", true),
