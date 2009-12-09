@@ -24,6 +24,7 @@ import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
 
@@ -55,7 +56,7 @@ public class ProUtil {
             return true;
         }
         try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.CD");
+            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isTrial", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
@@ -70,7 +71,7 @@ public class ProUtil {
      */
     public static final boolean isAllowedToRun(Controller controller) {
         try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.CD");
+            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
             Method m = c.getMethod("isAllowedToRun", Controller.class);
             return (Boolean) m.invoke(null, controller);
         } catch (Exception e) {
@@ -83,7 +84,7 @@ public class ProUtil {
         MemberInfo node)
     {
         try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
+            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("getPublicKey", Controller.class,
                 MemberInfo.class);
             return (PublicKey) m.invoke(null, controller, node);
@@ -105,7 +106,7 @@ public class ProUtil {
         MemberInfo node, PublicKey key)
     {
         try {
-            Class<?> c = Class.forName("de.dal33t.powerfolder.BC");
+            Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("addNodeToKeyStore", Controller.class,
                 MemberInfo.class, PublicKey.class);
             return (Boolean) m.invoke(null, controller, node, key);
