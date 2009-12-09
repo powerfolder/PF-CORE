@@ -54,12 +54,18 @@ public class PluginManager extends PFComponent {
 
     // Start / Stop ***********************************************************
 
+    public void init() {
+        readEnabledPlugins();
+        readDisabledPlugins();
+    }
+
     /**
      * Starts the plugin manager, reads and starts all plugins.
      */
     public void start() {
-        readEnabledPlugins();
-        readDisabledPlugins();
+        if (plugins.size() + disabledPlugins.size() == 0) {
+            logSevere("No plugins found to start. Maybe PluginManager not initialized?");
+        }
         startEnabledPlugins();
     }
 

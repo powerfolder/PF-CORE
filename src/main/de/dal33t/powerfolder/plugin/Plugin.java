@@ -48,7 +48,8 @@ public interface Plugin {
     String getDescription();
 
     /**
-     * Called before start on every plugin (enabled and disabled)
+     * Called at the very beginning of Controller start. For every plugin
+     * (enabled and disabled)
      */
     void init();
 
@@ -62,7 +63,8 @@ public interface Plugin {
     void stop();
 
     /**
-     * called before the plugin and pluginmanager are shutdown.
+     * called before the plugin and pluginmanager are shutdown. For every plugin
+     * (enabled and disabled)
      */
     void destroy();
 
