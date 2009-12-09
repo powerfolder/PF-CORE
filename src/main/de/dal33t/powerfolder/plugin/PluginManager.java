@@ -130,9 +130,10 @@ public class PluginManager extends PFComponent {
             if (alreadyLoaded(pluginClassName)) {
                 continue;
             }
-            Plugin plugin = initalizePlugin(pluginClassName);
+            Plugin plugin = newPluginInstance(pluginClassName);
             if (plugin != null) {
                 plugins.add(plugin);
+                plugin.init();
             }
         }
     }
@@ -143,7 +144,7 @@ public class PluginManager extends PFComponent {
      * @param pluginClassName
      *            the classname of the plugin
      */
-    private Plugin initalizePlugin(String pluginClassName) {
+    private Plugin newPluginInstance(String pluginClassName) {
         if (StringUtils.isBlank(pluginClassName)) {
             throw new IllegalArgumentException("Plugin string blank");
         }
@@ -183,7 +184,6 @@ public class PluginManager extends PFComponent {
                     return null;
                 }
             }
-            plugin.init();
             return plugin;
         } catch (Exception e) {
             log.log(Level.SEVERE, "Exception while initializing plugin '"
