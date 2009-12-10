@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.net;
 
 import java.awt.Component;
@@ -132,56 +132,55 @@ public class DynDnsManager extends PFComponent {
             // just resets the dyndns entry
             if (getController().getConnectionListener() != null) {
                 getController().getConnectionListener()
-                        .setMyDynDns(null, false);
+                    .setMyDynDns(null, false);
             }
         } else {
             if (getController().hasConnectionListener()) {
 
                 // sets the new dyndns with validation enabled
                 int res = getController().getConnectionListener().setMyDynDns(
-                        dynDns, true);
+                    dynDns, true);
 
                 // check the result from validation
                 switch (res) {
-                    case ConnectionListener.VALIDATION_FAILED:
+                    case ConnectionListener.VALIDATION_FAILED :
 
                         // validation failed ask the user if he/she
                         // wants to continue with these settings
                         String message = Translation
-                                .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
+                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.text");
                         String title = Translation
-                                .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
+                            .getTranslation("preferences.dialog.dyn_dns_manager.no_match.title");
 
-                        int result = DialogFactory.genericDialog(getController(),
-                                title, message,
-                                new String[]{
-                                        Translation.getTranslation("general.continue"),
-                                        Translation.getTranslation("general.cancel")},
-                                0, GenericDialogType.WARN); // Default is
+                        int result = DialogFactory.genericDialog(
+                            getController(), title, message, new String[]{
+                                Translation.getTranslation("general.continue"),
+                                Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.WARN); // Default is
                         // continue
 
                         if (result == 0) { // Continue
                             // the user is happy with his/her settings, then
                             // set the new dyndns without further validation
                             getController().getConnectionListener()
-                                    .setMyDynDns(dynDns, false);
+                                .setMyDynDns(dynDns, false);
                         } else {
                             // the user wants to change the dyndns settings
                             getController().getConnectionListener()
-                                    .setMyDynDns(null, false);
+                                .setMyDynDns(null, false);
                             return false;
                         }
                         break;
-                    case ConnectionListener.CANNOT_RESOLVE:
+                    case ConnectionListener.CANNOT_RESOLVE :
                         // the new dyndns could not be resolved
                         // force the user to enter a new one
                         getController().getConnectionListener().setMyDynDns(
-                                null, false);
+                            null, false);
                         return false;
 
-                    case ConnectionListener.OK:
-                        logInfo(
-                                "Successfully validated dyndns '" + dynDns + '\'');
+                    case ConnectionListener.OK :
+                        logInfo("Successfully validated dyndns '" + dynDns
+                            + '\'');
                         // getController().getUIController()
                         // .showMessage(null,
                         // "Success",
@@ -374,9 +373,8 @@ public class DynDnsManager extends PFComponent {
         String myHostIP = getIPviaHTTPCheckIP();
         String lastUpdatedIP = ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
             .getValue(getController());
-        logFine(
-            "Dyndns hostname IP: " + dyndnsIP + ". Real IP: " + myHostIP
-                + ". Last update IP: " + lastUpdatedIP);
+        logFine("Dyndns hostname IP: " + dyndnsIP + ". Real IP: " + myHostIP
+            + ". Last update IP: " + lastUpdatedIP);
         if (dyndnsIP.equals(myHostIP)) {
             return true;
         }
@@ -412,8 +410,8 @@ public class DynDnsManager extends PFComponent {
      * Updates DYNDNS if neccessary.
      */
     public synchronized void updateIfNessesary() {
-        if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE.getValueBoolean(
-                getController()))
+        if (!ConfigurationEntry.DYNDNS_AUTO_UPDATE
+            .getValueBoolean(getController()))
         {
             return;
         }
@@ -432,8 +430,8 @@ public class DynDnsManager extends PFComponent {
             @Override
             public void run() {
                 boolean dyndnsIsValid = dyndnsValid();
-                logFine(
-                    "Dyndns updater start. Update required? " + dyndnsIsValid);
+                logFine("Dyndns updater start. Update required? "
+                    + !dyndnsIsValid);
                 if (dyndnsIsValid) {
                     logFiner("No dyndns update performed: IP still valid");
                 } else {
