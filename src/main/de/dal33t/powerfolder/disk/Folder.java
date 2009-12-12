@@ -1988,6 +1988,23 @@ public class Folder extends PFComponent {
     }
 
     /**
+     *
+     * Delete a FileInfo that has been deleted. This is used to remove a
+     * deleted file entry so that it can be restored from the first
+     * Member that has the file available in the future.
+     *
+     * @param fileInfo
+     */
+    public void removeDeletedFileInfo(FileInfo fileInfo) {
+        Reject.ifFalse(fileInfo.isDeleted(),
+                "Should only be removing deleted infos.");
+        dao.delete(null, fileInfo);
+        dirty = true;
+        commissionRootFolder();
+        rootDirectory.removeFileInfo(fileInfo);
+    }
+
+    /**
      * Checks if the folder is syncing. Means: local file scan running or active
      * transfers.
      * 

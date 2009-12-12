@@ -46,7 +46,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.toedter.calendar.JDateChooser;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
@@ -107,11 +106,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         builder.add(dateVersionButton, cc.xy(1, row));
         builder.add(dateChooser, cc.xy(3, row));
 
-        if (Feature.REDOWNLOAD.isEnabled()) {
-            row += 2;
-
-            builder.add(redownloadButton, cc.xy(1, row));
-        }
+        row += 2;
+        builder.add(redownloadButton, cc.xy(1, row));
 
         row += 2;
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
@@ -319,6 +315,10 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 scrollPane.setVisible(false);
                 infoLabel.setVisible(false);
                 bar.setVisible(false);
+                hasNext = true;
+                updateButtons();
+                fileInfosToRestore.clear();
+                fileInfosToRestore.addAll(deletedFileInfos);
             }
         }
     }
