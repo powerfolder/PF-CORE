@@ -115,6 +115,7 @@ public class SettingsTab extends PFUIComponent {
     private ActionLabel previewFolderActionLabel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
+    private boolean settingFolder = false;
 
     /**
      * Constructor
@@ -159,6 +160,7 @@ public class SettingsTab extends PFUIComponent {
             folder.getDiskItemFilter().removeListener(patternChangeListener);
             folder.removeMembershipListener(membershipListner);
         }
+        settingFolder = true;
         folder = getController().getFolderRepository().getFolder(folderInfo);
         folder.getDiskItemFilter().addListener(patternChangeListener);
         folder.addMembershipListener(membershipListner);
@@ -166,6 +168,7 @@ public class SettingsTab extends PFUIComponent {
         scriptModel.setValue(folder.getDownloadScript());
         archiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
             .getArchiveMode(), folder.getFileArchiver().getVersionsPerFile());
+        settingFolder = false;
         update();
         enableConfigOSAction();
         enablePreviewFolderAction();
@@ -1048,7 +1051,9 @@ public class SettingsTab extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == modeModel || evt.getSource() == versionModel)
             {
-                updateArchiveMode(evt.getOldValue(), evt.getNewValue());
+                if (!settingFolder) {
+                    updateArchiveMode(evt.getOldValue(), evt.getNewValue());
+                }
             }
         }
     }
