@@ -57,6 +57,10 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
  */
 public class MainFrame extends PFUIComponent {
 
+    public static final int INLINE_INFO_FREE = 0;
+    public static final int INLINE_INFO_LEFT = 1;
+    public static final int INLINE_INFO_RIGHT = 2;
+
     private final AtomicBoolean controlKeyDown = new AtomicBoolean();
     private final AtomicInteger oldX = new AtomicInteger();
     private final AtomicInteger oldY = new AtomicInteger();
@@ -421,8 +425,9 @@ public class MainFrame extends PFUIComponent {
             // If info is inline and info is showing, do not store width because
             // info will not show at start up and the frame will be W-I-D-E.
             if (uiComponent.getWidth() > 0 
-                    && (!PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
-                    getController()) || inlineInfoPanel == null)) {
+                    && (PreferencesEntry.INLINE_INFO_MODE.getValueInt(
+                    getController()) == INLINE_INFO_FREE
+                    || inlineInfoPanel == null)) {
                 prefs.putInt("mainframe4.width", uiComponent.getWidth());
             }
             prefs.putInt("mainframe4.y", uiComponent.getY());
@@ -534,17 +539,22 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureInlineInfo() {
-        boolean inline = PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(
+        int inline = PreferencesEntry.INLINE_INFO_MODE.getValueInt(
                 getController());
         boolean displaying = inlineInfoPanel != null;
-        inlineInfoCloseButton.setVisible(inline && displaying);
+        inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE  && displaying);
 
         centralPanel.removeAll();
-        if (inline && displaying) {
+        if (inline != INLINE_INFO_FREE && displaying) {
             JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
             split.setOneTouchExpandable(false);
-            split.setLeftComponent(mainTabbedPane.getUIComponent());
-            split.setRightComponent(inlineInfoPanel);
+            if (inline == INLINE_INFO_LEFT) {
+                split.setLeftComponent(inlineInfoPanel);
+                split.setRightComponent(mainTabbedPane.getUIComponent());
+            } else {
+                split.setLeftComponent(mainTabbedPane.getUIComponent());
+                split.setRightComponent(inlineInfoPanel);
+            }
             centralPanel.add(split, BorderLayout.CENTER);
         } else {
             centralPanel.add(mainTabbedPane.getUIComponent(), BorderLayout.CENTER);

@@ -62,7 +62,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
-    private JCheckBox inlineInfoCB;
+    private JComboBox inlineInfoCombo;
     private JCheckBox translucentMainFrameCB;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
@@ -71,6 +71,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
     private JSlider folderSyncSlider;
+    private int originalInline;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
@@ -154,12 +155,17 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             new BufferedValueModel(mfModel, writeTrigger), Translation
                 .getTranslation("preferences.dialog.magnetic_frame"));
 
-        ValueModel iiModel = new ValueHolder(
-            PreferencesEntry.INLINE_INFO_MODE
-                .getValueBoolean(getController()));
-        inlineInfoCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(iiModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.inline_info"));
+        DefaultComboBoxModel inlineInfoCBM = new DefaultComboBoxModel();
+        inlineInfoCBM.addElement(Translation
+                .getTranslation("preferences.dialog.information_panel_separate"));
+        inlineInfoCBM.addElement(Translation
+                .getTranslation("preferences.dialog.information_panel_left"));
+        inlineInfoCBM.addElement(Translation
+                .getTranslation("preferences.dialog.information_panel_right"));
+        inlineInfoCombo = new JComboBox(inlineInfoCBM);
+
+        originalInline = PreferencesEntry.INLINE_INFO_MODE.getValueInt(getController());
+        inlineInfoCombo.setSelectedIndex(originalInline);
 
         ValueModel transModel = new ValueHolder(
             PreferencesEntry.TRANSLUCENT_MAIN_FRAME
@@ -351,7 +357,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(minToSysTrayCB, cc.xy(3, row));
             
             row += 2;
-            builder.add(inlineInfoCB, cc.xyw(3, row, 2));
+            builder.add(new JLabel(Translation
+                .getTranslation("preferences.dialog.information_panel")), cc.xy(1, row));
+            builder.add(inlineInfoCombo, cc.xy(3, row));
             
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
@@ -457,14 +465,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.USE_MAGNETIC_FRAMES.setValue(getController(),
             magneticFrameBox.isSelected());
 
-        if (PreferencesEntry.INLINE_INFO_MODE.getValueBoolean(getController()) !=
-                inlineInfoCB.isSelected()) {
+        if (originalInline != inlineInfoCombo.getSelectedIndex()) {
             needsRestart = true;
         }
 
         // Use inline info
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
-            inlineInfoCB.isSelected());
+            inlineInfoCombo.getSelectedIndex());
 
         PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
             translucentMainFrameCB.isSelected());

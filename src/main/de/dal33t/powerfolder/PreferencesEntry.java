@@ -26,6 +26,7 @@ import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
+import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -130,8 +131,8 @@ public enum PreferencesEntry {
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 
-    /** Show the information tab inline with the mainframe */
-    INLINE_INFO_MODE("inline.info", true),
+    /** Show the information tab inline with the mainframe 0=free, 1=left, 2=right */
+    INLINE_INFO_MODE("inline.info.mode", MainFrame.INLINE_INFO_FREE),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
