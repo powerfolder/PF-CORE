@@ -47,7 +47,9 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class SecurityManagerClient extends PFComponent implements SecurityManager {
+public class SecurityManagerClient extends PFComponent implements
+    SecurityManager
+{
 
     private static final boolean CACHE_ENABLED = true;
 
@@ -117,8 +119,7 @@ public class SecurityManagerClient extends PFComponent implements SecurityManage
                     cache.set(permission, hasPermission);
                     source = "recvd";
                 } else {
-                    hasPermission = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                        .getValueBoolean(getController());
+                    hasPermission = isSyncAnyWays();
                     source = "nocon";
                 }
             } else {
@@ -133,9 +134,14 @@ public class SecurityManagerClient extends PFComponent implements SecurityManage
             logWarning("Unable to check permission for "
                 + nullSafeGet(accountInfo) + ". " + e);
             logFiner(e);
-            return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-                .getValueBoolean(getController());
+            return isSyncAnyWays();
         }
+    }
+
+    private boolean isSyncAnyWays() {
+        return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+            .getValueBoolean(getController())
+            || (getController().isLanOnly() && !client.getServer().isOnLAN());
     }
 
     private final Object requestLock = new Object();
