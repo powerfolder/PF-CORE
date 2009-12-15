@@ -30,8 +30,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import java.io.File;
 
 /**
- * Test case to ensure that a file is re-downloaded if it is removed from the
- * db and then is available at a peer.
+ * Test case to ensure that a file is re-downloaded if it is removed from the db
+ * and then is available at a peer.
  */
 public class RedownloadTest extends TwoControllerTestCase {
 
@@ -63,19 +63,17 @@ public class RedownloadTest extends TwoControllerTestCase {
                 return folderLisa.getKnownFiles().size() == 1;
             }
         });
+        // Wait to complete upload at BART to release file.
+        TestHelper.waitMilliSeconds(500);
 
         // Delete the file at Bart.
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();
-        final File testFileBart = fileInfoBart.getDiskFile(getContollerBart().getFolderRepository());
-        boolean deleted = testFileBart.delete();
-
-        // Wait for OS to actually delete.
-        TestHelper.waitForCondition(20, new Condition() {
-            public boolean reached() {
-                return !testFileBart.exists();
-            }
-        });
-        assertTrue("File not deleted", deleted);
+        final File testFileBart = fileInfoBart.getDiskFile(getContollerBart()
+            .getFolderRepository());
+        assertTrue(testFileBart.exists());
+        assertTrue("Unable to deleted file at bart: " + testFileBart,
+            testFileBart.delete());
+        assertFalse(testFileBart.exists());
 
         scanFolder(folderBart);
         scanFolder(folderLisa);
@@ -93,6 +91,8 @@ public class RedownloadTest extends TwoControllerTestCase {
 
         // Scan folders. Bart should see Lisa's file and download.
         scanFolder(folderBart);
+        getContollerBart().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
         scanFolder(folderLisa);
 
         // Wait for copy.
@@ -104,6 +104,10 @@ public class RedownloadTest extends TwoControllerTestCase {
 
         assertEquals("Bart file count bad", 1, folderBart.getKnownItemCount());
         fileInfoBart = folderBart.getKnownFiles().iterator().next();
-        assertTrue("Bart file not deleted", fileInfoBart.isDeleted());
+        assertFileMatch(testFileBart, fileInfoBart, getContollerBart());
+        assertEquals(0, fileInfoBart.getVersion());
+        // WHY? File has been restored
+        // assertTrue("Bart file not deleted", fileInfoBart.isDeleted());
+
     }
 }
