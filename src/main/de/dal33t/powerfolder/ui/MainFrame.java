@@ -73,7 +73,6 @@ public class MainFrame extends PFUIComponent {
     private JLabel inlineInfoLabel;
     private JButton inlineInfoCloseButton;
 
-
     /**
      * The menu bar that handles F5 for sync, etc. This is not visible in the
      * GUI.
@@ -116,9 +115,9 @@ public class MainFrame extends PFUIComponent {
         builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI),
             SwingConstants.LEFT), cc.xy(1, 2));
         builder.add(inlineInfoLabel, cc.xy(2, 2, CellConstraints.DEFAULT,
-                CellConstraints.BOTTOM));
+            CellConstraints.BOTTOM));
         builder.add(inlineInfoCloseButton, cc.xy(4, 2, CellConstraints.DEFAULT,
-                CellConstraints.BOTTOM));
+            CellConstraints.BOTTOM));
 
         builder.add(centralPanel, cc.xyw(1, 4, 4));
         builder.add(statusBar.getUIComponent(), cc.xyw(1, 6, 4));
@@ -143,9 +142,9 @@ public class MainFrame extends PFUIComponent {
         uiComponent.setSize(width, height);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        // Initial top-right corner
-        uiComponent.setLocation(prefs.getInt("mainframe4.x", screenSize.width
-            - 50 - width), prefs.getInt("mainframe4.y", 50));
+        // Initial top-left corner
+        uiComponent.setLocation(prefs.getInt("mainframe4.x", 50), prefs.getInt(
+            "mainframe4.y", 50));
 
         // Now adjust for off-screen problems.
         if (uiComponent.getX() < 0) {
@@ -156,11 +155,12 @@ public class MainFrame extends PFUIComponent {
         }
         if (uiComponent.getX() + uiComponent.getWidth() > screenSize.width) {
             uiComponent.setLocation((int) screenSize.getWidth()
-                    - uiComponent.getWidth(), uiComponent.getY());
+                - uiComponent.getWidth(), uiComponent.getY());
         }
         if (uiComponent.getY() + uiComponent.getHeight() > screenSize.height) {
-            uiComponent.setLocation(uiComponent.getX(),
-                    (int) screenSize.getHeight() - uiComponent.getHeight());
+            uiComponent.setLocation(uiComponent.getX(), (int) screenSize
+                .getHeight()
+                - uiComponent.getHeight());
         }
 
         oldX.set(uiComponent.getX());
@@ -234,8 +234,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Must do this AFTER mainFrame is constructed else info frame may nudge
-     * and not have a reference to mainframe ui component.
+     * Must do this AFTER mainFrame is constructed else info frame may nudge and
+     * not have a reference to mainframe ui component.
      */
     public void attachListeners() {
         uiComponent.addComponentListener(new MyComponentAdapter());
@@ -330,8 +330,8 @@ public class MainFrame extends PFUIComponent {
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_NORMAL), Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_HOVER), Icons
             .getIconById(Icons.FILTER_TEXT_FIELD_CLEAR_BUTTON_PUSH));
-        inlineInfoCloseButton.setToolTipText(Translation.getTranslation(
-                "main_frame.inline_info_close.tip"));
+        inlineInfoCloseButton.setToolTipText(Translation
+            .getTranslation("main_frame.inline_info_close.tip"));
         inlineInfoCloseButton.addActionListener(new MyActionListener());
         inlineInfoCloseButton.setContentAreaFilled(false);
 
@@ -424,10 +424,10 @@ public class MainFrame extends PFUIComponent {
             prefs.putInt("mainframe4.x", uiComponent.getX());
             // If info is inline and info is showing, do not store width because
             // info will not show at start up and the frame will be W-I-D-E.
-            if (uiComponent.getWidth() > 0 
-                    && (PreferencesEntry.INLINE_INFO_MODE.getValueInt(
-                    getController()) == INLINE_INFO_FREE
-                    || inlineInfoPanel == null)) {
+            if (uiComponent.getWidth() > 0
+                && (PreferencesEntry.INLINE_INFO_MODE
+                    .getValueInt(getController()) == INLINE_INFO_FREE || inlineInfoPanel == null))
+            {
                 prefs.putInt("mainframe4.width", uiComponent.getWidth());
             }
             prefs.putInt("mainframe4.y", uiComponent.getY());
@@ -539,10 +539,11 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureInlineInfo() {
-        int inline = PreferencesEntry.INLINE_INFO_MODE.getValueInt(
-                getController());
+        int inline = PreferencesEntry.INLINE_INFO_MODE
+            .getValueInt(getController());
         boolean displaying = inlineInfoPanel != null;
-        inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE  && displaying);
+        inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE
+            && displaying);
 
         centralPanel.removeAll();
         if (inline != INLINE_INFO_FREE && displaying) {
@@ -557,7 +558,8 @@ public class MainFrame extends PFUIComponent {
             }
             centralPanel.add(split, BorderLayout.CENTER);
         } else {
-            centralPanel.add(mainTabbedPane.getUIComponent(), BorderLayout.CENTER);
+            centralPanel.add(mainTabbedPane.getUIComponent(),
+                BorderLayout.CENTER);
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
         }
@@ -567,8 +569,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void packWidth() {
-        uiComponent.setSize(new Dimension(uiComponent.getPreferredSize()
-                .width, uiComponent.getHeight()));
+        uiComponent.setSize(new Dimension(uiComponent.getPreferredSize().width,
+            uiComponent.getHeight()));
         packWidthNext = false;
     }
 
