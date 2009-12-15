@@ -122,7 +122,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
 
-//    private MyServerClientListener myServerClientListener;
+    // private MyServerClientListener myServerClientListener;
     private MyTransferManagerListener myTransferManagerListener;
     private MyFolderRepositoryListener myFolderRepositoryListener;
     private MyNodeManagerListener myNodeManagerListener;
@@ -487,9 +487,9 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void registerListeners() {
-//        myServerClientListener = new MyServerClientListener();
-//        getController().getOSClient().addListener(myServerClientListener);
-//
+        // myServerClientListener = new MyServerClientListener();
+        // getController().getOSClient().addListener(myServerClientListener);
+        //
         myNodeManagerListener = new MyNodeManagerListener();
         getController().getNodeManager().addNodeManagerListener(
             myNodeManagerListener);
@@ -508,10 +508,10 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
-//        if (myServerClientListener != null) {
-//            getController().getOSClient().addListener(myServerClientListener);
-//            myServerClientListener = null;
-//        }
+        // if (myServerClientListener != null) {
+        // getController().getOSClient().addListener(myServerClientListener);
+        // myServerClientListener = null;
+        // }
         if (myNodeManagerListener != null) {
             getController().getNodeManager().removeNodeManagerListener(
                 myNodeManagerListener);
@@ -601,8 +601,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     "exp_folder_view.last_synchronized", formattedDate);
             }
 
-            ScanResult.ResultState state = folder.getLastScanResultState();
-            if (state == null) {
+            if (!folder.hasOwnDatabase()) {
                 syncPercentText = Translation
                     .getTranslation("exp_folder_view.not_yet_scanned");
                 localSizeString = "?";
@@ -1215,29 +1214,29 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-//    private class MyServerClientListener implements ServerClientListener {
-//
-//        public void login(ServerClientEvent event) {
-//            // updateIconAndOS();
-//        }
-//
-//        public void accountUpdated(ServerClientEvent event) {
-//            // updateIconAndOS();
-//        }
-//
-//        public void serverConnected(ServerClientEvent event) {
-//            // updateIconAndOS();
-//        }
-//
-//        public void serverDisconnected(ServerClientEvent event) {
-//            // updateIconAndOS();
-//        }
-//
-//        public boolean fireInEventDispatchThread() {
-//            return true;
-//        }
-//    }
-//
+    // private class MyServerClientListener implements ServerClientListener {
+    //
+    // public void login(ServerClientEvent event) {
+    // // updateIconAndOS();
+    // }
+    //
+    // public void accountUpdated(ServerClientEvent event) {
+    // // updateIconAndOS();
+    // }
+    //
+    // public void serverConnected(ServerClientEvent event) {
+    // // updateIconAndOS();
+    // }
+    //
+    // public void serverDisconnected(ServerClientEvent event) {
+    // // updateIconAndOS();
+    // }
+    //
+    // public boolean fireInEventDispatchThread() {
+    // return true;
+    // }
+    // }
+    //
     private class MySyncFolderAction extends BaseAction {
 
         private MySyncFolderAction(Controller controller) {
