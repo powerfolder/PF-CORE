@@ -1495,16 +1495,15 @@ public class NodeManager extends PFComponent {
                 logWarning("Processing too many incoming connections (" + size
                     + ")");
             }
-            List<AbstractAcceptor> timeouted = new ArrayList<AbstractAcceptor>();
             for (AbstractAcceptor acceptor : acceptors) {
                 if (acceptor.hasTimeout()) {
-                    timeouted.add(acceptor);
+                    logWarning("Acceptor has timeout: " + acceptor);
+                    acceptor.shutdown();
+                    acceptors.remove(acceptor);
+                } else if (acceptor.isShutdown()) {
+                    logWarning("Acceptor has been shutdown: " + acceptor);
+                    acceptors.remove(acceptor);
                 }
-            }
-            for (AbstractAcceptor acceptor : timeouted) {
-                logFine("Acceptor has timeout: " + acceptor);
-                acceptor.shutdown();
-                acceptors.remove(acceptor);
             }
         }
     }

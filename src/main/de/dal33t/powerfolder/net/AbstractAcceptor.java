@@ -35,11 +35,12 @@ import de.dal33t.powerfolder.util.ProfilingEntry;
  */
 public abstract class AbstractAcceptor extends PFComponent implements Runnable {
     private Date startTime;
+    private ConnectionHandler handler;
 
     protected AbstractAcceptor(Controller controller) {
         super(controller);
     }
-    
+
     /**
      * @return information about the connection, e.g. remote address
      */
@@ -54,7 +55,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
      * Overriding behavior. Performs the actual work. If Exception occurs the
      * acceptor gets shut down.
      */
-    protected  abstract void accept() throws ConnectionException;
+    protected abstract void accept() throws ConnectionException;
 
     /**
      * @return if this acceptor has a timeout
@@ -64,15 +65,27 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
             // Not started yet
             return false;
         }
-        return (System.currentTimeMillis() > startTime.getTime()
-            + (Constants.INCOMING_CONNECTION_TIMEOUT * 1000));
+
+        Date lastKeepAlive = handler != null ? handler
+            .getLastKeepaliveMessageTime() : null;
+        if (lastKeepAlive == null) {
+            // No handler/We cannot check the last keepalive message.
+            return System.currentTimeMillis() > startTime.getTime()
+                + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMOUT);
+        }
+        // Check if the last keepalive timeout
+        return System.currentTimeMillis() > lastKeepAlive.getTime()
+            + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMOUT);
+    }
+
+    boolean isShutdown() {
+        return handler != null && !handler.isConnected();
     }
 
     public final void run() {
         if (!getController().getNodeManager().isStarted()) {
-            logWarning(
-                "NodeManager already shut down. "
-                    + "Closing incoming connection attempt: " + this);
+            logWarning("NodeManager already shut down. "
+                + "Closing incoming connection attempt: " + this);
             return;
         }
         ProfilingEntry pe = Profiling.start();
@@ -80,8 +93,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
         try {
             accept();
         } catch (ConnectionException e) {
-            logFiner(
-                "Unable to accept incoming connection handler " + this, e);
+            logFiner("Unable to accept incoming connection handler " + this, e);
             shutdown();
         } finally {
             // Remove from acceptors list
@@ -97,10 +109,10 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
      */
     protected void acceptConnection(ConnectionHandler handler) {
         try {
+            this.handler = handler;
             getController().getNodeManager().acceptConnection(handler);
         } catch (ConnectionException e) {
-            logFiner(
-                "Unable to accept incoming connection handler " + handler,
+            logFiner("Unable to accept incoming connection handler " + handler,
                 e);
             handler.shutdown();
             shutdown();
