@@ -91,6 +91,24 @@ public class OSUtil {
     }
 
     /**
+     * Tested on Windows Vista 64 bit with 32 bit VM. This method correctly
+     * returns false on this setup.
+     * <P>
+     * http://stackoverflow.com/questions/807263/how-do-i-detect-which-kind-of-
+     * jre-is-installed-32bit-vs-64bit
+     * 
+     * @return true if this VM is running a 64 bit version. false if 32 bit.
+     */
+    public static boolean is64BitPlatform() {
+        String arch = System.getProperty("sun.arch.data.model");
+        if (arch != null) {
+            return arch.contains("64");
+        }
+        // Try harder
+        return System.getProperty("os.arch").contains("64");
+    }
+
+    /**
      * Determines if this is a web start via Java WebStart
      * 
      * @return true if started via web
@@ -163,7 +181,7 @@ public class OSUtil {
     public static boolean loadLibrary(Class clazz, String lib) {
         String dir = "";
         if (isWindowsSystem()) {
-            dir = "win32libs";
+            dir = is64BitPlatform() ? "win64libs" : "win32libs";
         } else if (isMacOS() || isLinux()) {
             dir = "lin32libs";
         }
