@@ -101,6 +101,10 @@ public class MemberInfo implements Serializable {
     public InetSocketAddress getConnectAddress() {
         return this.connectAddress;
     }
+    
+    public String getNick() {
+        return nick;
+    }
 
     // Logic ******************************************************************
 
