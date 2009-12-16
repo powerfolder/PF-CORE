@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.FolderService;
@@ -153,8 +152,10 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
                 if (redownload) {
+                    // Delete from db, then request from peers.
                     folder.removeDeletedFileInfo(fileInfoToRestore);
-                    getController().getTransferManager().downloadNewestVersion(fileInfoToRestore, true);
+                    getController().getFolderRepository().getFileRequestor()
+                            .triggerFileRequesting(folder.getInfo());
                     restored = true;
                 } else {
                     if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {

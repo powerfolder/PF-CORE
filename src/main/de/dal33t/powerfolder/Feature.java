@@ -104,9 +104,7 @@ public enum Feature {
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false),
-
-    REDOWNLOAD(false);
+    CONFLICT_DETECTION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

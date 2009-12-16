@@ -70,10 +70,10 @@ public class RedownloadTest extends TwoControllerTestCase {
         FileInfo fileInfoBart = folderBart.getKnownFiles().iterator().next();
         final File testFileBart = fileInfoBart.getDiskFile(getContollerBart()
             .getFolderRepository());
-        assertTrue(testFileBart.exists());
+        assertTrue("Bart file should exist", testFileBart.exists());
         assertTrue("Unable to deleted file at bart: " + testFileBart,
             testFileBart.delete());
-        assertFalse(testFileBart.exists());
+        assertFalse("Bart file should not exist", testFileBart.exists());
 
         scanFolder(folderBart);
         scanFolder(folderLisa);
@@ -92,7 +92,7 @@ public class RedownloadTest extends TwoControllerTestCase {
         // Scan folders. Bart should see Lisa's file and download.
         scanFolder(folderBart);
         getContollerBart().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
+            .triggerFileRequesting(folderBart.getInfo());
         scanFolder(folderLisa);
 
         // Wait for copy.
@@ -105,9 +105,6 @@ public class RedownloadTest extends TwoControllerTestCase {
         assertEquals("Bart file count bad", 1, folderBart.getKnownItemCount());
         fileInfoBart = folderBart.getKnownFiles().iterator().next();
         assertFileMatch(testFileBart, fileInfoBart, getContollerBart());
-        assertEquals(0, fileInfoBart.getVersion());
-        // WHY? File has been restored
-        // assertTrue("Bart file not deleted", fileInfoBart.isDeleted());
-
+        assertEquals("Bart file bad version", 0, fileInfoBart.getVersion());
     }
 }
