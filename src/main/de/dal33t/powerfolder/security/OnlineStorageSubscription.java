@@ -226,9 +226,16 @@ public class OnlineStorageSubscription extends Model implements Serializable {
      * @param type
      */
     public void setTypeLegacy() {
-        Object oldValue = getType();
+        Object oldValue = type;
         this.type = findLegacyType();
         firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+    }
+
+    /**
+     * #1595
+     */
+    public void migrateLegacyToNew() {
+        setType(type);
     }
 
     public void setType(OnlineStorageSubscriptionType type) {
@@ -239,7 +246,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
             setStorageSize(0);
             setTrial(false);
         }
-        Object oldValue = getType();
+        Object oldValue = type;
         this.type = type;
         firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
     }
