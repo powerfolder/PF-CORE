@@ -28,14 +28,17 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.FolderAdapter;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
@@ -96,6 +99,7 @@ public class FolderStatistic extends PFComponent {
         MyFolderListener listener = new MyFolderListener();
         folder.addFolderListener(listener);
         folder.addMembershipListener(listener);
+        folder.getDiskItemFilter().addListener(listener);
 
         // Add to NodeManager
         getController().getNodeManager().addNodeManagerListener(
@@ -537,7 +541,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     private class MyFolderListener extends FolderAdapter implements
-        FolderMembershipListener
+        FolderMembershipListener, DiskItemFilterListener
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
@@ -589,6 +593,14 @@ public class FolderStatistic extends PFComponent {
 
         public boolean fireInEventDispatchThread() {
             return false;
+        }
+
+        public void patternAdded(PatternChangedEvent e) {
+            scheduleCalculate();
+        }
+
+        public void patternRemoved(PatternChangedEvent e) {
+            scheduleCalculate();
         }
     }
 

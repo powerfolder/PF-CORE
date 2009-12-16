@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -42,7 +42,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class DiskItemFilter {
 
-    private PatternChangeListener listenerSupport;
+    private DiskItemFilterListener listenerSupport;
 
     private static final Logger log = Logger.getLogger(DiskItemFilter.class
         .getName());
@@ -67,14 +67,14 @@ public class DiskItemFilter {
      */
     public DiskItemFilter() {
         listenerSupport = ListenerSupportFactory
-            .createListenerSupport(PatternChangeListener.class);
+            .createListenerSupport(DiskItemFilterListener.class);
     }
 
-    public void addListener(PatternChangeListener listener) {
+    public void addListener(DiskItemFilterListener listener) {
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
-    public void removeListener(PatternChangeListener listener) {
+    public void removeListener(DiskItemFilterListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 

@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.event;
 /**
  * Interface for components interested in receiving pattern change events.
  */
-public interface PatternChangeListener extends CoreListener {
+public interface DiskItemFilterListener extends CoreListener {
     void patternAdded(PatternChangedEvent e);
     void patternRemoved(PatternChangedEvent e);
 }

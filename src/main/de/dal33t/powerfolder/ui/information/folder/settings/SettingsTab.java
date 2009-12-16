@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -96,7 +96,7 @@ public class SettingsTab extends PFUIComponent {
     private DefaultListModel patternsListModel = new DefaultListModel();
     private final SelectionModel selectionModel;
     private FolderMembershipListener membershipListner;
-    private final PatternChangeListener patternChangeListener;
+    private final DiskItemFilterListener patternChangeListener;
 
     /**
      * Folders with this setting will backup files before replacing them with
@@ -901,7 +901,7 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class MyPatternChangeListener implements PatternChangeListener {
+    private class MyPatternChangeListener implements DiskItemFilterListener {
 
         public void patternAdded(PatternChangedEvent e) {
             rebuildPatterns();

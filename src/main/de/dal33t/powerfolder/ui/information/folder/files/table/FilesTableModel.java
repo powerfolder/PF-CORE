@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.PatternChangeListener;
+import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.Directory;
@@ -72,7 +72,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
     private int sortColumn;
-    private PatternChangeListener patternChangeListener;
+    private DiskItemFilterListener patternChangeListener;
 
     /**
      * Constructor
@@ -386,7 +386,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     // Inner classes //
     // ////////////////
 
-    private class MyPatternChangeListener implements PatternChangeListener {
+    private class MyPatternChangeListener implements DiskItemFilterListener {
 
         public void patternAdded(PatternChangedEvent e) {
             fireModelChanged();
