@@ -113,13 +113,29 @@ public class DateUtil {
     public static boolean isBeforeEndOfDate(Date subject, Date predicate) {
 
         Calendar cal = new GregorianCalendar();
-        cal.setTime(predicate);
+        cal.setTime(zeroTime(predicate));
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         cal.add(Calendar.DATE, 1);
         return subject.before(cal.getTime());
+    }
+
+    /**
+     * Returns a date that is the same day as the arg with all time parts == 0.
+     *
+     * @param date
+     * @return
+     */
+    public static Date zeroTime(Date date) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
     
 }

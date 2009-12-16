@@ -52,7 +52,9 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
 
     private final List<FileInfo> fileInfosToRestore;
     private final Folder folder;
-    private final boolean redownload;
+
+    /** If no archive is available, redownload from peers. */
+    private final boolean redownloadIfMissing;
 
     private JLabel statusLabel;
     private long successCount;
@@ -60,11 +62,11 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
 
     public MultiFileRestoringPanel(Controller controller, Folder folder,
                                  List<FileInfo> fileInfosToRestore,
-                                 boolean redownload) {
+                                 boolean redownloadIfMissing) {
         super(controller);
         this.fileInfosToRestore = fileInfosToRestore;
         this.folder = folder;
-        this.redownload = redownload;
+        this.redownloadIfMissing = redownloadIfMissing;
     }
 
     protected JComponent buildContent() {
@@ -151,37 +153,40 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                         .getFolderRepository());
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
-                if (redownload) {
+                if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
+                    log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
+                            " from local archive");
+                    folder.scanChangedFile(fileInfoToRestore);
+                    restored = true;
+                } else {
+                    // Not local. OnlineStorage perhaps?
+                    boolean online = folder.hasMember(getController()
+                            .getOSClient().getServer());
+                    if (online) {
+                        ServerClient client = getController().getOSClient();
+                        if (client != null && client.isConnected()
+                                && client.isLoggedIn()) {
+                            FolderService service = client.getFolderService();
+                            if (service != null) {
+                                service.restore(fileInfoToRestore, true);
+                                log.info("Restored " + fileInfoToRestore
+                                        .getFilenameOnly()
+                                        + " from OS archive");
+                                restored = true;
+                            }
+                        }
+                    }
+                }
+
+                // If no archive available, just redownload from best source.
+                if (redownloadIfMissing && !restored) {
                     // Delete from db, then request from peers.
                     folder.removeDeletedFileInfo(fileInfoToRestore);
                     getController().getFolderRepository().getFileRequestor()
                             .triggerFileRequesting(folder.getInfo());
+                    log.info("Redownloading " + fileInfoToRestore
+                            .getFilenameOnly());
                     restored = true;
-                } else {
-                    if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
-                        log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
-                                " from local archive");
-                        folder.scanChangedFile(fileInfoToRestore);
-                        restored = true;
-                    } else {
-                        // Not local. OnlineStorage perhaps?
-                        boolean online = folder.hasMember(getController()
-                                .getOSClient().getServer());
-                        if (online) {
-                            ServerClient client = getController().getOSClient();
-                            if (client != null && client.isConnected()
-                                    && client.isLoggedIn()) {
-                                FolderService service = client.getFolderService();
-                                if (service != null) {
-                                    service.restore(fileInfoToRestore, true);
-                                    log.info("Restored " + fileInfoToRestore
-                                            .getFilenameOnly()
-                                            + " from OS archive");
-                                    restored = true;
-                                }
-                            }
-                        }
-                    }
                 }
 
                 if (!restored) {
