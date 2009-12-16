@@ -485,7 +485,7 @@ public class Folder extends PFComponent {
      * @return true if succeeded
      * @see FileArchiver#maintain()
      */
-    public boolean purgeFileArchive() {
+    public boolean emptyFileArchive() {
         int version = archiver.getVersionsPerFile();
         archiver.setVersionsPerFile(0);
         boolean worked = archiver.maintain();
