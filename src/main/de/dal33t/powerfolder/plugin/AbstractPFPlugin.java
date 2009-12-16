@@ -77,6 +77,10 @@ public abstract class AbstractPFPlugin extends PFComponent implements Plugin {
     }
 
     protected boolean isEnabled() {
-        return getController().getPluginManager().isEnabled(this);
+        return getPluginManager().isEnabled(this);
+    }
+
+    protected PluginManager getPluginManager() {
+        return getController().getPluginManager();
     }
 }
