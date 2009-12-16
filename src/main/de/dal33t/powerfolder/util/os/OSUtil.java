@@ -182,8 +182,10 @@ public class OSUtil {
         String dir = "";
         if (isWindowsSystem()) {
             dir = is64BitPlatform() ? "win64libs" : "win32libs";
-        } else if (isMacOS() || isLinux()) {
+        } else if (isLinux()) {
             dir = "lin32libs";
+        } else if (isMacOS()) {
+            dir = "mac64libs";
         }
 
         String file = System.mapLibraryName(lib);
