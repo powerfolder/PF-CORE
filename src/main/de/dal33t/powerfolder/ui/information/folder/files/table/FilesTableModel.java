@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
@@ -175,7 +176,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
         }
 
         if (directories.keySet().contains(selectedRelativeName)) {
-            logInfo("Found " + selectedRelativeName + " in directories");
+            if (StringUtils.isNotBlank(selectedRelativeName)) {
+                logFine("Found '" + selectedRelativeName + "' in directories");
+            }
         } else {
             return;
         }
@@ -205,10 +208,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
                         boolean found = false;
                         for (DiskItem diskItem : diskItems) {
                             if (selectedDiskItem instanceof FileInfo
-                                    && diskItem instanceof FileInfo) {
+                                && diskItem instanceof FileInfo)
+                            {
                                 if (((FileInfo) selectedDiskItem)
-                                        .isVersionDateAndSizeIdentical(
-                                                (FileInfo) diskItem)) {
+                                    .isVersionDateAndSizeIdentical((FileInfo) diskItem))
+                                {
                                     found = true;
                                     break;
                                 }

@@ -200,8 +200,10 @@ public class DirectoryFilter extends FilterModel {
         Directory originalDirectory = folder.getDirectory();
 
         Date start = new Date();
-        logFine("Starting filter of " + originalDirectory.getRelativeName());
-
+        if (isFiner()) {
+            logFiner("Starting filter of "
+                + originalDirectory.getRelativeName());
+        }
         // Prepare keywords from text filter
         String textFilter = (String) getSearchFieldVM().getValue();
         String[] keywords = null;
