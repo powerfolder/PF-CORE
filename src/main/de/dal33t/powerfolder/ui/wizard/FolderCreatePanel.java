@@ -252,7 +252,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         }
         return SyncProfile.adjust(syncProfile, fileCount,
             ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
-                .getValueBoolean(getController()));
+                .getValueBoolean(getController()), false);
     }
 
     private static FolderInfo createFolderInfo(File localBase) {
@@ -315,10 +315,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
                 createShortcutToFolder(folderInfoFolderSettingsEntry.getKey(),
                     folderInfoFolderSettingsEntry.getValue());
-
-                if (folderPermissionOverride != null) {
-                    folder.setLocalFolderPermission(folderPermissionOverride);
-                }
 
                 folders.add(folder);
                 if (configurations.size() == 1) {
