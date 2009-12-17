@@ -68,6 +68,7 @@ import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
@@ -594,10 +595,12 @@ public class HomeTab extends PFUIComponent {
             getController().getNodeManager().isStarted());
 
         if (active) {
-            OnlineStorageSubscription storageSubscription = client.getAccount()
+            AccountDetails ad = client.getAccountDetails();
+            OnlineStorageSubscription storageSubscription = ad.getAccount()
                 .getOSSubscription();
             long totalStorage = storageSubscription.getStorageSize();
-            long spaceUsed = client.getAccountDetails().getSpaceUsed();
+            long spaceUsed = ad.getSpaceUsed();
+            spaceUsed += ad.getArchiveSize();
             if (spaceUsed > (double) totalStorage * 0.8) {
                 showBuyNow = true;
             }
