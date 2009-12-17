@@ -100,6 +100,7 @@ public class DiskItemFilter {
                 log.log(Level.SEVERE, "Problem loading pattern from "
                     + directory, ioe);
             } finally {
+                dirty = false;
                 if (reader != null) {
                     try {
                         reader.close();
@@ -190,9 +191,7 @@ public class DiskItemFilter {
     }
 
     /**
-     * True if patterns have been changed.
-     * 
-     * @return
+     * @return True if patterns have been changed.
      */
     public boolean isDirty() {
         return dirty;
