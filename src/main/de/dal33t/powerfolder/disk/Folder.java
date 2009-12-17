@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
-import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -109,6 +108,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
+    private static final String LAST_SYNC_INFO_FILENAME = "Last_sync.info";
+
     public static final String THUMBS_DB = "*thumbs.db";
     public static final String WORD_TEMP = "*~*.tmp";
     public static final String DS_STORE = "*.DS_Store";
@@ -130,11 +131,6 @@ public class Folder extends PFComponent {
      * Date of the folder last went to 100% synchronized with another member(s).
      */
     private Date lastSyncDate;
-
-    /**
-     * True if the folder reaches 100% sync with another member connected.
-     */
-    private final AtomicBoolean inSyncWithOthers;
 
     /**
      * The result state of the last scan
@@ -245,11 +241,6 @@ public class Folder extends PFComponent {
     private final CopyOnWriteArrayList<Problem> problems;
 
     /**
-     * #1046 The local security setting.
-     */
-    private FolderPermission localDefaultPermission;
-
-    /**
      * Constructor for folder.
      * 
      * @param controller
@@ -280,9 +271,6 @@ public class Folder extends PFComponent {
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
 
-        // Initially there are no other members, so is in sync (with self).
-        inSyncWithOthers = new AtomicBoolean(true);
-
         // Check base dir
         try {
             checkBaseDir(localBase, false);
@@ -307,18 +295,17 @@ public class Folder extends PFComponent {
             hasOwnDatabase = true;
         }
 
-        diskItemFilter = new DiskItemFilter();
-        diskItemFilter.loadPatternsFrom(getSystemSubDir());
-
         transferPriorities = new TransferPriorities();
+
+        diskItemFilter = new DiskItemFilter();
 
         // Initialize the DAO
         initFileInfoDAO();
 
         members = new ConcurrentHashMap<Member, Member>();
 
-        // Load folder database
-        loadFolderDB(); // will also read the blacklist
+        // Load folder database, ignore patterns and other metadata stuff.
+        loadMetadata();
 
         // put myself in membership
         join0(controller.getMySelf());
@@ -491,28 +478,6 @@ public class Folder extends PFComponent {
         boolean worked = archiver.maintain();
         archiver.setVersionsPerFile(version);
         return worked;
-    }
-
-    /**
-     * @return the local default permission. null if not yet set.
-     */
-    public FolderPermission getLocalDefaultPermission() {
-        return localDefaultPermission;
-    }
-
-    /**
-     * Sets the local security settings.
-     * 
-     * @param localDefaultPermission
-     */
-    public void setLocalFolderPermission(FolderPermission localDefaultPermission)
-    {
-        boolean changed = Util.equals(this.localDefaultPermission,
-            localDefaultPermission);
-        this.localDefaultPermission = localDefaultPermission;
-        if (changed) {
-            setDBDirty();
-        }
     }
 
     /**
@@ -846,7 +811,7 @@ public class Folder extends PFComponent {
             logWarning("Device reconnected. Loading folder database");
             initFileInfoDAO();
             // Try to load db from connected device now.
-            loadFolderDB();
+            loadMetadata();
         }
 
         ScanResult result;
@@ -897,6 +862,7 @@ public class Folder extends PFComponent {
             return false;
         } finally {
             lastScanResultState = result.getResultState();
+            checkLastSyncDate();
         }
     }
 
@@ -1134,11 +1100,6 @@ public class Folder extends PFComponent {
                     }
                     return fInfo;
                 }
-
-                // if (isFiner()) {
-                logWarning("File already known: " + localFile.toDetailString());
-                logWarning("File already known: " + fInfo.toDetailString());
-                // }
 
                 FileInfo syncFile = localFile.syncFromDiskIfRequired(
                     getController(), file);
@@ -1427,33 +1388,6 @@ public class Folder extends PFComponent {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
 
-                try {
-                    Object object = in.readObject();
-                    lastSyncDate = (Date) object;
-                    if (isFiner()) {
-                        logFiner("lastSyncDate" + lastSyncDate);
-                    }
-                } catch (EOFException e) {
-                    // ignore nothing available for ignore
-                    logFine("no last sync date");
-                } catch (Exception e) {
-                    logSevere("read ignore error: " + this + e.getMessage(), e);
-                }
-
-                try {
-                    Object object = in.readObject();
-                    localDefaultPermission = (FolderPermission) object;
-                    if (isFiner()) {
-                        logFiner("local default permission "
-                            + localDefaultPermission);
-                    }
-                } catch (EOFException e) {
-                    // ignore nothing available for ignore
-                    logFiner("no local default permission");
-                } catch (Exception e) {
-                    logSevere("read ignore error: " + this + e.getMessage(), e);
-                }
-
                 in.close();
                 fIn.close();
 
@@ -1471,6 +1405,21 @@ public class Folder extends PFComponent {
         }
 
         return true;
+    }
+
+    /**
+     * Loads the metadata information of this folder. Folder database, ignore
+     * patterns and last synchronized date.
+     */
+    private void loadMetadata() {
+        loadFolderDB();
+        loadLastSyncDate();
+        diskItemFilter.removeAllPatterns();
+        diskItemFilter.loadPatternsFrom(getSystemSubDir());
+        if (diskItemFilter.getPatterns().isEmpty()) {
+            logWarning("Ignore patterns empty. Adding default patterns");
+            addDefaultExcludes();
+        }
     }
 
     /**
@@ -1572,17 +1521,6 @@ public class Folder extends PFComponent {
                 }
                 oOut.writeObject(lastScan);
             }
-
-            if (isFiner()) {
-                logFiner("write lastSyncDate: " + lastSyncDate);
-            }
-            oOut.writeObject(lastSyncDate);
-
-            if (isFiner()) {
-                logFiner("write local default permission: "
-                    + localDefaultPermission);
-            }
-            oOut.writeObject(localDefaultPermission);
 
             oOut.close();
             fOut.close();
@@ -1988,16 +1926,15 @@ public class Folder extends PFComponent {
     }
 
     /**
-     *
-     * Delete a FileInfo that has been deleted. This is used to remove a
-     * deleted file entry so that it can be restored from the first
-     * Member that has the file available in the future.
-     *
+     * Delete a FileInfo that has been deleted. This is used to remove a deleted
+     * file entry so that it can be restored from the first Member that has the
+     * file available in the future.
+     * 
      * @param fileInfo
      */
     public void removeDeletedFileInfo(FileInfo fileInfo) {
         Reject.ifFalse(fileInfo.isDeleted(),
-                "Should only be removing deleted infos.");
+            "Should only be removing deleted infos.");
         dao.delete(null, fileInfo);
         dirty = true;
         commissionRootFolder();
@@ -3294,6 +3231,68 @@ public class Folder extends PFComponent {
         return inv;
     }
 
+    /**
+     * Ensures that default ignore patterns are set.
+     */
+    public void addDefaultExcludes() {
+        // Add thumbs to ignore pattern on windows systems
+        // Don't duplicate thumbs (like when moving a preview folder)
+        addPattern(THUMBS_DB);
+
+        // ... and temporary word files
+        addPattern(WORD_TEMP);
+
+        // Add desktop.ini to ignore pattern on windows systems
+        // if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
+        // {
+        addPattern(FileUtils.DESKTOP_INI_FILENAME);
+        // }
+
+        // Add dsstore to ignore pattern on mac systems
+        // Don't duplicate dsstore (like when moving a preview folder)
+        addPattern(DS_STORE);
+    }
+
+    /**
+     * Watch for harmonized sync is 100%. If so, set a new lastSync date.
+     */
+    private void checkLastSyncDate() {
+        double percentage = statistic.getHarmonizedSyncPercentage();
+        boolean newInSync = Double.compare(percentage, 100.0d) == 0;
+        if (newInSync) {
+            lastSyncDate = new Date();
+            storeLastSyncDate();
+        }
+
+        logWarning("Harmonized percentage: " + percentage + ". In sync? "
+            + newInSync + ". last sync date: " + lastSyncDate
+            + " . connected: " + getConnectedMembersCount() + ", in sync: "
+            + getStatistic().getMembersInSync());
+    }
+
+    private void storeLastSyncDate() {
+        File lastSyncFile = new File(getSystemSubDir(), LAST_SYNC_INFO_FILENAME);
+        try {
+            lastSyncFile.createNewFile();
+        } catch (IOException e) {
+            // Ignore.
+        }
+        try {
+            lastSyncFile.setLastModified(lastSyncFile.lastModified());
+        } catch (Exception e) {
+            logSevere("Unable to update last synced date to " + lastSyncFile);
+        }
+    }
+
+    private void loadLastSyncDate() {
+        File lastSyncFile = new File(getSystemSubDir(), LAST_SYNC_INFO_FILENAME);
+        if (lastSyncFile.exists()) {
+            lastSyncDate = new Date(lastSyncFile.lastModified());
+        } else {
+            lastSyncDate = null;
+        }
+    }
+
     // Security methods *******************************************************
 
     public boolean hasReadPermission(Member member) {
@@ -3338,42 +3337,6 @@ public class Folder extends PFComponent {
     @Override
     public String getLoggerName() {
         return super.getLoggerName() + " '" + getName() + '\'';
-    }
-
-    /**
-     * Ensures that default ignore patterns are set.
-     */
-    public void addDefaultExcludes() {
-        // Add thumbs to ignore pattern on windows systems
-        // Don't duplicate thumbs (like when moving a preview folder)
-        addPattern(THUMBS_DB);
-
-        // ... and temporary word files
-        addPattern(WORD_TEMP);
-
-        // Add desktop.ini to ignore pattern on windows systems
-        if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController())) {
-            addPattern(FileUtils.DESKTOP_INI_FILENAME);
-        }
-
-        // Add dsstore to ignore pattern on mac systems
-        // Don't duplicate dsstore (like when moving a preview folder)
-        addPattern(DS_STORE);
-    }
-
-    /**
-     * Watch for harmonized sync going from < 100% to 100%. If so, set a new
-     * lastSync date. UNKNOWN_SYNC_STATUS to 100% is not a valid transition.
-     */
-    private void checkLastSyncDate() {
-        double percentage = statistic.getHarmonizedSyncPercentage();
-        boolean newInSync = Double.compare(percentage, 100.0d) == 0
-            || Double.compare(percentage, UNKNOWN_SYNC_STATUS) == 0;
-        boolean oldInSync = inSyncWithOthers.getAndSet(newInSync);
-        if (newInSync && !oldInSync) {
-            lastSyncDate = new Date();
-            setDBDirty();
-        }
     }
 
     // *************** Event support
@@ -3511,7 +3474,7 @@ public class Folder extends PFComponent {
         }
 
         if (lastSyncDate != null && lastSyncDate.before(warningDate)
-            && !othersInSync)
+            && !othersInSync && !isSyncing())
         {
 
             // Only need one of these.
