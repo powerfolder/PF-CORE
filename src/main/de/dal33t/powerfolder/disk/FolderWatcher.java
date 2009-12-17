@@ -119,13 +119,22 @@ public class FolderWatcher extends PFComponent {
         return LIB_LOADED;
     }
 
+    private static volatile int REMOVED_WATCHES = 0;
+
     synchronized void remove() {
         if (!isLibLoaded()) {
             return;
         }
         if (watchID >= 0) {
+            if (REMOVED_WATCHES >= 8) {
+                logSevere("NOT unregistering filesystem watcher from " + folder
+                    + ", but ignoring events to prevent crash");
+                watchID = -1;
+                return;
+            }
             try {
                 JNotify.removeWatch(watchID);
+                REMOVED_WATCHES++;
             } catch (JNotifyException e) {
                 logWarning(e);
             } finally {
@@ -219,6 +228,10 @@ public class FolderWatcher extends PFComponent {
         }
 
         private void fileChanged(final String rootPath, final String name) {
+            if (watchID < 0) {
+                // Illegal / Useless
+                return;
+            }
             if (!isSupported()) {
                 // No supported
                 return;
