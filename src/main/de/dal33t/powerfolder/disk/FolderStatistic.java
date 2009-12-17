@@ -456,7 +456,9 @@ public class FolderStatistic extends PFComponent {
     public double getHarmonizedSyncPercentage() {
 
         // If there are no members connected, the sync percentage is unknown.
-        if (folder.getConnectedMembersCount() == 0) {
+        if (folder.getConnectedMembersCount() == 0
+            || current.sizesInSync.size() <= 1)
+        {
             return UNKNOWN_SYNC_STATUS;
         }
 
