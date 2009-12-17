@@ -78,6 +78,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Create a file with version = 1
         final File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
+
         scanFolder(getFolderAtBart());
         assertFileMatch(testFileBart, getFolderAtBart().getKnownFiles()
             .iterator().next(), getContollerBart());
@@ -214,12 +215,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertTrue(testFileLisa.delete());
         scanFolder(getFolderAtLisa());
 
+        FileInfo fInfoLisaDeleted = getFolderAtLisa().getKnownFiles()
+            .iterator().next();
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
-        assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
-            .getVersion());
-        assertTrue(getFolderAtLisa().getKnownFiles().iterator().next()
-            .isDeleted());
-
+        assertEquals(1, fInfoLisaDeleted.getVersion());
+        assertTrue(fInfoLisaDeleted.isDeleted());
+        assertEquals(0, fInfoLisaDeleted.getSize());
+        
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtBart().getKnownFiles().iterator().next()
@@ -227,11 +229,12 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             }
         });
 
+        FileInfo fInfoBartDeleted = getFolderAtBart().getKnownFiles()
+            .iterator().next();
         assertEquals(1, getFolderAtBart().getKnownItemCount());
-        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
-        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
-            .isDeleted());
+        assertEquals(1, fInfoBartDeleted.getVersion());
+        assertTrue(fInfoBartDeleted.isDeleted());
+        assertEquals(0, fInfoBartDeleted.getSize());
 
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
