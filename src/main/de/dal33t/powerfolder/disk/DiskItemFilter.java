@@ -173,6 +173,15 @@ public class DiskItemFilter {
         dirty = true;
     }
 
+    public void removeAllPatterns() {
+        for (CompilingPatternMatch patternMatch : patterns) {
+            patterns.remove(patternMatch);
+            listenerSupport.patternRemoved(new PatternChangedEvent(this,
+                patternMatch.getRealPatternText(), false));
+        }
+        dirty = true;
+    }
+
     /**
      * Remove a pattern from the list.
      * 
