@@ -149,8 +149,8 @@ public class HomeTab extends PFUIComponent {
         newWarningsCountVM = getUIController().getApplicationModel()
             .getWarningsModel().getWarningsCountVM();
         newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
-        controller.getFolderRepository().addOverallFolderStatListener(
-            new MyOverallFolderStatListener());
+        getApplicationModel().getFolderRepositoryModel()
+            .addOverallFolderStatListener(new MyOverallFolderStatListener());
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
         getApplicationModel().getUseOSModel().addValueChangeListener(
@@ -288,19 +288,29 @@ public class HomeTab extends PFUIComponent {
         updateNewWarningsText();
         updateNewComputersText();
         updateNewSingleFileOffersText();
-        initialSyncStats();
+        updateSyncStats();
         registerListeners();
 
-        // Start monitoring the up/download rate
+        // Start periodical updates
         getController().scheduleAndRepeat(new MyTimerTask(), 1000, 1000);
 
     }
 
-    private void initialSyncStats() {
-        boolean synced = getController().getFolderRepository().isSynchronized();
-        Date syncDate = getController().getFolderRepository()
-            .getSynchronizationDate();
-        displaySyncStats(syncDate, synced, !getController().getNodeManager()
+    private void updateSyncStats() {
+        // #1826 Lets say we are synchronized, when NOT syncing at the moment.
+        // boolean synced =
+        // getController().getFolderRepository().isSynchronized();
+        boolean syncing = getApplicationModel().getFolderRepositoryModel()
+            .wasSyncingAtDate();
+        Date syncDate;
+        if (syncing) {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getEtaSyncDate();
+        } else {
+            syncDate = getApplicationModel().getFolderRepositoryModel()
+                .getLastSyncDate();
+        }
+        displaySyncStats(syncDate, syncing, !getController().getNodeManager()
             .isStarted());
     }
 
@@ -618,7 +628,7 @@ public class HomeTab extends PFUIComponent {
 
     }
 
-    private void displaySyncStats(Date syncDate, boolean synced,
+    private void displaySyncStats(Date syncDate, boolean syncing,
         boolean disabled)
     {
         if (synchronizationStatusLabel != null) {
@@ -632,13 +642,18 @@ public class HomeTab extends PFUIComponent {
                 // No folders
                 syncStatsText = Translation
                     .getTranslation("home_tab.no_folders");
-            } else if (syncDate == null && synced) { // Never synced
+            } else if (syncDate == null && !syncing) { // Never synced
                 syncStatsText = Translation
                     .getTranslation("home_tab.never_synced");
             } else {
-                syncStatsText = synced ? Translation
-                    .getTranslation("home_tab.in_sync") : Translation
-                    .getTranslation("home_tab.synchronizing");
+                if (syncing) {
+                    long aniIndex = (System.currentTimeMillis() / 1000) % 3;
+                    syncStatsText = Translation
+                        .getTranslation("home_tab.synchronizing." + aniIndex);
+                } else {
+                    syncStatsText = Translation
+                        .getTranslation("home_tab.in_sync");
+                }
             }
             synchronizationStatusLabel.setText(syncStatsText);
         }
@@ -653,9 +668,9 @@ public class HomeTab extends PFUIComponent {
                         .getTranslation("home_tab.sync_unknown");
                 } else {
                     String date = Format.formatDateShort(syncDate);
-                    syncDateText = synced ? Translation.getTranslation(
-                        "home_tab.last_synced", date) : Translation
-                        .getTranslation("home_tab.sync_eta", date);
+                    syncDateText = syncing ? Translation.getTranslation(
+                        "home_tab.sync_eta", date) : Translation
+                        .getTranslation("home_tab.last_synced", date);
                 }
                 synchronizationDateLabel.setVisible(true);
                 synchronizationDateLabel.setText(syncDateText);
@@ -951,8 +966,7 @@ public class HomeTab extends PFUIComponent {
         OverallFolderStatListener
     {
         public void statCalculated(OverallFolderStatEvent e) {
-            displaySyncStats(e.getSyncDate(), e.isAllInSync(), !getController()
-                .getNodeManager().isStarted());
+            updateSyncStats();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -968,13 +982,15 @@ public class HomeTab extends PFUIComponent {
 
         @Override
         public void startStop(NodeManagerEvent e) {
-            initialSyncStats();
+            updateSyncStats();
             updateLicenseDetails();
         }
     }
 
     /**
      * Class to update the up/download rates.
+     * <P>
+     * And update the sync text.
      */
     private class MyTimerTask extends TimerTask {
 
@@ -989,7 +1005,15 @@ public class HomeTab extends PFUIComponent {
         }
 
         public void run() {
+            // Update general sync stats
+            updateSyncStats();
+
             double d = uploadCounter.calculateCurrentKBS();
+            if (getController().getTransferManager().countActiveUploads() == 0)
+            {
+                // Hide KB/s when not active uploads
+                d = 0;
+            }
             if (Double.compare(d, 0) == 0) {
                 uploadsLine.setNormalLabelText(Translation
                     .getTranslation("home_tab.files_uploads"));
@@ -999,6 +1023,11 @@ public class HomeTab extends PFUIComponent {
                     "home_tab.files_uploads_active", s));
             }
             d = downloadCounter.calculateCurrentKBS();
+            if (getController().getTransferManager().countActiveDownloads() == 0)
+            {
+                // Hide KB/s when no active downloads
+                d = 0;
+            }
             if (Double.compare(d, 0) == 0) {
                 downloadsLine.setNormalLabelText(Translation
                     .getTranslation("home_tab.files_downloads"));
