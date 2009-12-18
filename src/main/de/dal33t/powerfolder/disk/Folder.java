@@ -3263,11 +3263,12 @@ public class Folder extends PFComponent {
             lastSyncDate = new Date();
             storeLastSyncDate();
         }
-
-        logWarning("Harmonized percentage: " + percentage + ". In sync? "
-            + newInSync + ". last sync date: " + lastSyncDate
-            + " . connected: " + getConnectedMembersCount() + ", in sync: "
-            + getStatistic().getMembersInSync());
+        if (isFiner()) {
+            logFiner("Harmonized percentage: " + percentage + ". In sync? "
+                + newInSync + ". last sync date: " + lastSyncDate
+                + " . connected: " + getConnectedMembersCount() + ", in sync: "
+                + getStatistic().getMembersInSync());
+        }
     }
 
     private void storeLastSyncDate() {
