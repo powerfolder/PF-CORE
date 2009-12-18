@@ -1,5 +1,7 @@
 PowerFolder Basic Software License
 
+Copyright (c) 2009 PowerFolder Christian Sprajc. All rights reserved.
+
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
