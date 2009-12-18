@@ -45,7 +45,6 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,13 +55,9 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.OverallFolderStatEvent;
-import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -101,22 +96,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The trigger to start scanning
     private final Object scanTrigger = new Object();
     private boolean triggered;
-    private final FolderListener folderListener;
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
 
     /** The disk scanner */
     private final FolderScanner folderScanner;
-
-    /** true if all folders are in sync. */
-    private final AtomicBoolean allInSync = new AtomicBoolean(true);
-
-    /**
-     * Date all folders were last synchronized or the most future estimated sync
-     * date.
-     */
-    private Date allSyncOrEstimatedDate;
 
     /**
      * The current synchronizater of all folder memberships
@@ -129,8 +114,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      * target for #787.
      */
     private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
-
-    private final OverallFolderStatListener overallFolderStatListenerSupport;
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -159,26 +142,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Create listener support
         folderRepositoryListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderRepositoryListener.class);
-
-        folderListener = new OverallStatsCaludatorFolderListener();
-
-        overallFolderStatListenerSupport = ListenerSupportFactory
-            .createListenerSupport(OverallFolderStatListener.class);
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
-    }
-
-    public void addOverallFolderStatListener(OverallFolderStatListener listener)
-    {
-        ListenerSupportFactory.addListener(overallFolderStatListenerSupport,
-            listener);
-    }
-
-    public void removeOverallFolderStatListener(
-        OverallFolderStatListener listener)
-    {
-        ListenerSupportFactory.removeListener(overallFolderStatListenerSupport,
-            listener);
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -202,7 +167,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         logFine("setSuspendFireEvents: " + suspended);
     }
 
-    // @todo This shold go into the UI.
+    /**
+     * THIS IS A BIG HACK.
+     * 
+     * @todo This shold go into the UI.
+     * @return if allowed
+     */
     public boolean isShutdownAllowed() {
         boolean warnOnClose = PreferencesEntry.WARN_ON_CLOSE
             .getValueBoolean(getController());
@@ -226,18 +196,18 @@ public class FolderRepository extends PFComponent implements Runnable {
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");
                     String text;
-                    if (getController().getFolderRepository().isSynchronized())
-                    {
-                        text = Translation.getTranslation(
-                            "folder_repository.warn_on_close.text", folderslist
-                                .toString());
-                    } else {
-                        Date syncDate = getController().getFolderRepository()
-                            .getSynchronizationDate();
+                    if (getController().getFolderRepository().isSyncing()) {
+                        Date syncDate = getController().getUIController()
+                            .getApplicationModel().getFolderRepositoryModel()
+                            .getEtaSyncDate();
                         text = Translation.getTranslation(
                             "folder_repository.warn_on_close_eta.text",
                             folderslist.toString(), Format
                                 .formatDateShort(syncDate));
+                    } else {
+                        text = Translation.getTranslation(
+                            "folder_repository.warn_on_close.text", folderslist
+                                .toString());
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
@@ -808,7 +778,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder = new Folder(getController(), folderInfo, folderSettings);
         }
 
-        folder.addFolderListener(folderListener);
         folder.addProblemListener(valveProblemListenerSupport);
         folder.setArchiveMode(folderSettings.getArchiveMode());
         folder.setArchiveVersions(folderSettings.getVersions());
@@ -912,7 +881,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Remove internal
         folders.remove(folder.getInfo());
-        folder.removeFolderListener(folderListener);
         folder.removeProblemListener(valveProblemListenerSupport);
 
         // Break transfers
@@ -1139,18 +1107,18 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @return true if all folders are synchronized.
+     * "syncing" means SCANNING local files OR uploding files OR downloading
+     * files.
+     * 
+     * @return true if any folder is syncing. false if not.
      */
-    public boolean isSynchronized() {
-        return allInSync.get();
-    }
-
-    /**
-     * @return sync date. This will return the last date all folders were
-     *         synchronized OR the ETA if sync is in progress.
-     */
-    public Date getSynchronizationDate() {
-        return allSyncOrEstimatedDate;
+    public boolean isSyncing() {
+        for (Folder folder : folders.values()) {
+            if (folder.isSyncing()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Event support **********************************************************
@@ -1218,51 +1186,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    /**
-     * When a folder updates its stats, check all folders to get whether any
-     * folders are syncing and what the greatest estimated / last sync date is.
-     */
-    private void calculateOverallStats() {
-        boolean foldersInSync = true;
-
-        // Check for folders that are currently synchronizing.
-        for (Folder folder : folders.values()) {
-            double percentage = folder.getStatistic()
-                .getHarmonizedSyncPercentage();
-            boolean synchronizing = Double.compare(percentage, 100.0) < 0
-                && Double.compare(percentage,
-                    FolderStatistic.UNKNOWN_SYNC_STATUS) > 0;
-            if (synchronizing) {
-                foldersInSync = false;
-                break;
-            }
-        }
-
-        allInSync.set(foldersInSync);
-
-        // Find the folder with the most recent synchronized date / most
-        // future estimated date.
-        Date syncDate = null;
-        for (Folder folder : folders.values()) {
-            Date date;
-            if (foldersInSync) {
-                date = folder.getLastSyncDate();
-            } else {
-                date = folder.getStatistic().getEstimatedSyncDate();
-            }
-            if (date != null) {
-                if (syncDate == null || date.after(syncDate)) {
-                    syncDate = date;
-                }
-            }
-        }
-
-        allSyncOrEstimatedDate = syncDate;
-
-        overallFolderStatListenerSupport
-            .statCalculated(new OverallFolderStatEvent(foldersInSync, syncDate));
-    }
-
     private final class OldSyncWarningCheckTask extends TimerTask {
         @Override
         public void run() {
@@ -1317,30 +1240,4 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private class OverallStatsCaludatorFolderListener implements FolderListener
-    {
-
-        public void statisticsCalculated(FolderEvent folderEvent) {
-            calculateOverallStats();
-        }
-
-        public void syncProfileChanged(FolderEvent folderEvent) {
-        }
-
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-        }
-
-        public void scanResultCommited(FolderEvent folderEvent) {
-        }
-
-        public void fileChanged(FolderEvent folderEvent) {
-        }
-
-        public void filesDeleted(FolderEvent folderEvent) {
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return false;
-        }
-    }
 }
