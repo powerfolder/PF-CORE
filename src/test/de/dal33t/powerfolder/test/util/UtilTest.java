@@ -1,34 +1,37 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.ui.TimeEstimator;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
+import de.dal33t.powerfolder.util.ui.TimeEstimator;
 
 /**
  * Test for the Util class.
@@ -38,6 +41,20 @@ import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
  * @version $Revision: 1.5 $
  */
 public class UtilTest extends TestCase {
+
+    public void testCopyResourceTo() throws IOException {
+        File testFile1 = File.createTempFile("xxxxx", "yy");
+        assertEquals(testFile1, Util.copyResourceTo("Translation.properties",
+            null, testFile1, false));
+        assertTrue(testFile1.length() > 100);
+        assertEquals(testFile1, Util.copyResourceTo("Translation.properties",
+            null, testFile1, false));
+        assertTrue(testFile1.length() > 100);
+
+        File testFile2 = File.createTempFile("xxxxx", "yy");
+        assertNull(Util.copyResourceTo("NOTEXISTING", null, testFile2, false));
+        assertTrue(testFile2.length() == 0);
+    }
 
     public void testSplitArray() throws UnsupportedEncodingException {
         byte[] testArray = new byte[94];
@@ -98,7 +115,7 @@ public class UtilTest extends TestCase {
 
     /**
      * Estimating backwards is not possible.
-     *
+     * 
      * @throws InterruptedException
      */
     public void testSimpleTimeEstimationBack() throws InterruptedException {

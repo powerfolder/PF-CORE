@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -47,6 +48,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -184,26 +186,50 @@ public class Util {
      *            structure like etc/files)
      * @param destinationFile
      *            The file to create
+     * @param forceOverwrite
+     *            true if the resource should be copied even if not required.
      */
     public static File copyResourceTo(String resource, String altLocation,
-        File destinationFile)
+        File destinationFile, boolean forceOverwrite)
     {
-        destinationFile.mkdirs();
-        InputStream in = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream(resource);
-        if (in == null) {
-            LOG.finer("Unable to find resource: " + resource);
-            // try harder
-            in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(altLocation + '/' + resource);
-            if (in == null) {
-                LOG.warning("Unable to find resource: " + altLocation + '/'
+        try {
+            // Step 1) Check existence of resource
+            URL resURL = Thread.currentThread().getContextClassLoader()
+                .getResource(resource);
+            if (resURL == null && altLocation != null) {
+                LOG.finer("Unable to find resource: " + resource);
+                // try harder
+                resURL = Thread.currentThread().getContextClassLoader()
+                    .getResource(altLocation + '/' + resource);
+            }
+            if (resURL == null) {
+                LOG.warning("Unable to find resource: (" + altLocation + ")/"
                     + resource);
                 return null;
             }
-        }
-        try {
+            URLConnection resCon = resURL.openConnection();
+            long lastMod = resCon.getLastModified();
+            long length = resCon.getContentLength();
+
+            // Step 2) Check if update/overwrite is required
+            if (!forceOverwrite && destinationFile.exists()) {
+                boolean upToDate = length == destinationFile.length()
+                    && DateUtil.equalsFileDateCrossPlattform(lastMod,
+                        destinationFile.lastModified());
+                if (upToDate) {
+                    // No update required
+                    LOG.fine("Not required to update " + resURL + " to "
+                        + destinationFile);
+                    return destinationFile;
+                }
+            }
+
+            // Step 3) Actually copy
+            InputStream in = resCon.getInputStream();
+            destinationFile.mkdirs();
             FileUtils.copyFromStreamToFile(in, destinationFile);
+            // Preserver last mod for later caching.
+            destinationFile.setLastModified(resCon.getLastModified());
         } catch (IOException ioe) {
             LOG.warning("Unable to create target for resource: "
                 + destinationFile);
