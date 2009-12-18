@@ -3266,8 +3266,7 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Harmonized percentage: " + percentage + ". In sync? "
                 + newInSync + ". last sync date: " + lastSyncDate
-                + " . connected: " + getConnectedMembersCount() + ", in sync: "
-                + getStatistic().getMembersInSync());
+                + " . connected: " + getConnectedMembersCount());
         }
     }
 
