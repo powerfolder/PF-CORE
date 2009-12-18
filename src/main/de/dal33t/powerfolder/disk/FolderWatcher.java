@@ -126,12 +126,12 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (watchID >= 0) {
-            // if (REMOVED_WATCHES >= 5) {
-            // logSevere("NOT unregistering filesystem watcher from " + folder
-            // + " to prevent crash. Ignoring further filesystem events");
-            // watchID = -1;
-            // return;
-            // }
+            if (REMOVED_WATCHES >= 5) {
+                logSevere("NOT unregistering filesystem watcher from " + folder
+                    + " to prevent crash. Ignoring further filesystem events");
+                watchID = -1;
+                return;
+            }
             try {
                 JNotify.removeWatch(watchID);
                 REMOVED_WATCHES++;
@@ -188,11 +188,15 @@ public class FolderWatcher extends PFComponent {
                     }
                     FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
                     if (fileInfo == null) {
-                        logWarning("No change of file: "
-                            + dirtyFile.toDetailString());
+                        if (isFine()) {
+                            logFine("No change of file: "
+                                + dirtyFile.toDetailString());
+                        }
                     } else {
                         scanned++;
-                        logWarning("Scaned file: " + fileInfo.toDetailString());
+                        if (isFine()) {
+                            logFine("Scaned file: " + fileInfo.toDetailString());
+                        }
                     }
                 }
                 logWarning("Scanned " + scanned + " dirty files");
