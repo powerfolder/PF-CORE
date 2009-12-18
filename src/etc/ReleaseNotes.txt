@@ -1,21 +1,42 @@
-PowerFolder Version 4.0.3 - http://www.powerfolder.com
+PowerFolder Version 4.1.0 - http://www.powerfolder.com
 
 = New features =
- * Information tabs (Folder, Files, Transfers, etc.) can now be displayed in
-   same window with main tabs.
- * Added support for Windows Live Mail.
- 
-= Improvements =
- * Added bulk restore from file archive.
- * Reduced memory usage.
-   
-= Bugfixes =
- * Made file detection more robust: Not longer crashes on invalid file timestamps.
- * Fixed rare bug that caused files be marked as deleted and moved into the archive.
- * System service did not start after GUI was closed sometimes.
- * Download of large files not longer occasionally timeout.
- * Several other minor bugfixes.
+ * Instant file change detection for zero-delay syncing. Files now get instantly
+   synchronized after they have been updated, created or deleted.
+   This new feature also drastically reduces CPU load and hard drive activity when
+   running PowerFolder. Feature must be manually enabled under Preferences/Advanced.
+ * File archive bulk restore: PowerFolder now supports to restore multiple files
+   at once. Restore the latest version or select the version by date/time.
+   Wiki: http://www.powerfolder.com/wiki/File_Archive
 
+= Improvements =
+ * Completely reworked synchronization progress display.
+   Now sync dates and activity info is much more accurate.
+ * Completely reworked system service: Status under Preferences/Pro Settings
+   is now kept identical to the installation status of the service.
+   Warning about a running instance when starting the user interface won't
+   longer appear unless there is a problem actually. System service
+   always automatically starts after closing the user interface when enabled.
+   Wiki: http://www.powerfolder.com/wiki/System_Service
+ * Folders can now be removed/de-configured by script.
+   Wiki: http://www.powerfolder.com/wiki/Script_configuration
+ * Manual sync button now triggers instant sync even if folder is setup to
+   scheduled sync. Wiki: http://www.powerfolder.com/wiki/Scheduled_synchronization
+ * Slightly reduced CPU load while scanning for changes.
+ * File archive details now indicates the availability (local or online).
+
+= Bugfixes =
+ * Fixed bug that causes synchronization to stop on mix-case named directories
+   that had been manually copied/created before using PowerFolder.
+ * Fixed never ending synchronization display problem.
+ * Fixed re-appearing empty directories after they have been deleted.
+ * Corrected stuck synchronization in LAN only mode.
+   Wiki: http://www.powerfolder.com/wiki/LAN-Only_networking_mode
+ * Invitations directly sent to computers not longer get lost. 
+ * Fixed mass deletion detection. Sometimes did trigger without any harmful deletion.
+ * Fixed timeout when connection takes more that 20 minutes to get established.
+ * Sync percentages now get recalculated when changing the list of ignored files.
+ * Many more minor bugfixes.
 
 = Important for 3.X users =
 
@@ -51,6 +72,26 @@ Email	   : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.0.3
+-------------
+
+= New features =
+ * Information tabs (Folder, Files, Transfers, etc.) can now be displayed in
+   same window with main tabs.
+ * Added support for Windows Live Mail.
+ 
+= Improvements =
+ * Added bulk restore from file archive.
+ * Reduced memory usage.
+   
+= Bugfixes =
+ * Made file detection more robust: Not longer crashes on invalid file timestamps.
+ * Fixed rare bug that caused files be marked as deleted and moved into the archive.
+ * System service did not start after GUI was closed sometimes.
+ * Download of large files not longer occasionally timeout.
+ * Several other minor bugfixes.
+
 
 Version 4.0.2
 -------------
