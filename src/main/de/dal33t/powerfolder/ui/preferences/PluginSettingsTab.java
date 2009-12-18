@@ -284,10 +284,12 @@ public class PluginSettingsTab extends PFUIComponent implements PreferenceTab {
             boolean newStatus = !getController().getPluginManager().isEnabled(
                 plugin);
             getController().getPluginManager().setEnabled(plugin, newStatus);
-            if (newStatus && plugin.hasOptionsDialog()) {
-                plugin
-                    .showOptionsDialog(PluginSettingsTab.this.preferencesDialog);
-            }
+            // #1853: No need to show it. Disabled because of system service
+            // plugin.
+            // if (newStatus && plugin.hasOptionsDialog()) {
+            // plugin
+            // .showOptionsDialog(PluginSettingsTab.this.preferencesDialog);
+            // }
         }
 
         private void updateButton(Plugin plugin) {
