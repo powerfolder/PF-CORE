@@ -318,8 +318,8 @@ public class TransferManager extends PFComponent {
                 long numberOfDays = calcDays(completedUpload.getCompletedDate());
                 if (numberOfDays >= uploadCleanupFrequency) {
                     logInfo("Auto-cleaning up upload '"
-                        + completedUpload.getFile().getRelativeName() + "' (days="
-                        + numberOfDays + ')');
+                        + completedUpload.getFile().getRelativeName()
+                        + "' (days=" + numberOfDays + ')');
                     clearCompletedUpload(completedUpload);
                 }
             }
@@ -654,8 +654,8 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (node.equals(upload.getPartner())) {
-                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node
-                        .getNick());
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED,
+                        node.getNick());
                 }
             }
         }
@@ -663,8 +663,8 @@ public class TransferManager extends PFComponent {
         if (!activeUploads.isEmpty()) {
             for (Upload upload : activeUploads) {
                 if (node.equals(upload.getPartner())) {
-                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node
-                        .getNick());
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED,
+                        node.getNick());
                 }
             }
         }
@@ -1159,7 +1159,8 @@ public class TransferManager extends PFComponent {
         }
         // Never upload db files !!
         if (Folder.DB_FILENAME.equalsIgnoreCase(dl.file.getRelativeName())
-            || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file.getRelativeName()))
+            || Folder.DB_BACKUP_FILENAME.equalsIgnoreCase(dl.file
+                .getRelativeName()))
         {
             logSevere(from.getNick()
                 + " has illegally requested to download a folder database file");
@@ -1490,9 +1491,11 @@ public class TransferManager extends PFComponent {
                     logSevere("Unable to remove download: " + download, e);
                 }
                 if (!man.hasSources()) {
-                    logFine("No further sources in that manager, removing it!");
                     if (!man.isDone()) {
+                        logFine("No further sources in that manager, removing it!");
                         man.setBroken("Out of sources for download");
+                    } else {
+                        logWarning("No further sources in that manager, Not removing it because it's already done");
                     }
                 }
             }
@@ -1694,7 +1697,7 @@ public class TransferManager extends PFComponent {
                     {
                         logWarning("Requesting older file requested: "
                             + fileToDl.toDetailString() + ", local: "
-                            + localFile.toDetailString() + ", isNewer: "
+                            + localFile.toDetailString() + ", localIsNewer: "
                             + localFile.isNewerThan(fileToDl));
                     }
                     if (fileToDl.isNewerAvailable(getController()
@@ -2539,16 +2542,15 @@ public class TransferManager extends PFComponent {
                     logFine("Transfers: "
                         + countActiveDownloads()
                         + " download(s), "
-                        + Format.formatDecimal(
-                            getDownloadCounter().calculateCurrentKBS())
+                        + Format.formatDecimal(getDownloadCounter()
+                            .calculateCurrentKBS())
                         + " KByte/s, "
                         + activeUploads.size()
                         + " active upload(s), "
                         + queuedUploads.size()
                         + " in queue, "
-                        + Format.formatDecimal(
-                            getUploadCounter().calculateCurrentKBS())
-                        + " KByte/s");
+                        + Format.formatDecimal(getUploadCounter()
+                            .calculateCurrentKBS()) + " KByte/s");
                 }
 
                 count++;
@@ -2754,9 +2756,9 @@ public class TransferManager extends PFComponent {
         }
 
         logInfo((download ? "Download" : "Upload") + " completed: "
-            + Format.formatDecimal(fInfo.getSize())
-            + " bytes in " + (took / 1000) + "s (" + cpsStr + " KByte/s): "
-            + fInfo + memberInfo);
+            + Format.formatDecimal(fInfo.getSize()) + " bytes in "
+            + (took / 1000) + "s (" + cpsStr + " KByte/s): " + fInfo
+            + memberInfo);
     }
 
     // Event/Listening code ***************************************************
