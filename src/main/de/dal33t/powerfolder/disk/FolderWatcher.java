@@ -126,9 +126,9 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (watchID >= 0) {
-            if (REMOVED_WATCHES >= 8) {
+            if (REMOVED_WATCHES >= 5) {
                 logSevere("NOT unregistering filesystem watcher from " + folder
-                    + ", but ignoring events to prevent crash");
+                    + " to prevent crash. Ignoring further filesystem events");
                 watchID = -1;
                 return;
             }
