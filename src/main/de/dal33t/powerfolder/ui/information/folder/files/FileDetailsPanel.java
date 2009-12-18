@@ -136,8 +136,13 @@ public class FileDetailsPanel extends PFUIComponent {
             if (fileInfo
                 .isNewerAvailable(getController().getFolderRepository()))
             {
-                status = new StringBuilder(Translation
-                    .getTranslation("file_details_panel.newer_available"));
+                FileInfo newestVersion = fileInfo
+                    .getNewestVersion(getController().getFolderRepository());
+                String verStr = newestVersion != null ? newestVersion
+                    .getVersion()
+                    + "" : "?";
+                status = new StringBuilder(Translation.getTranslation(
+                    "file_details_panel.newer_available", verStr));
             } else {
                 status = new StringBuilder(Translation
                     .getTranslation("file_details_panel.normal"));
@@ -174,8 +179,8 @@ public class FileDetailsPanel extends PFUIComponent {
         MemberInfo modifiedBy = fileInfo.getModifiedBy();
         modifiedByField.setText(modifiedBy.nick);
         modifiedByField.setIcon(Icons.getIconById(Icons.COMPUTER));
-        modifiedDateField
-            .setText(Format.formatDateShort(fileInfo.getModifiedDate()));
+        modifiedDateField.setText(Format.formatDateShort(fileInfo
+            .getModifiedDate()));
 
         versionField.setText(String.valueOf(fileInfo.getVersion()));
 
