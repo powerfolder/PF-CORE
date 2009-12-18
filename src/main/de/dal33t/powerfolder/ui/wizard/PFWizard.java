@@ -34,7 +34,6 @@ import jwf.WizardContext;
 import jwf.WizardListener;
 import jwf.WizardPanel;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -115,29 +114,6 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new SendInvitationsPanel(controller));
-    }
-
-    /**
-     * Opens the send-invitation wizard.
-     * 
-     * @param controller
-     *            the controller.
-     * @param foInfo
-     *            the folder to send the invitation for.
-     */
-    public static void openSelectInvitationWizard(Controller controller,
-        Member member, List<FolderInfo> possibleFolders)
-    {
-        PFWizard wizard = new PFWizard(controller);
-        TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.send_invitations.send_success"),
-            Translation
-                .getTranslation("wizard.send_invitations.send_success_info"),
-            true);
-        wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
-
-        wizard.open(new SelectInvitationPanel(controller, member,
-            possibleFolders));
     }
 
     public static void openSingletonOnlineStorageJoinWizard(
