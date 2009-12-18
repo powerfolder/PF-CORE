@@ -1164,6 +1164,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     expand();
                 }
+                if (folder != null
+                    && getController().getUIController().isShowingFolder())
+                {
+                    getController().getUIController().openFilesInformation(
+                        folderInfo);
+                }
             }
         }
     }

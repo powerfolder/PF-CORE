@@ -1102,6 +1102,13 @@ public class UIController extends PFComponent {
     public boolean isStarted() {
         return started;
     }
+    
+    /**
+     * @return true if the information frame is showing a folder.
+     */
+    public boolean isShowingFolder() {
+        return informationFrame.isShowingFolder();
+    }
 
     /**
      * @return the controller

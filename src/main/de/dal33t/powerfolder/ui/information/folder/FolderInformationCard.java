@@ -74,46 +74,48 @@ public class FolderInformationCard extends InformationCard {
      * 
      * @param folderInfo
      */
-    public void setFolderInfo(FolderInfo folderInfo) {
-        detachProblemListener();
+    private void setFolderInfo0(FolderInfo folderInfo) {
         this.folderInfo = folderInfo;
-        filesTab.setFolderInfo(folderInfo);
         membersTab.setFolderInfo(folderInfo);
         settingsTab.setFolderInfo(folderInfo);
         problemsTab.setFolderInfo(folderInfo);
+    }
+
+    /**
+     * Sets the folder in the tabs.
+     * 
+     * @param folderInfo
+     */
+    public void setFolderInfo(FolderInfo folderInfo) {
+        detachProblemListener();
+        setFolderInfo0(folderInfo);
+        filesTab.setFolderInfo(folderInfo);
         atachProblemListener();
         updateProblems();
     }
 
     /**
-     * Sets the folder in the tabs with new set and sort date
-     * descending.
-     *
+     * Sets the folder in the tabs with new set and sort date descending.
+     * 
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
         detachProblemListener();
-        this.folderInfo = folderInfo;
+        setFolderInfo0(folderInfo);
         filesTab.setFolderInfoLatest(folderInfo);
-        membersTab.setFolderInfo(folderInfo);
-        settingsTab.setFolderInfo(folderInfo);
-        problemsTab.setFolderInfo(folderInfo);
         atachProblemListener();
         updateProblems();
     }
 
     /**
      * Sets the folder in the tabs with incoming set.
-     *
+     * 
      * @param folderInfo
      */
     public void setFolderInfoIncoming(FolderInfo folderInfo) {
         detachProblemListener();
-        this.folderInfo = folderInfo;
+        setFolderInfo0(folderInfo);
         filesTab.setFolderInfoIncoming(folderInfo);
-        membersTab.setFolderInfo(folderInfo);
-        settingsTab.setFolderInfo(folderInfo);
-        problemsTab.setFolderInfo(folderInfo);
         atachProblemListener();
         updateProblems();
     }

@@ -54,6 +54,7 @@ public class InformationFrame extends MagneticFrame {
     private DebugInformationCard debugInformationCard;
 
     private boolean showingFolder;
+
     private FolderInfo currentFolderInfo;
 
     /**
@@ -86,7 +87,7 @@ public class InformationFrame extends MagneticFrame {
     private void buildUIComponent() {
         JFrame mainFrame = getUIController().getMainFrame().getUIComponent();
         Preferences prefs = getController().getPreferences();
-        
+
         int y = prefs.getInt("infoframe4.y", mainFrame.getY());
         int x = prefs.getInt("infoframe4.x", 50);
         uiComponent.setLocation(x, y);
@@ -94,7 +95,8 @@ public class InformationFrame extends MagneticFrame {
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("infoframe4.width", mainFrame.getLocation().x - x - 10);
+        int width = prefs.getInt("infoframe4.width", mainFrame.getLocation().x
+            - x - 10);
         int height = prefs.getInt("infoframe4.height", mainFrame.getHeight());
         if (width < 50) {
             width = 50;
@@ -161,13 +163,16 @@ public class InformationFrame extends MagneticFrame {
         }
     }
 
+    public boolean isShowingFolder() {
+        return showingFolder;
+    }
+
     /**
      * Displays file info for a folder.
      * 
      * @param folderInfo
      */
-    public void displayFolderFiles(FolderInfo folderInfo)
-    {
+    public void displayFolderFiles(FolderInfo folderInfo) {
         buildFolderInformationCard();
         folderInformationCard.setFolderInfo(folderInfo);
         folderInformationCard.showFiles();
@@ -177,9 +182,9 @@ public class InformationFrame extends MagneticFrame {
     }
 
     /**
-     * Displays file info for a folder with filter set to new and
-     * sort set to date descending.
-     *
+     * Displays file info for a folder with filter set to new and sort set to
+     * date descending.
+     * 
      * @param folderInfo
      */
     public void displayFolderFilesLatest(FolderInfo folderInfo) {
@@ -193,7 +198,7 @@ public class InformationFrame extends MagneticFrame {
 
     /**
      * Displays file info for a folder with filter set to incoming.
-     *
+     * 
      * @param folderInfo
      */
     public void displayFolderFilesIncoming(FolderInfo folderInfo) {
