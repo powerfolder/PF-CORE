@@ -54,14 +54,14 @@ public class SyncButtonComponent extends PFUIComponent {
         folderRepositorySyncing = new AtomicBoolean();
         mousePressed = new AtomicBoolean();
 
-        syncAllLabel = new JLabel(Icons
-            .getIconById("sync_normal_00.icon"));
+        syncAllLabel = new JLabel(Icons.getIconById("sync_normal_00.icon"));
         syncAllLabel.setToolTipText(Translation
             .getTranslation("action_sync_all_folders.description"));
         syncAllLabel.addMouseListener(new MyMouseAdapter());
 
         controller.getThreadPool().submit(new MyRunnable());
-        controller.getFolderRepository().addOverallFolderStatListener(new MyOverallFolderStatListener());
+        getUIController().getApplicationModel().getFolderRepositoryModel()
+            .addOverallFolderStatListener(new MyOverallFolderStatListener());
     }
 
     public Component getUIComponent() {
@@ -125,8 +125,8 @@ public class SyncButtonComponent extends PFUIComponent {
                         directoryString = "normal";
                     }
 
-                    String iconId = "sync_" + directoryString + '_' +
-                            numberString + ".icon";
+                    String iconId = "sync_" + directoryString + '_'
+                        + numberString + ".icon";
                     final Icon icon = Icons.getIconById(iconId);
                     // Move into EDT, otherwise it violates the one thread EDT
                     // rule.
@@ -144,9 +144,11 @@ public class SyncButtonComponent extends PFUIComponent {
         }
     }
 
-    private class MyOverallFolderStatListener implements OverallFolderStatListener {
+    private class MyOverallFolderStatListener implements
+        OverallFolderStatListener
+    {
         public void statCalculated(OverallFolderStatEvent e) {
-            folderRepositorySyncing.set(!e.isAllInSync());
+            folderRepositorySyncing.set(e.isSyncing());
         }
 
         public boolean fireInEventDispatchThread() {
