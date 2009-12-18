@@ -126,8 +126,8 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (watchID >= 0) {
-            if (REMOVED_WATCHES >= 5) {
-                logSevere("NOT unregistering filesystem watcher from " + folder
+            if (REMOVED_WATCHES >= 0) {
+                logWarning("NOT unregistering filesystem watcher from " + folder
                     + " to prevent crash. Ignoring further filesystem events");
                 watchID = -1;
                 return;
@@ -165,6 +165,13 @@ public class FolderWatcher extends PFComponent {
                 + ". " + e, e);
             watchID = -1;
         }
+    }
+
+    // Logger methods *********************************************************
+
+    @Override
+    public String getLoggerName() {
+        return super.getLoggerName() + " '" + folder.getName() + '\'';
     }
 
     private class DirtyFilesScanner implements Runnable {
