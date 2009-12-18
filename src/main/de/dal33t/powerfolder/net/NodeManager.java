@@ -1044,7 +1044,9 @@ public class NodeManager extends PFComponent {
                 member.unmarkConnecting();
             }
         } else {
-            logWarning(rejectCause + ", connected? " + handler.isConnected());
+            if (isFine()) {
+                logFine(rejectCause + ", connected? " + handler.isConnected());
+            }
             // Tell remote side, fatal problem
             try {
                 handler.sendMessage(new Problem(rejectCause, true,
