@@ -49,8 +49,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        assertTrue(tryToConnectSimpsons());
-        joinTestFolder(SyncProfile.HOST_FILES);
+        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);
         getContollerHomer().setSilentMode(true);
         getContollerBart().setSilentMode(true);
         getContollerMarge().setSilentMode(true);
@@ -62,12 +61,12 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() {
-        getFolderAtBart().getStatistic().calculate0();
-        getFolderAtLisa().getStatistic().calculate0();
-        getFolderAtHomer().getStatistic().calculate0();
-        getFolderAtMarge().getStatistic().calculate0();
-        getFolderAtMaggie().getStatistic().calculate0();
+        forceStatsCals();
         assertHasLastSyncDate(false, false, false, false, false);
+
+        assertTrue(tryToConnectSimpsons());
+        forceStatsCals();
+        assertHasLastSyncDate(true, true, true, true, true);
 
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
@@ -119,6 +118,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFileSameVersion() {
+        assertTrue(tryToConnectSimpsons());
         setSyncProfile(SyncProfile.HOST_FILES);
         File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
@@ -155,6 +155,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testInitialSync() throws IOException {
+        assertTrue(tryToConnectSimpsons());
+        setSyncProfile(SyncProfile.HOST_FILES);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         File testFileAtLisa = new File(getFolderAtLisa().getLocalBase(),
@@ -197,11 +199,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testMultipleFiles() {
-        // assertFalse(getContollerHomer().isSilentMode());
-        // assertFalse(getContollerBart().isSilentMode());
-        // assertFalse(getContollerMarge().isSilentMode());
-        // assertFalse(getContollerLisa().isSilentMode());
-        // assertFalse(getContollerMaggie().isSilentMode());
+        assertTrue(tryToConnectSimpsons());
         int nFiles = 100;
         int totalSize = 0;
         List<File> files = new ArrayList<File>();
@@ -252,6 +250,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testIncomingFiles() {
+        assertTrue(tryToConnectSimpsons());
+        setSyncProfile(SyncProfile.HOST_FILES);
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1000);
         scanFolder(getFolderAtBart());
@@ -274,6 +274,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testDeletedFiles() {
+        assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
@@ -328,6 +329,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     }
 
     public void testAutodownload() {
+        assertTrue(tryToConnectSimpsons());
         // 1) Sync ONE file to all simpsons
         setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         File testFile1 = TestHelper.createRandomFile(getFolderAtBart()
@@ -382,6 +384,8 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Test the sync calculation with multiple files and mixed sync profiles
      */
     public void testMultipleFilesComplex() {
+        assertTrue(tryToConnectSimpsons());
+        setSyncProfile(SyncProfile.HOST_FILES);
         final int nFiles = 50;
         long totalSize = 0;
         for (int i = 0; i < nFiles; i++) {
@@ -526,11 +530,11 @@ public class FolderStatisticTest extends FiveControllerTestCase {
     private void assertHasLastSyncDate(boolean homer, boolean bart,
         boolean marge, boolean lisa, boolean maggie)
     {
-        assertEquals(getFolderAtHomer().getLastSyncDate() != null, homer);
-        assertEquals(getFolderAtBart().getLastSyncDate() != null, bart);
-        assertEquals(getFolderAtMarge().getLastSyncDate() != null, marge);
-        assertEquals(getFolderAtLisa().getLastSyncDate() != null, lisa);
-        assertEquals(getFolderAtMaggie().getLastSyncDate() != null, maggie);
+        assertEquals(homer, getFolderAtHomer().getLastSyncDate() != null);
+        assertEquals(bart, getFolderAtBart().getLastSyncDate() != null);
+        assertEquals(marge, getFolderAtMarge().getLastSyncDate() != null);
+        assertEquals(lisa, getFolderAtLisa().getLastSyncDate() != null);
+        assertEquals(maggie, getFolderAtMaggie().getLastSyncDate() != null);
     }
 
     private void assertSyncPercentages(Folder folder, double homer,
