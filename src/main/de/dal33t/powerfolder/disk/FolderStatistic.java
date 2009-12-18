@@ -107,7 +107,7 @@ public class FolderStatistic extends PFComponent {
     }
 
     // package protected called from Folder
-    void scheduleCalculate() {
+    public void scheduleCalculate() {
         // logWarning("Scheduled new calculation", new
         // RuntimeException("here"));
         if (calculating != null) {

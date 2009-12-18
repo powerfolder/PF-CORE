@@ -623,6 +623,8 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         }
 
         public void actionPerformed(ActionEvent e) {
+            // Also recalc stats.
+            folder.getStatistic().scheduleCalculate();
             refreshModel();
         }
     }
