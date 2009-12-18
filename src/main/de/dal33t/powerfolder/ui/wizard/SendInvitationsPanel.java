@@ -174,6 +174,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 if (invitee.equalsIgnoreCase(node.getNick())) {
                     InvitationUtil.invitationToNode(getController(),
                         invitation, node);
+                    // TODO: Check if this logic is ok: Sends out to ANY
+                    // comptuer with the same login/account. Is this really
+                    // good?
                     if (node.getAccountInfo() != null) {
                         try {
                             InvitationUtil.invitationByServer(getController(),
