@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.ui.render.DownloadManagerTableCellRenderer;
 import javax.swing.*;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 
 /**
  * A Table for displaying the downloads.
@@ -64,6 +66,18 @@ public class DownloadManagersTable extends JTable {
             .getDownloadsTableModel(), getColumnModel(),
             DownloadManagersTableModel.COLPROGRESS, true);
 
+        addHierarchyListener(new MyDisplayabilityListener());
+    }
+
+    private class MyDisplayabilityListener implements HierarchyListener {
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) == HierarchyEvent.DISPLAYABILITY_CHANGED)
+            {
+                boolean showing = e.getChanged().isShowing();
+                DownloadManagersTableModel m = (DownloadManagersTableModel) getModel();
+                m.setPeriodicUpdate(showing);
+            }
+        }
     }
 
     // Helper methods *********************************************************

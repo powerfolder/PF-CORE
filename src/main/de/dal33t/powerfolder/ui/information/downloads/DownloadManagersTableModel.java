@@ -71,6 +71,7 @@ public class DownloadManagersTableModel extends PFComponent implements
     private boolean sortAscending = true;
     private int sortColumn;
     private final TransferManagerModel model;
+    private volatile boolean periodicUpdate;
 
     public DownloadManagersTableModel(TransferManagerModel model) {
         super(model.getController());
@@ -81,6 +82,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         // Add listener
         model.getTransferManager().addListener(new MyTransferManagerListener());
 
+        periodicUpdate = false;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
@@ -95,6 +97,14 @@ public class DownloadManagersTableModel extends PFComponent implements
         downloadManagers.addAll(tm.getCompletedDownloadsCollection());
         downloadManagers.addAll(tm.getActiveDownloads());
         // #1732 FIXME: Does not work addAll(tm.getPendingDownloads());
+    }
+
+    public boolean isPeriodicUpdate() {
+        return periodicUpdate;
+    }
+
+    public void setPeriodicUpdate(boolean periodicUpdate) {
+        this.periodicUpdate = periodicUpdate;
     }
 
     /**
@@ -535,6 +545,10 @@ public class DownloadManagersTableModel extends PFComponent implements
     private class MyTimerTask extends TimerTask {
 
         public void run() {
+            if (!periodicUpdate) {
+                // Skip
+                return;
+            }
             Runnable wrapper = new Runnable() {
                 public void run() {
                     if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
@@ -546,15 +560,7 @@ public class DownloadManagersTableModel extends PFComponent implements
                     rowsUpdatedAll();
                 }
             };
-            try {
-                SwingUtilities.invokeAndWait(wrapper);
-            } catch (InterruptedException e) {
-                logFiner("Interrupteed while updating downloadstable", e);
-
-            } catch (InvocationTargetException e) {
-                logSevere("Unable to update downloadstable", e);
-
-            }
+            SwingUtilities.invokeLater(wrapper);
         }
     }
 

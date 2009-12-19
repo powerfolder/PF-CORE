@@ -19,6 +19,14 @@
  */
 package de.dal33t.powerfolder.ui.information.uploads;
 
+import java.awt.Dimension;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -27,11 +35,6 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
-
-import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import java.awt.*;
 
 /**
  * A Table for displaying the uploads.
@@ -70,6 +73,8 @@ public class UploadsTable extends JTable {
         SortedTableHeaderRenderer.associateHeaderRenderer(transferManagerModel
             .getUploadsTableModel(), getColumnModel(),
             UploadsTableModel.COLPROGRESS, true);
+
+        addHierarchyListener(new MyDisplayabilityListener());
     }
 
     // Helper methods *********************************************************
@@ -96,5 +101,16 @@ public class UploadsTable extends JTable {
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(5));
         column.setPreferredWidth(40);
+    }
+
+    private class MyDisplayabilityListener implements HierarchyListener {
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) == HierarchyEvent.DISPLAYABILITY_CHANGED)
+            {
+                boolean showing = e.getChanged().isShowing();
+                UploadsTableModel m = (UploadsTableModel) getModel();
+                m.setPeriodicUpdate(showing);
+            }
+        }
     }
 }

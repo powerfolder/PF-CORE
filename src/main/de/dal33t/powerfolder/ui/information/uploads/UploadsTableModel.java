@@ -67,18 +67,15 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     private boolean sortAscending = true;
     private int sortColumn;
     private final TransferManagerModel model;
+    private volatile boolean periodicUpdate;
 
     /**
      * Constructs a new table model for uploads.
      * 
      * @param model
      *            the transfermanager model
-     * @param enabledPeriodicalUpdates
-     *            true if periodical updates should be fired.
      */
-    public UploadsTableModel(TransferManagerModel model,
-        boolean enabledPeriodicalUpdates)
-    {
+    public UploadsTableModel(TransferManagerModel model) {
         super(model.getController());
         this.model = model;
         listeners = new LinkedList<TableModelListener>();
@@ -87,10 +84,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         model.getTransferManager().addListener(
             new UploadTransferManagerListener());
 
-        if (enabledPeriodicalUpdates) {
-            MyTimerTask task = new MyTimerTask();
-            getController().scheduleAndRepeat(task, UPDATE_TIME);
-        }
+        periodicUpdate = false;
+        MyTimerTask task = new MyTimerTask();
+        getController().scheduleAndRepeat(task, UPDATE_TIME);
     }
 
     /**
@@ -103,6 +99,14 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     }
 
     // Public exposing ********************************************************
+
+    public boolean isPeriodicUpdate() {
+        return periodicUpdate;
+    }
+
+    public void setPeriodicUpdate(boolean periodicUpdate) {
+        this.periodicUpdate = periodicUpdate;
+    }
 
     /**
      * @param rowIndex
@@ -410,14 +414,14 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         sortAscending = ascending;
     }
 
-// ////////////////
+    // ////////////////
     // Inner Classes //
     // ////////////////
 
     /**
      * Listener on Transfer manager with new event system. TODO: Consolidate
      * removing uploads on abort/complete/broken
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private class UploadTransferManagerListener extends TransferAdapter {
@@ -467,10 +471,14 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Continouosly updates the ui
+     * Continuously updates the model
      */
     private class MyTimerTask extends TimerTask {
         public void run() {
+            if (!periodicUpdate) {
+                // Skip
+                return;
+            }
             Runnable wrapper = new Runnable() {
                 public void run() {
                     if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
@@ -482,14 +490,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
                     rowsUpdatedAll();
                 }
             };
-            try {
-                SwingUtilities.invokeAndWait(wrapper);
-            } catch (InterruptedException e) {
-                logFiner("Interrupteed while updating downloadstable", e);
-
-            } catch (InvocationTargetException e) {
-                logSevere("Unable to update downloadstable", e);
-            }
+            SwingUtilities.invokeLater(wrapper);
         }
     }
 
