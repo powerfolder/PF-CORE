@@ -72,6 +72,7 @@ import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.SyncIconHelper;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
 
 /**
  * The status bar on the lower side of the main window.
@@ -295,8 +296,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             Runnable runnable = new Runnable() {
                 public void run() {
                     controller.getThreadPool().execute(
-                        new LimitedConnectivityChecker.CheckTask(controller,
-                            false));
+                        new CheckTask(controller));
                     LimitedConnectivityChecker
                         .showConnectivityWarning(controller);
                 }

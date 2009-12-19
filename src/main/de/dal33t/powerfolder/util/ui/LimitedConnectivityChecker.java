@@ -108,15 +108,16 @@ public class LimitedConnectivityChecker {
      */
     public static void install(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        CheckTask task = new CheckTask(controller, true);
-        controller.getThreadPool().execute(task);
+        CheckTask task = new CheckTask(controller);
+        controller.schedule(task,
+            1000L * Constants.LIMITED_CONNECTIVITY_CHECK_DELAY);
 
         // Support networking mode switch.
         controller.addPropertyChangeListener(
             Controller.PROPERTY_NETWORKING_MODE, new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    controller.getIOProvider().startIO(
-                        new CheckTask(controller, false));
+                    controller.getThreadPool().execute(
+                        new CheckTask(controller));
                 }
             });
     }
@@ -133,11 +134,9 @@ public class LimitedConnectivityChecker {
 
     public static class CheckTask implements Runnable {
         private Controller controller;
-        private boolean delay;
 
-        public CheckTask(Controller controller, boolean delay) {
+        public CheckTask(Controller controller) {
             this.controller = controller;
-            this.delay = delay;
         }
 
         public void run() {
@@ -149,15 +148,6 @@ public class LimitedConnectivityChecker {
             if (!PreferencesEntry.TEST_CONNECTIVITY.getValueBoolean(controller))
             {
                 return;
-            }
-
-            if (delay) {
-                try {
-                    Thread
-                        .sleep(Constants.LIMITED_CONNECTIVITY_CHECK_DELAY * 1000);
-                } catch (InterruptedException e) {
-                    return;
-                }
             }
             LimitedConnectivityChecker checker = new LimitedConnectivityChecker(
                 controller);
