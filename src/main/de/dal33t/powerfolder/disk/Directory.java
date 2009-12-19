@@ -397,15 +397,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 + fileInfo.toDetailString());
         }
 
+        Directory dir;
         synchronized (subDirectoriesMap) {
-            Directory dir = subDirectoriesMap.get(dirName);
+            dir = subDirectoriesMap.get(dirName);
             if (dir == null) {
                 dir = new Directory(rootFolder, this, dirName);
                 subDirectoriesMap.put(dirName, dir);
             }
-            dir.add0(member, fileInfo, theRest);
         }
-
+        dir.add0(member, fileInfo, theRest);
     }
 
     public Collection<Directory> getSubdirectories() {
