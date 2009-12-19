@@ -60,15 +60,16 @@ public abstract class Transfer extends Loggable implements Serializable {
     protected final State transferState = new State();
 
     public enum TransferState {
-        NONE("None", 0), FILERECORD_REQUEST("transfers.requested", 10), // DOWNLOAD
-        // only
-        FILEHASHING("transfers.hashing", 20), // UPLOAD only
-        REMOTEMATCHING("transfers.remote_hashing", 30), // UPLOAD only
-        DOWNLOADING("Downloading", 40), // DOWNLOAD only
-        UPLOADING("Uploading", 50), // UPLOAD only
-        MATCHING("transfers.hashing", 60), // DOWNLOAD ONLY
-        COPYING("transfers.copying", 70), // DOWNLOAD ONLY
-        VERIFYING("transfers.verifying", 80), DONE("transfers.completed", 100);
+        NONE("None", 10), // NONE WHAT DO YOU THINK?
+        FILERECORD_REQUEST("transfers.requested", 20), // DOWNLOAD
+        FILEHASHING("transfers.hashing", 30), // UPLOAD only
+        REMOTEMATCHING("transfers.remote_hashing", 40), // UPLOAD only
+        DOWNLOADING("Downloading", 50), // DOWNLOAD only
+        UPLOADING("Uploading", 60), // UPLOAD only
+        MATCHING("transfers.hashing", 70), // DOWNLOAD ONLY
+        COPYING("transfers.copying", 80), // DOWNLOAD ONLY
+        VERIFYING("transfers.verifying", 90), // DOWNLOAD ONLY
+        DONE("transfers.completed", 100);
 
         private int orderIndex;
 
