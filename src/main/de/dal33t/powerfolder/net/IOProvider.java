@@ -210,8 +210,8 @@ public class IOProvider extends PFComponent {
             if (!started) {
                 return;
             }
-            if (log.isLoggable(Level.WARNING)) {
-                logWarning("Checking " + keepAliveList.size()
+            if (log.isLoggable(Level.FINE)) {
+                logFine("Checking " + keepAliveList.size()
                     + " con handlers for keepalive");
             }
             Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
