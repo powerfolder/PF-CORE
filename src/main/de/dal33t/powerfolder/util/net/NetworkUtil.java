@@ -47,12 +47,10 @@ public class NetworkUtil {
     private final static Logger LOG = Logger.getLogger(NetworkUtil.class
         .getName());
 
-    // private static final int LAN_SOCKET_BUFFER_SIZE = 64 * 1024;
-    // private static final int INET_SOCKET_BUFFER_SIZE = 16 * 1024;
-    // private static final int LAN_SOCKET_BUFFER_LIMIT = 1024 * 1024;
-    // private static final int INET_SOCKET_BUFFER_LIMIT = 256 * 1024;
-
-    private static final long CACHE_TIMEOUT = 10 * 1000;
+    /**
+     * Network interfaces cache.
+     */
+    private static final long CACHE_TIMEOUT = 30 * 1000;
 
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InetAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
