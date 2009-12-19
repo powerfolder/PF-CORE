@@ -150,23 +150,19 @@ public class DelayedUpdater {
             if (canceled) {
                 return;
             }
-            try {
-                UIUtil.invokeAndWaitInEDT(new Runnable() {
-                    public void run() {
-                        if (canceled) {
-                            return;
-                        }
-                        try {
-                            task.run();
-                        } catch (Exception e) {
-                            LOG.log(Level.SEVERE,
-                                "Exception while executing delayed task: " + e,
-                                e);
-                        }
+            UIUtil.invokeLaterInEDT(new Runnable() {
+                public void run() {
+                    if (canceled) {
+                        return;
                     }
-                });
-            } catch (InterruptedException e) {
-            }
+                    try {
+                        task.run();
+                    } catch (Exception e) {
+                        LOG.log(Level.SEVERE,
+                            "Exception while executing delayed task: " + e, e);
+                    }
+                }
+            });
         }
     }
 }
