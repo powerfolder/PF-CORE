@@ -108,7 +108,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
-    private static final String LAST_SYNC_INFO_FILENAME = "Last_sync.info";
+    private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
 
     public static final String THUMBS_DB = "*thumbs.db";
     public static final String WORD_TEMP = "*~*.tmp";
@@ -3278,7 +3278,7 @@ public class Folder extends PFComponent {
             // Ignore.
         }
         try {
-            lastSyncFile.setLastModified(lastSyncFile.lastModified());
+            lastSyncFile.setLastModified(lastSyncDate.getTime());
         } catch (Exception e) {
             logSevere("Unable to update last synced date to " + lastSyncFile);
         }
