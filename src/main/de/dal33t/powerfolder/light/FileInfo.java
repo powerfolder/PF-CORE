@@ -176,8 +176,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (diskFile == null) {
             throw new NullPointerException("diskFile is null");
         }
-        boolean nameMatch = IGNORE_CASE ? diskFile.getName().equalsIgnoreCase(
-            getFilenameOnly()) : diskFile.getName().equals(getFilenameOnly());
+        String diskFileName = diskFile.getName();
+        boolean nameMatch = getRelativeName().endsWith(diskFileName);
+
+        if (!nameMatch && IGNORE_CASE) {
+            // Try harder if ignore case
+            nameMatch = diskFileName.equalsIgnoreCase(getFilenameOnly());
+        }
+
         // Check if files match
         if (!nameMatch) {
             throw new IllegalArgumentException(
