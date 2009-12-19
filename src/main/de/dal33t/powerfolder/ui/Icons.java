@@ -510,6 +510,8 @@ public class Icons {
 
     /**
      * returns a icon (never gray or red)
+     * <p>
+     * TODO THIS IS A MESS
      * 
      * @param fileInfo
      *            the fileinfo to return a icon for
@@ -545,6 +547,12 @@ public class Icons {
         }
         // local file doesnot exists
         icon = getIconExtension(extension);
+        EXTENSION_ICON_MAP.put(extension, icon);// put in cache
+        Icon disabled = getGrayIcon(icon); // think ahead we may need
+        // the disabled version somewhere later
+        // put in cache
+        EXTENSION_ICON_MAP.put(extension + DISABLED_EXTENSION_ADDITION,
+            disabled);
         return icon;
     }
 
