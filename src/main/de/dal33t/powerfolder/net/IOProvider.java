@@ -95,7 +95,8 @@ public class IOProvider extends PFComponent {
         ioThreadPool = new WrapperExecutorService(Executors
             .newCachedThreadPool(new NamedThreadFactory("IOThread-")));
         started = true;
-        startIO(new KeepAliveChecker());
+        getController().scheduleAndRepeat(new KeepAliveChecker(),
+            TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
         relayedConManager.start();
     }
 
@@ -209,48 +210,38 @@ public class IOProvider extends PFComponent {
             if (!started) {
                 return;
             }
-            while (started) {
-                if (log.isLoggable(Level.FINE)) {
-                    logFine("Checking " + keepAliveList.size()
-                        + " con handlers for keepalive");
-                }
-                Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
-                    keepAliveList);
-                if (getController().getNodeManager() != null) {
-                    Collection<Member> nodes = getController().getNodeManager()
-                        .getNodesAsCollection();
-                    // Might happen on startup
-                    if (nodes != null) {
-                        for (Member node : nodes) {
-                            ConnectionHandler peer = node.getPeer();
-                            if (peer == null) {
-                                continue;
-                            }
-                            if (!peer.isConnected()) {
-                                continue;
-                            }
-                            if (!list.contains(peer)) {
-                                logSevere("ConHan not in keepalive list of "
-                                    + node);
-                                list.add(peer);
-                            }
+            if (log.isLoggable(Level.WARNING)) {
+                logWarning("Checking " + keepAliveList.size()
+                    + " con handlers for keepalive");
+            }
+            Collection<ConnectionHandler> list = new HashSet<ConnectionHandler>(
+                keepAliveList);
+            if (getController().getNodeManager() != null) {
+                Collection<Member> nodes = getController().getNodeManager()
+                    .getNodesAsCollection();
+                // Might happen on startup
+                if (nodes != null) {
+                    for (Member node : nodes) {
+                        ConnectionHandler peer = node.getPeer();
+                        if (peer == null) {
+                            continue;
+                        }
+                        if (!peer.isConnected()) {
+                            continue;
+                        }
+                        if (!list.contains(peer)) {
+                            logSevere("ConHan not in keepalive list of " + node);
+                            list.add(peer);
                         }
                     }
                 }
-
-                for (ConnectionHandler conHan : list) {
-                    if (!conHan.isConnected()) {
-                        keepAliveList.remove(conHan);
-                    }
-                    if (!checkIfOk(conHan)) {
-                        keepAliveList.remove(conHan);
-                    }
+            }
+            for (ConnectionHandler conHan : list) {
+                if (!conHan.isConnected()) {
+                    keepAliveList.remove(conHan);
                 }
-                try {
-                    Thread.sleep(TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
-                } catch (InterruptedException e) {
-                    logFiner("InterruptedException", e);
-                    return;
+                if (!checkIfOk(conHan)) {
+                    keepAliveList.remove(conHan);
                 }
             }
         }
