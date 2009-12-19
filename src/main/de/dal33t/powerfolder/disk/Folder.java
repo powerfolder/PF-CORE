@@ -2106,11 +2106,8 @@ public class Folder extends PFComponent {
             // Not interesting...
             return;
         }
-        if (diskItemFilter.isExcluded(remoteFile)) {
-            return;
-        }
-        boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
 
+        boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
         if (!syncFromMemberAllowed) {
             // Not allowed to sync
             return;
@@ -2118,7 +2115,12 @@ public class Folder extends PFComponent {
 
         FileInfo localFile = getFile(remoteFile);
         if (localFile != null && !remoteFile.isNewerThan(localFile)) {
-            // Local file is newer
+            // Remote file is not newer = we are up to date.
+            return;
+        }
+
+        // Ignored? Skip!
+        if (diskItemFilter.isExcluded(remoteFile)) {
             return;
         }
 
@@ -2982,7 +2984,7 @@ public class Folder extends PFComponent {
                     if (remoteFile.isDeleted() && !includeDeleted) {
                         continue;
                     }
-                   
+
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
                     FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
