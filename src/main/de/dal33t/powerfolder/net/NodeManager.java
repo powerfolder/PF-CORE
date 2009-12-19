@@ -1032,7 +1032,7 @@ public class NodeManager extends PFComponent {
             try {
                 int connectionTries = member.markConnecting();
                 if (connectionTries >= 2) {
-                    logWarning("Multiple connection tries detected ("
+                    logFine("Multiple connection tries detected ("
                         + connectionTries + ") to " + member);
                 }
                 ConnectResult res = member.setPeer(handler);
