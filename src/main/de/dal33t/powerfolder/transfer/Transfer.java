@@ -60,24 +60,36 @@ public abstract class Transfer extends Loggable implements Serializable {
     protected final State transferState = new State();
 
     public enum TransferState {
-        NONE("None"), FILERECORD_REQUEST("transfers.requested"), MATCHING(
-            "transfers.hashing"), DOWNLOADING("Downloading"), VERIFYING(
-            "transfers.verifying"), DONE("transfers.completed"), REMOTEMATCHING(
-            "transfers.remote_hashing"), UPLOADING("Uploading"), FILEHASHING(
-            "transfers.hashing"), COPYING("transfers.copying");
+        NONE("None", 0), FILERECORD_REQUEST("transfers.requested", 10), // DOWNLOAD
+        // only
+        FILEHASHING("transfers.hashing", 20), // UPLOAD only
+        REMOTEMATCHING("transfers.remote_hashing", 30), // UPLOAD only
+        DOWNLOADING("Downloading", 40), // DOWNLOAD only
+        UPLOADING("Uploading", 50), // UPLOAD only
+        MATCHING("transfers.hashing", 60), // DOWNLOAD ONLY
+        COPYING("transfers.copying", 70), // DOWNLOAD ONLY
+        VERIFYING("transfers.verifying", 80), DONE("transfers.completed", 100);
+
+        private int orderIndex;
+
+        public int getOrderIndex() {
+            return orderIndex;
+        }
 
         private String translationId;
 
-        TransferState(String key) {
-            translationId = key;
+        TransferState(String key, int orderIndex) {
+            this.translationId = key;
+            this.orderIndex = orderIndex;
         }
 
         public String getTranslationId() {
             return translationId;
         }
+
     }
 
-    public static class State implements Serializable {
+    public static class State implements Serializable, Comparable<State> {
         private static final long serialVersionUID = 100L;
 
         private TransferState state = TransferState.NONE;
@@ -122,11 +134,20 @@ public abstract class Transfer extends Loggable implements Serializable {
         }
 
         /**
-         * Returns the date the transfer completed.
-         * @return
+         * @return the date the transfer completed.
          */
         public Date getCompletedDate() {
             return completedDate;
+        }
+
+        public int compareTo(State o) {
+            int comp = Integer.valueOf(state.orderIndex).compareTo(
+                o.state.orderIndex);
+            if (comp == 0) {
+                // Same state. Compare by progress
+                comp = Double.valueOf(progress).compareTo(o.progress);
+            }
+            return comp;
         }
     }
 
@@ -161,8 +182,8 @@ public abstract class Transfer extends Loggable implements Serializable {
      */
     void init(TransferManager aTransferManager) {
         if (transferManager != null) {
-            logSevere(
-                "Unable to set TransferManager. Having already one. " + this);
+            logSevere("Unable to set TransferManager. Having already one. "
+                + this);
             return;
         }
         this.transferManager = aTransferManager;
@@ -296,8 +317,9 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     public Date getCompletedDate() {
-        return transferState != null && transferState.getCompletedDate() != null
-                ? transferState.getCompletedDate() : null;
+        return transferState != null
+            && transferState.getCompletedDate() != null ? transferState
+            .getCompletedDate() : null;
     }
 
     /**
@@ -323,21 +345,21 @@ public abstract class Transfer extends Loggable implements Serializable {
             return true;
         }
         if (!getPartner().isCompletelyConnected()) {
-            logFine(
-                "Break cause: " + getPartner().getNick() + " not connected.");
+            logFine("Break cause: " + getPartner().getNick()
+                + " not connected.");
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            logFine(
-                "Break cause: " + getPartner().getNick() + " not on folder.");
+            logFine("Break cause: " + getPartner().getNick()
+                + " not on folder.");
             return true;
         }
 
         return false;
     }
-    
+
     /**
      * @return if this transfer is still queued at the remote side. if not this
      *         transfer should be set broken
@@ -421,7 +443,8 @@ public abstract class Transfer extends Loggable implements Serializable {
     //
     // @Override
     // public String getLoggerName() {
-    // return getClass().getSimpleName() + " '" + getRelativeFile().getFilenameOnly()
+    // return getClass().getSimpleName() + " '" +
+    // getRelativeFile().getFilenameOnly()
     // + "'";
     // }
 }

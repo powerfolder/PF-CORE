@@ -55,9 +55,7 @@ public class TransferComparator implements Comparator<Transfer> {
                 return o1.getFile().getFilenameOnly().compareToIgnoreCase(
                     o2.getFile().getFilenameOnly());
             case BY_PROGRESS :
-                double p1 = o1.getStateProgress();
-                double p2 = o2.getStateProgress();
-                 return Double.compare(p1, p2);
+                return o1.getState().compareTo(o2.getState());
             case BY_SIZE :
                 long s1 = o1.getFile().getSize();
                 long s2 = o2.getFile().getSize();
