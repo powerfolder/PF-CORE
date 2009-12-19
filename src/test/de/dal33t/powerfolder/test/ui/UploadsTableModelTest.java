@@ -56,7 +56,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         bartModelListener = new MyUploadTableModelListener();
         bartModel = new UploadsTableModel(new TransferManagerModel(
-            getContollerBart().getTransferManager()), false);
+            getContollerBart().getTransferManager()));
         bartModel.addTableModelListener(bartModelListener);
 
         // Instant cleanup
