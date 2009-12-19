@@ -1919,7 +1919,7 @@ public class Folder extends PFComponent {
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId());
         commissionRootFolder();
-        rootDirectory.removeFilesOfMember(member);
+        rootDirectory.removeUnusedFileInfoHolders();
 
         // Fire event
         fireMemberLeft(member);
@@ -2348,16 +2348,15 @@ public class Folder extends PFComponent {
         }
 
         // Update DAO
-        synchronized (dbAccessLock) {
+        if (newList.isNull()) {
+            // Delete files in domain and do nothing
             dao.deleteDomain(from.getId());
-            if (newList.isNull()) {
-                commissionRootFolder();
-                rootDirectory.removeFilesOfMember(from);
-                // Do nothing.
-                return;
-            }
-            store(from, newList.files);
+            commissionRootFolder();
+            rootDirectory.removeUnusedFileInfoHolders();
+            return;
         }
+        // Store but also deleted/clear domain before.
+        store(from, true, newList.files);
 
         // Try to find same files
         findSameFiles(from, Arrays.asList(newList.files));
@@ -2378,18 +2377,6 @@ public class Folder extends PFComponent {
         }
 
         fireRemoteContentsChanged(from, newList);
-    }
-
-    private void store(Member member, FileInfo... fileInfos) {
-        store(member, Arrays.asList(fileInfos));
-    }
-
-    private void store(Member member, Collection<FileInfo> fileInfos) {
-        synchronized (dbAccessLock) {
-            dao.store(member.isMySelf() ? null : member.getId(), fileInfos);
-        }
-        commissionRootFolder();
-        rootDirectory.addAll(member, fileInfos);
     }
 
     /**
@@ -2483,6 +2470,34 @@ public class Folder extends PFComponent {
 
         // Fire event
         fireRemoteContentsChanged(from, changes);
+    }
+
+    private void store(Member member, FileInfo... fileInfos) {
+        store(member, false, fileInfos);
+    }
+
+    private void store(Member member, boolean deletedDomain,
+        FileInfo... fileInfos)
+    {
+        store(member, deletedDomain, Arrays.asList(fileInfos));
+    }
+
+    private void store(Member member, Collection<FileInfo> fileInfos) {
+        store(member, false, fileInfos);
+    }
+
+    private void store(Member member, boolean deletedDomain,
+        Collection<FileInfo> fileInfos)
+    {
+        synchronized (dbAccessLock) {
+            String domainID = member.isMySelf() ? null : member.getId();
+            if (deletedDomain) {
+                dao.deleteDomain(domainID);
+            }
+            dao.store(domainID, fileInfos);
+        }
+        commissionRootFolder();
+        rootDirectory.addAll(member, fileInfos);
     }
 
     private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
@@ -2967,10 +2982,7 @@ public class Folder extends PFComponent {
                     if (remoteFile.isDeleted() && !includeDeleted) {
                         continue;
                     }
-                    if (diskItemFilter.isExcluded(remoteFile)) {
-                        continue;
-                    }
-
+                   
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
                     FileInfo alreadyIncoming = incomingFiles.get(remoteFile);
@@ -2990,7 +3002,9 @@ public class Folder extends PFComponent {
                     }
                     if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
-                        incomingFiles.put(remoteFile, remoteFile);
+                        if (!diskItemFilter.isExcluded(remoteFile)) {
+                            incomingFiles.put(remoteFile, remoteFile);
+                        }
                     }
                 }
             }
@@ -3021,7 +3035,9 @@ public class Folder extends PFComponent {
                     }
                     if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
-                        incomingFiles.put(remoteDir, remoteDir);
+                        if (!diskItemFilter.isExcluded(remoteDir)) {
+                            incomingFiles.put(remoteDir, remoteDir);
+                        }
                     }
                 }
             }

@@ -166,8 +166,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
     }
 
-    public boolean removeFilesOfMember(Member member) {
-        // @todo duh, member parameter is not used ???
+    public boolean removeUnusedFileInfoHolders() {
         boolean removed = false;
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
             if (!holder.isAnyVersionAvailable()) {
@@ -177,7 +176,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
         for (String key : subDirectoriesMap.keySet()) {
             Directory dir = subDirectoriesMap.get(key);
-            boolean dirRemoved = dir.removeFilesOfMember(member);
+            boolean dirRemoved = dir.removeUnusedFileInfoHolders();
             if (dir.fileInfoHolderMap.isEmpty()) {
                 subDirectoriesMap.remove(key);
             }
