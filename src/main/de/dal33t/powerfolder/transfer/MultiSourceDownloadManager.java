@@ -101,17 +101,23 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     }
 
     /**
-     * Returns the first valid completed date of a download.
-     * 
-     * @return
+     * @return the completed date of a download. Takes the most recent completed
+     *         date of its sources.
      */
     public Date getCompletedDate() {
         if (!downloads.isEmpty()) {
+            Date mostRecentCompletion = null;
             for (Download download : downloads.values()) {
-                if (download.getCompletedDate() != null) {
-                    return download.getCompletedDate();
+                Date completedDate = download.getCompletedDate();
+                if (completedDate != null) {
+                    if (mostRecentCompletion == null
+                        || completedDate.after(mostRecentCompletion))
+                    {
+                        mostRecentCompletion = completedDate;
+                    }
                 }
             }
+            return mostRecentCompletion;
         }
         return null;
     }
