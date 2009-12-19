@@ -43,12 +43,8 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class ConnectNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() {
-        if (!OSUtil.isWindowsSystem()) {
-            System.err
-                .println("Skipping test. NOT running on windows. This test always fails under Linux/Mac!!!");
-            return;
-        }
-        for (int i = 0; i < 50; i++) {
+        int nTries = OSUtil.isWindowsSystem() ? 50 : 1;
+        for (int i = 0; i < nTries; i++) {
             boolean connectOk = tryToConnectSimpsons();
 
             assertEquals("Connected nodes @Homer: "
