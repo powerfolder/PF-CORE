@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public class OSUtil {
 
     private static final Logger log = Logger.getLogger(OSUtil.class.getName());
-    private static boolean sysTraySupport = true;
+    private static Boolean sysTraySupport;
 
     // no instances
     private OSUtil() {
@@ -132,14 +132,10 @@ public class OSUtil {
      * @return if systray is supported on this platform
      */
     public static boolean isSystraySupported() {
-        if (!sysTraySupport) {
-            return false;
+        if (sysTraySupport == null) {
+            sysTraySupport = SystemTray.isSupported();
         }
-        try {
-            return SystemTray.isSupported();
-        } catch (LinkageError e) {
-            return false;
-        }
+        return sysTraySupport;
     }
 
     /**
