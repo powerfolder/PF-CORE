@@ -108,8 +108,6 @@ public class FolderStatistic extends PFComponent {
 
     // package protected called from Folder
     public void scheduleCalculate() {
-        // logWarning("Scheduled new calculation", new
-        // RuntimeException("here"));
         if (calculating != null) {
             return;
         }
@@ -124,10 +122,11 @@ public class FolderStatistic extends PFComponent {
             return;
         }
         if (current.analyzedFiles < MAX_ITEMS) {
-            setCalculateIn(500);
+            setCalculateIn(2000);
         } else {
             setCalculateIn(delay);
         }
+
     }
 
     // Calculator timer code
@@ -137,6 +136,7 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
+        //logWarning("Scheduled new calculation", new RuntimeException("here"));
         calculatorTask = new MyCalculatorTask();
         try {
             getController().schedule(calculatorTask, timeToWait);
@@ -634,6 +634,10 @@ public class FolderStatistic extends PFComponent {
         private void calculateIfRequired(NodeManagerEvent e) {
             if (!folder.hasMember(e.getNode())) {
                 // Member not on folder
+                return;
+            }
+            if (!e.getNode().hasCompleteFileListFor(folder.getInfo())) {
+                // Not full filelist yet.
                 return;
             }
             scheduleCalculate();
