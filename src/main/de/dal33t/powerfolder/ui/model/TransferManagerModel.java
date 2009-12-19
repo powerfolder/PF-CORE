@@ -71,7 +71,7 @@ public class TransferManagerModel extends PFUIComponent {
         uploadsAutoCleanupModel
             .setValue(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController()));
-        uploadsTableModel = new UploadsTableModel(this, true);
+        uploadsTableModel = new UploadsTableModel(this);
     }
 
     /**
@@ -119,7 +119,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count the visible completed downloads for a folder.
-     *
+     * 
      * @param folder
      * @return
      */
@@ -129,7 +129,8 @@ public class TransferManagerModel extends PFUIComponent {
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         for (int i = 0; i < downloadCount; i++) {
-            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            DownloadManager dlm = downloadManagersTableModel
+                .getDownloadManagerAtRow(i);
             Folder f = dlm.getFileInfo().getFolder(folderRepository);
             if (f == null) {
                 continue;
@@ -143,14 +144,15 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible completed downloads.
-     *
+     * 
      * @return
      */
     public int countCompletedDownloads() {
         int downloadCount = downloadManagersTableModel.getRowCount();
         int completedDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            DownloadManager dlm = downloadManagersTableModel
+                .getDownloadManagerAtRow(i);
             if (dlm.isCompleted()) {
                 completedDownloadCount++;
             }
@@ -160,14 +162,15 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count visible active downloads.
-     *
+     * 
      * @return
      */
     public int countActiveDownloads() {
         int downloadCount = downloadManagersTableModel.getRowCount();
         int activeDownloadCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            DownloadManager dlm = downloadManagersTableModel
+                .getDownloadManagerAtRow(i);
             if (dlm.isStarted()) {
                 activeDownloadCount++;
             }
@@ -177,7 +180,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Count total visible downloads.
-     *
+     * 
      * @return
      */
     public int countTotalDownloads() {
@@ -186,7 +189,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getActiveUploadsCountVM() {
@@ -195,7 +198,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of active displayed downloads.
-     *
+     * 
      * @return
      */
     public ValueModel getActiveDownloadsCountVM() {
@@ -204,7 +207,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of all displayed downloads.
-     *
+     * 
      * @return
      */
     public ValueModel getAllDownloadsCountVM() {
@@ -213,7 +216,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of all displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getAllUploadsCountVM() {
@@ -222,7 +225,7 @@ public class TransferManagerModel extends PFUIComponent {
 
     /**
      * Returns a value model with integer number of completed displayed uploads.
-     *
+     * 
      * @return
      */
     public ValueModel getCompletedUploadsCountVM() {
@@ -230,8 +233,9 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
-     * Returns a value model with integer number of completed displayed downloads.
-     *
+     * Returns a value model with integer number of completed displayed
+     * downloads.
+     * 
      * @return
      */
     public ValueModel getCompletedDownloadsCountVM() {
@@ -246,7 +250,8 @@ public class TransferManagerModel extends PFUIComponent {
         int activeDownloadCount = 0;
         int completedDownloadsCount = 0;
         for (int i = 0; i < downloadCount; i++) {
-            DownloadManager dlm = downloadManagersTableModel.getDownloadManagerAtRow(i);
+            DownloadManager dlm = downloadManagersTableModel
+                .getDownloadManagerAtRow(i);
             if (dlm == null) {
                 continue;
             }
@@ -296,7 +301,7 @@ public class TransferManagerModel extends PFUIComponent {
      */
     private class MyTransferManagerListener implements TransferManagerListener {
 
-         public void downloadRequested(TransferManagerEvent event) {
+        public void downloadRequested(TransferManagerEvent event) {
             updateDownloadsValueModels();
         }
 
