@@ -128,7 +128,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.0"; // 1.0.3.85;
+    public static final String PROGRAM_VERSION = "4.1.0 RC2"; // 1.0.3.85;
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -824,7 +824,7 @@ public class Controller extends PFComponent {
      * @param period
      *            the time in ms between executions
      */
-    public void scheduleAndRepeat(TimerTask task, long period) {
+    public void scheduleAndRepeat(Runnable task, long period) {
         if (!isShuttingDown()) {
             threadPool.scheduleWithFixedDelay(task, 0, period,
                 TimeUnit.MILLISECONDS);
@@ -842,7 +842,7 @@ public class Controller extends PFComponent {
      * @param period
      *            the time in ms between executions
      */
-    public void scheduleAndRepeat(TimerTask task, long initialDelay, long period)
+    public void scheduleAndRepeat(Runnable task, long initialDelay, long period)
     {
         if (!isShuttingDown()) {
             threadPool.scheduleWithFixedDelay(task, initialDelay, period,
@@ -858,7 +858,7 @@ public class Controller extends PFComponent {
      * @param delay
      *            the initial delay in ms
      */
-    public void schedule(TimerTask task, long delay) {
+    public void schedule(Runnable task, long delay) {
         if (!isShuttingDown()) {
             threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
         }
