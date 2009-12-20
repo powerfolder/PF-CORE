@@ -176,6 +176,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
         AccountInfo aInfo;
         try {
+            // TODO Check if really required
             synchronized (requestLock) {
                 // After we are request lock owner. Check if other thread
                 // probably has refreshed the session we are looking for.
