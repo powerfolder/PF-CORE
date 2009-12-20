@@ -1494,12 +1494,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.added != null) {
                     for (int i = 0; i < changes.added.length; i++) {
                         FileInfo file = changes.added[i];
-                        if (file.getRelativeName().contains(
-                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
-                        {
-                            continue;
-                            // #1411
-                        }
                         // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
@@ -1507,12 +1501,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (changes.removed != null) {
                     for (int i = 0; i < changes.removed.length; i++) {
                         FileInfo file = changes.removed[i];
-                        if (file.getRelativeName().contains(
-                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
-                        {
-                            continue;
-                            // #1411
-                        }
                         // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
