@@ -48,7 +48,7 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
     private static final Logger log = Logger
         .getLogger(MultiSourceDownloadManager.class.getName());
     private final ConcurrentMap<MemberInfo, Download> downloads = Util
-        .createConcurrentHashMap();
+        .createConcurrentHashMap(4);
 
     private Download pendingPartRecordFrom;
 
