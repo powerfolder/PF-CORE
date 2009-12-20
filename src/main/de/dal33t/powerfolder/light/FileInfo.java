@@ -470,6 +470,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "Unable to determine newest version. Folder not joined "
                     + folderInfo);
         }
+        // TODO: Many temporary objects!!
         ArrayList<String> domains = new ArrayList<String>(folder
             .getMembersCount());
         for (Member member : folder.getMembersAsCollection()) {
@@ -670,7 +671,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
-     * @return true if this instance is valud. false if is broken,e.g. Negative
+     * @return true if this instance is valid. false if is broken,e.g. Negative
      *         Time
      */
     public boolean isValid() {
@@ -694,14 +695,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *             if the state is corrupt
      */
     private void validate() {
-        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
-        Reject.ifNull(size, "Size is null");
-        Reject.ifFalse(size >= 0, "Negative file size");
         Reject.ifNull(lastModifiedDate, "Modification date is null");
         if (lastModifiedDate.getTime() < 0) {
             throw new IllegalStateException("Modification date is invalid: "
                 + lastModifiedDate);
         }
+        Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
+        Reject.ifNull(size, "Size is null");
+        Reject.ifFalse(size >= 0, "Negative file size");
         Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
