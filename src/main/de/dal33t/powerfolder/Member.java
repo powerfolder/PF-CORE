@@ -1999,6 +1999,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
+     * TODO Performance bottleneck.
+     * 
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
