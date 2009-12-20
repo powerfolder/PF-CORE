@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private final ConcurrentMap<String, Domain> domains = Util
-        .createConcurrentHashMap();
+        .createConcurrentHashMap(4);
 
     public FileInfoDAOHashMapImpl() {
         super();
