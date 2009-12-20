@@ -470,19 +470,12 @@ public class FolderScanner extends PFComponent {
     }
 
     /**
-     * allow all files but temp download, temp copy file and "powerfolder.db"
-     * <p>
      * #1411
      * 
      * @return true if file is allowed
      */
     private static boolean allowFile(File file) {
-        String path = file.getPath();
-        return !(path.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)
-            || path.contains(FileUtils.DOWNLOAD_TEMP_FILE)
-            || path.contains(FileUtils.DOWNLOAD_META_FILE)
-            || path.contains(Folder.DB_FILENAME) || path
-            .contains(Folder.DB_BACKUP_FILENAME));
+        return file.getPath().indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR) == -1;
     }
 
     /** @return true if all directory Crawler are idle. */
