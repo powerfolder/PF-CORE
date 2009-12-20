@@ -1020,22 +1020,6 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        // check for incomplete download files and delete them, if
-        // the real file exists
-        if (FileUtils.isTempDownloadFile(file)) {
-            if (FileUtils.isCompletedTempDownloadFile(file)
-                || fInfo.isDeleted())
-            {
-                logFiner("Removing temp download file: " + file);
-                if (!file.delete()) {
-                    logSevere("Failed to remove temp download file: " + file);
-                }
-            } else {
-                logFiner("Ignoring incomplete download file: " + file);
-            }
-            return null;
-        }
-
         checkFileName(fInfo);
 
         // First relink modified by memberinfo to
