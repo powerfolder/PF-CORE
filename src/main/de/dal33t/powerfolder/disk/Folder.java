@@ -155,7 +155,10 @@ public class Folder extends PFComponent {
      */
     private final TransferPriorities transferPriorities;
 
-    /** Lock for scan / accessing the actual files */
+    /**
+     * TODO THIS IS A HACK. Make it finer. Lock for scan / accessing the actual
+     * files
+     */
     private final Object scanLock = new Object();
 
     /** All members of this folder. Key == Value. Use Map for concurrency. */
