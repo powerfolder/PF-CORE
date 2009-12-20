@@ -19,13 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.Arrays;
-
 /**
  * Compiling pattern matcher that uses compiled parts to match '*' characters to
  * any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
  */
-public class CompilingPatternMatch {
+public class CompiledPattern {
 
     /** Precompiled parts to match on. */
     private String[] partsLower;
@@ -47,7 +45,7 @@ public class CompilingPatternMatch {
      * 
      * @param patternStringArg
      */
-    public CompilingPatternMatch(String patternStringArg) {
+    public CompiledPattern(String patternStringArg) {
 
         // Everything is case-insensitive.
         String patternString = patternStringArg.toLowerCase().trim();
@@ -102,7 +100,7 @@ public class CompilingPatternMatch {
         return index != -1;
     }
 
-    int indexOf(String source, int partNo, int fromIndex) {
+    private int indexOf(String source, int partNo, int fromIndex) {
         String partLower = partsLower[partNo];
         String partUpper = partsUpper[partNo];
         if (fromIndex >= source.length()) {
@@ -153,16 +151,8 @@ public class CompilingPatternMatch {
         return false;
     }
 
-    public String getRealPatternText() {
+    public String getRealText() {
         return (firstStar ? "*" : "") + patternText + (lastStar ? "*" : "");
-    }
-
-    public boolean isFirstStar() {
-        return firstStar;
-    }
-
-    public boolean isLastStar() {
-        return lastStar;
     }
 
     public boolean equals(Object obj) {
@@ -173,7 +163,7 @@ public class CompilingPatternMatch {
             return false;
         }
 
-        CompilingPatternMatch that = (CompilingPatternMatch) obj;
+        CompiledPattern that = (CompiledPattern) obj;
 
         return !(patternText != null
             ? !patternText.equals(that.patternText)

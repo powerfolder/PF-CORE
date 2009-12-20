@@ -65,7 +65,7 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.CompilingPatternMatch;
+import de.dal33t.powerfolder.util.CompiledPattern;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
@@ -400,7 +400,7 @@ public class SettingsTab extends PFUIComponent {
         for (String pattern : patternArray) {
 
             // Match any patterns for this file.
-            CompilingPatternMatch patternMatch = new CompilingPatternMatch(
+            CompiledPattern patternMatch = new CompiledPattern(
                 pattern);
             for (String blackListPattern : folder.getDiskItemFilter()
                 .getPatterns())

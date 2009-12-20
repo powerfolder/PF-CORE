@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.CompilingPatternMatch;
+import de.dal33t.powerfolder.util.CompiledPattern;
 
 import java.io.*;
 import java.util.*;
@@ -55,7 +55,7 @@ public class DiskItemFilter {
     /**
      * The patterns that will be used to match DiskItems with.
      */
-    private final List<CompilingPatternMatch> patterns = new CopyOnWriteArrayList<CompilingPatternMatch>();
+    private final List<CompiledPattern> patterns = new CopyOnWriteArrayList<CompiledPattern>();
 
     /**
      * Whether the pattens have been modified since the last save.
@@ -131,8 +131,8 @@ public class DiskItemFilter {
         try {
             file.createNewFile();
             writer = new FileWriter(file);
-            for (CompilingPatternMatch pattern : patterns) {
-                writer.write(pattern.getRealPatternText() + "\r\n");
+            for (CompiledPattern pattern : patterns) {
+                writer.write(pattern.getRealText() + "\r\n");
             }
             dirty = false;
         } catch (IOException e) {
@@ -156,7 +156,7 @@ public class DiskItemFilter {
      */
     public void addPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
-        CompilingPatternMatch pattern = new CompilingPatternMatch(patternText
+        CompiledPattern pattern = new CompiledPattern(patternText
             .replace('\\', '/').toLowerCase());
         if (patterns.contains(pattern)) {
             // Already contained
@@ -168,16 +168,16 @@ public class DiskItemFilter {
                 patternText, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE, "Problem adding pattern "
-                + pattern.getRealPatternText(), e);
+                + pattern.getRealText(), e);
         }
         dirty = true;
     }
 
     public void removeAllPatterns() {
-        for (CompilingPatternMatch patternMatch : patterns) {
+        for (CompiledPattern patternMatch : patterns) {
             patterns.remove(patternMatch);
             listenerSupport.patternRemoved(new PatternChangedEvent(this,
-                patternMatch.getRealPatternText(), false));
+                patternMatch.getRealText(), false));
         }
         dirty = true;
     }
@@ -188,8 +188,8 @@ public class DiskItemFilter {
      * @param patternText
      */
     public void removePattern(String patternText) {
-        for (CompilingPatternMatch patternMatch : patterns) {
-            String text = patternMatch.getRealPatternText();
+        for (CompiledPattern patternMatch : patterns) {
+            String text = patternMatch.getRealText();
             if (text.equals(patternText.toLowerCase())) {
                 patterns.remove(patternMatch);
             }
@@ -218,7 +218,7 @@ public class DiskItemFilter {
             Directory dir = (Directory) diskItem;
             String dirName = dir.getRelativeName() + "/*";
 
-            for (CompilingPatternMatch pattern : patterns) {
+            for (CompiledPattern pattern : patterns) {
                 if (pattern.isMatch(dirName)) {
                     return true;
                 }
@@ -226,7 +226,7 @@ public class DiskItemFilter {
         } else if (diskItem instanceof FileInfo) {
             String name = diskItem.getRelativeName();
 
-            for (CompilingPatternMatch pattern : patterns) {
+            for (CompiledPattern pattern : patterns) {
                 if (pattern.isMatch(name)) {
                     return true;
                 }
@@ -244,8 +244,8 @@ public class DiskItemFilter {
      */
     public List<String> getPatterns() {
         List<String> result = new ArrayList<String>();
-        for (CompilingPatternMatch pattern : patterns) {
-            result.add(pattern.getRealPatternText());
+        for (CompiledPattern pattern : patterns) {
+            result.add(pattern.getRealText());
         }
         return result;
     }
