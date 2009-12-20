@@ -517,7 +517,7 @@ public class FolderStatistic extends PFComponent {
         }
         Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);
         if (memberMap == null) {
-            memberMap = Util.createConcurrentHashMap();
+            memberMap = Util.createConcurrentHashMap(4);
             partialSyncStatMap.put(member, memberMap);
         }
         memberMap.put(fileInfo, bytesTransferred);
