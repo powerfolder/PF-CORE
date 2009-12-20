@@ -126,12 +126,12 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (watchID >= 0) {
-            if (REMOVED_WATCHES >= 0) {
-                logWarning("NOT unregistering filesystem watcher from " + folder
-                    + " to prevent crash. Ignoring further filesystem events");
-                watchID = -1;
-                return;
-            }
+            // if (REMOVED_WATCHES >= 0) {
+            // logWarning("NOT unregistering filesystem watcher from " + folder
+            // + " to prevent crash. Ignoring further filesystem events");
+            // watchID = -1;
+            // return;
+            // }
             try {
                 JNotify.removeWatch(watchID);
                 REMOVED_WATCHES++;
