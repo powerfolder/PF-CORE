@@ -50,49 +50,10 @@ public class FileUtils {
     private static final int BYTE_CHUNK_SIZE = 8192;
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
-    public static final String DOWNLOAD_TEMP_FILE = "(incomplete) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
 
     // no instances
     private FileUtils() {
-    }
-
-    /**
-     * @param file
-     * @return true if the given file is a meta data file for downloading
-     *         purposes.
-     */
-    public static boolean isDownloadMetaFile(File file) {
-        Reject.ifNull(file, "File is null");
-        String fileName = file.getName();
-        return fileName.startsWith(DOWNLOAD_META_FILE);
-    }
-
-    /**
-     * @param file
-     * @return true if this is a temporary download file
-     */
-    public static boolean isTempDownloadFile(File file) {
-        if (file == null) {
-            throw new NullPointerException("File is null");
-        }
-        String fileName = file.getName();
-        return fileName.startsWith(DOWNLOAD_TEMP_FILE);
-    }
-
-    /**
-     * @param file
-     * @return true if this file is a completed download file, means there
-     *         exists a targetfile with full name
-     */
-    public static boolean isCompletedTempDownloadFile(File file) {
-        if (!isTempDownloadFile(file)) {
-            return false;
-        }
-        // String targetFilename = file.getRelativeName().substring(11);
-        String targetFilename = file.getName().substring(13);
-        File targetFile = new File(file.getParentFile(), targetFilename);
-        return targetFile.exists() && (targetFile.length() == file.length());
     }
 
     /**
