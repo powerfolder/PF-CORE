@@ -19,93 +19,80 @@
  */
 package de.dal33t.powerfolder.test.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PatternMatch;
-import de.dal33t.powerfolder.util.CompilingPatternMatch;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 
 public class PatternMatchTest extends TestCase {
 
     public void testPatterns() {
-        assertTrue(PatternMatch.isMatch("sdfgkjh", "sdfgkjh"));
-        assertTrue(PatternMatch.isMatch("sdfgkjh", "SdFgKjH"));
-        assertTrue(PatternMatch.isMatch("SdFgKjH", "sdfgkjh"));
-        assertFalse(PatternMatch.isMatch("sdfxxxxxgkjh", "sdfgkjh"));
-        assertFalse(PatternMatch.isMatch("sdfgkjh", "sdfxxxxxgkjh"));
+        assertTrue(new CompiledPattern("sdfgkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("sdfgkjh").isMatch("SdFgKjH"));
+        assertTrue(new CompiledPattern("SdFgKjH").isMatch("sdfgkjh"));
+        assertFalse(new CompiledPattern("sdfxxxxxgkjh").isMatch("sdfgkjh"));
+        assertFalse(new CompiledPattern("sdfgkjh").isMatch("sdfxxxxxgkjh"));
 
-        assertTrue(PatternMatch.isMatch("sdfxxxxxgkjh", "sdf*gkjh"));
-        assertTrue(PatternMatch.isMatch("sdfgkjh", "sdf*gkjh"));
-        assertTrue(PatternMatch.isMatch("sdfgkjh", "sdf*g*h"));
-        assertTrue(PatternMatch.isMatch("", "*"));
-        assertTrue(PatternMatch.isMatch(" ", "*"));
+        assertTrue(new CompiledPattern("sdf*gkjh").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new CompiledPattern("sdf*gkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("sdf*g*h").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("*").isMatch(""));
 
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "*file*"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "*test*"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "*test*/*name"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "c*/*/*name"));
-        assertFalse(PatternMatch.isMatch("c:/test/file.name", "c*/huh/*name"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "c:/*.name"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "c:/*"));
-        assertTrue(PatternMatch.isMatch("c:/test/file.name", "*.name"));
+        assertTrue(new CompiledPattern("*file*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*test*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*test*/*name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("c*/*/*name")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new CompiledPattern("c*/huh/*name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("c:/*.name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("c:/*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*.name").isMatch("c:/test/file.name"));
 
-        assertTrue(PatternMatch.isMatch("c:\\test\\file.name", "c:\\*"));
+        assertTrue(new CompiledPattern("c:\\*").isMatch("c:\\test\\file.name"));
     }
 
     public void testCompiledPatterns() {
-        assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("sdfgkjh"));
-        assertTrue(new CompilingPatternMatch("sdfgkjh").isMatch("SdFgKjH"));
-        assertTrue(new CompilingPatternMatch("SdFgKjH").isMatch("sdfgkjh"));
-        assertFalse(new CompilingPatternMatch("sdfxxxxxgkjh")
-            .isMatch("sdfgkjh"));
-        assertFalse(new CompilingPatternMatch("sdfgkjh")
-            .isMatch("sdfxxxxxgkjh"));
+        assertTrue(new CompiledPattern("sdfgkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("sdfgkjh").isMatch("SdFgKjH"));
+        assertTrue(new CompiledPattern("SdFgKjH").isMatch("sdfgkjh"));
+        assertFalse(new CompiledPattern("sdfxxxxxgkjh").isMatch("sdfgkjh"));
+        assertFalse(new CompiledPattern("sdfgkjh").isMatch("sdfxxxxxgkjh"));
 
-        assertTrue(new CompilingPatternMatch("sdf*gkjh")
-            .isMatch("sdfxxxxxgkjh"));
-        assertTrue(new CompilingPatternMatch("sdf*gkjh").isMatch("sdfgkjh"));
-        assertTrue(new CompilingPatternMatch("sdf*g*h").isMatch("sdfgkjh"));
-        assertTrue(new CompilingPatternMatch("*").isMatch(""));
+        assertTrue(new CompiledPattern("sdf*gkjh").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new CompiledPattern("sdf*gkjh").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("sdf*g*h").isMatch("sdfgkjh"));
+        assertTrue(new CompiledPattern("*").isMatch(""));
         // Disabled since filenames usually DON'T start/end with spaces #1705
 
         // assertTrue(new CompilingPatternMatch("*").isMatch(" "));
 
-        assertTrue(new CompilingPatternMatch("*file*")
+        assertTrue(new CompiledPattern("*file*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*test*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*test*/*name")
             .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*test*")
+        assertTrue(new CompiledPattern("c*/*/*name")
             .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*test*/*name")
+        assertFalse(new CompiledPattern("c*/huh/*name")
             .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c*/*/*name")
+        assertTrue(new CompiledPattern("c:/*.name")
             .isMatch("c:/test/file.name"));
-        assertFalse(new CompilingPatternMatch("c*/huh/*name")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c:/*.name")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c:/*")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*.name")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*name")
-            .isMatch("c:/test/file.name"));
-        assertFalse(new CompilingPatternMatch("name")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("c:/test*")
-            .isMatch("c:/test/file.name"));
-        assertFalse(new CompilingPatternMatch("c:/test")
-            .isMatch("c:/test/file.name"));
-        assertTrue(new CompilingPatternMatch("*thumbs.db")
+        assertTrue(new CompiledPattern("c:/*").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*.name").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*name").isMatch("c:/test/file.name"));
+        assertFalse(new CompiledPattern("name").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("c:/test*").isMatch("c:/test/file.name"));
+        assertFalse(new CompiledPattern("c:/test").isMatch("c:/test/file.name"));
+        assertTrue(new CompiledPattern("*thumbs.db")
             .isMatch("c:/test/file.name/Thumbs.db"));
 
-        assertTrue(new CompilingPatternMatch("c:\\*")
-            .isMatch("c:\\test\\file.name"));
-        assertTrue(new CompilingPatternMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y")
+        assertTrue(new CompiledPattern("c:\\*").isMatch("c:\\test\\file.name"));
+        assertTrue(new CompiledPattern("x\\~!@#$%^-&()_+={}][:';,.<>|y")
             .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
-        assertTrue(new CompilingPatternMatch(
+        assertTrue(new CompiledPattern(
             "a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*a*ab")
             .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
     }
@@ -113,13 +100,13 @@ public class PatternMatchTest extends TestCase {
     public void testPerformance() {
         Profiling.setEnabled(true);
 
-        CompilingPatternMatch p1 = new CompilingPatternMatch("SdFgKjH");
-        CompilingPatternMatch p2 = new CompilingPatternMatch("sdf*g*h");
-        CompilingPatternMatch p3 = new CompilingPatternMatch("*");
-        CompilingPatternMatch p4 = new CompilingPatternMatch("*test*/*name");
-        CompilingPatternMatch p5 = new CompilingPatternMatch("c*/huh/*name");
-        CompilingPatternMatch p6 = new CompilingPatternMatch("*thumbs.db");
-        ProfilingEntry pe = Profiling.start();
+        CompiledPattern p1 = new CompiledPattern("SdFgKjH");
+        CompiledPattern p2 = new CompiledPattern("sdf*g*h");
+        CompiledPattern p3 = new CompiledPattern("*");
+        CompiledPattern p4 = new CompiledPattern("*test*/*name");
+        CompiledPattern p5 = new CompiledPattern("c*/huh/*name");
+        CompiledPattern p6 = new CompiledPattern("*thumbs.db");
+        ProfilingEntry pe = Profiling.start("CompiledPattern");
         for (int i = 0; i < 1000000; i++) {
             p1.isMatch("C:\\Programme\\test\\Thumbs.db");
             p2.isMatch("C:\\Programme\\test\\Thumbs.db");
@@ -127,6 +114,14 @@ public class PatternMatchTest extends TestCase {
             p4.isMatch("C:\\Programme\\test\\Thumbs.db");
             p5.isMatch("C:\\Programme\\test\\Thumbs.db");
             p6.isMatch("C:\\Programme\\test\\Thumbs.db");
+        }
+        Profiling.end(pe);
+
+        pe = Profiling.start("CompiledPatternThumbsDB");
+        CompiledPattern cpThumbs = new CompiledPattern(Folder.THUMBS_DB);
+        for (int i = 0; i < 10000000; i++) {
+            assertTrue(cpThumbs.isMatch("C:\\Programme\\test\\Thumbs.db"));
+            assertFalse(cpThumbs.isMatch("C:\\Programme\\test\\Testfile"));
         }
         Profiling.end(pe);
 

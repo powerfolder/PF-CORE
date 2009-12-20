@@ -17,7 +17,7 @@
  *
  * $Id: CompilingPatternMatch.java 8022 2009-05-21 07:46:07Z harry $
  */
-package de.dal33t.powerfolder.util;
+package de.dal33t.powerfolder.util.pattern;
 
 /**
  * Compiling pattern matcher that uses compiled parts to match '*' characters to
@@ -80,9 +80,7 @@ public class CompiledPattern {
     public boolean isMatch(String matchString) {
         int index = 0;
         for (int i = 0; i < partsLower.length; i++) {
-            String part = partsLower[i];
             index = indexOf(matchString, i, index);
-            // index = matchString.indexOf(part, index);
             boolean first = i == 0;
             boolean last = i + 1 == partsLower.length;
             if (index == -1) {
@@ -91,6 +89,7 @@ public class CompiledPattern {
             if (first && !firstStar && index != 0) {
                 return false;
             }
+            String part = partsLower[i];
             if (last && !lastStar
                 && index + part.length() != matchString.length())
             {
@@ -151,7 +150,7 @@ public class CompiledPattern {
         return false;
     }
 
-    public String getRealText() {
+    public String getMatchText() {
         return (firstStar ? "*" : "") + patternText + (lastStar ? "*" : "");
     }
 
