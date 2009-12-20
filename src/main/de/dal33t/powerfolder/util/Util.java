@@ -704,7 +704,26 @@ public class Util {
      */
     public static final <K, V> ConcurrentHashMap<K, V> createConcurrentHashMap()
     {
-        return new ConcurrentHashMap<K, V>(16, 0.75f, 4);
+        return createConcurrentHashMap(16);
+    }
+
+    /**
+     * Creates a concurrent map with lesser segements to save memory. The
+     * default concurrency of the maps are 4 (instead of 16 default).
+     * <p>
+     * 4 should be more suitable value for in-powerfolder us and procudes lesser
+     * Segements.
+     * 
+     * @param <K>
+     * @param <V>
+     * @param intialSize
+     *            the initial size of the map.
+     * @return the concurrent hashmap
+     */
+    public static final <K, V> ConcurrentHashMap<K, V> createConcurrentHashMap(
+        int intialSize)
+    {
+        return new ConcurrentHashMap<K, V>(intialSize, 0.75f, 4);
     }
 
 }
