@@ -58,13 +58,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * FileInfoHolder
      */
     private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = Util
-        .createConcurrentHashMap();
+        .createConcurrentHashMap(2);
 
+    private final Object subDirMapLock = new Object();
     /**
      * key = dir name, value = Directory
      */
-    private final Map<String, Directory> subDirectoriesMap = Util
-        .createConcurrentHashMap();
+    private Map<String, Directory> subDirectoriesMap;
 
     /**
      * The name of this directory (no path elements)
@@ -109,13 +109,16 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * folder).
      */
     public Directory getSubDirectory(String relativeName) {
+        if (!hasSubDirectories()) {
+            return null;
+        }
         int i = relativeName.indexOf('/');
         if (i == -1) {
-            return subDirectoriesMap.get(relativeName);
+            return getSubdirectriesMap().get(relativeName);
         } else {
             String subDir = relativeName.substring(0, i);
             String restPath = relativeName.substring(i + 1);
-            Directory dir = subDirectoriesMap.get(subDir);
+            Directory dir = getSubdirectriesMap().get(subDir);
             return dir.getSubDirectory(restPath);
         }
     }
@@ -139,9 +142,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
             }
         }
 
-        for (Directory dir : subDirectoriesMap.values()) {
-            if (!dir.isExpected()) {
-                return false;
+        if (hasSubDirectories()) {
+            for (Directory dir : getSubdirectriesMap().values()) {
+                if (!dir.isExpected()) {
+                    return false;
+                }
             }
         }
         return true;
@@ -157,11 +162,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
         if (fileInfoHolderMap.remove(fileInfo) != null) {
             return;
         }
-        for (String key : subDirectoriesMap.keySet()) {
-            Directory dir = subDirectoriesMap.get(key);
-            dir.removeFileInfo(fileInfo);
-            if (dir.fileInfoHolderMap.isEmpty()) {
-                subDirectoriesMap.remove(key);
+        if (hasSubDirectories()) {
+            for (String key : getSubdirectriesMap().keySet()) {
+                Directory dir = getSubdirectriesMap().get(key);
+                dir.removeFileInfo(fileInfo);
+                if (dir.fileInfoHolderMap.isEmpty()) {
+                    getSubdirectriesMap().remove(key);
+                }
             }
         }
     }
@@ -174,13 +181,15 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 fileInfoHolderMap.remove(holder.getFileInfo());
             }
         }
-        for (String key : subDirectoriesMap.keySet()) {
-            Directory dir = subDirectoriesMap.get(key);
-            boolean dirRemoved = dir.removeUnusedFileInfoHolders();
-            if (dir.fileInfoHolderMap.isEmpty()) {
-                subDirectoriesMap.remove(key);
+        if (hasSubDirectories()) {
+            for (String key : getSubdirectriesMap().keySet()) {
+                Directory dir = getSubdirectriesMap().get(key);
+                boolean dirRemoved = dir.removeUnusedFileInfoHolders();
+                if (dir.fileInfoHolderMap.isEmpty()) {
+                    getSubdirectriesMap().remove(key);
+                }
+                removed = removed || dirRemoved;
             }
-            removed = removed || dirRemoved;
         }
         return removed;
     }
@@ -204,8 +213,10 @@ public class Directory implements Comparable<Directory>, DiskItem {
         for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
             files.add(fileInfo);
         }
-        for (Directory directory : subDirectoriesMap.values()) {
-            files.addAll(directory.getFileInfosRecursive());
+        if (hasSubDirectories()) {
+            for (Directory directory : getSubdirectriesMap().values()) {
+                files.addAll(directory.getFileInfosRecursive());
+            }
         }
         return files;
     }
@@ -215,7 +226,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
      *         deleted
      */
     public boolean isDeleted() {
-        if (fileInfoHolderMap.isEmpty() && subDirectoriesMap.isEmpty()) {
+        if (fileInfoHolderMap.isEmpty() && !hasSubDirectories()) {
             return false;
         }
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
@@ -223,9 +234,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
                 return false; // one file not deleted
             }
         }
-        for (Directory dir : subDirectoriesMap.values()) {
-            if (!dir.isDeleted()) {
-                return false;
+        if (hasSubDirectories()) {
+            for (Directory dir : getSubdirectriesMap().values()) {
+                if (!dir.isDeleted()) {
+                    return false;
+                }
             }
         }
         return true; // this dir is deleted
@@ -293,8 +306,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
         // Keep synchronization here.
         synchronized (fileInfoHolderMap) {
-            if (fileInfoHolderMap.containsKey(fileInfo)) { // already there
-                FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
+            FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
+            if (fileInfoHolder != null) { // already there
                 if (member.isMySelf()) {
                     // Replace, key may be equal but different object.
                     fileInfoHolderMap.remove(fileInfo);
@@ -305,8 +318,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
 
                 fileInfoHolder.put(member, fileInfo);
             } else { // new
-                FileInfoHolder fileInfoHolder = new FileInfoHolder(rootFolder,
-                    member, fileInfo);
+                fileInfoHolder = new FileInfoHolder(rootFolder, member,
+                    fileInfo);
                 fileInfoHolderMap.put(fileInfo, fileInfoHolder);
             }
         }
@@ -397,18 +410,35 @@ public class Directory implements Comparable<Directory>, DiskItem {
         }
 
         Directory dir;
-        synchronized (subDirectoriesMap) {
-            dir = subDirectoriesMap.get(dirName);
+        synchronized (subDirMapLock) {
+            dir = getSubdirectriesMap().get(dirName);
             if (dir == null) {
                 dir = new Directory(rootFolder, this, dirName);
-                subDirectoriesMap.put(dirName, dir);
+                getSubdirectriesMap().put(dirName, dir);
             }
         }
         dir.add0(member, fileInfo, theRest);
     }
 
     public Collection<Directory> getSubdirectories() {
-        return subDirectoriesMap.values();
+        if (!hasSubDirectories()) {
+            return Collections.emptyList();
+        }
+        return getSubdirectriesMap().values();
+    }
+
+    private boolean hasSubDirectories() {
+        return subDirectoriesMap != null && !subDirectoriesMap.isEmpty();
+    }
+
+    private synchronized Map<String, Directory> getSubdirectriesMap() {
+        if (subDirectoriesMap != null) {
+            return subDirectoriesMap;
+        }
+        synchronized (subDirMapLock) {
+            subDirectoriesMap = Util.createConcurrentHashMap(2);
+        }
+        return subDirectoriesMap;
     }
 
     public FileInfo getDirectoryInfo() {
