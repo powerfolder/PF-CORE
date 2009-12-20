@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.CompiledPattern;
+import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 
 import java.io.*;
 import java.util.*;
@@ -132,7 +132,7 @@ public class DiskItemFilter {
             file.createNewFile();
             writer = new FileWriter(file);
             for (CompiledPattern pattern : patterns) {
-                writer.write(pattern.getRealText() + "\r\n");
+                writer.write(pattern.getMatchText() + "\r\n");
             }
             dirty = false;
         } catch (IOException e) {
@@ -168,7 +168,7 @@ public class DiskItemFilter {
                 patternText, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE, "Problem adding pattern "
-                + pattern.getRealText(), e);
+                + pattern.getMatchText(), e);
         }
         dirty = true;
     }
@@ -177,7 +177,7 @@ public class DiskItemFilter {
         for (CompiledPattern patternMatch : patterns) {
             patterns.remove(patternMatch);
             listenerSupport.patternRemoved(new PatternChangedEvent(this,
-                patternMatch.getRealText(), false));
+                patternMatch.getMatchText(), false));
         }
         dirty = true;
     }
@@ -189,7 +189,7 @@ public class DiskItemFilter {
      */
     public void removePattern(String patternText) {
         for (CompiledPattern patternMatch : patterns) {
-            String text = patternMatch.getRealText();
+            String text = patternMatch.getMatchText();
             if (text.equals(patternText.toLowerCase())) {
                 patterns.remove(patternMatch);
             }
@@ -245,7 +245,7 @@ public class DiskItemFilter {
     public List<String> getPatterns() {
         List<String> result = new ArrayList<String>();
         for (CompiledPattern pattern : patterns) {
-            result.add(pattern.getRealText());
+            result.add(pattern.getMatchText());
         }
         return result;
     }
