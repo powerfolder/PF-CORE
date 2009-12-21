@@ -179,7 +179,7 @@ public class OSUtil {
         if (isWindowsSystem()) {
             dir = is64BitPlatform() ? "win64libs" : "win32libs";
         } else if (isLinux()) {
-            dir = "lin32libs";
+            dir = is64BitPlatform() ? "lin64libs" : "lin32libs";
         } else if (isMacOS()) {
             dir = "mac64libs";
         }
