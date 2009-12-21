@@ -48,4 +48,5 @@ public interface WikiLinks {
     String SERVER_CLIENT_DEPLOYMENT = "Server_client_deployment";
     String UI_LOCK = "User-interface-lock";
     String SYSTEM_SERVICE = "System_Service";
+    String EXCLUDING_FILES_FROM_SYNCHRONIZATION = "Excluding_Files_from_Synchronization";
 }

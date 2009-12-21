@@ -378,7 +378,7 @@ public class SettingsTab extends PFUIComponent {
         EditAction editAction = new EditAction(getController());
         RemoveAction removeAction = new RemoveAction(getController());
 
-        FormLayout layout = new FormLayout("pref, pref, pref, pref:grow",
+        FormLayout layout = new FormLayout("pref, pref, pref, pref, pref:grow",
             "pref");
         PanelBuilder bar = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -392,6 +392,8 @@ public class SettingsTab extends PFUIComponent {
         bar.add(new JButtonMini(addAction), cc.xy(1, 1));
         bar.add(editButton, cc.xy(2, 1));
         bar.add(removeButton, cc.xy(3, 1));
+        bar.add(Help.createWikiLinkButton(getController(),
+            WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
 
         return bar.getPanel();
     }
