@@ -46,7 +46,7 @@ public class FolderWatcher extends PFComponent {
     /**
      * #1862
      */
-    private static final boolean UNREGISTER_WATCHERS = true;
+    private static final boolean UNREGISTER_WATCHERS = false;
 
     private static Boolean LIB_LOADED;
 
