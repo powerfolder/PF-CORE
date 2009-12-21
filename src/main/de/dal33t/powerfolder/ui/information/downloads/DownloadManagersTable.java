@@ -19,17 +19,18 @@
  */
 package de.dal33t.powerfolder.ui.information.downloads;
 
+import java.awt.Dimension;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+
+import javax.swing.JTable;
+import javax.swing.table.TableColumn;
+
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 import de.dal33t.powerfolder.ui.render.DownloadManagerTableCellRenderer;
-
-import javax.swing.*;
-import javax.swing.table.TableColumn;
-import java.awt.*;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
 
 /**
  * A Table for displaying the downloads.

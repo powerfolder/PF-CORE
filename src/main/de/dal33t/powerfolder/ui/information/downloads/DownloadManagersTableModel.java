@@ -104,6 +104,10 @@ public class DownloadManagersTableModel extends PFComponent implements
     }
 
     public void setPeriodicUpdate(boolean periodicUpdate) {
+        // Transition no update -> update.
+        if (!this.periodicUpdate && periodicUpdate) {
+            resortAndUpdate();
+        }
         this.periodicUpdate = periodicUpdate;
     }
 
@@ -549,19 +553,22 @@ public class DownloadManagersTableModel extends PFComponent implements
                 // Skip
                 return;
             }
-            Runnable wrapper = new Runnable() {
-                public void run() {
-                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
-                    {
-                        // Always sort on a PROGRESS change, so that the table
-                        // reorders correctly.
-                        sort();
-                    }
-                    rowsUpdatedAll();
-                }
-            };
-            SwingUtilities.invokeLater(wrapper);
+            resortAndUpdate();
         }
+
     }
 
+    private void resortAndUpdate() {
+        Runnable wrapper = new Runnable() {
+            public void run() {
+                if (fileInfoComparatorType == TransferComparator.BY_PROGRESS) {
+                    // Always sort on a PROGRESS change, so that the table
+                    // reorders correctly.
+                    sort();
+                }
+                rowsUpdatedAll();
+            }
+        };
+        SwingUtilities.invokeLater(wrapper);
+    }
 }
