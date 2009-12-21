@@ -73,10 +73,10 @@ public class SyncIconButtonMini extends JButtonMini {
 
     private class MyUpdateTask extends TimerTask {
         public void run() {
-            if (isVisible()) {
+            if (isVisible() && isShowing()) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (isVisible()) {
+                        if (isVisible() && isShowing()) {
                             rotate();
                         }
                     }
