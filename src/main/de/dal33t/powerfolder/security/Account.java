@@ -407,7 +407,7 @@ public class Account extends Model implements Serializable {
      */
     public long calculateTotalFoldersSize(Controller controller) {
         long totalSize = 0;
-        for (Permission p : getPermissions()) {
+        for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission
                 || p instanceof FolderAdminPermission)
             {
@@ -429,7 +429,7 @@ public class Account extends Model implements Serializable {
     public long calculateArchiveSize(Controller controller) {
         long start = System.currentTimeMillis();
         long size = 0;
-        for (Permission p : getPermissions()) {
+        for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission
                 || p instanceof FolderAdminPermission)
             {
@@ -455,7 +455,7 @@ public class Account extends Model implements Serializable {
      */
     public int countNumberOfFolders(Controller controller) {
         int nFolders = 0;
-        for (Permission p : getPermissions()) {
+        for (Permission p : permissions) {
             if (p instanceof FolderAdminPermission
                 || p instanceof FolderOwnerPermission)
             {
