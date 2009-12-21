@@ -24,8 +24,24 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
+import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
+import de.dal33t.powerfolder.util.pattern.ExactMatchPattern;
+import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.dal33t.powerfolder.util.pattern.PatternFactory;
+import de.dal33t.powerfolder.util.pattern.StartMatchPattern;
 
 public class PatternMatchTest extends TestCase {
+
+    public void testPatternFactory() {
+        Pattern p = PatternFactory.createPattern("dsdkjskj");
+        assertTrue(p instanceof ExactMatchPattern);
+        p = PatternFactory.createPattern("dsdkjskj*");
+        assertTrue(p instanceof StartMatchPattern);
+        p = PatternFactory.createPattern("*dsdkjskj");
+        assertTrue(p instanceof EndMatchPattern);
+        p = PatternFactory.createPattern("dsd*kjskj");
+        assertTrue(p instanceof CompiledPattern);
+    }
 
     public void testPatterns() {
         assertTrue(new CompiledPattern("sdfgkjh").isMatch("sdfgkjh"));
@@ -97,15 +113,128 @@ public class PatternMatchTest extends TestCase {
             .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
     }
 
+    public void testEndMatchPattern() {
+        try {
+            new EndMatchPattern("sdfgkjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new EndMatchPattern("sdfgkjh*");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new EndMatchPattern("sdfg*kjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new EndMatchPattern("*sdfg*kjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+
+        assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("sdfgkjh"));
+        assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("SdFgKjH"));
+        assertTrue(new EndMatchPattern("*SdFgKjH").isMatch("sdfgkjh"));
+        assertFalse(new EndMatchPattern("*sdfxxxxxgkjh").isMatch("sdfgkjh"));
+        assertFalse(new EndMatchPattern("*sdfgkjh").isMatch("sdfxxxxxgkjh"));
+
+        assertFalse(new EndMatchPattern("*sdfgkjh").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("sdfgkjh"));
+        assertFalse(new EndMatchPattern("*sdfgh").isMatch("sdfgkjh"));
+        assertTrue(new EndMatchPattern("*").isMatch(""));
+
+        assertFalse(new EndMatchPattern("*file").isMatch("c:/test/file.name"));
+        assertFalse(new EndMatchPattern("*test").isMatch("c:/test/file.name"));
+        assertFalse(new EndMatchPattern("*test/name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*name").isMatch("c:/test/file.name"));
+        assertFalse(new EndMatchPattern("*/huh/name")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*.name").isMatch("c:/test/file.name"));
+        assertFalse(new EndMatchPattern("*c:/").isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*.name").isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*name").isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*name").isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*test/file.name")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new EndMatchPattern("*test").isMatch("c:/test/file.name"));
+        assertTrue(new EndMatchPattern("*thumbs.db")
+            .isMatch("c:/test/file.name/Thumbs.db"));
+
+        assertTrue(new EndMatchPattern("*x\\~!@#$%^-&()_+={}][:';,.<>|y")
+            .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
+        assertTrue(new EndMatchPattern("*aab")
+            .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
+    }
+
+    public void testStartMatchPattern() {
+        try {
+            new StartMatchPattern("sdfgkjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new StartMatchPattern("*sdfgkjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new StartMatchPattern("sdfg*kjh");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+        try {
+            new StartMatchPattern("sdfg*kjh*");
+            fail("Illegal construction possible");
+        } catch (Exception e) {
+        }
+
+        assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("sdfgkjh"));
+        assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("SdFgKjH"));
+        assertTrue(new StartMatchPattern("SdFgKjH*").isMatch("sdfgkjh"));
+        assertFalse(new StartMatchPattern("sdfxxxxxgkjh*").isMatch("sdfgkjh"));
+        assertFalse(new StartMatchPattern("sdfgkjh*").isMatch("sdfxxxxxgkjh"));
+
+        assertFalse(new StartMatchPattern("sdfgkjh*").isMatch("sdfxxxxxgkjh"));
+        assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("sdfgkjh"));
+        assertFalse(new StartMatchPattern("sdfgh*").isMatch("sdfgkjh"));
+        assertTrue(new StartMatchPattern("*").isMatch(""));
+
+        assertFalse(new StartMatchPattern("file*").isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern("test*").isMatch("c:/test/file.name"));
+        assertTrue(new StartMatchPattern("test/*").isMatch("test/file.name"));
+        assertFalse(new StartMatchPattern("test/name*")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern("name*").isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern("/huh/name*")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern(".name*")
+            .isMatch("c:/test/file.name"));
+        assertTrue(new StartMatchPattern("c:/*").isMatch("c:/test/file.name"));
+        assertTrue(new StartMatchPattern("c:/test/file.name*")
+            .isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern("test*").isMatch("c:/test/file.name"));
+        assertFalse(new StartMatchPattern("thumbs.db*")
+            .isMatch("c:/test/file.name/Thumbs.db"));
+
+        assertTrue(new StartMatchPattern("x\\~!@#$%^-&()_+={}][:';,.<>|y*")
+            .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
+        assertTrue(new StartMatchPattern("baaaa*")
+            .isMatch("baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+    }
+
     public void testPerformance() {
         Profiling.setEnabled(true);
 
-        CompiledPattern p1 = new CompiledPattern("SdFgKjH");
-        CompiledPattern p2 = new CompiledPattern("sdf*g*h");
-        CompiledPattern p3 = new CompiledPattern("*");
-        CompiledPattern p4 = new CompiledPattern("*test*/*name");
-        CompiledPattern p5 = new CompiledPattern("c*/huh/*name");
-        CompiledPattern p6 = new CompiledPattern("*thumbs.db");
+        Pattern p1 = new CompiledPattern("SdFgKjH");
+        Pattern p2 = new StartMatchPattern("sdfgh*");
+        Pattern p3 = new CompiledPattern("*");
+        Pattern p4 = new CompiledPattern("*test*/*name");
+        Pattern p5 = new CompiledPattern("c*/huh/*name");
+        Pattern p6 = new EndMatchPattern("*thumbs.db");
         ProfilingEntry pe = Profiling.start("CompiledPattern");
         for (int i = 0; i < 1000000; i++) {
             p1.isMatch("C:\\Programme\\test\\Thumbs.db");
@@ -117,14 +246,30 @@ public class PatternMatchTest extends TestCase {
         }
         Profiling.end(pe);
 
+        int nPatterns = 10000000;
         pe = Profiling.start("CompiledPatternThumbsDB");
-        CompiledPattern cpThumbs = new CompiledPattern(Folder.THUMBS_DB);
-        for (int i = 0; i < 10000000; i++) {
-            assertTrue(cpThumbs.isMatch("C:\\Programme\\test\\Thumbs.db"));
-            assertFalse(cpThumbs.isMatch("C:\\Programme\\test\\Testfile"));
+        Pattern pattern = new CompiledPattern(Folder.THUMBS_DB);
+        for (int i = 0; i < nPatterns; i++) {
+            assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
+            assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
         }
         Profiling.end(pe);
 
+        pe = Profiling.start("EndMatchPatternThumbsDB");
+        pattern = new EndMatchPattern(Folder.THUMBS_DB);
+        for (int i = 0; i < nPatterns; i++) {
+            assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
+            assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
+        }
+        Profiling.end(pe);
+
+        pe = Profiling.start("StartMatchPatternThumbsDB");
+        pattern = new StartMatchPattern("programme\\test\\*");
+        for (int i = 0; i < nPatterns; i++) {
+            assertTrue(pattern.isMatch("Programme\\test\\Thumbs.db"));
+            assertFalse(pattern.isMatch("Users\\test\\Thumbs.db"));
+        }
+        Profiling.end(pe);
         System.err.println(Profiling.dumpStats());
     }
 }
