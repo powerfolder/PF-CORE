@@ -28,7 +28,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -39,6 +50,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.l2fprod.common.swing.JDirectoryChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -50,9 +62,9 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
@@ -71,16 +83,17 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
+import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.dal33t.powerfolder.util.pattern.PatternFactory;
 import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SelectionChangeEvent;
 import de.dal33t.powerfolder.util.ui.SelectionChangeListener;
 import de.dal33t.powerfolder.util.ui.SelectionModel;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
-import com.l2fprod.common.swing.JDirectoryChooser;
 
 /**
  * UI component for the information settings tab
@@ -400,8 +413,7 @@ public class SettingsTab extends PFUIComponent {
         for (String pattern : patternArray) {
 
             // Match any patterns for this file.
-            CompiledPattern patternMatch = new CompiledPattern(
-                pattern);
+            Pattern patternMatch = PatternFactory.createPattern(pattern);
             for (String blackListPattern : folder.getDiskItemFilter()
                 .getPatterns())
             {
@@ -753,19 +765,24 @@ public class SettingsTab extends PFUIComponent {
 
             // If the versions is reduced, offer to delete excess.
             if (newValue != null && oldValue != null
-                    && newValue instanceof Integer
-                    && oldValue instanceof Integer 
-                    && (Integer) newValue < (Integer) oldValue) {
+                && newValue instanceof Integer && oldValue instanceof Integer
+                && (Integer) newValue < (Integer) oldValue)
+            {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        int i = DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation(
-                                        "settings_tab.offer_maintenance.title"),
-                                Translation.getTranslation(
-                                        "settings_tab.offer_maintenance.text"),
-                                new String[]{Translation.getTranslation("general.delete"),
-                                        Translation.getTranslation("general.cancel")},
-                                0, GenericDialogType.QUESTION);
+                        int i = DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("settings_tab.offer_maintenance.title"),
+                                Translation
+                                    .getTranslation("settings_tab.offer_maintenance.text"),
+                                new String[]{
+                                    Translation
+                                        .getTranslation("general.delete"),
+                                    Translation
+                                        .getTranslation("general.cancel")}, 0,
+                                GenericDialogType.QUESTION);
                         if (i == 0) {
                             MySwingWorker worker = new MySwingWorker();
                             worker.start();
