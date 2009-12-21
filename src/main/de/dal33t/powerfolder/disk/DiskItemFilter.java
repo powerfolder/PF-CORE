@@ -19,6 +19,19 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
+
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -26,13 +39,8 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.PatternSyntaxException;
+import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.dal33t.powerfolder.util.pattern.PatternFactory;
 
 /**
  * Class to hold a number of patterns to filter DiskItems with. The class has
@@ -55,7 +63,7 @@ public class DiskItemFilter {
     /**
      * The patterns that will be used to match DiskItems with.
      */
-    private final List<CompiledPattern> patterns = new CopyOnWriteArrayList<CompiledPattern>();
+    private final List<Pattern> patterns = new CopyOnWriteArrayList<Pattern>();
 
     /**
      * Whether the pattens have been modified since the last save.
@@ -131,8 +139,8 @@ public class DiskItemFilter {
         try {
             file.createNewFile();
             writer = new FileWriter(file);
-            for (CompiledPattern pattern : patterns) {
-                writer.write(pattern.getMatchText() + "\r\n");
+            for (Pattern pattern : patterns) {
+                writer.write(pattern.getPatternText() + "\r\n");
             }
             dirty = false;
         } catch (IOException e) {
@@ -156,8 +164,8 @@ public class DiskItemFilter {
      */
     public void addPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
-        CompiledPattern pattern = new CompiledPattern(patternText
-            .replace('\\', '/').toLowerCase());
+        Pattern pattern = PatternFactory.createPattern(patternText.replaceAll(
+            "\\\\", "/").toLowerCase());
         if (patterns.contains(pattern)) {
             // Already contained
             return;
@@ -168,16 +176,16 @@ public class DiskItemFilter {
                 patternText, true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE, "Problem adding pattern "
-                + pattern.getMatchText(), e);
+                + pattern.getPatternText(), e);
         }
         dirty = true;
     }
 
     public void removeAllPatterns() {
-        for (CompiledPattern patternMatch : patterns) {
+        for (Pattern patternMatch : patterns) {
             patterns.remove(patternMatch);
             listenerSupport.patternRemoved(new PatternChangedEvent(this,
-                patternMatch.getMatchText(), false));
+                patternMatch.getPatternText(), false));
         }
         dirty = true;
     }
@@ -188,8 +196,8 @@ public class DiskItemFilter {
      * @param patternText
      */
     public void removePattern(String patternText) {
-        for (CompiledPattern patternMatch : patterns) {
-            String text = patternMatch.getMatchText();
+        for (Pattern patternMatch : patterns) {
+            String text = patternMatch.getPatternText();
             if (text.equals(patternText.toLowerCase())) {
                 patterns.remove(patternMatch);
             }
@@ -218,7 +226,7 @@ public class DiskItemFilter {
             Directory dir = (Directory) diskItem;
             String dirName = dir.getRelativeName() + "/*";
 
-            for (CompiledPattern pattern : patterns) {
+            for (Pattern pattern : patterns) {
                 if (pattern.isMatch(dirName)) {
                     return true;
                 }
@@ -226,7 +234,7 @@ public class DiskItemFilter {
         } else if (diskItem instanceof FileInfo) {
             String name = diskItem.getRelativeName();
 
-            for (CompiledPattern pattern : patterns) {
+            for (Pattern pattern : patterns) {
                 if (pattern.isMatch(name)) {
                     return true;
                 }
@@ -244,8 +252,8 @@ public class DiskItemFilter {
      */
     public List<String> getPatterns() {
         List<String> result = new ArrayList<String>();
-        for (CompiledPattern pattern : patterns) {
-            result.add(pattern.getMatchText());
+        for (Pattern pattern : patterns) {
+            result.add(pattern.getPatternText());
         }
         return result;
     }
