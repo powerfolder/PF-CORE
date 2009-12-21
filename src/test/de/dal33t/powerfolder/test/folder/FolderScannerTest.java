@@ -63,19 +63,6 @@ public class FolderScannerTest extends ControllerTestCase {
         File file3 = TestHelper.createRandomFile(getFolder().getLocalBase());
         File file4 = TestHelper.createRandomFile(getFolder().getLocalBase());
 
-        // files to ignore
-        File fileTempDownloadFile = new File(getFolder().getLocalBase(),
-            "(incomplete) this is a temp download file.whatever");
-        fileTempDownloadFile.createNewFile();
-
-        File oldFolderDBFile = new File(getFolder().getLocalBase(),
-            Folder.DB_FILENAME);
-        oldFolderDBFile.createNewFile();
-
-        File oldFolderDBBakFile = new File(getFolder().getLocalBase(),
-            Folder.DB_BACKUP_FILENAME);
-        oldFolderDBBakFile.createNewFile();
-
         ScanResult result = scanFolderWaitIfBusy(folderScanner);
 
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
