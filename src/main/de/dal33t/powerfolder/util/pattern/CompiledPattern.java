@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -23,7 +23,7 @@ package de.dal33t.powerfolder.util.pattern;
  * Compiling pattern matcher that uses compiled parts to match '*' characters to
  * any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
  */
-public class CompiledPattern {
+public class CompiledPattern extends AbstractPattern {
 
     /** Precompiled parts to match on. */
     private String[] partsLower;
@@ -36,16 +36,12 @@ public class CompiledPattern {
     private boolean lastStar;
 
     /**
-     * Original pattern text.
-     */
-    private final String patternText;
-
-    /**
      * Constructor.
      * 
      * @param patternStringArg
      */
     public CompiledPattern(String patternStringArg) {
+        super(patternStringArg);
 
         // Everything is case-insensitive.
         String patternString = patternStringArg.toLowerCase().trim();
@@ -72,9 +68,6 @@ public class CompiledPattern {
             String partLower = partsLower[i];
             partsUpper[i] = partLower.toUpperCase();
         }
-        // System.out.println("Got parts: " + Arrays.asList(parts));
-
-        patternText = patternString;
     }
 
     public boolean isMatch(String matchString) {
@@ -140,36 +133,4 @@ public class CompiledPattern {
         return -1;
     }
 
-    private static boolean equalChar(char c1, char cl2, char cu2) {
-        if (c1 == cl2) {
-            return true;
-        }
-        if (c1 == cu2) {
-            return true;
-        }
-        return false;
-    }
-
-    public String getMatchText() {
-        return (firstStar ? "*" : "") + patternText + (lastStar ? "*" : "");
-    }
-
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        CompiledPattern that = (CompiledPattern) obj;
-
-        return !(patternText != null
-            ? !patternText.equals(that.patternText)
-            : that.patternText != null);
-    }
-
-    public int hashCode() {
-        return patternText != null ? patternText.hashCode() : 0;
-    }
 }
