@@ -39,10 +39,12 @@ public class SyncIconButtonMini extends JButtonMini {
     private static final long ROTATION_STEP_DELAY = 100L;
     private int state;
     private volatile boolean spin;
-    private static final Icon ICON_ZERO = Icons.getIconById(Icons.SYNC_ANIMATION[0]);
+    private static final Icon ICON_ZERO = Icons
+        .getIconById(Icons.SYNC_ANIMATION[0]);
 
     public SyncIconButtonMini(Controller controller) {
-        super(ICON_ZERO, Translation.getTranslation("sync_icon_button_mini.tip"));
+        super(ICON_ZERO, Translation
+            .getTranslation("sync_icon_button_mini.tip"));
         state = 0;
         controller.scheduleAndRepeat(new MyUpdateTask(), ROTATION_STEP_DELAY);
     }
@@ -71,13 +73,15 @@ public class SyncIconButtonMini extends JButtonMini {
 
     private class MyUpdateTask extends TimerTask {
         public void run() {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    if (isVisible()) {
-                        rotate();
+            if (isVisible()) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        if (isVisible()) {
+                            rotate();
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 }
