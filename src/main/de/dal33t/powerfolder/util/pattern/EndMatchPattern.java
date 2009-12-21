@@ -50,6 +50,10 @@ public class EndMatchPattern extends AbstractPattern {
             // Special case. Match "*" to ""
             return matchLower.length == 0;
         }
+        if (matchString.length() < matchLower.length) {
+            // Impossible
+            return false;
+        }
         for (int i = matchLower.length - 1; i > 0; i--) {
             char cms = matchString.charAt(matchIndex);
             if (!equalChar(cms, matchLower[i], matchUpper[i])) {

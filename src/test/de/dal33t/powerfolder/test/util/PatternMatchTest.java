@@ -137,6 +137,8 @@ public class PatternMatchTest extends TestCase {
         } catch (Exception e) {
         }
 
+        assertFalse(new EndMatchPattern("*sdfgkjh").isMatch("fgkjh"));
+        assertFalse(new EndMatchPattern("*sdfgkjh").isMatch("dfgkjh"));
         assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("sdfgkjh"));
         assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("SdFgKjH"));
         assertTrue(new EndMatchPattern("*SdFgKjH").isMatch("sdfgkjh"));
@@ -194,7 +196,8 @@ public class PatternMatchTest extends TestCase {
             fail("Illegal construction possible");
         } catch (Exception e) {
         }
-
+        
+        assertFalse(new StartMatchPattern("sdfgkjh*").isMatch("sdf"));
         assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("sdfgkjh"));
         assertTrue(new StartMatchPattern("sdfgkjh*").isMatch("SdFgKjH"));
         assertTrue(new StartMatchPattern("SdFgKjH*").isMatch("sdfgkjh"));
