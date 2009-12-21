@@ -20,6 +20,7 @@ PowerFolder Version 4.1.0 - http://www.powerfolder.com
    Wiki: http://www.powerfolder.com/wiki/System_Service
  * Many performance improvements. PowerFolder should now use less CPU.
    Wiki: http://www.powerfolder.com/wiki/Performance_optimization
+ * Added completed date to up and downloads list.
  * Folders can now be removed/de-configured by script.
    Wiki: http://www.powerfolder.com/wiki/Script_configuration
  * Manual sync button now triggers instant sync even if folder is setup to
