@@ -35,6 +35,10 @@ public class WrappedRunnable implements Runnable {
 
     public WrappedRunnable(Runnable deligate) {
         super();
+        if (deligate instanceof WrappedRunnable) {
+            log.log(Level.WARNING, "unnecessary wrapped runnable chain!",
+                new RuntimeException("here"));
+        }
         Reject.ifNull(deligate, "Deligate is null");
         this.deligate = deligate;
     }

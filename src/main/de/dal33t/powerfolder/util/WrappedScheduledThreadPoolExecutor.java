@@ -60,10 +60,27 @@ public class WrappedScheduledThreadPoolExecutor extends
 
     // Overriding ************************************************************
 
-    @Override
-    public void execute(Runnable command) {
-        super.execute(new WrappedRunnable(command));
-    }
+    // Not overriden because super class calls schedule(..)
+
+    // @Override
+    // public void execute(Runnable command) {
+    // super.execute(new WrappedRunnable(command));
+    // }
+    //
+    // @Override
+    // public Future<?> submit(Runnable task) {
+    // return super.submit(new WrappedRunnable(task));
+    // }
+
+    // @Override
+    // public <T> Future<T> submit(Callable<T> task) {
+    // return super.submit(new WrappedCallable<T>(task));
+    // }
+    //
+    // @Override
+    // public <T> Future<T> submit(Runnable task, T result) {
+    // return super.submit(new WrappedRunnable(task), result);
+    // }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay,
@@ -93,21 +110,6 @@ public class WrappedScheduledThreadPoolExecutor extends
     {
         return super.scheduleWithFixedDelay(new WrappedRunnable(command),
             initialDelay, delay, unit);
-    }
-
-    @Override
-    public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(new WrappedCallable<T>(task));
-    }
-
-    @Override
-    public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(new WrappedRunnable(task), result);
-    }
-
-    @Override
-    public Future<?> submit(Runnable task) {
-        return super.submit(new WrappedRunnable(task));
     }
 
 }
