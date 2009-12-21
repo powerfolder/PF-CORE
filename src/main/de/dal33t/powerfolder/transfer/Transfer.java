@@ -57,7 +57,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     private TransferProblem transferProblem;
     private String problemInformation;
 
-    protected final State transferState = new State();
+    protected final State state = new State();
 
     public enum TransferState {
         NONE("None", 10), // NONE WHAT DO YOU THINK?
@@ -197,7 +197,7 @@ public abstract class Transfer extends Loggable implements Serializable {
 
         // FIX for #878
         if (isCompleted()) {
-            transferState.setProgress(1);
+            state.setProgress(1);
         }
     }
 
@@ -239,8 +239,8 @@ public abstract class Transfer extends Loggable implements Serializable {
 
     void setCompleted() {
         // Set final state.
-        transferState.setState(TransferState.DONE);
-        transferState.setProgress(1);
+        state.setState(TransferState.DONE);
+        state.setProgress(1);
     }
 
     /**
@@ -313,13 +313,13 @@ public abstract class Transfer extends Loggable implements Serializable {
      * @return if this download is completed
      */
     public boolean isCompleted() {
-        return transferState != null && transferState.getState() != null
-            && transferState.getState().equals(TransferState.DONE);
+        return state != null && state.getState() != null
+            && state.getState().equals(TransferState.DONE);
     }
 
     public Date getCompletedDate() {
-        return transferState != null
-            && transferState.getCompletedDate() != null ? transferState
+        return state != null
+            && state.getCompletedDate() != null ? state
             .getCompletedDate() : null;
     }
 
@@ -431,12 +431,16 @@ public abstract class Transfer extends Loggable implements Serializable {
         this.problemInformation = problemInformation;
     }
 
-    public TransferState getState() {
-        return transferState == null ? null : transferState.getState();
+    public State getState() {
+        return state;
+    }
+    
+    public TransferState getTransferState() {
+        return state == null ? null : state.getState();
     }
 
     public double getStateProgress() {
-        return transferState == null ? 0 : transferState.getProgress();
+        return state == null ? 0 : state.getProgress();
     }
     //
     // // General

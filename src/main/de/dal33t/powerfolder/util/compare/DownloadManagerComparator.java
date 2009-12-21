@@ -49,9 +49,14 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                 return o1.getFileInfo().getFilenameOnly().compareToIgnoreCase(
                     o2.getFileInfo().getFilenameOnly());
             case BY_PROGRESS :
-                double p1 = o1.getState().getProgress();
-                double p2 = o2.getState().getProgress();
-                 return Double.compare(p1, p2);
+                int comp = o1.getState().compareTo(o2.getState());
+                if (comp == 0 && o1.getCompletedDate() != null
+                    && o2.getCompletedDate() != null)
+                {
+                    return -o1.getCompletedDate().compareTo(
+                        o2.getCompletedDate());
+                }
+                return comp;
             case BY_SIZE :
                 long s1 = o1.getFileInfo().getSize();
                 long s2 = o2.getFileInfo().getSize();
@@ -61,14 +66,18 @@ public class DownloadManagerComparator implements Comparator<DownloadManager> {
                     return s1 - s2 > 0 ? 1 : -1;
                 }
             case BY_FOLDER :
-                return o1.getFileInfo().getFolderInfo().name.compareTo(
-                        o2.getFileInfo().getFolderInfo().name);
+                return o1.getFileInfo().getFolderInfo().name.compareTo(o2
+                    .getFileInfo().getFolderInfo().name);
             case BY_MEMBER :
                 if (o1.getSources().size() > 1 && o1.getSources().size() > 1) {
                     return 0;
-                } else if (o1.getSources().size() == 1 && o2.getSources().size() == 1) {
-                    return o1.getSources().iterator().next().getPartner().getNick().compareTo(
-                        o2.getSources().iterator().next().getPartner().getNick());
+                } else if (o1.getSources().size() == 1
+                    && o2.getSources().size() == 1)
+                {
+                    return o1.getSources().iterator().next().getPartner()
+                        .getNick().compareTo(
+                            o2.getSources().iterator().next().getPartner()
+                                .getNick());
                 } else {
                     return o1.getSources().size();
                 }

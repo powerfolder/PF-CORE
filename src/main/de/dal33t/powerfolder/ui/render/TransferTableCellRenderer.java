@@ -1,25 +1,35 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.render;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.util.Date;
+
+import javax.swing.JProgressBar;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
+
 import com.jgoodies.forms.factories.Borders;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -34,13 +44,9 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
 
 /**
  * Renderer for any transfer table
@@ -116,7 +122,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                             problemInformation));
                     }
                 } else {
-                    Transfer.TransferState state = download.getState();
+                    Transfer.TransferState state = download.getTransferState();
                     if (state == null) {
                         state = Transfer.TransferState.NONE;
                     }
@@ -134,13 +140,13 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                                 .getDownloadManager().getCounter()
                                 .calculateEstimatedMillisToCompletion(),
                                 !download.isCompleted() && download.isStarted());
-//                            EstimatedTime et = new EstimatedTime(download
-//                                .getCounter()
-//                                .calculateEstimatedMillisToCompletion(),
-//                                !download.isCompleted() && download.isStarted());
+                            // EstimatedTime et = new EstimatedTime(download
+                            // .getCounter()
+                            // .calculateEstimatedMillisToCompletion(),
+                            // !download.isCompleted() && download.isStarted());
                             String kbs = Translation.getTranslation(
-                                "transfers.kbs", Format.formatDecimal(
-                                            counter.calculateCurrentKBS()));
+                                "transfers.kbs", Format.formatDecimal(counter
+                                    .calculateCurrentKBS()));
                             String text = (et.isActive() ? et.toString()
                                 + " - " : "")
                                 + kbs;
@@ -149,8 +155,12 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
 
                         default :
                             if (download.isCompleted()) {
-                                bar.setString(Translation
-                                    .getTranslation("transfers.completed"));
+                                Date completedDate = download
+                                    .getCompletedDate();
+                                String dateStr = completedDate != null ? Format
+                                    .formatDateShort(completedDate, true) : "";
+                                bar.setString(Translation.getTranslation(
+                                    "transfers.completed", dateStr));
                             } else if (download.isQueued()) {
                                 bar.setString(Translation
                                     .getTranslation("transfers.queued"));
@@ -165,20 +175,23 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 }
             } else if (value instanceof Upload) {
                 Upload upload = (Upload) transfer;
-                switch (upload.getState()) {
+                switch (upload.getTransferState()) {
                     case FILEHASHING :
                     case REMOTEMATCHING :
                         bar.setString(Translation.getTranslation(upload
-                            .getState().getTranslationId()));
+                            .getTransferState().getTranslationId()));
                         break;
                     default :
                         if (upload.isCompleted()) {
-                            bar.setString(Translation
-                                .getTranslation("transfers.completed"));
+                            Date completedDate = transfer.getCompletedDate();
+                            String dateStr = completedDate != null ? Format
+                                .formatDateShort(completedDate, true) : "";
+                            bar.setString(Translation.getTranslation(
+                                "transfers.completed", dateStr));
                         } else if (upload.isStarted()) {
                             bar.setString(Translation.getTranslation(
-                                "transfers.kbs", Format.formatDecimal(
-                                            counter.calculateCurrentKBS())));
+                                "transfers.kbs", Format.formatDecimal(counter
+                                    .calculateCurrentKBS())));
                         } else {
                             bar.setString(Translation
                                 .getTranslation("transfers.queued"));
@@ -196,7 +209,9 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
                 setText(fInfo.getFilenameOnly());
                 Folder folder = fInfo.getFolder(controller
                     .getFolderRepository());
-                if (folder != null && folder.getDiskItemFilter().isExcluded(fInfo)) {
+                if (folder != null
+                    && folder.getDiskItemFilter().isExcluded(fInfo))
+                {
                     setIcon(Icons.getIconById(Icons.BLACK_LIST));
                 } else {
                     setIcon(null);
@@ -247,8 +262,9 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
         }
 
         if (!isSelected) {
-            setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                    : ColorUtil.ODD_TABLE_ROW_COLOR);
+            setBackground(row % 2 == 0
+                ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                : ColorUtil.ODD_TABLE_ROW_COLOR);
         }
 
         return defaultComp;

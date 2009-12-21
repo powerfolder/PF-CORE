@@ -128,7 +128,6 @@ public class Download extends Transfer {
      * 
      * @param fileInfo
      *            the fileInfo the remote side uses.
-     * @param fileInfo
      */
     public void uploadStarted(FileInfo fileInfo) {
         checkFileInfo(fileInfo);
@@ -193,7 +192,7 @@ public class Download extends Transfer {
             return false;
         }
         try {
-            rp = new RequestPart(getFile(), range, Math.max(0, transferState
+            rp = new RequestPart(getFile(), range, Math.max(0, state
                 .getProgress()));
         } catch (IllegalArgumentException e) {
             // I need to do this because FileInfos are NOT immutable...
@@ -303,6 +302,9 @@ public class Download extends Transfer {
 
     /**
      * This download is queued at the remote side
+     * 
+     * @param fInfo
+     *            the fileinfo
      */
     public void setQueued(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo is null!");
@@ -410,7 +412,7 @@ public class Download extends Transfer {
     }
 
     private boolean stateCanTimeout() {
-        TransferState state = getState();
+        TransferState state = getTransferState();
         return state != TransferState.FILERECORD_REQUEST
             && state != TransferState.VERIFYING
             && state != TransferState.MATCHING;

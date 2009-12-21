@@ -355,8 +355,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     public synchronized void init(boolean completed) throws IOException {
         assert fileInfo != null;
         if (completed) {
+            setTransferState(TransferState.DONE, 1);
             state = InternalState.COMPLETED;
         } else {
+            setTransferState(TransferState.NONE);
             state = InternalState.WAITING_FOR_SOURCE;
         }
 
@@ -511,6 +513,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             logInfo("Download completed: " + fileInfo.toDetailString());
         }
 
+        setTransferState(TransferState.DONE, 1);
         setState(InternalState.COMPLETED);
         shutdown();
         deleteMetaData();
@@ -536,7 +539,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     protected void setTransferState(double progress) {
         transferState.setProgress(progress);
         for (Download d : getSources()) {
-            d.transferState.setProgress(progress);
+            d.state.setProgress(progress);
         }
     }
 
@@ -547,8 +550,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         transferState.setState(state);
         transferState.setProgress(0);
         for (Download d : getSources()) {
-            d.transferState.setState(state);
-            d.transferState.setProgress(0);
+            d.state.setState(state);
+            d.state.setProgress(0);
         }
     }
 
@@ -556,8 +559,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         transferState.setState(state);
         transferState.setProgress(progress);
         for (Download d : getSources()) {
-            d.transferState.setState(state);
-            d.transferState.setProgress(progress);
+            d.state.setState(state);
+            d.state.setProgress(progress);
         }
     }
 
@@ -867,8 +870,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         if (getTempFile() == null
             || !getTempFile().exists()
-            || !DateUtil.equalsFileDateCrossPlattform(fileInfo.getModifiedDate()
-                .getTime(), getTempFile().lastModified()))
+            || !DateUtil.equalsFileDateCrossPlattform(fileInfo
+                .getModifiedDate().getTime(), getTempFile().lastModified()))
         {
             // If something's wrong with the tempfile, kill the meta data file
             // if it exists

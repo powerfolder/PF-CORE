@@ -19,24 +19,32 @@
 */
 package de.dal33t.powerfolder.ui.render;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.util.Collection;
+import java.util.Date;
+
+import javax.swing.JProgressBar;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
+
 import com.jgoodies.forms.factories.Borders;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.transfer.*;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.EstimatedTime;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
-import java.util.Collection;
 
 /**
  * Renderer for any transfer table
@@ -122,14 +130,17 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                     bar.setString(text);
                     break;
 
-                default:
+                default :
                     if (downloadManager.isCompleted()) {
+                        Date completedDate = downloadManager.getCompletedDate();
+                        String dateStr = completedDate != null ? Format
+                            .formatDateShort(completedDate, true) : "";
                         bar.setValue(100);
-                        bar.setString(Translation
-                                .getTranslation("transfers.completed"));
+                        bar.setString(Translation.getTranslation(
+                            "transfers.completed", dateStr));
                     } else if (downloadManager.isStarted()) {
                         bar.setString(Translation
-                                .getTranslation("transfers.started"));
+                            .getTranslation("transfers.started"));
                     } else {
                         bar.setString(Translation
                                 .getTranslation("transfers.requested"));

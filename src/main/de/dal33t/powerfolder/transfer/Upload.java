@@ -122,7 +122,7 @@ public class Upload extends Transfer {
             logWarning("Got request for a range bigger then my max filechunk size ("
                 + pr.getRange() + "): " + pr.getRange().getLength());
         }
-        transferState.setProgress(pr.getProgress());
+        state.setProgress(pr.getProgress());
         enqueueMessage(pr);
     }
 
@@ -211,7 +211,7 @@ public class Upload extends Transfer {
                         // FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
                             debugState = "Waiting for remote matching";
-                            transferState
+                            state
                                 .setState(TransferState.REMOTEMATCHING);
                             logFiner("Waiting for initial part requests!");
                             waitForRequests();
@@ -291,17 +291,17 @@ public class Upload extends Transfer {
             .getFolderRepository()));
         FilePartsRecord fpr;
         try {
-            transferState.setState(TransferState.FILEHASHING);
+            state.setState(TransferState.FILEHASHING);
             fpr = getTransferManager().getFileRecordManager().retrieveRecord(
                 fi, new ProgressListener() {
                     public void progressReached(double percentageReached) {
-                        transferState.setProgress(percentageReached);
+                        state.setProgress(percentageReached);
                     }
 
                 });
             getPartner().sendMessagesAsynchron(
                 new ReplyFilePartsRecord(fi, fpr));
-            transferState.setState(TransferState.UPLOADING);
+            state.setState(TransferState.UPLOADING);
         } catch (FileNotFoundException e) {
             logSevere("FileNotFoundException", e);
             getTransferManager().uploadBroken(Upload.this,
@@ -330,7 +330,7 @@ public class Upload extends Transfer {
         if (isAborted() || isBroken()) {
             return false;
         }
-        transferState.setState(TransferState.UPLOADING);
+        state.setState(TransferState.UPLOADING);
         RequestPart pr = null;
         synchronized (pendingRequests) {
             while (pendingRequests.isEmpty() && !isBroken() && !isAborted()) {
@@ -513,7 +513,7 @@ public class Upload extends Transfer {
 
     public String toString() {
         String msg = "State: " + debugState + ", TransferState: "
-            + transferState.getState() + " " + getFile().toDetailString()
+            + state.getState() + " " + getFile().toDetailString()
             + " to '" + getPartner().getNick() + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";

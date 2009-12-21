@@ -59,9 +59,11 @@ public class TransferComparator implements Comparator<Transfer> {
                 if (comp == 0 && o1.getCompletedDate() != null
                     && o2.getCompletedDate() != null)
                 {
-                    return o1.getCompletedDate().compareTo(
+                    
+                    return -o1.getCompletedDate().compareTo(
                         o2.getCompletedDate());
                 }
+                return comp;
             case BY_SIZE :
                 long s1 = o1.getFile().getSize();
                 long s2 = o2.getFile().getSize();
