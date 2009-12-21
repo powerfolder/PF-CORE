@@ -46,6 +46,9 @@ public class StartMatchPattern extends AbstractPattern {
     }
 
     public boolean isMatch(String matchString) {
+        if (matchString.length() < matchLower.length) {
+            return false;
+        }
         for (int i = 0; i < matchLower.length; i++) {
             char cms = matchString.charAt(i);
             if (!equalChar(cms, matchLower[i], matchUpper[i])) {

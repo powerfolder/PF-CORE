@@ -146,6 +146,7 @@ public class PatternMatchTest extends TestCase {
         assertFalse(new EndMatchPattern("*sdfgkjh").isMatch("sdfxxxxxgkjh"));
         assertTrue(new EndMatchPattern("*sdfgkjh").isMatch("sdfgkjh"));
         assertFalse(new EndMatchPattern("*sdfgh").isMatch("sdfgkjh"));
+        // Useless
         assertTrue(new EndMatchPattern("*").isMatch(""));
 
         assertFalse(new EndMatchPattern("*file").isMatch("c:/test/file.name"));

@@ -46,6 +46,10 @@ public class EndMatchPattern extends AbstractPattern {
 
     public boolean isMatch(String matchString) {
         int matchIndex = matchString.length() - 1;
+        if (matchIndex == -1) {
+            // Special case. Match "*" to ""
+            return matchLower.length == 0;
+        }
         for (int i = matchLower.length - 1; i > 0; i--) {
             char cms = matchString.charAt(matchIndex);
             if (!equalChar(cms, matchLower[i], matchUpper[i])) {
