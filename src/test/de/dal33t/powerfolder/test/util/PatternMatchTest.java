@@ -20,12 +20,12 @@
 package de.dal33t.powerfolder.test.util;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
 import de.dal33t.powerfolder.util.pattern.ExactMatchPattern;
+import de.dal33t.powerfolder.util.pattern.OfficeTempFilesMatchPattern;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
 import de.dal33t.powerfolder.util.pattern.StartMatchPattern;
@@ -41,6 +41,8 @@ public class PatternMatchTest extends TestCase {
         assertTrue(p instanceof EndMatchPattern);
         p = PatternFactory.createPattern("dsd*kjskj");
         assertTrue(p instanceof CompiledPattern);
+        p = PatternFactory.createPattern(Pattern.OFFICE_TEMP);
+        assertTrue(p instanceof OfficeTempFilesMatchPattern);
     }
 
     public void testPatterns() {
@@ -248,7 +250,7 @@ public class PatternMatchTest extends TestCase {
 
         int nPatterns = 10000000;
         pe = Profiling.start("CompiledPatternThumbsDB");
-        Pattern pattern = new CompiledPattern(Folder.THUMBS_DB);
+        Pattern pattern = new CompiledPattern(Pattern.THUMBS_DB);
         for (int i = 0; i < nPatterns; i++) {
             assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
             assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
@@ -256,7 +258,7 @@ public class PatternMatchTest extends TestCase {
         Profiling.end(pe);
 
         pe = Profiling.start("EndMatchPatternThumbsDB");
-        pattern = new EndMatchPattern(Folder.THUMBS_DB);
+        pattern = new EndMatchPattern(Pattern.THUMBS_DB);
         for (int i = 0; i < nPatterns; i++) {
             assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
             assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
@@ -268,6 +270,14 @@ public class PatternMatchTest extends TestCase {
         for (int i = 0; i < nPatterns; i++) {
             assertTrue(pattern.isMatch("Programme\\test\\Thumbs.db"));
             assertFalse(pattern.isMatch("Users\\test\\Thumbs.db"));
+        }
+        Profiling.end(pe);
+
+        pe = Profiling.start("OfficeTempMatchPatternThumbsDB");
+        pattern = new OfficeTempFilesMatchPattern('~', "*.tmp");
+        for (int i = 0; i < nPatterns; i++) {
+            assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
+            assertTrue(pattern.isMatch("Users\\test\\~W8833453.tmp"));
         }
         Profiling.end(pe);
         System.err.println(Profiling.dumpStats());
