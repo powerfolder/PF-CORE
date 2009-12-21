@@ -43,6 +43,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author sprajc
  */
 public class FolderWatcher extends PFComponent {
+    /**
+     * #1862
+     */
+    private static final boolean UNREGISTER_WATCHERS = true;
+
     private static Boolean LIB_LOADED;
 
     private Folder folder;
@@ -119,22 +124,20 @@ public class FolderWatcher extends PFComponent {
         return LIB_LOADED;
     }
 
-    private static volatile int REMOVED_WATCHES = 0;
-
     synchronized void remove() {
         if (!isLibLoaded()) {
             return;
         }
         if (watchID >= 0) {
-            // if (REMOVED_WATCHES >= 0) {
-            // logWarning("NOT unregistering filesystem watcher from " + folder
-            // + " to prevent crash. Ignoring further filesystem events");
-            // watchID = -1;
-            // return;
-            // }
+            if (!UNREGISTER_WATCHERS) {
+                logWarning("NOT unregistering filesystem watcher from "
+                    + folder
+                    + " to prevent crash. Ignoring further filesystem events");
+                watchID = -1;
+                return;
+            }
             try {
                 JNotify.removeWatch(watchID);
-                REMOVED_WATCHES++;
             } catch (JNotifyException e) {
                 logWarning(e);
             } finally {
