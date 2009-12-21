@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.test.net;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -43,6 +44,8 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        // Don't check limited connectivity.
+        PreferencesEntry.TEST_CONNECTIVITY.setValue(getContollerMarge(), false);
         getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
