@@ -57,6 +57,9 @@ public class AccountDetails implements Serializable {
         return user;
     }
 
+    /**
+     * @return the total usage of space (folders + archive)
+     */
     public long getSpaceUsed() {
         return spaceUsed;
     }
