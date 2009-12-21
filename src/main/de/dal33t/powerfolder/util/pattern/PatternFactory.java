@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import com.sun.corba.se.spi.logging.LogWrapperBase;
-
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -30,6 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @author sprajc
  */
 public class PatternFactory {
+
     private PatternFactory() {
     }
 
@@ -47,11 +46,18 @@ public class PatternFactory {
             return new EndMatchPattern(patternText);
         } else if (patternText.indexOf('*') == patternText.length() - 1) {
             return new StartMatchPattern(patternText);
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
+            Pattern.OFFICE_TEMP))
+        {
+            // This is a heuristisc but much quicker implementation for ignoring
+            // office temp files.
+            return new OfficeTempFilesMatchPattern('~', "*.tmp");
         } else {
-            System.out.println("Using fallback pattern matcher for '"
-                + patternText + "'");
             // Fallback solution: Works for all, but is not optimized.
+            System.out.println("Using fallback for pattern '" + patternText
+                + "'");
             return new CompiledPattern(patternText);
         }
     }
+
 }

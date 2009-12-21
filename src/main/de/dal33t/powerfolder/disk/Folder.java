@@ -98,6 +98,7 @@ import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.pattern.Pattern;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -109,10 +110,6 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
-
-    public static final String THUMBS_DB = "*thumbs.db";
-    public static final String WORD_TEMP = "*~*.tmp";
-    public static final String DS_STORE = "*.DS_Store";
 
     /** The base location of the folder. */
     private final File localBase;
@@ -3242,10 +3239,10 @@ public class Folder extends PFComponent {
     public void addDefaultExcludes() {
         // Add thumbs to ignore pattern on windows systems
         // Don't duplicate thumbs (like when moving a preview folder)
-        addPattern(THUMBS_DB);
+        addPattern(Pattern.THUMBS_DB);
 
         // ... and temporary word files
-        addPattern(WORD_TEMP);
+        addPattern(Pattern.OFFICE_TEMP);
 
         // Add desktop.ini to ignore pattern on windows systems
         // if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
@@ -3255,7 +3252,7 @@ public class Folder extends PFComponent {
 
         // Add dsstore to ignore pattern on mac systems
         // Don't duplicate dsstore (like when moving a preview folder)
-        addPattern(DS_STORE);
+        addPattern(Pattern.DS_STORE);
     }
 
     /**

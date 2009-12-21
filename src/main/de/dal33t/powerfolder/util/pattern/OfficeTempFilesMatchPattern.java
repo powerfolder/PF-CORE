@@ -20,23 +20,30 @@
 package de.dal33t.powerfolder.util.pattern;
 
 /**
- * Matching on any texts that end with the given pattern.
+ * Matching on any texts that ends with the given pattern
  */
-public interface Pattern {
+public class OfficeTempFilesMatchPattern extends EndMatchPattern {
 
-    static final String THUMBS_DB = "*thumbs.db";
-    static final String OFFICE_TEMP = "*~*.tmp";
-    static final String DS_STORE = "*.DS_Store";
+    private char startChar;
 
     /**
-     * @return the pattern text, e.g. "*thumbs.db"
+     * Constructor.
+     * 
+     * @param startChar
+     *            e.g. "~"
+     * @param endPattern
+     *            e.g. ".tmp"
      */
-    public abstract String getPatternText();
+    public OfficeTempFilesMatchPattern(char startChar, String endPattern) {
+        super(endPattern);
+        this.startChar = startChar;
+    }
 
-    /**
-     * @param matchString
-     * @return true if this pattern matches on the matchString. false if not.
-     */
-    public abstract boolean isMatch(String matchString);
+    public boolean isMatch(String matchString) {
+        if (!super.isMatch(matchString)) {
+            return false;
+        }
+        return matchString.indexOf(startChar) >= 0;
+    }
 
 }
