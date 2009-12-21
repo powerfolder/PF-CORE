@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -41,14 +43,21 @@ public class FolderInfo implements Serializable, Cloneable {
     public final String name;
     public final String id;
 
+    /**
+     * The cached hash info.
+     */
+    private transient int hash;
+
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
+        hash = hashCode0();
     }
 
     public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
+        hash = hashCode0();
     }
 
     public String getName() {
@@ -96,7 +105,12 @@ public class FolderInfo implements Serializable, Cloneable {
      * General
      */
 
+    @Override
     public int hashCode() {
+        return hash;
+    }
+
+    private int hashCode0() {
         return (id == null) ? 0 : id.hashCode();
     }
 
@@ -146,6 +160,16 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public String toString() {
         return "Folder '" + name + '\'';
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        // Oh! Default value. Better recalculate hashcode cache
+        if (hash == 0) {
+            hash = hashCode0();
+        }
     }
 
 }
