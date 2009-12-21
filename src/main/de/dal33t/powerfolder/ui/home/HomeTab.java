@@ -610,7 +610,6 @@ public class HomeTab extends PFUIComponent {
                 .getOSSubscription();
             long totalStorage = storageSubscription.getStorageSize();
             long spaceUsed = ad.getSpaceUsed();
-            spaceUsed += ad.getArchiveSize();
             if (spaceUsed > (double) totalStorage * 0.8) {
                 showBuyNow = true;
             }
