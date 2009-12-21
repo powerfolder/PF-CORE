@@ -205,15 +205,17 @@ public class FileVersionsPanel extends PFUIComponent {
                 .getModifiedDate())));
         currentVersionPanel.setVisible(true);
 
+        final Folder folder = fileInfo.getFolder(getController()
+            .getFolderRepository());
+        if (folder == null) {
+            return;
+        }
         // Run this outside of EDT, in case it runs slow.
         getController().getThreadPool().execute(new Runnable() {
             public void run() {
-
                 // Loading...
                 setState(STATE_LOADING);
                 try {
-                    Folder folder = fileInfo.getFolder(getController()
-                        .getFolderRepository());
                     FileArchiver fileArchiver = folder.getFileArchiver();
 
                     // Get local versions.
