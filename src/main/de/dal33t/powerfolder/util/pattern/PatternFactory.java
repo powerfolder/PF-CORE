@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
+import java.util.logging.Logger;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -28,6 +30,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @author sprajc
  */
 public class PatternFactory {
+    private static Logger LOG = Logger
+        .getLogger(PatternFactory.class.getName());
 
     private PatternFactory() {
     }
@@ -54,8 +58,7 @@ public class PatternFactory {
             return new OfficeTempFilesMatchPattern('~', "*.tmp");
         } else {
             // Fallback solution: Works for all, but is not optimized.
-            System.out.println("Using fallback for pattern '" + patternText
-                + "'");
+            LOG.fine("Using fallback for pattern '" + patternText + "'");
             return new CompiledPattern(patternText);
         }
     }
