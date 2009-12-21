@@ -18,12 +18,16 @@ PowerFolder Version 4.1.0 - http://www.powerfolder.com
    longer appear unless there is a problem actually. System service
    always automatically starts after closing the user interface when enabled.
    Wiki: http://www.powerfolder.com/wiki/System_Service
+ * Many performance improvements. PowerFolder should now use less CPU.
+   Wiki: http://www.powerfolder.com/wiki/Performance_optimization
  * Folders can now be removed/de-configured by script.
    Wiki: http://www.powerfolder.com/wiki/Script_configuration
  * Manual sync button now triggers instant sync even if folder is setup to
    scheduled sync. Wiki: http://www.powerfolder.com/wiki/Scheduled_synchronization
  * Slightly reduced CPU load while scanning for changes.
  * File archive details now indicates the availability (local or online).
+ * Online storage usage bar now shows the correct total value
+   (online data + online archive)
 
 = Bugfixes =
  * Fixed bug that causes synchronization to stop on mix-case named directories
