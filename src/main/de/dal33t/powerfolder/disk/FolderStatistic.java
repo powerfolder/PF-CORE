@@ -28,7 +28,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
@@ -454,7 +453,6 @@ public class FolderStatistic extends PFComponent {
      *         -1 if unknown
      */
     public double getHarmonizedSyncPercentage() {
-
         // If there are no members connected, the sync percentage is unknown.
         if (folder.getConnectedMembersCount() == 0
             || current.sizesInSync.size() <= 1)
