@@ -630,8 +630,8 @@ public class HomeTab extends PFUIComponent {
     private void displaySyncStats(Date syncDate, boolean syncing,
         boolean disabled)
     {
-        if (isFine()) {
-            logFine("Sync status: syncing? " + syncing + ", date: " + syncDate);
+        if (isFiner()) {
+            logFiner("Sync status: syncing? " + syncing + ", date: " + syncDate);
         }
         if (synchronizationStatusLabel != null) {
             String syncStatsText;

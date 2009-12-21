@@ -326,15 +326,20 @@ public class ExpandableComputerView extends PFUIComponent implements
      */
     private void updateDetails() {
 
-        Date time = node.getLastConnectTime();
-        String lastConnectedTime;
-        if (time == null) {
-            lastConnectedTime = "";
+        if (node.isCompletelyConnected()) {
+            lastSeenLabel.setText(Translation
+                .getTranslation("exp_computer_view.connected_text"));
         } else {
-            lastConnectedTime = Format.formatDateShort(time);
+            Date time = node.getLastConnectTime();
+            String lastConnectedTime;
+            if (time == null) {
+                lastConnectedTime = "";
+            } else {
+                lastConnectedTime = Format.formatDateShort(time);
+            }
+            lastSeenLabel.setText(Translation.getTranslation(
+                "exp_computer_view.last_seen_text", lastConnectedTime));
         }
-        lastSeenLabel.setText(Translation.getTranslation(
-            "exp_computer_view.last_seen_text", lastConnectedTime));
 
         AccountInfo aInfo = node.getAccountInfo();
         if (aInfo != null) {
