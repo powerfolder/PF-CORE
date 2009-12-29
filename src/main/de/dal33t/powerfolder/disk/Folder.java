@@ -2040,8 +2040,14 @@ public class Folder extends PFComponent {
                         + member.getNick() + "' has " + fileList.size()
                         + " possible files");
                 }
-                synchronized (scanLock) {
-                    for (FileInfo remoteFile : fileList) {
+
+                for (FileInfo remoteFile : fileList) {
+                    // Abort transfers on file.
+                    if (remoteFile.isFile()) {
+                        getController().getTransferManager().breakTransfers(
+                            remoteFile);
+                    }
+                    synchronized (scanLock) {
                         handleFileDeletion(remoteFile, force, member,
                             removedFiles);
                     }
@@ -2142,11 +2148,6 @@ public class Folder extends PFComponent {
             logFine("File was deleted by " + member + ", deleting local: "
                 + localFile.toDetailString() + " at "
                 + localCopy.getAbsolutePath());
-        }
-
-        // Abort transfers on file.
-        if (localFile.isFile()) {
-            getController().getTransferManager().breakTransfers(localFile);
         }
 
         if (localCopy.exists()) {
