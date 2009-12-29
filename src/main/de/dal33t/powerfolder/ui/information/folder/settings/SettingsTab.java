@@ -781,7 +781,7 @@ public class SettingsTab extends PFUIComponent {
                                     .getTranslation("settings_tab.offer_maintenance.text"),
                                 new String[]{
                                     Translation
-                                        .getTranslation("general.delete"),
+                                        .getTranslation("settings_tab.offer_maintenance.cleanup_button"),
                                     Translation
                                         .getTranslation("general.cancel")}, 0,
                                 GenericDialogType.QUESTION);
