@@ -102,6 +102,10 @@ public class MemberInfo implements Serializable {
         return this.connectAddress;
     }
     
+    public String getId() {
+        return id;
+    }
+    
     public String getNick() {
         return nick;
     }
