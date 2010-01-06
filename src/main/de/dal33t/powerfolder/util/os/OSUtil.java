@@ -184,15 +184,24 @@ public class OSUtil {
             dir = "mac64libs";
         }
 
-        String file = System.mapLibraryName(lib);
-        File targetFile = new File(Controller.getTempFilesLocation(), file);
+        String fileName = System.mapLibraryName(lib);
+        File targetFile = new File(Controller.getTempFilesLocation(), fileName);
         targetFile.deleteOnExit();
-        File fLib = Util.copyResourceTo(file, dir, targetFile, false);
+        File fLib = Util.copyResourceTo(fileName, dir, targetFile, false);
 
         if (fLib == null) {
-            log.severe(clazz.getName() + " --> Completely failed to load "
-                + lib + ": Failed to copy resource!");
-            return false;
+            log.warning(clazz.getName() + " --> Failed to load " + lib
+                + ": Failed to copy resource to " + targetFile);
+            String altFileName = System.mapLibraryName(lib + "-1");
+            File altTargetFile = new File(Controller.getTempFilesLocation(),
+                altFileName);
+            altTargetFile.deleteOnExit();
+            fLib = Util.copyResourceTo(fileName, dir, altTargetFile, false);
+            if (fLib == null) {
+                log.severe(clazz.getName() + " --> Completely failed to load "
+                    + lib + ": Failed to copy resource to " + altTargetFile);
+                return false;
+            }
         }
         if (loadLibrary(clazz, lib, false, true)) {
             return true;
