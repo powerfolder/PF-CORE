@@ -438,14 +438,21 @@ public class Folder extends PFComponent {
      *            the ArchiveMode
      */
     public void setArchiveMode(ArchiveMode mode) {
-        archiver = mode.getInstance(this);
-        // Store on disk
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-        getController().getConfig().put(syncProfKey, mode.name());
-        getController().saveConfig();
+        try {
+            archiver = mode.getInstance(this);
+            // Store on disk
+            String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+                .getBytes())));
+            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+                + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+            getController().getConfig().put(syncProfKey, mode.name());
+            getController().saveConfig();
+        } catch (Exception e) {
+            logWarning("Unable to set new archive mode: " + mode
+                + ". Falling back to no backup archive. " + e);
+            logFiner(e);
+            archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+        }
     }
 
     public void setArchiveVersions(int versions) {
@@ -1532,7 +1539,7 @@ public class Folder extends PFComponent {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
             logSevere(this + ": Unable to write database file "
-                + dbFile.getAbsolutePath(), e);
+                + dbFile.getAbsolutePath() + ". " + e);
             logFiner(e);
         }
     }

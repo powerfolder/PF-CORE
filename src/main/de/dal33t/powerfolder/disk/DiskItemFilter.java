@@ -144,7 +144,9 @@ public class DiskItemFilter {
             }
             dirty = false;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Problem saving pattern to " + directory, e);
+            log.log(Level.SEVERE, "Problem saving pattern to " + directory
+                + ". " + e);
+            log.log(Level.FINER, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
