@@ -1839,7 +1839,8 @@ public class Folder extends PFComponent {
         if (!hasReadPermission(member)
             || !hasReadPermission(getController().getMySelf()))
         {
-            logWarning("Not joining " + member + ". No read permisson");
+            logWarning("Not joining " + member + " / "
+                + member.getAccountInfo() + " no read permission");
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
                     .createNullListForPre4Client(currentInfo));
@@ -2035,8 +2036,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                logWarning("Not syncing deletions. No write permission for "
-                    + member);
+                logWarning("Not syncing deletions. " + member + " / "
+                    + member.getAccountInfo() + " no write permission");
                 continue;
             }
 
@@ -2565,17 +2566,17 @@ public class Folder extends PFComponent {
      * 
      * @param remoteFileInfos
      */
-    private void findSameFiles(Member remotePeer,
+    private void findSameFiles(Member member,
         Collection<FileInfo> remoteFileInfos)
     {
         Reject.ifNull(remoteFileInfos, "Remote file info list is null");
         if (isFiner()) {
             logFiner("Triing to find same files in remote list with "
-                + remoteFileInfos.size() + " files from " + remotePeer);
+                + remoteFileInfos.size() + " files from " + member);
         }
-        if (!hasWritePermission(remotePeer)) {
-            logWarning("Not searching same files. " + remotePeer
-                + " no write permission");
+        if (!hasWritePermission(member)) {
+            logWarning("Not searching same files. " + member + " / "
+                + member.getAccountInfo() + " no write permission");
             return;
         }
 
@@ -2964,8 +2965,8 @@ public class Folder extends PFComponent {
             }
             if (!hasWritePermission(member)) {
                 if (isWarning()) {
-                    logWarning("Not downloading files. " + member
-                        + " no write permission");
+                    logWarning("Not downloading files. " + member + " / "
+                        + member.getAccountInfo() + " no write permission");
                 }
                 continue;
             }
