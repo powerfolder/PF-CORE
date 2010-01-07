@@ -52,7 +52,8 @@ import de.dal33t.powerfolder.util.Waiter;
  */
 public class RelayedConnectionManager extends PFComponent {
 
-    private static final Logger log = Logger.getLogger(RelayedConnectionManager.class.getName());
+    private static final Logger log = Logger
+        .getLogger(RelayedConnectionManager.class.getName());
     private static long nextConnectionId = 0;
 
     /**
@@ -192,6 +193,9 @@ public class RelayedConnectionManager extends PFComponent {
             if (isRelay(node.getInfo())) {
                 return node;
             }
+        }
+        if (isRelay(getController().getMySelf().getInfo())) {
+            return getController().getMySelf();
         }
         return null;
     }

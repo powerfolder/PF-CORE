@@ -348,7 +348,7 @@ public class UDTSocketConnectionManager extends PFComponent {
                     Member relay = getController().getIOProvider()
                         .getRelayedConnectionManager().getRelay();
                     if (relay == null) {
-                        logSevere("Relay is null!");
+                        logSevere("Relay is null");
                         return;
                     }
                     // Try to send NACK, if it doesn't work - we don't care,
