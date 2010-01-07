@@ -67,6 +67,7 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_LAST_LOGIN_FROM = "lastLoginFrom";
     public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
     public static final String PROPERTYNAME_PRO_USER = "proUser";
+    public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_SERVER = "server";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
     public static final String PROPERTYNAME_OS_SUBSCRIPTION = "OSSubscription";
@@ -80,6 +81,7 @@ public class Account extends Model implements Serializable {
     private MemberInfo lastLoginFrom;
     private boolean newsLetter;
     private boolean proUser;
+    private String notes;
 
     /**
      * The list of computers associated with this account.
@@ -284,6 +286,17 @@ public class Account extends Model implements Serializable {
         this.proUser = proUser;
         firePropertyChange(PROPERTYNAME_PRO_USER, oldValue, this.proUser);
     }
+    
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        Object oldValue = getNotes();
+        this.notes = notes;
+        firePropertyChange(PROPERTYNAME_NOTES, oldValue, this.notes);
+    }
+
 
     public ServerInfo getServer() {
         return server;
