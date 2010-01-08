@@ -41,7 +41,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -114,7 +113,6 @@ public class Account extends Model implements Serializable {
         this.oid = IdGenerator.makeId();
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
-        this.osSubscription.setType(OnlineStorageSubscriptionType.NONE);
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
         this.computers = new CopyOnWriteArrayList<MemberInfo>();
     }
@@ -155,10 +153,28 @@ public class Account extends Model implements Serializable {
         firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
+    /**
+     * Revokes any permission to a folders.
+     * 
+     * @param foInfo
+     *            the folder.
+     */
     public void revokeAllFolderPermission(FolderInfo foInfo) {
         revoke(new FolderReadPermission(foInfo), new FolderReadWritePermission(
             foInfo), new FolderAdminPermission(foInfo),
             new FolderOwnerPermission(foInfo));
+    }
+
+    /**
+     * Revokes permission on ALL folders
+     */
+    public void revokeAllFolderPermission() {
+        // Revokes permission on ALL folders
+        for (Permission p : getPermissions()) {
+            if (p instanceof FolderPermission) {
+                revoke(p);
+            }
+        }
     }
 
     public void revokeAllPermissions() {
@@ -286,7 +302,7 @@ public class Account extends Model implements Serializable {
         this.proUser = proUser;
         firePropertyChange(PROPERTYNAME_PRO_USER, oldValue, this.proUser);
     }
-    
+
     public String getNotes() {
         return notes;
     }
@@ -296,7 +312,6 @@ public class Account extends Model implements Serializable {
         this.notes = notes;
         firePropertyChange(PROPERTYNAME_NOTES, oldValue, this.notes);
     }
-
 
     public ServerInfo getServer() {
         return server;

@@ -58,6 +58,10 @@ public class OnlineStorageSubscription extends Model implements Serializable {
 
     private OnlineStorageSubscriptionType type;
 
+    public OnlineStorageSubscription() {
+        setType(OnlineStorageSubscriptionType.NONE);
+    }
+
     // Logic ******************************************************************
 
     /**
@@ -222,8 +226,6 @@ public class OnlineStorageSubscription extends Model implements Serializable {
 
     /**
      * Legacy type for 3.1.X clients.
-     * 
-     * @param type
      */
     public void setTypeLegacy() {
         Object oldValue = type;
