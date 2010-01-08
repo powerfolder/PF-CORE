@@ -193,6 +193,10 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public void setStorageSizeGB(int storageSizeGB) {
         setStorageSize(1024L * 1024L * 1024L * storageSizeGB);
     }
+    
+    public void setStorageSizeUnlimited() {
+        setStorageSizeGB(UNLIMITED_GB);
+    }
 
     /**
      * @return the storage size in GBs
