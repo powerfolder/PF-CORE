@@ -67,9 +67,10 @@ public class FolderDBDebug {
             }
             totalSize += fileInfo.getSize();
         }
+        File f = new File(args[0] + ".csv");
         // Write filelist to disk
-        File outFile = Debug.writeFileListCSV("PowerBuilder", fName, Arrays
-            .asList(files), "FileList of folder " + fName);
+        File outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
+            "FileList of folder " + fName);
 
         System.out.println("Read " + files.length + " files ("
             + Format.formatBytesShort(totalSize) + ") from " + args[0]
