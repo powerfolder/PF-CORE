@@ -135,7 +135,9 @@ public class Debug {
     {
         if (!logFile.exists()) {
             try {
-                logFile.getParentFile().mkdirs();
+                if (logFile.getParentFile() != null) {
+                    logFile.getParentFile().mkdirs();
+                }
                 logFile.createNewFile();
             } catch (IOException e) {
                 log.severe("Unable to write filelist to "
