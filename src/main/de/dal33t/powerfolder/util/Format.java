@@ -23,9 +23,12 @@ import de.dal33t.powerfolder.PFComponent;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
+import java.util.Locale;
 
 /**
  * Helper class for all formatting
@@ -34,18 +37,13 @@ import java.util.Formatter;
  */
 public class Format extends PFComponent {
 
-    private static final ShortDateFormat SHORT_DATE_FORAMT
-            = new ShortDateFormat();
-    private static final ShortTimeFormat SHORT_TIME_FORAMT
-            = new ShortTimeFormat();
-    private static final LongTimeFormat LONG_TIME_FORAMT
-            = new LongTimeFormat();
-    private static final DoubleNumberFormat DOUBLE_NUMBER_FORAMT
-            = new DoubleNumberFormat();
-    private static final LongNumberFormat LONG_NUMBER_FORAMT
-            = new LongNumberFormat();
-    private static final PercentNumberFormat PERCENT_NUMBER_FORAMT
-            = new PercentNumberFormat();
+    private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
+    private static final ShortDateFormat SHORT_DATE_FORAMT = new ShortDateFormat();
+    private static final ShortTimeFormat SHORT_TIME_FORAMT = new ShortTimeFormat();
+    private static final LongTimeFormat LONG_TIME_FORAMT = new LongTimeFormat();
+    private static final DoubleNumberFormat DOUBLE_NUMBER_FORAMT = new DoubleNumberFormat();
+    private static final LongNumberFormat LONG_NUMBER_FORAMT = new LongNumberFormat();
+    private static final PercentNumberFormat PERCENT_NUMBER_FORAMT = new PercentNumberFormat();
 
     private Format() {
         // No instance
@@ -127,6 +125,34 @@ public class Format extends PFComponent {
     }
 
     /**
+     * Formats a date as universal canonical string in the format "dd MMM yyyy"
+     * (English).
+     * <p>
+     * Examples: 10-JAN-2010, 30-DEC-2009.
+     * 
+     * @param date
+     * @return a date as universal canonical string.
+     */
+    public static String formatDateCanonical(Date date) {
+        return CANONICAL_DATE_FORMAT.get().format(date);
+    }
+
+    /**
+     * Parses a date in universal canonical string format "dd MMM yyyy"
+     * (English).
+     * <p>
+     * Examples: 10-JAN-2010, 30-DEC-2009.
+     * 
+     * @param str
+     *            the string to parse
+     * @return the date.
+     * @throws ParseException
+     */
+    public static Date parseDateCanonical(String str) throws ParseException {
+        return CANONICAL_DATE_FORMAT.get().parse(str);
+    }
+
+    /**
      * Short date format.
      * 
      * @param date
@@ -164,8 +190,8 @@ public class Format extends PFComponent {
                     return Translation.getTranslation("general.yesterday")
                         + ' ' + formatTimeShort(date);
                 } else if (dayDiffer == 1) {
-                    return Translation.getTranslation("general.tomorrow")
-                        + ' ' + formatTimeShort(date);
+                    return Translation.getTranslation("general.tomorrow") + ' '
+                        + formatTimeShort(date);
                 }
             }
         }
@@ -186,7 +212,7 @@ public class Format extends PFComponent {
 
     /**
      * Formats long numbers
-     *
+     * 
      * @param n
      * @return
      */
@@ -195,9 +221,8 @@ public class Format extends PFComponent {
     }
 
     /**
-     * Formats numbers as percentage.
-     * 100.0 --> 100%
-     *
+     * Formats numbers as percentage. 100.0 --> 100%
+     * 
      * @param n
      * @return
      */
@@ -229,6 +254,12 @@ public class Format extends PFComponent {
         long seconds = dt / 1000 % 60;
         return f.format(Translation.getTranslation("general.time"), hours,
             minutes, seconds).out().toString();
+    }
+
+    private static class CanonicalDateFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+        }
     }
 
     private static class ShortDateFormat extends ThreadLocal<DateFormat> {
