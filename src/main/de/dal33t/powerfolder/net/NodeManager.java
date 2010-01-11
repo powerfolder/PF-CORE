@@ -70,6 +70,7 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -143,6 +144,9 @@ public class NodeManager extends PFComponent {
         }
         String networkId = ConfigurationEntry.NETWORK_ID
             .getValue(getController());
+        if (StringUtils.isBlank(networkId)) {
+            networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
+        }
         mySelf = new Member(getController(),
             new MemberInfo(nick, id, networkId));
         logInfo("I am '" + mySelf.getNick() + "'");
