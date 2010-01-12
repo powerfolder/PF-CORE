@@ -95,11 +95,6 @@ public enum Feature {
     TIP_OF_DAY(false),
 
     /**
-     * #1046: If the new security checks should be enabled.
-     */
-    SECURITY_CHECKS(true),
-
-    /**
      * True if running in beta mode. Basically to identify differences.
      */
     BETA(false),
@@ -159,7 +154,6 @@ public enum Feature {
         for (Feature feature : values()) {
             feature.disable();
         }
-        Feature.SECURITY_CHECKS.enable();
         Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
     }
