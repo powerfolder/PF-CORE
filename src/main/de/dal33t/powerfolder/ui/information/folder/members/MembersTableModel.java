@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.problem.NoOwnerProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -321,16 +322,16 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         } else if (columnIndex == COL_PERMISSION) {
             return folderMember.getPermission();
         } else if (columnIndex == COL_SYNC_STATUS) {
-            if (member == null
-                || !member.isCompletelyConnected() && !member.isMySelf())
+            if (member == null || !member.isCompletelyConnected()
+                && !member.isMySelf())
             {
                 return "";
             }
             double sync = stats.getSyncPercentage(member);
             return Format.formatPercent(sync);
         } else if (columnIndex == COL_LOCAL_SIZE) {
-            if (member == null
-                || !member.isCompletelyConnected() && !member.isMySelf())
+            if (member == null || !member.isCompletelyConnected()
+                && !member.isMySelf())
             {
                 return "";
             }
@@ -791,13 +792,21 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         protected void done() {
             try {
                 Map<AccountInfo, FolderPermission> res = get();
+                logWarning("Returned " + res);
                 if (!refreshFor.equals(folder)) {
                     // Folder has changed. discard result.
+                    logWarning("Folder has changed. discard result.");
                     return;
                 }
 
                 // TODO Find a better place to check this:
-                if (!NoOwnerProblem.hasOwner(res)) {
+                if (NoOwnerProblem.hasOwner(res)) {
+                    for (Problem p : folder.getProblems()) {
+                        if (p instanceof NoOwnerProblem) {
+                            folder.removeProblem(p);
+                        }
+                    }
+                } else {
                     NoOwnerProblem problem = new NoOwnerProblem(folder
                         .getInfo());
                     if (!folder.getProblems().contains(problem)) {
