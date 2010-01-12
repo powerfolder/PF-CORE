@@ -362,7 +362,12 @@ public class SecurityManagerClient extends PFComponent implements
         }
 
         public void run() {
-            client.refreshAccountDetails();
+            try {
+                client.refreshAccountDetails();
+            } catch (Exception e) {
+                logWarning("Unable to refresh account details. " + e);
+                logFiner(e);
+            }            
             clearNodeCache(node);
             refresh(node);
             getController().getFolderRepository()
