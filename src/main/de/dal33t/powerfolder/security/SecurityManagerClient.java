@@ -93,9 +93,6 @@ public class SecurityManagerClient extends PFComponent implements
 
     public boolean hasPermission(AccountInfo accountInfo, Permission permission)
     {
-        if (!Feature.SECURITY_CHECKS.isEnabled()) {
-            return true;
-        }
         try {
             Boolean hasPermission;
             PermissionsCacheSegment cache = permissionsCacheAccounts
