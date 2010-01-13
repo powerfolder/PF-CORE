@@ -130,7 +130,11 @@ public abstract class AbstractDistribution extends Loggable implements
         removeValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
     }
 
-    protected static final void setApplicationName(String name) {
+    protected static final void setAppName(String name) {
         Translation.setPlaceHolder("APPNAME", name);
+    }
+    
+    protected static final void setAppDescription(String description) {
+        Translation.setPlaceHolder("APPDESCRIPTION", description);
     }
 }
