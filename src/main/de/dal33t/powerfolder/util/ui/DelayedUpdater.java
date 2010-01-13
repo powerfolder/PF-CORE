@@ -146,9 +146,9 @@ public class DelayedUpdater {
             synchronized (DelayedUpdater.this) {
                 currentTask = null;
                 nextMandatoryEvent = -1;
-            }
-            if (canceled) {
-                return;
+                if (canceled) {
+                    return;
+                }
             }
             UIUtil.invokeLaterInEDT(new Runnable() {
                 public void run() {
