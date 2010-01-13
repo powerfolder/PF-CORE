@@ -433,8 +433,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleFilesCopyWithFolderWatcher() {
         // Register listeners
-        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getContollerLisa(), true);
-        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getContollerBart(), true);
+        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getContollerLisa(),
+            true);
+        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getContollerBart(),
+            true);
         LoggingManager.setConsoleLogging(Level.WARNING);
         getFolderAtBart().setSyncProfile(
             SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
@@ -1430,10 +1432,17 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // Switch back, dls should continue
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
-        TestHelper.waitForCondition(40, new Condition() {
+
+        TestHelper.waitForCondition(40, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
+            }
+
+            public String message() {
+                return "Completed downloads at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .countCompletedDownloads();
             }
         });
         TestHelper.waitForCondition(10, new Condition() {
