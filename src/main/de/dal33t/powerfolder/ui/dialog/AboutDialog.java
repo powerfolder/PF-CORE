@@ -136,10 +136,10 @@ public class AboutDialog extends PFUIComponent {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
 
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() -
-                dialog.getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() -
-                dialog.getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
+            .getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
+            .getHeight()) / 2;
         dialog.setLocation(x, y);
         dialog.setResizable(false);
         dialog.setVisible(true);
@@ -150,7 +150,7 @@ public class AboutDialog extends PFUIComponent {
                 logoLabel.deactivate();
             }
         });
-        
+
         okButton.requestFocus();
 
     }
@@ -185,11 +185,19 @@ public class AboutDialog extends PFUIComponent {
 
         pacmanPanel = new PacmanPanel();
 
-        logoLabel = new RippleLabel(getController(),
-                Icons.getImageById(Icons.ABOUT_ANIMATION));
+        logoLabel = new RippleLabel(getController(), Icons
+            .getImageById(Icons.ABOUT_ANIMATION));
         logoLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 3) {
+                if (e.getClickCount() == 1 && !e.isAltDown()) {
+                    try {
+                        // Open explorer
+                        BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
+                            .getValue(getController()));
+                    } catch (IOException ex) {
+                        logFiner(ex);
+                    }
+                } else if (e.getClickCount() >= 2 && e.isAltDown()) {
                     pacmanPanel.activate();
                 }
             }
@@ -212,21 +220,15 @@ public class AboutDialog extends PFUIComponent {
             .getUIComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation
-            .getTranslation("general.application.name"), Translation.getTranslation(
-            "about_dialog.power_folder.text", Controller.PROGRAM_VERSION)
+            .getTranslation("general.application.name"), Translation
+            .getTranslation("about_dialog.power_folder.text",
+                Controller.PROGRAM_VERSION)
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.build_date", buildDate)
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.build_time", buildTime)
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.max",
-                String.valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
-            + '\n'
-            + Translation.getTranslation("about_dialog.power_folder.used",
-                String
-                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.distribution", getController()
@@ -242,7 +244,14 @@ public class AboutDialog extends PFUIComponent {
                 .getProperty("os.name"))
             + '\n'
             + Translation.getTranslation("about_dialog.your_system.screen",
-                String.valueOf(dim.width), String.valueOf(dim.height)));
+                String.valueOf(dim.width), String.valueOf(dim.height))
+            + '\n'
+            + Translation.getTranslation("about_dialog.power_folder.max",
+                String.valueOf(Runtime.getRuntime().maxMemory() / 1024 / 1024))
+            + '\n'
+            + Translation.getTranslation("about_dialog.power_folder.used",
+                String
+                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024)));
 
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
@@ -315,7 +324,7 @@ public class AboutDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         builder.add(TextLinesPanelBuilder.createTextPanel(Translation
-            .getTranslation("about_dialog.sync_your_world"), HEADER_FONT_SIZE),
+            .getTranslation("about_dialog.app_description"), HEADER_FONT_SIZE),
             cc.xy(1, 1));
         builder.add(homeLink.getUIComponent(), cc.xy(1, 3));
         builder.add(docLink.getUIComponent(), cc.xy(1, 5));
