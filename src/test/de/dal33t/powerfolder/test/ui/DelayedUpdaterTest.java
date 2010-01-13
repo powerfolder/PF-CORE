@@ -12,14 +12,14 @@ import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 public class DelayedUpdaterTest extends TestCase {
     private DelayedUpdater updater;
-    private List<Date> udates;
+    private List<Date> updates;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         updater = new DelayedUpdater();
         updater.setDelay(1000);
-        udates = new CopyOnWriteArrayList<Date>();
+        updates = new CopyOnWriteArrayList<Date>();
     }
 
     public void testSingleEvent() {
@@ -27,10 +27,10 @@ public class DelayedUpdaterTest extends TestCase {
         updater.schedule(new Update());
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return udates.size() == 1;
+                return updates.size() == 1;
             }
         });
-        assertEquals(1, udates.size());
+        assertEquals(1, updates.size());
         long took = System.currentTimeMillis() - start;
         assertTrue("Update took " + took + "ms", took >= updater.getDelay());
     }
@@ -43,13 +43,13 @@ public class DelayedUpdaterTest extends TestCase {
         updater.schedule(new Update());
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return udates.size() == 1;
+                return updates.size() == 1;
             }
         });
-        assertEquals(1, udates.size());
+        assertEquals(1, updates.size());
         long took = System.currentTimeMillis() - start;
         long sinceLastEvent = System.currentTimeMillis()
-            - udates.get(0).getTime();
+            - updates.get(0).getTime();
         assertTrue("Updates took " + took + "ms", took >= updater.getDelay());
         assertTrue("Updates took " + took
             + "ms, should not really take longer than single", took <= 1100);
@@ -66,20 +66,20 @@ public class DelayedUpdaterTest extends TestCase {
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return udates.size() >= 10;
+                return updates.size() >= 10;
             }
 
             public String message() {
-                return "Got only " + udates.size() + " updates";
+                return "Got only " + updates.size() + " updates";
             }
         });
 
-        assertEquals(10, udates.size());
+        assertEquals(10, updates.size());
     }
 
     private class Update implements Runnable {
         public void run() {
-            udates.add(new Date());
+            updates.add(new Date());
         }
     }
 }
