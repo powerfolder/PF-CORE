@@ -99,7 +99,7 @@ public class LinkLabel extends PFComponent {
         setFontSize(UIUtil.MED_FONT_SIZE);
     }
 
-    public JComponent getUIComponent() {
+    public JLabel getUIComponent() {
         return uiComponent;
     }
 
