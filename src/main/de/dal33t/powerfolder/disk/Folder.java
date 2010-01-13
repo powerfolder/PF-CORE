@@ -2050,15 +2050,7 @@ public class Folder extends PFComponent {
                 }
 
                 for (FileInfo remoteFile : fileList) {
-                    // Abort transfers on file.
-                    if (remoteFile.isFile()) {
-                        getController().getTransferManager().breakTransfers(
-                            remoteFile);
-                    }
-                    synchronized (scanLock) {
-                        handleFileDeletion(remoteFile, force, member,
-                            removedFiles);
-                    }
+                    handleFileDeletion(remoteFile, force, member, removedFiles);
                 }
             }
 
@@ -2158,43 +2150,52 @@ public class Folder extends PFComponent {
                 + localCopy.getAbsolutePath());
         }
 
-        if (localCopy.exists()) {
-            if (localFile.isDiretory()) {
-                if (isFine()) {
-                    logFine("Deleting directory from remote: "
-                        + localFile.toDetailString());
-                }
-                watcher.addIgnoreFile(localFile);
-                try {
-                    if (!localCopy.delete()) {
-                        if (isWarning()) {
-                            String[] content = localCopy.list();
-                            String contentStr = content != null
-                                ? Arrays.asList(content).toString()
-                                : "(unable to access)";
-                            logWarning("Unable to delete directory locally: "
-                                + localCopy + ". Info: "
-                                + localFile.toDetailString() + ". contents: "
-                                + contentStr);
+        // Abort transfers on file.
+        if (remoteFile.isFile()) {
+            getController().getTransferManager().breakTransfers(remoteFile);
+        }
+
+        synchronized (scanLock) {
+            if (localCopy.exists()) {
+                if (localFile.isDiretory()) {
+                    if (isFine()) {
+                        logFine("Deleting directory from remote: "
+                            + localFile.toDetailString());
+                    }
+                    watcher.addIgnoreFile(localFile);
+                    try {
+                        if (!localCopy.delete()) {
+                            if (isWarning()) {
+                                String[] content = localCopy.list();
+                                String contentStr = content != null
+                                    ? Arrays.asList(content).toString()
+                                    : "(unable to access)";
+                                logWarning("Unable to delete directory locally: "
+                                    + localCopy
+                                    + ". Info: "
+                                    + localFile.toDetailString()
+                                    + ". contents: " + contentStr);
+                            }
+                            // Skip. Dir was not actually deleted / could not
+                            // sync
+                            return;
                         }
-                        // Skip. Dir was not actually deleted / could not sync
+                    } finally {
+                        watcher.removeIgnoreFile(localFile);
+                    }
+
+                } else if (localFile.isFile()) {
+                    if (!deleteFile(localFile, localCopy)) {
+                        logWarning("Unable to deleted. was not able to move old file to recycle bin "
+                            + localCopy.getAbsolutePath()
+                            + ". "
+                            + localFile.toDetailString());
                         return;
                     }
-                } finally {
-                    watcher.removeIgnoreFile(localFile);
-                }
-
-            } else if (localFile.isFile()) {
-                if (!deleteFile(localFile, localCopy)) {
-                    logWarning("Unable to deleted. was not able to move old file to recycle bin "
-                        + localCopy.getAbsolutePath()
-                        + ". "
+                } else {
+                    logSevere("Unable to apply remote deletion: "
                         + localFile.toDetailString());
-                    return;
                 }
-            } else {
-                logSevere("Unable to apply remote deletion: "
-                    + localFile.toDetailString());
             }
         }
 
