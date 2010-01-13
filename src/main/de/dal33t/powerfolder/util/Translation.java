@@ -57,6 +57,7 @@ public class Translation {
     private static Map<String, String> placeHolders = new ConcurrentHashMap<String, String>();
     static {
         setPlaceHolder("APPNAME", "PowerFolder");
+        setPlaceHolder("APPDESCRIPTION", "Sync your World");
     }
     // The resource bundle, initalized lazy
     private static ResourceBundle resourceBundle;
