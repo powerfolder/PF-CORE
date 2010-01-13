@@ -19,15 +19,39 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.RootPaneUI;
 
@@ -36,10 +60,16 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -67,6 +97,7 @@ public class MainFrame extends PFUIComponent {
     private boolean packWidthNext;
 
     private JFrame uiComponent;
+    private JLabel logoLabel;
     private JPanel centralPanel;
     private MainTabbedPane mainTabbedPane;
     private JPanel inlineInfoPanel;
@@ -112,8 +143,7 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(menuBar, cc.xyw(1, 1, 4));
 
-        builder.add(new JLabel(Icons.getIconById(Icons.LOGO400UI),
-            SwingConstants.LEFT), cc.xy(1, 2));
+        builder.add(logoLabel, cc.xy(1, 2));
         builder.add(inlineInfoLabel, cc.xy(2, 2, CellConstraints.DEFAULT,
             CellConstraints.BOTTOM));
         builder.add(inlineInfoCloseButton, cc.xy(4, 2, CellConstraints.DEFAULT,
@@ -315,6 +345,11 @@ public class MainFrame extends PFUIComponent {
             }
         });
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
+
+        logoLabel = new LinkLabel(getController(), "", ConfigurationEntry.PROVIDER_URL
+                            .getValue(getController())).getUIComponent();
+        logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
+        logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
         createMenuBar();
 
