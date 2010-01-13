@@ -625,7 +625,7 @@ public class NodeManager extends PFComponent {
             fireFriendRemoved(node);
 
             // Remove computer from the list of my last logged in computers.
-            if (getController().getOSClient().getAccount().isValid()) {
+            if (getController().getOSClient().isLoggedIn()) {
                 getController().getTaskManager().scheduleTask(
                     new RemoveComputerFromAccountTask(getController()
                         .getOSClient().getAccountInfo(), node.getInfo()));
