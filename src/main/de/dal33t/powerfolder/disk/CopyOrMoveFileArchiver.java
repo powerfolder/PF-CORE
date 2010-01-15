@@ -95,7 +95,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         File target = getArchiveTarget(fileInfo);
 
         if (target.exists()) {
-            log.severe("File " + fileInfo
+            log.warning("File " + fileInfo
                 + " seems to be archived already, doing nothing.");
             // Maybe throw Exception instead?
             return;
