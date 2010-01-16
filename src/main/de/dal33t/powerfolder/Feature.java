@@ -99,12 +99,7 @@ public enum Feature {
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false),
-
-    /**
-     * If the admin interface check for permissions.
-     */
-    ADMIN_CHECK_PERMISSION(false);
+    CONFLICT_DETECTION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
