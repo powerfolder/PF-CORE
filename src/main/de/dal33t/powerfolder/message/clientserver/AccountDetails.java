@@ -35,7 +35,7 @@ public class AccountDetails implements Serializable {
 
     private Account user;
     private long spaceUsed;
-    private int nFolders;
+
     /**
      * Still named "recycleBinSize" for Serialization compatibility reasons.
      * <P>
@@ -43,13 +43,10 @@ public class AccountDetails implements Serializable {
      */
     private long recycleBinSize;
 
-    public AccountDetails(Account user, long spaceUsed, int nFolders,
-        long archiveSize)
-    {
+    public AccountDetails(Account user, long spaceUsed, long archiveSize) {
         super();
         this.user = user;
         this.spaceUsed = spaceUsed;
-        this.nFolders = nFolders;
         this.recycleBinSize = archiveSize;
     }
 
@@ -64,16 +61,12 @@ public class AccountDetails implements Serializable {
         return spaceUsed;
     }
 
-    public int getNFolders() {
-        return nFolders;
-    }
-
     public long getArchiveSize() {
         return recycleBinSize;
     }
 
     public String toString() {
-        return "AccountDetails, " + user + ". " + nFolders + " folders, "
+        return "AccountDetails, " + user + ". "
             + Format.formatBytesShort(spaceUsed + recycleBinSize);
     }
 }
