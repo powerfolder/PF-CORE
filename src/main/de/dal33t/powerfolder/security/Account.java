@@ -209,6 +209,26 @@ public class Account extends Model implements Serializable {
     }
 
     /**
+     * @return the list of folders this account gets charged for.
+     */
+    public Collection<FolderInfo> getFoldersCharged() {
+        if (permissions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Collection<FolderInfo> folders = new ArrayList<FolderInfo>(permissions
+            .size());
+        for (Permission p : getPermissions()) {
+            if (p instanceof FolderOwnerPermission
+                || p instanceof FolderAdminPermission)
+            {
+                FolderPermission fp = (FolderPermission) p;
+                folders.add(fp.getFolder());
+            }
+        }
+        return folders;
+    }
+
+    /**
      * @return all folders the account has directly at folder read permission
      *         granted.
      */
@@ -412,17 +432,21 @@ public class Account extends Model implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
+    /**
+     * @param controller
+     * @return the account details
+     * @deprecated does not correctly calculate in cloud setup.
+     */
     public AccountDetails calculateDetails(Controller controller) {
         Reject.ifNull(controller, "Controller");
         long used = calculateTotalUsage(controller);
-        int nFolders = countNumberOfFolders(controller);
         long archiveSize = calculateArchiveSize(controller);
-        return new AccountDetails(this, used, nFolders, archiveSize);
+        return new AccountDetails(this, used, archiveSize);
     }
 
     /**
      * @param controller
-     * @return the total used online storage size
+     * @return the total used online storage size on THIS server only.
      */
     public long calculateTotalUsage(Controller controller) {
         return calculateTotalFoldersSize(controller)
@@ -431,43 +455,33 @@ public class Account extends Model implements Serializable {
 
     /**
      * @param controller
-     * @return the total size used by this user
+     * @return the total size used by this user on THIS server only.
      */
-    public long calculateTotalFoldersSize(Controller controller) {
+    private long calculateTotalFoldersSize(Controller controller) {
         long totalSize = 0;
-        for (Permission p : permissions) {
-            if (p instanceof FolderOwnerPermission
-                || p instanceof FolderAdminPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder f = fp.getFolder().getFolder(controller);
-                if (f == null) {
-                    continue;
-                }
-                totalSize += f.getStatistic().getLocalSize();
+        for (FolderInfo foInfo : getFoldersCharged()) {
+            Folder f = foInfo.getFolder(controller);
+            if (f == null) {
+                continue;
             }
+            totalSize += f.getStatistic().getLocalSize();
         }
         return totalSize;
     }
 
     /**
      * @param controller
-     * @return the total size of recycle bin
+     * @return the total size of archive on THIS server only.
      */
     public long calculateArchiveSize(Controller controller) {
         long start = System.currentTimeMillis();
         long size = 0;
-        for (Permission p : permissions) {
-            if (p instanceof FolderOwnerPermission
-                || p instanceof FolderAdminPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder f = fp.getFolder().getFolder(controller);
-                if (f == null) {
-                    continue;
-                }
-                size += f.getFileArchiver().getSize();
+        for (FolderInfo foInfo : getFoldersCharged()) {
+            Folder f = foInfo.getFolder(controller);
+            if (f == null) {
+                continue;
             }
+            size += f.getFileArchiver().getSize();
         }
         long took = System.currentTimeMillis() - start;
         if (took > 1000L * 20) {
@@ -475,27 +489,6 @@ public class Account extends Model implements Serializable {
                 + "ms");
         }
         return size;
-    }
-
-    /**
-     * @param controller
-     * @return the mirrored # of folders by this user
-     */
-    public int countNumberOfFolders(Controller controller) {
-        int nFolders = 0;
-        for (Permission p : permissions) {
-            if (p instanceof FolderAdminPermission
-                || p instanceof FolderOwnerPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder f = fp.getFolder().getFolder(controller);
-                if (f == null) {
-                    continue;
-                }
-                nFolders++;
-            }
-        }
-        return nFolders;
     }
 
     /**
@@ -533,20 +526,14 @@ public class Account extends Model implements Serializable {
     public int enableSync(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         int n = 0;
-        for (Permission p : getPermissions()) {
-            if (p instanceof FolderAdminPermission
-                || p instanceof FolderOwnerPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder f = fp.getFolder().getFolder(controller);
-                if (f == null) {
-                    continue;
-                }
-                if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
-                    n++;
-                    f
-                        .setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
-                }
+        for (FolderInfo foInfo : getFoldersCharged()) {
+            Folder f = foInfo.getFolder(controller);
+            if (f == null) {
+                continue;
+            }
+            if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                n++;
+                f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
             }
         }
         return n;
@@ -562,23 +549,18 @@ public class Account extends Model implements Serializable {
     public int disableSync(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         int nNewDisabled = 0;
-        for (Permission p : getPermissions()) {
-            if (p instanceof FolderAdminPermission
-                || p instanceof FolderOwnerPermission)
-            {
-                FolderPermission fp = (FolderPermission) p;
-                Folder folder = fp.getFolder().getFolder(controller);
-                if (folder == null) {
-                    continue;
-                }
-                if (LOG.isLoggable(Level.FINER)) {
-                    LOG.finer("Disable download of new files for folder: "
-                        + folder + " for " + getUsername());
-                }
-                if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
-                    folder.setSyncProfile(SyncProfile.DISABLED);
-                    nNewDisabled++;
-                }
+        for (FolderInfo foInfo : getFoldersCharged()) {
+            Folder folder = foInfo.getFolder(controller);
+            if (folder == null) {
+                continue;
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("Disable download of new files for folder: " + folder
+                    + " for " + getUsername());
+            }
+            if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
+                folder.setSyncProfile(SyncProfile.DISABLED);
+                nNewDisabled++;
             }
         }
         if (nNewDisabled > 0) {
