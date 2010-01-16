@@ -128,20 +128,20 @@ public class Format extends PFComponent {
      * Formats a date as universal canonical string in the format "dd MMM yyyy"
      * (English).
      * <p>
-     * Examples: 10-JAN-2010, 30-DEC-2009.
+     * Examples: 10 JAN 2010, 30-DEC 2009.
      * 
      * @param date
      * @return a date as universal canonical string.
      */
     public static String formatDateCanonical(Date date) {
-        return CANONICAL_DATE_FORMAT.get().format(date);
+        return CANONICAL_DATE_FORMAT.get().format(date).toUpperCase();
     }
 
     /**
      * Parses a date in universal canonical string format "dd MMM yyyy"
      * (English).
      * <p>
-     * Examples: 10-JAN-2010, 30-DEC-2009.
+     * Examples: 10 JAN 2010, 30 DEC 2009.
      * 
      * @param str
      *            the string to parse
