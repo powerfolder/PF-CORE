@@ -98,7 +98,7 @@ public interface AccountService {
      *            the filter to apply
      * @return the filtered list of accounts.
      */
-    Collection<AccountDetails> getAccounts(AccountFilterModel filterModel);
+    List<AccountDetails> getAccounts(AccountFilterModel filterModel);
 
     /**
      * Saves or updates the given Account.
