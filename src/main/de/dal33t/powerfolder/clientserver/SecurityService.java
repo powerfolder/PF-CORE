@@ -52,6 +52,11 @@ public interface SecurityService {
      */
     boolean login(String username, String passwordMD5, String salt);
 
+    /**
+     * @return true if a user is logged in currently = has open session.
+     */
+    boolean isLoggedIn();
+
     // Nodes information retrieval ********************************************
 
     /**
