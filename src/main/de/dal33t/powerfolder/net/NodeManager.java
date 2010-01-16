@@ -930,7 +930,7 @@ public class NodeManager extends PFComponent {
      * 
      * @param handler
      * @throws ConnectionException
-     * @return the connected node or null if problem occoured
+     * @return the connected node or null if problem occurred
      */
     public Member acceptConnection(ConnectionHandler handler)
         throws ConnectionException

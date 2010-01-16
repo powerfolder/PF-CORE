@@ -65,7 +65,7 @@ public class ConnectionException extends Exception {
     }
 
     /**
-     * Adds the member, where the problem occoured
+     * Adds the member, where the problem occurred
      *
      * @param member
      * @return this exception

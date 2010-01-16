@@ -80,7 +80,7 @@ public class ServerClientModel extends PFUIComponent {
 
     /**
      * Checks the current webservice account and opens the login wizard if
-     * problem occour.
+     * problem occurs.
      */
     public void checkAndSetupAccount() {
         if (client.isLoggedIn()) {
