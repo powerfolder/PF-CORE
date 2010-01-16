@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -148,13 +147,13 @@ public class ServerClient extends PFComponent {
         Member theNode = getController().getNodeManager().getNode(theNodeId);
         if (theNode == null) {
             String networkId = getController().getNodeManager().getNetworkId();
-            MemberInfo serverInfo = new MemberInfo(theName, theNodeId,
+            MemberInfo serverNode = new MemberInfo(theName, theNodeId,
                 networkId);
-            // Add only to nodemanager if not temporary
-            if (!temporaryNode) {
-                theNode = serverInfo.getNode(getController(), true);
+            if (temporaryNode) {
+                // Temporary node. Don't add to nodemanager
+                theNode = new Member(getController(), serverNode);
             } else {
-                theNode = new Member(getController(), serverInfo);
+                theNode = serverNode.getNode(getController(), true);
             }
         }
         if (!StringUtils.isBlank(host)) {
@@ -833,7 +832,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void setAnonAccount() {
-        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0, 0);
+        accountDetails = new AccountDetails(new AnonymousAccount(), 0, 0);
     }
 
     /**
