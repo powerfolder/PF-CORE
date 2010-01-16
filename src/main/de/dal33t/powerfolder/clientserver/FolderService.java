@@ -167,4 +167,28 @@ public interface FolderService {
      * @param versionsPerFile
      */
     void setArchiveMode(FolderInfo foInfo, ArchiveMode mode, int versionsPerFile);
+
+    // Information ************************************************************
+
+    /**
+     * @param foInfos
+     * @return the local size occupied by the given folders.
+     */
+    long calculateLocalSize(Collection<FolderInfo> foInfos);
+
+    /**
+     * @param foInfos
+     * @return the archive size occupied by the given folders.
+     */
+    long calculateArchiveSize(Collection<FolderInfo> foInfos);
+
+    /**
+     * Bulk get of archive and local folders size.
+     * 
+     * @param foInfos
+     * @return [0] = the local size occupied by the given folders.
+     *         <p>
+     *         [1] = the archive size occupied by the given folders.
+     */
+    long[] calculateSizes(Collection<FolderInfo> foInfos);
 }
