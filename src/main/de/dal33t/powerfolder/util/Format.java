@@ -134,7 +134,7 @@ public class Format extends PFComponent {
      * @return a date as universal canonical string.
      */
     public static String formatDateCanonical(Date date) {
-        return CANONICAL_DATE_FORMAT.get().format(date).toUpperCase();
+        return CANONICAL_DATE_FORMAT.get().format(date);
     }
 
     /**
