@@ -43,8 +43,18 @@ public class AccountFilterModel extends Model {
     private boolean payingOSOnly;
     private boolean activeTrial;
     private String username;
+    
+    private int maxResults;
 
     // Getter and Setter ******************************************************
+
+    public int getMaxResults() {
+        return maxResults;
+    }
+
+    public void setMaxResults(int maxResults) {
+        this.maxResults = maxResults;
+    }
 
     public boolean isDisabledOnly() {
         return disabledOnly;
