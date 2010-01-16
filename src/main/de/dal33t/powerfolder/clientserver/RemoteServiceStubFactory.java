@@ -58,7 +58,7 @@ public class RemoteServiceStubFactory {
      * @return the remote stub implementing the service interface
      */
     @SuppressWarnings("unchecked")
-    static <T> T createRemoteStub(Controller controller,
+    public static <T> T createRemoteStub(Controller controller,
         Class<? extends T> serviceInterface, Member remoteSide)
     {
         Reject.ifNull(controller, "Controller is null");
