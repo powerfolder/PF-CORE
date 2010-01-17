@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -1367,6 +1366,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
+    public void testSwitchSyncProfileMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testSwitchSyncProfile();
+            tearDown();
+            setUp();
+        }
+    }
+
     /**
      * Test to switch sync profiles during active transfers.
      * <p>
@@ -1380,15 +1387,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             1000000);
         getContollerLisa().getTransferManager().setAllowedUploadCPSForLAN(
             1000000);
-        // Instant cleanup
-        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
-            Boolean.TRUE.toString());
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
-            getContollerBart(), "0");
-        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerLisa(),
-            Boolean.TRUE.toString());
-        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
-            getContollerLisa(), "0");
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -1445,10 +1443,18 @@ public class FileTransferTest extends TwoControllerTestCase {
                         .countCompletedDownloads();
             }
         });
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .countAllUploads() == 0;
+                    .countAllUploads() == 1
+                    && getContollerBart().getTransferManager()
+                        .countLiveUploads() == 0;
+            }
+
+            public String message() {
+                return "Barts uploads: "
+                    + getContollerBart().getTransferManager().countAllUploads();
             }
         });
 
