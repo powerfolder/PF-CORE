@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -72,9 +73,11 @@ public class FirewallUtil {
             nin = new BufferedReader(new InputStreamReader(netsh
                 .getInputStream()));
             nout = new PrintWriter(netsh.getOutputStream(), true);
-            nout.println("firewall add portopening protocol="
-                + protocol.toUpperCase() + " port=" + port
-                + " name=\"PowerFolder\"");
+            nout
+                .println("firewall add portopening protocol="
+                    + protocol.toUpperCase() + " port=" + port + " name=\""
+                    + Translation.getTranslation("general.application.name")
+                    + "\"");
             String reply = nin.readLine();
             if (reply == null || !reply.equalsIgnoreCase("netsh>Ok.")) {
                 throw new IOException(reply);
