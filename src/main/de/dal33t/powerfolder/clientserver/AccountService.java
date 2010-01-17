@@ -130,14 +130,6 @@ public interface AccountService {
     boolean delete(String username);
 
     /**
-     * Checks the givens accounts for excess usage
-     * 
-     * @param usernames
-     *            the username of the users to check.
-     */
-    void checkAccounts(String... usernames);
-
-    /**
      * Performs all checks on the given online storage user accounts.
      * 
      * @param accounts
