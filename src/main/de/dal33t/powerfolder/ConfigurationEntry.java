@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -807,6 +808,14 @@ public enum ConfigurationEntry {
     public void removeValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().remove(configKey);
+    }
+
+    /**
+     * @param controller
+     * @return if the value is set to the default value (or not set at all).
+     */
+    public boolean isDefault(Controller controller) {
+        return Util.equals(getValue(controller), getDefaultValue());
     }
 
     /**
