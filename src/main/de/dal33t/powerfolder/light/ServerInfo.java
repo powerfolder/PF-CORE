@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
 
+import de.dal33t.powerfolder.util.Reject;
+
 /**
  * Contains important information about a server
  * 
@@ -33,14 +35,17 @@ public class ServerInfo implements Serializable {
 
     private MemberInfo node;
     private String webUrl;
+    private String httpTunnelUrl;
 
     public ServerInfo() {
     }
 
-    public ServerInfo(MemberInfo node, String webUrl) {
+    public ServerInfo(MemberInfo node, String webUrl, String httpTunnelUrl) {
         super();
+        Reject.ifNull(node, "NodeInfo");
         this.node = node;
         this.webUrl = webUrl;
+        this.httpTunnelUrl = httpTunnelUrl;
     }
 
     public MemberInfo getNode() {
@@ -57,6 +62,14 @@ public class ServerInfo implements Serializable {
 
     public void setWebUrl(String webUrl) {
         this.webUrl = webUrl;
+    }
+
+    public String getHTTPTunnelUrl() {
+        return httpTunnelUrl;
+    }
+
+    public void setHTTPTunnelUrl(String httpTunnelUrl) {
+        this.httpTunnelUrl = httpTunnelUrl;
     }
 
     @Override
