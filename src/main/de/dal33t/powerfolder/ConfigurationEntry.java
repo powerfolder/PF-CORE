@@ -145,7 +145,7 @@ public enum ConfigurationEntry {
      * HTTP tunnel relay URL
      */
     PROVIDER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://relay.powerfolder.com/rpc"),
+        "http://os005.node.powerfolder.com/rpc"),
 
     // Server settings ********************************************************
 

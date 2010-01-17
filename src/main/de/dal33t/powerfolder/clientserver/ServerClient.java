@@ -551,8 +551,13 @@ public class ServerClient extends PFComponent {
                     if (accountDetails.getAccount().getServer() != null) {
                         configChanged = setServerWebURLInConfig(accountDetails
                             .getAccount().getServer().getWebUrl());
+                        configChanged = setServerHTTPTunnelURLInConfig(accountDetails
+                            .getAccount().getServer().getHTTPTunnelUrl())
+                            || configChanged;
                     } else {
                         configChanged = setServerWebURLInConfig(null);
+                        configChanged = setServerHTTPTunnelURLInConfig(null)
+                            || configChanged;
                     }
                     if (configChanged) {
                         getController().saveConfig();
@@ -791,6 +796,24 @@ public class ServerClient extends PFComponent {
         return true;
     }
 
+    private boolean setServerHTTPTunnelURLInConfig(String newTunnelURL) {
+        logWarning("New tunnel URL");
+        String oldUrl = ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL
+            .getValue(getController());
+        if (Util.equals(oldUrl, newTunnelURL)) {
+            return false;
+        }
+        // Currently not supported from config
+        if (StringUtils.isBlank(newTunnelURL)) {
+            ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL
+                .removeValue(getController());
+        } else {
+            ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL.setValue(
+                getController(), newTunnelURL);
+        }
+        return true;
+    }
+
     // Event handling ********************************************************
 
     public void addListener(ServerClientListener listener) {
@@ -890,6 +913,7 @@ public class ServerClient extends PFComponent {
                 setServerInConfig(newServerNode.getInfo());
             }
             setServerWebURLInConfig(newServerInfo.getWebUrl());
+            setServerHTTPTunnelURLInConfig(newServerInfo.getHTTPTunnelUrl());
             getController().saveConfig();
         }
 
