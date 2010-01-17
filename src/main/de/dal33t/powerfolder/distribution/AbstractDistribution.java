@@ -101,7 +101,7 @@ public abstract class AbstractDistribution extends Loggable implements
     protected static final void removeValue(Controller c,
         ConfigurationEntry entry)
     {
-        if (!entry.getValue(c).equals(entry.getDefaultValue())) {
+        if (!entry.isDefault(c)) {
             // Change back to default
             entry.removeValue(c);
         }
@@ -133,7 +133,7 @@ public abstract class AbstractDistribution extends Loggable implements
     protected static final void setAppName(String name) {
         Translation.setPlaceHolder("APPNAME", name);
     }
-    
+
     protected static final void setAppDescription(String description) {
         Translation.setPlaceHolder("APPDESCRIPTION", description);
     }
