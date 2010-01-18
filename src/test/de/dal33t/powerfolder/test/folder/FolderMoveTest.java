@@ -105,7 +105,7 @@ public class FolderMoveTest extends ControllerTestCase {
     }
 
     public void testFolderMoveMultiple() throws Exception {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             testFolderMove();
             tearDown();
             setUp();
