@@ -141,12 +141,6 @@ public enum ConfigurationEntry {
      */
     PROVIDER_WIKI_URL("provider.url.wiki", "http://www.powerfolder.com/wiki"),
 
-    /**
-     * HTTP tunnel relay URL
-     */
-    PROVIDER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://os005.node.powerfolder.com/rpc"),
-
     // Server settings ********************************************************
 
     /**
@@ -171,6 +165,12 @@ public enum ConfigurationEntry {
      * server.powerfolder.com:1234
      */
     SERVER_HOST("server.host", "access.powerfolder.com:1337"),
+
+    /**
+     * HTTP tunnel relay URL. TODO Change config key.
+     */
+    SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
+        "http://os005.node.powerfolder.com/rpc"),
 
     /**
      * #1687: How this computer should behave when the server is not connected.

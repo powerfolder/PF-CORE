@@ -798,17 +798,17 @@ public class ServerClient extends PFComponent {
 
     private boolean setServerHTTPTunnelURLInConfig(String newTunnelURL) {
         logFine("New tunnel URL: " + newTunnelURL);
-        String oldUrl = ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL
+        String oldUrl = ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
             .getValue(getController());
         if (Util.equals(oldUrl, newTunnelURL)) {
             return false;
         }
         // Currently not supported from config
         if (StringUtils.isBlank(newTunnelURL)) {
-            ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL
+            ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
                 .removeValue(getController());
         } else {
-            ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL.setValue(
+            ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL.setValue(
                 getController(), newTunnelURL);
         }
         return true;

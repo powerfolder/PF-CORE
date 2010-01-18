@@ -110,6 +110,7 @@ public abstract class AbstractDistribution extends Loggable implements
         removeValue(c, ConfigurationEntry.SERVER_WEB_URL);
         removeValue(c, ConfigurationEntry.SERVER_NODEID);
         removeValue(c, ConfigurationEntry.SERVER_HOST);
+        removeValue(c, ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL);
     }
 
     protected static final void resetNetworkID(Controller c) {
@@ -125,7 +126,6 @@ public abstract class AbstractDistribution extends Loggable implements
         removeValue(c, ConfigurationEntry.PROVIDER_BUY_URL);
         removeValue(c, ConfigurationEntry.PROVIDER_CONTACT_URL);
         removeValue(c, ConfigurationEntry.PROVIDER_WIKI_URL);
-        removeValue(c, ConfigurationEntry.PROVIDER_HTTP_TUNNEL_RPC_URL);
     }
 
     protected static final void setAppName(String name) {
