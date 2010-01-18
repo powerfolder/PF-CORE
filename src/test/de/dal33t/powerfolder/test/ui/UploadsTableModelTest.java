@@ -200,7 +200,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testDisconnectWhileUploadMultiple() throws Exception {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 10; i++) {
             testDisconnectWhileUpload();
             tearDown();
             setUp();
