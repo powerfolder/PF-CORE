@@ -1431,7 +1431,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Switch back, dls should continue
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(40, new ConditionWithMessage() {
+        TestHelper.waitForCondition(11, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
