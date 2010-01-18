@@ -101,10 +101,8 @@ public abstract class AbstractDistribution extends Loggable implements
     protected static final void removeValue(Controller c,
         ConfigurationEntry entry)
     {
-        if (!entry.isDefault(c)) {
-            // Change back to default
-            entry.removeValue(c);
-        }
+        // Change back to default
+        entry.removeValue(c);
     }
 
     protected static final void resetServer(Controller c) {
