@@ -28,7 +28,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
     }
 
     public void testStoreCompletedDownloadsMultiple() throws Exception {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             testStoreCompletedDownloads();
             tearDown();
             setUp();
