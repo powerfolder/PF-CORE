@@ -105,6 +105,6 @@ public class ServerInfo implements Serializable {
 
     public String toString() {
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl;
+            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 }
