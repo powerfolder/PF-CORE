@@ -48,12 +48,6 @@ public class ServerInfo implements Serializable {
         this.httpTunnelUrl = httpTunnelUrl;
     }
 
-    public void merge(ServerInfo other) {
-        setNode(other.getNode());
-        setWebUrl(other.getWebUrl());
-        setHTTPTunnelUrl(other.getHTTPTunnelUrl());
-    }
-
     public MemberInfo getNode() {
         return node;
     }

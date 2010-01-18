@@ -684,6 +684,16 @@ public enum ConfigurationEntry {
     /**
      * @param controller
      *            the controller to read the config from
+     * @return If a value was set for this entry.
+     */
+    public boolean hasValue(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        return controller.getConfig().getProperty(configKey) != null;
+    }
+
+    /**
+     * @param controller
+     *            the controller to read the config from
      * @return The current value from the configuration for this entry. or
      */
     public String getValue(Controller controller) {
