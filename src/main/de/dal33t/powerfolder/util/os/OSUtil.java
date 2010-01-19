@@ -57,7 +57,15 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows vista") >= 0;
     }
-
+    
+    /**
+     * @return if current system is running windows vista
+     */
+    public static boolean isWindows7System() {
+        String os = System.getProperty("os.name");
+        return os != null && os.toLowerCase().indexOf("windows 7") >= 0;
+    }
+    
     /**
      * @return true if this is a Google Android system
      */

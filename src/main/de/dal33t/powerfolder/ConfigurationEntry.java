@@ -21,6 +21,7 @@ package de.dal33t.powerfolder;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -356,19 +357,20 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR("foldersbase") {
         @Override
         public String getDefaultValue() {
-            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()) {
+            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()
+                && !OSUtil.isWindows7System())
+            {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
                     return util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
                         false)
-                        + System.getProperty("file.separator")
+                        + File.separatorChar
                         + System.getProperty("pf.base_dir_default",
                             "PowerFolders");
                 }
             }
-            // Also place the base dir into user home on Vista.
-            return System.getProperty("user.home")
-                + System.getProperty("file.separator")
+            // Also place the base dir into user home on Vista and 7
+            return System.getProperty("user.home") + File.separatorChar
                 + System.getProperty("pf.base_dir_default", "PowerFolders");
         }
     },
