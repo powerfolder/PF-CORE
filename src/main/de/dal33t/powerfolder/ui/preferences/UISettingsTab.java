@@ -157,14 +157,15 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         DefaultComboBoxModel inlineInfoCBM = new DefaultComboBoxModel();
         inlineInfoCBM.addElement(Translation
-                .getTranslation("preferences.dialog.information_panel_separate"));
+            .getTranslation("preferences.dialog.information_panel_separate"));
         inlineInfoCBM.addElement(Translation
-                .getTranslation("preferences.dialog.information_panel_left"));
+            .getTranslation("preferences.dialog.information_panel_left"));
         inlineInfoCBM.addElement(Translation
-                .getTranslation("preferences.dialog.information_panel_right"));
+            .getTranslation("preferences.dialog.information_panel_right"));
         inlineInfoCombo = new JComboBox(inlineInfoCBM);
 
-        originalInline = PreferencesEntry.INLINE_INFO_MODE.getValueInt(getController());
+        originalInline = PreferencesEntry.INLINE_INFO_MODE
+            .getValueInt(getController());
         inlineInfoCombo.setSelectedIndex(originalInline);
 
         ValueModel transModel = new ValueHolder(
@@ -344,8 +345,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
-            builder.add(skinLabel, cc.xy(1, row));
-            builder.add(skinCombo, cc.xy(3, row));
+            if (skinLabel != null && skinCombo != null) {
+                builder.add(skinLabel, cc.xy(1, row));
+                builder.add(skinCombo, cc.xy(3, row));
+            }
 
             row += 2;
             builder.add(new JLabel(Translation
@@ -355,12 +358,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(minToSysTrayCB, cc.xy(3, row));
-            
+
             row += 2;
             builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.information_panel")), cc.xy(1, row));
+                .getTranslation("preferences.dialog.information_panel")), cc
+                .xy(1, row));
             builder.add(inlineInfoCombo, cc.xy(3, row));
-            
+
             row += 2;
             builder.add(magneticFrameBox, cc.xyw(3, row, 2));
 
