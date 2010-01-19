@@ -411,6 +411,8 @@ public class FileRequestor extends PFComponent {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
                         it.remove();
+                        // Give CPU a bit time.
+                        Thread.sleep(2);
                     }
                     if (isFiner()) {
                         long took = System.currentTimeMillis() - start;
