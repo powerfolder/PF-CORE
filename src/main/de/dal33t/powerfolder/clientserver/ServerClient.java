@@ -947,9 +947,17 @@ public class ServerClient extends PFComponent {
                 addrStr = "myself";
             } else {
                 InetSocketAddress addr = server.getReconnectAddress();
-                addrStr = addr != null && addr.getAddress() != null
-                    ? NetworkUtil.getHostAddressNoResolve(addr.getAddress())
-                    : "n/a";
+                if (addr != null) {
+                    if (addr.getAddress() != null) {
+                        addrStr = NetworkUtil.getHostAddressNoResolve(addr
+                            .getAddress());
+                    } else {
+                        addrStr = addr.getHostName();
+                    }
+                } else {
+                    addrStr = "n/a";
+                }
+
                 if (addr != null
                     && addr.getPort() != ConnectionListener.DEFAULT_PORT)
                 {
