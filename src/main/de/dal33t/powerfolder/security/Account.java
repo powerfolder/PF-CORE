@@ -110,7 +110,12 @@ public class Account extends Model implements Serializable {
 
     public Account() {
         // Generate unique id
-        this.oid = IdGenerator.makeId();
+        this(IdGenerator.makeId());
+    }
+
+    public Account(String oid) {
+        Reject.ifBlank(oid, "OID");
+        this.oid = oid;
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
