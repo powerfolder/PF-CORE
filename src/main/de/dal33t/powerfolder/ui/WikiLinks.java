@@ -49,4 +49,5 @@ public interface WikiLinks {
     String UI_LOCK = "User-interface-lock";
     String SYSTEM_SERVICE = "System_Service";
     String EXCLUDING_FILES_FROM_SYNCHRONIZATION = "Excluding_Files_from_Synchronization";
+    String MEMORY_CONFIGURATION = "Memory_configuration";
 }

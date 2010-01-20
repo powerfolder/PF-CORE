@@ -19,18 +19,19 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.WarningEvent;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.WarningEvent;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Detects if PowerFolder is running out of memory.
@@ -48,7 +49,7 @@ public class MemoryMonitor implements Runnable {
     }
 
     public void run() {
-
+        
         // Do not show dialog repeatedly.
         if (runAlready) {
             return;
@@ -60,6 +61,7 @@ public class MemoryMonitor implements Runnable {
         log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
+        
         if (maxMemory == totalMemory) {
             addWarning();
             runAlready = true;
@@ -76,7 +78,9 @@ public class MemoryMonitor implements Runnable {
                     int response = DialogFactory
                         .genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
-                            .getTranslation("low_memory.text"),
+                            .getTranslation("low_memory.text", Help
+                                .getWikiArticleURL(controller,
+                                    WikiLinks.MEMORY_CONFIGURATION)),
                             new String[]{
                                 Translation
                                     .getTranslation("low_memory.increase"),

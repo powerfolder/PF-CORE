@@ -160,8 +160,9 @@ public class MembersTable extends JTable {
             setForeground(ColorUtil.getTextForegroundColor());
 
             boolean isServer = folderMember.getMember() != null
-                && model.getController().getOSClient().isServer(
-                    folderMember.getMember());
+                && (model.getController().getOSClient().isServer(
+                    folderMember.getMember()) || folderMember.getMember()
+                    .isServer());
 
             if (actualColumn == MembersTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
@@ -178,15 +179,15 @@ public class MembersTable extends JTable {
                     setForeground(Color.GRAY);
                 }
             } else if (actualColumn == MembersTableModel.COL_USERNAME) {
-                if (folderMember.getAccountInfo() != null) {
-                    setText(folderMember.getAccountInfo().getScrabledUsername());
-                } else if (!model.getController().getOSClient().isConnected()) {
+                if (!model.getController().getOSClient().isConnected()) {
                     setText(Translation
                         .getTranslation("folder_member.not_connected_to_server"));
                     setForeground(Color.GRAY);
                 } else if (isServer) {
                     setText(Translation.getTranslation("folder_member.server"));
                     setForeground(Color.GRAY);
+                } else if (folderMember.getAccountInfo() != null) {
+                    setText(folderMember.getAccountInfo().getScrabledUsername());
                 } else {
                     setText(Translation
                         .getTranslation("folder_member.not_logged_in"));
