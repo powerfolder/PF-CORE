@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Translation;
@@ -134,5 +135,22 @@ public abstract class AbstractDistribution extends Loggable implements
 
     protected static final void setAppDescription(String description) {
         Translation.setPlaceHolder("APPDESCRIPTION", description);
+    }
+
+    /**
+     * Sets the folder basedir subdir name if not already set in config. e.g.
+     * C:\Users\sprajc\myDir.
+     * 
+     * @param c
+     * @param replacement
+     */
+    protected static final void setFoldersBaseDirName(Controller c, String myDir)
+    {
+        if (!ConfigurationEntry.FOLDER_BASEDIR.hasValue(c)) {
+            String folderBaseDir = ConfigurationEntry.FOLDER_BASEDIR
+                .getDefaultValue().replace(
+                    Constants.FOLDERS_BASE_DIR_SUBDIR_NAME, myDir);
+            ConfigurationEntry.FOLDER_BASEDIR.setValue(c, folderBaseDir);
+        }
     }
 }
