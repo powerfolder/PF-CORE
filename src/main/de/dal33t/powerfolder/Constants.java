@@ -47,6 +47,14 @@ public class Constants {
     public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
 
     /**
+     * The subdir name that will be used by default for the PowerFolders base
+     * directory.
+     * 
+     * @see ConfigurationEntry#FOLDER_BASEDIR
+     */
+    public static final String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+
+    /**
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
@@ -55,7 +63,7 @@ public class Constants {
      * Name of the INI file on windows installations.
      */
     public static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
-    
+
     /**
      * Check for updates every hour.
      */
@@ -303,14 +311,14 @@ public class Constants {
     public static final String PRO_LOADER_PLUGIN_CLASS = "de.dal33t.powerfolder.CD";
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
-    
+
     public static final String SESSIONS_SUB_DIR = "sessions";
 
     // Web stuff **************************************************************
-    
+
     public static final String UI_LOCK_UNLOCK_URI = "/unlock";
     public static final String LOGIN_URI = "/login";
-    
+
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
     public static final String LOGIN_PARAM_PASSWORD_MD5 = "PasswordMD5";

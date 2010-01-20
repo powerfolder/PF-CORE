@@ -357,21 +357,20 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR("foldersbase") {
         @Override
         public String getDefaultValue() {
+            String rootDir = System.getProperty("user.home");
+
+            // Also place the base dir into user home on Vista and 7
             if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()
                 && !OSUtil.isWindows7System())
             {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
-                    return util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
-                        false)
-                        + File.separatorChar
-                        + System.getProperty("pf.base_dir_default",
-                            "PowerFolders");
+                    rootDir = util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
+                        false);
                 }
             }
-            // Also place the base dir into user home on Vista and 7
-            return System.getProperty("user.home") + File.separatorChar
-                + System.getProperty("pf.base_dir_default", "PowerFolders");
+            return rootDir + File.separatorChar
+                + Constants.FOLDERS_BASE_DIR_SUBDIR_NAME;
         }
     },
 
@@ -820,14 +819,6 @@ public enum ConfigurationEntry {
     public void removeValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         controller.getConfig().remove(configKey);
-    }
-
-    /**
-     * @param controller
-     * @return if the value is set to the default value (or not set at all).
-     */
-    public boolean isDefault(Controller controller) {
-        return Util.equals(getValue(controller), getDefaultValue());
     }
 
     /**
