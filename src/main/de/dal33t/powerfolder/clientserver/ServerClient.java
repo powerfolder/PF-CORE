@@ -736,6 +736,8 @@ public class ServerClient extends PFComponent {
                 for (MemberInfo serverMInfo : servers) {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
+                    hostingServer.setServer(true);
+                    
                     if (hostingServer.isConnected()
                         || hostingServer.isConnecting()
                         || hostingServer.equals(server))
@@ -744,7 +746,6 @@ public class ServerClient extends PFComponent {
                         continue;
                     }
                     // Connect now
-                    hostingServer.setServer(true);
                     hostingServer.markForImmediateConnect();
                 }
             }
@@ -1008,6 +1009,8 @@ public class ServerClient extends PFComponent {
                 if (username != null) {
                     login(username, password);
                 }
+
+                getController().schedule(new HostingServerRetriever(), 0);
             }
         }
 
