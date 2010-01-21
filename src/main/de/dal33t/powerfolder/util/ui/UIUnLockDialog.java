@@ -326,7 +326,7 @@ public class UIUnLockDialog extends PFUIComponent {
                 url = ConfigurationEntry.SERVER_WEB_URL
                     .getValue(getController());
             }
-            logInfo("Trying to unlock user interface at: " + url);
+            logWarning("Trying to unlock user interface at: " + url);
 
             String salt = IdGenerator.makeId() + IdGenerator.makeId();
             String mix = salt + new String(password).trim() + salt;
