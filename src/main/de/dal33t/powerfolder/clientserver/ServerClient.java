@@ -70,9 +70,7 @@ public class ServerClient extends PFComponent {
     private String username;
     // TODO Convert to char[] for security reasons.
     private String password;
-
     private Member server;
-    private String webURL;
 
     /**
      * If this client should connect to the server where his folders are hosted
@@ -110,8 +108,7 @@ public class ServerClient extends PFComponent {
     public ServerClient(Controller controller) {
         this(controller, ConfigurationEntry.SERVER_NAME.getValue(controller),
             ConfigurationEntry.SERVER_HOST.getValue(controller),
-            ConfigurationEntry.SERVER_NODEID.getValue(controller),
-            ConfigurationEntry.SERVER_WEB_URL.getValue(controller), true,
+            ConfigurationEntry.SERVER_NODEID.getValue(controller), true,
             ConfigurationEntry.SERVER_CONFIG_UPDATE.getValueBoolean(controller));
     }
 
@@ -122,20 +119,16 @@ public class ServerClient extends PFComponent {
      * @param name
      * @param host
      * @param nodeId
-     * @param webURL
      * @param allowServerChange
      * @param updateConfig
      */
     public ServerClient(Controller controller, String name, String host,
-        String nodeId, String webURL, boolean allowServerChange,
-        boolean updateConfig)
+        String nodeId, boolean allowServerChange, boolean updateConfig)
     {
         super(controller);
 
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
-        this.webURL = !StringUtils.isBlank(webURL) ? Util
-            .removeLastSlashFromURI(webURL) : null;
         this.serviceProvider = new RemoteServiceProvider();
 
         // Custom server
@@ -303,6 +296,9 @@ public class ServerClient extends PFComponent {
      * @return the URL of the web access to the server (cluster).
      */
     public String getWebURL() {
+        String webURL = Util
+            .removeLastSlashFromURI(ConfigurationEntry.SERVER_WEB_URL
+                .getValue(getController()));
         if (!StringUtils.isBlank(webURL)) {
             return webURL;
         }
@@ -314,7 +310,6 @@ public class ServerClient extends PFComponent {
         {
             return accountDetails.getAccount().getServer().getWebUrl();
         }
-
         // No web url.
         return null;
     }
@@ -737,7 +732,7 @@ public class ServerClient extends PFComponent {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
                     hostingServer.setServer(true);
-                    
+
                     if (hostingServer.isConnected()
                         || hostingServer.isConnecting()
                         || hostingServer.equals(server))
@@ -781,7 +776,6 @@ public class ServerClient extends PFComponent {
     }
 
     public boolean setServerWebURLInConfig(String newWebUrl) {
-        this.webURL = newWebUrl;
         String oldWebUrl = ConfigurationEntry.SERVER_WEB_URL
             .getValue(getController());
         if (Util.equals(oldWebUrl, newWebUrl)) {
