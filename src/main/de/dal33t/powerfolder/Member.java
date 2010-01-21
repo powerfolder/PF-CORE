@@ -1717,13 +1717,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
                     try {
                         logInfo("Processing message: " + clr);
-                        Properties preConfig = ConfigurationLoader
-                            .loadPreConfiguration(clr.getConfigURL());
-                        ConfigurationLoader.mergeConfigs(preConfig,
-                            getController().getConfig(), clr
-                                .isReplaceExisting());
-                        // Seems to be valid, store.
-                        getController().saveConfig();
+                        if (StringUtils.isNotBlank(clr.getConfigURL())) {
+                            Properties preConfig = ConfigurationLoader
+                                .loadPreConfiguration(clr.getConfigURL());
+                            ConfigurationLoader.mergeConfigs(preConfig,
+                                getController().getConfig(), clr
+                                    .isReplaceExisting());
+                            // Seems to be valid, store.
+                            getController().saveConfig();
+                        }
                         if (clr.isModifyWinINIConfigCentral()) {
                             ConfigurationLoadRequest
                                 .modifyWinINIConfigCentral();
