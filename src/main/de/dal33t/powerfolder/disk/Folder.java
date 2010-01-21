@@ -3330,7 +3330,8 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
-        if (getController().getOSClient().isServer(member)) {
+        if (getController().getOSClient().isServer(member) || member.isServer())
+        {
             return true;
         }
         return getController().getSecurityManager().hasPermission(
