@@ -20,18 +20,23 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -42,6 +47,10 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
+ */
+/**
+ * @author sprajc
+ *
  */
 public class ScanFolderTest extends ControllerTestCase {
 
@@ -179,7 +188,7 @@ public class ScanFolderTest extends ControllerTestCase {
         assertFalse(getFolder().getKnownFiles().iterator().next().isDeleted());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertFileMatch(sameName, getFolder().getKnownFiles().iterator().next());
-        
+
         assertTrue(file.renameTo(sameName));
         scanFolder();
 
@@ -602,6 +611,71 @@ public class ScanFolderTest extends ControllerTestCase {
 
         // Do some afterchecks.
         assertEquals(1, getFolder().getKnownItemCount());
+    }
+
+    /**
+     * TRAC #1880
+     * @throws IOException
+     */
+    public void testScanDirMovementWithWatcher() throws IOException {
+        getController().setSilentMode(false);
+        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getController(),
+            true);
+        LoggingManager.setConsoleLogging(Level.WARNING);
+        getFolder().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
+
+        // Subdir with 2 files
+        File subdir1 = new File(getFolder().getLocalBase(), "subdir1");
+        TestHelper.createRandomFile(subdir1);
+        TestHelper.createRandomFile(subdir1);
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolder().getKnownDirectories().size() == 1
+                    && getFolder().getKnownFiles().size() == 2;
+            }
+
+            public String message() {
+                return "Found disk items: " + getFolder().getKnownItemCount();
+            }
+        });
+
+        // Now move
+        File subdir2 = new File(getFolder().getLocalBase(), "SUBDIR2");
+        FileUtils.recursiveMove(subdir1, subdir2);
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolder().getKnownDirectories().size() == 2
+                    && getFolder().getKnownFiles().size() == 4;
+            }
+
+            public String message() {
+                return "Found files (" + getFolder().getKnownFiles().size()
+                    + "): " + getFolder().getKnownFiles() + ". dirs ("
+                    + getFolder().getKnownDirectories().size() + "): "
+                    + getFolder().getKnownDirectories();
+            }
+        });
+
+        // Make subdir1 reappear!
+        subdir1 = new File(getFolder().getLocalBase(), "subdir1");
+        TestHelper.createRandomFile(subdir1);
+        TestHelper.createRandomFile(subdir1);
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolder().getKnownDirectories().size() == 2
+                    && getFolder().getKnownFiles().size() == 4;
+            }
+
+            public String message() {
+                return "Found files (" + getFolder().getKnownFiles().size()
+                    + "): " + getFolder().getKnownFiles() + ". dirs ("
+                    + getFolder().getKnownDirectories().size() + "): "
+                    + getFolder().getKnownDirectories();
+            }
+        });
     }
 
     // Helper *****************************************************************
