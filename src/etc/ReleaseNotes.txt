@@ -1,4 +1,57 @@
-PowerFolder Version 4.1.0 - http://www.powerfolder.com
+PowerFolder Version 4.1.1 - http://www.powerfolder.com
+
+= Improvements =
+ * Improved HTTP tunneled connections.
+   Wiki: http://www.powerfolder.com/wiki/HTTP-Tunnel
+ * Several other improvements.
+
+= Bugfixes =
+ * Read only folders such as DVDs, network drives or write
+   protected USB sticks now correctly appear in PowerFolder.
+ * Fixed bug in instant file detection that caused
+   directories rarely turn into 0 byte files.
+   http://www.powerfolder.com/wiki/Performance_optimization#Use_instant_file_detection
+ * Fixed server change problem when UI was locked.
+ * Several other bugfixes.
+ 
+
+= Important for 3.X users =
+
+If you upgrade from an existing PowerFolder version keep in mind, that folders
+are now visible globally for each account, this means all users on an account
+will see all folders. Use the rights system to restrict the access to certain
+computers and users. You might need to register new accounts per user at
+https://www.powerfolder.com/storage_register.html 
+
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/support.html
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features. We hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/contact.html
+Support    : http://www.powerfolder.com/support.html
+Development: http://www.powerfolder.com/about_us.html
+Email	   : contact (at) powerfolder.com
+
+
+== Version History ==
+
+Version 4.1.0
+-------------
 
 = New features =
  * Instant file change detection for zero-delay syncing. Files now get instantly
@@ -43,40 +96,6 @@ PowerFolder Version 4.1.0 - http://www.powerfolder.com
  * Sync percentages now get recalculated when changing the list of ignored files.
  * Many more minor bugfixes.
 
-= Important for 3.X users =
-
-If you upgrade from an existing PowerFolder version keep in mind, that folders
-are now visible globally for each account, this means all users on an account
-will see all folders. Use the rights system to restrict the access to certain
-computers and users. You might need to register new accounts per user at
-https://www.powerfolder.com/storage_register.html 
-
-
-Please give us feedback and request improvements:
-http://www.powerfolder.com/support.html
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features. We hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-Homepage   : http://www.powerfolder.com
-Contact    : http://www.powerfolder.com/contact.html
-Support    : http://www.powerfolder.com/support.html
-Development: http://www.powerfolder.com/about_us.html
-Email	   : contact (at) powerfolder.com
-
-
-== Version History ==
 
 Version 4.0.3
 -------------
