@@ -48,11 +48,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public FileInfo find(FileInfo info, String domain) {
-        if (info.isFile()) {
-            return getDomain(domain).files.get(info);
-        } else {
-            return getDomain(domain).directories.get(info);
+        FileInfo res = getDomain(domain).files.get(info);
+        if (res != null) {
+            return res;
         }
+        return getDomain(domain).directories.get(info);
     }
 
     public Collection<FileInfo> findAllFiles(String domain) {
@@ -106,12 +106,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         for (FileInfo fileInfo : infos) {
             if (fileInfo.isFile()) {
                 d.files.put(fileInfo, fileInfo);
+                // Make sure not dir is left with name name.
+                d.directories.remove(fileInfo);
             } else {
                 if (isFiner()) {
                     logFiner("Storing directory: " + fileInfo.toDetailString());
                 }
                 d.directories.put((DirectoryInfo) fileInfo,
                     (DirectoryInfo) fileInfo);
+                // Make sure not file is left with name name.
+                d.files.remove(fileInfo);
             }
         }
     }
