@@ -1090,6 +1090,10 @@ public class Folder extends PFComponent {
                             + fInfo.toDetailString());
                     }
                     return fInfo;
+                } else {
+                    if (isFiner()) {
+                        logFiner("Scan known file: " + fInfo.toDetailString());
+                    }
                 }
 
                 FileInfo syncFile = localFile.syncFromDiskIfRequired(
