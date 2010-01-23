@@ -293,15 +293,20 @@ public class NodeSearcher extends PFComponent {
             if (!getController().getOSClient().isLoggedIn()) {
                 return;
             }
-            Collection<MemberInfo> res = getController().getOSClient()
-                .getSecurityService().searchNodes(pattern);
-            for (MemberInfo nodeInfo : res) {
-                Member node = nodeInfo.getNode(getController(), true);
-                if (checkMember(node)) {
-                    searchResultListModel.add(node);
+            try {
+                Collection<MemberInfo> res = getController().getOSClient()
+                    .getSecurityService().searchNodes(pattern);
+                for (MemberInfo nodeInfo : res) {
+                    Member node = nodeInfo.getNode(getController(), true);
+                    if (checkMember(node)) {
+                        searchResultListModel.add(node);
+                    }
                 }
+                fetchAccountInfos(searchResultListModel);
+            } catch (Exception e) {
+                logWarning("Unable to search via server. " + e);
+                logFiner(e);
             }
-            fetchAccountInfos(searchResultListModel);
         }
 
         /**
