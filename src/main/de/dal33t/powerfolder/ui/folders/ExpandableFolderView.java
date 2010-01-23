@@ -52,7 +52,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -108,6 +107,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JPanel uiComponent;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
+    private AtomicBoolean mouseOver;
 
     private JLabel filesLabel;
     private ActionLabel transferModeLabel;
@@ -147,6 +147,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
     private DelayedUpdater folderDetailsUpdater;
+
+    private ActionLabel upperSyncLink;
+    private JButtonMini upperOpenFilesButton;
+    private JButtonMini upperInviteButton;
 
     /**
      * Constructor
@@ -190,7 +194,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         // Something changed - change details.
-
         unregisterFolderListeners();
 
         folder = folderArg;
@@ -219,6 +222,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             return;
         }
         expanded.set(true);
+        updateUpperComponents();
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.collapse"));
         updateNameLabel();
@@ -231,10 +235,22 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     public void collapse() {
         expanded.set(false);
+        updateUpperComponents();
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_folder_view.expand"));
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
+    }
+
+    /**
+     * Show the upper links if mouse over and not expanded and have folder
+     * (not online-only).
+     */ 
+    private void updateUpperComponents() {
+        boolean show = !expanded.get() && mouseOver.get() && folder != null;
+        upperSyncLink.getUIComponent().setVisible(show);
+        upperInviteButton.setVisible(show);
+        upperOpenFilesButton.setVisible(show);
     }
 
     /**
@@ -254,7 +270,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Build ui
         // icon name space # files probs sync / join
         FormLayout upperLayout = new FormLayout(
-            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu, pref:grow, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
         primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
@@ -267,14 +283,22 @@ public class ExpandableFolderView extends PFUIComponent implements
         nameLabel.addMouseListener(ma);
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
 
-        upperBuilder.add(problemButton, cc.xy(7, 1));
+        upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
+        upperBuilder.add(upperOpenFilesButton, cc.xy(9, 1));
+        upperBuilder.add(upperInviteButton, cc.xy(11, 1));
+        upperBuilder.add(problemButton, cc.xy(13, 1));
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
-        upperPanel.setToolTipText(Translation
-            .getTranslation("exp_folder_view.expand"));
+        if (folder != null) {
+            upperPanel.setToolTipText(Translation
+                .getTranslation("exp_folder_view.expand"));
+        }
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         upperPanel.addMouseListener(ma);
+        upperSyncLink.getUIComponent().addMouseListener(ma);
+        upperInviteButton.addMouseListener(ma);
+        upperOpenFilesButton.addMouseListener(ma);
 
         primaryButton.addActionListener(new PrimaryButtonActionListener());
 
@@ -408,6 +432,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         syncFolderAction = new MySyncFolderAction(getController());
 
         expanded = new AtomicBoolean();
+        mouseOver = new AtomicBoolean();
 
         osComponent = new OnlineStorageComponent(getController(), folder);
 
@@ -416,11 +441,22 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         openFilesInformationButton = new JButtonMini(
             openFilesInformationAction, true);
+        upperOpenFilesButton = new JButtonMini(
+            openFilesInformationAction, true);
 
         inviteButton = new JButtonMini(inviteAction, true);
+        upperInviteButton = new JButtonMini(inviteAction, true);
+
         problemButton = new JButtonMini(myProblemAction, true);
         syncFolderButton = new SyncIconButtonMini(getController());
         syncFolderButton.addActionListener(syncFolderAction);
+        upperSyncLink = new ActionLabel(getController(), syncFolderAction);
+        upperSyncLink.setText("");
+
+        upperSyncLink.getUIComponent().setVisible(false);
+        upperInviteButton.setVisible(false);
+        upperOpenFilesButton.setVisible(false);
+        
         filesLabel = new JLabel();
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
@@ -601,13 +637,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     "exp_folder_view.last_synchronized", formattedDate);
             }
 
-            if (!folder.hasOwnDatabase()) {
-                syncPercentText = Translation
-                    .getTranslation("exp_folder_view.not_yet_scanned");
-                localSizeString = "?";
-                totalSizeString = "?";
-                filesAvailableLabelText = "";
-            } else {
+            if (folder.hasOwnDatabase()) {
                 FolderStatistic statistic = folder.getStatistic();
                 double sync = statistic.getHarmonizedSyncPercentage();
                 if (sync < UNKNOWN_SYNC_STATUS) {
@@ -619,34 +649,32 @@ public class ExpandableFolderView extends PFUIComponent implements
 
                 // Sync in progress? Rewrite date as estimate.
                 if (Double.compare(sync, 100.0) < 0
-                    && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0)
-                {
+                        && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0) {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         String formattedDate = Format.formatDateShort(date);
                         syncDateText = Translation.getTranslation(
-                            "exp_folder_view.estimated_synchronized",
-                            formattedDate);
+                                "exp_folder_view.estimated_synchronized",
+                                formattedDate);
                     }
                 }
 
                 if (lastSyncDate == null
-                    && (Double.compare(sync, 100.0) == 0 || Double.compare(
-                        sync, UNKNOWN_SYNC_STATUS) == 0))
-                {
+                        && (Double.compare(sync, 100.0) == 0 || Double.compare(
+                        sync, UNKNOWN_SYNC_STATUS) == 0)) {
                     // Never synced with others.
                     syncPercentText = Translation
-                        .getTranslation("exp_folder_view.unsynchronized");
+                            .getTranslation("exp_folder_view.unsynchronized");
                 } else {
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
                         syncPercentText = Translation
-                            .getTranslation("exp_folder_view.unsynchronized");
+                                .getTranslation("exp_folder_view.unsynchronized");
                         syncPercentTip = Translation
-                            .getTranslation("exp_folder_view.unsynchronized.tip");
+                                .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", Format
-                                .formatDecimal(sync));
+                                "exp_folder_view.synchronized", Format
+                                        .formatDecimal(sync));
                     }
                 }
 
@@ -666,14 +694,21 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available", String
-                            .valueOf(count));
+                            "exp_folder_view.files_available", String
+                                    .valueOf(count));
                 }
+            } else {
+                syncPercentText = Translation
+                        .getTranslation("exp_folder_view.not_yet_scanned");
+                localSizeString = "?";
+                totalSizeString = "?";
+                filesAvailableLabelText = "";
             }
         }
 
         syncPercentLabel.setText(syncPercentText);
         syncPercentLabel.setToolTipText(syncPercentTip);
+        upperSyncLink.setText(syncPercentText);
         syncDateLabel.setText(syncDateText);
         localSizeLabel.setText(Translation.getTranslation(
             "exp_folder_view.local", localSizeString));
@@ -889,7 +924,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
 
-        if (!newFiles) {
+        if (!newFiles && folder != null) {
             if (expanded.get()) {
                 nameLabel.setToolTipText(Translation
                     .getTranslation("exp_folder_view.collapse"));
@@ -1115,16 +1150,15 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private class MyMouseAdapter extends MouseAdapter {
 
-        private volatile boolean mouseOver;
-
         // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
+            mouseOver.set(true);
+            updateUpperComponents();
             if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
-                mouseOver = true;
                 if (!expanded.get()) {
                     getController().schedule(new TimerTask() {
                         public void run() {
-                            if (mouseOver) {
+                            if (mouseOver.get()) {
                                 if (!expanded.get()) {
                                     expand();
                                     PreferencesEntry.AUTO_EXPAND.setValue(
@@ -1138,7 +1172,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void mouseExited(MouseEvent e) {
-            mouseOver = false;
+            mouseOver.set(false);
+            updateUpperComponents();
         }
 
         public void mousePressed(MouseEvent e) {
@@ -1163,12 +1198,12 @@ public class ExpandableFolderView extends PFUIComponent implements
                     collapse();
                 } else {
                     expand();
-                }
-                if (folder != null
-                    && getController().getUIController().isShowingFolder())
-                {
-                    getController().getUIController().openFilesInformation(
-                        folderInfo);
+                    if (folder != null
+                        && getController().getUIController().isShowingFolder())
+                    {
+                        getController().getUIController().openFilesInformation(
+                            folderInfo);
+                    }
                 }
             }
         }
