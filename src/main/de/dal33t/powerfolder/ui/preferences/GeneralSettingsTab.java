@@ -79,6 +79,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel modeModel;
     private ValueModel versionModel;
 
+    private JCheckBox updateCheck;
+
     private boolean needsRestart;
 
     // The triggers the writing into core
@@ -127,6 +129,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
+
+        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
+            .getValueBoolean(getController());
+        updateCheck = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
+            checkForUpdate);
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel, Translation
@@ -229,7 +238,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -276,6 +285,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.non_windows_info"),
                     SwingConstants.CENTER), cc.xyw(1, row, 4));
             }
+
+            row += 2;
+            builder.add(updateCheck, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
@@ -325,6 +337,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (!StringUtils.isBlank(nickField.getText())) {
             getController().changeNick(nickField.getText(), false);
         }
+
+        boolean checkForUpdate = updateCheck.isSelected();
+        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
