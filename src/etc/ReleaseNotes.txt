@@ -1,6 +1,8 @@
 PowerFolder Version 4.1.1 - http://www.powerfolder.com
 
 = Improvements =
+ * Folder action buttons (such as sync, browse files or invite/send files)
+   now appear when hovering over folders with the mouse. 
  * Improved HTTP tunneled connections.
    Wiki: http://www.powerfolder.com/wiki/HTTP-Tunnel
  * Several other improvements.
