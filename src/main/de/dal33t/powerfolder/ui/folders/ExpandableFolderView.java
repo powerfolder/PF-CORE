@@ -243,11 +243,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Show the upper links if mouse over and not expanded and have folder
-     * (not online-only).
+     * Show the upper links if mouse over and have folder (not online-only).
      */ 
     private void updateUpperComponents() {
-        boolean show = !expanded.get() && mouseOver.get() && folder != null;
+        boolean show = mouseOver.get() && folder != null;
         upperSyncLink.getUIComponent().setVisible(show);
         upperInviteButton.setVisible(show);
         upperOpenFilesButton.setVisible(show);
@@ -610,6 +609,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateStatsDetails() {
 
         String syncPercentText;
+        String upperSyncPercent;
         String syncPercentTip = null;
         String syncDateText;
         String localSizeString;
@@ -619,6 +619,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             syncPercentText = Translation.getTranslation(
                 "exp_folder_view.synchronized", "?");
+            upperSyncPercent = "?";
             syncDateText = Translation.getTranslation(
                 "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
@@ -665,16 +666,19 @@ public class ExpandableFolderView extends PFUIComponent implements
                     // Never synced with others.
                     syncPercentText = Translation
                             .getTranslation("exp_folder_view.unsynchronized");
+                    upperSyncPercent = syncPercentText;
                 } else {
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
                         syncPercentText = Translation
                                 .getTranslation("exp_folder_view.unsynchronized");
+                        upperSyncPercent = syncPercentText;
                         syncPercentTip = Translation
                                 .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
                                 "exp_folder_view.synchronized", Format
                                         .formatDecimal(sync));
+                        upperSyncPercent = Format.formatDecimal(sync) + '%';
                     }
                 }
 
@@ -700,6 +704,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             } else {
                 syncPercentText = Translation
                         .getTranslation("exp_folder_view.not_yet_scanned");
+                upperSyncPercent = "?";
                 localSizeString = "?";
                 totalSizeString = "?";
                 filesAvailableLabelText = "";
@@ -708,7 +713,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         syncPercentLabel.setText(syncPercentText);
         syncPercentLabel.setToolTipText(syncPercentTip);
-        upperSyncLink.setText(syncPercentText);
+        upperSyncLink.setText(upperSyncPercent);
         syncDateLabel.setText(syncDateText);
         localSizeLabel.setText(Translation.getTranslation(
             "exp_folder_view.local", localSizeString));
