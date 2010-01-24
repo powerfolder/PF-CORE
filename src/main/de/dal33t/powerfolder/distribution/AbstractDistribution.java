@@ -86,17 +86,24 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
-    protected boolean loadPreConfigFromClasspath(Properties config) {
+    protected boolean loadPreConfigFromClasspath(Properties config,
+        boolean replaceExisting)
+    {
         try {
             Properties preConfig = ConfigurationLoader
                 .loadPreConfigFromClasspath("Client.config");
-            ConfigurationLoader.mergeConfigs(preConfig, config, true);
+            ConfigurationLoader
+                .mergeConfigs(preConfig, config, replaceExisting);
             logInfo("Loaded preconfiguration file Client.config from jar file");
             return true;
         } catch (IOException e) {
             logSevere("Error while loading Client.config from jar file", e);
             return false;
         }
+    }
+
+    protected boolean loadPreConfigFromClasspath(Properties config) {
+        return loadPreConfigFromClasspath(config, true);
     }
 
     protected static final void removeValue(Controller c,
