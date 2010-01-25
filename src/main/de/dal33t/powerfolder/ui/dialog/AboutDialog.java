@@ -505,7 +505,7 @@ public class AboutDialog extends PFUIComponent {
             Date buildDateTime = parser.parse(buildDateTimeString);
 
             SimpleDateFormat localizedFormatter = new SimpleDateFormat(
-                "hh:mm:ss z", Translation.getActiveLocale());
+                "HH:mm:ss z", Translation.getActiveLocale());
 
             buildTime = localizedFormatter.format(buildDateTime);
             // localizedFormatter.applyPattern("dd MMMM yyyy");
