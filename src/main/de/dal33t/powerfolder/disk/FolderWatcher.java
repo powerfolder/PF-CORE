@@ -46,8 +46,9 @@ public class FolderWatcher extends PFComponent {
     /**
      * #1862
      */
-    private static final boolean UNREGISTER_WATCHERS = OSUtil.isWindowsSystem()
-        && !OSUtil.is64BitPlatform();
+    private static final boolean UNREGISTER_WATCHERS = false;
+    // OSUtil.isWindowsSystem()
+    // && !OSUtil.is64BitPlatform();
 
     private static Boolean LIB_LOADED;
 
