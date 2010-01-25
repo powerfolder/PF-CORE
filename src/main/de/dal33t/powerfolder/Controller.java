@@ -128,7 +128,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.1 RC2"; // 1.0.3.108;
+    public static final String PROGRAM_VERSION = "4.1.1"; // 1.5.0.1
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -556,7 +556,7 @@ public class Controller extends PFComponent {
             // Now start the connecting process
             reconnectManager.start();
         } else {
-            logWarning("Not starting reconnection process. "
+            logFine("Not starting reconnection process. "
                 + "Config auto.connect set to false");
         }
         // Start connecting to OS client.
@@ -691,7 +691,7 @@ public class Controller extends PFComponent {
             Level fileLevel = LoggingManager.levelForName(str);
             LoggingManager.setFileLogging(fileLevel != null
                 ? fileLevel
-                : Level.WARNING);
+                : Level.FINE);
 
             // Switch on the document handler.
             if (isUIEnabled()) {
