@@ -96,7 +96,7 @@ public class FileRequestor extends PFComponent {
         }
         folderQueue.offer(folder);
         synchronized (folderQueue) {
-            folderQueue.notifyAll();
+            folderQueue.notify();
         }
     }
 
