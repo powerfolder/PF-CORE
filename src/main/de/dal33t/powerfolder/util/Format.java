@@ -76,10 +76,8 @@ public class Format extends PFComponent {
     }
 
     /**
-     * Returns a count of bytes in a string
-     * 
      * @param bytes
-     * @return
+     * @return a count of bytes in a string
      */
     public static String formatBytesShort(long bytes) {
         double number = bytes;
