@@ -66,9 +66,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox autoExpandCB;
     private JLabel transPercLabel;
     private JSlider transPercSlider;
-    private JCheckBox folderSyncCB;
-    private JLabel folderSyncLabel;
-    private JSlider folderSyncSlider;
     private int originalInline;
 
     private JLabel skinLabel;
@@ -215,35 +212,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         transPercLabel = new JLabel(Translation
             .getTranslation("preferences.dialog.translucent_text"));
 
-        folderSyncCB = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.folder_sync_warn.use"));
-        folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
-            .getValueBoolean(getController()));
-
-        folderSyncSlider = new JSlider();
-        folderSyncSlider.setMinimum(1);
-        folderSyncSlider.setMaximum(30);
-        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN
-            .getValueInt(getController()));
-        folderSyncSlider.setMinorTickSpacing(1);
-
-        folderSyncSlider.setPaintTicks(true);
-        folderSyncSlider.setPaintLabels(true);
-
-        dictionary = new Hashtable<Integer, JLabel>();
-        dictionary.put(1, new JLabel("1"));
-        dictionary.put(10, new JLabel("10"));
-        dictionary.put(20, new JLabel("20"));
-        dictionary.put(30, new JLabel("30"));
-        folderSyncSlider.setLabelTable(dictionary);
-
-        folderSyncLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.folder_sync_text"));
-
-        folderSyncCB.addChangeListener(new FolderChangeListener());
-
-        doFolderChangeEvent();
-
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
 
@@ -322,7 +290,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -389,13 +357,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(getTransSpinnerPanel(), cc.xy(3, row));
             }
 
-            row += 2;
-            builder.add(folderSyncCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(folderSyncLabel, cc.xy(1, row));
-            builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
-
             panel = builder.getPanel();
 
             enableTransPerc();
@@ -414,20 +375,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         CellConstraints cc = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout);
         builder.add(transPercSlider, cc.xy(1, 1));
-        return builder.getPanel();
-    }
-
-    private void doFolderChangeEvent() {
-        folderSyncLabel.setEnabled(folderSyncCB.isSelected());
-        folderSyncSlider.setEnabled(folderSyncCB.isSelected());
-    }
-
-    private Component getFolderSpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
-
-        CellConstraints cc = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.add(folderSyncSlider, cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -479,12 +426,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
             transPercSlider.getValue());
-
-        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(), String
-            .valueOf(folderSyncCB.isSelected()));
-
-        ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(), String
-            .valueOf(folderSyncSlider.getValue()));
 
         getController().saveConfig();
 
@@ -575,11 +516,5 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
         return chooser;
-    }
-
-    private class FolderChangeListener implements ChangeListener {
-        public void stateChanged(ChangeEvent e) {
-            doFolderChangeEvent();
-        }
     }
 }

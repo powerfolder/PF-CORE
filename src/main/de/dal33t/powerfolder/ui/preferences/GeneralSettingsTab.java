@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -33,6 +34,8 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
@@ -80,6 +83,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel versionModel;
 
     private JCheckBox updateCheck;
+
+    private JCheckBox folderSyncCB;
+    private JLabel folderSyncLabel;
+    private JSlider folderSyncSlider;
 
     private boolean needsRestart;
 
@@ -229,6 +236,36 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getValue(getController())),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                 .getValueInt(getController()));
+
+        folderSyncCB = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.folder_sync_warn.use"));
+        folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
+            .getValueBoolean(getController()));
+
+        folderSyncSlider = new JSlider();
+        folderSyncSlider.setMinimum(1);
+        folderSyncSlider.setMaximum(30);
+        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN
+            .getValueInt(getController()));
+        folderSyncSlider.setMinorTickSpacing(1);
+
+        folderSyncSlider.setPaintTicks(true);
+        folderSyncSlider.setPaintLabels(true);
+
+        dictionary = new Hashtable<Integer, JLabel>();
+        dictionary.put(1, new JLabel("1"));
+        dictionary.put(10, new JLabel("10"));
+        dictionary.put(20, new JLabel("20"));
+        dictionary.put(30, new JLabel("30"));
+        folderSyncSlider.setLabelTable(dictionary);
+
+        folderSyncLabel = new JLabel(Translation
+            .getTranslation("preferences.dialog.folder_sync_text"));
+
+        folderSyncCB.addChangeListener(new FolderChangeListener());
+
+        doFolderChangeEvent();
+
     }
 
     /**
@@ -238,7 +275,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -314,6 +351,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3,
                 row, 2));
 
+            row += 2;
+            builder.add(folderSyncCB, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(folderSyncLabel, cc.xy(1, row));
+            builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
@@ -327,6 +370,20 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      */
     private void enableMassDeleteSlider() {
         massDeleteSlider.setEnabled(massDeleteBox.isSelected());
+    }
+
+    private void doFolderChangeEvent() {
+        folderSyncLabel.setEnabled(folderSyncCB.isSelected());
+        folderSyncSlider.setEnabled(folderSyncCB.isSelected());
+    }
+
+    private Component getFolderSpinnerPanel() {
+        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
+
+        CellConstraints cc = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout);
+        builder.add(folderSyncSlider, cc.xy(1, 1));
+        return builder.getPanel();
     }
 
     public void save() {
@@ -382,6 +439,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             ((ArchiveMode) modeModel.getValue()).name());
         ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
             versionModel.getValue().toString());
+        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(), String
+            .valueOf(folderSyncCB.isSelected()));
+
+        ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(), String
+            .valueOf(folderSyncSlider.getValue()));
     }
 
     private void configureFavorite(boolean newValue) {
@@ -397,4 +459,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             enableMassDeleteSlider();
         }
     }
+
+    private class FolderChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            doFolderChangeEvent();
+        }
+    }
+
 }
