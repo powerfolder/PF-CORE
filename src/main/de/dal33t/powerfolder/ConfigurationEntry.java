@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
