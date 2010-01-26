@@ -3,6 +3,8 @@ package de.dal33t.powerfolder.test.disk;
 import java.io.File;
 import java.io.IOException;
 
+import de.dal33t.powerfolder.disk.FolderWatcher;
+
 import junit.framework.TestCase;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyListener;
@@ -36,6 +38,10 @@ public class JNotifyTest extends TestCase {
     }
 
     private void testWatcher(int nWatches, int nFiles) {
+        if (!FolderWatcher.isLibLoaded()) {
+            System.err.println("Not checking JNotify. Unable to load lib.");
+            return;
+        }
         File tmpDir = new File(System.getProperty("java.io.tmpdir"),
             "watchertest");
         int x = 1;
