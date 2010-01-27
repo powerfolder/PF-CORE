@@ -95,4 +95,5 @@ public interface FileArchiver {
      */
     boolean maintain();
 
+    void purge()  throws IOException;
 }

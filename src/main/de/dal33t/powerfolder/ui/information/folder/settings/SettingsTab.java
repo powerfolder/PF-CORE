@@ -82,7 +82,6 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
 import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
@@ -159,8 +158,9 @@ public class SettingsTab extends PFUIComponent {
         modeModel.addValueChangeListener(listener);
         versionModel = new ValueHolder(); // <Integer>
         versionModel.addValueChangeListener(listener);
+        PurgeListener purgeListener = new PurgeListener();
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
-            modeModel, versionModel);
+            modeModel, versionModel, purgeListener);
     }
 
     /**
@@ -825,6 +825,42 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
+    private void purgeArchive() {
+        if (folder == null) {
+            logSevere("Calling purgeArchive with no folder???");
+        } else {
+            int result = DialogFactory
+                .genericDialog(
+                    getController(),
+                    Translation
+                        .getTranslation("settings_tab.purge_archive_title"),
+                    Translation
+                        .getTranslation("settings_tab.purge_archive_message"),
+                    new String[]{
+                        Translation
+                            .getTranslation("settings_tab.purge_archive_purge"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.WARN);
+
+            if (result == 0) { // Purge
+                try {
+                    folder.getFileArchiver().purge();
+                } catch (IOException e) {
+                    logSevere(e);
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("settings_tab.purge_archive_title"),
+                            Translation
+                                .getTranslation("settings_tab.purge_archive_problem"),
+                            GenericDialogType.ERROR);
+
+                }
+            }
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -1088,4 +1124,9 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
+    private class PurgeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            purgeArchive();
+        }
+    }
 }

@@ -70,4 +70,8 @@ public class NullFileArchiver implements FileArchiver {
     public boolean maintain() {
         return false;
     }
+
+    public void purge() {
+        // Nothing to do
+    }
 }

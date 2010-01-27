@@ -23,6 +23,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.PFUIPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -31,6 +33,7 @@ import javax.swing.*;
 import java.awt.Component;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ActionListener;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -80,7 +83,7 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
     private JPanel panel;
     private ValueModel modeModel; // <ArchiveMode>
     private ValueModel versionModel; // <Integer>
-
+    private ActionListener purgeListener;
     /**
      * Constructor
      *
@@ -92,6 +95,15 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      *             ValueModel<Integer> that gets notified of version history
      *             changes.
      */
+    public ArchiveModeSelectorPanel(Controller controller, ValueModel modeModel,
+        ValueModel versionModel, ActionListener purgeListener) {
+        super(controller);
+        this.modeModel = modeModel;
+        this.versionModel = versionModel;
+        this.purgeListener = purgeListener;
+        initComponents();
+    }
+
     public ArchiveModeSelectorPanel(Controller controller, ValueModel modeModel,
         ValueModel versionModel) {
         super(controller);
@@ -171,12 +183,19 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("70dlu, pref:grow", "pref");
+        FormLayout layout = new FormLayout("70dlu, 3dlu, pref, pref:grow", "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
 
         panel.add(archiveCombo, cc.xy(1, 1));
+        if (purgeListener != null) {
+            JButtonMini purgeButton = new JButtonMini(
+                    Icons.getIconById(Icons.DELETE), Translation.getTranslation(
+                            "archive_mode_selector_panel.purge.tip"));
+            purgeButton.addActionListener(purgeListener);
+            panel.add(purgeButton, cc.xy(3, 1));
+        }
         panel.setOpaque(false);
     }
 
