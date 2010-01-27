@@ -405,12 +405,13 @@ public class FileRequestor extends PFComponent {
                     for (Iterator<Folder> it = folderQueue.iterator(); it
                         .hasNext();)
                     {
+                        Folder f = it.next();
+                        it.remove();
                         try {
-                            requestMissingFilesForAutodownload(it.next());
+                            requestMissingFilesForAutodownload(f);
                         } catch (RuntimeException e) {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
-                        it.remove();
                         // Give CPU a bit time.
                         Thread.sleep(2);
                     }
