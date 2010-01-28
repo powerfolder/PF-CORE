@@ -491,7 +491,7 @@ public class AboutDialog extends PFUIComponent {
      */
     private void readDateTimeFromJar() {
         try {
-            File jar = new File("PowerFolder.jar");
+            File jar = new File(getController().getJARName());
             JarFile file = new JarFile(jar);
             Manifest mf = file.getManifest();
             Attributes attr = mf.getMainAttributes();
