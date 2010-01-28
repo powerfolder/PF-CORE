@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import java.util.Calendar;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -68,12 +69,12 @@ public class Identity extends Message {
     // shouldn't deny the
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
-    @SuppressWarnings("unused")
     private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
 
-    private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION.isEnabled();
+    private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
+        .isEnabled();
 
     /**
      * If I got interesting pending messages for you. Better keep the
@@ -105,8 +106,10 @@ public class Identity extends Message {
         // identity is created, so we have to use this workaround.
         this.pendingMessages = controller.getTaskManager().hasSendMessageTask();
 
+        boolean useZIPonLAN = ConfigurationEntry.USE_ZIP_ON_LAN
+            .getValueBoolean(controller);
         this.useCompressedStream = !handler.isOnLAN()
-            || (handler.isOnLAN() && controller.useZipOnLan());
+            || (handler.isOnLAN() && useZIPonLAN);
     }
 
     /**
