@@ -34,6 +34,11 @@ public class ControllerTest extends ControllerTestCase {
         Debug.dumpThreadStacks();
     }
 
+    public void testDistrubution() {
+        assertEquals("PowerFolder.jar", getController().getJARName());
+        assertEquals("PowerFolder.l4j.ini", getController().getL4JININame());
+    }
+
     public void testThreadPool() throws InterruptedException,
         ExecutionException
     {
