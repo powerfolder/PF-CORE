@@ -128,7 +128,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.1 - 1.5.0.3"; // 1.5.0.1
+    public static final String PROGRAM_VERSION = "4.1.1 - 1.5.0.4"; // 1.5.0.1
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -561,7 +561,20 @@ public class Controller extends PFComponent {
         }
         // Start connecting to OS client.
         if (Feature.OS_CLIENT.isEnabled()) {
-            osClient.loginWithLastKnown();
+            if (ConfigurationEntry.SERVER_CONNECT_USERNAME
+                .hasValue(getController()))
+            {
+                String username = ConfigurationEntry.SERVER_CONNECT_USERNAME
+                    .getValue(getController());
+                String password = ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                    .getValue(getController());
+                logWarning("Logging into server " + osClient.getServerString()
+                    + ". Username: " + username);
+                osClient.login(username, password);
+            } else {
+                osClient.loginWithLastKnown();
+            }
+
             osClient.start();
         } else {
             logWarning("Not starting Online Storage (reconnection), "
@@ -1171,6 +1184,29 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * @return Name of the JAR file on windows installations.
+     */
+    public String getJARName() {
+        if (distribution != null && distribution.getBinaryName() != null) {
+            return distribution.getBinaryName() + ".jar";
+        }
+        logSevere("Unable to get JAR name for distribution: " + distribution);
+        return "PowerFolder.jar";
+    }
+
+    /**
+     * @return Name of the L4J INI file on windows installations.
+     */
+    public String getL4JININame() {
+        if (distribution != null && distribution.getBinaryName() != null) {
+            return distribution.getBinaryName() + ".l4j.ini";
+        }
+        logSevere("Unable to get l4j.ini name for distribution: "
+            + distribution);
+        return "PowerFolder.l4j.ini";
+    }
+
+    /**
      *Sets the silent mode.
      * 
      * @param newSilentMode
@@ -1204,12 +1240,20 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Should ZIP compression on LAN be enabled.
+     * If this client is running in backup only mode.
+     * <p>
+     * Backup only client feature. Controls:
+     * <p>
+     * 1) If the client can send invitations
+     * <p>
+     * 2) If the client can add friends
+     * <p>
+     * 3) The client can connect to others except the server.
      * 
-     * @return true if lan compression should be enables else false.
+     * @return true if running as backup only client.
      */
-    public boolean useZipOnLan() {
-        return ConfigurationEntry.USE_ZIP_ON_LAN.getValueBoolean(this);
+    public boolean isBackupOnly() {
+        return ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(this);
     }
 
     /**
@@ -1904,10 +1948,10 @@ public class Controller extends PFComponent {
     /**
      * Returns the buildtime of this jar
      * 
-     * @return the Date the PowerFolder.jar was build.
+     * @return the Date the application jar was build.
      */
-    public static Date getBuildTime() {
-        File jar = new File("PowerFolder.jar");
+    public Date getBuildTime() {
+        File jar = new File(getJARName());
         if (jar.exists()) {
             return new Date(jar.lastModified());
         }
@@ -2330,23 +2374,6 @@ public class Controller extends PFComponent {
                 logInfo("No invitations found - probably first start of PF.");
             }
         }
-    }
-
-    /**
-     * If this client is running in backup only mode.
-     * <p>
-     * Backup only client feature. Controls:
-     * <p>
-     * 1) If the client can send invitations
-     * <p>
-     * 2) If the client can add friends
-     * <p>
-     * 3) The client can connect to others except the server.
-     * 
-     * @return true if running as backup only client.
-     */
-    public boolean isBackupOnly() {
-        return ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(this);
     }
 
 }
