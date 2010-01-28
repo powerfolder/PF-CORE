@@ -33,6 +33,10 @@ public class PowerFolderBeta extends AbstractDistribution {
         return "4.0 Beta";
     }
 
+    public String getBinaryName() {
+        return "PowerFolder";
+    }
+
     public void init(Controller controller) {
         this.controller = controller;
         // Reset network ID to default in default distribution.

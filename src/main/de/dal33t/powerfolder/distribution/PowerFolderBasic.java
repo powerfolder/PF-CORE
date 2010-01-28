@@ -35,6 +35,10 @@ public class PowerFolderBasic extends AbstractDistribution {
         return "PowerFolderBasic";
     }
 
+    public String getBinaryName() {
+        return "PowerFolder";
+    }
+
     public void init(Controller controller) {
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client

@@ -37,6 +37,12 @@ public interface Distribution {
     String getName();
 
     /**
+     * @return the short binary name for the branding. e.g. for l4j.ini file or
+     *         jar-file retrieval. by default "PowerFolder".
+     */
+    String getBinaryName();
+
+    /**
      * Initializes the branding. This should take care of load: Icon set,
      * Translation texts, Preconfiguration file.
      * 
