@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.ui.WikiLinks;
@@ -49,7 +48,7 @@ public class MemoryMonitor implements Runnable {
     }
 
     public void run() {
-        
+
         // Do not show dialog repeatedly.
         if (runAlready) {
             return;
@@ -61,7 +60,6 @@ public class MemoryMonitor implements Runnable {
         log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
-        
         if (maxMemory == totalMemory) {
             addWarning();
             runAlready = true;
@@ -129,8 +127,7 @@ public class MemoryMonitor implements Runnable {
             boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 500;
             // Write a new one if found.
             if (!alreadyMax) {
-                pw = new PrintWriter(new FileWriter(
-                    Constants.POWERFOLDER_INI_FILE));
+                pw = new PrintWriter(new FileWriter(controller.getL4JININame()));
                 log.fine("Writing new ini...");
                 pw.println("-Xms16m");
                 pw.println("-Xmx512m");
