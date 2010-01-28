@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -77,12 +77,12 @@ public class ConfigurationLoadRequest extends Message {
         return modifyWinINIConfigCentral;
     }
 
-    public static void modifyWinINIConfigCentral() {
+    public static void modifyWinINIConfigCentral(Controller c) {
         File installPath = WinUtils.getProgramInstallationPath();
         if (installPath == null) {
             return;
         }
-        File iniFile = new File(installPath, Constants.POWERFOLDER_INI_FILE);
+        File iniFile = new File(installPath, c.getL4JININame());
 
         if (!iniFile.exists()) {
             LOG.warning("Unable to update ini file. Not found: " + iniFile);
