@@ -60,11 +60,6 @@ public class Constants {
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
 
     /**
-     * Name of the INI file on windows installations.
-     */
-    public static final String POWERFOLDER_INI_FILE = "PowerFolder.l4j.ini";
-
-    /**
      * Check for updates every hour.
      */
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
