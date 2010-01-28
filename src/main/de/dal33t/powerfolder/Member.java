@@ -1728,7 +1728,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         }
                         if (clr.isModifyWinINIConfigCentral()) {
                             ConfigurationLoadRequest
-                                .modifyWinINIConfigCentral();
+                                .modifyWinINIConfigCentral(getController());
                         }
                         if (clr.isRestartRequired()) {
                             getController().shutdownAndRequestRestart();
