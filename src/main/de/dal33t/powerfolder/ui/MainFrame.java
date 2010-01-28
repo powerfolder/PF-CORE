@@ -407,8 +407,10 @@ public class MainFrame extends PFUIComponent {
                 + getController().getMySelf().getNick());
         }
 
-        if (getController().isVerbose() && Controller.getBuildTime() != null) {
-            title.append(" | build: " + Controller.getBuildTime());
+        if (getController().isVerbose()
+            && getController().getBuildTime() != null)
+        {
+            title.append(" | build: " + getController().getBuildTime());
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
@@ -531,9 +533,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Get the selected main tab index.
-     * 
-     * @return
+     * @return the selected main tab index.
      */
     public int getSelectedMainTabIndex() {
         return mainTabbedPane.getSelectedTabIndex();
