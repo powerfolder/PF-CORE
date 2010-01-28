@@ -187,6 +187,16 @@ public enum ConfigurationEntry {
      * #1715 If it should be possible to register at the server.
      */
     SERVER_REGISTER_ENABLED("server.register.enabled", true),
+    
+    /**
+     * Username for connection
+     */
+    SERVER_CONNECT_USERNAME("server.connect.username"),
+    
+    /**
+     * Password for connection
+     */
+    SERVER_CONNECT_PASSWORD("server.connect.password"),
 
     // General settings *******************************************************
 
