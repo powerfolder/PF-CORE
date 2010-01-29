@@ -349,5 +349,6 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     public void purge() throws IOException {
         FileUtils.recursiveDelete(archiveDirectory);
+        size = 0L;
     }
 }

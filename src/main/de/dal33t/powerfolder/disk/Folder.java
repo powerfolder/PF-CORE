@@ -474,20 +474,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Purges / deletes ALL files in the currently selected file archiver.
-     * 
-     * @return true if succeeded
-     * @see FileArchiver#maintain()
-     */
-    public boolean emptyFileArchive() {
-        int version = archiver.getVersionsPerFile();
-        archiver.setVersionsPerFile(0);
-        boolean worked = archiver.maintain();
-        archiver.setVersionsPerFile(version);
-        return worked;
-    }
-
-    /**
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if necessary.
      * 
