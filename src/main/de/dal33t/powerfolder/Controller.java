@@ -397,8 +397,7 @@ public class Controller extends PFComponent {
 
         // initialize logger
         initLogger();
-        logInfo("PowerFolder v" + PROGRAM_VERSION + " (build: "
-            + getBuildTime() + ')');
+        logInfo("PowerFolder v" + PROGRAM_VERSION);
         logFine("OS: " + System.getProperty("os.name"));
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
@@ -417,6 +416,7 @@ public class Controller extends PFComponent {
 
         // Initialize branding/preconfiguration of the client
         initDistribution();
+        logInfo("Build time: " + getBuildTime());
 
         Debug.writeSystemProperties();
 
@@ -1190,7 +1190,8 @@ public class Controller extends PFComponent {
         if (distribution != null && distribution.getBinaryName() != null) {
             return distribution.getBinaryName() + ".jar";
         }
-        logSevere("Unable to get JAR name for distribution: " + distribution);
+        logSevere("Unable to get JAR name for distribution: " + distribution,
+            new RuntimeException());
         return "PowerFolder.jar";
     }
 
