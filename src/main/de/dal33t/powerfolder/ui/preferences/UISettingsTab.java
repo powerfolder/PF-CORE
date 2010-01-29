@@ -23,13 +23,20 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Locale;
 
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.ComboBoxAdapter;
@@ -42,7 +49,11 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Skin;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -445,16 +456,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
      * 
      * @return a language chooser, which contains the supported locales
      */
+    @SuppressWarnings("serial")
     private JComboBox createLanguageChooser() {
         // Create combobox
         JComboBox chooser = new JComboBox();
-        Locale[] locales = Translation.getSupportedLocales();
-        for (Locale locale1 : locales) {
+        for (Locale locale1 : Translation.getSupportedLocales()) {
             chooser.addItem(locale1);
-        }
-        if (Translation.isCustomLocale()) {
-            chooser.addItem(Translation.getActiveLocale());
-            chooser.setEnabled(false);
         }
 
         // Add renderer
@@ -489,6 +496,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
      *            if minimize to system is choosen
      * @return the combobox
      */
+    @SuppressWarnings("serial")
     private JComboBox createXBehaviorChooser(ValueModel xBehaviorModel) {
         // Build combobox model
         ComboBoxAdapter<Boolean> model = new ComboBoxAdapter<Boolean>(

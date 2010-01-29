@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -52,7 +54,7 @@ public class Translation {
     public static final Locale PORTUGUESE = new Locale("pt");
 
     /** List of all supported locales */
-    private static Locale[] supportedLocales;
+    private static List<Locale> supportedLocales;
 
     private static Map<String, String> placeHolders = new ConcurrentHashMap<String, String>();
     static {
@@ -72,30 +74,41 @@ public class Translation {
     /**
      * @return the supported locales by PowerFolder
      */
-    public static synchronized Locale[] getSupportedLocales() {
+    public static synchronized List<Locale> getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new Locale[14];
-            supportedLocales[0] = Locale.ENGLISH;
-            supportedLocales[1] = Locale.UK;
-            supportedLocales[2] = Locale.GERMAN;
-            supportedLocales[3] = DUTCH;
-            supportedLocales[4] = Locale.JAPANESE;
-            supportedLocales[5] = Locale.ITALIAN;
-            supportedLocales[6] = SPANISH;
-            supportedLocales[7] = RUSSIAN;
-            supportedLocales[8] = Locale.FRENCH;
-            supportedLocales[9] = Locale.CHINESE;
-            supportedLocales[10] = SWEDISH;
-            supportedLocales[11] = ARABIC;
-            supportedLocales[12] = POLISH;
-            supportedLocales[13] = PORTUGUESE;
+            supportedLocales = new ArrayList<Locale>();
+            supportedLocales.add(Locale.ENGLISH);
+            supportedLocales.add(Locale.UK);
+            supportedLocales.add(Locale.GERMAN);
+            supportedLocales.add(DUTCH);
+            supportedLocales.add(Locale.JAPANESE);
+            supportedLocales.add(Locale.ITALIAN);
+            supportedLocales.add(SPANISH);
+            supportedLocales.add(RUSSIAN);
+            supportedLocales.add(Locale.FRENCH);
+            supportedLocales.add(Locale.CHINESE);
+            supportedLocales.add(SWEDISH);
+            supportedLocales.add(ARABIC);
+            supportedLocales.add(POLISH);
+            supportedLocales.add(PORTUGUESE);
         }
-        Arrays.sort(supportedLocales, new Comparator<Locale>() {
-            public int compare(Locale o1, Locale o2) {
-                return o1.getDisplayName(o1).compareTo(o2.getDisplayName(o2));
-            }
-        });
-        return supportedLocales;
+        Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
+        return Collections.unmodifiableList(supportedLocales);
+    }
+
+    /**
+     * Adds a new locale to the list of supported locales. For adding a new
+     * language dynamically.
+     * 
+     * @param locale
+     */
+    public static synchronized void addSupportedLocales(Locale locale) {
+        Reject.ifNull(locale, "Locale");
+        if (!getSupportedLocales().contains(locale)) {
+            supportedLocales.add(locale);
+        } else {
+            log.warning("Not adding locale. Already supported: " + locale);
+        }
     }
 
     /**
@@ -108,14 +121,6 @@ public class Translation {
             return Locale.ENGLISH;
         }
         return getResourceBundle().getLocale();
-    }
-
-    /**
-     * @return true if a custom (non-standard) locale is currently active.
-     */
-    public static boolean isCustomLocale() {
-        return !Arrays.asList(getSupportedLocales())
-            .contains(getActiveLocale());
     }
 
     /**
@@ -258,6 +263,14 @@ public class Translation {
             placeHolders.remove('{' + id + '}');
         } else {
             placeHolders.put('{' + id + '}', text);
+        }
+    }
+
+    private static final class LocaleComparator implements Comparator<Locale> {
+        private static LocaleComparator INSTANCE = new LocaleComparator();
+
+        public int compare(Locale o1, Locale o2) {
+            return o1.getDisplayName(o1).compareTo(o2.getDisplayName(o2));
         }
     }
 }

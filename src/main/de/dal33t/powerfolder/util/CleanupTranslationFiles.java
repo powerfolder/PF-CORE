@@ -86,7 +86,7 @@ public class CleanupTranslationFiles {
 
         // writeTranslationFile(null, keys, originals);
 
-        Locale[] supportedLocales = Translation.getSupportedLocales();
+        List<Locale> supportedLocales = Translation.getSupportedLocales();
         for (Locale locale : supportedLocales) {
             if (locale.getLanguage().equals("en")) {
                 // Skip en
@@ -98,14 +98,15 @@ public class CleanupTranslationFiles {
         }
 
         System.out.println("Streamlined " + originals.size()
-            + " translations. " + (supportedLocales.length - 1)
+            + " translations. " + (supportedLocales.size() - 1)
             + " Translation files");
     }
 
-    private void writeTranslationFile(String localeName, List<String> keys,
+    private void writeTranslationFile(String theLocaleName, List<String> keys,
         Properties translations) throws IOException
     {
         boolean original;
+        String localeName = theLocaleName;
         if (localeName == null) {
             localeName = "";
             original = true;
