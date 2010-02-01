@@ -139,7 +139,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
         LOG.warning(problem);
         bar.setVisible(false);
         statusLabel.setText(" ");
-        problemLabel.setText(problem);
+        problemLabel.setText(problem.replace("de.dal33t.powerfolder.", ""));
         problemLabel.setVisible(true);
         updateButtons();
         updateTitle();
