@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,18 +49,14 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.distribution.AbstractDistribution;
-import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.SecurityException;
-import de.dal33t.powerfolder.ui.preferences.ServerSelectorPanel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class LoginOnlineStoragePanel extends PFWizardPanel {
     private static final Logger LOG = Logger
@@ -205,7 +200,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 new ConfigurationLoaderDialog(getController()).openAndWait();
             }
         });
-        serverInfoLabel.setText(getServerString());
+        serverInfoLabel.setText(client.getServerString());
 
         // FIXME Use separate account stores for different servers?
         usernameLabel = new JLabel(Translation
@@ -251,33 +246,6 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         client.addListener(new MyServerClientListner());
     }
 
-    /**
-     * COPIED FROM {@link ServerSelectorPanel}
-     * 
-     * @return
-     */
-    private String getServerString() {
-        String addrStr;
-        if (getController().getOSClient().getServer() != null) {
-            if (getController().getOSClient().getServer().isMySelf()) {
-                addrStr = "myself";
-            } else {
-                InetSocketAddress addr = getController().getOSClient()
-                    .getServer().getReconnectAddress();
-                addrStr = addr != null ? NetworkUtil
-                    .getHostAddressNoResolve(addr.getAddress()) : "n/a";
-                if (addr != null
-                    && addr.getPort() != ConnectionListener.DEFAULT_PORT)
-                {
-                    addrStr += ":" + addr.getPort();
-                }
-            }
-        } else {
-            addrStr = "n/a";
-        }
-        return addrStr;
-    }
-
     protected String getTitle() {
         return Translation.getTranslation("wizard.webservice.login");
     }
@@ -296,7 +264,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         if (!AbstractDistribution.isPowerFolderServer(getController())) {
             serverLabel.setVisible(true);
             serverInfoLabel.getUIComponent().setVisible(true);
-            serverInfoLabel.setText(getServerString());
+            serverInfoLabel.setText(client.getServerString());
         } else {
             serverLabel.setVisible(false);
             serverInfoLabel.getUIComponent().setVisible(false);
