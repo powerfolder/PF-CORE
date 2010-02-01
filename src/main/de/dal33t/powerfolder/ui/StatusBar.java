@@ -60,6 +60,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
@@ -444,14 +445,16 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // Advise user of quality issue.
             Runnable runnable = new Runnable() {
                 public void run() {
+                    String wikiLink = Help.getWikiArticleURL(controller,
+                        WikiLinks.LIMITED_CONNECTIVITY);
+                    String infoText = Translation.getTranslation(
+                        "status_bar.poor_quality_warning.text", wikiLink);
                     NeverAskAgainResponse response = DialogFactory
                         .genericDialog(
                             controller,
                             Translation
                                 .getTranslation("status_bar.poor_quality_warning.title"),
-                            Translation
-                                .getTranslation("status_bar.poor_quality_warning.text"),
-                            new String[]{Translation
+                            infoText, new String[]{Translation
                                 .getTranslation("general.ok")}, 0,
                             GenericDialogType.INFO, Translation
                                 .getTranslation("general.neverAskAgain"));

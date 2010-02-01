@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -261,16 +263,16 @@ public class LimitedConnectivityChecker {
     public static void showConnectivityWarning(final Controller controllerArg) {
         Runnable showMessage = new Runnable() {
             public void run() {
+                String wikiLink = Help.getWikiArticleURL(controllerArg,
+                    WikiLinks.LIMITED_CONNECTIVITY);
                 NeverAskAgainResponse response = DialogFactory.genericDialog(
                     controllerArg, Translation
                         .getTranslation("limited_connection.title"),
                     Translation.getTranslation("limited_connection.text",
-                        ConfigurationEntry.PROVIDER_WIKI_URL
-                            .getValue(controllerArg)), new String[]{Translation
+                        wikiLink), new String[]{Translation
                         .getTranslation("general.ok")}, 0,
                     GenericDialogType.INFO, Translation
                         .getTranslation("limited_connection.dont_autodetect"));
-
                 if (response.isNeverAskAgain()) {
                     PreferencesEntry.TEST_CONNECTIVITY.setValue(controllerArg,
                         false);
