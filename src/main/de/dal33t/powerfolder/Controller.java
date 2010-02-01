@@ -22,6 +22,7 @@ package de.dal33t.powerfolder;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -128,7 +129,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.1 - 1.5.0.4"; // 1.5.0.1
+    public static final String PROGRAM_VERSION = "4.1.1.2"; // 1.5.0.4
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -407,6 +408,9 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
+        if (!Desktop.isDesktopSupported()) {
+            logWarning("Desktop utility not supported");
+        }
 
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);

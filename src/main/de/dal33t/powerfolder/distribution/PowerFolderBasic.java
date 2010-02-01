@@ -93,4 +93,14 @@ public class PowerFolderBasic extends AbstractDistribution {
         return false;
     }
 
+    @Override
+    public boolean showCredentials() {
+        return true;
+    }
+
+    @Override
+    public boolean showClientPromo() {
+        return true;
+    }
+
 }

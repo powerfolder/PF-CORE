@@ -40,11 +40,12 @@ public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
 
-    /**
-     * @return true if the credentials in the about box should be shown.
-     */
     public boolean showCredentials() {
-        return true;
+        return false;
+    }
+
+    public boolean showClientPromo() {
+        return false;
     }
 
     /**

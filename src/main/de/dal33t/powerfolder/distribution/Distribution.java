@@ -57,6 +57,11 @@ public interface Distribution {
     boolean showCredentials();
 
     /**
+     * @return true if promotional GFX should be shown from system tray.
+     */
+    boolean showClientPromo();
+
+    /**
      * @return true if this distribution is allowed to choose from different
      *         skins.
      */

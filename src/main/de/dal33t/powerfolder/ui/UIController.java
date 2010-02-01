@@ -74,6 +74,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -108,6 +109,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -346,18 +348,20 @@ public class UIController extends PFComponent {
         {
             gotoHPIfRequired();
             // Show promo after 5 seconds
-            getController().scheduleAndRepeat(new TimerTask() {
-                @Override
-                public void run() {
-                    UIUtil.invokeLaterInEDT(new Runnable() {
-                        public void run() {
-                            showPromoGFX();
-                        }
-                    });
-                }
-            }, 0, 1000L * 60 * 60);
+            if (getController().getDistribution().showClientPromo()) {
+                getController().scheduleAndRepeat(new TimerTask() {
+                    @Override
+                    public void run() {
+                        UIUtil.invokeLaterInEDT(new Runnable() {
+                            public void run() {
+                                showPromoGFX();
+                            }
+                        });
+                    }
+                }, 0, 1000L * 60 * 60);
+            }
         }
-        
+
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
             getController().scheduleAndRepeat(new TimerTask() {
@@ -406,10 +410,8 @@ public class UIController extends PFComponent {
 
     private void showPromoGFX() {
         try {
-            JLabel promoLabel = new JLabel(
-                new ImageIcon(
-                    new URL(
-                        "http://www.powerfolder.com/fileadmin/clientimages/clientpromo.gif")));
+            JLabel promoLabel = new JLabel(new ImageIcon(new URL(
+                Constants.PROVIDER_CLIENT_PROMO_URL)));
             promoLabel.setSize(new Dimension(200, 200));
             promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             promoLabel.addMouseListener(new MouseAdapter() {
@@ -746,9 +748,13 @@ public class UIController extends PFComponent {
     public void showOutOfMemoryError(OutOfMemoryError oome) {
         if (!seenOome) {
             seenOome = true;
+            // http\://www.powerfolder.com/wiki/Memory_configuration
+            String memoryConfigHelp = Help.getWikiArticleURL(getController(),
+                WikiLinks.MEMORY_CONFIGURATION);
+            String infoText = Translation.getTranslation(
+                "low_memory.error.text", memoryConfigHelp);
             int response = DialogFactory.genericDialog(getController(),
-                Translation.getTranslation("low_memory.error.title"),
-                Translation.getTranslation("low_memory.error.text"),
+                Translation.getTranslation("low_memory.error.title"), infoText,
                 new String[]{
                     Translation.getTranslation("general.ok"),
                     Translation
@@ -773,7 +779,7 @@ public class UIController extends PFComponent {
      */
     private void displayInformationWindow() {
         boolean inline = PreferencesEntry.INLINE_INFO_MODE
-                .getValueInt(getController()) != MainFrame.INLINE_INFO_FREE;
+            .getValueInt(getController()) != MainFrame.INLINE_INFO_FREE;
         if (inline) {
             mainFrame.showInlineInfoPanel((JPanel) informationFrame
                 .getUIComponent().getContentPane(), informationFrame
@@ -1102,7 +1108,7 @@ public class UIController extends PFComponent {
     public boolean isStarted() {
         return started;
     }
-    
+
     /**
      * @return true if the information frame is showing a folder.
      */

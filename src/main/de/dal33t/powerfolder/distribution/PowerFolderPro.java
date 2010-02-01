@@ -75,4 +75,14 @@ public class PowerFolderPro extends AbstractDistribution {
     public boolean allowSkinChange() {
         return true;
     }
+
+    @Override
+    public boolean showCredentials() {
+        return true;
+    }
+
+    @Override
+    public boolean showClientPromo() {
+        return true;
+    }
 }
