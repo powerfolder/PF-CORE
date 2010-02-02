@@ -168,6 +168,10 @@ public interface FolderService {
      */
     void setArchiveMode(FolderInfo foInfo, ArchiveMode mode, int versionsPerFile);
 
+    ArchiveMode getArchiveMode(FolderInfo foInfo);
+
+    int getVersionsPerFile(FolderInfo foInfo);
+
     // Information ************************************************************
 
     /**
