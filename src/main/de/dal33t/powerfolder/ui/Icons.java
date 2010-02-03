@@ -35,6 +35,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.PixelGrabber;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -57,15 +58,16 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
 
 /**
  * Contains all icons for the powerfolder application. Icons should be got by
- * calling something like <code>Icons.getIconById(Icon.EXAMPLE)</code>. This
- * will dereference via Icons.properties and will return the Icon as well as
- * caching it, so that subsequent calls will return the same object. The
- * advantage of this aproach is that Icons are only greated as required, saving
- * time and memory. Similarly, Images should be got by calling something like
+ * calling <code>Icons.getIconById(Icon.EXAMPLE)</code>. This will dereference
+ * the icon via properties file and will return the Icon as well as caching it,
+ * so that subsequent calls will return the same object. The advantage of this
+ * approach is that Icons are only get as required, saving time and memory.
+ * Similarly, Images should be got by calling something like
  * <code>Icons.getImageById(Icon.EXAMPLE)</code>.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -206,7 +208,6 @@ public class Icons {
     public static final String SYSTRAY_DEFAULT = "systray_default.icon";
 
     private static final Logger log = Logger.getLogger(Icons.class.getName());
-    private static final String DEFAULT_ICON_PROPERTIES_FILENAME = "Icons.properties";
     private static final String DISABLED_EXTENSION_ADDITION = "_disabled";
     private static final Object FILE_LOCK = new Object();
 
@@ -219,9 +220,8 @@ public class Icons {
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
-    private static String overridePropertiesFilename;
+    private static String DEFAULT_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
     private static Properties iconProperties;
-    private static Properties overrideIconProperties;
 
     /**
      * Constructor - no instances.
@@ -231,18 +231,30 @@ public class Icons {
     }
 
     /**
-     * Configure PowerFolder to use a different properties file / icons. If PF
-     * can not find the icon in the override set, it will default to internal
-     * icons, so users do not need to define a full set of icons.
+     * Configure the properties file / icons. PowerFolder will takes the icons
+     * from this properties.
      * 
-     * @param iconSetFile
+     * @param icoProps
      */
-    public static void loadOverrideFile(String iconSetFile) {
-        log.info("Loaded override icons file " + iconSetFile);
-        overridePropertiesFilename = iconSetFile;
-        overrideIconProperties = null;
+    public static void setIconProperties(Properties icoProps) {
+        Reject.ifNull(icoProps, "iconProperties");
+        Reject.ifTrue(icoProps.isEmpty(), "iconProperties are empty");
+        log.info("Set icons properties: " + icoProps);
+        iconProperties = icoProps;
         ID_ICON_MAP.clear();
         ID_IMAGE_MAP.clear();
+    }
+
+    /**
+     * @return the icon properties. Loads the default icon properties if
+     *         null/not set/not loaded.
+     */
+    public static synchronized Properties getIconProperties() {
+        if (iconProperties == null) {
+            iconProperties = loadProperties(DEFAULT_PROPERTIES_FILENAME);
+        }
+        // Don't hand out internal instance to prevent side effects.
+        return new Properties(iconProperties);
     }
 
     /**
@@ -253,7 +265,6 @@ public class Icons {
      * @return the icon
      */
     public static Icon getIconById(String id) {
-
         if (id == null) {
             log.severe("Icon id null ???");
             return null;
@@ -353,15 +364,6 @@ public class Icons {
      * @return
      */
     private static String getIconId(String id) {
-        Properties overrideProperties = getOverrideIconProperties();
-        if (overrideProperties != null) {
-            String iconId = overrideProperties.getProperty(id);
-            if (iconId != null) {
-                return iconId;
-            }
-        }
-
-        // Not found in override icon set, try local.
         return getIconProperties().getProperty(id);
     }
 
@@ -883,73 +885,40 @@ public class Icons {
         return cm.hasAlpha();
     }
 
-    private static synchronized Properties getIconProperties() {
-        if (iconProperties == null) {
-            iconProperties = new Properties();
-
-            InputStream in = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(DEFAULT_ICON_PROPERTIES_FILENAME);
-            if (in == null) {
-                throw new IllegalArgumentException(
-                    "Icon properties file not found: "
-                        + DEFAULT_ICON_PROPERTIES_FILENAME);
-            }
-
-            BufferedInputStream buffered = null;
-            try {
-                buffered = new BufferedInputStream(in);
-                iconProperties.load(buffered);
-            } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Cannot read: "
-                    + DEFAULT_ICON_PROPERTIES_FILENAME, ioe);
-            } finally {
-                if (buffered != null) {
-                    try {
-                        buffered.close();
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
-            }
-        }
-        return iconProperties;
-    }
-
     /**
-     * This gets icon mappings from an override set. Referenced icons must be in
-     * the classpath. On Windows environments, file separators in the properties
-     * file need to be \\ e.g. play.icon=myIcons\\Play.gif
+     * Loads a properties file from classpath.
      * 
-     * @return
+     * @param filename
+     *            the filename to load
+     * @return the properties that have been loaded. Or <code>null</code> if not
+     *         found.
      */
-    private static synchronized Properties getOverrideIconProperties() {
+    public static Properties loadProperties(String filename) {
+        Reject.ifBlank(filename, "Properties blank");
 
-        if (overridePropertiesFilename != null
-            && overrideIconProperties == null)
-        {
-            overrideIconProperties = new Properties();
-
-            BufferedInputStream buf = null;
-            try {
-                InputStream inputStream = Thread.currentThread()
-                    .getContextClassLoader().getResourceAsStream(
-                        overridePropertiesFilename);
-                buf = new BufferedInputStream(inputStream);
-                overrideIconProperties.load(buf);
-            } catch (IOException ioe) {
-                log.log(Level.INFO, "Cannot read: "
-                    + overridePropertiesFilename, ioe);
-            } finally {
-                if (buf != null) {
-                    try {
-                        buf.close();
-                    } catch (Exception e) {
-                        // Ignore
-                    }
+        BufferedInputStream buf = null;
+        try {
+            Properties props = new Properties();
+            InputStream inputStream = Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(filename);
+            if (inputStream == null) {
+                throw new FileNotFoundException("File not found");
+            }
+            buf = new BufferedInputStream(inputStream);
+            props.load(buf);
+            return props;
+        } catch (IOException ioe) {
+            log.log(Level.INFO, "Cannot read properties file: " + filename
+                + ". " + ioe, ioe);
+            return null;
+        } finally {
+            if (buf != null) {
+                try {
+                    buf.close();
+                } catch (Exception e) {
+                    // Ignore
                 }
             }
         }
-        return overrideIconProperties;
     }
-
 }

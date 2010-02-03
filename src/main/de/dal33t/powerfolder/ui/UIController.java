@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -725,9 +726,9 @@ public class UIController extends PFComponent {
                 .getName());
         }
 
-        String fileName = activeSkin.getIconsPropertiesFileName();
-        if (fileName != null) {
-            Icons.loadOverrideFile(fileName);
+        Properties props = activeSkin.getIconsProperties();
+        if (props != null) {
+            Icons.setIconProperties(props);
         }
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
