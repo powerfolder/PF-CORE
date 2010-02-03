@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
@@ -36,7 +37,8 @@ public class BlackMoonSkin implements Skin {
         return new SyntheticaBlackMoonLookAndFeel();
     }
 
-    public String getIconsPropertiesFileName() {
-        return "skin/BlackMoonIcons.properties";
+    public Properties getIconsProperties() {
+        // Use default icon properties.
+        return null;
     }
 }

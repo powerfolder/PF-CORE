@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.util.Properties;
+
+import de.dal33t.powerfolder.ui.Icons;
+
 public class SnowlandBasic extends AbstractSyntheticaSkin {
     public static final String NAME = "Snowland (Basic)";
 
@@ -33,8 +37,12 @@ public class SnowlandBasic extends AbstractSyntheticaSkin {
     }
 
     @Override
-    public String getIconsPropertiesFileName() {
-        return "de/dal33t/powerfolder/skin/powerfolderbasic/icons.properties";
+    public Properties getIconsProperties() {
+        Properties p = Icons.getIconProperties();
+        Properties my = Icons
+            .loadProperties("de/dal33t/powerfolder/skin/powerfolderbasic/icons.properties");
+        p.putAll(my);
+        return p;
     }
 
     @Override

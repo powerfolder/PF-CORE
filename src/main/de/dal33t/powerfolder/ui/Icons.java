@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
+import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.OverlayedIcon;
@@ -220,7 +221,8 @@ public class Icons {
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
-    private static String DEFAULT_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
+    // Snowload is our default.
+    private static String DEFAULT_PROPERTIES_FILENAME = Snowland.PROPERTIES_FILENAME;
     private static Properties iconProperties;
 
     /**

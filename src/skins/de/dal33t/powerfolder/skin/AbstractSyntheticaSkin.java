@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
@@ -30,11 +31,11 @@ import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
  */
 public abstract class AbstractSyntheticaSkin implements Skin {
 
+    public abstract Properties getIconsProperties();
+
     public abstract String getName();
 
     public abstract String getID();
-
-    public abstract String getIconsPropertiesFileName();
 
     public abstract String getSynthXMLFileName();
 

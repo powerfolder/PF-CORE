@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaGreenDreamLookAndFeel;
 
@@ -35,8 +37,12 @@ public class GreenDreamSkin implements Skin {
     public LookAndFeel getLookAndFeel() throws ParseException {
         return new SyntheticaGreenDreamLookAndFeel();
     }
-    
-    public String getIconsPropertiesFileName() {
-        return "de/dal33t/powerfolder/skin/greendream/icons.properties";
+
+    public Properties getIconsProperties() {
+        Properties p = Icons.getIconProperties();
+        Properties my = Icons
+            .loadProperties("de/dal33t/powerfolder/skin/greendream/icons.properties");
+        p.putAll(my);
+        return p;
     }
 }

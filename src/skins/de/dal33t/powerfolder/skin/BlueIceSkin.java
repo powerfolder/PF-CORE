@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
@@ -36,7 +37,8 @@ public class BlueIceSkin implements Skin {
         return new SyntheticaBlueIceLookAndFeel();
     }
 
-    public String getIconsPropertiesFileName() {
-        return "skin/BlueIceIcons.properties";
+    public Properties getIconsProperties() {
+        // Use default icon properties.
+        return null;
     }
 }

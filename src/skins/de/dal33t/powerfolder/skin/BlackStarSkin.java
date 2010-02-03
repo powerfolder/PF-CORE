@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
@@ -32,11 +33,12 @@ public class BlackStarSkin implements Skin {
         return Translation.getTranslation("skin.black_star");
     }
 
-    public String getIconsPropertiesFileName() {
-        return "skin/BlackStarIcons.properties";
-    }
-
     public LookAndFeel getLookAndFeel() throws ParseException {
         return new SyntheticaBlackStarLookAndFeel();
+    }
+
+    public Properties getIconsProperties() {
+        // Use default icon properties.
+        return null;
     }
 }

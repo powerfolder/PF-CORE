@@ -19,7 +19,10 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.util.Properties;
+
 public class Snowland extends AbstractSyntheticaSkin {
+    public static String PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
     public static final String NAME = "Snowland";
 
     @Override
@@ -33,8 +36,9 @@ public class Snowland extends AbstractSyntheticaSkin {
     }
 
     @Override
-    public String getIconsPropertiesFileName() {
-        return "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
+    public Properties getIconsProperties() {
+        // Use default
+        return null;
     }
 
     @Override
