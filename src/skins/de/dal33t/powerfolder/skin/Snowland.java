@@ -22,7 +22,8 @@ package de.dal33t.powerfolder.skin;
 import java.util.Properties;
 
 public class Snowland extends AbstractSyntheticaSkin {
-    public static String PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
+    public static String ICON_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/powerfolder1/icons.properties";
+    
     public static final String NAME = "Snowland";
 
     @Override

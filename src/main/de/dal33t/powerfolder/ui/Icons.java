@@ -222,7 +222,7 @@ public class Icons {
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
     // Snowload is our default.
-    private static String DEFAULT_PROPERTIES_FILENAME = Snowland.PROPERTIES_FILENAME;
+    private static String DEFAULT_PROPERTIES_FILENAME = Snowland.ICON_PROPERTIES_FILENAME;
     private static Properties iconProperties;
 
     /**

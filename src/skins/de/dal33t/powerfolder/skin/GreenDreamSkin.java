@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaGreenDreamLookAndFeel;
 
 public class GreenDreamSkin implements Skin {
+    public static String ICON_PROPERTIES_FILENAME = "de/dal33t/powerfolder/skin/greendream/icons.properties";
 
     public String getName() {
         return Translation.getTranslation("skin.green_dream");
@@ -40,8 +41,7 @@ public class GreenDreamSkin implements Skin {
 
     public Properties getIconsProperties() {
         Properties p = Icons.getIconProperties();
-        Properties my = Icons
-            .loadProperties("de/dal33t/powerfolder/skin/greendream/icons.properties");
+        Properties my = Icons.loadProperties(ICON_PROPERTIES_FILENAME);
         p.putAll(my);
         return p;
     }
