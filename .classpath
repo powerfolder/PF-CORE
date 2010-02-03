@@ -27,18 +27,18 @@
 	<classpathentry kind="lib" path="lib/synthetica/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/synthetica/swingx.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/synthetica.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlackMoon.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlackStar.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlueIce.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlueMoon.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaBlueSteel.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaGreenDream.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaMauveMetallic.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaOrangeMetallic.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaSilverMoon.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaSkyMetallic.jar"/>
-	<classpathentry kind="lib" path="lib/synthetica/syntheticaWhiteVision.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlackMoon.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlackStar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueIce.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueMoon.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaBlueSteel.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaGreenDream.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaMauveMetallic.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaOrangeMetallic.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSilverMoon.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSkyMetallic.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaWhiteVision.jar"/>
 	<classpathentry kind="lib" path="lib/h2-1.1.109.jar"/>
 	<classpathentry kind="lib" path="lib/l2fprod-common-directorychooser.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ehcache-1.6.0.jar"/>
