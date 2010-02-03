@@ -90,12 +90,12 @@ public class ChatModel {
                             boolean local) {
         ChatLine chatLine = new ChatLine(fromMember, message);
         if (local) {
-            // Text sent by me, so show in peer's panel.
+            // Text sent by me to peer, so echo locally in his panel.
             ChatBox chat = getChatBox(toMember);
             chat.addLine(chatLine);
             fireChatModelChanged(toMember, chatLine);
         } else {
-            // Text received from peer, so display in my panel.
+            // Text received from peer, so display in his panel.
             ChatBox chat = getChatBox(fromMember);
             chat.addLine(chatLine);
             fireChatModelChanged(fromMember, chatLine);
