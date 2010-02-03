@@ -1094,7 +1094,7 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().dispose();
 
             // Close systray
-            if (OSUtil.isSystraySupported()) {
+            if (OSUtil.isSystraySupported() && sysTrayMenu != null) {
                 SystemTray.getSystemTray().remove(sysTrayMenu);
             }
         }
@@ -1177,7 +1177,7 @@ public class UIController extends PFComponent {
     }
 
     public Image getTrayIcon() {
-        return sysTrayMenu.getImage();
+        return sysTrayMenu != null ? sysTrayMenu.getImage() : null;
     }
 
     // Message dialog helpers *************************************************
