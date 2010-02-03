@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.skin;
 
 import java.text.ParseException;
+import java.util.Properties;
 
 import javax.swing.LookAndFeel;
 
@@ -44,7 +45,9 @@ public interface Skin {
     LookAndFeel getLookAndFeel() throws ParseException;
 
     /**
-     * @return Name of an icon properties file with icon overrides.
+     * @return icon properties to use. Return <code>null</code> if default set
+     *         should be used.
      */
-    String getIconsPropertiesFileName();
+    Properties getIconsProperties();
+
 }
