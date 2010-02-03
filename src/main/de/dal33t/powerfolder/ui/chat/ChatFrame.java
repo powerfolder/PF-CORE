@@ -290,13 +290,12 @@ public class ChatFrame extends MagneticFrame {
      */
     private void handleChatEvent(ChatModelEvent event) {
         if (event.getSource() instanceof Member) {
-            Member source = (Member) event.getSource();
+            Member fromMember = (Member) event.getSource();
 
-            // Okay, we are up.
-            // Do we have a tab for this guy?
+            // Do we have a tab for this member?
             ChatPanel panel = null;
             for (MemberInfo memberInfo : memberPanels.keySet()) {
-                if (source.getInfo().equals(memberInfo)) {
+                if (fromMember.getInfo().equals(memberInfo)) {
                     // We have this guy.
                     panel = memberPanels.get(memberInfo);
                     break;
@@ -311,12 +310,12 @@ public class ChatFrame extends MagneticFrame {
                 if (event.isStatus()) {
                     return;
                 }
-                panel = displayChat(source.getInfo(), false);
+                panel = displayChat(fromMember.getInfo(), false);
             }
 
-            if (!showingTabForMember(source.getInfo())) {
-                newMessages.add(source.getInfo());
-                updateTabIcons(source);
+            if (!showingTabForMember(fromMember.getInfo())) {
+                newMessages.add(fromMember.getInfo());
+                updateTabIcons(fromMember);
             }
 
             // Now display message.

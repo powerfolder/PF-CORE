@@ -83,13 +83,23 @@ public class ChatModel {
      *            The member that typed the message (myself or the other member)
      * @param message
      *            The actual line of text
+     * @param local
+     *            True if local, so just echo the text I sent
      */
-    public void addChatLine(Member toMember, Member fromMember, String message)
-    {
-        ChatBox chat = getChatBox(toMember);
+    public void addChatLine(Member toMember, Member fromMember, String message,
+                            boolean local) {
         ChatLine chatLine = new ChatLine(fromMember, message);
-        chat.addLine(chatLine);
-        fireChatModelChanged(fromMember, chatLine);
+        if (local) {
+            // Text sent by me, so show in peer's panel.
+            ChatBox chat = getChatBox(toMember);
+            chat.addLine(chatLine);
+            fireChatModelChanged(toMember, chatLine);
+        } else {
+            // Text received from peer, so display in my panel.
+            ChatBox chat = getChatBox(fromMember);
+            chat.addLine(chatLine);
+            fireChatModelChanged(fromMember, chatLine);
+        }
     }
 
     /**
@@ -155,7 +165,9 @@ public class ChatModel {
      * Calls all listeners
      * 
      * @param fromMember
+     *              Member that sent the message line
      * @param line
+     *              The message line
      */
     private void fireChatModelChanged(Member fromMember, ChatLine line) {
         chatModelListeners.chatChanged(new ChatModelEvent(fromMember, line
@@ -279,8 +291,14 @@ public class ChatModel {
          */
         public void handleMessage(Member source, Message message) {
             if (message instanceof MemberChatMessage) {
-                MemberChatMessage mcMessage = (MemberChatMessage) message;
-                addChatLine(controller.getMySelf(), source, mcMessage.text);
+
+                // Do not care about own, sent messages,
+                // which are already echoed by the chat panel.
+                if (!controller.getMySelf().equals(source)) {
+                    MemberChatMessage mcMessage = (MemberChatMessage) message;
+                    addChatLine(controller.getMySelf(), source, mcMessage.text,
+                            false);
+                }
             }
         }
 

@@ -342,7 +342,7 @@ public class ChatPanel extends PFUIComponent {
                 if (message.trim().length() > 0) { // no SPAM on "enter"
                     if (chatPartner.isCompletelyConnected()) {
                         chatModel.addChatLine(chatPartner, getController()
-                            .getMySelf(), message);
+                            .getMySelf(), message, true);
                         chatInput.setText("");
                         MemberChatMessage chatMessage = new MemberChatMessage(
                             message);
