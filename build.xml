@@ -86,7 +86,7 @@ For creation of the installer:
 			<include name="h2-1.1.109.jar" />
 			<include name="ehcache-1.6.0.jar" />
 			<include name="l2fprod-common-directorychooser.jar" />
-      <include name="jcalendar.jar" />
+			<include name="jcalendar.jar" />
 
 			<include name="synthetica/commons-logging-1.1.jar" />
 			<include name="synthetica/flexdock.jar" />
@@ -336,90 +336,42 @@ For creation of the installer:
 			</packageset>
 
 			<doctitle>
-				<![CDATA[<h1>PowerFolder API Documentation</h1>]]></doctitle>
-		<!-- J2SE API. -->
+				<![CDATA[<h1>PowerFolder API Documentation</h1>]]>
+			</doctitle>
 		<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-	</javadoc>
-</target>
-
-<!-- Build the download applet. -->
-<target name="jar-applet" depends="init">
-
-	<mkdir dir="${dist.dir}" />
-	<mkdir dir="${build.dir}" />
-
-	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
-		<compilerarg value="-Xlint:${Unchecked}" />
-		<compilerarg value="-Xlint:${Fallthrough}" />
-
-		<src path="${applet.dir}" />
-	</javac>
-
-	<!-- copy files from etc to include in jar -->
-	<copy todir="${dist.dir}">
-		<fileset dir="${applet.dir}">
-			<include name="**/*.html" />
-		</fileset>
-	</copy>
-
-
-	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
-            <manifest>
-                <attribute name="Built-By" value="${BuildBy}" />
-                <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
-                <attribute name="BuildDateTime" value="${BuildDateTime}" />
-                <attribute name="Sealed" value="true" />
-                <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
-            </manifest>
-        </jar>-->
-</target>
-
-<target name="demo" depends="init" description="Builds a pair of demo Skins">
-
-	<delete dir="${build.dir}" />
-	<delete dir="${dist.dir}" />
-
-	<mkdir dir="${build.dir}" />
-	<mkdir dir="${dist.dir}" />
-
-	<javac destdir="${build.dir}" source="1.5" target="1.5" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
-
-		<!-- javac 1.5 specific warnings -->
-		<compilerarg value="-Xlint:${Unchecked}" />
-		<compilerarg value="-Xlint:${Fallthrough}" />
-
-		<classpath>
-			<fileset refid="libs" />
-			<fileset refid="testlibs" />
-		</classpath>
-
-		<src path="${demo.src.dir}" />
-		<src path="${main.src.dir}" />
-		<src path="${jwf.src.dir}" />
-		<src path="${jnotify.src.dir}" />
-	</javac>
-
-	<copy file="${demo.src.dir}/demo/synth.xml" todir="${build.dir}/demo" />
-	<copy file="${demo.src.dir}/demo/synth2.xml" todir="${build.dir}/demo" />
-	<copy file="${demo.src.dir}/CustomIcons.properties" todir="${build.dir}" />
-	<copy file="${demo.src.dir}/OtherIcons.properties" todir="${build.dir}" />
-	<copy file="${demo.src.dir}/icons/PowerFolderDemo.png" todir="${build.dir}/icons" />
-	<copy file="${demo.src.dir}/icons/PowerFolderDemo2.png" todir="${build.dir}/icons" />
-	<copy file="${demo.src.dir}/META-INF/services/de.dal33t.powerfolder.skin.Skin" todir="${build.dir}/META-INF/services" />
-
-	<jar jarfile="${dist.dir}/CustomLookAndFeel.jar" basedir="${build.dir}" update="true">
-		<include name="demo/**" />
-		<include name="icons/**" />
-		<include name="META-INF/**" />
-		<include name="CustomIcons.properties" />
-		<include name="OtherIcons.properties" />
-		<manifest>
-			<attribute name="Built-By" value="${BuildBy}" />
-			<attribute name="BuildDateTime" value="${BuildDateTime}" />
-			<attribute name="Sealed" value="false" />
-		</manifest>
-	</jar>
-
-</target>
+    	</javadoc>
+    </target>
+    
+    <!-- Build the download applet. -->
+    <target name="jar-applet" depends="init">
+    
+    	<mkdir dir="${dist.dir}" />
+    	<mkdir dir="${build.dir}" />
+    
+    	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+    		<compilerarg value="-Xlint:${Unchecked}" />
+    		<compilerarg value="-Xlint:${Fallthrough}" />
+    
+    		<src path="${applet.dir}" />
+    	</javac>
+    
+    	<!-- copy files from etc to include in jar -->
+    	<copy todir="${dist.dir}">
+    		<fileset dir="${applet.dir}">
+    			<include name="**/*.html" />
+    		</fileset>
+    	</copy>
+    
+    
+    	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+                    <manifest>
+                        <attribute name="Built-By" value="${BuildBy}" />
+                        <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
+                        <attribute name="BuildDateTime" value="${BuildDateTime}" />
+                        <attribute name="Sealed" value="true" />
+                        <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
+                    </manifest>
+                </jar>-->
+    </target>
 
 </project>
