@@ -781,12 +781,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      */
     private String getFileID() throws Error {
         if (fileID == null) {
-            try {
-                fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
-                    .getRelativeName().getBytes("UTF8"))));
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e);
-            }
+            fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
+                .getRelativeName().getBytes(Convert.UTF8))));
         }
         return fileID;
     }
