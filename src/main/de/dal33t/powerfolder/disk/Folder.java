@@ -362,9 +362,11 @@ public class Folder extends PFComponent {
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
             Invitation inv = createInvitation();
-            InvitationUtil.save(inv, new File(folderSettings.getLocalBaseDir(),
-                FileUtils.removeInvalidFilenameChars(inv.folder.name)
-                    + ".invitation"));
+            File invFile = new File(folderSettings.getLocalBaseDir(), FileUtils
+                .removeInvalidFilenameChars(inv.folder.name)
+                + ".invitation");
+            InvitationUtil.save(inv, invFile);
+            scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
         }
 
         watcher = new FolderWatcher(this);

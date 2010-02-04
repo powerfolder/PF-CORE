@@ -177,7 +177,7 @@ public class FileRequestor extends PFComponent {
 
         // Dont request files until has own database
         if (!folder.hasOwnDatabase()) {
-            logFine("Not requesting files. No own database for " + folder);
+            logWarning("Not requesting files. No own database for " + folder);
             return;
         }
         if (folder.getConnectedMembersCount() == 0) {
