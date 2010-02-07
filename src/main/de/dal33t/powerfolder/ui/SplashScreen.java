@@ -222,9 +222,9 @@ public class SplashScreen extends JWindow {
                         g.setColor(FREE_TEXT_COLOR);
                     }
                     String version = Controller.PROGRAM_VERSION;
-                    g.drawString(version, getWidth() - 95, 146);
+                    g.drawString(version, 20, getHeight() - 25);
                     if (Feature.TIP_OF_DAY.isEnabled()) {
-                        g.drawString(tipOfTheDay, 30, 146);
+                        g.drawString(tipOfTheDay, 20, getHeight() - 50);
                     }
                 }
             });
