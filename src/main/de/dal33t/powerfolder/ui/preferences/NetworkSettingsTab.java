@@ -193,6 +193,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
             .getValueBoolean(getController()) ? 0 : 1;
         serverDisconnectBehaviorBox.setSelectedIndex(selected);
+        serverDisconnectBehaviorBox.setToolTipText(""
+            + serverDisconnectBehaviorBox.getSelectedItem());
+        serverDisconnectBehaviorBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                serverDisconnectBehaviorBox.setToolTipText(""
+                    + serverDisconnectBehaviorBox.getSelectedItem());
+            }
+        });
     }
 
     private void enableDisableComponents(boolean lanOnly) {
@@ -294,7 +302,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), String.valueOf(relayedConnectionBox.isSelected()));
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
-                String.valueOf(udtConnectionBox.isSelected()));
+            String.valueOf(udtConnectionBox.isSelected()));
         PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
             useOnlineStorageCB.isSelected());
         boolean syncAnyways = serverDisconnectBehaviorBox.getSelectedIndex() == 0;
