@@ -175,6 +175,12 @@ public interface FolderService {
     // Information ************************************************************
 
     /**
+     * @param foInfo
+     * @return true if this folder is joined by the remote side.
+     */
+    boolean hasJoined(FolderInfo foInfo);
+
+    /**
      * @param foInfos
      * @return the local size occupied by the given folders.
      */
