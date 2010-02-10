@@ -142,7 +142,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
         builder.add(p, cc.xyw(3, 5, 2));
 
         builder.add(new JLabel(Translation
-            .getTranslation("general.archive_mode")), cc.xy(1, 7));
+            .getTranslation("general.local_archive_mode")), cc.xy(1, 7));
         builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3, 7, 2));
 
         return builder.getPanel();
