@@ -554,50 +554,63 @@ public class HomeTab extends PFUIComponent {
     private void updateOnlineStorageDetails() {
         boolean active = false;
         boolean showBuyNow = false;
-        if (client.getUsername() == null
-            || client.getUsername().trim().length() == 0)
+        String username = client.getUsername();
+        if (username == null || username.trim().length() == 0)
         {
             onlineStorageAccountLabel.setText(Translation
                 .getTranslation("home_tab.online_storage.not_setup"));
             onlineStorageAccountLabel.setToolTipText(Translation
                 .getTranslation("home_tab.online_storage.not_setup.tips"));
-        } else if (client.getPassword() == null
-            || client.getPassword().trim().length() == 0)
-        {
-            onlineStorageAccountLabel.setText(Translation
-                .getTranslation("home_tab.online_storage.no_password"));
-            onlineStorageAccountLabel.setToolTipText(Translation
-                .getTranslation("home_tab.online_storage.no_password.tips"));
-        } else if (client.isConnected()) {
-            if (!client.isLoggedIn()) {
-                onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account_not_logged_in", client
-                        .getUsername()));
-                onlineStorageAccountLabel
-                    .setToolTipText(Translation
-                        .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
-            } else if (client.getAccount().getOSSubscription().isDisabled()) {
-                onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account_disabled", client
-                        .getUsername()));
-                onlineStorageAccountLabel
-                    .setToolTipText(Translation
-                        .getTranslation("home_tab.online_storage.account_disabled.tips"));
-                showBuyNow = true;
+        } else {
+            String password = client.getPassword();
+            if (password == null || password.trim().length() == 0) {
+                onlineStorageAccountLabel.setText(Translation
+                    .getTranslation("home_tab.online_storage.no_password"));
+                onlineStorageAccountLabel.setToolTipText(Translation
+                    .getTranslation("home_tab.online_storage.no_password.tips"));
+            } else if (client.isConnected()) {
+                if (client.isLoggedIn()) {
+                    OnlineStorageSubscription storageSubscription =
+                            client.getAccount().getOSSubscription();
+                    if (storageSubscription.isDisabled()) {
+                        Date expirationDate = storageSubscription.getDisabledExpirationDate();
+                        if (storageSubscription.isDisabledExpiration() &&
+                                expirationDate != null) {
+                            onlineStorageAccountLabel.setText(Translation.getTranslation(
+                                    "home_tab.online_storage.account_disabled_expiration",
+                                    username, Format.formatDateCanonical(expirationDate)));
+                        } else if (storageSubscription.isDisabledUsage()) {
+                            onlineStorageAccountLabel.setText(Translation.getTranslation(
+                                    "home_tab.online_storage.account_disabled_usage", username));
+                        } else {
+                            onlineStorageAccountLabel.setText(Translation.getTranslation(
+                                    "home_tab.online_storage.account_disabled", username));
+                        }
+                        onlineStorageAccountLabel
+                                .setToolTipText(Translation
+                                        .getTranslation("home_tab.online_storage.account_disabled.tips"));
+                        showBuyNow = true;
+                    } else {
+                        onlineStorageAccountLabel.setText(Translation.getTranslation(
+                                "home_tab.online_storage.account", username));
+                        onlineStorageAccountLabel.setToolTipText(Translation
+                                .getTranslation("home_tab.online_storage.account.tips"));
+                        active = true;
+                    }
+                } else {
+                    onlineStorageAccountLabel.setText(Translation.getTranslation(
+                            "home_tab.online_storage.account_not_logged_in", username));
+                    onlineStorageAccountLabel
+                            .setToolTipText(Translation
+                                    .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
+                }
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account", client.getUsername()));
-                onlineStorageAccountLabel.setToolTipText(Translation
-                    .getTranslation("home_tab.online_storage.account.tips"));
-                active = true;
+                    "home_tab.online_storage.account_connecting", username));
+                onlineStorageAccountLabel
+                    .setToolTipText(Translation
+                        .getTranslation("home_tab.online_storage.account_connecting.tips"));
             }
-        } else {
-            onlineStorageAccountLabel.setText(Translation.getTranslation(
-                "home_tab.online_storage.account_connecting", client
-                    .getUsername()));
-            onlineStorageAccountLabel
-                .setToolTipText(Translation
-                    .getTranslation("home_tab.online_storage.account_connecting.tips"));
         }
 
         // Don't show if PowerFolder is disabled.
@@ -930,7 +943,7 @@ public class HomeTab extends PFUIComponent {
         }
     }
 
-    private final class MyDaysValidListener implements PropertyChangeListener {
+    private class MyDaysValidListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateLicenseDetails();
         }
