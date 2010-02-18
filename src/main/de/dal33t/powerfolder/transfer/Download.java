@@ -337,8 +337,7 @@ public class Download extends Transfer {
     public void setBroken(final TransferProblem problem, final String message) {
         synchronized (this) {
             // Prevent setBroken from being called more than once on a
-            // single
-            // download
+            // single download
             if (markedBroken) {
                 if (isFiner()) {
                     logFiner("Not breaking already marked broken download");

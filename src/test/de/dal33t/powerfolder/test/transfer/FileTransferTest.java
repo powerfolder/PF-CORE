@@ -844,6 +844,112 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     /**
+     * TRAC #1904
+     */
+    public void testRecoverFromMD5Error() {
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+            400000);
+        getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
+            400000);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
+        ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
+        // testfile
+        File testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase());
+        testFile.setLastModified(System.currentTimeMillis() - 6000);
+        scanFolder(getFolderAtBart());
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getKnownItemCount() == 1;
+            }
+        });
+
+        TestHelper.changeFile(testFile, 3 * 1024 * 1024);
+        // Let him scan the new content
+        scanFolder(getFolderAtBart());
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() > 0;
+            }
+        });
+
+        final File tempFile = getContollerLisa().getTransferManager()
+            .getActiveDownloads().iterator().next().getTempFile();
+        // Let them copy some ~1 megs
+        final long mbUntilBreak = 1;
+        TestHelper.waitForCondition(100, new Condition() {
+            public boolean reached() {
+                return tempFile.length() > mbUntilBreak * 1024 * 1024;
+            }
+        });
+        disconnectBartAndLisa();
+
+        LoggingManager.setConsoleLogging(Level.FINE);
+        assertTrue(tempFile.exists());
+        assertTrue(tempFile.length() > 0);
+        assertTrue(tempFile.length() < testFile.length());
+        assertTrue("Size inc. file: " + tempFile.length() + ", size testfile: "
+            + testFile.length(), tempFile.length() < testFile.length());
+
+        // Now mess up the tempfile = Force a MD5_ERROR
+        long tempMod = tempFile.lastModified();
+        TestHelper.changeFile(tempFile, tempFile.length());
+        tempFile.setLastModified(tempMod);
+
+        // Reconnect /Resume transfer
+        connectBartAndLisa();
+
+        // Wait untill download is started
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() > 0;
+            }
+        });
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 0;
+            }
+        });
+
+        assertTrue("Tempfile does exist although MD5_ERROR has been observed:" + tempFile, !tempFile.exists());
+
+        getContollerLisa().getFolderRepository().getFileRequestor()
+            .triggerFileRequesting();
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() > 0;
+            }
+        });
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() == 0;
+            }
+        });
+
+        FileInfo fBart = getFolderAtBart().getKnownFiles().iterator().next();
+        File fileBart = fBart.getDiskFile(getContollerBart()
+            .getFolderRepository());
+        FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
+        File fileLisa = fLisa.getDiskFile(getContollerLisa()
+            .getFolderRepository());
+        assertEquals(1, fBart.getVersion());
+        assertEquals(1, fLisa.getVersion());
+        assertTrue("File content mismatch: " + fileBart + " and " + fileLisa,
+            TestHelper.compareFiles(fileBart, fileLisa));
+
+        long bytesDownloaded = getContollerLisa().getTransferManager()
+            .getDownloadCounter().getBytesTransferred();
+        System.err.println("Downloaded: " + bytesDownloaded);
+        System.err.println("Filelength: " + fileBart.length());
+    }
+
+    /**
      * Tests the copy and download resume of a big file.
      * <p>
      * TRAC #415

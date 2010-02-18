@@ -481,15 +481,24 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setState(InternalState.BROKEN);
         shutdown();
 
-        if (getTempFile() != null && getTempFile().exists()
-            && getTempFile().length() == 0)
-        {
-            if (isFiner()) {
-                logFiner("Deleting tempfile with size 0.");
+        if (problem.equals(TransferProblem.MD5_ERROR)) {
+            try {
+                deleteTempFile();
+            } catch (IOException e) {
+                logSevere("Unable to remove tempfile on MD5_ERROR: "
+                    + getTempFile() + ". " + e, e);
             }
-            if (!getTempFile().delete()) {
-                logWarning("Failed to delete temp file: "
-                    + getTempFile().getAbsolutePath());
+        } else {
+            if (getTempFile() != null && getTempFile().exists()
+                && getTempFile().length() == 0)
+            {
+                if (isFiner()) {
+                    logFiner("Deleting tempfile with size 0.");
+                }
+                if (!getTempFile().delete()) {
+                    logWarning("Failed to delete temp file: "
+                        + getTempFile().getAbsolutePath());
+                }
             }
         }
         final Download sources[] = getSources().toArray(new Download[0]);
@@ -842,7 +851,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private void killTempFile() throws FileNotFoundException, IOException {
+    private void deleteTempFile() throws IOException {
         if (isFiner()) {
             logFiner("killTempFile: " + getTempFile() + ", size: "
                 + getTempFile().length());
@@ -872,13 +881,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             // If something's wrong with the tempfile, kill the meta data file
             // if it exists
             deleteMetaData();
-            killTempFile();
+            deleteTempFile();
             return;
         }
 
         File mf = getMetaFile();
         if (mf == null || !mf.exists()) {
-            killTempFile();
+            deleteTempFile();
             return;
         }
 
@@ -896,7 +905,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 }
             } else {
                 in.close();
-                killTempFile();
+                deleteTempFile();
                 deleteMetaData();
             }
         } catch (Exception e) {
@@ -1121,7 +1130,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // logWarning("saveMetaData()");
         File mf = getMetaFile();
         if (mf == null && !isCompleted()) {
-            killTempFile();
+            deleteTempFile();
             return;
         }
 
@@ -1158,7 +1167,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         if (cleanup) {
             try {
-                killTempFile();
+                deleteTempFile();
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {

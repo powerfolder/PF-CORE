@@ -1495,7 +1495,7 @@ public class TransferManager extends PFComponent {
                         logFine("No further sources in that manager, removing it!");
                         man.setBroken("Out of sources for download");
                     } else {
-                        logWarning("No further sources in that manager, Not removing it because it's already done");
+                        logFine("No further sources in that manager, Not removing it because it's already done");
                     }
                 }
             }
