@@ -30,7 +30,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         scanFolder(fb);
         TestHelper.waitMilliSeconds(3000);
 
-        FileInfo fib = fb.getKnowFilesAsArray()[0];
+        FileInfo fib = fb.getKnownFiles().iterator().next();
 
         FileArchiver fa = ArchiveMode.FULL_BACKUP.getInstance(fb);
         try {
@@ -57,11 +57,11 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return fb.getKnowFilesAsArray().length > 0;
+                return fb.getKnownFiles().size() > 0;
             }
         });
 
-        FileInfo fib = fb.getKnowFilesAsArray()[0];
+        FileInfo fib = fb.getKnownFiles().iterator().next();
         File eBart = new File(fb.getSystemSubDir(), "archive");
         eBart = new File(eBart, fib.getRelativeName() + "_K_"
             + fib.getVersion());
@@ -87,10 +87,10 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return fb.getKnowFilesAsArray().length > 0;
+                return fb.getKnownFiles().size() > 0;
             }
         });
-        FileInfo fib = fb.getKnowFilesAsArray()[0];
+        FileInfo fib = fb.getKnownFiles().iterator().next();
 
         for (int i = 0; i < 4; i++) {
             modLisaFile(tl, fib);
@@ -133,10 +133,10 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(5, new Condition() {
             public boolean reached() {
-                return fb.getKnowFilesAsArray().length > 0;
+                return fb.getKnownFiles().size() > 0;
             }
         });
-        FileInfo fib = fb.getKnowFilesAsArray()[0];
+        FileInfo fib = fb.getKnownFiles().iterator().next();
 
         File ver[] = new File[5];
         for (int i = 0; i < ver.length; i++) {

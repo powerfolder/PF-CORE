@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Collection;
 
 import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderScanner;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -95,7 +94,7 @@ public class FolderScannerTest extends ControllerTestCase {
         scanFolder(getFolder());
 
         // one deleted file should be found in old Scanning
-        assertEquals(1, countDeleted(getFolder().getKnowFilesAsArray()));
+        assertEquals(1, countDeleted(getFolder().getKnownFiles()));
 
         // change a file
         TestHelper.changeFile(file2);
@@ -140,7 +139,7 @@ public class FolderScannerTest extends ControllerTestCase {
         return result;
     }
 
-    private int countDeleted(FileInfo[] fileInfos) {
+    private int countDeleted(Collection<FileInfo> fileInfos) {
         int deletedCount = 0;
         for (FileInfo fileInfo : fileInfos) {
             if (fileInfo.isDeleted()) {

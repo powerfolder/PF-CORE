@@ -49,9 +49,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
             setUp();
         }
     }
-    
+
     public void testNothing() {
-        
+
     }
 
     public void xtestKillerSwarm() throws IOException {
@@ -67,7 +67,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         File tmpFile = TestHelper.createRandomFile(barts.getLocalBase(),
             1000000);
         scanFolder(barts);
-        final FileInfo fInfo = barts.getKnowFilesAsArray()[0];
+        final FileInfo fInfo = barts.getKnownFiles().iterator().next();
 
         setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
@@ -246,9 +246,9 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     continue;
                 }
 
-                File f1 = getFolderOf(c1).getKnowFilesAsArray()[0]
+                File f1 = getFolderOf(c1).getKnownFiles().iterator().next()
                     .getDiskFile(c1.getFolderRepository());
-                File f2 = getFolderOf(c2).getKnowFilesAsArray()[0]
+                File f2 = getFolderOf(c2).getKnownFiles().iterator().next()
                     .getDiskFile(c2.getFolderRepository());
 
                 TestHelper.compareFiles(f1, f2);
@@ -284,7 +284,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 10000000);
         scanFolder(getFolderOf("0"));
-        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
+        final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
+            .next();
 
         setNSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
@@ -390,7 +391,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 String cont = "" + prng.nextInt(numC);
                 // TODO: After PF gets real conflict resolution remove this:
                 cont = "0";
-                FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
+                FileInfo[] fi = getFolderOf(cont).getKnownFiles().toArray(
+                    new FileInfo[0]);
                 if (fi.length > 0) {
                     FileInfo chosen = fi[prng.nextInt(fi.length)];
                     if (chosen.diskFileExists(getContoller(cont))) {
@@ -551,7 +553,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         File tmpFile = TestHelper.createRandomFile(getFolderOf("0")
             .getLocalBase(), 1000000);
         scanFolder(getFolderOf("0"));
-        final FileInfo fInfo = getFolderOf("0").getKnowFilesAsArray()[0];
+        final FileInfo fInfo = getFolderOf("0").getKnownFiles().iterator()
+            .next();
 
         for (int tries = 0; tries < 4; tries++) {
 
@@ -562,7 +565,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 // TODO: After PF gets real conflict resolution remove this:
                 cont = "0";
 
-                FileInfo[] fi = getFolderOf(cont).getKnowFilesAsArray();
+                FileInfo[] fi = getFolderOf(cont).getKnownFiles().toArray(
+                    new FileInfo[0]);
                 if (fi.length > 0 && fi[0].diskFileExists(getContoller(cont))) {
                     RandomAccessFile raf = new RandomAccessFile(fi[0]
                         .getDiskFile(getContoller(cont).getFolderRepository()),
@@ -619,7 +623,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         int newestVersion = 0;
         for (int i = 0; i < numC; i++) {
             scanFolder(getFolderOf("" + i));
-            int v = getFolderOf("" + i).getKnowFilesAsArray()[0].getVersion();
+            int v = getFolderOf("" + i).getKnownFiles().iterator().next()
+                .getVersion();
             if (v > newestVersion) {
                 newestVersion = v;
             }
@@ -629,7 +634,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
         TestHelper.waitForCondition(numC * 15 + 30, new ConditionWithMessage() {
             public boolean reached() {
                 for (int i = 0; i < numC; i++) {
-                    if (getFolderOf("" + i).getKnowFilesAsArray()[0]
+                    if (getFolderOf("" + i).getKnownFiles().iterator().next()
                         .getVersion() != version)
                     {
                         return false;
@@ -641,8 +646,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
             public String message() {
                 int nver = 0;
                 for (int i = 0; i < numC; i++) {
-                    nver = Math.max(nver, getFolderOf("" + i)
-                        .getKnowFilesAsArray()[0].getVersion());
+                    nver = Math.max(nver, getFolderOf("" + i).getKnownFiles()
+                        .iterator().next().getVersion());
                 }
                 StringBuilder b = new StringBuilder();
                 b.append("Newest version is " + nver);
@@ -650,12 +655,12 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 File reference = null;
 
                 for (int i = 0; i < numC; i++) {
-                    if (getFolderOf("" + i).getKnowFilesAsArray()[0]
+                    if (getFolderOf("" + i).getKnownFiles().iterator().next()
                         .getVersion() == nver)
                     {
-                        File fb = getFolderOf("" + i).getKnowFilesAsArray()[0]
-                            .getDiskFile(getContoller("" + i)
-                                .getFolderRepository());
+                        File fb = getFolderOf("" + i).getKnownFiles()
+                            .iterator().next().getDiskFile(
+                                getContoller("" + i).getFolderRepository());
                         b.append("Filecheck of " + i + ": ");
                         if (reference == null) {
                             reference = fb;
@@ -672,7 +677,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
                     }
                     b.append("\n---\n");
                     b.append(i).append(": ").append(
-                        getFolderOf("" + i).getKnowFilesAsArray()[0]
+                        getFolderOf("" + i).getKnownFiles().iterator().next()
                             .getVersion());
                     b.append(", uploads: ");
                     b.append(getContoller("" + i).getTransferManager()
@@ -713,12 +718,12 @@ public class SwarmingTest extends MultipleControllerTestCase {
                 return b.toString();
             }
         });
-        File a = getFolderOf("0").getKnowFilesAsArray()[0]
+        File a = getFolderOf("0").getKnownFiles().iterator().next()
             .getDiskFile(getContoller("0").getFolderRepository());
         for (int i = 1; i < numC; i++) {
-            TestHelper.compareFiles(a, getFolderOf("" + i)
-                .getKnowFilesAsArray()[0].getDiskFile(getContoller("" + i)
-                .getFolderRepository()));
+            TestHelper.compareFiles(a, getFolderOf("" + i).getKnownFiles()
+                .iterator().next().getDiskFile(
+                    getContoller("" + i).getFolderRepository()));
         }
 
         TestHelper.assertIncompleteFilesGone(this);

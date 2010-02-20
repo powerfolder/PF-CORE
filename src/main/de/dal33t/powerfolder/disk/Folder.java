@@ -2823,18 +2823,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * ATTENTION: DO NOT USE!!
-     * 
-     * @return the internal file database as array. ONLY FOR TESTs
-     * @deprecated do not use - ONLY FOR TESTs
-     */
-    @Deprecated
-    public FileInfo[] getKnowFilesAsArray() {
-        Collection<FileInfo> infoCollection = dao.findAllFiles(null);
-        return infoCollection.toArray(new FileInfo[infoCollection.size()]);
-    }
-
-    /**
      * WARNING: Contents may change after getting the collection.
      * 
      * @return a unmodifiable collection referecing the internal file database

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -93,8 +94,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
 
-        assertEquals(expectedFilesAtBart, getFolderAtBart()
-            .getKnownItemCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownItemCount());
 
         // List should still don't know any files
         assertEquals(0, getFolderAtLisa().getKnownItemCount());
@@ -118,10 +118,8 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         });
 
         // Both should have the files now
-        assertEquals(expectedFilesAtBart, getFolderAtBart()
-            .getKnownItemCount());
-        assertEquals(expectedFilesAtBart, getFolderAtLisa()
-            .getKnownItemCount());
+        assertEquals(expectedFilesAtBart, getFolderAtBart().getKnownItemCount());
+        assertEquals(expectedFilesAtBart, getFolderAtLisa().getKnownItemCount());
     }
 
     /**
@@ -196,12 +194,12 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtBart().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtBart());
         getFolderAtBart().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
-        assertEquals(2, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
+        assertEquals(2, countDeleted(getFolderAtBart().getKnownFiles()));
 
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         scanFolder(getFolderAtLisa());
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
-        assertEquals(1, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
+        assertEquals(1, countDeleted(getFolderAtLisa().getKnownFiles()));
 
         // Filelist transfer
         TestHelper.waitMilliSeconds(1000);
@@ -210,10 +208,10 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().syncRemoteDeletedFiles(true);
         getFolderAtBart().syncRemoteDeletedFiles(true);
 
-        assertEquals(3, countDeleted(getFolderAtBart().getKnowFilesAsArray()));
-        assertEquals(2, countExisting(getFolderAtBart().getKnowFilesAsArray()));
-        assertEquals(3, countDeleted(getFolderAtLisa().getKnowFilesAsArray()));
-        assertEquals(2, countExisting(getFolderAtLisa().getKnowFilesAsArray()));
+        assertEquals(3, countDeleted(getFolderAtBart().getKnownFiles()));
+        assertEquals(2, countExisting(getFolderAtBart().getKnownFiles()));
+        assertEquals(3, countDeleted(getFolderAtLisa().getKnownFiles()));
+        assertEquals(2, countExisting(getFolderAtLisa().getKnownFiles()));
         // Check deleted files.
         // Directory should contain onyl 2 files (+2 = system dir)
         assertEquals("Files at lisa: "
@@ -224,7 +222,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
             getFolderAtBart().getLocalBase().list().length);
     }
 
-    private int countDeleted(FileInfo[] files) {
+    private int countDeleted(Collection<FileInfo> files) {
         int deleted = 0;
         for (FileInfo info : files) {
             if (info.isDeleted()) {
@@ -234,7 +232,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         return deleted;
     }
 
-    private int countExisting(FileInfo[] files) {
+    private int countExisting(Collection<FileInfo> files) {
         int existing = 0;
         for (FileInfo info : files) {
             if (!info.isDeleted()) {
