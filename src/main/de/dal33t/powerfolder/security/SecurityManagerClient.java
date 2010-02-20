@@ -58,7 +58,7 @@ public class SecurityManagerClient extends PFComponent implements
         private static final long serialVersionUID = 1L;
 
         public String toString() {
-            return "Anonymous";
+            return "Default";
         }
     };
 
