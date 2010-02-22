@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
@@ -77,8 +76,8 @@ public class SecurityManagerClient extends PFComponent implements
             .createListenerSupport(SecurityManagerListener.class);
     }
 
-    public Account authenticate(String username, String password) {
-        return client.login(username, password);
+    public Account authenticate(String username, char[] password) {
+        return client.login(username, new String(password));
     }
 
     public Account authenticate(String username, String passwordMD5, String salt)
@@ -367,7 +366,7 @@ public class SecurityManagerClient extends PFComponent implements
             } catch (Exception e) {
                 logWarning("Unable to refresh account details. " + e);
                 logFiner(e);
-            }            
+            }
             clearNodeCache(node);
             refresh(node);
             getController().getFolderRepository()

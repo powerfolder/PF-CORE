@@ -43,9 +43,8 @@ public interface SecurityManager {
      *            the password of the login
      * @return the account if acces is possible, null if user could not be
      *         logged in.
-     * @deprecated Better use {@link #authenticate(String, String, String)}
      */
-    Account authenticate(String username, String password);
+    Account authenticate(String username, char[] password);
 
     /**
      * Authenticates the user.
@@ -58,6 +57,7 @@ public interface SecurityManager {
      *            a random string used to randomize passwordMD5
      * @return the account if acces is possible, null if user could not be
      *         logged in.
+     * @deprecated Use {@link #authenticate(String, char[])}
      */
     Account authenticate(String username, String passwordMD5, String salt);
 
