@@ -90,11 +90,14 @@ public class LoggingManager {
     /**
      * The default filter for the handlers
      */
-    private static Filter filter = new Filter() {
+    private static Filter DEFAULT_FILTER = new Filter() {
         public boolean isLoggable(LogRecord record) {
-            // return false;
-            return record.getLoggerName() != null
-                && record.getLoggerName().startsWith("de.dal33t");
+            String loggerName = record.getLoggerName();
+            if (loggerName == null) {
+                return false;
+            }
+            return loggerName.startsWith("de.dal33t")
+                || loggerName.startsWith("net.sf.webdav");
         }
     };
 
@@ -116,10 +119,10 @@ public class LoggingManager {
         documentHandler = new DocumentHandler();
         bufferedHandler = new BufferedHandler(20);
 
-        rootLogger.setFilter(filter);
-        consoleHandler.setFilter(filter);
-        documentHandler.setFilter(filter);
-        bufferedHandler.setFilter(filter);
+        rootLogger.setFilter(DEFAULT_FILTER);
+        consoleHandler.setFilter(DEFAULT_FILTER);
+        documentHandler.setFilter(DEFAULT_FILTER);
+        bufferedHandler.setFilter(DEFAULT_FILTER);
     }
 
     /**
@@ -213,7 +216,7 @@ public class LoggingManager {
                 fileHandler = new FileHandler(fileLoggingFileName);
                 fileHandler.setFormatter(new LoggingFormatter());
                 getRootLogger().addHandler(fileHandler);
-                fileHandler.setFilter(filter);
+                fileHandler.setFilter(DEFAULT_FILTER);
             } catch (IOException e) {
                 // Duh. No file logger.
                 e.printStackTrace();
