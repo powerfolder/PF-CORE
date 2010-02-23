@@ -185,8 +185,8 @@ public class ServerClient extends PFComponent {
             logFine("Not connecting to server: " + server
                 + ". Reason: Server not on LAN");
         }
-        getController().scheduleAndRepeat(new OnlineStorageConnectTask(),
-            3L * 1000L, 1000L * 20);
+        getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
+            1000L * 20);
         // Wait 10 seconds at start
         getController().scheduleAndRepeat(new HostingServerRetriever(),
             10L * 1000L, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
@@ -1022,7 +1022,7 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private class OnlineStorageConnectTask extends TimerTask {
+    private class ServerConnectTask extends TimerTask {
         @Override
         public void run() {
             if (isConnected()) {
