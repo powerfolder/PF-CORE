@@ -137,6 +137,10 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
             // versionHistory > max ==> Unlimited
             archiveCombo.setSelectedIndex(PAIRS.size() - 1);
         }
+
+        // Make sure that the models have the correct values, in case nothing
+        // gets changed.
+        fireChange();
     }
 
     /**

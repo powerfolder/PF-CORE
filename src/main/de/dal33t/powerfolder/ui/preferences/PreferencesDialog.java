@@ -251,18 +251,23 @@ public class PreferencesDialog extends BaseDialog {
                 SwingWorker worker = new SwingWorker() {
                     @Override
                     public Object construct() {
-                        // validate the user input and check the result
-                        boolean succes = validateSettings();
-                        if (!succes) {
+                        try {
+                            // validate the user input and check the result
+                            boolean succes = validateSettings();
+                            if (!succes) {
+                                return Boolean.FALSE;
+                            }
+
+                            // Save settings
+                            saveSettings();
+                            if (needsRestart()) {
+                                handleRestartRequest();
+                            }
+                            return Boolean.TRUE;
+                        } catch (Exception ex) {
+                            logSevere(ex);
                             return Boolean.FALSE;
                         }
-
-                        // Save settings
-                        saveSettings();
-                        if (needsRestart()) {
-                            handleRestartRequest();
-                        }
-                        return Boolean.TRUE;
                     }
 
                     @Override
