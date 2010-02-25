@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.*;
 
@@ -219,11 +220,13 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 updateButtons();
             } else if (e.getSource() == locationButton) {
                 String initial = (String) locationValueModel.getValue();
-                String file = DialogFactory.chooseDirectory(getController(),
-                    initial);
-                location = file;
-                locationDirectoryField.setText(file);
-                updateButtons();
+                File file = DialogFactory.chooseDirectory(
+                        getController().getUIController(), initial);
+                if (file != null) {
+                    location = file.getAbsolutePath();
+                    locationDirectoryField.setText(location);
+                    updateButtons();
+                }
             }
         }
     }

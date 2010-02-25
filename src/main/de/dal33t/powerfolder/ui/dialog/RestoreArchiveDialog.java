@@ -136,10 +136,13 @@ public class RestoreArchiveDialog extends BaseDialog {
     }
 
     private void showFileDialog() {
-        String dir = DialogFactory.chooseDirectory(getController(),
+        File dir = DialogFactory.chooseDirectory(
+                getController().getUIController(),
             fileLocationField.getText());
-        fileLocationField.setText(dir);
-        enableComponents();
+        if (dir != null) {
+            fileLocationField.setText(dir.getAbsolutePath());
+            enableComponents();
+        }
     }
 
     protected Icon getIcon() {

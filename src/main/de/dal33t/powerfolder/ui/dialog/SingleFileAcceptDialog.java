@@ -39,6 +39,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 
 /**
  * Dialog for accepting a file transfer offer from another computer.
@@ -169,8 +170,11 @@ public class SingleFileAcceptDialog extends BaseDialog {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        String file = DialogFactory.chooseDirectory(getController(), initial);
-        locationModel.setValue(file);
+        File file = DialogFactory.chooseDirectory(
+                getController().getUIController(), initial);
+        if (file != null) {
+            locationModel.setValue(file.getAbsolutePath());
+        }
     }
 
     /**

@@ -58,7 +58,6 @@ import jwf.WizardPanel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.l2fprod.common.swing.JDirectoryChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -415,22 +414,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JDirectoryChooser dirChooser = new JDirectoryChooser(
-                initialDirectory);
-            dirChooser.setShowingCreateDirectory(true);
-            dirChooser.setMultiSelectionEnabled(false);
-            int res = dirChooser.showOpenDialog(UIUtil.getParentWindow(e));
-            if (res != JFileChooser.APPROVE_OPTION) {
+            File file = DialogFactory.chooseDirectory(getUIController(),
+                    initialDirectory);
+            if (file == null) {
                 return;
             }
-            String dir = dirChooser.getSelectedFile().getAbsolutePath();
-            if (StringUtils.isBlank(dir)) {
-                return;
-            }
-            File newLocation = new File(dir);
             File localBase = new File(getController().getFolderRepository()
                 .getFoldersBasedir());
-            if (newLocation.equals(localBase)) {
+            if (file.equals(localBase)) {
                 DialogFactory
                     .genericDialog(
                         getController(),
@@ -441,10 +432,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         GenericDialogType.ERROR);
                 return;
             }
-            if (new File(dir).exists()) {
-                initialDirectory = dir;
-                if (!customDirectoryListModel.contains(dir)) {
-                    customDirectoryListModel.addElement(dir);
+            if (file.exists()) {
+                initialDirectory = file.getAbsolutePath();
+                if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
+                    customDirectoryListModel.addElement(file.getAbsolutePath());
                     updateButtons();
                     startFolderSizeCalculator();
                 }

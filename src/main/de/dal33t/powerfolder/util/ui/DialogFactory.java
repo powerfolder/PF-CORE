@@ -20,8 +20,9 @@
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.l2fprod.common.swing.JDirectoryChooser;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
 
@@ -39,27 +40,72 @@ import java.io.File;
 public class DialogFactory {
 
     /**
-     * Opens a DirectoryChooser with the current file and returns the new
-     * selection. This will return the original value if nothing is selected.
-     * 
-     * @param controller
-     *            the controller, used to get the parent frame
-     * @param initialDirectory
+     * Opens a DirectoryChooser returns the selection. Returns null if operation
+     * is cancelled.
+     *
+     * @param uiController
+     *            the ui controller, used to get the parent frame
      * @return the chosen directory
      */
-    public static String chooseDirectory(Controller controller,
-        String initialDirectory)
-    {
-        JDirectoryChooser dc = new JDirectoryChooser();
-        if (initialDirectory != null && initialDirectory.trim().length() != 0) {
-            dc.setCurrentDirectory(new File(initialDirectory));
+    public static File chooseDirectory(UIController uiController) {
+        return chooseDirectory(uiController, (File) null);
+    }
+
+    /**
+     * Opens a DirectoryChooser with the current dir and returns the new
+     * selection. Returns null if operation is cancelled.
+     *
+     * @param uiController
+     *            the ui controller, used to get the parent frame
+     * @param initialDirectoryName
+     *            optional name of the initial selected directory
+     * @return the chosen directory
+     */
+    public static File chooseDirectory(UIController uiController,
+        String initialDirectoryName) {
+        if (initialDirectoryName == null) {
+            return chooseDirectory(uiController, (File) null);
+        } else  {
+            return chooseDirectory(uiController, new File(initialDirectoryName));
         }
-        int i = dc
-            .showOpenDialog(controller.getUIController().getActiveFrame());
-        if (i == JFileChooser.APPROVE_OPTION) {
-            return dc.getSelectedFile().getAbsolutePath();
+    }
+    /**
+     * Opens a DirectoryChooser with the current dir and returns the new
+     * selection. Returns null if operation is cancelled.
+     *
+     * @param uiController
+     *            the ui controller, used to get the parent frame
+     * @param initialDirectory
+     *            optional initial selected directory
+     * @return the chosen directory
+     */
+    public static File chooseDirectory(UIController uiController,
+                                       File initialDirectory) {
+        if (PreferencesEntry.PF_DIRECTORY_CHOOSER.getValueBoolean(
+                uiController.getController())) {
+            // Use PF chooser
+            // @todo harry
+            return null;
+        } else {
+            // Use standard chooser. This is a fallback in case there are ever
+            // any problems with PF dir chooser.
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setMultiSelectionEnabled(false);
+
+            if (initialDirectory != null && initialDirectory.isDirectory() &&
+                    initialDirectory.exists()) {
+                chooser.setCurrentDirectory(initialDirectory);
+            }
+
+            int i = chooser.showDialog(uiController.getActiveFrame(),
+                    Translation.getTranslation("general.select"));
+            if (i == JFileChooser.APPROVE_OPTION) {
+                return chooser.getSelectedFile();
+            } else {
+                return null;
+            }
         }
-        return null;
     }
 
     /**

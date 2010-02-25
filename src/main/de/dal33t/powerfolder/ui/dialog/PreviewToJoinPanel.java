@@ -208,9 +208,12 @@ public class PreviewToJoinPanel extends BaseDialog {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            String file = DialogFactory.chooseDirectory(getController(),
+            File file = DialogFactory.chooseDirectory(
+                    getController().getUIController(),
                 initial);
-            locationModel.setValue(file);
+            if (file != null) {
+                locationModel.setValue(file.getAbsolutePath());
+            }
         }
     }
 }

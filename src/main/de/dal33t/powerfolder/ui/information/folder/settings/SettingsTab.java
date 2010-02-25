@@ -50,7 +50,6 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.l2fprod.common.swing.JDirectoryChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -541,15 +540,10 @@ public class SettingsTab extends PFUIComponent {
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        JDirectoryChooser dc = new JDirectoryChooser();
-        if (originalDirectory != null) {
-            dc.setCurrentDirectory(originalDirectory);
-        }
-        int i = dc.showOpenDialog(getController().getUIController()
-            .getActiveFrame());
-        if (i == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = dc.getSelectedFile();
-            if (FileUtils.isSubdirectory(originalDirectory, selectedFile)) {
+        File file = DialogFactory.chooseDirectory(
+                getController().getUIController(), originalDirectory);
+        if (file != null) {
+            if (FileUtils.isSubdirectory(originalDirectory, file)) {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("settings_tab.subdir.title"), Translation
                     .getTranslation("settings_tab.subdir.text"),
@@ -557,7 +551,7 @@ public class SettingsTab extends PFUIComponent {
             } else {
                 File foldersBaseDir = new File(getController()
                     .getFolderRepository().getFoldersBasedir());
-                if (selectedFile.equals(foldersBaseDir)) {
+                if (file.equals(foldersBaseDir)) {
                     DialogFactory
                         .genericDialog(getController(), Translation
                             .getTranslation("settings_tab.basedir.title"),
@@ -565,7 +559,7 @@ public class SettingsTab extends PFUIComponent {
                                 .getTranslation("settings_tab.basedir.text"),
                             GenericDialogType.ERROR);
                 } else {
-                    moveDirectory(originalDirectory, selectedFile,
+                    moveDirectory(originalDirectory, file,
                         moveContent == 0);
                 }
             }
@@ -1112,7 +1106,7 @@ public class SettingsTab extends PFUIComponent {
             chooser.setSelectedFile(new File(initial));
             int res = chooser.showDialog(getUIController().getMainFrame()
                 .getUIComponent(), Translation
-                .getTranslation("settings_tab.download_script.select"));
+                .getTranslation("general.select"));
 
             if (res == JFileChooser.APPROVE_OPTION) {
                 String script = chooser.getSelectedFile().getAbsolutePath();

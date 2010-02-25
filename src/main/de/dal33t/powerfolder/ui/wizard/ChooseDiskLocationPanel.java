@@ -501,12 +501,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        String file = DialogFactory.chooseDirectory(getController(), initial);
-        locationModel.setValue(file);
+        File file = DialogFactory.chooseDirectory(
+                getController().getUIController(), initial);
+        if (file != null) {
+            locationModel.setValue(file.getAbsolutePath());
 
-        // Update this so that if the user clicks other user dirs
-        // and then 'Custom', the selected dir will show.
-        transientDirectory = file;
+            // Update this so that if the user clicks other user dirs
+            // and then 'Custom', the selected dir will show.
+            transientDirectory = file.getAbsolutePath();
+        }
     }
 
     /**

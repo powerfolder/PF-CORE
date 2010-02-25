@@ -626,14 +626,12 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            String newLocationName = DialogFactory.chooseDirectory(
-                getController(), initial);
-            if (newLocationName != null) {
-                File newLocation = new File(newLocationName);
+            File newLocation = DialogFactory.chooseDirectory(
+                getController().getUIController(), initial);
+            if (newLocation != null) {
 
                 // Make sure that the user is not setting this to the base dir
-                // of
-                // an existing folder.
+                // of an existing folder.
                 for (Folder folder : getController().getFolderRepository()
                     .getFolders())
                 {
@@ -651,7 +649,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                         return;
                     }
                 }
-                locationModel.setValue(newLocationName);
+                locationModel.setValue(newLocation.getAbsolutePath());
             }
         }
     }

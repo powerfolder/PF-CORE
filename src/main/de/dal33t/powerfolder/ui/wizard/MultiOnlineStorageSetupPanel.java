@@ -44,7 +44,6 @@ import jwf.WizardPanel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.l2fprod.common.swing.JDirectoryChooser;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -55,6 +54,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -262,14 +262,12 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            JDirectoryChooser dc = new JDirectoryChooser();
-            dc.setCurrentDirectory(folderLocalBaseMap.get(selectedFolderInfo));
-            int i = dc.showOpenDialog(getController().getUIController()
-                .getActiveFrame());
-            if (i == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = dc.getSelectedFile();
-                localFolderField.setText(selectedFile.getAbsolutePath());
-                folderLocalBaseMap.put(selectedFolderInfo, selectedFile);
+            File file = DialogFactory.chooseDirectory(
+                    getController().getUIController(),
+                    folderLocalBaseMap.get(selectedFolderInfo));
+            if (file != null) {
+                localFolderField.setText(file.getAbsolutePath());
+                folderLocalBaseMap.put(selectedFolderInfo, file);
             }
         }
     }
