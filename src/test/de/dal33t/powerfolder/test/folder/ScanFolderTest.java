@@ -61,6 +61,22 @@ public class ScanFolderTest extends ControllerTestCase {
         setupTestFolder(SyncProfile.HOST_FILES);
     }
 
+    public void testRootFileInfo() {
+        FileInfo fInfo = FileInfoFactory.lookupInstance(getFolder().getInfo(),
+            "");
+        File file = fInfo.getDiskFile(getController().getFolderRepository());
+        assertNotNull(file);
+        assertEquals(getFolder().getLocalBase(), file);
+
+        try {
+            fInfo = FileInfoFactory.lookupInstance(getFolder().getInfo(),
+                "../Afile.txt");
+            fail("Fileinfo relative name contained ..: " + fInfo);
+        } catch (Exception e) {
+            // OK
+        }
+    }
+
     public void testScanChangedFileMethod() {
         File file = TestHelper.createRandomFile(getFolder().getLocalBase(),
             10 + (int) (Math.random() * 100));
