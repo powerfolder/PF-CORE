@@ -128,6 +128,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         Date lastModifiedDate, int version, boolean deleted,
         FolderInfo folderInfo)
     {
+        Reject.ifNull(folderInfo, "folder is null!");
+        Reject.ifNull(relativeName, "relativeName is null!");
+        Reject.ifTrue(relativeName.contains(".."),
+            "relativeName must not contain ..");
+
         this.fileName = relativeName;
         this.size = size;
         this.modifiedBy = modifiedBy;
@@ -144,6 +149,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     protected FileInfo(FolderInfo folder, String relativeName) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
+        Reject.ifTrue(relativeName.contains(".."),
+            "relativeName must not contain ..");
+
         this.fileName = relativeName;
         folderInfo = folder;
 
