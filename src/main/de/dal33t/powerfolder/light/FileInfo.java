@@ -130,8 +130,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        Reject.ifTrue(relativeName.contains("../"),
-            "relativeName must not contain ../");
+        if (relativeName.contains("../")) {
+            throw new IllegalArgumentException(
+                "relativeName must not contain ../: " + relativeName);
+        }
 
         this.fileName = relativeName;
         this.size = size;
@@ -149,8 +151,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     protected FileInfo(FolderInfo folder, String relativeName) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        Reject.ifTrue(relativeName.contains("../"),
-            "relativeName must not contain ../");
+        if (relativeName.contains("../")) {
+            throw new IllegalArgumentException(
+                "relativeName must not contain ../: " + relativeName);
+        }
 
         this.fileName = relativeName;
         folderInfo = folder;
