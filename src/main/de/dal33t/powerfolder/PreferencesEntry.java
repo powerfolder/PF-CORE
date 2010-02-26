@@ -134,7 +134,7 @@ public enum PreferencesEntry {
     /** Show the information tab inline with the mainframe 0=free, 1=left, 2=right */
     INLINE_INFO_MODE("inline.info.mode", MainFrame.INLINE_INFO_RIGHT),
 
-    PF_DIRECTORY_CHOOSER("pf.directory.chooser", false),
+    PF_DIRECTORY_CHOOSER("pf.directory.chooser", true),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);

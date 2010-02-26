@@ -20,11 +20,14 @@
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Reject;
 
 import javax.swing.*;
 import java.io.File;
@@ -40,18 +43,6 @@ import java.io.File;
 public class DialogFactory {
 
     /**
-     * Opens a DirectoryChooser returns the selection. Returns null if operation
-     * is cancelled.
-     *
-     * @param uiController
-     *            the ui controller, used to get the parent frame
-     * @return the chosen directory
-     */
-    public static File chooseDirectory(UIController uiController) {
-        return chooseDirectory(uiController, (File) null);
-    }
-
-    /**
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled.
      *
@@ -63,11 +54,9 @@ public class DialogFactory {
      */
     public static File chooseDirectory(UIController uiController,
         String initialDirectoryName) {
-        if (initialDirectoryName == null) {
-            return chooseDirectory(uiController, (File) null);
-        } else  {
-            return chooseDirectory(uiController, new File(initialDirectoryName));
-        }
+        Reject.ifNull(initialDirectoryName, "Must supply an initial directory");
+        Reject.ifBlank(initialDirectoryName, "Must supply an initial directory");
+        return chooseDirectory(uiController, new File(initialDirectoryName));
     }
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
@@ -81,23 +70,30 @@ public class DialogFactory {
      */
     public static File chooseDirectory(UIController uiController,
                                        File initialDirectory) {
+        Reject.ifNull(initialDirectory, "Must supply an initial directory");
+        Reject.ifFalse(initialDirectory.exists(),
+                "Must supply a real initial directory: " +
+                        initialDirectory.getAbsolutePath());
+        Reject.ifFalse(initialDirectory.isDirectory(),
+                "Initial directory is a file: " +
+                        initialDirectory.getAbsolutePath());
+        System.out.println("hghg " + initialDirectory.getAbsolutePath());
         if (PreferencesEntry.PF_DIRECTORY_CHOOSER.getValueBoolean(
                 uiController.getController())) {
             // Use PF chooser
-            // @todo harry
-            return null;
+            ValueModel vm = new ValueHolder();
+            vm.setValue(initialDirectory);
+            DirectoryChooser dc = new DirectoryChooser(
+                    uiController.getController(), vm);
+            dc.open();
+            return (File) vm.getValue();
         } else {
-            // Use standard chooser. This is a fallback in case there are ever
+            // Use standard chooser. This is a fall back in case there are ever
             // any problems with PF dir chooser.
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(false);
-
-            if (initialDirectory != null && initialDirectory.isDirectory() &&
-                    initialDirectory.exists()) {
-                chooser.setCurrentDirectory(initialDirectory);
-            }
-
+            chooser.setCurrentDirectory(initialDirectory);
             int i = chooser.showDialog(uiController.getActiveFrame(),
                     Translation.getTranslation("general.select"));
             if (i == JFileChooser.APPROVE_OPTION) {
@@ -109,10 +105,7 @@ public class DialogFactory {
     }
 
     /**
-     * The prefered way to create a FileChooser in PowerFolder. Will override
-     * the default look and feel of the FileChooser component on Windows to
-     * windows look and feel. This adds the buttons like "recent", "My
-     * Documents" etc. Now uses the Synthetica chooser.
+     * The prefered way to create a FileChooser in PowerFolder. 
      * 
      * @return a file chooser
      */
