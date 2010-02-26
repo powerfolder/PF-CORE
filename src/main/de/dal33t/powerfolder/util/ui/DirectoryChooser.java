@@ -223,56 +223,59 @@ class DirectoryChooser extends BaseDialog {
             ndc.open();
             Object o = subDirValueModel.getValue();
             if (o != null) {
-                String subDir = (String) o;
-                File f = new File(baseFile, subDir);
-                if (f.exists()) {
-                    DialogFactory.genericDialog(getController(),
-                            Translation.getTranslation(
-                                    "dialog.directorychooser.new.description"),
-                            Translation.getTranslation(
-                                    "dialog.directorychooser.new.exists",
-                                    f.getAbsolutePath()),
-                            GenericDialogType.WARN);
-                } else {
-                    boolean success = f.mkdir();
-                    if (success) {
-                        TreePath selectionPath = tree.getSelectionPath();
-                        Object parentComponent = selectionPath.getLastPathComponent();
-                        if (parentComponent instanceof DirectoryTreeNode) {
+                String subDir = ((String) o).trim();
+                if (subDir.length() > 0) {
+                    File f = new File(baseFile, subDir);
+                    if (f.exists()) {
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "dialog.directorychooser.new.description"),
+                                Translation.getTranslation(
+                                        "dialog.directorychooser.new.exists",
+                                        f.getAbsolutePath()),
+                                GenericDialogType.WARN);
+                    } else {
+                        boolean success = f.mkdir();
+                        if (success) {
+                            TreePath selectionPath = tree.getSelectionPath();
+                            Object parentComponent = selectionPath.getLastPathComponent();
+                            if (parentComponent instanceof DirectoryTreeNode) {
 
-                            // Expand parent of new folder, so new child shows.
-                            DirectoryTreeNode parentNode =
-                                    (DirectoryTreeNode) parentComponent;
-                            model.insertNodeInto(new DirectoryTreeNode(f, false),
-                                    parentNode, parentNode.getChildCount());
+                                // Expand parent of new folder, so new child shows.
+                                DirectoryTreeNode parentNode =
+                                        (DirectoryTreeNode) parentComponent;
+                                model.insertNodeInto(new DirectoryTreeNode(f, false),
+                                        parentNode, parentNode.getChildCount());
 
-                            // Find new folder in parent.
-                            Enumeration children = parentNode.children();
-                            while (children.hasMoreElements()) {
-                                Object node = children.nextElement();
-                                if (node instanceof DirectoryTreeNode) {
-                                    DirectoryTreeNode childNode = (DirectoryTreeNode) node;
-                                    if (childNode.getUserObject() instanceof File) {
-                                        File childFile = (File) childNode.getUserObject();
-                                        if (childFile.equals(f)) {
+                                // Find new folder in parent.
+                                Enumeration children = parentNode.children();
+                                while (children.hasMoreElements()) {
+                                    Object node = children.nextElement();
+                                    if (node instanceof DirectoryTreeNode) {
+                                        DirectoryTreeNode childNode = (DirectoryTreeNode) node;
+                                        if (childNode.getUserObject() instanceof File) {
+                                            File childFile = (File) childNode.getUserObject();
+                                            if (childFile.equals(f)) {
 
-                                            // Expand to child.
-                                            TreeNode[] childPathNodes =
-                                                    model.getPathToRoot(childNode);
-                                            TreePath childPath = new TreePath(childPathNodes);
-                                            tree.setSelectionPath(childPath);
-                                            tree.scrollPathToVisible(childPath);
-                                            break;
+                                                // Expand to child.
+                                                TreeNode[] childPathNodes =
+                                                        model.getPathToRoot(childNode);
+                                                TreePath childPath = new TreePath(childPathNodes);
+                                                tree.setSelectionPath(childPath);
+                                                tree.scrollPathToVisible(childPath);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
                             }
+                        } else {
+                            DialogFactory.genericDialog(getController(),
+                                    Translation.getTranslation("dialog.directorychooser.new.description"),
+                                    Translation.getTranslation("dialog.directorychooser.new.problem",
+                                            f.getAbsolutePath()),
+                                    GenericDialogType.WARN);
                         }
-                    } else {
-                        DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation("dialog.directorychooser.new.description"),
-                                Translation.getTranslation("dialog.directorychooser.new.problem", f.getAbsolutePath()),
-                                GenericDialogType.WARN);
                     }
                 }
             }
