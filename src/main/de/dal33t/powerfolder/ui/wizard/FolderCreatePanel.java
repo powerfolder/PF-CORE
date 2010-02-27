@@ -25,7 +25,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PERMISSION_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
@@ -38,10 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +64,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -240,7 +235,6 @@ public class FolderCreatePanel extends PFWizardPanel {
         bar.setVisible(true);
         errorPane.setVisible(false);
         worker.start();
-
         updateButtons();
     }
 
@@ -291,30 +285,50 @@ public class FolderCreatePanel extends PFWizardPanel {
     private class MyFolderCreateWorker extends SwingWorker {
 
         private boolean problems;
+        private boolean duplicates;
+        private String duplicateName;
 
         @Override
         public Object construct() {
             ServerClient client = getController().getOSClient();
 
-            // Folder permission override, from invitations.
-            FolderPermission folderPermissionOverride = (FolderPermission) getWizardContext()
-                .getAttribute(FOLDER_PERMISSION_ATTRIBUTE);
+            // First, check for folders with the same name. We do not want to
+            // create folders with an existing name.
+            for (FolderInfo folderInfo : configurations.keySet()) {
+                String proposedName = folderInfo.getName();
+                Collection<Folder> folderCollection =
+                        getController().getFolderRepository().getFolders();
+                for (Folder folder : folderCollection) {
+                    if (folder.getName().equals(proposedName)) {
+                        duplicates = true;
+                        duplicateName = proposedName;
+                        return null;
+                    }
+                }
+                for (FolderInfo accountFolderInfo : client.getAccountFolders()) {
+                    if (accountFolderInfo.getName().equals(proposedName)) {
+                        duplicates = true;
+                        duplicateName = proposedName;
+                        return null;
+                    }
+                }
+            }
 
-            for (Map.Entry<FolderInfo, FolderSettings> folderInfoFolderSettingsEntry : configurations
+            for (Map.Entry<FolderInfo, FolderSettings> entry : configurations
                 .entrySet())
             {
-                FolderSettings folderSettings = folderInfoFolderSettingsEntry
+                FolderSettings folderSettings = entry
                     .getValue();
                 Folder folder = getController().getFolderRepository()
-                    .createFolder(folderInfoFolderSettingsEntry.getKey(),
+                    .createFolder(entry.getKey(),
                         folderSettings);
 
                 folder.addDefaultExcludes();
                 if (createDesktopShortcut) {
                     folder.setDesktopShortcut(true);
                 }
-                createShortcutToFolder(folderInfoFolderSettingsEntry.getKey(),
-                    folderInfoFolderSettingsEntry.getValue());
+                createShortcutToFolder(entry.getKey(),
+                    entry.getValue());
 
                 folders.add(folder);
                 if (configurations.size() == 1) {
@@ -343,12 +357,12 @@ public class FolderCreatePanel extends PFWizardPanel {
                     if (client.hasJoined(folder)) {
                         // Already have this os folder.
                         log.log(Level.WARNING, "Already have os folder "
-                            + folderInfoFolderSettingsEntry.getKey().name);
+                            + entry.getKey().name);
                         continue;
                     }
 
                     client.getFolderService().createFolder(
-                        folderInfoFolderSettingsEntry.getKey(),
+                        entry.getKey(),
                         SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
                     // Set as default synced folder?
@@ -359,7 +373,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         // with
                         // folder? Which is placed on WizardContext.
                         client.getFolderService().setDefaultSynchronizedFolder(
-                            folderInfoFolderSettingsEntry.getKey());
+                            entry.getKey());
                         createDefaultFolderHelpFile(folder);
                         folder.recommendScanOnNextMaintenance();
                         try {
@@ -374,16 +388,16 @@ public class FolderCreatePanel extends PFWizardPanel {
             return null;
         }
 
-        private void addProblem(String problem) {
-            problems = true;
-            StringBuilder stringBuilder = new StringBuilder(errorArea.getText());
-            if (stringBuilder.length() > 0) {
-                stringBuilder.append("\n\n");
-            }
-            stringBuilder.append(problem);
-            errorArea.setText(stringBuilder.toString());
-            errorPane.setVisible(true);
-        }
+//        private void addProblem(String problem) {
+//            problems = true;
+//            StringBuilder stringBuilder = new StringBuilder(errorArea.getText());
+//            if (stringBuilder.length() > 0) {
+//                stringBuilder.append("\n\n");
+//            }
+//            stringBuilder.append(problem);
+//            errorArea.setText(stringBuilder.toString());
+//            errorPane.setVisible(true);
+//        }
 
         private void createShortcutToFolder(FolderInfo folderInfo,
             FolderSettings folderSettings)
@@ -403,8 +417,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 return;
             }
 
-            File shortcutFile = new File(baseDir, folderInfo.getName().concat(
-                ".lnk"));
+            File shortcutFile = new File(baseDir, folderInfo.getName() + ".lnk");
             String shortcutPath = shortcutFile.getAbsolutePath();
             String filePath = folderSettings.getLocalBaseDir()
                 .getAbsolutePath();
@@ -436,14 +449,11 @@ public class FolderCreatePanel extends PFWizardPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w
-                    .write("This is the default synchronized folder of PowerFolder.\r\n");
-                w
-                    .write("Simply place files into this directory to sync them\r\n");
+                w.write("This is the default synchronized folder of PowerFolder.\r\n");
+                w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w
-                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
@@ -462,11 +472,17 @@ public class FolderCreatePanel extends PFWizardPanel {
         public void finished() {
             bar.setVisible(false);
 
-            if (problems) {
+            if (duplicates) {
                 updateButtons();
-
-                statusLabel.setText(Translation
-                    .getTranslation("wizard.create_folder.problems"));
+                String synchronizedFolderText = Translation.getTranslation(
+                        "wizard.what_to_do.synchronized_folder");
+                String joinOnlineText = Translation.getTranslation(
+                        "wizard.what_to_do.join_online");
+                statusLabel.setText(Translation.getTranslation(
+                        "wizard.create_folder.problems"));
+                errorArea.setText(Translation
+                    .getTranslation("wizard.create_folder.duplicates",
+                        duplicateName, synchronizedFolderText, joinOnlineText));
                 errorPane.setVisible(true);
             } else {
                 for (Folder folder : folders) {
@@ -481,4 +497,6 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
         }
     }
+
+
 }
