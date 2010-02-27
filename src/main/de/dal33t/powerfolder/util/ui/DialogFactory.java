@@ -77,7 +77,7 @@ public class DialogFactory {
         Reject.ifFalse(initialDirectory.isDirectory(),
                 "Initial directory is a file: " +
                         initialDirectory.getAbsolutePath());
-        System.out.println("hghg " + initialDirectory.getAbsolutePath());
+
         if (PreferencesEntry.PF_DIRECTORY_CHOOSER.getValueBoolean(
                 uiController.getController())) {
             // Use PF chooser
