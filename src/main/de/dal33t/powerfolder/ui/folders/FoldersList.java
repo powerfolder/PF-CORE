@@ -83,7 +83,6 @@ public class FoldersList extends PFUIComponent {
 
     private DelayedUpdater transfersUpdater;
 
-
     /**
      * Constructor
      * 
@@ -189,8 +188,7 @@ public class FoldersList extends PFUIComponent {
             FolderBean bean = new FolderBean(folderInfo);
             bean.setFolder(folder);
             bean.setLocal(true);
-            bean.setOnline(folder.hasMember(getController().getOSClient()
-                .getServer()));
+            bean.setOnline(getController().getOSClient().hasJoined(folder));
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
