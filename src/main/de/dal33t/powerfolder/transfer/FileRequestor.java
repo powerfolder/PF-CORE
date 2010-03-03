@@ -30,6 +30,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -277,53 +278,63 @@ public class FileRequestor extends PFComponent {
         folder.scanDirectory(dirInfo, dirFile);
     }
 
-    private void prepareDownload(FileInfo fInfo, boolean autoDownload) {
+    private void prepareDownload(FileInfo newestVersion, boolean autoDownload) {
         TransferManager tm = getController().getTransferManager();
-        if (autoDownload
-            && fInfo.getLocalFileInfo(getController().getFolderRepository()) != null)
-        {
-            if (pendingRequests.contains(fInfo)) {
-                return;
-            }
-            // FIXME Currently only support for automatically requested files,
-            // additional features require some rewriting of the whole requests
-            // thing.
-            Collection<Member> sources = tm.getSourcesForVersion(fInfo
-                .getNewestVersion(getController().getFolderRepository()));
-            Member fhReq = null;
-            Member oldSource = null;
-            for (Member m : sources) {
-                if (m.getIdentity().isSupportingFileHistoryRequests()) {
-                    // TODO Send History request!
-                    fhReq = m;
-                    break;
-                } else {
-                    oldSource = m;
+        if (Feature.CONFLICT_DETECTION.isEnabled()) {
+            if (autoDownload
+                && newestVersion.getLocalFileInfo(getController()
+                    .getFolderRepository()) != null)
+            {
+                if (pendingRequests.contains(newestVersion)) {
+                    return;
                 }
-            }
+                // FIXME Currently only support for automatically requested
+                // files,
+                // additional features require some rewriting of the whole
+                // requests
+                // thing.
+                // FIXME #1927: Differs from method used in
+                // TransferManager.downloadNewestVersion
+                // Already probably caused problems while migrating users in
+                // cloud
+                Collection<Member> sources = tm
+                    .getSourcesForVersion(newestVersion);
+                Member fhReq = null;
+                Member oldSource = null;
+                for (Member m : sources) {
+                    if (m.getIdentity().isSupportingFileHistoryRequests()) {
+                        // TODO Send History request!
+                        fhReq = m;
+                        break;
+                    } else {
+                        oldSource = m;
+                    }
+                }
 
-            // No source at all?
-            if (fhReq == null && oldSource == null) {
-                // This is autoDownlad so just drop out
-                return;
-            }
+                // No source at all?
+                if (fhReq == null && oldSource == null) {
+                    // This is autoDownlad so just drop out
+                    return;
+                }
 
-            if (fhReq == null && oldSource != null) {
-                if (!ProblemUtil.resolveNoFileHistorySupport(fInfo
-                    .getFolder(getController().getFolderRepository()), fInfo,
-                    oldSource))
-                {
+                if (fhReq == null && oldSource != null) {
+                    if (!ProblemUtil.resolveNoFileHistorySupport(newestVersion
+                        .getFolder(getController().getFolderRepository()),
+                        newestVersion, oldSource))
+                    {
+                        return;
+                    }
+                }
+
+                if (fhReq != null) {
+                    pendingRequests.add(newestVersion);
+                    fhReq.sendMessageAsynchron(new FileHistoryRequest(
+                        newestVersion), null);
                     return;
                 }
             }
-
-            if (fhReq != null) {
-                pendingRequests.add(fInfo);
-                fhReq.sendMessageAsynchron(new FileHistoryRequest(fInfo), null);
-                return;
-            }
         }
-        tm.downloadNewestVersion(fInfo, autoDownload);
+        tm.downloadNewestVersion(newestVersion, autoDownload);
     }
 
     /**
