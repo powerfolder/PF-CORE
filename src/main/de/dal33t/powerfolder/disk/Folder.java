@@ -186,7 +186,7 @@ public class Folder extends PFComponent {
      * Flag indicating that folder has a set of own know files will be true
      * after first scan ever
      */
-    private boolean hasOwnDatabase;
+    private volatile boolean hasOwnDatabase;
 
     /** Flag indicating */
     private volatile boolean shutdown;
