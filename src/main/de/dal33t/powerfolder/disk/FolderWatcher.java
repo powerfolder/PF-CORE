@@ -212,7 +212,9 @@ public class FolderWatcher extends PFComponent {
                         }
                     }
                 }
-                logWarning("Scanned " + scanned + " dirty files");
+                if (scanned > 0) {
+                    logWarning("Scanned " + scanned + " dirty files");
+                }
                 dirtyFiles.clear();
             } catch (Exception e) {
                 logSevere("Unable to scan changed file: " + dirtyFile + ". "
