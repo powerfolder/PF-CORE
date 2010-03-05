@@ -267,14 +267,10 @@ public abstract class Transfer extends Loggable implements Serializable {
         if (!wasStarted) {
             // Start now
             startTime = new Date();
+            getTransferManager().setStarted(this);
         } else {
             logWarning("Got already started transfer", new RuntimeException(
                 "from here"));
-        }
-
-        // Inform transfer manager only ONCE
-        if (!wasStarted) {
-            getTransferManager().setStarted(this);
         }
     }
 
@@ -318,8 +314,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     }
 
     public Date getCompletedDate() {
-        return state != null
-            && state.getCompletedDate() != null ? state
+        return state != null && state.getCompletedDate() != null ? state
             .getCompletedDate() : null;
     }
 
@@ -434,7 +429,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     public State getState() {
         return state;
     }
-    
+
     public TransferState getTransferState() {
         return state == null ? null : state.getState();
     }
