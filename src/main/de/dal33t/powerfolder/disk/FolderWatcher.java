@@ -164,8 +164,7 @@ public class FolderWatcher extends PFComponent {
         boolean watchSubtree = true;
         try {
             watchID = JNotify.addWatch(path, mask, watchSubtree, listener);
-            logWarning("Initialized filesystem watch on " + path + " / "
-                + folder);
+            logFine("Initialized filesystem watch on " + path + " / " + folder);
         } catch (JNotifyException e) {
             logSevere("Unable to initialize filesystem watch for " + folder
                 + ". " + e);
