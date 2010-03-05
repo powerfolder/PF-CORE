@@ -555,54 +555,69 @@ public class HomeTab extends PFUIComponent {
         boolean active = false;
         boolean showBuyNow = false;
         String username = client.getUsername();
-        if (username == null || username.trim().length() == 0)
-        {
+        if (username == null || username.trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation
                 .getTranslation("home_tab.online_storage.not_setup"));
             onlineStorageAccountLabel.setToolTipText(Translation
                 .getTranslation("home_tab.online_storage.not_setup.tips"));
         } else {
-            String password = client.getPassword();
-            if (password == null || password.trim().length() == 0) {
+            char[] password = client.getPassword();
+            if (password == null || password.length == 0) {
                 onlineStorageAccountLabel.setText(Translation
                     .getTranslation("home_tab.online_storage.no_password"));
-                onlineStorageAccountLabel.setToolTipText(Translation
-                    .getTranslation("home_tab.online_storage.no_password.tips"));
+                onlineStorageAccountLabel
+                    .setToolTipText(Translation
+                        .getTranslation("home_tab.online_storage.no_password.tips"));
             } else if (client.isConnected()) {
                 if (client.isLoggedIn()) {
-                    OnlineStorageSubscription storageSubscription =
-                            client.getAccount().getOSSubscription();
+                    OnlineStorageSubscription storageSubscription = client
+                        .getAccount().getOSSubscription();
                     if (storageSubscription.isDisabled()) {
-                        Date expirationDate = storageSubscription.getDisabledExpirationDate();
-                        if (storageSubscription.isDisabledExpiration() &&
-                                expirationDate != null) {
-                            onlineStorageAccountLabel.setText(Translation.getTranslation(
-                                    "home_tab.online_storage.account_disabled_expiration",
-                                    username, Format.formatDateCanonical(expirationDate)));
+                        Date expirationDate = storageSubscription
+                            .getDisabledExpirationDate();
+                        if (storageSubscription.isDisabledExpiration()
+                            && expirationDate != null)
+                        {
+                            onlineStorageAccountLabel
+                                .setText(Translation
+                                    .getTranslation(
+                                        "home_tab.online_storage.account_disabled_expiration",
+                                        username,
+                                        Format
+                                            .formatDateCanonical(expirationDate)));
                         } else if (storageSubscription.isDisabledUsage()) {
-                            onlineStorageAccountLabel.setText(Translation.getTranslation(
-                                    "home_tab.online_storage.account_disabled_usage", username));
+                            onlineStorageAccountLabel
+                                .setText(Translation
+                                    .getTranslation(
+                                        "home_tab.online_storage.account_disabled_usage",
+                                        username));
                         } else {
-                            onlineStorageAccountLabel.setText(Translation.getTranslation(
-                                    "home_tab.online_storage.account_disabled", username));
+                            onlineStorageAccountLabel.setText(Translation
+                                .getTranslation(
+                                    "home_tab.online_storage.account_disabled",
+                                    username));
                         }
                         onlineStorageAccountLabel
-                                .setToolTipText(Translation
-                                        .getTranslation("home_tab.online_storage.account_disabled.tips"));
+                            .setToolTipText(Translation
+                                .getTranslation("home_tab.online_storage.account_disabled.tips"));
                         showBuyNow = true;
                     } else {
-                        onlineStorageAccountLabel.setText(Translation.getTranslation(
-                                "home_tab.online_storage.account", username));
-                        onlineStorageAccountLabel.setToolTipText(Translation
+                        onlineStorageAccountLabel.setText(Translation
+                            .getTranslation("home_tab.online_storage.account",
+                                username));
+                        onlineStorageAccountLabel
+                            .setToolTipText(Translation
                                 .getTranslation("home_tab.online_storage.account.tips"));
                         active = true;
                     }
                 } else {
-                    onlineStorageAccountLabel.setText(Translation.getTranslation(
-                            "home_tab.online_storage.account_not_logged_in", username));
+                    onlineStorageAccountLabel.setText(Translation
+                        .getTranslation(
+                            "home_tab.online_storage.account_not_logged_in",
+                            username));
                     onlineStorageAccountLabel
-                            .setToolTipText(Translation
-                                    .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
+                        .setToolTipText(Translation
+                            .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
                 }
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(

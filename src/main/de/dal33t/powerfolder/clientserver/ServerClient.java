@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
@@ -47,6 +48,7 @@ import de.dal33t.powerfolder.security.AnonymousAccount;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -68,8 +70,7 @@ public class ServerClient extends PFComponent {
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
     private String username;
-    // TODO Convert to char[] for security reasons.
-    private String password;
+    private char[] password;
     private Member server;
 
     /**
@@ -339,27 +340,8 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-        String url = getWebURL() + Constants.LOGIN_URI;
-        if (StringUtils.isNotBlank(getUsername())) {
-            url += "?";
-            url += Constants.LOGIN_PARAM_USERNAME;
-            url += "=";
-            url += Util.endcodeForURL(getUsername());
-            if (StringUtils.isNotBlank(getPassword())) {
-                String salt = IdGenerator.makeId() + IdGenerator.makeId();
-                String mix = salt + getPassword().trim() + salt;
-                byte[] passwordMD5 = Util.md5(mix.getBytes(Convert.UTF8));
-                url += "&";
-                url += Constants.LOGIN_PARAM_PASSWORD_MD5;
-                url += "=";
-                url += Util.endcodeForURL(Base64.encodeBytes(passwordMD5));
-                url += "&";
-                url += Constants.LOGIN_PARAM_SALT;
-                url += "=";
-                url += Util.endcodeForURL(Base64.encodeString(salt));
-            }
-        }
-        return url;
+        return LoginUtil.decorateURL(getWebURL() + Constants.LOGIN_URI,
+            username, password);
     }
 
     /**
@@ -373,10 +355,7 @@ public class ServerClient extends PFComponent {
         }
         String url = getWebURL() + Constants.LOGIN_URI;
         if (StringUtils.isNotBlank(getUsername())) {
-            url += "?";
-            url += Constants.LOGIN_PARAM_USERNAME;
-            url += "=";
-            url += getUsername();
+            url = LoginUtil.decorateURL(url, getUsername(), null);
         }
         return url;
     }
@@ -446,22 +425,31 @@ public class ServerClient extends PFComponent {
      * this server.uses default account setting as fallback
      * 
      * @return the identity with this username or <code>InvalidAccount</code> if
-     *         login failed. NEVER returns <code>null</code>
+     *         login failed.
      */
     public Account loginWithLastKnown() {
         String un = getController().getPreferences().get(
             PREFS_PREFIX + '.' + server.getIP() + ".username", null);
-        String pw = getController().getPreferences().get(
-            PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
-        if (StringUtils.isNotBlank(pw)) {
-            pw = new String(Base64.decode(pw), Convert.UTF8);
-        } else {
-            // Fallback (TRAC #1291)
-            pw = getController().getPreferences().get(
-                PREFS_PREFIX + '.' + server.getIP() + ".info", null);
+        char[] pw = LoginUtil.deobfuscate(getController().getPreferences().get(
+            PREFS_PREFIX + '.' + server.getIP() + ".info3", null));
+
+        if (pw == null) {
+            String pwOld = getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".info2", null);
+            if (StringUtils.isNotBlank(pwOld)) {
+                // Fallback (TRAC #1921)
+                pwOld = new String(Base64.decode(pwOld), Convert.UTF8);
+            } else {
+                // Fallback (TRAC #1291)
+                pwOld = getController().getPreferences().get(
+                    PREFS_PREFIX + '.' + server.getIP() + ".info", null);
+            }
+            if (StringUtils.isNotBlank(pwOld)) {
+                pw = pwOld.toCharArray();
+            }
         }
 
-        if (!StringUtils.isBlank(un) && !StringUtils.isBlank(pw)) {
+        if (!StringUtils.isBlank(un)) {
             return login(un, pw);
         }
         // Failed!
@@ -490,42 +478,48 @@ public class ServerClient extends PFComponent {
      * @return the identity with this username or <code>InvalidAccount</code> if
      *         login failed. NEVER returns <code>null</code>
      */
-    public Account login(String theUsername, String thePassword) {
-        synchronized (loginLock) {
-            password = thePassword != null ? thePassword.trim() : null;
-            String salt = IdGenerator.makeId() + IdGenerator.makeId();
-            String mix = salt + password + salt;
-            String passwordMD5 = new String(Util
-                .md5(mix.getBytes(Convert.UTF8)), Convert.UTF8);
-            return login(theUsername, passwordMD5, salt);
-        }
-    }
-
-    /**
-     * Logs into the server and saves the identity as my login.
-     * <p>
-     * If the server is not connected and invalid account is returned and the
-     * login data saved for auto-login on reconnect.
-     * 
-     * @param theUsername
-     * @param thePasswordMD5
-     * @param salt
-     * @return the identity with this username or <code>InvalidAccount</code> if
-     *         login failed. NEVER returns <code>null</code>
-     */
-    public Account login(String theUsername, String thePasswordMD5, String salt)
-    {
+    public Account login(String theUsername, char[] thePassword) {
         synchronized (loginLock) {
             username = theUsername;
-            // TODO Save MD5/Salted password
+            password = thePassword;
             saveLastKnowLogin();
-            if (!isConnected()) {
+            if (!isConnected() || password == null) {
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
             }
-            boolean loginOk = securityService.login(theUsername,
-                thePasswordMD5, salt);
+            boolean loginOk = false;
+
+            Identity id = server.getIdentity();
+            boolean tryOldLogin = id != null && id.getProgramVersion() != null
+                && Util.compareVersions("4.1.1", id.getProgramVersion());
+
+            try {
+                if (!tryOldLogin) {
+                    loginOk = securityService.login(username, password);
+                }
+            } catch (RemoteCallException e) {
+                if (e.getCause() instanceof NoSuchMethodException) {
+                    // Old server version (Pre 1.5.0 or older)
+                    // Try it the old fashioned way
+                    tryOldLogin = true;
+                } else {
+                    // Rethrow
+                    throw e;
+                }
+            }
+
+            if (tryOldLogin) {
+                logWarning("Trying old login method");
+                // Old server version (Pre 1.5.0 or older)
+                // Try it the old fashioned way
+                String salt = IdGenerator.makeId() + IdGenerator.makeId();
+                String mix = salt + Util.toString(password) + salt;
+                String passwordMD5 = new String(Util.md5(mix
+                    .getBytes(Convert.UTF8)), Convert.UTF8);
+                loginOk = securityService.login(username, passwordMD5, salt);
+            }
+
             if (!loginOk) {
                 logWarning("Login to server server "
                     + server.getReconnectAddress() + " (user " + theUsername
@@ -600,7 +594,7 @@ public class ServerClient extends PFComponent {
     /**
      * @return the password that is set for login.
      */
-    public String getPassword() {
+    public char[] getPassword() {
         return password;
     }
 
@@ -864,19 +858,18 @@ public class ServerClient extends PFComponent {
             getController().getPreferences().put(
                 PREFS_PREFIX + '.' + server.getIP() + ".username", username);
         }
-
-        if (isRememberPassword() && !StringUtils.isBlank(password)) {
-            getController().getPreferences().put(
-                PREFS_PREFIX + '.' + server.getIP() + ".info2",
-                Base64.encodeBytes(password.getBytes(Convert.UTF8)));
-        } else {
-            getController().getPreferences().remove(
-                PREFS_PREFIX + '.' + server.getIP() + ".info2");
-        }
-
-        // Clear plain text password (TRAC #1291)
+        // Remove old (TRAC #1291) (TRAC #1921)
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info");
+        getController().getPreferences().remove(
+            PREFS_PREFIX + '.' + server.getIP() + ".info2");
+        getController().getPreferences().remove(
+            PREFS_PREFIX + '.' + server.getIP() + ".info3");
+        if (isRememberPassword() && password != null && password.length > 0) {
+            getController().getPreferences().put(
+                PREFS_PREFIX + '.' + server.getIP() + ".info3",
+                LoginUtil.obfuscate(password));
+        }
     }
 
     private void changeToServer(ServerInfo newServerInfo) {

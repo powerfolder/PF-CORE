@@ -129,7 +129,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.1.4"; // 1.5.0.4 / 4.1.1.3
+    public static final String PROGRAM_VERSION = "4.1.2 - 1.5.0.25"; // 1.5.0.25
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -408,7 +408,7 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-        if (!Desktop.isDesktopSupported()) {
+        if (!Desktop.isDesktopSupported() && isUIEnabled()) {
             logWarning("Desktop utility not supported");
         }
 
@@ -574,7 +574,7 @@ public class Controller extends PFComponent {
                     .getValue(getController());
                 logWarning("Logging into server " + osClient.getServerString()
                     + ". Username: " + username);
-                osClient.login(username, password);
+                osClient.login(username, Util.toCharArray(password));
             } else {
                 osClient.loginWithLastKnown();
             }

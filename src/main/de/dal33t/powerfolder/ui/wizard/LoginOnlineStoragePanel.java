@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -213,7 +214,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         if (client.isConnected()) {
             usernameField.setText(client.getUsername());
-            passwordField.setText(client.getPassword());
+            passwordField.setText(Util.toString(client.getPassword()));
         }
 
         // loginButton = new JButton("Login");
@@ -281,7 +282,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             boolean loginOk = false;
             try {
                 loginOk = client.login(usernameField.getText(),
-                    new String(passwordField.getPassword())).isValid();
+                    passwordField.getPassword()).isValid();
                 if (!loginOk) {
                     throw new SecurityException(Translation
                         .getTranslation("online_storage.account_data"));
@@ -304,7 +305,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
         public void serverConnected(ServerClientEvent event) {
             usernameField.setText(client.getUsername());
-            passwordField.setText(client.getPassword());
+            passwordField.setText(Util.toString(client.getPassword()));
             updateOnlineStatus();
         }
 

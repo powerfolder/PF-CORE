@@ -57,7 +57,7 @@ public interface AccountService {
      * @param salt
      *            the salt - a random string.
      * @return the Account with this username or null if login failed.
-     * @deprecated use {@link SecurityService#login(String, String, String)}
+     * @deprecated use {@link SecurityService#login(String, char[])}
      */
     @Deprecated
     boolean login(String username, String passwordMD5, String salt);

@@ -276,6 +276,10 @@ public class Account extends Model implements Serializable {
         return password;
     }
 
+    public char[] getPasswordChars() {
+        return password != null ? password.toCharArray() : null;
+    }
+
     public void setPassword(String password) {
         Object oldValue = getPassword();
         this.password = password;

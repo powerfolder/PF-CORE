@@ -64,15 +64,12 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * #1784: For locking the user interface.
@@ -326,25 +323,9 @@ public class UIUnLockDialog extends PFUIComponent {
                 url = ConfigurationEntry.SERVER_WEB_URL
                     .getValue(getController());
             }
-            logWarning("Trying to unlock user interface at: " + url);
-
-            String salt = IdGenerator.makeId() + IdGenerator.makeId();
-            String mix = salt + new String(password).trim() + salt;
-            byte[] passwordMD5 = Util.md5(mix.getBytes(Convert.UTF8));
-
             url += Constants.UI_LOCK_UNLOCK_URI;
-            url += "?";
-            url += Constants.LOGIN_PARAM_USERNAME;
-            url += "=";
-            url += Util.endcodeForURL(username);
-            url += "&";
-            url += Constants.LOGIN_PARAM_PASSWORD_MD5;
-            url += "=";
-            url += Util.endcodeForURL(Base64.encodeBytes(passwordMD5));
-            url += "&";
-            url += Constants.LOGIN_PARAM_SALT;
-            url += "=";
-            url += Util.endcodeForURL(Base64.encodeString(salt));
+            logWarning("Trying to unlock user interface at: " + url);
+            url = LoginUtil.decorateURL(url, username, password);
 
             URL u = new URL(url);
             HttpURLConnection c = (HttpURLConnection) u.openConnection();
@@ -380,9 +361,8 @@ public class UIUnLockDialog extends PFUIComponent {
                     // Switch login
                     String username = usernameField.getText();
                     char[] password = passwordField.getPassword();
-                    getController().getOSClient().login(username,
-                        new String(password));
-                    
+                    getController().getOSClient().login(username, password);
+
                     mainProgrammContinue();
                     return;
                 } else {

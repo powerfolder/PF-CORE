@@ -48,7 +48,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -92,6 +91,32 @@ public class Util {
             return true;
         }
         return a.equalsIgnoreCase(b);
+    }
+
+    /**
+     * Safe-get for null char arrays to String conversion.
+     * 
+     * @param chars
+     * @return the chars as string. If the input is null output will be null
+     */
+    public static final String toString(char[] chars) {
+        if (chars == null) {
+            return null;
+        }
+        return new String(chars);
+    }
+
+    /**
+     * Safe-get for null Strings to char array conversion.
+     * 
+     * @param str
+     * @return String as char array. If the input is null output will be null
+     */
+    public static final char[] toCharArray(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.toCharArray();
     }
 
     /**

@@ -77,12 +77,15 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     public Account authenticate(String username, char[] password) {
-        return client.login(username, new String(password));
+        return client.login(username, password);
     }
 
     public Account authenticate(String username, String passwordMD5, String salt)
     {
-        return client.login(username, passwordMD5, salt);
+        // TRAC #1921
+        throw new UnsupportedOperationException(
+            "Authentication with md5 encoded password not supported at client for "
+                + username);
     }
 
     public boolean hasPermission(Account account, Permission permission) {

@@ -53,6 +53,10 @@ public class RemoteMethodCallRequest extends Request {
     public Method getMethod(Object target) throws NoSuchMethodException {
         return target.getClass().getMethod(methodName, methodParamTypes);
     }
+    
+    public String getMethodName() {
+        return methodName;
+    }
 
     public Object[] getArgs() {
         return args;

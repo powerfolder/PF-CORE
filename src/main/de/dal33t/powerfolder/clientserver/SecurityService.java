@@ -48,9 +48,20 @@ public interface SecurityService {
      *            the password mixed with the salt as MD5
      * @param salt
      *            the salt - a random string.
-     * @return the Account with this username or null if login failed.
+     * @return if login succeeded
+     * @deprecated Use {@link #login(String, char[])}
      */
     boolean login(String username, String passwordMD5, String salt);
+
+    /**
+     * Logs in from a remote location.
+     * 
+     * @param username
+     * @param password
+     *            the password
+     * @return if login succeeded
+     */
+    boolean login(String username, char[] password);
 
     /**
      * @return true if a user is logged in currently = has open session.
