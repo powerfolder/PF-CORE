@@ -37,9 +37,9 @@ public abstract class FolderPermission implements Permission {
 
     protected FolderPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
-        folder = foInfo;
+        folder = foInfo.intern();
     }
-    
+
     public abstract String getName();
 
     public final FolderInfo getFolder() {

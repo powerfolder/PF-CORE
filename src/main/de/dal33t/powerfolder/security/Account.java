@@ -249,6 +249,15 @@ public class Account extends Model implements Serializable {
         return folderInfos;
     }
 
+    public void internFolderInfos() {
+        for (Permission permission : permissions) {
+            if (permission instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) permission;
+                fp.folder = fp.folder.intern();
+            }
+        }
+    }
+
     // Accessing / API ********************************************************
 
     /**

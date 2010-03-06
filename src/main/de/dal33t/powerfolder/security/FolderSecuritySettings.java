@@ -43,7 +43,7 @@ public class FolderSecuritySettings implements Serializable {
      */
     private Date modifiedDate;
 
-    private final FolderInfo folder;
+    private FolderInfo folder;
 
     /**
      * The permissions a computer/account inherits if no permission is found for
@@ -60,7 +60,7 @@ public class FolderSecuritySettings implements Serializable {
     {
         super();
         Reject.ifNull(folder, "Folder is null");
-        this.folder = folder;
+        this.folder = folder.intern();
         this.defaultPermission = defaultPermission;
         touch();
     }
@@ -98,6 +98,13 @@ public class FolderSecuritySettings implements Serializable {
             return false;
         }
         return !defaultPermission.getFolder().equals(folder);
+    }
+
+    public void internFolderInfos() {
+        folder = folder.intern();
+        if (defaultPermission != null) {
+            defaultPermission.folder = folder;
+        }
     }
 
     // General ****************************************************************
