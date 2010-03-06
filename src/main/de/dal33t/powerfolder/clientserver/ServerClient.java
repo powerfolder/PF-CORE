@@ -188,6 +188,8 @@ public class ServerClient extends PFComponent {
         }
         getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
             1000L * 20);
+        getController().scheduleAndRepeat(new AutoLoginTask(), 20L * 1000L,
+            1000L * 20);
         // Wait 10 seconds at start
         getController().scheduleAndRepeat(new HostingServerRetriever(),
             10L * 1000L, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
@@ -479,6 +481,8 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
+        logFine("Login with: " + theUsername + ":"
+            + (thePassword != null ? '(' + thePassword.length + ')' : "n/a"));
         synchronized (loginLock) {
             username = theUsername;
             password = thePassword;
@@ -993,7 +997,8 @@ public class ServerClient extends PFComponent {
                 listenerSupport.serverConnected(new ServerClientEvent(
                     ServerClient.this, e.getNode()));
 
-                if (username != null) {
+                if (username != null && password != null && password.length > 0)
+                {
                     login(username, password);
                 }
 
@@ -1040,6 +1045,21 @@ public class ServerClient extends PFComponent {
             }
             // Try to connect
             server.markForImmediateConnect();
+        }
+    }
+
+    private class AutoLoginTask extends TimerTask {
+        @Override
+        public void run() {
+            if (!isConnected()) {
+                return;
+            }
+            if (isLoggedIn()) {
+                return;
+            }
+            if (username != null && password != null && password.length > 0) {
+                login(username, password);
+            }
         }
     }
 
