@@ -361,12 +361,18 @@ public class Folder extends PFComponent {
 
         // Create invitation
         if (folderSettings.isCreateInvitationFile()) {
-            Invitation inv = createInvitation();
-            File invFile = new File(folderSettings.getLocalBaseDir(), FileUtils
-                .removeInvalidFilenameChars(inv.folder.name)
-                + ".invitation");
-            InvitationUtil.save(inv, invFile);
-            scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
+            try {
+                Invitation inv = createInvitation();
+                File invFile = new File(folderSettings.getLocalBaseDir(),
+                        FileUtils.removeInvalidFilenameChars(inv.folder.name)
+                    + ".invitation");
+                InvitationUtil.save(inv, invFile);
+                scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
+            } catch (Exception e) {
+                // Failure to send invite is not fatal to folder create.
+                // Log it and move on.
+                logInfo(e);
+            }
         }
 
         watcher = new FolderWatcher(this);

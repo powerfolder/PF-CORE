@@ -41,12 +41,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import jwf.WizardPanel;
 
@@ -73,6 +69,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -97,9 +95,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private final List<Folder> folders;
 
-    private JLabel statusLabel;
-    private JTextArea errorArea;
-    private JComponent errorPane;
     private JProgressBar bar;
 
     public FolderCreatePanel(Controller controller) {
@@ -126,7 +121,7 @@ public class FolderCreatePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("140dlu, $lcg, $wfield",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -134,19 +129,11 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         int row = 1;
 
-        statusLabel = builder.addLabel(Translation
-            .getTranslation("wizard.create_folder.working"), cc.xy(1, row));
-
         row += 2;
         bar = new JProgressBar();
         bar.setIndeterminate(true);
         builder.add(bar, cc.xy(1, row));
 
-        errorArea = new JTextArea();
-        errorArea.setRows(5);
-        errorArea.setWrapStyleWord(true);
-        errorPane = new JScrollPane(errorArea);
-        builder.add(errorPane, cc.xy(1, row));
         return builder.getPanel();
     }
 
@@ -233,7 +220,6 @@ public class FolderCreatePanel extends PFWizardPanel {
 
         SwingWorker worker = new MyFolderCreateWorker();
         bar.setVisible(true);
-        errorPane.setVisible(false);
         worker.start();
         updateButtons();
     }
@@ -284,51 +270,44 @@ public class FolderCreatePanel extends PFWizardPanel {
 
     private class MyFolderCreateWorker extends SwingWorker {
 
-        private boolean problems;
-        private boolean duplicates;
-        private String duplicateName;
-
         @Override
         public Object construct() {
             ServerClient client = getController().getOSClient();
 
-            // First, check for folders with the same name. We do not want to
-            // create folders with an existing name.
-            for (FolderInfo folderInfo : configurations.keySet()) {
-                String proposedName = folderInfo.getName();
-                Collection<Folder> folderCollection =
-                        getController().getFolderRepository().getFolders();
-                for (Folder folder : folderCollection) {
-                    if (folder.getName().equals(proposedName)) {
-                        duplicates = true;
-                        duplicateName = proposedName;
-                        return null;
-                    }
-                }
-                for (FolderInfo accountFolderInfo : client.getAccountFolders()) {
-                    if (accountFolderInfo.getName().equals(proposedName)) {
-                        duplicates = true;
-                        duplicateName = proposedName;
-                        return null;
-                    }
-                }
-            }
+            Collection<FolderInfo> onlineFolderInfos = client.getAccountFolders();
 
             for (Map.Entry<FolderInfo, FolderSettings> entry : configurations
                 .entrySet())
             {
-                FolderSettings folderSettings = entry
-                    .getValue();
+                FolderInfo folderInfo = entry.getKey();
+                FolderSettings folderSettings = entry.getValue();
+
+                // Look for folders where there is already an online folder with 
+                // the same name. Offer to join instead of create duplicates.
+                for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                    if (onlineFolderInfo.getName().equals(folderInfo.getName())) {
+                        if (!onlineFolderInfo.equals(folderInfo)) {
+                            log.info("Found online folder with same name: " +
+                                    folderInfo.getName() +
+                                    ". Asking user what to do...");
+                            if (joinInstead(folderInfo)) {
+                                // User actually wants to join, so use online.
+                                folderInfo = onlineFolderInfo;
+                                log.info("Changed folder info to online version: " +
+                                        folderInfo.getName());
+                            }
+                        }
+                    }
+                }
+
                 Folder folder = getController().getFolderRepository()
-                    .createFolder(entry.getKey(),
-                        folderSettings);
+                    .createFolder(folderInfo, folderSettings);
 
                 folder.addDefaultExcludes();
                 if (createDesktopShortcut) {
                     folder.setDesktopShortcut(true);
                 }
-                createShortcutToFolder(entry.getKey(),
-                    entry.getValue());
+                createShortcutToFolder(folderInfo, folderSettings);
 
                 folders.add(folder);
                 if (configurations.size() == 1) {
@@ -357,12 +336,12 @@ public class FolderCreatePanel extends PFWizardPanel {
                     if (client.hasJoined(folder)) {
                         // Already have this os folder.
                         log.log(Level.WARNING, "Already have os folder "
-                            + entry.getKey().name);
+                            + folderInfo.name);
                         continue;
                     }
 
                     client.getFolderService().createFolder(
-                        entry.getKey(),
+                        folderInfo,
                         SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
                     // Set as default synced folder?
@@ -373,7 +352,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         // with
                         // folder? Which is placed on WizardContext.
                         client.getFolderService().setDefaultSynchronizedFolder(
-                            entry.getKey());
+                            folderInfo);
                         createDefaultFolderHelpFile(folder);
                         folder.recommendScanOnNextMaintenance();
                         try {
@@ -388,16 +367,22 @@ public class FolderCreatePanel extends PFWizardPanel {
             return null;
         }
 
-//        private void addProblem(String problem) {
-//            problems = true;
-//            StringBuilder stringBuilder = new StringBuilder(errorArea.getText());
-//            if (stringBuilder.length() > 0) {
-//                stringBuilder.append("\n\n");
-//            }
-//            stringBuilder.append(problem);
-//            errorArea.setText(stringBuilder.toString());
-//            errorPane.setVisible(true);
-//        }
+        /**
+         * If user appears to be creating a duplicate of online folder,
+         * ask if they actually wish to join existing.
+         *
+         * @param folderInfo
+         * @return
+         */
+        private boolean joinInstead(FolderInfo folderInfo) {
+            return DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation("wizard.create_folder.found_online.title"),
+                    Translation.getTranslation("wizard.create_folder.found_online.text",
+                            folderInfo.getName()), new String[]{
+                            Translation.getTranslation("wizard.create_folder.found_online.join"),
+                            Translation.getTranslation("wizard.create_folder.found_online.create")},
+                    0, GenericDialogType.QUESTION) == 0;
+        }
 
         private void createShortcutToFolder(FolderInfo folderInfo,
             FolderSettings folderSettings)
@@ -471,32 +456,19 @@ public class FolderCreatePanel extends PFWizardPanel {
         @Override
         public void finished() {
             bar.setVisible(false);
-
-            if (duplicates) {
-                updateButtons();
-                String synchronizedFolderText = Translation.getTranslation(
-                        "wizard.what_to_do.synchronized_folder");
-                String joinOnlineText = Translation.getTranslation(
-                        "wizard.what_to_do.join_online");
-                statusLabel.setText(Translation.getTranslation(
-                        "wizard.create_folder.problems"));
-                errorArea.setText(Translation
-                    .getTranslation("wizard.create_folder.duplicates",
-                        duplicateName, synchronizedFolderText, joinOnlineText));
-                errorPane.setVisible(true);
-            } else {
-                for (Folder folder : folders) {
-                    if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
-                        .getSyncProfile()))
-                    {
-                        // Show sync folder panel after created a project folder
-                        new SyncFolderPanel(getController(), folder).open();
-                    }
+            for (Folder folder : folders) {
+                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
+                    .getSyncProfile()))
+                {
+                    // Show sync folder panel after created a project folder
+                    new SyncFolderPanel(getController(), folder).open();
                 }
-                getWizard().next();
             }
+            getWizard().next();
         }
     }
+
+
 
 
 }
