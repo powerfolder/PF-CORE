@@ -174,8 +174,9 @@ public interface FolderService {
      * To empty/purge the online stored archive.
      * 
      * @param foInfo
+     * @return if succeeded
      */
-    void purgeArchive(FolderInfo foInfo);
+    boolean purgeArchive(FolderInfo foInfo);
 
     int getVersionsPerFile(FolderInfo foInfo);
 
