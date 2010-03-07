@@ -108,6 +108,7 @@ public class AboutDialog extends PFUIComponent {
     private JButton systemMonitorButton;
     private JButton bugReportButton;
     private JButton okButton;
+    private JButton activateButton;
     private ActionListener closeAction;
     /** when enter is pressed the button/action with focus is called * */
     private ActionListener generalAction;
@@ -301,10 +302,11 @@ public class AboutDialog extends PFUIComponent {
         createBugReportButton();
         createCheckForUpdatesButton();
         createSystemMonitorButton();
+        createActivateButton();
         createOKButton();
         focusList = new Component[]{okButton, bugReportButton,
             checkForUpdatesButton, systemMonitorButton};
-        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(
+        JPanel buttons = ButtonBarFactory.buildRightAlignedBar(activateButton,
             checkForUpdatesButton, bugReportButton, systemMonitorButton,
             okButton);
         buttons.setOpaque(false);
@@ -406,6 +408,22 @@ public class AboutDialog extends PFUIComponent {
             }
         }
 
+    }
+
+    private JButton createActivateButton() {
+        activateButton = new JButton(Translation
+            .getTranslation("about_dialog.activate.text"));
+        activateButton.setToolTipText(Translation
+            .getTranslation("about_dialog.activate.tips"));
+        activateButton.setMnemonic(Translation.getTranslation(
+            "about_dialog.activate.key").trim().charAt(0));
+        if (getApplicationModel().getLicenseModel().getActivationAction() != null)
+        {
+            activateButton.addActionListener(getApplicationModel()
+                .getLicenseModel().getActivationAction());
+        }
+        activateButton.setBackground(Color.WHITE);
+        return activateButton;
     }
 
     /**
