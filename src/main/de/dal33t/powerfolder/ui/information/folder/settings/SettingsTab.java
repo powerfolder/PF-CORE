@@ -111,7 +111,7 @@ public class SettingsTab extends PFUIComponent {
     private final SelectionModel selectionModel;
     private FolderMembershipListener membershipListner;
     private final DiskItemFilterListener patternChangeListener;
-    private volatile boolean updateingOnlineArchiveMode ;
+    private volatile boolean updateingOnlineArchiveMode;
 
     /**
      * Folders with this setting will backup files before replacing them with
@@ -171,13 +171,14 @@ public class SettingsTab extends PFUIComponent {
         onlineVersionModel = new ValueHolder(); // <Integer>
         onlineVersionModel.addValueChangeListener(onlineListener);
 
-        PurgeListener purgeListener = new PurgeListener();
-        localArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
-                localModeModel, localVersionModel, purgeListener);
-        onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(controller,
-                onlineModeModel, onlineVersionModel);
-        onlineLabel = new JLabel(Translation.getTranslation(
-                "general.online_archive_mode"));
+        localArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
+            controller, localModeModel, localVersionModel,
+            new LocalPurgeListener());
+        onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
+            controller, onlineModeModel, onlineVersionModel,
+            new OnlinePurgeListener());
+        onlineLabel = new JLabel(Translation
+            .getTranslation("general.online_archive_mode"));
         onlineLabel.setVisible(false);
         onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
     }
@@ -210,8 +211,12 @@ public class SettingsTab extends PFUIComponent {
     private void loadOnlineArchiveMode() {
         // Do this offline so it does not slow the main display.
         FolderInfo fi = folder == null ? null : folder.getInfo();
-        SwingWorker worker = new MyServerModeSwingWorker(fi);
-        worker.start();
+        if (serverClient.hasJoined(folder) && serverClient.isConnected()) {
+            new MyServerModeSwingWorker(fi).start();
+        } else {
+            onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
+            onlineLabel.setVisible(false);
+        }
     }
 
     /**
@@ -244,13 +249,13 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(new JLabel(Translation
             .getTranslation("general.local_archive_mode")), cc.xy(2, row));
-        builder.add(localArchiveModeSelectorPanel.getUIComponent(), cc
-            .xyw(4, row, 4));
+        builder.add(localArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
+            row, 4));
 
         row += 2;
         builder.add(onlineLabel, cc.xy(2, row));
-        builder.add(onlineArchiveModeSelectorPanel.getUIComponent(), cc
-            .xyw(4, row, 4));
+        builder.add(onlineArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
+            row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
@@ -540,8 +545,8 @@ public class SettingsTab extends PFUIComponent {
         File originalDirectory = folder.getLocalBase();
 
         // Select the new folder.
-        File file = DialogFactory.chooseDirectory(
-                getController().getUIController(), originalDirectory);
+        File file = DialogFactory.chooseDirectory(getController()
+            .getUIController(), originalDirectory);
         if (file != null) {
             if (FileUtils.isSubdirectory(originalDirectory, file)) {
                 DialogFactory.genericDialog(getController(), Translation
@@ -559,8 +564,7 @@ public class SettingsTab extends PFUIComponent {
                                 .getTranslation("settings_tab.basedir.text"),
                             GenericDialogType.ERROR);
                 } else {
-                    moveDirectory(originalDirectory, file,
-                        moveContent == 0);
+                    moveDirectory(originalDirectory, file, moveContent == 0);
                 }
             }
         }
@@ -852,27 +856,58 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private void purgeArchive() {
+    private void purgeLocalArchive() {
         if (folder == null) {
             logSevere("Calling purgeArchive with no folder???");
         } else {
-            int result = DialogFactory
-                .genericDialog(
-                    getController(),
+            int result = DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("settings_tab.purge_archive_title"),
+                Translation
+                    .getTranslation("settings_tab.purge_archive_message"),
+                new String[]{
                     Translation
-                        .getTranslation("settings_tab.purge_archive_title"),
-                    Translation
-                        .getTranslation("settings_tab.purge_archive_message"),
-                    new String[]{
-                        Translation
-                            .getTranslation("settings_tab.purge_archive_purge"),
-                        Translation.getTranslation("general.cancel")}, 0,
-                    GenericDialogType.WARN);
+                        .getTranslation("settings_tab.purge_archive_purge"),
+                    Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.WARN);
 
             if (result == 0) { // Purge
                 try {
                     folder.getFileArchiver().purge();
                 } catch (IOException e) {
+                    logSevere(e);
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("settings_tab.purge_archive_title"),
+                            Translation
+                                .getTranslation("settings_tab.purge_archive_problem"),
+                            GenericDialogType.ERROR);
+
+                }
+            }
+        }
+    }
+
+    private void purgeOnlineArchive() {
+        if (folder == null) {
+            logSevere("Calling purgeArchive with no folder???");
+        } else {
+            int result = DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("settings_tab.purge_archive_title"),
+                Translation
+                    .getTranslation("settings_tab.purge_archive_message"),
+                new String[]{
+                    Translation
+                        .getTranslation("settings_tab.purge_archive_purge"),
+                    Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.WARN);
+
+            if (result == 0) { // Purge
+                try {
+                    serverClient.getFolderService().purgeArchive(
+                        folder.getInfo());
+                } catch (Exception e) {
                     logSevere(e);
                     DialogFactory
                         .genericDialog(
@@ -1104,9 +1139,9 @@ public class SettingsTab extends PFUIComponent {
             String initial = (String) scriptModel.getValue();
             JFileChooser chooser = DialogFactory.createFileChooser();
             chooser.setSelectedFile(new File(initial));
-            int res = chooser.showDialog(getUIController().getMainFrame()
-                .getUIComponent(), Translation
-                .getTranslation("general.select"));
+            int res = chooser
+                .showDialog(getUIController().getMainFrame().getUIComponent(),
+                    Translation.getTranslation("general.select"));
 
             if (res == JFileChooser.APPROVE_OPTION) {
                 String script = chooser.getSelectedFile().getAbsolutePath();
@@ -1134,7 +1169,8 @@ public class SettingsTab extends PFUIComponent {
 
     private class MyLocalValueChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == localModeModel || evt.getSource() == localVersionModel)
+            if (evt.getSource() == localModeModel
+                || evt.getSource() == localVersionModel)
             {
                 if (!settingFolder) {
                     updateLocalArchiveMode(evt.getOldValue(), evt.getNewValue());
@@ -1143,9 +1179,11 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class MyOnlineValueChangeListener implements PropertyChangeListener {
+    private class MyOnlineValueChangeListener implements PropertyChangeListener
+    {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == onlineModeModel || evt.getSource() == onlineVersionModel)
+            if (evt.getSource() == onlineModeModel
+                || evt.getSource() == onlineVersionModel)
             {
                 if (!updateingOnlineArchiveMode) {
                     SwingWorker worker = new MyUpdaterSwingWorker();
@@ -1175,18 +1213,21 @@ public class SettingsTab extends PFUIComponent {
     private class MyUpdaterSwingWorker extends SwingWorker {
         public Object construct() {
             try {
-                if (folder != null && serverClient != null) {
+                if (folder != null) {
                     FolderInfo folderInfo = folder.getInfo();
-                    FolderService folderService = serverClient.getFolderService();
+                    FolderService folderService = serverClient
+                        .getFolderService();
                     if (folderService != null) {
-                        ArchiveMode am = (ArchiveMode) onlineModeModel.getValue();
+                        ArchiveMode am = (ArchiveMode) onlineModeModel
+                            .getValue();
                         if (am == ArchiveMode.NO_BACKUP) {
                             folderService.setArchiveMode(folderInfo,
-                                    ArchiveMode.NO_BACKUP, 0);
+                                ArchiveMode.NO_BACKUP, 0);
                         } else {
-                            Integer versions = (Integer) onlineVersionModel.getValue();
+                            Integer versions = (Integer) onlineVersionModel
+                                .getValue();
                             folderService.setArchiveMode(folderInfo,
-                                    ArchiveMode.FULL_BACKUP, versions);
+                                ArchiveMode.FULL_BACKUP, versions);
                         }
                     }
                 }
@@ -1210,18 +1251,22 @@ public class SettingsTab extends PFUIComponent {
 
         public Object construct() {
             try {
-                onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
+                onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
+                    false);
                 onlineLabel.setVisible(false);
-                if (folderInfo != null && serverClient != null) {
-                    FolderService folderService = serverClient.getFolderService();
-                    if (folderService != null) {
-                        ArchiveMode archiveMode = folderService.getArchiveMode(folderInfo);
-                        int perFile = folderService.getVersionsPerFile(folderInfo);
-                        updateingOnlineArchiveMode = true;
-                        onlineArchiveModeSelectorPanel.setArchiveMode(archiveMode, perFile);
-                        onlineArchiveModeSelectorPanel.getUIComponent().setVisible(true);
-                        onlineLabel.setVisible(true);
-                    }
+                if (folderInfo != null) {
+                    FolderService folderService = serverClient
+                        .getFolderService();
+                    ArchiveMode archiveMode = folderService
+                        .getArchiveMode(folderInfo);
+                    int perFile = folderService.getVersionsPerFile(folderInfo);
+                    updateingOnlineArchiveMode = true;
+                    onlineArchiveModeSelectorPanel.setArchiveMode(archiveMode,
+                        perFile);
+                    onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
+                        true);
+                    onlineLabel.setVisible(true);
+
                 }
             } catch (Exception e) {
                 logSevere(e);
@@ -1233,9 +1278,21 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class PurgeListener implements ActionListener {
+    private class LocalPurgeListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            purgeArchive();
+            purgeLocalArchive();
+        }
+    }
+
+    private class OnlinePurgeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            new SwingWorker() {
+                @Override
+                public Object construct() throws Throwable {
+                    purgeOnlineArchive();
+                    return null;
+                }
+            }.start();
         }
     }
 }

@@ -170,6 +170,13 @@ public interface FolderService {
 
     ArchiveMode getArchiveMode(FolderInfo foInfo);
 
+    /**
+     * To empty/purge the online stored archive.
+     * 
+     * @param foInfo
+     */
+    void purgeArchive(FolderInfo foInfo);
+
     int getVersionsPerFile(FolderInfo foInfo);
 
     // Information ************************************************************
