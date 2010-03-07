@@ -103,6 +103,7 @@ public class MainFrame extends PFUIComponent {
     private JPanel inlineInfoPanel;
     private JLabel inlineInfoLabel;
     private JButton inlineInfoCloseButton;
+    private JSplitPane split;
 
     /**
      * The menu bar that handles F5 for sync, etc. This is not visible in the
@@ -151,6 +152,9 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(centralPanel, cc.xyw(1, 4, 4));
         builder.add(statusBar.getUIComponent(), cc.xyw(1, 6, 4));
+
+        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        split.setOneTouchExpandable(false);
 
         uiComponent.getContentPane().add(
             GradientPanel.create(builder.getPanel()));
@@ -483,6 +487,13 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
+     * @return true, if application is currently minimized
+     */
+    public boolean isMaximized() {
+        return (uiComponent.getExtendedState() & Frame.MAXIMIZED_BOTH) != 0;
+    }
+
+    /**
      * Determine if application is currently minimized or hidden (for example,
      * in the systray)
      * 
@@ -574,16 +585,16 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void configureInlineInfo() {
+        boolean wasMaximized = isMaximized();
         int inline = PreferencesEntry.INLINE_INFO_MODE
             .getValueInt(getController());
         boolean displaying = inlineInfoPanel != null;
         inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE
             && displaying);
 
-        centralPanel.removeAll();
         if (inline != INLINE_INFO_FREE && displaying) {
-            JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            split.setOneTouchExpandable(false);
+            centralPanel.removeAll();
+            int currentDividerLocation = split.getDividerLocation();
             if (inline == INLINE_INFO_LEFT) {
                 split.setLeftComponent(inlineInfoPanel);
                 split.setRightComponent(mainTabbedPane.getUIComponent());
@@ -592,20 +603,48 @@ public class MainFrame extends PFUIComponent {
                 split.setRightComponent(inlineInfoPanel);
             }
             centralPanel.add(split, BorderLayout.CENTER);
+            if (packWidthNext) {
+                packWidth(wasMaximized);
+            }
+            int targetWidth;
+            int mainTabbedWidth = (int) mainTabbedPane.getUIComponent()
+                    .getPreferredSize().getWidth();
+            if (inline == INLINE_INFO_LEFT) {
+                int uiWidth = uiComponent.getWidth();
+                targetWidth = uiWidth -
+                        Math.max(uiWidth - currentDividerLocation, mainTabbedWidth);
+                if (targetWidth <= 0) {
+                    targetWidth = uiWidth - mainTabbedWidth;
+                }
+            } else {
+                targetWidth = Math.max(currentDividerLocation,
+                        mainTabbedWidth);
+                if (targetWidth <= 0) {
+                    targetWidth = mainTabbedWidth;
+                }
+            }
+            split.setDividerLocation(targetWidth);
         } else {
+            // Splitpane place holders
+            split.setLeftComponent(new JPanel());
+            split.setRightComponent(new JPanel());
+            
+            centralPanel.removeAll();
             centralPanel.add(mainTabbedPane.getUIComponent(),
                 BorderLayout.CENTER);
             inlineInfoPanel = null;
             inlineInfoLabel.setText("");
-        }
-        if (packWidthNext) {
-            packWidth();
+            if (packWidthNext) {
+                packWidth(wasMaximized);
+            }
         }
     }
 
-    private void packWidth() {
-        uiComponent.setSize(new Dimension(uiComponent.getPreferredSize().width,
-            uiComponent.getHeight()));
+    private void packWidth(boolean wasMaximized) {
+        if (!wasMaximized) {
+            uiComponent.setSize(new Dimension(uiComponent.getPreferredSize().width,
+                uiComponent.getHeight()));
+        }
         packWidthNext = false;
     }
 
