@@ -296,6 +296,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                                 log.info("Changed folder info to online version: " +
                                         folderInfo.getName());
                             }
+                            break;
                         }
                     }
                 }
