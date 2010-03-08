@@ -237,8 +237,8 @@ public class FilesTable extends JTable {
                             statusForTooltip = Translation
                                 .getTranslation("file_info.deleted");
 
-                        } else if (folder.getDiskItemFilter().isExcluded(
-                            fileInfo))
+                        } else if (folder != null
+                            && folder.getDiskItemFilter().isExcluded(fileInfo))
                         {
                             // File filtered out by blacklist.
                             statusForTooltip = replaceSpacesWithNBSP(Translation
