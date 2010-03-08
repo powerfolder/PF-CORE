@@ -1,30 +1,22 @@
-PowerFolder Version 4.1.1 - http://www.powerfolder.com
+PowerFolder Version 4.1.2 - http://www.powerfolder.com
 
 = Improvements =
- * Folder action buttons (such as sync, browse files or invite/send files)
-   now appear when hovering over folders with the mouse. 
- * Improved HTTP tunneled connections.
-   Wiki: http://www.powerfolder.com/wiki/HTTP-Tunnel
- * Several other improvements.
-
-= Bugfixes =
- * Read only folders such as DVDs, network drives or write
-   protected USB sticks now correctly appear in PowerFolder.
- * Fixed bug in instant file detection that caused
-   directories rarely turn into 0 byte files.
-   http://www.powerfolder.com/wiki/Performance_optimization#Use_instant_file_detection
- * Fixed server change problem when UI was locked.
- * Several other bugfixes.
+ * Usability improvement: Warns user if trying to create a folder twice.
+ * It's now possible to control the number of online archived files
+   in the client under Folder / Settings / File Archive (online).
+   http://www.powerfolder.com/wiki/File_Archive
+ * Replaced directory chooser with a more robust version.
+ * Better auto-recovery logic on hash error after download.
+ * Shows better reason text if account is disabled.
  
-
-= Important for 3.X users =
-
-If you upgrade from an existing PowerFolder version keep in mind, that folders
-are now visible globally for each account, this means all users on an account
-will see all folders. Use the rights system to restrict the access to certain
-computers and users. You might need to register new accounts per user at
-https://www.powerfolder.com/storage_register.html 
-
+= Bugfixes =
+ * Fixed "flickering" icons on folder tab.
+ * Fixed bug on Linux that causes user interface to freeze.
+ * Fixed bug that prevented to save preferences.
+!!! * Fixed appearing phantom chat windows.
+ * Better auto-login recovery from lost server connection.
+ * Fixed several cosmetic issues.
+ 
 
 Please give us feedback and request improvements:
 http://www.powerfolder.com/support.html
@@ -51,6 +43,26 @@ Email	   : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.1.1
+-------------
+
+= Improvements =
+ * Folder action buttons (such as sync, browse files or invite/send files)
+   now appear when hovering over folders with the mouse. 
+ * Improved HTTP tunneled connections.
+   Wiki: http://www.powerfolder.com/wiki/HTTP-Tunnel
+ * Several other improvements.
+
+= Bugfixes =
+ * Read only folders such as DVDs, network drives or write
+   protected USB sticks now correctly appear in PowerFolder.
+ * Fixed bug in instant file detection that caused
+   directories rarely turn into 0 byte files.
+   http://www.powerfolder.com/wiki/Performance_optimization#Use_instant_file_detection
+ * Fixed server change problem when UI was locked.
+ * Several other bugfixes.
+ 
 
 Version 4.1.0
 -------------
@@ -218,6 +230,15 @@ Version 4.0.0
  * Fixed a bug which caused corrupt configuration file during update.
  * Inviter now automatically gets added to the friendlist.
  * Uninstaller now also removes PowerFolder system service.
+ 
+
+= Important for 3.X users =
+
+If you upgrade from an existing PowerFolder version keep in mind, that folders
+are now visible globally for each account, this means all users on an account
+will see all folders. Use the rights system to restrict the access to certain
+computers and users. You might need to register new accounts per user at
+https://www.powerfolder.com/storage_register.html 
 
 
 Version 3.1.10
