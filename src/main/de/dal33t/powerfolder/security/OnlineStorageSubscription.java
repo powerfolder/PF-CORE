@@ -25,6 +25,7 @@ import java.util.Date;
 import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
+import de.dal33t.powerfolder.util.Format;
 
 /**
  * Capsulates all the account information for the Online Storage.
@@ -193,7 +194,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public void setStorageSizeGB(int storageSizeGB) {
         setStorageSize(1024L * 1024L * 1024L * storageSizeGB);
     }
-    
+
     public void setStorageSizeUnlimited() {
         setStorageSizeGB(UNLIMITED_GB);
     }
@@ -220,7 +221,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
         if (isUnlimited()) {
             return "Unlimited";
         }
-        return getStorageSizeGB() + " GB";
+        return Format.formatBytesShort(getStorageSize());
     }
 
     @Deprecated
