@@ -66,13 +66,12 @@ public interface SecurityManager {
     /**
      * Called when the account status on the given node is changed. e.g. logout
      * through disconnect.
-     * <P>
-     * TODO Listen for {@link AccountStateChanged} messages and update
-     * accordingly.
      * 
      * @param node
+     * @param removeSession
+     *            true if the session should be removed
      */
-    void nodeAccountStateChanged(Member node);
+    void nodeAccountStateChanged(Member node, boolean removeSession);
 
     // Security stuff *********************************************************
 

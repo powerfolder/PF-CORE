@@ -1006,7 +1006,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getNodeManager().connectStateChanged(this);
 
             // Inform security manager to update account state.
-            getController().getSecurityManager().nodeAccountStateChanged(this);
+            getController().getSecurityManager().nodeAccountStateChanged(this,
+                !handshaked);
         }
 
         if (isInfo()) {
@@ -1176,7 +1177,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             info.lastConnectTime = new Date();
 
             // Inform security manager to update account state.
-            getController().getSecurityManager().nodeAccountStateChanged(this);
+            getController().getSecurityManager().nodeAccountStateChanged(this,
+                true);
 
             // Inform nodemanger about it
             getController().getNodeManager().connectStateChanged(this);
@@ -1705,7 +1707,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Member node = asc.getNode().getNode(getController(), false);
                 if (node != null) {
                     getController().getSecurityManager()
-                        .nodeAccountStateChanged(node);
+                        .nodeAccountStateChanged(node, false);
                 }
                 asc.decreaseTTL();
                 if (asc.isAlive()) {
