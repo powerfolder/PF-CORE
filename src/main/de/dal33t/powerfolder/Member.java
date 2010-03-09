@@ -1703,7 +1703,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
             } else if (message instanceof AccountStateChanged) {
                 AccountStateChanged asc = (AccountStateChanged) message;
-                logFine("Received: " + asc);
+                logFine("Received: " + asc + " from " + this);
                 Member node = asc.getNode().getNode(getController(), false);
                 if (node != null) {
                     getController().getSecurityManager()
