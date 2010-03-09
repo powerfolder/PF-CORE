@@ -51,5 +51,5 @@ public interface WikiLinks {
     String EXCLUDING_FILES_FROM_SYNCHRONIZATION = "Excluding_Files_from_Synchronization";
     String MEMORY_CONFIGURATION = "Memory_configuration";
     String LIMITED_CONNECTIVITY = "Limited_connectivity";
-
+    String WEBDAV = "WebDAV";
 }
