@@ -966,10 +966,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folderMembershipSynchronizer.canceled = true;
             }
             folderMembershipSynchronizer = new AllFolderMembershipSynchronizer();
-            if (getController().getThreadPool() != null) {
-                getController().getThreadPool().submit(
-                    folderMembershipSynchronizer);
-            }
+            getController().schedule(folderMembershipSynchronizer, 0);
         }
     }
 
