@@ -19,12 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -175,27 +170,11 @@ public class MainFrame extends PFUIComponent {
         }
         uiComponent.setSize(width, height);
 
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         // Initial top-left corner
         uiComponent.setLocation(prefs.getInt("mainframe4.x", 50), prefs.getInt(
             "mainframe4.y", 50));
 
-        // Now adjust for off-screen problems.
-        if (uiComponent.getX() < 0) {
-            uiComponent.setLocation(0, uiComponent.getY());
-        }
-        if (uiComponent.getY() < 0) {
-            uiComponent.setLocation(uiComponent.getX(), 0);
-        }
-        if (uiComponent.getX() + uiComponent.getWidth() > screenSize.width) {
-            uiComponent.setLocation((int) screenSize.getWidth()
-                - uiComponent.getWidth(), uiComponent.getY());
-        }
-        if (uiComponent.getY() + uiComponent.getHeight() > screenSize.height) {
-            uiComponent.setLocation(uiComponent.getX(), (int) screenSize
-                .getHeight()
-                - uiComponent.getHeight());
-        }
+        relocateIfNecessary();
 
         oldX.set(uiComponent.getX());
         oldY.set(uiComponent.getY());
@@ -638,11 +617,38 @@ public class MainFrame extends PFUIComponent {
                 packWidth(wasMaximized);
             }
         }
+
+        relocateIfNecessary();
+    }
+
+    /**
+     * Did we move the UI outside the screen boundary?
+     */
+    private void relocateIfNecessary() {
+        if (isIconified() || isMaximized()) {
+            // Don't care.
+            return;
+        }
+        // Now adjust for off-screen problems.
+        int uiY = uiComponent.getY();
+        int uiX = uiComponent.getX();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = (int) screenSize.getWidth();
+        int uiWidth = uiComponent.getWidth();
+        if (uiX < 0) {
+            uiComponent.setLocation(0, uiY);
+        }
+        if (uiX + uiWidth > screenWidth) {
+            uiComponent.setLocation(screenWidth - uiWidth, uiY);
+        }
+        if (uiY < 0 || uiY > (int) screenSize.getHeight()) {
+            uiComponent.setLocation(uiComponent.getX(), 0);
+        }
     }
 
     private void packWidth(boolean wasMaximized) {
         if (!wasMaximized) {
-            uiComponent.setSize(new Dimension(uiComponent.getPreferredSize().width,
+            uiComponent.setSize(new Dimension(uiComponent.getMinimumSize().width,
                 uiComponent.getHeight()));
         }
         packWidthNext = false;
