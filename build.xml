@@ -233,6 +233,20 @@ For creation of the installer:
 		<copy file="${etc.dir}\ReleaseNotes.txt" todir="${InstallerFilesLocation}\files" overwrite="true" />
 	</target>
 
+	<target name="zip-source" depends="init" description="Zips all source code">
+		<zip zipfile="${dist.dir}/PowerFolder-source.zip" update="true">
+			<fileset dir=".">
+				<include name="src/**/*" />
+				<include name="lib/**/*" />
+				<include name="developer_resources/**/*" />
+				<include name="build.xml" />
+				<include name="build-local.properties" />
+				<include name=".project" />
+				<include name=".classpath" />
+			</fileset>
+		</zip>
+	</target>
+
 	<target name="installer" depends="prepare-installer" description="Generate the installer for the free-version">
 		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 installer-pro.nsi -->
 		<property name="versionString" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -337,31 +351,31 @@ For creation of the installer:
 				<![CDATA[<h1>PowerFolder API Documentation</h1>]]>
 			</doctitle>
 		<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-    	</javadoc>
-    </target>
-    
-    <!-- Build the download applet. -->
-    <target name="jar-applet" depends="init">
-    
-    	<mkdir dir="${dist.dir}" />
-    	<mkdir dir="${build.dir}" />
-    
-    	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
-    		<compilerarg value="-Xlint:${Unchecked}" />
-    		<compilerarg value="-Xlint:${Fallthrough}" />
-    
-    		<src path="${applet.dir}" />
-    	</javac>
-    
-    	<!-- copy files from etc to include in jar -->
-    	<copy todir="${dist.dir}">
-    		<fileset dir="${applet.dir}">
-    			<include name="**/*.html" />
-    		</fileset>
-    	</copy>
-    
-    
-    	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
+	</javadoc>
+</target>
+
+<!-- Build the download applet. -->
+<target name="jar-applet" depends="init">
+
+	<mkdir dir="${dist.dir}" />
+	<mkdir dir="${build.dir}" />
+
+	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+		<compilerarg value="-Xlint:${Unchecked}" />
+		<compilerarg value="-Xlint:${Fallthrough}" />
+
+		<src path="${applet.dir}" />
+	</javac>
+
+	<!-- copy files from etc to include in jar -->
+	<copy todir="${dist.dir}">
+		<fileset dir="${applet.dir}">
+			<include name="**/*.html" />
+		</fileset>
+	</copy>
+
+
+	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
                     <manifest>
                         <attribute name="Built-By" value="${BuildBy}" />
                         <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -370,6 +384,6 @@ For creation of the installer:
                         <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
                     </manifest>
                 </jar>-->
-    </target>
+</target>
 
 </project>
