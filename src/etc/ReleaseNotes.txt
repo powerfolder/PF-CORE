@@ -13,7 +13,6 @@ PowerFolder Version 4.1.2 - http://www.powerfolder.com
  * Fixed "flickering" icons on folder tab.
  * Fixed bug on Linux that causes user interface to freeze.
  * Fixed bug that prevented to save preferences.
-!!! * Fixed appearing phantom chat windows.
  * Better auto-login recovery from lost server connection.
  * Fixed several cosmetic issues.
  
