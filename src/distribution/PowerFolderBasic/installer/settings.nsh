@@ -1,6 +1,7 @@
 ; PowerFolder NSIS 2.x settings header
 ; http://www.powerfolder.com
 
+!define APPBINARYNAME "PowerFolder"
 !define APPNAME "PowerFolder"
 !define APPDESC "Sync your World"
 !define APPCOMPANY "PowerFolder.com"
