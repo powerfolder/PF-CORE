@@ -18,7 +18,7 @@ PowerFolder Version 4.1.2 - http://www.powerfolder.com
  
 
 Please give us feedback and request improvements:
-http://www.powerfolder.com/support.html
+http://www.powerfolder.com/contact.html
 
 Minimum Java version is 6.0.
 
