@@ -91,7 +91,7 @@ public class ApplicationModel extends PFUIComponent {
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     PreferencesEntry.SHOW_CHAT_NOTIFICATIONS.setValue(
-                        controller, evt.getNewValue().toString());
+                        controller, (Boolean) evt.getNewValue());
                     controller.saveConfig();
                 }
             });
@@ -102,7 +102,7 @@ public class ApplicationModel extends PFUIComponent {
             .addValueChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS.setValue(
-                        controller, evt.getNewValue().toString());
+                        controller, (Boolean) evt.getNewValue());
                     controller.saveConfig();
                 }
             });

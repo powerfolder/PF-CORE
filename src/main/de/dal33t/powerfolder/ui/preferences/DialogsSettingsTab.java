@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.preferences;
 
 import com.jgoodies.binding.value.Trigger;
@@ -102,38 +102,42 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private void initComponents() {
-        applicationModel = getController().getUIController().getApplicationModel();
+        applicationModel = getController().getUIController()
+            .getApplicationModel();
 
         writeTrigger = new Trigger();
 
         // Show chat notifications when minimized
         showChatNotificationBox = new JCheckBox(Translation
-                .getTranslation("preferences.dialog.show_chat_notifications"));
+            .getTranslation("preferences.dialog.show_chat_notifications"));
         showChatNotificationBox.setSelected((Boolean) applicationModel
-                .getChatNotificationsValueModel().getValue());
-        applicationModel.getChatNotificationsValueModel().addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                showChatNotificationBox.setSelected((Boolean) evt.getNewValue());
-            }
-        });
+            .getChatNotificationsValueModel().getValue());
+        applicationModel.getChatNotificationsValueModel()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    showChatNotificationBox.setSelected((Boolean) evt
+                        .getNewValue());
+                }
+            });
 
         // Show system notifications when minimized
         showSystemNotificationBox = new JCheckBox(Translation
-                .getTranslation("preferences.dialog.show_system_notifications"));
+            .getTranslation("preferences.dialog.show_system_notifications"));
         showSystemNotificationBox.setSelected((Boolean) applicationModel
-                .getSystemNotificationsValueModel().getValue());
-        applicationModel.getSystemNotificationsValueModel().addValueChangeListener(
-                new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                showSystemNotificationBox.setSelected((Boolean) evt.getNewValue());
-            }
-        });
+            .getSystemNotificationsValueModel().getValue());
+        applicationModel.getSystemNotificationsValueModel()
+            .addValueChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    showSystemNotificationBox.setSelected((Boolean) evt
+                        .getNewValue());
+                }
+            });
 
         notificationDisplaySlider = new JSlider();
         notificationDisplaySlider.setMinimum(0);
         notificationDisplaySlider.setMaximum(30);
-        notificationDisplaySlider.setValue(PreferencesEntry.NOTIFICATION_DISPLAY
+        notificationDisplaySlider
+            .setValue(PreferencesEntry.NOTIFICATION_DISPLAY
                 .getValueInt(getController()));
         notificationDisplaySlider.setMajorTickSpacing(5);
         notificationDisplaySlider.setMinorTickSpacing(1);
@@ -142,7 +146,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationDisplaySlider.setPaintLabels(true);
 
         Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 30; i += notificationDisplaySlider.getMajorTickSpacing())
+        for (int i = 0; i <= 30; i += notificationDisplaySlider
+            .getMajorTickSpacing())
         {
             dictionary.put(i, new JLabel(Integer.toString(i)));
         }
@@ -151,9 +156,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationTranslucentSlider = new JSlider();
         notificationTranslucentSlider.setMinimum(0);
         notificationTranslucentSlider.setMaximum(80);
-        notificationTranslucentSlider.setValue(
-                PreferencesEntry.NOTIFICATION_TRANSLUCENT.getValueInt(
-                        getController()));
+        notificationTranslucentSlider
+            .setValue(PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()));
         notificationTranslucentSlider.setMajorTickSpacing(20);
         notificationTranslucentSlider.setMinorTickSpacing(5);
 
@@ -161,7 +166,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         notificationTranslucentSlider.setPaintLabels(true);
 
         dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 0; i <= 80; i += notificationTranslucentSlider.getMajorTickSpacing())
+        for (int i = 0; i <= 80; i += notificationTranslucentSlider
+            .getMajorTickSpacing())
         {
             dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
         }
@@ -218,7 +224,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout("right:pref, 3dlu, pref",
+            FormLayout layout = new FormLayout(
+                "right:pref, 3dlu, pref",
                 "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -247,14 +254,14 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(warnOnPoorConnectionQuality, cc.xy(3, row));
 
-            ////////////////////////////////////////
+            // //////////////////////////////////////
             // Notification stuff only below here //
-            ////////////////////////////////////////
+            // //////////////////////////////////////
 
             row += 2;
-            builder.addSeparator(Translation.getTranslation(
-                    "preferences.dialog.dialogs.notifications"),
-                    cc.xyw(1, row, 3));
+            builder.addSeparator(Translation
+                .getTranslation("preferences.dialog.dialogs.notifications"), cc
+                .xyw(1, row, 3));
 
             row += 2;
             builder.add(showChatNotificationBox, cc.xy(3, row));
@@ -264,15 +271,20 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             if (Constants.OPACITY_SUPPORTED) {
                 row += 2;
-                builder.addLabel(Translation.getTranslation(
-                        "preferences.dialog.dialogs.notification_translucency"),
+                builder
+                    .addLabel(
+                        Translation
+                            .getTranslation("preferences.dialog.dialogs.notification_translucency"),
                         cc.xy(1, row));
-                builder.add(createNotificationTranslucentSpinnerPanel(), cc.xy(3, row));
+                builder.add(createNotificationTranslucentSpinnerPanel(), cc.xy(
+                    3, row));
             }
 
             row += 2;
-            builder.addLabel(Translation.getTranslation(
-                    "preferences.dialog.dialogs.notification_delay"),
+            builder
+                .addLabel(
+                    Translation
+                        .getTranslation("preferences.dialog.dialogs.notification_delay"),
                     cc.xy(1, row));
             builder.add(createNotificationDisplaySpinnerPanel(), cc.xy(3, row));
 
@@ -282,12 +294,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private Component createNotificationDisplaySpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, pref:grow",
+            "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(notificationDisplaySlider, cc.xy(1, 1));
-        JButton preview = new JButton(
-                Translation.getTranslation("preferences.dialog.dialogs.preview"));
+        JButton preview = new JButton(Translation
+            .getTranslation("preferences.dialog.dialogs.preview"));
         preview.addActionListener(new MyActionListener());
         builder.add(preview, cc.xy(3, 1));
         return builder.getPanel();
@@ -308,7 +321,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         // Write properties into core
         writeTrigger.triggerCommit();
-        
+
         boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
         boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
         boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
@@ -319,33 +332,33 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         if (showChatNotificationBox != null) {
             applicationModel.getChatNotificationsValueModel().setValue(
-                    showChatNotificationBox.isSelected());
+                showChatNotificationBox.isSelected());
         }
 
         if (showSystemNotificationBox != null) {
             applicationModel.getSystemNotificationsValueModel().setValue(
-                    showSystemNotificationBox.isSelected());
+                showSystemNotificationBox.isSelected());
         }
 
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                notificationTranslucentSlider.getValue());
+            notificationTranslucentSlider.getValue());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
-                notificationDisplaySlider.getValue());
+            notificationDisplaySlider.getValue());
 
         PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN.setValue(
             getController(), askFriendship);
-        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(
-            getController(), askFriendshipMessage);
+        PreferencesEntry.ASK_FOR_FRIENDSHIP_MESSAGE.setValue(getController(),
+            askFriendshipMessage);
         PreferencesEntry.TEST_CONNECTIVITY.setValue(getController(),
             testConnectivity);
         PreferencesEntry.WARN_ON_CLOSE.setValue(getController(), warnOnClose);
         PreferencesEntry.FILE_NAME_CHECK
             .setValue(getController(), filenamCheck);
-        PreferencesEntry.DUPLICATE_FOLDER_USE
-            .setValue(getController(), duplicateFolders);
-        PreferencesEntry.WARN_POOR_QUALITY
-            .setValue(getController(), poorConnection);
+        PreferencesEntry.DUPLICATE_FOLDER_USE.setValue(getController(),
+            duplicateFolders);
+        PreferencesEntry.WARN_POOR_QUALITY.setValue(getController(),
+            poorConnection);
     }
 
     /**
@@ -356,29 +369,30 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             // Remember current
             Integer currentDisplay = PreferencesEntry.NOTIFICATION_DISPLAY
-                    .getValueInt(getController());
+                .getValueInt(getController());
             Integer currentTranlucent = PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                    .getValueInt(getController());
+                .getValueInt(getController());
 
             // Set temporary
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
-                    notificationDisplaySlider.getValue());
+                notificationDisplaySlider.getValue());
             PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                    notificationTranslucentSlider.getValue());
+                notificationTranslucentSlider.getValue());
 
             // Display
-            getController().getUIController().previewMessage(
-                    Translation.getTranslation(
-                            "preferences.dialog.dialogs.notification.preview.title"),
-                    Translation.getTranslation(
-                            "preferences.dialog.dialogs.notification.preview.text")
-                    );
+            getController()
+                .getUIController()
+                .previewMessage(
+                    Translation
+                        .getTranslation("preferences.dialog.dialogs.notification.preview.title"),
+                    Translation
+                        .getTranslation("preferences.dialog.dialogs.notification.preview.text"));
 
             // Reset
             PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
-                    currentDisplay);
+                currentDisplay);
             PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
-                    currentTranlucent);
+                currentTranlucent);
         }
     }
 }
