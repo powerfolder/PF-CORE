@@ -294,7 +294,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     @Override
-    public synchronized String toString() {
+    public String toString() {
         return "[" + getClass().getSimpleName() + "; state= " + state
             + " file=" + getFileInfo() + "; tempFileRAF: " + tempRAF
             + "; tempFile: " + getTempFile() + "; broken: " + isBroken()
