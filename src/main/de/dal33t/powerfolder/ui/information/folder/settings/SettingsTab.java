@@ -263,12 +263,6 @@ public class SettingsTab extends PFUIComponent {
         builder.add(onlineLabel, cc.xy(2, row));
         builder.add(onlineArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
             row, 4));
-
-        row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
-            "right, top"));
-        builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
         
         row += 2;
         if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
@@ -276,6 +270,12 @@ public class SettingsTab extends PFUIComponent {
                 .getTranslation("settings_tab.download_script"), cc.xy(2, row));
             builder.add(createScriptField(), cc.xyw(4, row, 4));
         }
+
+        row += 2;
+        builder.add(new JLabel(Translation
+            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
+            "right, top"));
+        builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(createConfigurePanel(), cc.xy(4, row));
