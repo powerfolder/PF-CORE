@@ -248,6 +248,13 @@ public class SettingsTab extends PFUIComponent {
 
         row += 2;
         builder.add(new JLabel(Translation
+            .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
+            row));
+        builder.add(localFolderField, cc.xy(4, row));
+        builder.add(localFolderButton, cc.xy(6, row));
+
+        row += 2;
+        builder.add(new JLabel(Translation
             .getTranslation("general.local_archive_mode")), cc.xy(2, row));
         builder.add(localArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
             row, 4));
@@ -262,15 +269,8 @@ public class SettingsTab extends PFUIComponent {
             .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
             "right, top"));
         builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
-
+        
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
-            row));
-        builder.add(localFolderField, cc.xy(4, row));
-        builder.add(localFolderButton, cc.xy(6, row));
-        row += 2;
-
         if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
             builder.addLabel(Translation
                 .getTranslation("settings_tab.download_script"), cc.xy(2, row));
