@@ -59,8 +59,9 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
             MatchInfo match = null;
             while ((match = matcher.nextMatch()) != null) {
                 if (progressListener != null) {
-                    progressListener.progressReached((double) in.getReadBytes()
-                        / fsize);
+                    progressListener.progressReached(fsize > 0 ? (double) in
+                        .getReadBytes()
+                        / fsize : 1);
                 }
                 matches.add(match);
             }

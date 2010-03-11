@@ -439,7 +439,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (calcedState.getFileLength() != fileInfo.getSize()) {
                 // Concurrent file modification
                 throw new BrokenDownloadException();
-            }
+            } 
             setFilePartsState(calcedState);
             counter = new TransferCounter(filePartsState.countPartStates(
                 filePartsState.getRange(), PartState.AVAILABLE), fileInfo
@@ -666,8 +666,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         long avs = filePartsState.countPartStates(filePartsState.getRange(),
             PartState.AVAILABLE);
-        setTransferState(TransferState.DOWNLOADING, (double) avs
-            / fileInfo.getSize());
+        setTransferState(TransferState.DOWNLOADING, fileInfo.getSize() > 0
+            ? (double) avs / fileInfo.getSize()
+            : 1);
 
         // add bytes to transferred status
         FolderStatistic stat = fileInfo.getFolder(

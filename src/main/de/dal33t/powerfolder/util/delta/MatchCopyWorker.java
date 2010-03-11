@@ -65,8 +65,10 @@ public class MatchCopyWorker implements Callable<FilePartsState> {
                         throw new InterruptedException();
                     }
                     if (progressObserver != null) {
-                        progressObserver.progressReached((double) index
-                            / matchInfoList.size());
+                        progressObserver
+                            .progressReached(matchInfoList.size() > 0
+                                ? (double) index / matchInfoList.size()
+                                : 1);
                     }
                     index++;
 
