@@ -83,22 +83,22 @@ public class ChatModel {
      *            The member that typed the message (myself or the other member)
      * @param message
      *            The actual line of text
-     * @param local
+     * @param createdLocally
      *            True if local, so just echo the text I sent
      */
     public void addChatLine(Member toMember, Member fromMember, String message,
-                            boolean local) {
+                            boolean createdLocally) {
         ChatLine chatLine = new ChatLine(fromMember, message);
-        if (local) {
+        if (createdLocally) {
             // Text sent by me to peer, so echo locally in his panel.
             ChatBox chat = getChatBox(toMember);
             chat.addLine(chatLine);
-            fireChatModelChanged(toMember, chatLine);
+            fireChatModelChanged(toMember, chatLine, true);
         } else {
             // Text received from peer, so display in his panel.
             ChatBox chat = getChatBox(fromMember);
             chat.addLine(chatLine);
-            fireChatModelChanged(fromMember, chatLine);
+            fireChatModelChanged(fromMember, chatLine, false);
         }
     }
 
@@ -108,11 +108,12 @@ public class ChatModel {
      * @param fromMember
      * @param message
      */
-    public void addStatusChatLine(Member fromMember, String message) {
+    public void addStatusChatLine(Member fromMember, String message,
+                                  boolean createdLocally) {
         ChatBox chat = getChatBox(fromMember);
         ChatLine chatLine = new ChatLine(fromMember, message, true);
         chat.addLine(chatLine);
-        fireChatModelChanged(fromMember, chatLine);
+        fireChatModelChanged(fromMember, chatLine, createdLocally);
     }
 
     /**
@@ -169,9 +170,9 @@ public class ChatModel {
      * @param line
      *              The message line
      */
-    private void fireChatModelChanged(Member fromMember, ChatLine line) {
+    private void fireChatModelChanged(Member fromMember, ChatLine line, boolean createdLocally) {
         chatModelListeners.chatChanged(new ChatModelEvent(fromMember, line
-            .getText(), line.isStatus()));
+            .getText(), line.isStatus(), createdLocally));
     }
 
     /**
@@ -225,7 +226,7 @@ public class ChatModel {
                 "chat_panel.member_joined_folder_at_time", node.getNick(),
                 folderEvent.getFolder().getName(), Format
                     .formatTimeShort(new Date())) + '\n';
-            addStatusChatLine(node, statusMessage);
+            addStatusChatLine(node, statusMessage, false);
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
@@ -234,7 +235,7 @@ public class ChatModel {
                 "chat_panel.member_left_folder_at_time", node.getNick(),
                 folderEvent.getFolder().getName(), Format
                     .formatTimeShort(new Date())) + '\n';
-            addStatusChatLine(node, statusMessage);
+            addStatusChatLine(node, statusMessage, false);
         }
 
         public boolean fireInEventDispatchThread() {
@@ -254,10 +255,10 @@ public class ChatModel {
                 String statusMessage = Translation.getTranslation(
                     "chat_panel.member_connected_at_time", node.getNick(),
                     Format.formatTimeShort(new Date())) + '\n';
-                addStatusChatLine(node, statusMessage);
+                addStatusChatLine(node, statusMessage, false);
                 for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {
-                        addStatusChatLine(node, statusMessage);
+                        addStatusChatLine(node, statusMessage, false);
                     }
                 }
             }
@@ -269,10 +270,10 @@ public class ChatModel {
                 String statusMessage = Translation.getTranslation(
                     "chat_panel.member_disconnected_at_time", node.getNick(),
                     Format.formatTimeShort(new Date())) + '\n';
-                addStatusChatLine(node, statusMessage);
+                addStatusChatLine(node, statusMessage, false);
                 for (Folder folder : repository.getFolders()) {
                     if (folder.hasMember(node)) {
-                        addStatusChatLine(node, statusMessage);
+                        addStatusChatLine(node, statusMessage, false);
                     }
                 }
             }

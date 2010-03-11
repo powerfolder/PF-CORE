@@ -351,7 +351,7 @@ public class ChatPanel extends PFUIComponent {
                     } else {
                         chatModel.addStatusChatLine(chatPartner, Translation
                             .getTranslation("chat_panel.cannot_deliver",
-                                chatPartner.getNick()));
+                                chatPartner.getNick()), false);
                     }
 
                 } else { // Enter key without text - clear.

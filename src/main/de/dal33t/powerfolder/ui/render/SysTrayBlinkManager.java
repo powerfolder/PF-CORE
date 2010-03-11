@@ -116,7 +116,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void chatChanged(ChatModelEvent event) {
 
             // Ignore status updates or if ui not iconified
-            if (event.isStatus()
+            if (event.isStatusFlag()
                 || !uiController.getMainFrame().isIconifiedOrHidden())
             {
                 return;

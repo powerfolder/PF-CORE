@@ -29,8 +29,9 @@ import de.dal33t.powerfolder.Member;
 public class ChatModelEvent extends EventObject {
 
     private static final long serialVersionUID = 1L;
-    private boolean isStatus;
+    private boolean statusFlag;
     private String message = "";
+    private boolean createdLocally;
 
     /**
      * Constructor, creating the event.
@@ -38,19 +39,20 @@ public class ChatModelEvent extends EventObject {
      * @param fromMember
      *          member who sent the message
      * @param message
-     * @param flag
+     * @param statusFlag
      */
-    ChatModelEvent(Member fromMember, String message, boolean flag) {
+    ChatModelEvent(Member fromMember, String message, boolean statusFlag, boolean createdLocally) {
         super(fromMember);
         this.message = message;
-        isStatus = flag;
+        this.statusFlag = statusFlag;
+        this.createdLocally = createdLocally;
     }
 
     /**
      * @return whether the event is a status type.
      */
-    public boolean isStatus() {
-        return isStatus;
+    public boolean isStatusFlag() {
+        return statusFlag;
     }
 
     /**
@@ -60,8 +62,13 @@ public class ChatModelEvent extends EventObject {
         return message;
     }
 
+    public boolean isCreatedLocally() {
+        return createdLocally;
+    }
+
     public String toString() {
-        return "ChatModelEvent " + getSource() + ". (" + (isStatus ? "S" : "M")
-            + "): " + message;
+        return "ChatModelEvent " + getSource() + ". (" +
+                (statusFlag ? "S" : "M") + (createdLocally ? "L" : "R") + "): "
+                + message;
     }
 }
