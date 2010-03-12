@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.Reject;
 
 import javax.swing.*;
 import java.io.File;
@@ -54,9 +53,8 @@ public class DialogFactory {
      */
     public static File chooseDirectory(UIController uiController,
         String initialDirectoryName) {
-        Reject.ifNull(initialDirectoryName, "Must supply an initial directory");
-        Reject.ifBlank(initialDirectoryName, "Must supply an initial directory");
-        return chooseDirectory(uiController, new File(initialDirectoryName));
+        File file = new File(initialDirectoryName);
+        return chooseDirectory(uiController, file);
     }
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
@@ -70,14 +68,6 @@ public class DialogFactory {
      */
     public static File chooseDirectory(UIController uiController,
                                        File initialDirectory) {
-        Reject.ifNull(initialDirectory, "Must supply an initial directory");
-        Reject.ifFalse(initialDirectory.exists(),
-                "Must supply a real initial directory: " +
-                        initialDirectory.getAbsolutePath());
-        Reject.ifFalse(initialDirectory.isDirectory(),
-                "Initial directory is a file: " +
-                        initialDirectory.getAbsolutePath());
-
         if (PreferencesEntry.PF_DIRECTORY_CHOOSER.getValueBoolean(
                 uiController.getController())) {
             // Use PF chooser
