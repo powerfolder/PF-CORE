@@ -183,7 +183,7 @@ public class ServerClient extends PFComponent {
 
     public void start() {
         if (getController().isLanOnly() && !server.isOnLAN()) {
-            logFine("Not connecting to server: " + server
+            logWarning("Not connecting to server: " + server
                 + ". Reason: Server not on LAN");
         }
         getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
