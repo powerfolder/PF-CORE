@@ -55,7 +55,7 @@ public class ListenerSupportFactory {
         .getLogger(ListenerSupportFactory.class.getName());
 
     // AWT system check
-    private static final boolean AWT_AVAILABLE = UIUtil.isAWTAvailable();
+    private static final boolean AWT_AVAILABLE = UIUtil.isAwtAvailable();
 
     /**
      * Creates a listener support for the listener event interface.

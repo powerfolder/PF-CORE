@@ -162,7 +162,7 @@ public class SecurityManagerClient extends PFComponent implements
             return session.getAccountInfo();
         }
         // Smells like hack
-        if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
+        if (UIUtil.isAwtAvailable() && EventQueue.isDispatchThread()) {
             if (isFiner()) {
                 logFiner("Not trying to refresh account of " + node
                     + ". Running in EDT thread");

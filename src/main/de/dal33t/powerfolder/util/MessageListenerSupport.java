@@ -43,7 +43,7 @@ import javax.swing.*;
 public class MessageListenerSupport {
 
     // AWT system check
-    private static final boolean AWT_AVAILABLE = UIUtil.isAWTAvailable();
+    private static final boolean AWT_AVAILABLE = UIUtil.isAwtAvailable();
 
     private Loggable source;
 

@@ -35,11 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -69,7 +65,7 @@ public class UIUtil {
     public static final int MED_FONT_SIZE = 15;
 
     /** Flag if awt is available */
-    private static boolean AWTAvailable;
+    private static boolean awtAvailable;
 
     // Initalize awt check
     static {
@@ -82,10 +78,10 @@ public class UIUtil {
             StyleConstants.setForeground(warn, Color.RED);
 
             // Okay we have AWT
-            AWTAvailable = true;
+            awtAvailable = true;
         } catch (Error e) {
             // ERROR ? Okay no AWT
-            AWTAvailable = false;
+            awtAvailable = false;
         }
     }
 
@@ -105,8 +101,16 @@ public class UIUtil {
      * 
      * @return
      */
-    public static boolean isAWTAvailable() {
-        return AWTAvailable;
+    public static boolean isAwtAvailable() {
+        return awtAvailable;
+    }
+
+    public static void setFontSize(JLabel label, int fontSize) {
+        SimpleComponentFactory.setFont(label, fontSize, label.getFont().getStyle());
+    }
+
+    public static void setFontStyle(JLabel label, int style) {
+        SimpleComponentFactory.setFont(label, label.getFont().getSize(), style);
     }
 
     /**
@@ -122,7 +126,7 @@ public class UIUtil {
         throws InterruptedException
     {
         Reject.ifNull(task, "Task is null");
-        if (!isAWTAvailable() || SwingUtilities.isEventDispatchThread()) {
+        if (!isAwtAvailable() || SwingUtilities.isEventDispatchThread()) {
             task.run();
         } else {
             try {
@@ -148,7 +152,7 @@ public class UIUtil {
      */
     public static void invokeLaterInEDT(Runnable task) {
         Reject.ifNull(task, "Task is null");
-        if (!isAWTAvailable()) {
+        if (!isAwtAvailable()) {
             task.run();
         } else {
             SwingUtilities.invokeLater(task);

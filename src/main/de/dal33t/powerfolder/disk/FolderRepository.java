@@ -191,7 +191,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 for (Folder folder : foldersToWarn) {
                     folderslist.append("\n     - " + folder.getName());
                 }
-                if (UIUtil.isAWTAvailable() && !getController().isConsoleMode())
+                if (UIUtil.isAwtAvailable() && !getController().isConsoleMode())
                 {
                     String title = Translation
                         .getTranslation("folder_repository.warn_on_close.title");

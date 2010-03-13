@@ -258,7 +258,7 @@ public class HomeTab extends PFUIComponent {
         licenseInfoSection = new LicenseInfoSection(getController());
         buyNowLabel = new LinkLabel(getController(), "", "");
         buyNowLabel.convertToBigLabel();
-        buyNowLabel.setFontStyle(Font.BOLD);
+        UIUtil.setFontStyle(buyNowLabel.getUIComponent(), Font.BOLD);
         buyNowLabel.getUIComponent().setVisible(false);
         buyNowLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("20dlu, 0, 0, 0"));

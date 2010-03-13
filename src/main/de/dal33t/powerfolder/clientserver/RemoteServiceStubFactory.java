@@ -106,7 +106,7 @@ public class RemoteServiceStubFactory {
                     }
                 }
             }
-            if (UIUtil.isAWTAvailable() && EventQueue.isDispatchThread()) {
+            if (UIUtil.isAwtAvailable() && EventQueue.isDispatchThread()) {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed in EDT thread. Args: "
                     + (args != null ? Arrays.asList(args) : "n/a"),

@@ -19,9 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.welcome;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -31,6 +30,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import de.dal33t.powerfolder.util.Translation;
+
+import java.awt.*;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -106,7 +108,14 @@ public class WelcomeTab extends PFUIComponent {
         // Bottom border
         builder.setBorder(Borders.createEmptyBorder("1dlu, 3dlu, 2dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
+
+        JLabel label = new JLabel(Translation.getTranslation("welcome_tab.welcome_text"));
+        UIUtil.setFontSize(label, UIUtil.MED_FONT_SIZE);
+        UIUtil.setFontStyle(label, Font.BOLD);
         int row = 1;
+        builder.add(label, cc.xy(1, row));
+
+        row++;
         return builder.getPanel();
     }
 
