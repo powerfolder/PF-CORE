@@ -158,6 +158,7 @@ public class Icons {
     public static final String INACTIVE = "inactive.icon";
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
+    public static final String WELCOME = "powerfolder_16.icon";
 
     // Sync icons
     public static final String SYNC = "sync.icon";
@@ -222,7 +223,7 @@ public class Icons {
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
     // Snowload is our default.
-    private static String DEFAULT_PROPERTIES_FILENAME = Snowland.ICON_PROPERTIES_FILENAME;
+    private static final String DEFAULT_PROPERTIES_FILENAME = Snowland.ICON_PROPERTIES_FILENAME;
     private static Properties iconProperties;
 
     /**
@@ -261,7 +262,7 @@ public class Icons {
 
     /**
      * Returns the icons for the specified id.
-     * 
+     *
      * @param id
      *            the icon id
      * @return the icon
@@ -408,41 +409,41 @@ public class Icons {
 
         String iconID;
         if (node.isMySelf()) {
-            iconID = Icons.NODE_MYSELF;
+            iconID = NODE_MYSELF;
         } else if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
             if (node.isFriend()) {
-                iconID = Icons.NODE_FRIEND_CONNECTED;
+                iconID = NODE_FRIEND_CONNECTED;
             } else {
-                iconID = Icons.NODE_NON_FRIEND_CONNECTED;
+                iconID = NODE_NON_FRIEND_CONNECTED;
             }
 
             if (node.isOnLAN()) {
-                iconID = Icons.NODE_FRIEND_LAN;
+                iconID = NODE_FRIEND_LAN;
             } else if (peer != null) {
                 ConnectionQuality quality = peer.getConnectionQuality();
                 if (quality != null) {
                     switch (quality) {
                         case GOOD :
-                            iconID = Icons.NODE_FRIEND_CONNECTED;
+                            iconID = NODE_FRIEND_CONNECTED;
                             break;
                         case MEDIUM :
-                            iconID = Icons.NODE_FRIEND_MEDIUM;
+                            iconID = NODE_FRIEND_MEDIUM;
                             break;
                         case POOR :
-                            iconID = Icons.NODE_FRIEND_POOR;
+                            iconID = NODE_FRIEND_POOR;
                             break;
                     }
                 }
             }
         } else {
             if (node.isFriend()) {
-                iconID = Icons.NODE_FRIEND_DISCONNECTED;
+                iconID = NODE_FRIEND_DISCONNECTED;
             } else {
-                iconID = Icons.NODE_NON_FRIEND_DISCONNECTED;
+                iconID = NODE_NON_FRIEND_DISCONNECTED;
             }
         }
-        Icon icon = Icons.getIconById(iconID);
+        Icon icon = getIconById(iconID);
         if (!node.isOnSameNetwork()) {
             icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
         }

@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
 import de.dal33t.powerfolder.ui.home.HomeTab;
+import de.dal33t.powerfolder.ui.welcome.WelcomeTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -36,10 +37,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class MainTabbedPane extends PFUIComponent {
 
-    public static final int HOME_INDEX = 0;
-    public static final int FOLDERS_INDEX = 1;
-    public static final int COMPUTERS_INDEX = 2;
+    public static final int WELCOME_INDEX = 0;
+    public static final int HOME_INDEX = 1;
+    public static final int FOLDERS_INDEX = 2;
+    public static final int COMPUTERS_INDEX = 3;
 
+    private WelcomeTab welcomeTab;
     private HomeTab homeTab;
     private FoldersTab foldersTab;
     private ComputersTab computersTab;
@@ -67,6 +70,10 @@ public class MainTabbedPane extends PFUIComponent {
             // Initalize components
             initComponents();
             uiComponent.add(Translation
+                .getTranslation("main_tabbed_pane.welcome.name"), welcomeTab
+                .getUIComponent());
+
+            uiComponent.add(Translation
                 .getTranslation("main_tabbed_pane.home.name"), homeTab
                 .getUIComponent());
 
@@ -84,7 +91,14 @@ public class MainTabbedPane extends PFUIComponent {
                     computersTab.getUIComponent());
             }
 
-            String key = Translation.getTranslation("main_tabbed_pane.home.key");
+            String key = Translation.getTranslation("main_tabbed_pane.welcome.key");
+            uiComponent.setMnemonicAt(WELCOME_INDEX, (int) Character.toUpperCase(
+                    key.charAt(0)));
+            uiComponent.setToolTipTextAt(WELCOME_INDEX, Translation
+                .getTranslation("main_tabbed_pane.welcome.description"));
+            uiComponent.setIconAt(WELCOME_INDEX, Icons.getIconById(Icons.WELCOME));
+
+            key = Translation.getTranslation("main_tabbed_pane.home.key");
             uiComponent.setMnemonicAt(HOME_INDEX, (int) Character.toUpperCase(key
                 .charAt(0)));
             uiComponent.setToolTipTextAt(HOME_INDEX, Translation
@@ -124,6 +138,7 @@ public class MainTabbedPane extends PFUIComponent {
     private void initComponents() {
         uiComponent = new JTabbedPane();
         uiComponent.setOpaque(false);
+        welcomeTab = new WelcomeTab(getController());
         homeTab = new HomeTab(getController());
         foldersTab = new FoldersTab(getController());
         computersTab = new ComputersTab(getController());
