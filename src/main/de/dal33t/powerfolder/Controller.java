@@ -78,6 +78,7 @@ import de.dal33t.powerfolder.event.WarningHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.SingleFileOffer;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -757,10 +758,10 @@ public class Controller extends PFComponent {
         try {
             configFilename = filename;
             configFile = new File(getConfigLocationBase(), filename);
-            if (!configFile.exists()) {
-                logInfo("Config file does not exist. " + configFile);
-            } else {
+            if (configFile.exists()) {
                 logInfo("Loading configfile " + configFile);
+            } else {
+                logInfo("Config file does not exist. " + configFile);
             }
             if (OSUtil.isWebStart()) {
                 logFine("WebStart, config file location: "
@@ -977,7 +978,9 @@ public class Controller extends PFComponent {
         } else {
             String ports = ConfigurationEntry.NET_BIND_PORT
                 .getValue(getController());
-            if (!"0".equals(ports)) {
+            if ("0".equals(ports)) {
+                logWarning("Not opening connection listener. (port=0)");
+            } else {
                 if (ports == null) {
                     ports = "-1";
                 }
@@ -990,8 +993,8 @@ public class Controller extends PFComponent {
                         if (listenerOpened && connectionListener != null) {
                             // set reconnect on first successfull listener
                             nodeManager.getMySelf().getInfo()
-                                .setConnectAddress(
-                                    connectionListener.getAddress());
+                                    .setConnectAddress(
+                                            connectionListener.getAddress());
                         }
                         if (!listenerOpened && !isUIOpen()) {
                             logSevere("Couldn't bind to port " + port);
@@ -1002,7 +1005,7 @@ public class Controller extends PFComponent {
                         }
                     } catch (NumberFormatException e) {
                         logFine("Unable to read listener port ('" + portStr
-                            + "') from config");
+                                + "') from config");
                     }
                 }
                 // If this is the GUI version we didn't kill the program yet,
@@ -1011,8 +1014,6 @@ public class Controller extends PFComponent {
                 if (connectionListener == null) {
                     portBindFailureProblem(ports);
                 }
-            } else {
-                logWarning("Not opening connection listener. (port=0)");
             }
         }
 
@@ -1819,6 +1820,17 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * Whether to display notifications bottom-left instead of the normal
+     * bottom-right. Primarily a development switch for running two PFs on one
+     * PC.
+     *
+     * @return true if notifications should be displayed on the left.
+     */
+    public boolean isNotifyLeft() {
+        return commandLine != null && commandLine.hasOption('y');
+    }
+
+    /**
      * Opens the graphical user interface
      */
     private void openUI() {
@@ -1943,7 +1955,7 @@ public class Controller extends PFComponent {
      * config file to enable this, this request node information. Only enabled
      * if in verbose mode.
      * 
-     * @see de.dal33t.powerfolder.message.RequestNodeInformation
+     * @see RequestNodeInformation
      * @return true if we are in verbose mode
      */
     public boolean isDebugReports() {
@@ -2037,16 +2049,16 @@ public class Controller extends PFComponent {
             // Check if migration is necessary
             if (unixConfigDir.exists()) {
                 boolean migrateConfig = false;
-                if (!windowsConfigDir.exists()) {
-                    // Migrate if APPDATA/PowerFolder not existing yet OR
-                    migrateConfig = true;
-                } else {
-                    // APPDATA/PowerFolder does not yet contain a config file.
+                if (windowsConfigDir.exists()) {
+                    // APPDATA/PowerFolder does not yet contain a config file OR
                     migrateConfig = windowsConfigDir.list(new FilenameFilter() {
                         public boolean accept(File dir, String name) {
                             return name.endsWith("config");
                         }
                     }).length == 0;
+                } else {
+                    // Migrate if APPDATA/PowerFolder not existing yet.
+                    migrateConfig = true;
                 }
 
                 if (migrateConfig) {

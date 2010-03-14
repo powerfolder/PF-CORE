@@ -822,8 +822,6 @@ public class UIController extends PFComponent {
      * 
      * @param folderInfo
      *            info of the folder to display files information for.
-     * @param directoryFilterMode
-     *            the directory filter mode to be in
      */
     public void openFilesInformation(FolderInfo folderInfo) {
         informationFrame.displayFolderFiles(folderInfo);
@@ -1349,10 +1347,10 @@ public class UIController extends PFComponent {
     }
 
     public void notifyComponent(JComponent content) {
-        final Slider slider = new Slider(content,
+        Slider slider = new Slider(content,
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()));
+                .getValueInt(getController()), getController().isNotifyLeft());
         slider.show();
     }
 

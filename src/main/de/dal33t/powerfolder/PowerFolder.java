@@ -98,6 +98,8 @@ public class PowerFolder {
             "<createfolder> Creates a new Folder");
         options.addOption("r", "removefolder", true,
             "<removefolder> Removes a existing Folder");
+        options.addOption("y", "notifyleft", false,
+            "Show notification at left of screen");
         options.addOption("z", "nowarn", false,
             "Do not warn if already running");
         COMMAND_LINE_OPTIONS = options;

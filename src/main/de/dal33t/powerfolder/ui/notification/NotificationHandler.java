@@ -117,7 +117,7 @@ public class NotificationHandler extends PFComponent {
         final Slider slider = new Slider((JComponent) contentPane,
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()));
+                .getValueInt(getController()), getController().isNotifyLeft());
 
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {

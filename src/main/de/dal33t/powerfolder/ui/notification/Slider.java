@@ -58,10 +58,8 @@ public class Slider {
     private Timer animateUpTimer;
     private Timer dismissTimer;
     private Timer animateDownTimer;
-    private int showX;
-    private int startY;
-    private Dimension contentsSize;
     private int translucencyPercentage;
+    private boolean displayLeft;
 
     /**
      * Constructor
@@ -69,13 +67,15 @@ public class Slider {
      * @param contents
      * @param displaySeconds
      * @param translucencyPercentage
+     * @param displayLeft
      */
     public Slider(JComponent contents, int displaySeconds,
-        int translucencyPercentage)
+        int translucencyPercentage, boolean displayLeft)
     {
         this.contents = contents;
         this.displaySeconds = displaySeconds;
         this.translucencyPercentage = translucencyPercentage;
+        this.displayLeft = displayLeft;
     }
 
     public JComponent getContents() {
@@ -106,10 +106,10 @@ public class Slider {
         }
 
         // Initial boundaries.
-        contentsSize = contents.getSize();
+        Dimension contentsSize = contents.getSize();
         Rectangle desktopBounds = initDesktopBounds();
-        showX = desktopBounds.width - contentsSize.width - 10;
-        startY = desktopBounds.y + desktopBounds.height - 10;
+        int showX = displayLeft ? 10 : desktopBounds.width - contentsSize.width - 10;
+        int startY = desktopBounds.y + desktopBounds.height - 10;
 
         window.getContentPane().add(contents);
         window.pack();
