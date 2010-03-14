@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Class to render the online storage trial info on the home tab.
+ * Class to render the online storage trial info on the status tab.
  */
 public class LicenseInfoSection extends PFUIComponent {
 
@@ -110,9 +110,9 @@ public class LicenseInfoSection extends PFUIComponent {
         if (disabled) {
             infoLabel.setIcon(Icons.getIconById(Icons.WARNING));
             infoLabel.setText(Translation
-                .getTranslation("pro.home_tab.disabled"));
+                .getTranslation("pro.status_tab.disabled"));
             infoLabel.setToolTipText(Translation
-                .getTranslation("pro.home_tab.disabled.tips"));
+                .getTranslation("pro.status_tab.disabled.tips"));
             infoLabel.getUIComponent().setVisible(true);
             progressBar.setVisible(false);
         } else if (aboutToExpire) {
@@ -122,13 +122,13 @@ public class LicenseInfoSection extends PFUIComponent {
                 infoLabel.setIcon(null);
             }
             infoLabel.setText(Translation.getTranslation(
-                "pro.home_tab.remaining", String.valueOf(days)));
+                "pro.status_tab.remaining", String.valueOf(days)));
             infoLabel.setToolTipText(Translation.getTranslation(
-                "pro.home_tab.remaining.tips", String.valueOf(days)));
+                "pro.status_tab.remaining.tips", String.valueOf(days)));
             infoLabel.getUIComponent().setVisible(true);
             progressBar.setValue(100 * days / 30);
             progressBar.setToolTipText(Translation.getTranslation(
-                "pro.home_tab.remaining.tips", String.valueOf(days)));
+                "pro.status_tab.remaining.tips", String.valueOf(days)));
             progressBar.setVisible(true);
         } else {
             infoLabel.setIcon(null);

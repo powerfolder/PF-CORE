@@ -90,7 +90,7 @@ public class Icons {
     public static final String STOP = "stop.icon";
     public static final String RUN = "run.icon";
     public static final String PAUSE = "sleep.icon";
-    public static final String HOME = "home.icon";
+    public static final String STATUS = "status.icon";
 
     public static final String ADD = "add.icon";
     public static final String EDIT = "edit.icon";
@@ -158,7 +158,7 @@ public class Icons {
     public static final String INACTIVE = "inactive.icon";
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
-    public static final String WELCOME = "powerfolder_16.icon";
+    public static final String START = "powerfolder_16.icon";
 
     // Sync icons
     public static final String SYNC = "sync.icon";

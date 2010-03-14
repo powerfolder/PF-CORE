@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Class to render the online storage info on the home tab.
+ * Class to render the online storage info on the status tab.
  */
 public class OnlineStorageSection extends PFUIComponent {
 
@@ -82,7 +82,7 @@ public class OnlineStorageSection extends PFUIComponent {
 
         // Add own mouse listener to ensure always new URL. Set URL to null
         usageLabel.setTextAndURL(Translation.getTranslation(
-            "home_tab.online_storage.usage",
+            "status_tab.online_storage.usage",
             Format.formatBytesShort(spaceUsed), Format
                 .formatDecimal(percentageUsed)), null);
         usageLabel.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "

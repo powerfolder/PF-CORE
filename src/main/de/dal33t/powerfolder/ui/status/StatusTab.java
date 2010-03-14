@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: HomeTab.java 5495 2008-10-24 04:59:13Z harry $
+ * $Id: StatusTab.java 5495 2008-10-24 04:59:13Z harry $
  */
 package de.dal33t.powerfolder.ui.status;
 
@@ -86,7 +86,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
- * Class for the Home tab in the main tab area of the UI.
+ * Class for the Status tab in the main tab area of the UI.
  */
 public class StatusTab extends PFUIComponent {
 
@@ -207,42 +207,42 @@ public class StatusTab extends PFUIComponent {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
         numberOfFoldersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.folders"), Translation
-            .getTranslation("home_tab.no_folders"), false, true, null, null);
+            .getTranslation("status_tab.folders"), Translation
+            .getTranslation("status_tab.no_folders"), false, true, null, null);
         sizeOfFoldersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.total", "KB"), null, true, false, null,
+            .getTranslation("status_tab.total", "KB"), null, true, false, null,
             null);
         filesAvailableLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.files_available"), null, true, true,
+            .getTranslation("status_tab.files_available"), null, true, true,
             null, null);
         newWarningsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.new_warnings"), null, true, true,
+            .getTranslation("status_tab.new_warnings"), null, true, true,
             getApplicationModel().getActionModel().getActivateWarningAction(),
             Icons.getIconById(Icons.WARNING));
         newInvitationsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.new_invitations"), null, true, true,
+            .getTranslation("status_tab.new_invitations"), null, true, true,
             getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction(), Icons
                 .getIconById(Icons.INFORMATION));
         newFriendRequestsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.new_friend_requests"), null, true, true,
+            .getTranslation("status_tab.new_friend_requests"), null, true, true,
             getApplicationModel().getActionModel().getAskForFriendshipAction(),
             Icons.getIconById(Icons.INFORMATION));
         newSingleFileOffersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.new_single_file_offers"), null, true,
+            .getTranslation("status_tab.new_single_file_offers"), null, true,
             true, getApplicationModel().getActionModel()
                 .getSingleFileTransferOfferAction(), null);
         downloadsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.files_downloads"), null, false, true,
+            .getTranslation("status_tab.files_downloads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenDownloadsInformationAction(), null);
         uploadsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.files_uploads"), null, false, true,
+            .getTranslation("status_tab.files_uploads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction(), null);
         computersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("home_tab.computers"), Translation
-            .getTranslation("home_tab.no_computers"), false, true, null, null);
+            .getTranslation("status_tab.computers"), Translation
+            .getTranslation("status_tab.no_computers"), false, true, null, null);
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
@@ -264,7 +264,7 @@ public class StatusTab extends PFUIComponent {
             Borders.createEmptyBorder("20dlu, 0, 0, 0"));
         if (!ProUtil.isRunningProVersion() && Feature.BETA.isDisabled()) {
             showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+                .getTranslation("pro.status_tab.upgrade_powerfolder"));
         }
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
@@ -274,9 +274,9 @@ public class StatusTab extends PFUIComponent {
             }
         });
         tellFriendLabel.setText(Translation
-            .getTranslation("home_tab.tell_friend.text"));
+            .getTranslation("status_tab.tell_friend.text"));
         tellFriendLabel.setToolTipText(Translation
-            .getTranslation("home_tab.tell_friend.tip"));
+            .getTranslation("status_tab.tell_friend.tip"));
 
         updateTransferText();
         updateFoldersText();
@@ -353,7 +353,7 @@ public class StatusTab extends PFUIComponent {
 
         int row = 1;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.status"), cc
+        builder.addSeparator(Translation.getTranslation("status_tab.status"), cc
             .xy(1, row));
         row += 2;
         builder.add(synchronizationStatusLabel, cc.xy(1, row));
@@ -361,7 +361,7 @@ public class StatusTab extends PFUIComponent {
         builder.add(synchronizationDateLabel, cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.you_have"),
+        builder.addSeparator(Translation.getTranslation("status_tab.you_have"),
             cc.xy(1, row));
         row += 2;
         builder.add(newWarningsLine.getUIComponent(), cc.xy(1, row));
@@ -379,7 +379,7 @@ public class StatusTab extends PFUIComponent {
         builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("home_tab.local"), cc
+        builder.addSeparator(Translation.getTranslation("status_tab.local"), cc
             .xy(1, row));
         row += 2;
         builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
@@ -390,7 +390,7 @@ public class StatusTab extends PFUIComponent {
         row += 2;
 
         builder.addSeparator(Translation
-            .getTranslation("home_tab.online_storage.title"), cc.xy(1, row));
+            .getTranslation("status_tab.online_storage.title"), cc.xy(1, row));
         row += 2;
         builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xy(1, row));
         row++;
@@ -430,7 +430,7 @@ public class StatusTab extends PFUIComponent {
         }
         sizeOfFoldersLine.setValue(totalSize);
         sizeOfFoldersLine.setNormalLabelText(Translation.getTranslation(
-            "home_tab.total", suffix));
+            "status_tab.total", suffix));
     }
 
     /**
@@ -529,7 +529,7 @@ public class StatusTab extends PFUIComponent {
 
         if (!ProUtil.isRunningProVersion()) {
             showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+                .getTranslation("pro.status_tab.upgrade_powerfolder"));
             return;
         }
 
@@ -541,10 +541,10 @@ public class StatusTab extends PFUIComponent {
             && daysValid < 30;
         if (trial || !allowed) {
             showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+                .getTranslation("pro.status_tab.upgrade_powerfolder"));
         } else if (aboutToExpire) {
             showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.renew_license"));
+                .getTranslation("pro.status_tab.renew_license"));
         }
     }
 
@@ -557,17 +557,17 @@ public class StatusTab extends PFUIComponent {
         String username = client.getUsername();
         if (username == null || username.trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation
-                .getTranslation("home_tab.online_storage.not_setup"));
+                .getTranslation("status_tab.online_storage.not_setup"));
             onlineStorageAccountLabel.setToolTipText(Translation
-                .getTranslation("home_tab.online_storage.not_setup.tips"));
+                .getTranslation("status_tab.online_storage.not_setup.tips"));
         } else {
             char[] password = client.getPassword();
             if (password == null || password.length == 0) {
                 onlineStorageAccountLabel.setText(Translation
-                    .getTranslation("home_tab.online_storage.no_password"));
+                    .getTranslation("status_tab.online_storage.no_password"));
                 onlineStorageAccountLabel
                     .setToolTipText(Translation
-                        .getTranslation("home_tab.online_storage.no_password.tips"));
+                        .getTranslation("status_tab.online_storage.no_password.tips"));
             } else if (client.isConnected()) {
                 if (client.isLoggedIn()) {
                     OnlineStorageSubscription storageSubscription = client
@@ -581,7 +581,7 @@ public class StatusTab extends PFUIComponent {
                             onlineStorageAccountLabel
                                 .setText(Translation
                                     .getTranslation(
-                                        "home_tab.online_storage.account_disabled_expiration",
+                                        "status_tab.online_storage.account_disabled_expiration",
                                         username,
                                         Format
                                             .formatDateCanonical(expirationDate)));
@@ -589,42 +589,42 @@ public class StatusTab extends PFUIComponent {
                             onlineStorageAccountLabel
                                 .setText(Translation
                                     .getTranslation(
-                                        "home_tab.online_storage.account_disabled_usage",
+                                        "status_tab.online_storage.account_disabled_usage",
                                         username));
                         } else {
                             onlineStorageAccountLabel.setText(Translation
                                 .getTranslation(
-                                    "home_tab.online_storage.account_disabled",
+                                    "status_tab.online_storage.account_disabled",
                                     username));
                         }
                         onlineStorageAccountLabel
                             .setToolTipText(Translation
-                                .getTranslation("home_tab.online_storage.account_disabled.tips"));
+                                .getTranslation("status_tab.online_storage.account_disabled.tips"));
                         showBuyNow = true;
                     } else {
                         onlineStorageAccountLabel.setText(Translation
-                            .getTranslation("home_tab.online_storage.account",
+                            .getTranslation("status_tab.online_storage.account",
                                 username));
                         onlineStorageAccountLabel
                             .setToolTipText(Translation
-                                .getTranslation("home_tab.online_storage.account.tips"));
+                                .getTranslation("status_tab.online_storage.account.tips"));
                         active = true;
                     }
                 } else {
                     onlineStorageAccountLabel.setText(Translation
                         .getTranslation(
-                            "home_tab.online_storage.account_not_logged_in",
+                            "status_tab.online_storage.account_not_logged_in",
                             username));
                     onlineStorageAccountLabel
                         .setToolTipText(Translation
-                            .getTranslation("home_tab.online_storage.account_not_logged_in.tips"));
+                            .getTranslation("status_tab.online_storage.account_not_logged_in.tips"));
                 }
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
-                    "home_tab.online_storage.account_connecting", username));
+                    "status_tab.online_storage.account_connecting", username));
                 onlineStorageAccountLabel
                     .setToolTipText(Translation
-                        .getTranslation("home_tab.online_storage.account_connecting.tips"));
+                        .getTranslation("status_tab.online_storage.account_connecting.tips"));
             }
         }
 
@@ -650,7 +650,7 @@ public class StatusTab extends PFUIComponent {
         // Show Buy now link if: Disabled OR >80%
         if (showBuyNow) {
             showBuyNowLink(Translation
-                .getTranslation("pro.home_tab.upgrade_powerfolder"));
+                .getTranslation("pro.status_tab.upgrade_powerfolder"));
         }
 
     }
@@ -666,23 +666,23 @@ public class StatusTab extends PFUIComponent {
             if (disabled) {
                 // Not running
                 syncStatsText = Translation
-                    .getTranslation("home_tab.not_running");
+                    .getTranslation("status_tab.not_running");
             } else if (getController().getFolderRepository().getFoldersCount() == 0)
             {
                 // No folders
                 syncStatsText = Translation
-                    .getTranslation("home_tab.no_folders");
+                    .getTranslation("status_tab.no_folders");
             } else if (syncDate == null && !syncing) { // Never synced
                 syncStatsText = Translation
-                    .getTranslation("home_tab.never_synced");
+                    .getTranslation("status_tab.never_synced");
             } else {
                 if (syncing) {
                     long aniIndex = (System.currentTimeMillis() / 1000) % 3;
                     syncStatsText = Translation
-                        .getTranslation("home_tab.synchronizing." + aniIndex);
+                        .getTranslation("status_tab.synchronizing." + aniIndex);
                 } else {
                     syncStatsText = Translation
-                        .getTranslation("home_tab.in_sync");
+                        .getTranslation("status_tab.in_sync");
                 }
             }
             synchronizationStatusLabel.setText(syncStatsText);
@@ -695,12 +695,12 @@ public class StatusTab extends PFUIComponent {
                 String syncDateText;
                 if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 30)) {
                     syncDateText = Translation
-                        .getTranslation("home_tab.sync_unknown");
+                        .getTranslation("status_tab.sync_unknown");
                 } else {
                     String date = Format.formatDateShort(syncDate);
                     syncDateText = syncing ? Translation.getTranslation(
-                        "home_tab.sync_eta", date) : Translation
-                        .getTranslation("home_tab.last_synced", date);
+                        "status_tab.sync_eta", date) : Translation
+                        .getTranslation("status_tab.last_synced", date);
                 }
                 synchronizationDateLabel.setVisible(true);
                 synchronizationDateLabel.setText(syncDateText);
@@ -1046,11 +1046,11 @@ public class StatusTab extends PFUIComponent {
             }
             if (Double.compare(d, 0) == 0) {
                 uploadsLine.setNormalLabelText(Translation
-                    .getTranslation("home_tab.files_uploads"));
+                    .getTranslation("status_tab.files_uploads"));
             } else {
                 String s = Format.formatDecimal(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
-                    "home_tab.files_uploads_active", s));
+                        "status_tab.files_uploads_active", s));
             }
             d = downloadCounter.calculateCurrentKBS();
             if (getController().getTransferManager().countActiveDownloads() == 0)
@@ -1060,11 +1060,11 @@ public class StatusTab extends PFUIComponent {
             }
             if (Double.compare(d, 0) == 0) {
                 downloadsLine.setNormalLabelText(Translation
-                    .getTranslation("home_tab.files_downloads"));
+                    .getTranslation("status_tab.files_downloads"));
             } else {
                 String s = Format.formatDecimal(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
-                    "home_tab.files_downloads_active", s));
+                        "status_tab.files_downloads_active", s));
             }
         }
     }

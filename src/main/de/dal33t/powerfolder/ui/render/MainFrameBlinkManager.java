@@ -45,7 +45,7 @@ import java.beans.PropertyChangeEvent;
  */
 public class MainFrameBlinkManager extends PFUIComponent {
 
-    private final AtomicBoolean flashHomeTab = new AtomicBoolean();
+    private final AtomicBoolean flashStatusTab = new AtomicBoolean();
     private final AtomicBoolean flashFolderTab = new AtomicBoolean();
     private final AtomicBoolean flashMemberTab = new AtomicBoolean();
     private final AtomicInteger selectedMainTab = new AtomicInteger();
@@ -86,10 +86,10 @@ public class MainFrameBlinkManager extends PFUIComponent {
         boolean blink = System.currentTimeMillis() / 1000 % 2 != 0;
 
         MainFrame mainFrame = uiController.getMainFrame();
-        if (blink && flashHomeTab.get()) {
-            mainFrame.setHomeTabIcon(Icons.getIconById(Icons.BLANK));
+        if (blink && flashStatusTab.get()) {
+            mainFrame.setStatusTabIcon(Icons.getIconById(Icons.BLANK));
         } else {
-            mainFrame.setHomeTabIcon(Icons.getIconById(Icons.HOME));
+            mainFrame.setStatusTabIcon(Icons.getIconById(Icons.STATUS));
         }
 
         if (blink && flashFolderTab.get()) {
@@ -106,12 +106,12 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Sets the home icon flashing.
+     * Sets the status icon flashing.
      * 
      * @param flash
      */
-    private void flashHomeTabIcon(boolean flash) {
-        flashHomeTab.set(flash);
+    private void flashStatusTabIcon(boolean flash) {
+        flashStatusTab.set(flash);
     }
 
     /**
@@ -124,7 +124,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Sets the home icon flashing.
+     * Sets the member icon flashing.
      * 
      * @param flash
      */
@@ -165,7 +165,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 return;
             }
 
-            flashHomeTabIcon(true);
+            flashStatusTabIcon(true);
             update();
         }
     }
@@ -187,7 +187,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 return;
             }
 
-            flashHomeTabIcon(true);
+            flashStatusTabIcon(true);
             update();
         }
     }
@@ -209,7 +209,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 return;
             }
 
-            flashHomeTabIcon(true);
+            flashStatusTabIcon(true);
             update();
         }
     }
@@ -247,7 +247,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 .getSelectedMainTabIndex());
 
             if (selectedMainTab.get() == MainTabbedPane.STATUS_INDEX) {
-                flashHomeTabIcon(false);
+                flashStatusTabIcon(false);
                 update();
             } else if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {
                 flashFolderTabIcon(false);

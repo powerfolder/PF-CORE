@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * This model holds warnings that are displayed to the user in the HomeTab.
+ * This model holds warnings that are displayed to the user in the StatusTab.
  */
 public class WarningModel extends PFComponent implements WarningHandler {
 

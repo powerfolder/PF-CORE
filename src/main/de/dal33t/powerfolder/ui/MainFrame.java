@@ -496,12 +496,12 @@ public class MainFrame extends PFUIComponent {
     }
 
     /**
-     * Set the Icon for the home tab.
+     * Set the Icon for the sttus tab.
      * 
-     * @param homeIcon
+     * @param statusIcon
      */
-    public void setHomeTabIcon(Icon homeIcon) {
-        mainTabbedPane.setHomeIcon(homeIcon);
+    public void setStatusTabIcon(Icon statusIcon) {
+        mainTabbedPane.setStatusIcon(statusIcon);
     }
 
     /**

@@ -70,11 +70,11 @@ public class MainTabbedPane extends PFUIComponent {
             // Initalize components
             initComponents();
             uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.welcome.name"), startTab
+                .getTranslation("main_tabbed_pane.start.name"), startTab
                 .getUIComponent());
 
             uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.home.name"), statusTab
+                .getTranslation("main_tabbed_pane.status.name"), statusTab
                 .getUIComponent());
 
             uiComponent.add(Translation
@@ -91,19 +91,19 @@ public class MainTabbedPane extends PFUIComponent {
                     computersTab.getUIComponent());
             }
 
-            String key = Translation.getTranslation("main_tabbed_pane.welcome.key");
+            String key = Translation.getTranslation("main_tabbed_pane.start.key");
             uiComponent.setMnemonicAt(START_INDEX, (int) Character.toUpperCase(
                     key.charAt(0)));
             uiComponent.setToolTipTextAt(START_INDEX, Translation
-                .getTranslation("main_tabbed_pane.welcome.description"));
-            uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.WELCOME));
+                .getTranslation("main_tabbed_pane.start.description"));
+            uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.START));
 
-            key = Translation.getTranslation("main_tabbed_pane.home.key");
+            key = Translation.getTranslation("main_tabbed_pane.status.key");
             uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character.toUpperCase(key
                 .charAt(0)));
             uiComponent.setToolTipTextAt(STATUS_INDEX, Translation
-                .getTranslation("main_tabbed_pane.home.description"));
-            uiComponent.setIconAt(STATUS_INDEX, Icons.getIconById(Icons.HOME));
+                .getTranslation("main_tabbed_pane.status.description"));
+            uiComponent.setIconAt(STATUS_INDEX, Icons.getIconById(Icons.STATUS));
 
             key = Translation.getTranslation("main_tabbed_pane.folders.key");
             uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
@@ -163,12 +163,12 @@ public class MainTabbedPane extends PFUIComponent {
     }
 
     /**
-     * Set the home tab icon.
+     * Set the status tab icon.
      * 
-     * @param homeIcon
+     * @param statusIcon
      */
-    public void setHomeIcon(Icon homeIcon) {
-        uiComponent.setIconAt(STATUS_INDEX, homeIcon);
+    public void setStatusIcon(Icon statusIcon) {
+        uiComponent.setIconAt(STATUS_INDEX, statusIcon);
     }
 
     /**

@@ -44,7 +44,7 @@ import java.awt.event.ActionEvent;
 import jwf.WizardContext;
 
 /**
- * Class for the Home tab in the main tab area of the UI.
+ * Class for the Status tab in the main tab area of the UI.
  */
 public class StartTab extends PFUIComponent {
 
@@ -147,7 +147,7 @@ public class StartTab extends PFUIComponent {
         builder.setBorder(Borders.createEmptyBorder("1dlu, 3dlu, 2dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
-        JLabel label = new JLabel(Translation.getTranslation("welcome_tab.welcome_text"));
+        JLabel label = new JLabel(Translation.getTranslation("start_tab.welcome_text"));
         UIUtil.setFontSize(label, UIUtil.MED_FONT_SIZE);
         UIUtil.setFontStyle(label, Font.BOLD);
 

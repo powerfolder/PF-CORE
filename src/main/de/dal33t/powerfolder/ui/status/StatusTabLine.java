@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: HomeTabLine.java 5495 2008-10-24 04:59:13Z harry $
+ * $Id: StatusTabLine.java 5495 2008-10-24 04:59:13Z harry $
  */
 package de.dal33t.powerfolder.ui.status;
 
