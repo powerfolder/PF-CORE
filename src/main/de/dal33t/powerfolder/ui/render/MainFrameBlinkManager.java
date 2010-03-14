@@ -160,7 +160,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 .getWarningsModel().getWarningsCountVM().getValue();
 
             if (count == null || count == 0
-                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+                || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)
             {
                 return;
             }
@@ -182,7 +182,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 .getValue();
 
             if (count == null || count == 0
-                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+                || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)
             {
                 return;
             }
@@ -204,7 +204,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
                 .getReceivedAskForFriendshipCountVM().getValue();
 
             if (count == null || count == 0
-                || selectedMainTab.get() == MainTabbedPane.HOME_INDEX)
+                || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)
             {
                 return;
             }
@@ -246,7 +246,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
             selectedMainTab.set(uiController.getMainFrame()
                 .getSelectedMainTabIndex());
 
-            if (selectedMainTab.get() == MainTabbedPane.HOME_INDEX) {
+            if (selectedMainTab.get() == MainTabbedPane.STATUS_INDEX) {
                 flashHomeTabIcon(false);
                 update();
             } else if (selectedMainTab.get() == MainTabbedPane.FOLDERS_INDEX) {

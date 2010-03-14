@@ -43,7 +43,7 @@ import java.awt.*;
  * Includes a 3dlu space under the detail (if displayed).
  *
  */
-public class HomeTabLine extends PFUIComponent {
+public class StatusTabLine extends PFUIComponent {
 
     private static final String ZERO_CARD = "Z";
     private static final String NORMAL_CARD = "N";
@@ -81,7 +81,7 @@ public class HomeTabLine extends PFUIComponent {
      *                  optional action that the normal label should do if
      *                  clicked.
      */
-    public HomeTabLine(Controller controller, String normalLabelText,
+    public StatusTabLine(Controller controller, String normalLabelText,
                        String zeroLabelText, boolean hideOnZero, boolean castInt,
                        Action normalAction, Icon nzIcon)
     {

@@ -23,8 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
-import de.dal33t.powerfolder.ui.status.HomeTab;
-import de.dal33t.powerfolder.ui.start.WelcomeTab;
+import de.dal33t.powerfolder.ui.status.StatusTab;
+import de.dal33t.powerfolder.ui.start.StartTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -37,13 +37,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class MainTabbedPane extends PFUIComponent {
 
-    public static final int WELCOME_INDEX = 0;
-    public static final int HOME_INDEX = 1;
+    public static final int START_INDEX = 0;
+    public static final int STATUS_INDEX = 1;
     public static final int FOLDERS_INDEX = 2;
     public static final int COMPUTERS_INDEX = 3;
 
-    private WelcomeTab welcomeTab;
-    private HomeTab homeTab;
+    private StartTab startTab;
+    private StatusTab statusTab;
     private FoldersTab foldersTab;
     private ComputersTab computersTab;
 
@@ -70,11 +70,11 @@ public class MainTabbedPane extends PFUIComponent {
             // Initalize components
             initComponents();
             uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.welcome.name"), welcomeTab
+                .getTranslation("main_tabbed_pane.welcome.name"), startTab
                 .getUIComponent());
 
             uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.home.name"), homeTab
+                .getTranslation("main_tabbed_pane.home.name"), statusTab
                 .getUIComponent());
 
             uiComponent.add(Translation
@@ -92,18 +92,18 @@ public class MainTabbedPane extends PFUIComponent {
             }
 
             String key = Translation.getTranslation("main_tabbed_pane.welcome.key");
-            uiComponent.setMnemonicAt(WELCOME_INDEX, (int) Character.toUpperCase(
+            uiComponent.setMnemonicAt(START_INDEX, (int) Character.toUpperCase(
                     key.charAt(0)));
-            uiComponent.setToolTipTextAt(WELCOME_INDEX, Translation
+            uiComponent.setToolTipTextAt(START_INDEX, Translation
                 .getTranslation("main_tabbed_pane.welcome.description"));
-            uiComponent.setIconAt(WELCOME_INDEX, Icons.getIconById(Icons.WELCOME));
+            uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.WELCOME));
 
             key = Translation.getTranslation("main_tabbed_pane.home.key");
-            uiComponent.setMnemonicAt(HOME_INDEX, (int) Character.toUpperCase(key
+            uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character.toUpperCase(key
                 .charAt(0)));
-            uiComponent.setToolTipTextAt(HOME_INDEX, Translation
+            uiComponent.setToolTipTextAt(STATUS_INDEX, Translation
                 .getTranslation("main_tabbed_pane.home.description"));
-            uiComponent.setIconAt(HOME_INDEX, Icons.getIconById(Icons.HOME));
+            uiComponent.setIconAt(STATUS_INDEX, Icons.getIconById(Icons.HOME));
 
             key = Translation.getTranslation("main_tabbed_pane.folders.key");
             uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
@@ -138,8 +138,8 @@ public class MainTabbedPane extends PFUIComponent {
     private void initComponents() {
         uiComponent = new JTabbedPane();
         uiComponent.setOpaque(false);
-        welcomeTab = new WelcomeTab(getController());
-        homeTab = new HomeTab(getController());
+        startTab = new StartTab(getController());
+        statusTab = new StatusTab(getController());
         foldersTab = new FoldersTab(getController());
         computersTab = new ComputersTab(getController());
     }
@@ -168,7 +168,7 @@ public class MainTabbedPane extends PFUIComponent {
      * @param homeIcon
      */
     public void setHomeIcon(Icon homeIcon) {
-        uiComponent.setIconAt(HOME_INDEX, homeIcon);
+        uiComponent.setIconAt(STATUS_INDEX, homeIcon);
     }
 
     /**

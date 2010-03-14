@@ -88,22 +88,22 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 /**
  * Class for the Home tab in the main tab area of the UI.
  */
-public class HomeTab extends PFUIComponent {
+public class StatusTab extends PFUIComponent {
 
     private JPanel uiComponent;
 
     private JLabel synchronizationStatusLabel;
     private JLabel synchronizationDateLabel;
-    private HomeTabLine numberOfFoldersLine;
-    private HomeTabLine sizeOfFoldersLine;
-    private HomeTabLine filesAvailableLine;
-    private HomeTabLine newWarningsLine;
-    private HomeTabLine newInvitationsLine;
-    private HomeTabLine newFriendRequestsLine;
-    private HomeTabLine newSingleFileOffersLine;
-    private HomeTabLine computersLine;
-    private HomeTabLine downloadsLine;
-    private HomeTabLine uploadsLine;
+    private StatusTabLine numberOfFoldersLine;
+    private StatusTabLine sizeOfFoldersLine;
+    private StatusTabLine filesAvailableLine;
+    private StatusTabLine newWarningsLine;
+    private StatusTabLine newInvitationsLine;
+    private StatusTabLine newFriendRequestsLine;
+    private StatusTabLine newSingleFileOffersLine;
+    private StatusTabLine computersLine;
+    private StatusTabLine downloadsLine;
+    private StatusTabLine uploadsLine;
     private final ValueModel downloadsCountVM;
     private final ValueModel uploadsCountVM;
     private final MyFolderListener folderListener;
@@ -124,7 +124,7 @@ public class HomeTab extends PFUIComponent {
      * 
      * @param controller
      */
-    public HomeTab(Controller controller) {
+    public StatusTab(Controller controller) {
         super(controller);
         downloadsCountVM = getApplicationModel().getTransferManagerModel()
             .getAllDownloadsCountVM();
@@ -206,41 +206,41 @@ public class HomeTab extends PFUIComponent {
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
-        numberOfFoldersLine = new HomeTabLine(getController(), Translation
+        numberOfFoldersLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.folders"), Translation
             .getTranslation("home_tab.no_folders"), false, true, null, null);
-        sizeOfFoldersLine = new HomeTabLine(getController(), Translation
+        sizeOfFoldersLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.total", "KB"), null, true, false, null,
             null);
-        filesAvailableLine = new HomeTabLine(getController(), Translation
+        filesAvailableLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.files_available"), null, true, true,
             null, null);
-        newWarningsLine = new HomeTabLine(getController(), Translation
+        newWarningsLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.new_warnings"), null, true, true,
             getApplicationModel().getActionModel().getActivateWarningAction(),
             Icons.getIconById(Icons.WARNING));
-        newInvitationsLine = new HomeTabLine(getController(), Translation
+        newInvitationsLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.new_invitations"), null, true, true,
             getApplicationModel().getActionModel()
                 .getOpenInvitationReceivedWizardAction(), Icons
                 .getIconById(Icons.INFORMATION));
-        newFriendRequestsLine = new HomeTabLine(getController(), Translation
+        newFriendRequestsLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.new_friend_requests"), null, true, true,
             getApplicationModel().getActionModel().getAskForFriendshipAction(),
             Icons.getIconById(Icons.INFORMATION));
-        newSingleFileOffersLine = new HomeTabLine(getController(), Translation
+        newSingleFileOffersLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.new_single_file_offers"), null, true,
             true, getApplicationModel().getActionModel()
                 .getSingleFileTransferOfferAction(), null);
-        downloadsLine = new HomeTabLine(getController(), Translation
+        downloadsLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.files_downloads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenDownloadsInformationAction(), null);
-        uploadsLine = new HomeTabLine(getController(), Translation
+        uploadsLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.files_uploads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction(), null);
-        computersLine = new HomeTabLine(getController(), Translation
+        computersLine = new StatusTabLine(getController(), Translation
             .getTranslation("home_tab.computers"), Translation
             .getTranslation("home_tab.no_computers"), false, true, null, null);
         onlineStorageAccountLabel = new ActionLabel(getController(),

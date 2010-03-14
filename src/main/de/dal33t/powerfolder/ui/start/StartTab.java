@@ -46,7 +46,7 @@ import jwf.WizardContext;
 /**
  * Class for the Home tab in the main tab area of the UI.
  */
-public class WelcomeTab extends PFUIComponent {
+public class StartTab extends PFUIComponent {
 
     private JPanel uiComponent;
     private ActionLabel synchronizedLink;
@@ -59,7 +59,7 @@ public class WelcomeTab extends PFUIComponent {
      *
      * @param controller
      */
-    public WelcomeTab(Controller controller) {
+    public StartTab(Controller controller) {
         super(controller);
     }
 
