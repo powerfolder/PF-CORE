@@ -17,7 +17,7 @@
  *
  * $Id: WelcomeTab.java 5495 2008-10-24 04:59:13Z harry $
  */
-package de.dal33t.powerfolder.ui.welcome;
+package de.dal33t.powerfolder.ui.start;
 
 import javax.swing.*;
 

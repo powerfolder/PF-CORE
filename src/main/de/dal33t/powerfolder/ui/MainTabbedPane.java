@@ -23,8 +23,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
-import de.dal33t.powerfolder.ui.home.HomeTab;
-import de.dal33t.powerfolder.ui.welcome.WelcomeTab;
+import de.dal33t.powerfolder.ui.status.HomeTab;
+import de.dal33t.powerfolder.ui.start.WelcomeTab;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;

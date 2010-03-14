@@ -17,7 +17,7 @@
  *
  * $Id: HomeTab.java 5495 2008-10-24 04:59:13Z harry $
  */
-package de.dal33t.powerfolder.ui.home;
+package de.dal33t.powerfolder.ui.status;
 
 import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;

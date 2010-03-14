@@ -17,7 +17,7 @@
  *
  * $Id: HomeTabLine.java 5495 2008-10-24 04:59:13Z harry $
  */
-package de.dal33t.powerfolder.ui.home;
+package de.dal33t.powerfolder.ui.status;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
