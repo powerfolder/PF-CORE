@@ -29,10 +29,16 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Help;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -40,6 +46,10 @@ import java.awt.*;
 public class WelcomeTab extends PFUIComponent {
 
     private JPanel uiComponent;
+    private ActionLabel synchronizedLink;
+    private ActionLabel backupLink;
+    private ActionLabel hostLink;
+    private LinkLabel documentationLink;
 
     /**
      * Constructor
@@ -94,6 +104,31 @@ public class WelcomeTab extends PFUIComponent {
      * Initialise class components.
      */
     private void initComponents() {
+        synchronizedLink = new ActionLabel(getController(),
+            new DoSynchronizedAction(Translation
+                .getTranslation("wizard.what_to_do.synchronized_folder")));
+        synchronizedLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.synchronized_folder.tip"));
+        synchronizedLink.convertToBigLabel();
+
+        backupLink = new ActionLabel(getController(), new DoBackupAction(
+            Translation.getTranslation("wizard.what_to_do.backup_folder")));
+        backupLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.backup_folder.tip"));
+        backupLink.convertToBigLabel();
+
+        hostLink = new ActionLabel(getController(), new DoHostAction(
+            Translation.getTranslation("wizard.what_to_do.host_work")));
+        hostLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.host_work.tip"));
+        hostLink.convertToBigLabel();
+
+        documentationLink = Help.createQuickstartGuideLabel(getController(),
+            Translation
+                .getTranslation("wizard.what_to_do.open_online_documentation"));
+        documentationLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
+        documentationLink.convertToBigLabel();
     }
 
     /**
@@ -102,7 +137,7 @@ public class WelcomeTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -112,10 +147,28 @@ public class WelcomeTab extends PFUIComponent {
         JLabel label = new JLabel(Translation.getTranslation("welcome_tab.welcome_text"));
         UIUtil.setFontSize(label, UIUtil.MED_FONT_SIZE);
         UIUtil.setFontStyle(label, Font.BOLD);
+
         int row = 1;
         builder.add(label, cc.xy(1, row));
 
-        row++;
+        row +=2;
+
+        builder.add(synchronizedLink.getUIComponent(), cc.xy(1, row));
+
+        row +=2;
+
+        builder.add(backupLink.getUIComponent(), cc.xy(1, row));
+
+        row +=2;
+
+        builder.add(hostLink.getUIComponent(), cc.xy(1, row));
+
+        row +=2;
+
+        builder.add(documentationLink.getUIComponent(), cc.xy(1, row));
+
+        row +=2;
+        
         return builder.getPanel();
     }
 
@@ -141,4 +194,33 @@ public class WelcomeTab extends PFUIComponent {
         return bar.getPanel();
     }
 
+    private class DoSynchronizedAction extends AbstractAction {
+
+        private DoSynchronizedAction(String name) {
+            putValue(NAME, name);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private class DoBackupAction extends AbstractAction {
+
+        private DoBackupAction(String name) {
+            putValue(NAME, name);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private class DoHostAction extends AbstractAction {
+
+        private DoHostAction(String name) {
+            putValue(NAME, name);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
 }

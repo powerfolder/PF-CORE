@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import jwf.WizardPanel;
@@ -57,7 +56,6 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * The start panel of the "what to do" wizard line
