@@ -33,12 +33,15 @@ import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+
+import jwf.WizardContext;
 
 /**
  * Class for the Home tab in the main tab area of the UI.
@@ -201,6 +204,11 @@ public class WelcomeTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            PFWizard wizard = new PFWizard(getController());
+            WizardContext context = wizard.getWizardContext();
+            PFWizardPanel panel = WhatToDoPanel.doSyncOption(getController(),
+                    context);
+            wizard.open(panel);
         }
     }
 
@@ -211,6 +219,11 @@ public class WelcomeTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            PFWizard wizard = new PFWizard(getController());
+            WizardContext context = wizard.getWizardContext();
+            PFWizardPanel panel = WhatToDoPanel.doBackupOption(getController(),
+                    context);
+            wizard.open(panel);
         }
     }
 
@@ -221,6 +234,11 @@ public class WelcomeTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
+            PFWizard wizard = new PFWizard(getController());
+            WizardContext context = wizard.getWizardContext();
+            PFWizardPanel panel = WhatToDoPanel.doHostOption(getController(),
+                    context);
+            wizard.open(panel);
         }
     }
 }

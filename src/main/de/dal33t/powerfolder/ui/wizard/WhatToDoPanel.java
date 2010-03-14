@@ -37,6 +37,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 
 import jwf.WizardPanel;
+import jwf.WizardContext;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -158,11 +159,11 @@ public class WhatToDoPanel extends PFWizardPanel {
         Object option = decision.getValue();
 
         if (option == synchronizedOption) {
-            return doSyncOption();
+            return doSyncOption(getController(), getWizardContext());
         } else if (option == backupOption) {
-            return doBackupOption();
+            return doBackupOption(getController(), getWizardContext());
         } else if (option == hostOption) {
-            return doHostOption();
+            return doHostOption(getController(), getWizardContext());
         } else if (option == customOption) {
             return doCustomAction();
         } else if (option == onlineOption) {
@@ -236,101 +237,104 @@ public class WhatToDoPanel extends PFWizardPanel {
         return new ChooseMultiDiskLocationPanel(getController(), setupPanel);
     }
 
-    private WizardPanel doHostOption() {
+    public static PFWizardPanel doHostOption(Controller controller,
+                                      WizardContext wizardContext) {
         // Reset folderinfo for disk location
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
+        wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
         // This is hosting (manual download) profile!
-        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+        wizardContext.setAttribute(SYNC_PROFILE_ATTRIBUTE,
             SyncProfile.HOST_FILES);
 
         // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
             Translation.getTranslation("wizard.what_to_do.host_pcs.select"));
 
         // Prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
+        wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
 
         // Select backup by OS
-        getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
+        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, true);
 
         // Setup sucess panel of this wizard path
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"), Translation
                 .getTranslation("wizard.what_to_do.folder_host_success")
                 + Translation.getTranslation("wizard.what_to_do.host_pcs_join"));
-        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+        wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
 
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
+        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, Boolean.TRUE);
 
-        return new ChooseMultiDiskLocationPanel(getController(), createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
-    private WizardPanel doBackupOption() {
+    public static PFWizardPanel doBackupOption(Controller controller,
+                                      WizardContext wizardContext) {
         // Reset folderinfo for disk location
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
+        wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
         // This is backup (source) profile!
-        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+        wizardContext.setAttribute(SYNC_PROFILE_ATTRIBUTE,
             SyncProfile.BACKUP_SOURCE);
 
         // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
             Translation.getTranslation("wizard.what_to_do.backp.select"));
 
         // Don't prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
+        wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Select backup by OS
-        getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
+        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, true);
 
         // Setup sucess panel of this wizard path
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"), Translation
                 .getTranslation("wizard.what_to_do.folder_backup_success")
                 + Translation.getTranslation("wizard.what_to_do.pcs_join"));
-        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+        wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, true);
+        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
-        FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
 
-        return new ChooseMultiDiskLocationPanel(getController(), createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
-    private WizardPanel doSyncOption() {
+    public static PFWizardPanel doSyncOption(Controller controller,
+                                      WizardContext wizardContext) {
         // Reset folderinfo for disk location
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
+        wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
         // This is sync pcs (mirror) profile!
-        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+        wizardContext.setAttribute(SYNC_PROFILE_ATTRIBUTE,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         // No invitation by default.
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
+        wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Select backup by OS
-        getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
+        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, true);
 
         // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
             Translation.getTranslation("wizard.what_to_do.sync_pcs.select"));
 
         // Setup sucess panel of this wizard path
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"), Translation
                 .getTranslation("wizard.what_to_do.sync_pcs.success")
                 + Translation
                     .getTranslation("wizard.what_to_do.sync_pcs.pcs_join"));
-        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+        wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
 
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, true);
+        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
-        return new ChooseMultiDiskLocationPanel(getController(), createPanel);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
     /**
