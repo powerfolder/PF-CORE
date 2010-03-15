@@ -130,7 +130,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.2"; // 1.5.0.32
+    public static final String PROGRAM_VERSION = "4.1.2.34"; // 1.5.0.34
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -730,6 +730,14 @@ public class Controller extends PFComponent {
             Profiling.reset();
         }
 
+        if (commandLine.hasOption('l')) {
+            String str = commandLine.getOptionValue('l');
+            Level consoleLevel = LoggingManager.levelForName(str);
+            if (consoleLevel != null) {
+                LoggingManager.setConsoleLogging(consoleLevel);
+            }
+        }
+
         // Enable debug reports.
         debugReports = ConfigurationEntry.DEBUG_REPORTS
             .getValueBoolean(getController());
@@ -993,8 +1001,8 @@ public class Controller extends PFComponent {
                         if (listenerOpened && connectionListener != null) {
                             // set reconnect on first successfull listener
                             nodeManager.getMySelf().getInfo()
-                                    .setConnectAddress(
-                                            connectionListener.getAddress());
+                                .setConnectAddress(
+                                    connectionListener.getAddress());
                         }
                         if (!listenerOpened && !isUIOpen()) {
                             logSevere("Couldn't bind to port " + port);
@@ -1005,7 +1013,7 @@ public class Controller extends PFComponent {
                         }
                     } catch (NumberFormatException e) {
                         logFine("Unable to read listener port ('" + portStr
-                                + "') from config");
+                            + "') from config");
                     }
                 }
                 // If this is the GUI version we didn't kill the program yet,
@@ -1823,7 +1831,7 @@ public class Controller extends PFComponent {
      * Whether to display notifications bottom-left instead of the normal
      * bottom-right. Primarily a development switch for running two PFs on one
      * PC.
-     *
+     * 
      * @return true if notifications should be displayed on the left.
      */
     public boolean isNotifyLeft() {
