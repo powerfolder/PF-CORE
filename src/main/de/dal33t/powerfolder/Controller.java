@@ -730,7 +730,7 @@ public class Controller extends PFComponent {
             Profiling.reset();
         }
 
-        if (commandLine.hasOption('l')) {
+        if (commandLine != null && commandLine.hasOption('l')) {
             String str = commandLine.getOptionValue('l');
             Level consoleLevel = LoggingManager.levelForName(str);
             if (consoleLevel != null) {
