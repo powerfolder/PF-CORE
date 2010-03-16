@@ -242,12 +242,12 @@ public class LimitedConnectivityChecker {
                 .contains(LIMITED_CONNECTIVITY_TEST_SUCCESSFULLY_STRING);
         } catch (SocketTimeoutException e) {
             log.log(Level.WARNING, "Limited connectivity check failed for "
-                + host + ':' + port, e);
+                + host + ':' + port + ". " + e);
             log.log(Level.FINER, "SocketTimeoutException", e);
             return false;
         } catch (IOException e) {
             log.log(Level.WARNING, "Limited connectivity check failed for "
-                + host + ':' + port, e);
+                + host + ':' + port + ". " + e, e);
             return false;
         } finally {
             if (in != null) {
