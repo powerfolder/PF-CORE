@@ -52,12 +52,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -263,13 +262,11 @@ public class SettingsTab extends PFUIComponent {
         builder.add(onlineLabel, cc.xy(2, row));
         builder.add(onlineArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
             row, 4));
-        
+
         row += 2;
-        if (Feature.DOWNLOAD_SCRIPT.isEnabled()) {
-            builder.addLabel(Translation
-                .getTranslation("settings_tab.download_script"), cc.xy(2, row));
-            builder.add(createScriptField(), cc.xyw(4, row, 4));
-        }
+        builder.addLabel(Translation
+            .getTranslation("settings_tab.download_script"), cc.xy(2, row));
+        builder.add(createScriptField(), cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(new JLabel(Translation
