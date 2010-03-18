@@ -75,19 +75,9 @@ public enum Feature {
     DETECT_UPDATE_BY_VERSION,
 
     /**
-     * If the internal features of the client console should be activated.
-     */
-    CLIENT_INTERNAL_FUNCTIONS(false),
-
-    /**
      * Writes the debug filelist CSV into debug directory
      */
     DEBUG_WRITE_FILELIST_CSV(false),
-
-    /**
-     * If it should be possible to select a script after download.
-     */
-    DOWNLOAD_SCRIPT(true),
 
     /**
      * Display Tip Of Day.
