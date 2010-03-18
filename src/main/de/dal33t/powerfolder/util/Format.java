@@ -126,7 +126,7 @@ public class Format extends PFComponent {
      * Formats a date as universal canonical string in the format "dd MMM yyyy"
      * (English).
      * <p>
-     * Examples: 10 JAN 2010, 30-DEC 2009.
+     * Examples: 10 JAN 2010, 30 DEC 2009.
      * 
      * @param date
      * @return a date as universal canonical string.
