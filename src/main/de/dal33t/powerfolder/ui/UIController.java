@@ -348,7 +348,7 @@ public class UIController extends PFComponent {
         if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
         {
             gotoHPIfRequired();
-            // Show promo after 5 seconds
+            // Show promo after 30 seconds
             if (getController().getDistribution().showClientPromo()) {
                 getController().scheduleAndRepeat(new TimerTask() {
                     @Override
@@ -359,7 +359,7 @@ public class UIController extends PFComponent {
                             }
                         });
                     }
-                }, 0, 1000L * 60 * 60);
+                }, 30 * 1000L, 1000L * 60 * 60);
             }
         }
 
