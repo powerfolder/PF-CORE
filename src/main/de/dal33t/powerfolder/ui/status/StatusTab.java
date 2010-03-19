@@ -165,7 +165,6 @@ public class StatusTab extends PFUIComponent {
         if (uiComponent == null) {
             buildUI();
         }
-        uiComponent.setTransferHandler(new MyTransferHandler());
         return uiComponent;
     }
 
@@ -855,90 +854,6 @@ public class StatusTab extends PFUIComponent {
             updateOnlineStorageDetails();
         }
     }
-
-    /**
-     * Handler to accept folder drops, opening folder wizard.
-     */
-    private class MyTransferHandler extends TransferHandler {
-
-        /**
-         * Whether this drop can be imported; must be file list flavor.
-         * 
-         * @param support
-         * @return
-         */
-        public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
-        }
-
-        /**
-         * Import the file. Only import if it is a single directory.
-         * 
-         * @param support
-         * @return
-         */
-        public boolean importData(TransferSupport support) {
-
-            if (!support.isDrop()) {
-                return false;
-            }
-
-            final File file = getFileList(support);
-            if (file == null) {
-                return false;
-            }
-
-            // Run later, so do not tie up OS drag and drop process.
-            Runnable runner = new Runnable() {
-                public void run() {
-                    if (file.isDirectory()) {
-                        PFWizard.openExistingDirectoryWizard(getController(),
-                            file);
-                    } else if (file.getName().endsWith(".invitation")) {
-                        Invitation invitation = InvitationUtil.load(file);
-                        PFWizard.openInvitationReceivedWizard(getController(),
-                            invitation);
-                    }
-                }
-            };
-            SwingUtilities.invokeLater(runner);
-
-            return true;
-        }
-
-        /**
-         * Get the directory to import. The transfer is a list of files; need to
-         * check the list has one directory, else return null.
-         * 
-         * @param support
-         * @return
-         */
-        private File getFileList(TransferSupport support) {
-            Transferable t = support.getTransferable();
-            try {
-                List list = (List) t
-                    .getTransferData(DataFlavor.javaFileListFlavor);
-                if (list.size() == 1) {
-                    for (Object o : list) {
-                        if (o instanceof File) {
-                            File file = (File) o;
-                            if (file.isDirectory()) {
-                                return file;
-                            } else if (file.getName().endsWith(".invitation")) {
-                                return file;
-                            }
-                        }
-                    }
-                }
-            } catch (UnsupportedFlavorException e) {
-                logSevere(e);
-            } catch (IOException e) {
-                logSevere(e);
-            }
-            return null;
-        }
-    }
-
     private class UseOSModelListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {

@@ -207,17 +207,17 @@ public class AboutDialog extends PFUIComponent {
         homeLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.home_page"),
             ConfigurationEntry.PROVIDER_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize((JLabel) homeLink.getUIComponent(),
+        SimpleComponentFactory.setFontSize(homeLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
         docLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.documentation"),
             ConfigurationEntry.PROVIDER_WIKI_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize((JLabel) docLink.getUIComponent(),
+        SimpleComponentFactory.setFontSize(docLink.getUIComponent(),
             SimpleComponentFactory.BIG_FONT_SIZE);
         supportLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.support"),
             ConfigurationEntry.PROVIDER_SUPPORT_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize((JLabel) supportLink
+        SimpleComponentFactory.setFontSize(supportLink
             .getUIComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
 
         powerFolder = createTextBox(Translation

@@ -28,6 +28,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -35,12 +36,20 @@ import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.InvitationUtil;
 
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import jwf.WizardContext;
 
@@ -153,7 +162,7 @@ public class StartTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -183,10 +192,20 @@ public class StartTab extends PFUIComponent {
 
         builder.add(documentationLink.getUIComponent(), cc.xy(1, row));
 
-        row += 3;
+        row += 2;
+
+        builder.addLabel(Translation.getTranslation("start_tab.drag_hint"),
+                cc.xy(1, row, CellConstraints.CENTER, CellConstraints.CENTER));
+
+        row += 2;
+
         builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
-        return builder.getPanel();
+        JPanel panel = builder.getPanel();
+
+        panel.setTransferHandler(new MyTransferHandler());
+
+        return panel;
     }
 
     /**
@@ -253,6 +272,89 @@ public class StartTab extends PFUIComponent {
             PFWizardPanel panel = WhatToDoPanel.doHostOption(getController(),
                     context);
             wizard.open(panel);
+        }
+    }
+
+    /**
+     * Handler to accept folder drops, opening folder wizard.
+     */
+    private class MyTransferHandler extends TransferHandler {
+
+        /**
+         * Whether this drop can be imported; must be file list flavor.
+         *
+         * @param support
+         * @return
+         */
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+        }
+
+        /**
+         * Import the file. Only import if it is a single directory.
+         *
+         * @param support
+         * @return
+         */
+        public boolean importData(TransferSupport support) {
+
+            if (!support.isDrop()) {
+                return false;
+            }
+
+            final File file = getFileList(support);
+            if (file == null) {
+                return false;
+            }
+
+            // Run later, so do not tie up OS drag and drop process.
+            Runnable runner = new Runnable() {
+                public void run() {
+                    if (file.isDirectory()) {
+                        PFWizard.openExistingDirectoryWizard(getController(),
+                            file);
+                    } else if (file.getName().endsWith(".invitation")) {
+                        Invitation invitation = InvitationUtil.load(file);
+                        PFWizard.openInvitationReceivedWizard(getController(),
+                            invitation);
+                    }
+                }
+            };
+            SwingUtilities.invokeLater(runner);
+
+            return true;
+        }
+
+        /**
+         * Get the directory to import. The transfer is a list of files; need to
+         * check the list has one directory, else return null.
+         *
+         * @param support
+         * @return
+         */
+        private File getFileList(TransferSupport support) {
+            Transferable t = support.getTransferable();
+            try {
+                List list = (List) t
+                    .getTransferData(DataFlavor.javaFileListFlavor);
+                if (list.size() == 1) {
+                    for (Object o : list) {
+                        if (o instanceof File) {
+                            File file = (File) o;
+                            if (file.isDirectory()) {
+                                return file;
+                            } else if (file.getName().endsWith(".invitation")) {
+                                return file;
+                            }
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException e) {
+                logSevere(e);
+            } catch (IOException e) {
+                logSevere(e);
+            }
+            return null;
         }
     }
 }
