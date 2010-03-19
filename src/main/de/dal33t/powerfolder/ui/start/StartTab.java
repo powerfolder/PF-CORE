@@ -28,7 +28,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -36,20 +35,13 @@ import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
 import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.InvitationUtil;
 
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 import jwf.WizardContext;
 
@@ -146,7 +138,8 @@ public class StartTab extends PFUIComponent {
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
-                PFWizard wizard = new PFWizard(getController());
+                PFWizard wizard = new PFWizard(getController(), Translation.getTranslation(
+                "wizard.pfwizard.tell_friend_title"));
                 wizard.open(new TellFriendPanel(getController()));
             }
         });
@@ -203,7 +196,7 @@ public class StartTab extends PFUIComponent {
 
         JPanel panel = builder.getPanel();
 
-        panel.setTransferHandler(new MyTransferHandler());
+        panel.setTransferHandler(new FileDropTransferHandler(getController()));
 
         return panel;
     }
@@ -237,7 +230,8 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doSyncOption(getController(),
                     context);
@@ -252,7 +246,8 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doBackupOption(getController(),
                     context);
@@ -267,94 +262,12 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doHostOption(getController(),
                     context);
             wizard.open(panel);
-        }
-    }
-
-    /**
-     * Handler to accept folder drops, opening folder wizard.
-     */
-    private class MyTransferHandler extends TransferHandler {
-
-        /**
-         * Whether this drop can be imported; must be file list flavor.
-         *
-         * @param support
-         * @return
-         */
-        public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
-        }
-
-        /**
-         * Import the file. Only import if it is a single directory.
-         *
-         * @param support
-         * @return
-         */
-        public boolean importData(TransferSupport support) {
-
-            if (!support.isDrop()) {
-                return false;
-            }
-
-            final File file = getFileList(support);
-            if (file == null) {
-                return false;
-            }
-
-            // Run later, so do not tie up OS drag and drop process.
-            Runnable runner = new Runnable() {
-                public void run() {
-                    if (file.isDirectory()) {
-                        PFWizard.openExistingDirectoryWizard(getController(),
-                            file);
-                    } else if (file.getName().endsWith(".invitation")) {
-                        Invitation invitation = InvitationUtil.load(file);
-                        PFWizard.openInvitationReceivedWizard(getController(),
-                            invitation);
-                    }
-                }
-            };
-            SwingUtilities.invokeLater(runner);
-
-            return true;
-        }
-
-        /**
-         * Get the directory to import. The transfer is a list of files; need to
-         * check the list has one directory, else return null.
-         *
-         * @param support
-         * @return
-         */
-        private File getFileList(TransferSupport support) {
-            Transferable t = support.getTransferable();
-            try {
-                List list = (List) t
-                    .getTransferData(DataFlavor.javaFileListFlavor);
-                if (list.size() == 1) {
-                    for (Object o : list) {
-                        if (o instanceof File) {
-                            File file = (File) o;
-                            if (file.isDirectory()) {
-                                return file;
-                            } else if (file.getName().endsWith(".invitation")) {
-                                return file;
-                            }
-                        }
-                    }
-                }
-            } catch (UnsupportedFlavorException e) {
-                logSevere(e);
-            } catch (IOException e) {
-                logSevere(e);
-            }
-            return null;
         }
     }
 }

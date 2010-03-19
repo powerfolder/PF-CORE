@@ -51,10 +51,7 @@ import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -469,7 +466,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 
         if (!silent && getController().isUIEnabled()) {
-            PFWizard wizard = new PFWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.folder_title"));
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             if (syncProfile != null) {

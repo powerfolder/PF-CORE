@@ -647,7 +647,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 }
             }
 
-            PFWizard wizard = new PFWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.restore_title"));
 
             MultiFileRestorePanel panel = new MultiFileRestorePanel(
                     getController(), tableModel.getFolder(),
