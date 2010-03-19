@@ -147,6 +147,7 @@ public class StartTab extends PFUIComponent {
             .getTranslation("status_tab.tell_friend.text"));
         tellFriendLabel.setToolTipText(Translation
             .getTranslation("status_tab.tell_friend.tip"));
+        tellFriendLabel.convertToBigLabel();
     }
 
     /**
