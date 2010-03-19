@@ -225,12 +225,13 @@ public class StatusTab extends PFUIComponent {
                 .getOpenInvitationReceivedWizardAction(), Icons
                 .getIconById(Icons.INFORMATION));
         newFriendRequestsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_friend_requests"), null, true, true,
-            getApplicationModel().getActionModel().getAskForFriendshipAction(),
-            Icons.getIconById(Icons.INFORMATION));
-        newSingleFileOffersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_single_file_offers"), null, true,
+            .getTranslation("status_tab.new_friend_requests"), null, true,
             true, getApplicationModel().getActionModel()
+                .getAskForFriendshipAction(), Icons
+                .getIconById(Icons.INFORMATION));
+        newSingleFileOffersLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.new_single_file_offers"),
+            null, true, true, getApplicationModel().getActionModel()
                 .getSingleFileTransferOfferAction(), null);
         downloadsLine = new StatusTabLine(getController(), Translation
             .getTranslation("status_tab.files_downloads"), null, false, true,
@@ -353,8 +354,8 @@ public class StatusTab extends PFUIComponent {
 
         int row = 1;
 
-        builder.addSeparator(Translation.getTranslation("status_tab.status"), cc
-            .xy(1, row));
+        builder.addSeparator(Translation.getTranslation("status_tab.status"),
+            cc.xy(1, row));
         row += 2;
         builder.add(synchronizationStatusLabel, cc.xy(1, row));
         row += 2;
@@ -421,10 +422,12 @@ public class StatusTab extends PFUIComponent {
         totalSize /= 1024;
         String suffix = "KB";
         if (totalSize >= 1024) {
+            totalSize += 512;
             totalSize /= 1024;
             suffix = "MB";
         }
         if (totalSize >= 1024) {
+            totalSize += 512;
             totalSize /= 1024;
             suffix = "GB";
         }
@@ -592,10 +595,11 @@ public class StatusTab extends PFUIComponent {
                                         "status_tab.online_storage.account_disabled_usage",
                                         username));
                         } else {
-                            onlineStorageAccountLabel.setText(Translation
-                                .getTranslation(
-                                    "status_tab.online_storage.account_disabled",
-                                    username));
+                            onlineStorageAccountLabel
+                                .setText(Translation
+                                    .getTranslation(
+                                        "status_tab.online_storage.account_disabled",
+                                        username));
                         }
                         onlineStorageAccountLabel
                             .setToolTipText(Translation
@@ -603,8 +607,8 @@ public class StatusTab extends PFUIComponent {
                         showBuyNow = true;
                     } else {
                         onlineStorageAccountLabel.setText(Translation
-                            .getTranslation("status_tab.online_storage.account",
-                                username));
+                            .getTranslation(
+                                "status_tab.online_storage.account", username));
                         onlineStorageAccountLabel
                             .setToolTipText(Translation
                                 .getTranslation("status_tab.online_storage.account.tips"));
@@ -727,6 +731,7 @@ public class StatusTab extends PFUIComponent {
 
         public void statisticsCalculated(FolderEvent folderEvent) {
             recalculateFilesAvailable();
+            updateFoldersText();
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
@@ -1050,7 +1055,7 @@ public class StatusTab extends PFUIComponent {
             } else {
                 String s = Format.formatDecimal(d);
                 uploadsLine.setNormalLabelText(Translation.getTranslation(
-                        "status_tab.files_uploads_active", s));
+                    "status_tab.files_uploads_active", s));
             }
             d = downloadCounter.calculateCurrentKBS();
             if (getController().getTransferManager().countActiveDownloads() == 0)
@@ -1064,7 +1069,7 @@ public class StatusTab extends PFUIComponent {
             } else {
                 String s = Format.formatDecimal(d);
                 downloadsLine.setNormalLabelText(Translation.getTranslation(
-                        "status_tab.files_downloads_active", s));
+                    "status_tab.files_downloads_active", s));
             }
         }
     }
