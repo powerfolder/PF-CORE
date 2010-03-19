@@ -90,7 +90,10 @@ public class UserDirectories {
                 WinUtils.CSIDL_MYVIDEO, false);
             appsDirWindowsMail = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_LOCAL_APP_DATA, false)
-                + File.separator + "Microsoft" + File.separator + "Windows Mail";
+                + File.separator
+                + "Microsoft"
+                + File.separator
+                + "Windows Mail";
         }
     }
 
@@ -165,21 +168,23 @@ public class UserDirectories {
             .getTranslation("user.dir.sites"), false);
 
         // Hidden by Vista.
-        if (userDirMyDocuments != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyDocuments), Translation
-                .getTranslation("user.dir.my_documents"), false);
-        }
-        if (userDirMyMusic != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyMusic), Translation
-                .getTranslation("user.dir.my_music"), false);
-        }
-        if (userDirMyPictures != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyPictures), Translation
-                .getTranslation("user.dir.my_pictures"), false);
-        }
-        if (userDirMyVideos != null && !OSUtil.isWindowsVistaSystem()) {
-            addTargetDirectory(new File(userDirMyVideos), Translation
-                .getTranslation("user.dir.my_videos"), false);
+        if (!OSUtil.isWindowsVistaSystem() && !OSUtil.isWindows7System()) {
+            if (userDirMyDocuments != null) {
+                addTargetDirectory(new File(userDirMyDocuments), Translation
+                    .getTranslation("user.dir.my_documents"), false);
+            }
+            if (userDirMyMusic != null) {
+                addTargetDirectory(new File(userDirMyMusic), Translation
+                    .getTranslation("user.dir.my_music"), false);
+            }
+            if (userDirMyPictures != null) {
+                addTargetDirectory(new File(userDirMyPictures), Translation
+                    .getTranslation("user.dir.my_pictures"), false);
+            }
+            if (userDirMyVideos != null) {
+                addTargetDirectory(new File(userDirMyVideos), Translation
+                    .getTranslation("user.dir.my_videos"), false);
+            }
         }
 
         addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
@@ -188,7 +193,6 @@ public class UserDirectories {
             .getTranslation("user.dir.recent_documents"), false);
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
-
         addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
             .getTranslation("user.dir.videos"), false);
 
@@ -207,8 +211,9 @@ public class UserDirectories {
                         .getTranslation("apps.dir.outlook"), false);
                 }
                 if (appsDirWindowsMail != null) {
-                    addTargetDirectory(new File(appsDirWindowsMail), Translation
-                        .getTranslation("apps.dir.windows_mail"), false);
+                    addTargetDirectory(new File(appsDirWindowsMail),
+                        Translation.getTranslation("apps.dir.windows_mail"),
+                        false);
                 }
             } else {
                 Logger.getAnonymousLogger().severe(
