@@ -112,7 +112,6 @@ public class StatusTab extends PFUIComponent {
     private OnlineStorageSection onlineStorageSection;
     private LicenseInfoSection licenseInfoSection;
     private LinkLabel buyNowLabel;
-    private ActionLabel tellFriendLabel;
 
     private final ValueModel newWarningsCountVM;
     private final ValueModel newFriendRequestsCountVM;
@@ -267,17 +266,6 @@ public class StatusTab extends PFUIComponent {
             showBuyNowLink(Translation
                 .getTranslation("pro.status_tab.upgrade_powerfolder"));
         }
-        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
-        {
-            public void actionPerformed(ActionEvent e) {
-                PFWizard wizard = new PFWizard(getController());
-                wizard.open(new TellFriendPanel(getController()));
-            }
-        });
-        tellFriendLabel.setText(Translation
-            .getTranslation("status_tab.tell_friend.text"));
-        tellFriendLabel.setToolTipText(Translation
-            .getTranslation("status_tab.tell_friend.tip"));
 
         updateTransferText();
         updateFoldersText();
@@ -340,10 +328,7 @@ public class StatusTab extends PFUIComponent {
                 // have
                 // section
                 "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
-                "pref, 3dlu, pref, pref, pref, pref, 3dlu, " + // Online
-                // Storage
-                // section + License key section
-                "pref:grow, pref");
+                "pref, 3dlu, pref, pref, pref, pref");
         // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
@@ -400,8 +385,6 @@ public class StatusTab extends PFUIComponent {
         builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(buyNowLabel.getUIComponent(), cc.xy(1, row));
-        row += 3;
-        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
         return builder.getPanel();
     }

@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
+import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
@@ -53,6 +54,7 @@ public class StartTab extends PFUIComponent {
     private ActionLabel backupLink;
     private ActionLabel hostLink;
     private LinkLabel documentationLink;
+    private ActionLabel tellFriendLabel;
 
     /**
      * Constructor
@@ -132,6 +134,17 @@ public class StartTab extends PFUIComponent {
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
         documentationLink.convertToBigLabel();
+        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e) {
+                PFWizard wizard = new PFWizard(getController());
+                wizard.open(new TellFriendPanel(getController()));
+            }
+        });
+        tellFriendLabel.setText(Translation
+            .getTranslation("status_tab.tell_friend.text"));
+        tellFriendLabel.setToolTipText(Translation
+            .getTranslation("status_tab.tell_friend.tip"));
     }
 
     /**
@@ -140,7 +153,7 @@ public class StartTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -170,8 +183,9 @@ public class StartTab extends PFUIComponent {
 
         builder.add(documentationLink.getUIComponent(), cc.xy(1, row));
 
-        row +=2;
-        
+        row += 3;
+        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
+
         return builder.getPanel();
     }
 
