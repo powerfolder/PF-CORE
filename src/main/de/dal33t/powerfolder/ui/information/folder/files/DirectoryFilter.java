@@ -273,6 +273,11 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong deletedCount, AtomicLong incomingCount, AtomicLong localCount)
     {
 
+        if (folder.isSharedSystemSubDir(directory.getAbsoluteFile())) {
+            // User never sees the shared system subdirectory.
+            return;
+        }
+
         for (FileInfo fileInfo : directory.getFileInfos()) {
 
             int searchMode = (Integer) searchModeVM.getValue();

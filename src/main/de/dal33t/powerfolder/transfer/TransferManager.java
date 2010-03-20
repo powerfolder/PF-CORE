@@ -771,6 +771,17 @@ public class TransferManager extends PFComponent {
             }
             clearCompletedDownload(dlManager);
         }
+
+        // Auto cleanup any downloads to the shared system subdirectory,
+        // so they do not show in the UI.
+        if (folder.isSharedSystemSubDir(dlManager.getFileInfo().getDiskFile(
+                getController().getFolderRepository()).getParentFile())) {
+            if (isFiner()) {
+                logFiner("Auto-cleaned " + dlManager.getSources() +
+                        " (shared system subdir)");
+            }
+            clearCompletedDownload(dlManager);
+        }
     }
 
     /**
@@ -862,6 +873,7 @@ public class TransferManager extends PFComponent {
     void setCompleted(Transfer transfer) {
         boolean transferFound = false;
 
+        FileInfo fileInfo = transfer.getFile();
         if (transfer instanceof Download) {
             // Fire event
             fireDownloadCompleted(new TransferManagerEvent(this,
@@ -884,7 +896,7 @@ public class TransferManager extends PFComponent {
             if (requestMoreFiles) {
                 // Trigger filerequestor
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(transfer.getFile().getFolderInfo());
+                    .triggerFileRequesting(fileInfo.getFolderInfo());
             } else {
                 logFiner("Not triggering file requestor. " + nDlFromNode
                     + " more dls from " + transfer.getPartner());
@@ -920,6 +932,17 @@ public class TransferManager extends PFComponent {
                 clearCompletedUpload((Upload) transfer);
             }
 
+            // Auto cleanup any uploads to the shared system subdirectory,
+            // so they do not show in the UI.
+            if (fileInfo.getFolder(getController().getFolderRepository())
+                    .isSharedSystemSubDir(fileInfo.getDiskFile(
+                    getController().getFolderRepository()).getParentFile())) {
+                if (isFiner()) {
+                    logFiner("Auto-cleaned " + transfer +
+                            " (shared system subdir)");
+                }
+                clearCompletedUpload((Upload) transfer);
+            }
         }
 
         // Now trigger, to start next transfer
@@ -980,8 +1003,8 @@ public class TransferManager extends PFComponent {
         }
 
         // Store in config
-        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(), ""
-            + (allowedCPS / 1024));
+        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(),
+                String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1012,8 +1035,8 @@ public class TransferManager extends PFComponent {
         // }
         //
         // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(), ""
-            + (allowedCPS / 1024));
+        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(),
+                String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1043,8 +1066,8 @@ public class TransferManager extends PFComponent {
             allowedCPS = 3 * 1024;
         }
         // Store in config
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(), ""
-            + (allowedCPS / 1024));
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(),
+                String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1074,8 +1097,8 @@ public class TransferManager extends PFComponent {
         // allowedCPS = 3 * 1024;
         // }
         // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(), ""
-            + (allowedCPS / 1024));
+        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(),
+                String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
