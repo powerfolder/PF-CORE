@@ -774,8 +774,8 @@ public class TransferManager extends PFComponent {
 
         // Auto cleanup any downloads to the shared system subdirectory,
         // so they do not show in the UI.
-        if (folder.isSharedSystemSubDir(dlManager.getFileInfo().getDiskFile(
-                getController().getFolderRepository()).getParentFile())) {
+        if (folder.isInSharedSystemSubDir(dlManager.getFileInfo().getDiskFile(
+                getController().getFolderRepository()))) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources() +
                         " (shared system subdir)");
@@ -935,8 +935,8 @@ public class TransferManager extends PFComponent {
             // Auto cleanup any uploads to the shared system subdirectory,
             // so they do not show in the UI.
             if (fileInfo.getFolder(getController().getFolderRepository())
-                    .isSharedSystemSubDir(fileInfo.getDiskFile(
-                    getController().getFolderRepository()).getParentFile())) {
+                    .isInSharedSystemSubDir(fileInfo.getDiskFile(
+                    getController().getFolderRepository()))) {
                 if (isFiner()) {
                     logFiner("Auto-cleaned " + transfer +
                             " (shared system subdir)");

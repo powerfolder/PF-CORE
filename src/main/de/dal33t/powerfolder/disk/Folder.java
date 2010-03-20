@@ -2811,6 +2811,16 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Is this in the shared system subdirectory?
+     *
+     * @param file
+     * @return
+     */
+    public boolean isInSharedSystemSubDir(File file) {
+        return FileUtils.isFileInDirectory(file, getSharedSystemSubDir());
+    }
+
+    /**
      * @return true if this folder is disconnected/not available at the moment.
      */
     public boolean isDeviceDisconnected() {
