@@ -288,6 +288,10 @@ public class Folder extends PFComponent {
                 return !isSystemSubDir(pathname);
             }
         };
+
+        // Create the shared system subdirectory if it does not already exists.
+        getSharedSystemSubDir();
+        
         if (localBase.list() != null
             && localBase.listFiles(allExceptSystemDirFilter).length == 0)
         {
@@ -2747,7 +2751,7 @@ public class Folder extends PFComponent {
 
     /**
      * @return the system subdir in the local base folder. subdir gets created
-     *         if not existing
+     *         if not exists
      */
     public File getSystemSubDir() {
         File systemSubDir = new File(localBase,
@@ -2763,9 +2767,46 @@ public class Folder extends PFComponent {
         return systemSubDir;
     }
 
+    /**
+     * @return the shared system subdir in the local base folder. subdir gets created
+     *         if not exists
+     */
+    public File getSharedSystemSubDir() {
+        File sharedSystemSubDir = new File(localBase,
+            Constants.POWERFOLDER_SHARED_SYSTEM_SUBDIR);
+        if (!sharedSystemSubDir.exists()) {
+            if (sharedSystemSubDir.mkdirs()) {
+                FileUtils.makeHiddenOnWindows(sharedSystemSubDir);
+            } else {
+                logSevere("Failed to create shared system subdir: " +
+                        sharedSystemSubDir);
+            }
+        }
+
+        return sharedSystemSubDir;
+    }
+
+    /**
+     * Is this directory the system subdirectory?
+     *
+     * @param aDir
+     * @return
+     */
     public boolean isSystemSubDir(File aDir) {
         return aDir.isDirectory()
             && getSystemSubDir().getAbsolutePath().equals(
+                aDir.getAbsolutePath());
+    }
+
+    /**
+     * Is this directory the shared system subdirectory?
+     *
+     * @param aDir
+     * @return
+     */
+    public boolean isSharedSystemSubDir(File aDir) {
+        return aDir.isDirectory()
+            && getSharedSystemSubDir().getAbsolutePath().equals(
                 aDir.getAbsolutePath());
     }
 

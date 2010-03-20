@@ -271,8 +271,7 @@ public class StatusTab extends PFUIComponent {
         registerListeners();
 
         // Start periodical updates
-        getController().scheduleAndRepeat(new MyTimerTask(), 1000, 1000);
-
+        getController().scheduleAndRepeat(new MyTimerTask(), 5000, 5000);
     }
 
     private void updateSyncStats() {

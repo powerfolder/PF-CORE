@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.disk;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,7 +40,6 @@ import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -75,9 +73,12 @@ public class FolderScanner extends PFComponent {
     private Map<String, FileInfo> remaining = Util.createConcurrentHashMap();
 
     /** DirectoryCrawler threads that are idle */
-    private List<DirectoryCrawler> directoryCrawlersPool = new CopyOnWriteArrayList<DirectoryCrawler>();
+    private final List<DirectoryCrawler> directoryCrawlersPool =
+            new CopyOnWriteArrayList<DirectoryCrawler>();
+
     /** Where crawling DirectoryCrawlers are */
-    private List<DirectoryCrawler> activeDirectoryCrawlers = new CopyOnWriteArrayList<DirectoryCrawler>();
+    private final List<DirectoryCrawler> activeDirectoryCrawlers =
+            new CopyOnWriteArrayList<DirectoryCrawler>();
     /**
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
@@ -296,16 +297,14 @@ public class FolderScanner extends PFComponent {
             ScanResult myResult = currentScanResult;
             reset();
             if (isWarning()) {
-                if (!currentScanResult.getResultState().equals(
-                    ResultState.SCANNED))
-                {
-                    logWarning("Scan of folder " + folder.getName()
-                        + " done in " + (System.currentTimeMillis() - started)
-                        + "ms. Result: " + currentScanResult.getResultState());
-                } else {
+                if (currentScanResult.getResultState() == ResultState.SCANNED) {
                     logFiner("Scan of folder " + folder.getName() + " done in "
-                        + (System.currentTimeMillis() - started)
-                        + "ms. Result: " + currentScanResult.getResultState());
+                            + (System.currentTimeMillis() - started)
+                            + "ms. Result: " + currentScanResult.getResultState());
+                } else {
+                    logWarning("Scan of folder " + folder.getName()
+                            + " done in " + (System.currentTimeMillis() - started)
+                            + "ms. Result: " + currentScanResult.getResultState());
                 }
             }
             return myResult;
@@ -470,12 +469,12 @@ public class FolderScanner extends PFComponent {
     }
 
     /**
-     * #1411
+     * #1411 - Do not scan POWERFOLDER_SYSTEM_SUBDIR.
      * 
      * @return true if file is allowed
      */
     private static boolean allowFile(File file) {
-        return file.getPath().indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR) == -1;
+        return !file.getPath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
     }
 
     /** @return true if all directory Crawler are idle. */
@@ -674,12 +673,12 @@ public class FolderScanner extends PFComponent {
         private boolean shutdown = false;
 
         private void scan(File aRoot) {
-            if (this.root != null) {
+            if (root != null) {
                 throw new IllegalStateException(
                     "cannot scan 2 directories at once");
             }
             synchronized (this) {
-                this.root = aRoot;
+                root = aRoot;
                 notify();
             }
         }

@@ -260,7 +260,7 @@ public class FolderWatcher extends PFComponent {
                 return;
             }
             if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                // Ignore
+                // Ignore POWERFOLDER_SYSTEM_SUBDIR
                 return;
             }
             if (dirtyFiles.containsKey(name)) {

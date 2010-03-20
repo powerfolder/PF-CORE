@@ -73,7 +73,7 @@ public class PreviewFolderRemoveAction extends BaseAction {
      * Called from FolderLeave Panel if the folder leave is confirmed.
      * 
      * @param deleteSystemSubFolder
-     *            whether to delete hte .PowerFolder directory *
+     *            whether to delete the .PowerFolder directory *
      * @param removeFromOS
      *            if the folder and files should be removed from the Online
      *            Storage

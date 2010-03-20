@@ -129,11 +129,8 @@ public class MassDeletionTest extends TwoControllerTestCase {
             // Files should survive and profile switch to HOST_FILE.
             TestHelper.waitForCondition(20, new ConditionWithMessage() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == nFiles + 1; // The
-                    // files
-                    // +
-                    // .PowerFolder
-                    // dir
+                    return getFolderAtLisa().getLocalBase().listFiles().length == nFiles + 1;
+                    // The files + .PowerFolder dir
                 }
 
                 public String message() {
@@ -162,9 +159,8 @@ public class MassDeletionTest extends TwoControllerTestCase {
             // Files should have been deleted and profile remains same.
             TestHelper.waitForCondition(40, new Condition() {
                 public boolean reached() {
-                    return getFolderAtLisa().getLocalBase().listFiles().length == 1; // The
-                    // .PowerFolder
-                    // dir
+                    return getFolderAtLisa().getLocalBase().listFiles().length == 1;
+                    // The .PowerFolder dir
                 }
             });
             System.out.println("Protection: " + protection);
