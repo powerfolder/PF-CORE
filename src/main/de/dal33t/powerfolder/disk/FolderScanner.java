@@ -469,12 +469,14 @@ public class FolderScanner extends PFComponent {
     }
 
     /**
-     * #1411 - Do not scan POWERFOLDER_SYSTEM_SUBDIR.
+     * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder") but
+     * POWERFOLDER_SHARED_SYSTEM_SUBDIR (".PowerFolder-shared") is okay.
      * 
      * @return true if file is allowed
      */
     private static boolean allowFile(File file) {
-        return !file.getPath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        return !file.getPath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR) ||
+                file.getPath().contains(Constants.POWERFOLDER_SHARED_SYSTEM_SUBDIR);
     }
 
     /** @return true if all directory Crawler are idle. */
