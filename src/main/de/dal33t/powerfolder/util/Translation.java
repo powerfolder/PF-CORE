@@ -185,7 +185,7 @@ public class Translation {
                 resourceBundle = ResourceBundle.getBundle("Translation",
                     confLang);
 
-                log.warning("Default Locale '" + Locale.getDefault()
+                log.info("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()
                     + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
