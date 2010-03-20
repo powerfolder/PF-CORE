@@ -751,7 +751,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         @Override
         protected Void doInBackground() throws Exception {
-            logWarning("Setting new default permission: " + newPermission);
+            logInfo("Setting new default permission: " + newPermission);
             getController().getOSClient().getSecurityService()
                 .setDefaultPermission(folderInfo, newPermission);
 
@@ -792,7 +792,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
         protected void done() {
             try {
                 Map<AccountInfo, FolderPermission> res = get();
-                logWarning("Returned " + res);
+                logFine("Returned " + res);
                 if (!refreshFor.equals(folder)) {
                     // Folder has changed. discard result.
                     logWarning("Folder has changed. discard result.");
