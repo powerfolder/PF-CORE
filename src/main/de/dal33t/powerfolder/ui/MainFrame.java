@@ -571,6 +571,9 @@ public class MainFrame extends PFUIComponent {
         inlineInfoCloseButton.setVisible(inline != INLINE_INFO_FREE
             && displaying);
 
+        int originalX = uiComponent.getX();
+        int originalWidth = uiComponent.getWidth();
+
         if (inline != INLINE_INFO_FREE && displaying) {
             centralPanel.removeAll();
             int currentDividerLocation = split.getDividerLocation();
@@ -595,12 +598,19 @@ public class MainFrame extends PFUIComponent {
                 if (targetWidth <= 0) {
                     targetWidth = uiWidth - mainTabbedWidth;
                 }
+
+                // Move so UI right side to original position.
+                uiComponent.setLocation(originalX - uiComponent.getWidth() + originalWidth,
+                        uiComponent.getY());
             } else {
                 targetWidth = Math.max(currentDividerLocation,
                         mainTabbedWidth);
                 if (targetWidth <= 0) {
                     targetWidth = mainTabbedWidth;
                 }
+
+                // Move so UI left side to original position.
+                uiComponent.setLocation(originalX, uiComponent.getY());
             }
             split.setDividerLocation(targetWidth);
         } else {
@@ -615,6 +625,12 @@ public class MainFrame extends PFUIComponent {
             inlineInfoLabel.setText("");
             if (packWidthNext) {
                 packWidth(wasMaximized);
+            }
+            if (inline == INLINE_INFO_LEFT) {
+                // Collapsing of left inline.
+                // Move so UI right side to original position.
+                uiComponent.setLocation(originalX - uiComponent.getWidth() + originalWidth,
+                        uiComponent.getY());
             }
         }
 
