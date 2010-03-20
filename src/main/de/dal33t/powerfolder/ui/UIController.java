@@ -286,7 +286,7 @@ public class UIController extends PFComponent {
         }
 
         if (getController().isStartMinimized()) {
-            logWarning("Starting minimized");
+            logInfo("Starting minimized");
         }
 
         mainFrame.setNetworkingModeStatus(getController().getNetworkingMode());
