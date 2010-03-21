@@ -259,7 +259,9 @@ public class FolderWatcher extends PFComponent {
                 // Not allowed
                 return;
             }
-            if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+            if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)
+                || name.contains(Constants.POWERFOLDER_SHARED_SYSTEM_SUBDIR))
+            {
                 // Ignore POWERFOLDER_SYSTEM_SUBDIR
                 return;
             }
