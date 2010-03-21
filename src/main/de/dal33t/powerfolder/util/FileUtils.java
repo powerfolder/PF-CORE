@@ -663,9 +663,10 @@ public class FileUtils {
         }
         String directoryPath = directory.getAbsolutePath();
 
-        log.finer("File parent: " + fileParentPath);
-        log.finer("Directory: " + directoryPath);
-
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("File parent: " + fileParentPath);
+            log.finer("Directory: " + directoryPath);
+        }
         return fileParentPath.startsWith(directoryPath);
     }
 
