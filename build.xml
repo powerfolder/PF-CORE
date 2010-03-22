@@ -30,6 +30,14 @@ For creation of the installer:
 	<description>
         Build PowerFolder.jar with ant
     </description>
+	
+	<condition property="isMac">
+	    <os family="mac" />
+	</condition>
+	
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
 
 	<target name="loadproperties0">
 		<!-- Load build-local.properties -->
@@ -54,6 +62,7 @@ For creation of the installer:
 			<!--must match the format in AboutDialog2-->
 			<format property="BuildDateTime" pattern="MMMM/dd/yyyy hh:mm:ss a, z" />
 		</tstamp>
+		<property name="versionString" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
 
 		<!-- set global properties for this build -->
 		<property name="skins.src.dir" location="src/skins" />
@@ -247,7 +256,7 @@ For creation of the installer:
 		</zip>
 	</target>
 
-	<target name="installer" depends="prepare-installer" description="Generate the installer for the free-version">
+	<target name="installer" depends="prepare-installer" if="isWindows" description="Generate the installer for the free-version">
 		<!-- "C:\Program Files\NSIS\makensisw.exe" /DAPPVERSION=v0.9.2 /DVER_MAJOR=0 /DVER_MINOR=9 /DVER_REVISION=2 /DVER_BUILD=0 installer-pro.nsi -->
 		<property name="versionString" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
 		<exec dir="${InstallerFilesLocation}" executable="${InstallerGeneratorProgram}">
@@ -277,6 +286,33 @@ For creation of the installer:
 			<arg value="${installer.exe}" />
 		</exec>
 	</target>
+	
+	<target name="jarbundler" depends="jar" if="isMac" description="Builds the MacOS JAR Bundle">
+		<taskdef name="jarbundler" 
+		         classname="net.sourceforge.jarbundler.JarBundler" />
+		
+		<jarbundler dir="${dist.dir}"
+		            name="${distribution.name}"
+		            mainclass="${mainclass}" 
+		            jar="${dist.dir}/${jar.name}"
+					icon="${distribution.installer.dir}/files/Icon128x128.icns"
+					jvmversion="1.6+"
+					version="${versionString}"
+					vmoptions="-Xms16m -Xmx512m -XX:MaxPermSize=256m -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10"
+		/>
+		<tar destfile="${dist.dir}/${distribution.name}_v${versionString}_Mac.tar.gz" compression="gzip">
+			<tarfileset dir="${dist.dir}" filemode="744">
+				<include name="${distribution.name}.app/Contents/MacOS/**/*" />
+			</tarfileset>
+			<fileset dir="${dist.dir}">
+				<include name="${distribution.name}.app/**/*" />
+				<exclude name="${distribution.name}.app/Contents/MacOS/**/*" />
+			</fileset>
+		</tar>
+		<delete file="${dist.dir}/${distribution.name}.app"/>
+	</target>
+	
+	<target name="dist-client" description="Builds all client distribution files" depends="jarbundler, installer"/>
 
 	<!-- clean the working dirs -->
 	<target name="clean" description="clean up" depends="init">
