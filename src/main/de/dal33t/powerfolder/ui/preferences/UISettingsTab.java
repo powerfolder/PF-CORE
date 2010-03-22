@@ -73,7 +73,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox magneticFrameBox;
     private JComboBox inlineInfoCombo;
     private JCheckBox translucentMainFrameCB;
-    private JCheckBox pfChooserCB;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
     private JLabel transPercLabel;
@@ -180,13 +179,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 doMainFrameTranslucency();
             }
         });
-
-        ValueModel chooserModel = new ValueHolder(
-            PreferencesEntry.PF_DIRECTORY_CHOOSER
-                .getValueBoolean(getController()));
-        pfChooserCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(chooserModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.pf_chooser"));
 
         ValueModel onTopModel = new ValueHolder(
             PreferencesEntry.MAIN_ALWAYS_ON_TOP
@@ -309,7 +301,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -354,9 +346,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(autoExpandCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(pfChooserCB, cc.xyw(3, row, 2));
 
             if (getUIController().getMainFrame().getUIComponent()
                 .isAlwaysOnTopSupported())
@@ -433,9 +422,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
             translucentMainFrameCB.isSelected());
-
-        PreferencesEntry.PF_DIRECTORY_CHOOSER.setValue(getController(),
-            pfChooserCB.isSelected());
 
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
             mainAlwaysOnTopCB.isSelected());

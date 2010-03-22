@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DirectoryChooser.java 5178 2008-09-10 14:59:17Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DirectoryChooser.java 5178 2008-09-10 14:59:17Z harry $
+ */
 package de.dal33t.powerfolder.util.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -41,20 +41,18 @@ import javax.swing.tree.TreeNode;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Enumeration;
 
 /**
- * Class for choosing a directory.
- * Shows a tree of the local file system.
- * User can select any non-hidden directory.
- * Also displayes the currently selected directory.
- * Also has a new subdirectory button for creating subdirectories.
- *
- * NOTE: This class is package-private, not public, because it should only
- * be accessed through DirectoryChooser.
+ * Class for choosing a directory. Shows a tree of the local file system. User
+ * can select any non-hidden directory. Also displayes the currently selected
+ * directory. Also has a new subdirectory button for creating subdirectories.
+ * NOTE: This class is package-private, not public, because it should only be
+ * accessed through DirectoryChooser.
  */
 class DirectoryChooser extends BaseDialog {
 
@@ -69,9 +67,11 @@ class DirectoryChooser extends BaseDialog {
 
     /**
      * Constructor.
-     *
-     * @param controller for super class
-     * @param valueModel a value model with the existing directory path
+     * 
+     * @param controller
+     *            for super class
+     * @param valueModel
+     *            a value model with the existing directory path
      */
     DirectoryChooser(Controller controller, ValueModel valueModel) {
         super(controller, true);
@@ -90,12 +90,13 @@ class DirectoryChooser extends BaseDialog {
 
     /**
      * ok and cancel buttons.
-     *
+     * 
      * @return
      */
     protected Component getButtonBar() {
 
-        // Ok btton sets the selected file path in the value model, if any selected.
+        // Ok btton sets the selected file path in the value model, if any
+        // selected.
         okButton = createOKButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 okEvent();
@@ -110,7 +111,16 @@ class DirectoryChooser extends BaseDialog {
             }
         });
 
-        return ButtonBarFactory.buildCenteredBar(okButton, cancelButton);
+        JButton useClassicButton = new JButton(Translation
+            .getTranslation("dialog.directorychooser.use_classic"));
+        useClassicButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                useClassicBrowser();
+            }
+        });
+
+        return ButtonBarFactory.buildCenteredBar(useClassicButton, okButton,
+            cancelButton);
     }
 
     protected JButton getDefaultButton() {
@@ -129,15 +139,23 @@ class DirectoryChooser extends BaseDialog {
         }
     }
 
+    protected JComponent getContent() {
+        try {
+            return getContent0();
+        } catch (Exception e) {
+            logSevere("Unable to render directory chooser. " + e, e);
+            return new JLabel(Translation
+                .getTranslation("dialog.directorychooser.error"));
+        }
+    }
+
     /**
-     * Main content area.
-     * Shows a tree of the local file system
-     * and currently selected path
-     * and new directory button.
-     *
+     * Main content area. Shows a tree of the local file system and currently
+     * selected path and new directory button.
+     * 
      * @return
      */
-    protected JComponent getContent() {
+    private JComponent getContent0() {
 
         logFine("getContent()");
         // Populate root node with primary drives.
@@ -147,8 +165,9 @@ class DirectoryChooser extends BaseDialog {
         }
         for (File f : fs) {
             if (isFine()) {
-                logFine("Root " + f.getAbsolutePath());
+                logFine("Root " + f);
             }
+
             DirectoryTreeNode treeNode = new DirectoryTreeNode(f, true);
             ((DefaultMutableTreeNode) tree.getModel().getRoot()).add(treeNode);
         }
@@ -187,7 +206,7 @@ class DirectoryChooser extends BaseDialog {
 
     /**
      * Return an icon for dialog.
-     *
+     * 
      * @return
      */
     protected Icon getIcon() {
@@ -196,7 +215,7 @@ class DirectoryChooser extends BaseDialog {
 
     /**
      * The page title
-     *
+     * 
      * @return
      */
     public String getTitle() {
@@ -206,20 +225,20 @@ class DirectoryChooser extends BaseDialog {
     private void newDirectoryAction() {
 
         // Select the currently selected directory
-        if (tree.getSelectionPath() == null ||
-                !(tree.getSelectionPath().getLastPathComponent()
-                        instanceof DirectoryTreeNode)) {
+        if (tree.getSelectionPath() == null
+            || !(tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode))
+        {
             return;
         }
-        DirectoryTreeNode dtn =
-                (DirectoryTreeNode) tree.getSelectionPath().getLastPathComponent();
+        DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
+            .getLastPathComponent();
         File selectedDir = (File) dtn.getUserObject();
         String baseFile = selectedDir.getAbsolutePath();
 
         if (baseFile != null) {
             ValueModel subDirValueModel = new ValueHolder();
             NewDirectoryCreator ndc = new NewDirectoryCreator(getController(),
-                    true, baseFile, subDirValueModel);
+                true, baseFile, subDirValueModel);
             ndc.open();
             Object o = subDirValueModel.getValue();
             if (o != null) {
@@ -227,25 +246,29 @@ class DirectoryChooser extends BaseDialog {
                 if (subDir.length() > 0) {
                     File f = new File(baseFile, subDir);
                     if (f.exists()) {
-                        DialogFactory.genericDialog(getController(),
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("dialog.directorychooser.new.description"),
                                 Translation.getTranslation(
-                                        "dialog.directorychooser.new.description"),
-                                Translation.getTranslation(
-                                        "dialog.directorychooser.new.exists",
-                                        f.getAbsolutePath()),
+                                    "dialog.directorychooser.new.exists", f
+                                        .getAbsolutePath()),
                                 GenericDialogType.WARN);
                     } else {
                         boolean success = f.mkdir();
                         if (success) {
                             TreePath selectionPath = tree.getSelectionPath();
-                            Object parentComponent = selectionPath.getLastPathComponent();
+                            Object parentComponent = selectionPath
+                                .getLastPathComponent();
                             if (parentComponent instanceof DirectoryTreeNode) {
 
-                                // Expand parent of new folder, so new child shows.
-                                DirectoryTreeNode parentNode =
-                                        (DirectoryTreeNode) parentComponent;
-                                model.insertNodeInto(new DirectoryTreeNode(f, false),
-                                        parentNode, parentNode.getChildCount());
+                                // Expand parent of new folder, so new child
+                                // shows.
+                                DirectoryTreeNode parentNode = (DirectoryTreeNode) parentComponent;
+                                model.insertNodeInto(new DirectoryTreeNode(f,
+                                    false), parentNode, parentNode
+                                    .getChildCount());
 
                                 // Find new folder in parent.
                                 Enumeration children = parentNode.children();
@@ -253,16 +276,21 @@ class DirectoryChooser extends BaseDialog {
                                     Object node = children.nextElement();
                                     if (node instanceof DirectoryTreeNode) {
                                         DirectoryTreeNode childNode = (DirectoryTreeNode) node;
-                                        if (childNode.getUserObject() instanceof File) {
-                                            File childFile = (File) childNode.getUserObject();
+                                        if (childNode.getUserObject() instanceof File)
+                                        {
+                                            File childFile = (File) childNode
+                                                .getUserObject();
                                             if (childFile.equals(f)) {
 
                                                 // Expand to child.
-                                                TreeNode[] childPathNodes =
-                                                        model.getPathToRoot(childNode);
-                                                TreePath childPath = new TreePath(childPathNodes);
-                                                tree.setSelectionPath(childPath);
-                                                tree.scrollPathToVisible(childPath);
+                                                TreeNode[] childPathNodes = model
+                                                    .getPathToRoot(childNode);
+                                                TreePath childPath = new TreePath(
+                                                    childPathNodes);
+                                                tree
+                                                    .setSelectionPath(childPath);
+                                                tree
+                                                    .scrollPathToVisible(childPath);
                                                 break;
                                             }
                                         }
@@ -270,10 +298,14 @@ class DirectoryChooser extends BaseDialog {
                                 }
                             }
                         } else {
-                            DialogFactory.genericDialog(getController(),
-                                    Translation.getTranslation("dialog.directorychooser.new.description"),
-                                    Translation.getTranslation("dialog.directorychooser.new.problem",
-                                            f.getAbsolutePath()),
+                            DialogFactory
+                                .genericDialog(
+                                    getController(),
+                                    Translation
+                                        .getTranslation("dialog.directorychooser.new.description"),
+                                    Translation.getTranslation(
+                                        "dialog.directorychooser.new.problem",
+                                        f.getAbsolutePath()),
                                     GenericDialogType.WARN);
                         }
                     }
@@ -285,19 +317,44 @@ class DirectoryChooser extends BaseDialog {
     private void processTreeChange() {
         logInfo("processTreeChange()");
         pathField.setText("");
-        if (tree.getSelectionPath() != null &&
-                tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode) {
-            DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath().getLastPathComponent();
+        if (tree.getSelectionPath() != null
+            && tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode)
+        {
+            DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
+                .getLastPathComponent();
             if (isFine()) {
-                logFine("DirectoryTreeNode scanned " + dtn.isScanned() +
-                " volume " + dtn.isVolume());
+                logFine("DirectoryTreeNode scanned " + dtn.isScanned()
+                    + " volume " + dtn.isVolume());
             }
             File f = (File) dtn.getUserObject();
             if (isFine()) {
                 logFine("DirectoryTreeNode file " + f.getAbsolutePath());
             }
             pathField.setText(f.getAbsolutePath());
-            newDirectoryAction.setEnabled(tree.isExpanded(tree.getSelectionPath()) || dtn.isLeaf());
+            newDirectoryAction.setEnabled(tree.isExpanded(tree
+                .getSelectionPath())
+                || dtn.isLeaf());
+        }
+    }
+
+    private void useClassicBrowser() {
+        // Use standard chooser. This is a fall back in case there are
+        // ever any problems with PF dir chooser.
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        if (valueModel.getValue() != null) {
+            chooser.setCurrentDirectory((File) valueModel.getValue());
+        }
+        // setVisible(false);
+        int i = chooser.showDialog(getUIController().getActiveFrame(),
+            Translation.getTranslation("general.select"));
+        if (i == JFileChooser.APPROVE_OPTION) {
+            valueModel.setValue(chooser.getSelectedFile());
+            setVisible(false);
+        } else {
+            valueModel.setValue(null);
+            setVisible(true);
         }
     }
 
@@ -324,6 +381,7 @@ class DirectoryChooser extends BaseDialog {
 
         /**
          * Just fire the newDirectoryAction().
+         * 
          * @param e
          */
         public void actionPerformed(ActionEvent e) {

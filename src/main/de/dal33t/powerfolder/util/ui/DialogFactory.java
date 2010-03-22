@@ -19,17 +19,20 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Help;
-
-import javax.swing.*;
 import java.io.File;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Provides some convenient one method access to some dialogs.
@@ -44,7 +47,7 @@ public class DialogFactory {
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled.
-     *
+     * 
      * @param uiController
      *            the ui controller, used to get the parent frame
      * @param initialDirectoryName
@@ -52,14 +55,16 @@ public class DialogFactory {
      * @return the chosen directory
      */
     public static File chooseDirectory(UIController uiController,
-        String initialDirectoryName) {
+        String initialDirectoryName)
+    {
         File file = new File(initialDirectoryName);
         return chooseDirectory(uiController, file);
     }
+
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled.
-     *
+     * 
      * @param uiController
      *            the ui controller, used to get the parent frame
      * @param initialDirectory
@@ -67,35 +72,19 @@ public class DialogFactory {
      * @return the chosen directory
      */
     public static File chooseDirectory(UIController uiController,
-                                       File initialDirectory) {
-        if (PreferencesEntry.PF_DIRECTORY_CHOOSER.getValueBoolean(
-                uiController.getController())) {
-            // Use PF chooser
-            ValueModel vm = new ValueHolder();
-            vm.setValue(initialDirectory);
-            DirectoryChooser dc = new DirectoryChooser(
-                    uiController.getController(), vm);
-            dc.open();
-            return (File) vm.getValue();
-        } else {
-            // Use standard chooser. This is a fall back in case there are ever
-            // any problems with PF dir chooser.
-            JFileChooser chooser = new JFileChooser();
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setMultiSelectionEnabled(false);
-            chooser.setCurrentDirectory(initialDirectory);
-            int i = chooser.showDialog(uiController.getActiveFrame(),
-                    Translation.getTranslation("general.select"));
-            if (i == JFileChooser.APPROVE_OPTION) {
-                return chooser.getSelectedFile();
-            } else {
-                return null;
-            }
-        }
+        File initialDirectory)
+    {
+        // Use PF chooser
+        ValueModel vm = new ValueHolder();
+        vm.setValue(initialDirectory);
+        DirectoryChooser dc = new DirectoryChooser(
+            uiController.getController(), vm);
+        dc.open();
+        return (File) vm.getValue();
     }
 
     /**
-     * The prefered way to create a FileChooser in PowerFolder. 
+     * The prefered way to create a FileChooser in PowerFolder.
      * 
      * @return a file chooser
      */
