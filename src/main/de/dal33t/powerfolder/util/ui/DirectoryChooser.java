@@ -19,25 +19,6 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.binding.value.ValueHolder;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-
-import javax.swing.*;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeNode;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -46,6 +27,35 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Enumeration;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Class for choosing a directory. Shows a tree of the local file system. User
@@ -56,7 +66,7 @@ import java.util.Enumeration;
  */
 class DirectoryChooser extends BaseDialog {
 
-    private final ValueModel valueModel; // <File>
+    private File selectedDir;
     private final DirectoryTree tree;
     private final JTextField pathField;
     private final JButton newDirButton;
@@ -73,9 +83,9 @@ class DirectoryChooser extends BaseDialog {
      * @param valueModel
      *            a value model with the existing directory path
      */
-    DirectoryChooser(Controller controller, ValueModel valueModel) {
+    DirectoryChooser(Controller controller, File initialValue) {
         super(controller, true);
-        this.valueModel = valueModel;
+        this.selectedDir = initialValue;
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
         model = new DefaultTreeModel(rootTreeNode);
         tree = new DirectoryTree(model);
@@ -84,8 +94,11 @@ class DirectoryChooser extends BaseDialog {
         newDirectoryAction = new NewDirectoryAction(getController());
         newDirectoryAction.setEnabled(false);
         newDirButton = new JButton(newDirectoryAction);
-
         tree.addMouseListener(new NavTreeListener());
+    }
+
+    public File getSelectedDir() {
+        return selectedDir;
     }
 
     /**
@@ -106,7 +119,7 @@ class DirectoryChooser extends BaseDialog {
         JButton cancelButton = createCancelButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 // Signal cancel with a null vm value.
-                valueModel.setValue(null);
+                selectedDir = null;
                 setVisible(false);
             }
         });
@@ -132,8 +145,7 @@ class DirectoryChooser extends BaseDialog {
             Object o = tree.getSelectionPath().getLastPathComponent();
             if (o instanceof DirectoryTreeNode) {
                 DirectoryTreeNode dtn = (DirectoryTreeNode) o;
-                File file = (File) dtn.getUserObject();
-                valueModel.setValue(file);
+                selectedDir = dtn.getDir();
             }
             setVisible(false);
         }
@@ -199,7 +211,7 @@ class DirectoryChooser extends BaseDialog {
 
         // Initialize the tree path on the path supplied.
         logFine("Initializing path...");
-        tree.initializePath((File) valueModel.getValue());
+        tree.initializePath(selectedDir);
         logFine("Initialized path");
         return c;
     }
@@ -232,7 +244,7 @@ class DirectoryChooser extends BaseDialog {
         }
         DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
             .getLastPathComponent();
-        File selectedDir = (File) dtn.getUserObject();
+        File selectedDir = dtn.getDir();
         String baseFile = selectedDir.getAbsolutePath();
 
         if (baseFile != null) {
@@ -326,7 +338,7 @@ class DirectoryChooser extends BaseDialog {
                 logFine("DirectoryTreeNode scanned " + dtn.isScanned()
                     + " volume " + dtn.isVolume());
             }
-            File f = (File) dtn.getUserObject();
+            File f = dtn.getDir();
             if (isFine()) {
                 logFine("DirectoryTreeNode file " + f.getAbsolutePath());
             }
@@ -343,17 +355,17 @@ class DirectoryChooser extends BaseDialog {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
-        if (valueModel.getValue() != null) {
-            chooser.setCurrentDirectory((File) valueModel.getValue());
+        if (selectedDir != null) {
+            chooser.setCurrentDirectory(selectedDir);
         }
         // setVisible(false);
         int i = chooser.showDialog(getUIController().getActiveFrame(),
             Translation.getTranslation("general.select"));
         if (i == JFileChooser.APPROVE_OPTION) {
-            valueModel.setValue(chooser.getSelectedFile());
+            selectedDir = chooser.getSelectedFile();
             setVisible(false);
         } else {
-            valueModel.setValue(null);
+            selectedDir = null;
             setVisible(true);
         }
     }

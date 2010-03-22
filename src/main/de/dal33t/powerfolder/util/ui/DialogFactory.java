@@ -25,8 +25,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 
 import de.dal33t.powerfolder.Controller;
@@ -57,7 +55,8 @@ public class DialogFactory {
     public static File chooseDirectory(UIController uiController,
         String initialDirectoryName)
     {
-        File file = new File(initialDirectoryName);
+        File file = initialDirectoryName != null ? new File(
+            initialDirectoryName) : null;
         return chooseDirectory(uiController, file);
     }
 
@@ -74,13 +73,10 @@ public class DialogFactory {
     public static File chooseDirectory(UIController uiController,
         File initialDirectory)
     {
-        // Use PF chooser
-        ValueModel vm = new ValueHolder();
-        vm.setValue(initialDirectory);
         DirectoryChooser dc = new DirectoryChooser(
-            uiController.getController(), vm);
+            uiController.getController(), initialDirectory);
         dc.open();
-        return (File) vm.getValue();
+        return dc.getSelectedDir();
     }
 
     /**

@@ -1,72 +1,48 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DirectoryTreeCellRenderer.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DirectoryTreeCellRenderer.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.util.ui;
 
-import de.dal33t.powerfolder.ui.Icons;
-
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.Component;
 import java.io.File;
 
+import javax.swing.Icon;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
+
+import de.dal33t.powerfolder.ui.Icons;
+
 /**
- * Class to render a directory tree node.
- * Shows an open or closed directory icon and text for the directory.
- *
- * NOTE: This class is package-private, not public, because it should only
- * be accessed through DirectoryChooser.
+ * Class to render a directory tree node. Shows an open or closed directory icon
+ * and text for the directory. NOTE: This class is package-private, not public,
+ * because it should only be accessed through DirectoryChooser.
  */
 class DirectoryTreeCellRenderer extends DefaultTreeCellRenderer {
 
-    /**
-     * Render a directory cell.
-     *
-     * @param tree
-     * @param value
-     * @param sel
-     * @param expanded
-     * @param leaf
-     * @param row
-     * @param hasFocus
-     * @return
-     */
-    public Component getTreeCellRendererComponent(
-            JTree tree,
-            Object value,
-            boolean sel,
-            boolean expanded,
-            boolean leaf,
-            int row,
-            boolean hasFocus) {
+    public Component getTreeCellRendererComponent(JTree tree, Object value,
+        boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
+    {
 
-        super.getTreeCellRendererComponent(
-                tree, value, sel,
-                expanded, leaf, row,
-                hasFocus);
+        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf,
+            row, hasFocus);
 
-        // Set icon open / closed.
-        if (expanded) {
-            setIcon(Icons.getIconById(Icons.DIRECTORY_OPEN));
-        } else {
-            setIcon(Icons.getIconById(Icons.DIRECTORY));
-        }
+        Icon icon = null;
 
         // Set directory name.
         if (value instanceof DirectoryTreeNode) {
@@ -79,7 +55,19 @@ class DirectoryTreeCellRenderer extends DefaultTreeCellRenderer {
                     setText(directory.getName());
                 }
             }
+            icon = dtn.getIcon();
         }
+
+        // Set icon open / closed.
+
+        if (icon == null) {
+            if (expanded) {
+                icon = Icons.getIconById(Icons.DIRECTORY_OPEN);
+            } else {
+                icon = Icons.getIconById(Icons.DIRECTORY);
+            }
+        }
+        setIcon(icon);
 
         return this;
     }

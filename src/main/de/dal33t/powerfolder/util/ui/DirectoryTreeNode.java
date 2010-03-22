@@ -19,26 +19,28 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
+
+import javax.swing.Icon;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  * Class to represent a directory node in the tree. Initially the node has a
  * dummy node, so that the node handle is displayed by the tree. A node can be
  * scanned, which removes the dummy node and replaces with real file system
- * subdirectories.
- *
- * NOTE: This class is package-private, not public, because it should only
- * be accessed through DirectoryChooser.
+ * subdirectories. NOTE: This class is package-private, not public, because it
+ * should only be accessed through DirectoryChooser.
  */
 class DirectoryTreeNode extends DefaultMutableTreeNode {
 
     private boolean volume;
     private boolean scanned;
+    private Icon icon;
 
     /**
      * Constructor.
-     *
+     * 
      * @param directory
      * @param volume
      */
@@ -85,7 +87,7 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
         while (getChildCount() > 0) {
             remove(0);
         }
-        File f = (File) getUserObject();
+        File f = getDir();
         if (f != null && f.isDirectory() && f.canRead()) {
             File[] files = f.listFiles();
             if (files != null) {
@@ -106,20 +108,32 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Whether the node has been scanned.
-     *
-     * @return
+     * @return Whether the node has been scanned.
      */
     public boolean isScanned() {
         return scanned;
     }
 
     /**
-     * Whether the node is a base file system volume.
-     *
-     * @return
+     * @return Whether the node is a base file system volume.
      */
     public boolean isVolume() {
         return volume;
     }
+
+    public File getDir() {
+        return (File) getUserObject();
+    }
+
+    public Icon getIcon() {
+        if (icon == null) {
+            icon = FileSystemView.getFileSystemView().getSystemIcon(getDir());
+        }
+        return icon;
+    }
+
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+    }
+
 }

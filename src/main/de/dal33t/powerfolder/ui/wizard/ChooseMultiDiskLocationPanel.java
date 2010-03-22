@@ -430,13 +430,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         GenericDialogType.ERROR);
                 return;
             }
-            if (file.exists()) {
-                initialDirectory = file.getAbsolutePath();
-                if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
-                    customDirectoryListModel.addElement(file.getAbsolutePath());
-                    updateButtons();
-                    startFolderSizeCalculator();
-                }
+            initialDirectory = file.getAbsolutePath();
+            if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
+                customDirectoryListModel.addElement(file.getAbsolutePath());
+                updateButtons();
+                startFolderSizeCalculator();
             }
         }
     }
