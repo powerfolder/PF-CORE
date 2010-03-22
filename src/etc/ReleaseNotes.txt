@@ -1,21 +1,8 @@
-PowerFolder Version 4.1.2 - http://www.powerfolder.com
+PowerFolder Version 4.1.3 - http://www.powerfolder.com
 
-= Improvements =
- * Usability improvement: Warns user if trying to create a folder twice.
- * It's now possible to control the number of online archived files
-   in the client under Folder / Settings / File Archive (online).
-   http://www.powerfolder.com/wiki/File_Archive
- * Replaced directory chooser with a more robust version.
- * Better auto-recovery logic on hash error after download.
- * Shows better reason text if account is disabled.
- 
 = Bugfixes =
- * Fixed "flickering" icons on folder tab.
- * Fixed bug on Linux that causes user interface to freeze.
- * Fixed bug that prevented to save preferences.
- * Better auto-login recovery from lost server connection.
- * Fixed several cosmetic issues.
- 
+ * Fixed file browser problem.
+
 
 Please give us feedback and request improvements:
 http://www.powerfolder.com/contact.html
@@ -43,6 +30,26 @@ Email	   : contact (at) powerfolder.com
 
 == Version History ==
 
+Version 4.1.2
+-------------
+
+= Improvements =
+ * Usability improvement: Warns user if trying to create a folder twice.
+ * It's now possible to control the number of online archived files
+   in the client under Folder / Settings / File Archive (online).
+   http://www.powerfolder.com/wiki/File_Archive
+ * Replaced directory chooser with a more robust version.
+ * Better auto-recovery logic on hash error after download.
+ * Shows better reason text if account is disabled.
+ 
+= Bugfixes =
+ * Fixed "flickering" icons on folder tab.
+ * Fixed bug on Linux that causes user interface to freeze.
+ * Fixed bug that prevented to save preferences.
+ * Better auto-login recovery from lost server connection.
+ * Fixed several cosmetic issues.
+ 
+ 
 Version 4.1.1
 -------------
 
