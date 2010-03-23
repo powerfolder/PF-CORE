@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 public class PowerFolderPro extends AbstractDistribution {
 
     public String getName() {
-        return "PowerFolderPro";
+        return "PowerFolder Pro";
     }
 
     public String getBinaryName() {
