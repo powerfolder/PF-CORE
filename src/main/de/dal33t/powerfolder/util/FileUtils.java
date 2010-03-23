@@ -244,6 +244,9 @@ public class FileUtils {
 
         if (Desktop.isDesktopSupported()) {
             Desktop.getDesktop().open(file);
+        } else {
+            log.warning("Unable to open file " + file
+                + ". Java Desktop not supported");
         }
     }
 
