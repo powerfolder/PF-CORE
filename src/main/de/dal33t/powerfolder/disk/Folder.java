@@ -289,9 +289,6 @@ public class Folder extends PFComponent {
             }
         };
 
-        // Create the shared system subdirectory if it does not already exists.
-        getSharedSystemSubDir();
-        
         if (localBase.list() != null
             && localBase.listFiles(allExceptSystemDirFilter).length == 0)
         {
@@ -2768,13 +2765,14 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return the shared system subdir in the local base folder. subdir gets created
-     *         if not exists
+     * @param createIfNecessary
+     *              create the directory if it does not exists
+     * @return the shared system subdir in the local base folder.
      */
-    public File getSharedSystemSubDir() {
+    public File getSharedSystemSubDir(boolean createIfNecessary) {
         File sharedSystemSubDir = new File(localBase,
             Constants.POWERFOLDER_SHARED_SYSTEM_SUBDIR);
-        if (!sharedSystemSubDir.exists()) {
+        if (createIfNecessary && !sharedSystemSubDir.exists()) {
             if (sharedSystemSubDir.mkdirs()) {
                 FileUtils.makeHiddenOnWindows(sharedSystemSubDir);
             } else {
@@ -2806,7 +2804,7 @@ public class Folder extends PFComponent {
      */
     public boolean isSharedSystemSubDir(File aDir) {
         return aDir.isDirectory()
-            && getSharedSystemSubDir().getAbsolutePath().equals(
+            && getSharedSystemSubDir(false).getAbsolutePath().equals(
                 aDir.getAbsolutePath());
     }
 
@@ -2817,7 +2815,7 @@ public class Folder extends PFComponent {
      * @return
      */
     public boolean isInSharedSystemSubDir(File file) {
-        return FileUtils.isFileInDirectory(file, getSharedSystemSubDir());
+        return FileUtils.isFileInDirectory(file, getSharedSystemSubDir(false));
     }
 
     /**
