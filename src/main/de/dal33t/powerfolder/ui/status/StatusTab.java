@@ -844,6 +844,7 @@ public class StatusTab extends PFUIComponent {
             updateOnlineStorageDetails();
         }
     }
+    
     private class UseOSModelListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {

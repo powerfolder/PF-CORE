@@ -28,6 +28,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -39,9 +43,11 @@ import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Format;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Date;
 
 import jwf.WizardContext;
 
@@ -56,6 +62,8 @@ public class StartTab extends PFUIComponent {
     private ActionLabel hostLink;
     private LinkLabel documentationLink;
     private ActionLabel tellFriendLabel;
+    private ServerClient client;
+    private ActionLabel onlineStorageAccountLabel;
 
     /**
      * Constructor
@@ -110,6 +118,8 @@ public class StartTab extends PFUIComponent {
      * Initialise class components.
      */
     private void initComponents() {
+        client = getApplicationModel().getServerClientModel().getClient();
+        client.addListener(new MyServerClientListener());
         synchronizedLink = new ActionLabel(getController(),
             new DoSynchronizedAction(Translation
                 .getTranslation("wizard.what_to_do.synchronized_folder")));
@@ -135,6 +145,13 @@ public class StartTab extends PFUIComponent {
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
         documentationLink.convertToBigLabel();
+        onlineStorageAccountLabel = new ActionLabel(getController(),
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    PFWizard.openLoginWizard(getController(), getController()
+                        .getOSClient());
+                }
+            });
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
             public void actionPerformed(ActionEvent e) {
@@ -148,6 +165,9 @@ public class StartTab extends PFUIComponent {
         tellFriendLabel.setToolTipText(Translation
             .getTranslation("status_tab.tell_friend.tip"));
         tellFriendLabel.convertToBigLabel();
+
+        updateOnlineStorageDetails();
+
     }
 
     /**
@@ -156,7 +176,7 @@ public class StartTab extends PFUIComponent {
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu, pref");
+        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -185,6 +205,10 @@ public class StartTab extends PFUIComponent {
         row +=2;
 
         builder.add(documentationLink.getUIComponent(), cc.xy(1, row));
+
+        row += 2;
+
+        builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xy(1, row));
 
         row += 2;
 
@@ -222,6 +246,50 @@ public class StartTab extends PFUIComponent {
         }
 
         return bar.getPanel();
+    }
+
+    private void updateOnlineStorageDetails() {
+        boolean show = false;
+        String username = client.getUsername();
+        if (username != null && username.trim().length() != 0) {
+            char[] password = client.getPassword();
+            if (password != null && password.length != 0 && client.isConnected()) {
+                if (client.isLoggedIn()) {
+                    OnlineStorageSubscription storageSubscription = client
+                            .getAccount().getOSSubscription();
+                    if (storageSubscription.isDisabled()) {
+                        Date expirationDate = storageSubscription
+                                .getDisabledExpirationDate();
+                        if (storageSubscription.isDisabledExpiration()
+                                && expirationDate != null) {
+                            onlineStorageAccountLabel
+                                    .setText(Translation
+                                            .getTranslation(
+                                            "status_tab.online_storage.account_disabled_expiration",
+                                            username,
+                                            Format.formatDateCanonical(expirationDate)));
+                        } else if (storageSubscription.isDisabledUsage()) {
+                            onlineStorageAccountLabel
+                                    .setText(Translation
+                                            .getTranslation(
+                                            "status_tab.online_storage.account_disabled_usage",
+                                            username));
+                        } else {
+                            onlineStorageAccountLabel
+                                    .setText(Translation
+                                            .getTranslation(
+                                            "status_tab.online_storage.account_disabled",
+                                            username));
+                        }
+                        onlineStorageAccountLabel
+                                .setToolTipText(Translation
+                                        .getTranslation("status_tab.online_storage.account_disabled.tips"));
+                        show = true;
+                    }
+                }
+            }
+        }
+        onlineStorageAccountLabel.getUIComponent().setVisible(show);
     }
 
     private class DoSynchronizedAction extends AbstractAction {
@@ -271,4 +339,29 @@ public class StartTab extends PFUIComponent {
             wizard.open(panel);
         }
     }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void login(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
+    }
+
+
 }
