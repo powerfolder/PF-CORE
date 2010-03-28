@@ -98,6 +98,7 @@ public class ReconnectManager extends PFComponent {
             }
         }
         synchronized (reconnectionQueue) {
+            reconnectionQueue.clear();
             reconnectionQueue.notifyAll();
         }
     }
@@ -355,6 +356,9 @@ public class ReconnectManager extends PFComponent {
     private class ReconnectorPoolResizer extends TimerTask {
         @Override
         public void run() {
+            if (!started) {
+                return;
+            }
             synchronized (reconnectors) {
                 // Remove dead reconnectors.
                 for (Iterator<Reconnector> it = reconnectors.iterator(); it
