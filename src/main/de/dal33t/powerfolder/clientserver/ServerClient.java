@@ -999,7 +999,12 @@ public class ServerClient extends PFComponent {
 
                 if (username != null && password != null && password.length > 0)
                 {
-                    login(username, password);
+                    try {
+                        login(username, password);
+                    } catch (RemoteCallException ex) {
+                        logWarning("Unable to login. " + ex);
+                        logFine(ex);
+                    }
                 }
 
                 getController().schedule(new HostingServerRetriever(), 0);
