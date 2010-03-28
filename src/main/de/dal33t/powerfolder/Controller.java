@@ -52,6 +52,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -887,6 +888,22 @@ public class Controller extends PFComponent {
     public void schedule(Runnable task, long delay) {
         if (!isShuttingDown()) {
             threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Removes a schduled task for the threadpool
+     * 
+     * @param task
+     */
+    public void removeScheduled(Runnable task) {
+        if (!isShuttingDown()) {
+            if (threadPool instanceof ScheduledThreadPoolExecutor) {
+                ((ScheduledThreadPoolExecutor) threadPool).remove(task);
+            } else {
+                logSevere("Unable to remove scheduled task. Wrong threadpool. "
+                    + task);
+            }
         }
     }
 
