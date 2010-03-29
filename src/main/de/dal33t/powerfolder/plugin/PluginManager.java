@@ -241,7 +241,9 @@ public class PluginManager extends PFComponent {
         logFine("enable: " + enabled + ' ' + plugin);
         if (enabled) {
             disabledPlugins.remove(plugin);
-            plugins.add(plugin);
+            if (!plugins.contains(plugin)) {
+                plugins.add(plugin);
+            }
             try {
                 plugin.start();
             } catch (Exception e) {
@@ -250,7 +252,9 @@ public class PluginManager extends PFComponent {
             }
         } else {
             plugins.remove(plugin);
-            disabledPlugins.add(plugin);
+            if (!disabledPlugins.contains(plugin)) {
+                disabledPlugins.add(plugin);
+            }
             try {
                 plugin.stop();
             } catch (Exception e) {
