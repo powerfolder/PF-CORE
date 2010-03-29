@@ -22,6 +22,8 @@ package de.dal33t.powerfolder;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +34,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -65,8 +68,26 @@ public enum ConfigurationEntry {
     /**
      * The nickname to use.
      */
-    NICK("nick", System.getenv("COMPUTERNAME") != null ? System.getenv(
-        "COMPUTERNAME").toLowerCase() : System.getProperty("user.name")),
+    NICK("nick") {
+        @Override
+        public String getDefaultValue() {
+            String def = null;
+            if (StringUtils.isNotBlank(System.getenv("COMPUTERNAME"))) {
+                def = System.getenv("COMPUTERNAME").toLowerCase();
+            }
+            if (def == null) {
+                try {
+                    InetAddress addr = InetAddress.getLocalHost();
+                    def = addr.getHostName();
+                } catch (UnknownHostException e) {
+                }
+            }
+            if (def == null) {
+                def = System.getProperty("user.name");
+            }
+            return def;
+        }
+    },
 
     /**
      * The node id to use. Advanced entry, usually automatically generated and
