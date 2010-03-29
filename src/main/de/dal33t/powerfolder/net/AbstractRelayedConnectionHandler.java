@@ -138,8 +138,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         super(controller);
         Reject.ifNull(remote, "Remote is null");
         Reject.ifNull(relay, "Relay is null");
-        Reject.ifFalse(relay.isCompletelyConnected(), "Relay is not connected: "
-            + relay);
         this.remote = remote;
         this.relay = relay;
         this.serializer = new ByteSerializer();
