@@ -90,7 +90,6 @@ public class ServerClient extends PFComponent {
 
     private AccountDetails accountDetails;
 
-    private ServiceProvider serviceProvider;
     private SecurityService securityService;
     private AccountService userService;
     private FolderService folderService;
@@ -130,7 +129,6 @@ public class ServerClient extends PFComponent {
 
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
-        this.serviceProvider = new RemoteServiceProvider();
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation
@@ -259,33 +257,13 @@ public class ServerClient extends PFComponent {
      * @param serverChange
      */
     public void setServer(Member serverNode, boolean serverChange) {
-        setServer(serverNode, serverChange, new RemoteServiceProvider());
-    }
-
-    /**
-     * Sets/Changes the server.
-     * 
-     * @param serverNode
-     * @param serverChange
-     * @param serviceProvider
-     *            the service provider to use.
-     */
-    public void setServer(Member serverNode, boolean serverChange,
-        ServiceProvider serviceProvider)
-    {
         Reject.ifNull(serverNode, "Server node is null");
-        Reject.ifNull(serviceProvider, "ServiceProvider is null");
-        this.serviceProvider = serviceProvider;
         setNewServerNode(serverNode);
         this.allowServerChange = serverChange;
         loginWithLastKnown();
         if (!isConnected()) {
             getServer().markForImmediateConnect();
         }
-    }
-
-    public ServiceProvider getServiceProvider() {
-        return serviceProvider;
     }
 
     /**
@@ -654,6 +632,11 @@ public class ServerClient extends PFComponent {
     }
 
     // Services ***************************************************************
+    
+    public <T> T getService(Class<T> serviceInterface) {
+        return RemoteServiceStubFactory.createRemoteStub(getController(),
+            serviceInterface, server);
+    }
 
     public SecurityService getSecurityService() {
         return securityService;
@@ -834,17 +817,10 @@ public class ServerClient extends PFComponent {
     }
 
     private void initializeServiceStubs() {
-        securityService = serviceProvider.getService(SecurityService.class);
-        userService = serviceProvider.getService(AccountService.class);
-        folderService = serviceProvider.getService(FolderService.class);
-        publicKeyService = serviceProvider.getService(PublicKeyService.class);
-    }
-
-    private class RemoteServiceProvider implements ServiceProvider {
-        public <T> T getService(Class<? extends T> serviceInterface) {
-            return RemoteServiceStubFactory.createRemoteStub(getController(),
-                serviceInterface, server);
-        }
+        securityService = getService(SecurityService.class);
+        userService = getService(AccountService.class);
+        folderService = getService(FolderService.class);
+        publicKeyService = getService(PublicKeyService.class);
     }
 
     private void setAnonAccount() {
