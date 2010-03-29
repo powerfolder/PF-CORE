@@ -36,7 +36,7 @@ public class FolderObtainPermissionTask extends ServerRemoteCallTask {
         }
         FolderPermission fp = client.getSecurityService()
             .obtainFolderPermission(foInfo);
-        LOG.warning("Obtained permission on " + foInfo + ": " + fp);
+        LOG.fine("Obtained permission on " + foInfo + ": " + fp);
         remove();
     }
 }
