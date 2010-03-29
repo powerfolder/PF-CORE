@@ -77,7 +77,11 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     public Account authenticate(String username, char[] password) {
-        return client.login(username, password);
+        Account a = client.login(username, password);
+        if (!a.isValid()) {
+            return null;
+        }
+        return a;
     }
 
     public Account authenticate(String username, String passwordMD5, String salt)
