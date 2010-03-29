@@ -1835,11 +1835,16 @@ public class Folder extends PFComponent {
      * @return true if actually joined the folder.
      */
     public boolean join(Member member) {
-        if (!hasReadPermission(member)
-            || !hasReadPermission(getController().getMySelf()))
-        {
-            logWarning("Not joining " + member + " / "
-                + member.getAccountInfo() + " no read permission");
+        boolean memberRead = hasReadPermission(member);
+        if (!memberRead || !hasReadPermission(getController().getMySelf())) {
+            if (!memberRead) {
+                logWarning("Not joining " + member + " / "
+                    + member.getAccountInfo() + " no read permission");
+            } else {
+                logWarning("Not joining " + member + " / "
+                    + member.getAccountInfo()
+                    + ". Myself got no read permission");
+            }
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
                     .createNullListForPre4Client(currentInfo));
