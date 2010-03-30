@@ -29,6 +29,8 @@ import java.util.logging.Level;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -38,6 +40,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.EqualsCondition;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -138,6 +141,52 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         // null = IN SYNC
         assertNull(testDirInfoLisa.syncFromDiskIfRequired(getContollerLisa(),
             testDirLisa));
+    }
+
+    /**
+     * TRAC #1960
+     */
+    public void testNoDbAfterDirectorySync() {
+        final Folder foLisa = getFolderAtLisa();
+        assertTrue(foLisa.hasOwnDatabase());
+        assertTrue(getFolderAtLisa().hasOwnDatabase());
+        // 10 MB testfile
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        for (int i = 0; i < 500; i++) {
+            new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
+        }
+        scanFolder(getFolderAtBart());
+
+        Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
+            getContollerBart().getMySelf().getInfo());
+        TestHelper.waitForCondition(10, new EqualsCondition() {
+            public Object expected() {
+                return 500;
+            }
+
+            public Object actual() {
+                return foLisa.getKnownDirectories().size();
+            }
+        });
+        TestHelper.waitForCondition(10, new EqualsCondition() {
+            public Object expected() {
+                return 1;
+            }
+
+            public Object actual() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads();
+            }
+        });
+        bartAtLisa.shutdown();
+        // Only dirs. No files
+        assertEquals(500, foLisa.getKnownItemCount());
+        getContollerLisa().getFolderRepository().removeFolder(foLisa, false);
+
+        // DB Must have beend stored
+        assertTrue(
+            "Database file was NOT saved at Lisa although directory have been synced",
+            new File(foLisa.getSystemSubDir(), Folder.DB_FILENAME).exists());
     }
 
     public void testMixedCaseSubdirs() throws IOException {

@@ -365,8 +365,8 @@ public class Folder extends PFComponent {
             try {
                 Invitation inv = createInvitation();
                 File invFile = new File(folderSettings.getLocalBaseDir(),
-                        FileUtils.removeInvalidFilenameChars(inv.folder.name)
-                    + ".invitation");
+                    FileUtils.removeInvalidFilenameChars(inv.folder.name)
+                        + ".invitation");
                 InvitationUtil.save(inv, invFile);
                 scanChangedFile(FileInfoFactory.lookupInstance(this, invFile));
             } catch (Exception e) {
@@ -1143,6 +1143,7 @@ public class Folder extends PFComponent {
         }
 
         store(getController().getMySelf(), correctFolderInfo(dirInfo));
+        setDBDirty();
     }
 
     /**
@@ -2771,7 +2772,7 @@ public class Folder extends PFComponent {
 
     /**
      * @param createIfNecessary
-     *              create the directory if it does not exists
+     *            create the directory if it does not exists
      * @return the shared system subdir in the local base folder.
      */
     public File getSharedSystemSubDir(boolean createIfNecessary) {
@@ -2781,8 +2782,8 @@ public class Folder extends PFComponent {
             if (sharedSystemSubDir.mkdirs()) {
                 FileUtils.makeHiddenOnWindows(sharedSystemSubDir);
             } else {
-                logSevere("Failed to create shared system subdir: " +
-                        sharedSystemSubDir);
+                logSevere("Failed to create shared system subdir: "
+                    + sharedSystemSubDir);
             }
         }
 
@@ -2791,7 +2792,7 @@ public class Folder extends PFComponent {
 
     /**
      * Is this directory the system subdirectory?
-     *
+     * 
      * @param aDir
      * @return
      */
@@ -2803,7 +2804,7 @@ public class Folder extends PFComponent {
 
     /**
      * Is this directory the shared system subdirectory?
-     *
+     * 
      * @param aDir
      * @return
      */
@@ -2815,7 +2816,7 @@ public class Folder extends PFComponent {
 
     /**
      * Is this in the shared system subdirectory?
-     *
+     * 
      * @param file
      * @return
      */
