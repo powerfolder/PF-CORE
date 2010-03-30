@@ -51,7 +51,11 @@ import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.InvitationUtil;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -265,8 +269,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     }
                 }
                 socket.close();
-            } catch (IOException e) {
-                log.warning("Problems parsing remote command from " + socket);
+            } catch (Exception e) {
+                logWarning("Problems parsing remote command from " + socket
+                    + ". " + e);
+                logFiner(e);
             }
         }
     }
@@ -281,7 +287,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             log.severe("Received a empty remote command");
             return;
         }
-        log.fine("Received remote command: '" + command + '\'');
+        logFine("Processing remote command: '" + command + '\'');
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
         } else if (command.startsWith(OPEN)) {
@@ -317,11 +323,22 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
             // New style configuration
             // dir=%BASE_DIR%\IPAKI\BACKUP;name=IPAKI/BACKUP/%COMPUTERNAME%;syncprofile=true,true,true,true,5,false,12,0,m,Auto-sync;backup_by_server=true
-            makeFolder(folderConfig);
+
+            final String finalFolderConfig = folderConfig;
+            getController().schedule(new Runnable() {
+                public void run() {
+                    makeFolder(finalFolderConfig);
+                }
+            }, 0);
 
         } else if (command.startsWith(REMOVEFOLDER)) {
-            String folderConfig = command.substring(REMOVEFOLDER.length());
-            removeFolder(folderConfig);
+            final String folderConfig = command
+                .substring(REMOVEFOLDER.length());
+            getController().schedule(new Runnable() {
+                public void run() {
+                    removeFolder(folderConfig);
+                }
+            }, 0);
         } else {
             log.warning("Remote command not recognizable '" + command + '\'');
         }
@@ -466,8 +483,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 
         if (!silent && getController().isUIEnabled()) {
-            PFWizard wizard = new PFWizard(getController(),
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.folder_title"));
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             if (syncProfile != null) {
