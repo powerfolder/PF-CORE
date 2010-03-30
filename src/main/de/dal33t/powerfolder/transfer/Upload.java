@@ -113,7 +113,8 @@ public class Upload extends Transfer {
             || pr.getRange().getLength() <= 0)
         {
             logSevere("Received invalid part request!");
-            getTransferManager().uploadBroken(this, TransferProblem.INVALID_PART);
+            getTransferManager().uploadBroken(this,
+                TransferProblem.INVALID_PART);
             return;
         }
         if (pr.getRange().getLength() > getTransferManager()
@@ -211,8 +212,7 @@ public class Upload extends Transfer {
                         // FilePartsRecord
                         if (checkForFilePartsRecordRequest()) {
                             debugState = "Waiting for remote matching";
-                            state
-                                .setState(TransferState.REMOTEMATCHING);
+                            state.setState(TransferState.REMOTEMATCHING);
                             logFiner("Waiting for initial part requests!");
                             waitForRequests();
                         }
@@ -337,7 +337,8 @@ public class Upload extends Transfer {
                 try {
                     pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
                 } catch (InterruptedException e) {
-                    logSevere("InterruptedException", e);
+                    logWarning("Interrupted on " + this + ". " + e);
+                    logFiner(e);
                     throw new TransferException(e);
                 }
             }
@@ -513,8 +514,8 @@ public class Upload extends Transfer {
 
     public String toString() {
         String msg = "State: " + debugState + ", TransferState: "
-            + state.getState() + " " + getFile().toDetailString()
-            + " to '" + getPartner().getNick() + "'";
+            + state.getState() + " " + getFile().toDetailString() + " to '"
+            + getPartner().getNick() + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
         }
