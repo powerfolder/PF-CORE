@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
 import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
@@ -512,12 +513,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                         .getValue(getController())), false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                     .getValueInt(getController()));
-            Folder folder = getController().getFolderRepository().createFolder(
-                foInfo, settings);
+            getController().getFolderRepository()
+                .createFolder(foInfo, settings);
             if (backupByServer) {
-                getController().getOSClient().getFolderService().createFolder(
-                    folder.getInfo(),
-                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                new CreateFolderOnServerTask(foInfo,
+                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT)
+                    .scheduleTask(getController());
             }
         }
     }
