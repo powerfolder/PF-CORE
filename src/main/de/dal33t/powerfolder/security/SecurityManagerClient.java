@@ -204,7 +204,7 @@ public class SecurityManagerClient extends PFComponent implements
                 }
             }
         } catch (RemoteCallException e) {
-            logSevere("Unable to retrieve account info for " + node + ". " + e);
+            logWarning("Unable to retrieve account info for " + node + ". " + e);
             logFiner(e);
             aInfo = null;
         }
@@ -265,7 +265,7 @@ public class SecurityManagerClient extends PFComponent implements
                 fireNodeAccountStateChanged(node);
             }
         } catch (RemoteCallException e) {
-            logSevere("Unable to retrieve account info for " + nodes.size()
+            logWarning("Unable to retrieve account info for " + nodes.size()
                 + " nodes. " + e);
             logFiner(e);
         }
