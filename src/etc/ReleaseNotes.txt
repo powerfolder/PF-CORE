@@ -1,7 +1,15 @@
-PowerFolder Version 4.1.3 - http://www.powerfolder.com
+PowerFolder Version 4.2.1 - http://www.powerfolder.com
 
+= New features =
+ * Introduced "connect on demand" feature to reduce the number active connections.
+   http://www.powerfolder.com/wiki/Connect_on_demand
+ * Special Linux client with web interface available. Contact us for details.
+ 
+= Improvements ==
+ * Linux client takes hostname instead of username by default as nick/computer name.
+ 
 = Bugfixes =
- * Fixed file browser problem.
+ * Several minor bugfixes.
 
 
 Please give us feedback and request improvements:
@@ -25,10 +33,17 @@ Homepage   : http://www.powerfolder.com
 Contact    : http://www.powerfolder.com/contact.html
 Support    : http://www.powerfolder.com/support.html
 Development: http://www.powerfolder.com/about_us.html
-Email	   : contact (at) powerfolder.com
+Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.1.3
+-------------
+
+= Bugfixes =
+ * Fixed file browser problem.
+
 
 Version 4.1.2
 -------------
@@ -48,8 +63,8 @@ Version 4.1.2
  * Fixed bug that prevented to save preferences.
  * Better auto-login recovery from lost server connection.
  * Fixed several cosmetic issues.
- 
- 
+
+
 Version 4.1.1
 -------------
 
@@ -889,8 +904,8 @@ Version 1.0 RC1
       sorting, and reordering of columns supported
 
 - UI: tree now no longer holds the folder members and chat, this is now in 
-	  a Tabbed view see after clicking on a "MyFolder"
-	  
+      a Tabbed view see after clicking on a "MyFolder"
+      
 - UI: the right side now has usefull titles indicating what you are viewing
 
 - UI: In the filelist table a column with the availability (number of members 
@@ -1053,13 +1068,13 @@ Version 0.5.0b
   
 - Folder synchronisation settings improved. User may choose from these synchonisation
   profiles:
-	Manual download
+    Manual download
     Auto-download (from friends)
-	Auto-download (everything)
-	Synchronize PCs
-	Project work
-	Torrent downloader
-	Torrent releaser
+    Auto-download (everything)
+    Synchronize PCs
+    Project work
+    Torrent downloader
+    Torrent releaser
   (Documention coming soon on http://www.powerfolder.com)
   
 - Added blinking of systray icon if message or invitation received
@@ -1128,8 +1143,8 @@ Version 0.4.6b
   Also gui has less short-time freezes
 
 - Made folder synchronization speed speed selectable (normal: scan every 5min, fast: 2,5min, fastest: 1min)
-	Faster syncspeed is interesting for small folder which lots of changes,
-	Big folder with occasional changes, normal speed is recommended
+    Faster syncspeed is interesting for small folder which lots of changes,
+    Big folder with occasional changes, normal speed is recommended
 
 - Number of files in filefilter are now correct
 
@@ -1147,24 +1162,24 @@ Version 0.4.5b
   Transfers still visible from the Navigation tree (Transfers)
 
 - Node icons changed:
-		bright body with hand up: connected
-		dark body with hand down: disconnected
-		blue head: friend
-		orange head: non-friend
+        bright body with hand up: connected
+        dark body with hand down: disconnected
+        blue head: friend
+        orange head: non-friend
 
 - File list has nicer optics now: Files now have colors and icons:
-		deleted file: red
-		downloading file: orange
-		expected file: gray
-		(note: filenumbers next to checkbox may not be correct)
+        deleted file: red
+        downloading file: orange
+        expected file: gray
+        (note: filenumbers next to checkbox may not be correct)
 
 - File list filter now capable of filtering by date
-		(e.g. show only files from the last 7 days)
-		
+        (e.g. show only files from the last 7 days)
+        
 - Folder sync status is show by a colored bar behind the member icon
-		
+        
 - Reminds file filter settings
-		
+        
 - Added "Scan folder now" rightclick-option on folder
 
 - Improved inital network connect speed
@@ -1182,11 +1197,11 @@ Version 0.4.4b
 --------------
 
 - Added synchronisation mode selection for folders. Currently three modes are available:
-	Share only: Files on folder will be shared to others only, no downloads to local folder
-	Share and download: Files will be shared and new ones get downloaded from friends
-	Complete: Files gets shared and downloaded. Additionally files, that are removed by
-		a friend will be also removed local. This is useful for work-folders
-	
+    Share only: Files on folder will be shared to others only, no downloads to local folder
+    Share and download: Files will be shared and new ones get downloaded from friends
+    Complete: Files gets shared and downloaded. Additionally files, that are removed by
+        a friend will be also removed local. This is useful for work-folders
+    
 - Added preferences setup page. Own dyndns address now easily to set
 
 - Updates on files are now correctly handled, newer files will be downloaded from remote.
@@ -1281,10 +1296,10 @@ Version 0.3.9b
 - General more stable version, major bugs removed
 
 - Changed member icon stlye:
-	Blue   head: Connected to member
-	Yellow head: Member is online
-	Red    head: Member is offline
-	
+    Blue   head: Connected to member
+    Yellow head: Member is online
+    Red    head: Member is offline
+    
 - Update check added
 
 - Faster inital connect to supernodes
