@@ -643,19 +643,14 @@ public class FileUtils {
     }
 
     /**
-     * See if a file in inside a directory.
-     * 
      * @param file
      * @param directory
-     * @return
+     * @return true if a file in inside a directory.
      */
     public static boolean isFileInDirectory(File file, File directory) {
 
         Reject.ifTrue(file == null || directory == null,
             "File and directory may not be null");
-
-        Reject.ifTrue(file.isDirectory() || !directory.isDirectory(),
-            "File must be a file and directory must be a directory.");
 
         File fileParent = file.getParentFile();
         String fileParentPath;

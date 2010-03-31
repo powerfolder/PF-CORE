@@ -2815,10 +2815,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Is this in the shared system subdirectory?
-     * 
      * @param file
-     * @return
+     * @return true if this in the shared system subdirectory.
      */
     public boolean isInSharedSystemSubDir(File file) {
         return FileUtils.isFileInDirectory(file, getSharedSystemSubDir(false));
