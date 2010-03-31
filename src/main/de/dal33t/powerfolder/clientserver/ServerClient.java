@@ -632,7 +632,7 @@ public class ServerClient extends PFComponent {
     }
 
     // Services ***************************************************************
-    
+
     public <T> T getService(Class<T> serviceInterface) {
         return RemoteServiceStubFactory.createRemoteStub(getController(),
             serviceInterface, server);
@@ -701,6 +701,9 @@ public class ServerClient extends PFComponent {
         }
         Runnable retriever = new Runnable() {
             public void run() {
+                if (!isConnected()) {
+                    return;
+                }
                 Collection<FolderInfo> infos = getController()
                     .getFolderRepository().getJoinedFolderInfos();
                 FolderInfo[] folders = infos.toArray(new FolderInfo[infos
@@ -983,7 +986,7 @@ public class ServerClient extends PFComponent {
                     }
                 }
 
-                getController().schedule(new HostingServerRetriever(), 0);
+                getController().schedule(new HostingServerRetriever(), 1000L);
             }
         }
 
