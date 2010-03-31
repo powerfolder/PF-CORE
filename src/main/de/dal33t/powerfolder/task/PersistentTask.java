@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ * Copyright 2004 - 2010 Christian Sprajc, Dennis Waldherr. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -21,14 +21,17 @@ package de.dal33t.powerfolder.task;
 
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * This class represents a persistent task which PowerFolder should perform. The
  * task remains stored until remove() is called.
  * 
- * @author Dennis "Bytekeeper" Waldherr </a>
+ * @author Christian Sprajc
+ * @author Dennis "Bytekeeper" Waldherr
  * @version $Revision$
  */
 public abstract class PersistentTask implements Serializable {
@@ -46,6 +49,23 @@ public abstract class PersistentTask implements Serializable {
             expires = Calendar.getInstance();
             expires.add(Calendar.DAY_OF_MONTH, daysToExpire);
         }
+    }
+
+    /**
+     * Schedules this task for execution
+     * 
+     * @param controller
+     * @return if succeeded
+     */
+    public boolean scheduleTask(Controller controller) {
+        Reject.ifNull(controller, "Controller");
+        if (!controller.getTaskManager().isStarted()) {
+            Logger.getLogger(PersistentTask.class.getName()).warning(
+                "Unable to schedule task. Task manager not started. " + this);
+            return false;
+        }
+        controller.getTaskManager().scheduleTask(this);
+        return true;
     }
 
     /**
