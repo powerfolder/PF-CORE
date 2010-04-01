@@ -24,6 +24,7 @@ import java.util.List;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 
@@ -43,10 +44,13 @@ public interface AccountService {
      *            the password
      * @param newsLetter
      *            true if the users wants to subscribe to the newsletter.
+     * @param serverInfo
+     *            The server to host the account on or null for default
      * @return the Account if registration was successfully. null if not
      *         possible or already taken even if password match.
      */
-    Account register(String username, String password, boolean newsLetter);
+    Account register(String username, String password, boolean newsLetter,
+        ServerInfo serverInfo);
 
     /**
      * Logs in from a remote location.
