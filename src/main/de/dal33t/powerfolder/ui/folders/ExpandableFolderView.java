@@ -850,7 +850,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     public void removeExpansionListener(ExpansionListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     /**

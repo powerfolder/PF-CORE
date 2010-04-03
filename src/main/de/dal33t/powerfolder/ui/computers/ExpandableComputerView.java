@@ -448,7 +448,7 @@ public class ExpandableComputerView extends PFUIComponent implements
      * @param listener
      */
     public void removeExpansionListener(ExpansionListener listener) {
-        ListenerSupportFactory.addListener(listenerSupport, listener);
+        ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
     public JPopupMenu createPopupMenu() {
