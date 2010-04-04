@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.computers;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -46,7 +46,7 @@ public class ComputersList extends PFUIComponent {
     private JPanel uiComponent;
     private JPanel computerListPanel;
     private final NodeManagerModel nodeManagerModel;
-    private final Set<ExpandableComputerView> viewList;
+    private final List<ExpandableComputerView> viewList;
     private ExpansionListener expansionListener;
     private ComputersTab computersTab;
     private volatile boolean populated;
@@ -79,7 +79,7 @@ public class ComputersList extends PFUIComponent {
         expansionListener = new MyExpansionListener();
         nodeManagerModel = getUIController().getApplicationModel()
             .getNodeManagerModel();
-        viewList = new CopyOnWriteArraySet<ExpandableComputerView>();
+        viewList = new CopyOnWriteArrayList<ExpandableComputerView>();
 
         previousConnectedLans = new TreeSet<Member>();
         previousFriends = new TreeSet<Member>();
