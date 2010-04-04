@@ -36,12 +36,15 @@ import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import javax.swing.*;
+import javax.swing.event.CaretListener;
+import javax.swing.event.CaretEvent;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -67,6 +70,9 @@ public class ChatPanel extends PFUIComponent {
     private ChatFrame chatFrame;
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private ChatModel chatModel;
+    private JPopupMenu contextMenu;
+    private MyCopyAction copyAction;
+    private MySelectAllAction selectAllAction;
 
     /**
      * Constructor NOTE: This panel is NOT responsible for receiving messages.
@@ -126,6 +132,8 @@ public class ChatPanel extends PFUIComponent {
      * Initialize the ui.
      */
     private void initialize() {
+        copyAction = new MyCopyAction(getController());
+        selectAllAction = new MySelectAllAction(getController());
         createToolBar();
         createOutputComponents();
         createInputComponents();
@@ -142,10 +150,7 @@ public class ChatPanel extends PFUIComponent {
 
         configureAddRemoveAction();
 
-        // bar.addGridded(new JButton(addRemoveFriendAction));
-        // bar.addRelatedGap();
         bar.addGridded(new JButton(new MyReconnectAction(getController())));
-
         bar.getPanel();
 
         JButton closeButton = new JButton3Icons(Icons
@@ -184,6 +189,8 @@ public class ChatPanel extends PFUIComponent {
         chatOutput.setEditable(false);
         outputScrollPane = new JScrollPane(chatOutput);
         chatOutput.getParent().setBackground(Color.WHITE);
+        chatOutput.addMouseListener(new MyMouseListener());
+        chatOutput.addCaretListener(new MyCaretListener());
         UIUtil.removeBorder(outputScrollPane);
     }
 
@@ -549,4 +556,63 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
+    private class MyMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        private void showContextMenu(final MouseEvent evt) {
+            chatOutput.requestFocus();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+                }
+            });
+        }
+
+        public JPopupMenu createPopupMenu() {
+            if (contextMenu == null) {
+                contextMenu = new JPopupMenu();
+                contextMenu.add(copyAction);
+                contextMenu.add(selectAllAction);
+            }
+            return contextMenu;
+        }
+    }
+
+    private class MyCopyAction extends BaseAction {
+
+        private MyCopyAction(Controller controller) {
+            super("action_copy", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            Util.setClipboardContents(chatOutput.getSelectedText().trim());
+        }
+    }
+
+    private class MySelectAllAction extends BaseAction {
+
+        private MySelectAllAction(Controller controller) {
+            super("action_select_all", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            chatOutput.selectAll();
+        }
+    }
+
+    private class MyCaretListener implements CaretListener {
+        public void caretUpdate(CaretEvent e) {
+            copyAction.setEnabled(e.getDot() != e.getMark());
+        }
+    }
 }
