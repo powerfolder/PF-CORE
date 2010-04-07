@@ -62,8 +62,10 @@ public enum Feature {
 
     /**
      * If typical strings of FileInfo should be cached with a softreference.
+     * <p>
+     * Disabled: FileInfo:322 and 282
      */
-    CACHE_FILEINFO_STRINGS,
+    // CACHE_FILEINFO_STRINGS,
 
     /**
      * If file updates get detected newer using the version counter. Otherwise
@@ -71,8 +73,10 @@ public enum Feature {
      * <P>
      * #658
      * <P>
+     * Disabled FileInfo:442
+     * <p>
      */
-    DETECT_UPDATE_BY_VERSION,
+    // DETECT_UPDATE_BY_VERSION,
 
     /**
      * Writes the debug filelist CSV into debug directory
@@ -89,7 +93,9 @@ public enum Feature {
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false);
+    CONFLICT_DETECTION(false),
+
+    CREDITS_SYSTEM(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
@@ -139,7 +145,7 @@ public enum Feature {
         for (Feature feature : values()) {
             feature.disable();
         }
-        Feature.DETECT_UPDATE_BY_VERSION.enable();
+        // Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
     }
 }
