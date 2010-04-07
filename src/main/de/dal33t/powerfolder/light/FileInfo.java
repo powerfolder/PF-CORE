@@ -32,14 +32,13 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -279,9 +278,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *         converted to lowercase
      */
     public String getLowerCaseFilenameOnly() {
-        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-            return getFilenameOnly0().toLowerCase();
-        }
+        // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
+        // return getFilenameOnly0().toLowerCase();
+        // }
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
             strings.setLowerCaseName(fileName.toLowerCase());
@@ -319,9 +318,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return the filename only of this file.
      */
     public String getFilenameOnly() {
-        if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-            return getFilenameOnly0();
-        }
+        // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
+        // return getFilenameOnly0();
+        // }
         FileInfoStrings strings = getStringsCache();
         if (strings.getFileNameOnly() == null) {
             strings.setFileNameOnly(getFilenameOnly0());
@@ -439,11 +438,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (ofInfo == null) {
             throw new NullPointerException("Other file is null");
         }
-        if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
-            // Directly detected by last modified
-            return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
-                ofInfo.lastModifiedDate);
-        }
+        // if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
+        // // Directly detected by last modified
+        // return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
+        // ofInfo.lastModifiedDate);
+        // }
         if (version == ofInfo.version) {
             if (ignoreLastModified) {
                 return false;
