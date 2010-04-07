@@ -415,12 +415,12 @@ public class Account extends Model implements Serializable {
         return computers;
     }
 
-    public Collection<String> getLicenseKeyFiles() {
+    public List<String> getLicenseKeyFiles() {
         if (licenseKeyFiles == null) {
             // Migrate
             licenseKeyFiles = new CopyOnWriteArrayList<String>();
         }
-        return licenseKeyFiles;
+        return (List<String>) licenseKeyFiles;
     }
 
     /**
