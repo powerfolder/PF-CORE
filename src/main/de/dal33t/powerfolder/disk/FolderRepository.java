@@ -49,11 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -88,6 +84,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final Logger log = Logger.getLogger(FolderRepository.class
         .getName());
     private final Map<FolderInfo, Folder> folders;
+    private final Map<FolderInfo, Folder> metaFolders;
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintaitingFolder;
@@ -134,6 +131,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         triggered = false;
         // Rest
         folders = new ConcurrentHashMap<FolderInfo, Folder>();
+        metaFolders = new ConcurrentHashMap<FolderInfo, Folder>();
         fileRequestor = new FileRequestor(controller);
         started = false;
 
@@ -615,9 +613,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (Folder folder : folders.values()) {
             folder.shutdown();
         }
+        for (Folder metaFolder : metaFolders.values()) {
+            metaFolder.shutdown();
+        }
 
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
+        metaFolders.clear();
         logFine("Stopped");
     }
 
@@ -784,6 +786,25 @@ public class FolderRepository extends PFComponent implements Runnable {
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
+        // Now create metaFolder and map to the same FolderInfo key.
+        if (Feature.META_FOLDER.isEnabled() && !folderSettings.isPreviewOnly())
+        {
+            FolderInfo metaFolderInfo = new FolderInfo("meta" +
+                    folderInfo.getName(), folderInfo.id);
+            File metaBase = new File(Controller.getMiscFilesLocation(), "meta");
+            FolderSettings metaFolderSettings = new FolderSettings(
+                    new File(metaBase, substituteSlash(metaFolderInfo.id))
+                    , SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                    ArchiveMode.NO_BACKUP, 0);
+            Folder metaFolder = new Folder(getController(), metaFolderInfo,
+                    metaFolderSettings);
+            metaFolders.put(folderInfo, metaFolder);
+
+            logInfo("Created metaFolder " + metaFolderInfo.name +
+                    ", local copy at '" + metaFolderSettings.getLocalBaseDir() +
+                    '\'');
+        }
+
         // Synchronize folder memberships
         triggerSynchronizeAllFolderMemberships();
 
@@ -806,6 +827,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderSettings.getLocalBaseDir() + '\'');
 
         return folder;
+    }
+
+    /**
+     * Need to substitute '/' with '_',
+     * else it looks like a directory/subdirectory :-/
+     *  
+     * @param id
+     * @return
+     */
+    private static String substituteSlash(String id) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < id.length(); i++) {
+            char c = id.charAt(i);
+            if (c == '/') {
+                sb.append('_');
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     /**
@@ -881,6 +922,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Remove internal
         folders.remove(folder.getInfo());
+        metaFolders.remove(folder.getInfo());
         folder.removeProblemListener(valveProblemListenerSupport);
 
         // Break transfers
@@ -1047,6 +1089,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         scanningFolders.add(folder);
                     }
                 }
+                for (Folder metaFolder : metaFolders.values()) {
+                    if (metaFolder.isMaintenanceRequired()) {
+                        scanningFolders.add(metaFolder);
+                    }
+                }
                 Collections.sort(scanningFolders, FolderComparator.INSTANCE);
                 if (isFiner()) {
                     logFiner("Maintaining " + scanningFolders.size()
@@ -1112,6 +1159,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     public boolean isSyncing() {
         for (Folder folder : folders.values()) {
             if (folder.isSyncing()) {
+                return true;
+            }
+        }
+        for (Folder metaFolder : metaFolders.values()) {
+            if (metaFolder.isSyncing()) {
                 return true;
             }
         }

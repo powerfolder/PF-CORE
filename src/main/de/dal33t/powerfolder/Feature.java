@@ -95,7 +95,9 @@ public enum Feature {
 
     CONFLICT_DETECTION(false),
 
-    CREDITS_SYSTEM(false);
+    CREDITS_SYSTEM(false),
+
+    META_FOLDER(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
