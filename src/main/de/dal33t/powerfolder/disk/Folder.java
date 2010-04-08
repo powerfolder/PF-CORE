@@ -2771,26 +2771,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param createIfNecessary
-     *            create the directory if it does not exists
-     * @return the shared system subdir in the local base folder.
-     */
-    public File getSharedSystemSubDir(boolean createIfNecessary) {
-        File sharedSystemSubDir = new File(localBase,
-            Constants.POWERFOLDER_SHARED_SYSTEM_SUBDIR);
-        if (createIfNecessary && !sharedSystemSubDir.exists()) {
-            if (sharedSystemSubDir.mkdirs()) {
-                FileUtils.makeHiddenOnWindows(sharedSystemSubDir);
-            } else {
-                logSevere("Failed to create shared system subdir: "
-                    + sharedSystemSubDir);
-            }
-        }
-
-        return sharedSystemSubDir;
-    }
-
-    /**
      * Is this directory the system subdirectory?
      * 
      * @param aDir
@@ -2800,26 +2780,6 @@ public class Folder extends PFComponent {
         return aDir.isDirectory()
             && getSystemSubDir().getAbsolutePath().equals(
                 aDir.getAbsolutePath());
-    }
-
-    /**
-     * Is this directory the shared system subdirectory?
-     * 
-     * @param aDir
-     * @return
-     */
-    public boolean isSharedSystemSubDir(File aDir) {
-        return aDir.isDirectory()
-            && getSharedSystemSubDir(false).getAbsolutePath().equals(
-                aDir.getAbsolutePath());
-    }
-
-    /**
-     * @param file
-     * @return true if this in the shared system subdirectory.
-     */
-    public boolean isInSharedSystemSubDir(File file) {
-        return FileUtils.isFileInDirectory(file, getSharedSystemSubDir(false));
     }
 
     /**

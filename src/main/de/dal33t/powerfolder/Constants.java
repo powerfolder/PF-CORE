@@ -47,13 +47,6 @@ public class Constants {
     public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
 
     /**
-     * The name of the shared subdirectory in every folder to share powerfolder
-     * system files among peers.
-     */
-    public static final String POWERFOLDER_SHARED_SYSTEM_SUBDIR =
-            ".PowerFolder-shared";
-
-    /**
      * The subdir name that will be used by default for the PowerFolders base
      * directory.
      * 

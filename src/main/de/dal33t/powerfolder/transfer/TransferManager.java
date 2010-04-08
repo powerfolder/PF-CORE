@@ -770,16 +770,6 @@ public class TransferManager extends PFComponent {
                 logFiner("Auto-cleaned " + dlManager.getSources());
             }
             clearCompletedDownload(dlManager);
-        } else if (folder.isInSharedSystemSubDir(dlManager.getFileInfo()
-            .getDiskFile(getController().getFolderRepository())))
-        {
-            // Auto cleanup any downloads to the shared system subdirectory,
-            // so they do not show in the UI.
-            if (isFiner()) {
-                logFiner("Auto-cleaned " + dlManager.getSources()
-                    + " (shared system subdir)");
-            }
-            clearCompletedDownload(dlManager);
         }
     }
 
@@ -927,18 +917,6 @@ public class TransferManager extends PFComponent {
             {
                 if (isFiner()) {
                     logFiner("Auto-cleaned " + transfer);
-                }
-                clearCompletedUpload((Upload) transfer);
-            } else if (fileInfo
-                .getFolder(getController().getFolderRepository())
-                .isInSharedSystemSubDir(
-                    fileInfo.getDiskFile(getController().getFolderRepository())))
-            {
-                // Auto cleanup any uploads to the shared system subdirectory,
-                // so they do not show in the UI.
-                if (isFiner()) {
-                    logFiner("Auto-cleaned " + transfer
-                        + " (shared system subdir)");
                 }
                 clearCompletedUpload((Upload) transfer);
             }
