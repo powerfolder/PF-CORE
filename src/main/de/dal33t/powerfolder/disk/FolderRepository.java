@@ -790,11 +790,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Feature.META_FOLDER.isEnabled() && !folderSettings.isPreviewOnly())
         {
             FolderInfo metaFolderInfo = new FolderInfo("meta" +
-                    folderInfo.getName(), folderInfo.id);
-            File metaBase = new File(Controller.getMiscFilesLocation(), "meta");
+                    folderInfo.getName(), "meta" + folderInfo.id);
+            File metaBase = new File(folderSettings.getLocalBaseDir(),
+                    Constants.POWERFOLDER_SYSTEM_SUBDIR);
             FolderSettings metaFolderSettings = new FolderSettings(
-                    new File(metaBase, substituteSlash(metaFolderInfo.id))
-                    , SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                    new File(metaBase, "meta"),
+                    SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
                     ArchiveMode.NO_BACKUP, 0);
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
                     metaFolderSettings);
@@ -827,26 +828,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folderSettings.getLocalBaseDir() + '\'');
 
         return folder;
-    }
-
-    /**
-     * Need to substitute '/' with '_',
-     * else it looks like a directory/subdirectory :-/
-     *  
-     * @param id
-     * @return
-     */
-    private static String substituteSlash(String id) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < id.length(); i++) {
-            char c = id.charAt(i);
-            if (c == '/') {
-                sb.append('_');
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
     }
 
     /**
