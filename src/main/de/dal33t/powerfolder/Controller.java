@@ -131,7 +131,7 @@ public class Controller extends PFComponent {
     /**
      * program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.1.2 - 1.5.0.37"; // 1.5.0.37
+    public static final String PROGRAM_VERSION = "4.2.1 - 1.5.0.39"; // 1.5.0.39
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -2260,6 +2260,11 @@ public class Controller extends PFComponent {
      * @param event
      */
     public void addAskForFriendship(AskForFriendshipEvent event) {
+        if (networkingMode.equals(NetworkingMode.SERVERONLYMODE)) {
+            logFine("Ignoring ask for friendship from client "
+                + event.getMemberInfo() + ". Running in server only mode");
+            return;
+        }
         for (AskForFriendshipListener listener : askForFriendshipListeners) {
             listener.askForFriendship(event);
         }
