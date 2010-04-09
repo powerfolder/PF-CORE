@@ -439,7 +439,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (calcedState.getFileLength() != fileInfo.getSize()) {
                 // Concurrent file modification
                 throw new BrokenDownloadException();
-            } 
+            }
             setFilePartsState(calcedState);
             counter = new TransferCounter(filePartsState.countPartStates(
                 filePartsState.getRange(), PartState.AVAILABLE), fileInfo
@@ -900,8 +900,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(mf));
+        ObjectInputStream in = null;
         try {
+            in = new ObjectInputStream(new FileInputStream(mf));
             FileInfo fi = (FileInfo) in.readObject();
             if (fi.isVersionDateAndSizeIdentical(fileInfo)) {
                 List<?> content = (List<?>) in.readObject();
@@ -920,10 +921,18 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (Exception e) {
             remotePartRecord = null;
             filePartsState = null;
-            in.close();
+            try {
+                in.close();
+            } catch (IOException ex) {
+            }
             deleteMetaData();
         } finally {
-            in.close();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
+            }
         }
 
         if (filePartsState != null) {
