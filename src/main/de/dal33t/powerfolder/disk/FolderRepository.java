@@ -663,7 +663,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * The indirect reference to the internal concurrect hashmap. Contents may
      * changed after get. Very fast.
-     * 
+     *
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFolders() {
@@ -790,11 +790,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Feature.META_FOLDER.isEnabled() && !folderSettings.isPreviewOnly())
         {
             FolderInfo metaFolderInfo = new FolderInfo("meta" +
-                    folderInfo.getName(), "meta" + folderInfo.id);
-            File metaBase = new File(folderSettings.getLocalBaseDir(),
+                    folderInfo.getName(), Constants.METAFOLDER_SUBDIR +
+                    folderInfo.id);
+            File systemSubdir = new File(folderSettings.getLocalBaseDir(),
                     Constants.POWERFOLDER_SYSTEM_SUBDIR);
             FolderSettings metaFolderSettings = new FolderSettings(
-                    new File(metaBase, "meta"),
+                    new File(systemSubdir, Constants.METAFOLDER_SUBDIR),
                     SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
                     ArchiveMode.NO_BACKUP, 0);
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
@@ -1149,6 +1150,19 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets a metaFolder for a FolderInfo.
+     * NOTE: the folderInfo is the parent Folder's FolderInfo,
+     * NOT the FolderInfo of the metaFolder.
+     *
+     * @param folderInfo
+     *          parent Folder's FolderInfo
+     * @return
+     */
+    public Folder getMetaFolder(FolderInfo folderInfo) {
+        return metaFolders.get(folderInfo);
     }
 
     // Event support **********************************************************

@@ -24,6 +24,7 @@ import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.io.File;
 
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -246,7 +248,7 @@ public class FolderWatcher extends PFComponent {
             fileChanged(rootPath, name);
         }
 
-        private void fileChanged(final String rootPath, final String name) {
+        private void fileChanged(String rootPath, String name) {
             if (watchID < 0) {
                 // Illegal / Useless
                 return;
@@ -259,9 +261,7 @@ public class FolderWatcher extends PFComponent {
                 // Not allowed
                 return;
             }
-            if (name.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
-            {
-                // Ignore POWERFOLDER_SYSTEM_SUBDIR
+            if (!FileUtils.isScannable(new File(name))) {
                 return;
             }
             if (dirtyFiles.containsKey(name)) {

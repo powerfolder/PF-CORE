@@ -47,6 +47,11 @@ public class Constants {
     public static final String POWERFOLDER_SYSTEM_SUBDIR = ".PowerFolder";
 
     /**
+     * The name of the 'meta' subdirectory, home of the metaFolder files.
+     */
+    public static final String METAFOLDER_SUBDIR = "meta";
+
+    /**
      * The subdir name that will be used by default for the PowerFolders base
      * directory.
      * 

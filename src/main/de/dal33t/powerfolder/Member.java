@@ -836,6 +836,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             // Send node informations now
             // Send joined folders to synchronize
+            Collection<FolderInfo> folderInfos = new HashSet<FolderInfo>();
+            folderInfos.addAll(getController().getFolderRepository().getJoinedFolderInfos());
             FolderList folderList = new FolderList(getController()
                 .getFolderRepository().getJoinedFolderInfos(), peer
                 .getRemoteMagicId());
@@ -1919,12 +1921,16 @@ public class Member extends PFComponent implements Comparable<Member> {
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             joinedFolders.add(folder.getInfo());
+                            Folder metaFolder = repo.getMetaFolder(folder.getInfo());
+                            if (metaFolder != null && metaFolder.join(this)) {
+                                joinedFolders.add(metaFolder.getInfo());
+                            }
                         }
                     }
                 }
             }
 
-            // ok now remove member from not longer joined folders
+            // ok now remove member from no longer joined folders
             for (Folder folder : localFolders) {
                 if (folder != null && !joinedFolders.contains(folder.getInfo()))
                 {
@@ -1936,7 +1942,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (!joinedFolders.isEmpty()) {
                 logInfo(getNick() + " joined " + joinedFolders.size()
                     + " folder(s)");
-                if (!isFriend() && !isServer()) {
+                if (!isFriend() && !server) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
                         getInfo(), joinedFolders);
                     getController().addAskForFriendship(event);

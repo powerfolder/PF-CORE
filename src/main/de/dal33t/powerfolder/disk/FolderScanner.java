@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFComponent;
@@ -42,6 +41,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -416,7 +416,7 @@ public class FolderScanner extends PFComponent {
                 break;
             }
             if (file.isFile()) { // the files in the root
-                if (allowFile(file)) {
+                if (FileUtils.isScannable(file)) {
                     if (!scanFile(file, "")) {
                         failure = true;
                         return false;
@@ -466,15 +466,6 @@ public class FolderScanner extends PFComponent {
             }
         }
         return true;
-    }
-
-    /**
-     * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
-     *
-     * @return true if file is allowed
-     */
-    private static boolean allowFile(File file) {
-        return !file.getPath().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
     }
 
     /** @return true if all directory Crawler are idle. */
@@ -774,7 +765,7 @@ public class FolderScanner extends PFComponent {
                     break;
                 }
                 if (subFile.isFile()) {
-                    if (allowFile(subFile)) {
+                    if (FileUtils.isScannable(subFile)) {
                         if (!scanFile(subFile, currentDirName)) {
                             // hardware failure
                             failure = true;
