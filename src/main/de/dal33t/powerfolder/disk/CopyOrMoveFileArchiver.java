@@ -166,13 +166,22 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         assert dir != null && dir.isDirectory();
         assert checked != null;
 
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            // Is empty or not existent.
+            return true;
+        }
+
         boolean allSuccessful = true;
 
         File[] flist = dir.listFiles();
         Map<String, Collection<File>> fileMap = new HashMap<String, Collection<File>>();
         for (File f : flist) {
             if (f.isDirectory()) {
-                allSuccessful &= checkRecursive(f, checked);
+                boolean thisSuccessfuly = checkRecursive(f, checked);
+                if (thisSuccessfuly) {
+                    f.delete();
+                }
+                allSuccessful &= thisSuccessfuly;
             } else {
                 String baseName = getBaseName(f);
                 File vf = new File(dir, baseName);

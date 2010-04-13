@@ -137,6 +137,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
             }
         });
         FileInfo fib = fb.getKnownFiles().iterator().next();
+        assertEquals(0, fb.getFileArchiver().getSize());
 
         File ver[] = new File[5];
         for (int i = 0; i < ver.length; i++) {
@@ -146,6 +147,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         for (int i = 0; i < ver.length; i++) {
             ver[i] = new File(archdir, fib.getRelativeName() + "_K_" + i);
         }
+        assertEquals(0, fl.getFileArchiver().getSize());
         assertFalse(ver[0].exists());
         assertFalse(ver[1].exists());
         assertTrue(ver[2].exists());
@@ -153,12 +155,23 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(ver[4].exists());
 
         fb.setArchiveVersions(1);
-        assertTrue(((CopyOrMoveFileArchiver) fb.getFileArchiver()).maintain());
+        assertTrue(fb.getFileArchiver().maintain());
+        assertTrue(fb.getFileArchiver().getSize() > 0);
         assertFalse(ver[0].exists());
         assertFalse(ver[1].exists());
         assertFalse(ver[2].exists());
         assertFalse(ver[3].exists());
         assertTrue(ver[4].exists());
+
+        fb.setArchiveVersions(0);
+        assertTrue(fb.getFileArchiver().maintain());
+        assertEquals(0, fb.getFileArchiver().getSize());
+        assertFalse(ver[0].exists());
+        assertFalse(ver[1].exists());
+        assertFalse(ver[2].exists());
+        assertFalse(ver[3].exists());
+        assertFalse(ver[4].exists());
+
     }
 
     private void modLisaFile(File file, final FileInfo fInfo) {
