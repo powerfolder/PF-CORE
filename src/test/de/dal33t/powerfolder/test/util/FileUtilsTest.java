@@ -71,22 +71,10 @@ public class FileUtilsTest extends TestCase {
         assertTrue("Process a null directory", okay);
 
         // Test directory for file
-        try {
-            FileUtils.isFileInDirectory(testDir, testDir);
-            okay = false;
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        assertTrue("Process a directory for file", okay);
+        assertFalse(FileUtils.isFileInDirectory(testDir, testDir));
 
         // Test file for directory
-        try {
-            FileUtils.isFileInDirectory(new File("X"), new File("Y"));
-            okay = false;
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        assertTrue("Process a file for directory", okay);
+        assertFalse(FileUtils.isFileInDirectory(new File("X"), new File("Y")));
 
         // Test file not in directory
         try {
