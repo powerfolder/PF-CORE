@@ -393,23 +393,6 @@ public class Util {
     }
 
     /**
-     * Decodes a url fragment, thus special characters are tranferred from a url
-     * compatible style
-     * 
-     * @param aURLFragment
-     * @return
-     */
-    public static String decodeFromURL(String aURLFragment) {
-        String result = null;
-        try {
-            result = URLDecoder.decode(aURLFragment, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException("UTF-8 not supported", ex);
-        }
-        return result;
-    }
-
-    /**
      * Removes the last '/' from an URI and trims the string. Example:
      * http://www.powerfolder.com/ gets converted into
      * http://www.powerfolder.com
