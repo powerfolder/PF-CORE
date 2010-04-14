@@ -64,7 +64,7 @@ public class PluginManager extends PFComponent {
      */
     public void start() {
         if (plugins.size() + disabledPlugins.size() == 0) {
-            logSevere("No plugins found to start. Maybe PluginManager not initialized?");
+            logFine("No plugins found to start. Maybe PluginManager not initialized?");
         }
         startEnabledPlugins();
     }
