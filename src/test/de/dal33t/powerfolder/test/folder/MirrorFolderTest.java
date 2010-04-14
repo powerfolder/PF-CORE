@@ -147,6 +147,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
      * TRAC #1960
      */
     public void testNoDbAfterDirectorySync() {
+        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
         final Folder foLisa = getFolderAtLisa();
         assertTrue(foLisa.hasOwnDatabase());
         assertTrue(getFolderAtLisa().hasOwnDatabase());
@@ -168,14 +169,18 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                 return foLisa.getKnownDirectories().size();
             }
         });
-        TestHelper.waitForCondition(10, new EqualsCondition() {
-            public Object expected() {
-                return 1;
+
+        assertEquals(1, getFolderAtLisa().getIncomingFiles().size());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerLisa().getTransferManager()
+                    .countActiveDownloads() >= 1;
             }
 
-            public Object actual() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads();
+            public String message() {
+                return "Downloads at lisa: "
+                    + getContollerLisa().getTransferManager()
+                        .countActiveDownloads();
             }
         });
         bartAtLisa.shutdown();
