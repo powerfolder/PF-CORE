@@ -46,6 +46,15 @@ public interface NodeManagerListener extends CoreListener {
     public void nodeRemoved(NodeManagerEvent e);
 
     /**
+     * When a node started connecting. Will be followed by
+     * {@link #nodeConnected(NodeManagerEvent)} or
+     * {@link #nodeDisconnected(NodeManagerEvent)}
+     * 
+     * @param e
+     */
+    public void nodeConnecting(NodeManagerEvent e);
+
+    /**
      * When the node actually connected to this computer.
      * 
      * @param e
