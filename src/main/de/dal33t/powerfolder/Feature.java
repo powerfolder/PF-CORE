@@ -96,6 +96,8 @@ public enum Feature {
     CONFLICT_DETECTION(false),
 
     CREDITS_SYSTEM(false),
+    
+    REGION_SELECTOR(false),
 
     META_FOLDER(false);
 
