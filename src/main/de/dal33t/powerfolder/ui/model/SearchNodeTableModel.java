@@ -36,8 +36,8 @@ import com.jgoodies.binding.list.ObservableList;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.util.Reject;
@@ -325,12 +325,7 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
      * Adapter between TableModel and NodeManager. Listens on changes of the
      * nodes and fires tablemodel events.
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-        }
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeConnected(NodeManagerEvent e) {
             updateNode(e.getNode());
@@ -358,9 +353,6 @@ public class SearchNodeTableModel extends PFUIComponent implements TableModel,
 
         public void settingsChanged(NodeManagerEvent e) {
             updateNode(e.getNode());
-        }
-
-        public void startStop(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {
