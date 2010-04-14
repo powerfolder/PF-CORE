@@ -447,14 +447,18 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the number of currently running connection tries. Should be 1
      */
     public int markConnecting() {
-        return currentConnectTries.incrementAndGet();
+        int tries = currentConnectTries.incrementAndGet();
+        getController().getNodeManager().connectingStateChanged(this);
+        return tries;
     }
 
     /**
      * @return the current connection tries. 0 if not longer connecting.
      */
     public int unmarkConnecting() {
-        return currentConnectTries.decrementAndGet();
+        int tries = currentConnectTries.decrementAndGet();
+        getController().getNodeManager().connectingStateChanged(this);
+        return tries;
     }
 
     /**

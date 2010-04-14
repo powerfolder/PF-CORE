@@ -21,8 +21,8 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,6 +32,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Directory;
+import de.dal33t.powerfolder.disk.FileInfoHolder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
@@ -249,8 +250,8 @@ public class DirectoryFilter extends FilterModel {
         Date end = new Date();
         logFine("Filtered directory " + originalDirectory.getRelativeName()
             + ", original count " + originalFileCount.get()
-            + ", filtered count " + filteredFileCount.get()
-            + " in " + (end.getTime() - start.getTime()) + "ms");
+            + ", filtered count " + filteredFileCount.get() + " in "
+            + (end.getTime() - start.getTime()) + "ms");
     }
 
     /**
@@ -273,8 +274,8 @@ public class DirectoryFilter extends FilterModel {
         AtomicLong deletedCount, AtomicLong incomingCount, AtomicLong localCount)
     {
 
-        for (FileInfo fileInfo : directory.getFileInfos()) {
-
+        for (FileInfoHolder fileInfoHolder : directory.getFileInfoHolders()) {
+            FileInfo fileInfo = fileInfoHolder.getFileInfo();
             int searchMode = (Integer) searchModeVM.getValue();
 
             originalCount.incrementAndGet();
@@ -345,8 +346,7 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        for (Directory subDirectory : directory.getSubdirectories())
-        {
+        for (Directory subDirectory : directory.getSubdirectories()) {
             FilteredDirectoryModel subModel = new FilteredDirectoryModel(
                 directory, folder, subDirectory.getRelativeName());
 

@@ -19,14 +19,15 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -54,8 +55,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.ExpansionEvent;
 import de.dal33t.powerfolder.event.ExpansionListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -329,6 +330,9 @@ public class ExpandableComputerView extends PFUIComponent implements
         if (node.isCompletelyConnected()) {
             lastSeenLabel.setText(Translation
                 .getTranslation("exp_computer_view.connected_text"));
+        } else if (node.isConnecting()) {
+            lastSeenLabel.setText(Translation
+                .getTranslation("exp_computer_view.connecting_text"));
         } else {
             Date time = node.getLastConnectTime();
             String lastConnectedTime;
@@ -397,6 +401,10 @@ public class ExpandableComputerView extends PFUIComponent implements
                     }
                 }
             }
+        } else if (node.isConnecting()) {
+            iconName = Icons.CHAT_PENDING;
+            text = Translation
+                .getTranslation("exp_computer_view.node_connecting_text");
         } else {
             if (node.isFriend()) {
                 iconName = Icons.NODE_FRIEND_DISCONNECTED;
@@ -524,7 +532,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     /**
      * Listener of node events.
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public boolean fireInEventDispatchThread() {
             return true;
@@ -539,6 +547,10 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnecting(NodeManagerEvent e) {
+            updateDetailsIfRequired(e.getNode());
         }
 
         public void nodeConnected(NodeManagerEvent e) {
