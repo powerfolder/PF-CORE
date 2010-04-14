@@ -21,7 +21,15 @@ package de.dal33t.powerfolder.ui.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.swing.ListModel;
@@ -35,8 +43,8 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
@@ -297,7 +305,7 @@ public class NodeManagerModel extends PFUIComponent {
     /**
      * Listens for changes in the node manager
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void friendAdded(NodeManagerEvent e) {
             if (!friendsListModel.contains(e.getNode())) {
@@ -339,9 +347,6 @@ public class NodeManagerModel extends PFUIComponent {
 
         public void settingsChanged(NodeManagerEvent e) {
             updateNode(e.getNode());
-        }
-
-        public void startStop(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {
