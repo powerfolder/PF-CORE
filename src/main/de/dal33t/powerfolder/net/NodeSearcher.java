@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -164,7 +165,7 @@ public class NodeSearcher extends PFComponent {
     /**
      * Listens to the nodemanager for fresh canidates.
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
         public void nodeRemoved(NodeManagerEvent e) {
         }
 
@@ -199,18 +200,6 @@ public class NodeSearcher extends PFComponent {
                 canidatesFromSupernodes.add(e.getNode());
                 searchThread.notifyAll();
             }
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
-        }
-
-        public void nodeOffline(NodeManagerEvent e) {
-        }
-
-        public void nodeOnline(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {

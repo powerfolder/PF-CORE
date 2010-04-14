@@ -655,6 +655,15 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Callback to inform nodemanager that this nodes connecting state changed.
+     * 
+     * @param node
+     */
+    public void connectingStateChanged(Member node) {
+        fireNodeConnecting(node);
+    }
+
+    /**
      * Callback method from node to inform nodemanager about an online state
      * change
      * 
@@ -1570,6 +1579,10 @@ public class NodeManager extends PFComponent {
 
     private void fireNodeAdded(final Member node) {
         listenerSupport.nodeAdded(new NodeManagerEvent(this, node));
+    }
+
+    private void fireNodeConnecting(Member node) {
+        listenerSupport.nodeConnecting(new NodeManagerEvent(this, node));
     }
 
     private void fireNodeConnected(final Member node) {
