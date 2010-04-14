@@ -134,9 +134,14 @@ public class SecurityManagerClient extends PFComponent implements
             }
             return hasPermission;
         } catch (RemoteCallException e) {
-            logWarning("Unable to check permission for "
-                + nullSafeGet(accountInfo) + ". " + e);
-            logFiner(e);
+            if (isWarning()) {
+                logWarning("Unable to check permission for "
+                    + nullSafeGet(accountInfo) + ". " + e);
+            }
+            if (isFiner()) {
+                logFiner(e);
+            }
+
             return isSyncAnyWays();
         }
     }
