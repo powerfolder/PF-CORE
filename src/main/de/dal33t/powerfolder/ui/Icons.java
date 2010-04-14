@@ -138,6 +138,7 @@ public class Icons {
     public static final String NODE_FRIEND_DISCONNECTED = "node_friend_disconnected.icon";
     public static final String NODE_NON_FRIEND_CONNECTED = "node_non_friend_connected.icon";
     public static final String NODE_NON_FRIEND_DISCONNECTED = "node_non_friend_disconnected.icon";
+    public static final String NODE_CONNECTING = NODE_FRIEND_DISCONNECTED;
     public static final String NODE_FRIEND_POOR = "node_friend_poor.icon";
     public static final String NODE_FRIEND_MEDIUM = "node_friend_medium.icon";
     public static final String NODE_FRIEND_LAN = "node_friend_lan.icon";
@@ -224,6 +225,7 @@ public class Icons {
 
     // Snowload is our default.
     private static final String DEFAULT_PROPERTIES_FILENAME = Snowland.ICON_PROPERTIES_FILENAME;
+
     private static Properties iconProperties;
 
     /**
