@@ -19,20 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.MemberComparator;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * Class to hole selected users.
@@ -155,7 +156,7 @@ public class NodesSelectTableModel implements TableModel {
      * Adapter between TableModel and NodeManager. Listens on changes to nodes
      * and fires events.
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeRemoved(NodeManagerEvent e) {
             if (nodes.remove(e.getNode())) {
@@ -193,12 +194,6 @@ public class NodesSelectTableModel implements TableModel {
             if (nodes.remove(e.getNode())) {
                 fireModelStructureChanged();
             }
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
-
-        public void startStop(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {
