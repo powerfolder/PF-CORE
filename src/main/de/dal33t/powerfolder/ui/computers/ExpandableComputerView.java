@@ -402,7 +402,7 @@ public class ExpandableComputerView extends PFUIComponent implements
                 }
             }
         } else if (node.isConnecting()) {
-            iconName = Icons.CHAT_PENDING;
+            iconName = Icons.NODE_CONNECTING;
             text = Translation
                 .getTranslation("exp_computer_view.node_connecting_text");
         } else {
