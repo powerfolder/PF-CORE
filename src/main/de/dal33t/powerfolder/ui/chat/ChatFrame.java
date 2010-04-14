@@ -19,32 +19,42 @@
  */
 package de.dal33t.powerfolder.ui.chat;
 
+import java.awt.Component;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.prefs.Preferences;
+
+import javax.swing.Icon;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.RootPaneUI;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.MagneticFrame;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.plaf.RootPaneUI;
-import java.awt.event.*;
-import java.awt.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.prefs.Preferences;
 
 /**
  * The information window.
@@ -352,7 +362,7 @@ public class ChatFrame extends MagneticFrame {
     /**
      * Listens on changes in the online state and update the ui components
      */
-    private class MyNodeManagerListener implements NodeManagerListener {
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void nodeRemoved(NodeManagerEvent e) {
             updateTabIcons(e.getNode());
@@ -388,9 +398,6 @@ public class ChatFrame extends MagneticFrame {
 
         public void settingsChanged(NodeManagerEvent e) {
             updateTabIcons(e.getNode());
-        }
-
-        public void startStop(NodeManagerEvent e) {
         }
 
         public boolean fireInEventDispatchThread() {
