@@ -19,23 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.render;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.SwingUtilities;
+
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
-
-import javax.swing.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Manages the blinking icon in the Systray. Flash the sys tray every second if
@@ -243,34 +244,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
         }
     }
 
-    private class MyNodeManagerListener implements NodeManagerListener {
-
-        public void friendAdded(NodeManagerEvent e) {
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-        }
-
-        public void nodeOffline(NodeManagerEvent e) {
-        }
-
-        public void nodeOnline(NodeManagerEvent e) {
-        }
-
-        public void nodeRemoved(NodeManagerEvent e) {
-        }
-
-        public void settingsChanged(NodeManagerEvent e) {
-        }
+    private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void startStop(NodeManagerEvent e) {
             flashTrayIcon(!getController().getNodeManager().isStarted());
