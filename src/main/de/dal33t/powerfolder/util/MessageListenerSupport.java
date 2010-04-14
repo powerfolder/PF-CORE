@@ -19,20 +19,20 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.awt.EventQueue;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.awt.*;
+
+import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
 
 /**
  * Helper class to handle message listener/firing
@@ -176,31 +176,31 @@ public class MessageListenerSupport {
         }
 
         // Fire general listener
-        final AtomicInteger lGenCount = new AtomicInteger();
         Collection<MessageListener> generalListeners = messageListenersNotInDispatchThread
             .get(All.class);
         if (generalListeners != null && !generalListeners.isEmpty()) {
             for (MessageListener genListener : generalListeners) {
                 genListener.handleMessage(theSource, message);
-                lGenCount.incrementAndGet();
             }
         }
 
         // Fire special listeners
         Collection<MessageListener> specialListeners = messageListenersNotInDispatchThread
             .get(message.getClass());
-        final AtomicInteger lSpcCount = new AtomicInteger();
         if (specialListeners != null && !specialListeners.isEmpty()) {
             for (MessageListener specListener : specialListeners) {
                 specListener.handleMessage(theSource, message);
-                lSpcCount.incrementAndGet();
             }
         }
 
-        boolean executeEDT = (messageListenersInDispatchThread.get(All.class) != null && !messageListenersInDispatchThread
-            .get(All.class).isEmpty())
-            || (messageListenersInDispatchThread.get(message.getClass()) != null && !messageListenersInDispatchThread
-                .get(message.getClass()).isEmpty());
+        // java.util.List<E>
+        final List<MessageListener> generalEDTListener = messageListenersInDispatchThread
+            .get(All.class);
+        final List<MessageListener> specialEDTListener = messageListenersInDispatchThread
+            .get(message.getClass());
+        boolean executeEDT = (generalEDTListener != null && !generalEDTListener
+            .isEmpty())
+            || (specialEDTListener != null && !specialEDTListener.isEmpty());
 
         if (!executeEDT) {
             // SKIP EDT executing.
@@ -209,26 +209,18 @@ public class MessageListenerSupport {
 
         Runnable edtRunner = new Runnable() {
             public void run() {
-                Collection<MessageListener> innerGeneralListeners = messageListenersInDispatchThread
-                    .get(All.class);
-                if (innerGeneralListeners != null
-                    && !innerGeneralListeners.isEmpty())
+                if (generalEDTListener != null && !generalEDTListener.isEmpty())
                 {
-                    for (MessageListener genListener : innerGeneralListeners) {
+                    for (MessageListener genListener : generalEDTListener) {
                         genListener.handleMessage(theSource, message);
-                        lGenCount.incrementAndGet();
                     }
                 }
 
                 // Fire special listeners
-                Collection<MessageListener> innerSpecialListeners = messageListenersInDispatchThread
-                    .get(message.getClass());
-                if (innerSpecialListeners != null
-                    && !innerSpecialListeners.isEmpty())
+                if (specialEDTListener != null && !specialEDTListener.isEmpty())
                 {
-                    for (MessageListener specListener : innerSpecialListeners) {
+                    for (MessageListener specListener : specialEDTListener) {
                         specListener.handleMessage(theSource, message);
-                        lSpcCount.incrementAndGet();
                     }
                 }
             }
@@ -241,14 +233,6 @@ public class MessageListenerSupport {
             // Put runner in swingthread
             SwingUtilities.invokeLater(edtRunner);
         }
-
-        // if (lSpcCount > 0 || lGenCount > 0) {
-        // theSource.getLogger().verbose(
-        // "Deligated message (" + message.getClass().getRelativeName() +
-        // ") to "
-        // + lGenCount + " general and " + lSpcCount
-        // + " special message listener");
-        // }
     }
 
     private static class All {
