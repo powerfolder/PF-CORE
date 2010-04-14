@@ -107,7 +107,7 @@ public class FileInfoHolder {
         }
     }
 
-    FileInfo getFileInfo() {
+    public FileInfo getFileInfo() {
         return fileInfo;
     }
 

@@ -57,7 +57,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * The files (FileInfoHolder s) in this Directory key = fileInfo value =
      * FileInfoHolder
      */
-    private final Map<FileInfo, FileInfoHolder> fileInfoHolderMap = Util
+    private final Map<String, FileInfoHolder> fileInfoHolderMap = Util
         .createConcurrentHashMap(2);
 
     private final Object subDirMapLock = new Object();
@@ -159,7 +159,7 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @param fileInfo
      */
     public void removeFileInfo(FileInfo fileInfo) {
-        if (fileInfoHolderMap.remove(fileInfo) != null) {
+        if (fileInfoHolderMap.remove(fileInfo.getRelativeName()) != null) {
             return;
         }
         if (hasSubDirectories()) {
@@ -178,7 +178,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
         for (FileInfoHolder holder : fileInfoHolderMap.values()) {
             if (!holder.isAnyVersionAvailable()) {
                 removed = true;
-                fileInfoHolderMap.remove(holder.getFileInfo());
+                fileInfoHolderMap
+                    .remove(holder.getFileInfo().getRelativeName());
             }
         }
         if (hasSubDirectories()) {
@@ -200,7 +201,18 @@ public class Directory implements Comparable<Directory>, DiskItem {
      * @return the list of files
      */
     public Collection<FileInfo> getFileInfos() {
-        return Collections.unmodifiableCollection(fileInfoHolderMap.keySet());
+        List<FileInfo> files = new ArrayList<FileInfo>(fileInfoHolderMap.size());
+        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
+            files.add(fileInfoHolder.getFileInfo());
+        }
+        return files;
+    }
+
+    /**
+     * @return the file info holders as unmodifiable collection.
+     */
+    public Collection<FileInfoHolder> getFileInfoHolders() {
+        return Collections.unmodifiableCollection(fileInfoHolderMap.values());
     }
 
     /**
@@ -210,8 +222,8 @@ public class Directory implements Comparable<Directory>, DiskItem {
      */
     public List<FileInfo> getFileInfosRecursive() {
         List<FileInfo> files = new ArrayList<FileInfo>();
-        for (FileInfo fileInfo : fileInfoHolderMap.keySet()) {
-            files.add(fileInfo);
+        for (FileInfoHolder fileInfoHolder : fileInfoHolderMap.values()) {
+            files.add(fileInfoHolder.getFileInfo());
         }
         if (hasSubDirectories()) {
             for (Directory directory : getSubdirectriesMap().values()) {
@@ -304,23 +316,20 @@ public class Directory implements Comparable<Directory>, DiskItem {
             // Not supported.
             return;
         }
+        String relativeName = fileInfo.getRelativeName();
         // Keep synchronization here.
         synchronized (fileInfoHolderMap) {
-            FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(fileInfo);
+            FileInfoHolder fileInfoHolder = fileInfoHolderMap.get(relativeName);
             if (fileInfoHolder != null) { // already there
                 if (member.isMySelf()) {
-                    // Replace, key may be equal but different object.
-                    fileInfoHolderMap.remove(fileInfo);
-                    fileInfoHolderMap.put(fileInfo, fileInfoHolder);
                     // Update value.
                     fileInfoHolder.setFileInfo(fileInfo);
                 }
-
                 fileInfoHolder.put(member, fileInfo);
             } else { // new
                 fileInfoHolder = new FileInfoHolder(rootFolder, member,
                     fileInfo);
-                fileInfoHolderMap.put(fileInfo, fileInfoHolder);
+                fileInfoHolderMap.put(relativeName, fileInfoHolder);
             }
         }
     }
