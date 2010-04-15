@@ -217,9 +217,13 @@ public class AboutDialog extends PFUIComponent {
         supportLink = new LinkLabel(getController(), Translation
             .getTranslation("about_dialog.support"),
             ConfigurationEntry.PROVIDER_SUPPORT_URL.getValue(getController()));
-        SimpleComponentFactory.setFontSize(supportLink
-            .getUIComponent(), SimpleComponentFactory.BIG_FONT_SIZE);
+        SimpleComponentFactory.setFontSize(supportLink.getUIComponent(),
+            SimpleComponentFactory.BIG_FONT_SIZE);
 
+        Object licKey = getApplicationModel().getLicenseModel()
+            .getLicenseKeyModel();
+        String license = licKey != null ? Translation.getTranslation(
+            "about_dialog.power_folder.license", licKey.toString()) : "";
         powerFolder = createTextBox(Translation
             .getTranslation("general.application.name"), Translation
             .getTranslation("about_dialog.power_folder.text",
@@ -233,7 +237,7 @@ public class AboutDialog extends PFUIComponent {
             + '\n'
             + Translation.getTranslation(
                 "about_dialog.power_folder.distribution", getController()
-                    .getDistribution().getName()));
+                    .getDistribution().getName()) + '\n' + license);
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         system = createTextBox(Translation
@@ -421,6 +425,13 @@ public class AboutDialog extends PFUIComponent {
         {
             activateButton.addActionListener(getApplicationModel()
                 .getLicenseModel().getActivationAction());
+            // Close to force refresh
+            activateButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
+            });
         }
         activateButton.setBackground(Color.WHITE);
         return activateButton;

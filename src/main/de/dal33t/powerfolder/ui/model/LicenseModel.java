@@ -30,10 +30,16 @@ import com.jgoodies.binding.value.ValueModel;
 public class LicenseModel {
     private ValueModel daysValidModel;
     private Action activationAction;
+    private ValueModel licenseKeyModel;
+
+    public ValueModel getLicenseKeyModel() {
+        return licenseKeyModel;
+    }
 
     public LicenseModel() {
         super();
         this.daysValidModel = new ValueHolder(-1, true);
+        this.licenseKeyModel = new ValueHolder(null, false);
     }
 
     public Action getActivationAction() {
