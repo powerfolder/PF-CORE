@@ -921,9 +921,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (Exception e) {
             remotePartRecord = null;
             filePartsState = null;
-            try {
-                in.close();
-            } catch (IOException ex) {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                }
             }
             deleteMetaData();
         } finally {
