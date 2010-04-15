@@ -41,7 +41,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
     }
 
     /**
-     * Test that constuctors have enough information.
+     * Test that metafolders sync.
      */
     public void testMetaFolderSync() {
         if (Feature.META_FOLDER.isEnabled()) {
@@ -103,7 +103,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
             assertTrue("lisa file does not exist", lisaFolder.getKnownFiles()
                     .iterator().next().diskFileExists(contollerLisa));
 
-            // Check sync between bart and lisa metafolders work.
+            // Check sync between bart and lisa metafolders works.
             int lisaOriginalMetaCount = lisaMetaFolder.getKnownFiles().size();
             TestHelper.createRandomFile(bartMetaFolder.getLocalBase(),
                     "MetaTestFile.txt");
