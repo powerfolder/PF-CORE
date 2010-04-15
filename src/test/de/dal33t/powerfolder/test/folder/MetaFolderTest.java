@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: DirectoryTest.java 4282 2008-06-16 03:25:09Z tot $
+ * $Id: MetaFolderTest.java 4282 2008-06-16 03:25:09Z harry $
  */
 package de.dal33t.powerfolder.test.folder;
 
@@ -51,12 +51,18 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
             // Check the mata folder was created.
             File localBase = bartFolder.getLocalBase();
-            File systemSubdir = new File(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            assertTrue("bart system subdir does not exists", systemSubdir.exists());
-            File metaFolderDir = new File(systemSubdir, Constants.METAFOLDER_SUBDIR);
-            assertTrue("bart metaFolder dir does not exists", metaFolderDir.exists());
-            File metaFolderSystemSubdir = new File(metaFolderDir, Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            assertTrue("bart metaFolder systemsubdir does not exists", metaFolderSystemSubdir.exists());
+            File systemSubdir = new File(localBase,
+                    Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            assertTrue("bart system subdir does not exist",
+                    systemSubdir.exists());
+            File metaFolderDir = new File(systemSubdir,
+                    Constants.METAFOLDER_SUBDIR);
+            assertTrue("bart metaFolder dir does not exist",
+                    metaFolderDir.exists());
+            File metaFolderSystemSubdir = new File(metaFolderDir,
+                    Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            assertTrue("bart metaFolder system subdir does not exist",
+                    metaFolderSystemSubdir.exists());
 
             Folder lisaFolder = getFolderAtLisa();
 
@@ -64,15 +70,15 @@ public class MetaFolderTest extends TwoControllerTestCase {
             localBase = lisaFolder.getLocalBase();
             systemSubdir = new File(localBase,
                     Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            assertTrue("lisa system subdir does not exists",
+            assertTrue("lisa system subdir does not exist",
                     systemSubdir.exists());
             metaFolderDir = new File(systemSubdir,
                     Constants.METAFOLDER_SUBDIR);
-            assertTrue("lisa metaFolder dir does not exists",
+            assertTrue("lisa metaFolder dir does not exist",
                     metaFolderDir.exists());
             metaFolderSystemSubdir = new File(metaFolderDir,
                     Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            assertTrue("lisa metaFolder systemsubdir does not exists",
+            assertTrue("lisa metaFolder system subdir does not exist",
                     metaFolderSystemSubdir.exists());
 
             // Check folders are in repo
@@ -97,7 +103,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
             assertTrue("lisa file does not exist", lisaFolder.getKnownFiles()
                     .iterator().next().diskFileExists(contollerLisa));
 
-            // Check sync between bart and lisa metafolders works.
+            // Check sync between bart and lisa metafolders work.
             int lisaOriginalMetaCount = lisaMetaFolder.getKnownFiles().size();
             TestHelper.createRandomFile(bartMetaFolder.getLocalBase(),
                     "MetaTestFile.txt");
