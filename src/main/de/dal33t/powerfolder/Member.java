@@ -1923,7 +1923,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             joinedFolders.add(folder.getInfo());
-                            Folder metaFolder = repo.getMetaFolder(folder.getInfo());
+                            Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
                             if (metaFolder != null && metaFolder.join(this)) {
                                 joinedFolders.add(metaFolder.getInfo());
                             }
@@ -2004,7 +2004,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(true))
         {
             if (folder.hasMember(this)) {
                 return true;
@@ -2018,7 +2018,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public List<Folder> getJoinedFolders() {
         List<Folder> joinedFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(true))
         {
             if (folder.hasMember(this)) {
                 joinedFolders.add(folder);

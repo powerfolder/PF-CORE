@@ -84,11 +84,11 @@ public class MetaFolderTest extends TwoControllerTestCase {
             // Check folders are in repo
             Controller contollerBart = getContollerBart();
             Folder bartMetaFolder = contollerBart.getFolderRepository()
-                    .getMetaFolder(bartFolder.getInfo());
+                    .getMetaFolderForParent(bartFolder.getInfo());
             assertNotNull("No bart meta folder", bartMetaFolder);
 
             Folder lisaMetaFolder = contollerBart.getFolderRepository()
-                    .getMetaFolder(lisaFolder.getInfo());
+                    .getMetaFolderForParent(lisaFolder.getInfo());
             assertNotNull("No lisa meta folder", lisaMetaFolder);
 
             // Check sync between bart and lisa still works.

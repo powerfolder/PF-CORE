@@ -164,7 +164,7 @@ public class FileRequestor extends PFComponent {
      * @param folder
      *            the folder to request missing files on.
      */
-    private void requestMissingFilesForAutodownload(final Folder folder) {
+    private void requestMissingFilesForAutodownload(Folder folder) {
         if (!folder.getSyncProfile().isAutodownload()) {
             if (isFiner()) {
                 logFiner("Skipping " + folder + ". not on auto donwload");

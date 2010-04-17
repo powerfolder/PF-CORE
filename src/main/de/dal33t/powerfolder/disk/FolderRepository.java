@@ -679,19 +679,42 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * The indirect reference to the internal concurrect hashmap. Contents may
-     * changed after get. Very fast. Excludes metaFolders.
+     * changed after get.
      *
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFolders() {
-        return Collections.unmodifiableCollection(folders.values());
+        return getFolders(true);
+    }
+
+    /**
+     * The indirect reference to the internal concurrect hashmap. Contents may
+     * changed after get.
+     *
+     * @param includeMetaFolders
+     * @return the folders as unmodifiable collection
+     */
+    public Collection<Folder> getFolders(boolean includeMetaFolders) {
+        Collection<Folder> mergedFolders = new ArrayList<Folder>();
+        mergedFolders.addAll(folders.values());
+        if (includeMetaFolders) {
+            mergedFolders.addAll(metaFolders.values());
+        }
+        return Collections.unmodifiableCollection(mergedFolders);
     }
 
     /**
      * @return the number of folders
      */
     public int getFoldersCount() {
-        return folders.size();
+        return getFoldersCount(true);
+    }
+
+    /**
+     * @return the number of folders
+     */
+    public int getFoldersCount(boolean includeMetaFolders) {
+        return folders.size() + (includeMetaFolders ? metaFolders.size() : 0);
     }
 
     /**
@@ -1178,8 +1201,23 @@ public class FolderRepository extends PFComponent implements Runnable {
      *          parent Folder's FolderInfo
      * @return
      */
-    public Folder getMetaFolder(FolderInfo parentFolderInfo) {
+    public Folder getMetaFolderForParent(FolderInfo parentFolderInfo) {
         return metaFolders.get(parentFolderInfo);
+    }
+
+    /**
+     * Is this a metaFolder?
+     * 
+     * @param folderInfo
+     * @return
+     */
+    public boolean isMetaFolder(FolderInfo folderInfo) {
+        for (Folder metaFolder : metaFolders.values()) {
+            if (metaFolder.getInfo().equals(folderInfo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Event support **********************************************************

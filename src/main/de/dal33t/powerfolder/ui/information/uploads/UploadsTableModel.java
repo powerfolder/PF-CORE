@@ -99,9 +99,30 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        uploads.addAll(tm.getActiveUploads());
-        uploads.addAll(tm.getQueuedUploads());
+        for (Upload upload : tm.getActiveUploads()) {
+            if (!isMetaFolderUpload(upload)) {
+                uploads.add(upload);
+            }
+        }
+        for (Upload upload : tm.getQueuedUploads()) {
+            if (!isMetaFolderUpload(upload)) {
+                uploads.add(upload);
+            }
+        }
     }
+
+    /**
+     * UI does not care about metaFolder events.
+     *
+     * @param upload
+     * @return
+     */
+    private boolean isMetaFolderUpload(Upload upload) {
+        FolderInfo folderInfo = upload.getFile().getFolderInfo();
+        return getController().getFolderRepository().isMetaFolder(folderInfo);
+    }
+
+
 
     // Public exposing ********************************************************
 
@@ -157,7 +178,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * Re-sorts the file list with the new comparator only if comparator differs
      * from old one
      * 
-     * @param newComparator
+     * @param newComparatorType
      * @return if the table was freshly sorted
      */
     public boolean sortMe(int newComparatorType) {
@@ -215,6 +236,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
     // Model helper methods ***************************************************
 
     private void addOrUpdateUpload(Upload ul) {
+        if (isMetaFolderUpload(ul)) {
+            return;
+        }
         boolean added = false;
         int index;
         synchronized (uploads) {

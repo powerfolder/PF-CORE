@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information.downloads;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
@@ -94,9 +94,28 @@ public class DownloadManagersTableModel extends PFComponent implements
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        downloadManagers.addAll(tm.getCompletedDownloadsCollection());
-        downloadManagers.addAll(tm.getActiveDownloads());
+        for (DownloadManager downloadManager : tm.getCompletedDownloadsCollection()) {
+            if (!isMetaFolderDownload(downloadManager)) {
+                downloadManagers.add(downloadManager);
+            }
+        }
+        for (DownloadManager downloadManager : tm.getActiveDownloads()) {
+            if (!isMetaFolderDownload(downloadManager)) {
+                downloadManagers.add(downloadManager);
+            }
+        }
         // #1732 FIXME: Does not work addAll(tm.getPendingDownloads());
+    }
+
+    /**
+     * UI does not care about metaFolder events.
+     * 
+     * @param downloadManager
+     * @return
+     */
+    private boolean isMetaFolderDownload(DownloadManager downloadManager) {
+        FolderInfo folderInfo = downloadManager.getFileInfo().getFolderInfo();
+        return getController().getFolderRepository().isMetaFolder(folderInfo);
     }
 
     public boolean isPeriodicUpdate() {
@@ -165,36 +184,6 @@ public class DownloadManagersTableModel extends PFComponent implements
             }
         }
         return false;
-    }
-
-    /**
-     * Add all if there is not an identical download.
-     * 
-     * @param dls
-     */
-    private void addAll(Collection<Download> dls) {
-        for (Download dl : dls) {
-            boolean insert = true;
-            for (DownloadManager downloadManager : downloadManagers) {
-                if (dl != null && dl.getDownloadManager() != null
-                    && downloadManager.equals(dl.getDownloadManager()))
-                {
-                    insert = false;
-                    break;
-                }
-                // for (Download download : downloadManager.getSources()) {
-                // if (dl.getFile().isVersionDateAndSizeIdentical(
-                // download.getFile()))
-                // {
-                // insert = false;
-                // break;
-                // }
-                // }
-            }
-            if (insert) {
-                downloadManagers.add(dl.getDownloadManager());
-            }
-        }
     }
 
     private boolean sort() {
@@ -528,7 +517,9 @@ public class DownloadManagersTableModel extends PFComponent implements
             DownloadManager alreadyDl = index >= 0 ? downloadManagers
                 .get(index) : null;
             if (alreadyDl == null) {
-                downloadManagers.add(dl.getDownloadManager());
+                if (!isMetaFolderDownload(dl.getDownloadManager())) {
+                    downloadManagers.add(dl.getDownloadManager());
+                }
                 rowAdded();
             } else {
                 // @todo DownloadManager already knows of change???

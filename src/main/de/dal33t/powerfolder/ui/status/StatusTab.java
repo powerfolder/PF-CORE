@@ -383,7 +383,7 @@ public class StatusTab extends PFUIComponent {
      */
     private void updateFoldersText() {
         Collection<Folder> folders = getController().getFolderRepository()
-            .getFolders();
+            .getFolders(false);
         int numberOfFolder = folders.size();
         numberOfFoldersLine.setValue(numberOfFolder);
         long totalSize = 0;
@@ -653,7 +653,7 @@ public class StatusTab extends PFUIComponent {
                     .getTranslation("status_tab.never_synced");
             } else {
                 if (syncing) {
-                    long aniIndex = (System.currentTimeMillis() / 1000) % 3;
+                    long aniIndex = System.currentTimeMillis() / 1000 % 3;
                     syncStatsText = Translation
                         .getTranslation("status_tab.synchronizing." + aniIndex);
                 } else {
