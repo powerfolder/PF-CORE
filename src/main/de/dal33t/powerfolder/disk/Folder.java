@@ -2262,7 +2262,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Broadcasts the remote commando to scan the folder.
+     * Broadcasts the remote command to scan the folder.
      */
     public void broadcastScanCommand() {
         if (isFiner()) {

@@ -649,7 +649,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return if folder is in repo
      */
     public boolean hasJoinedFolder(FolderInfo info) {
-        return folders.containsKey(info);
+        if (folders.containsKey(info)) {
+            return true;
+        }
+        for (Folder folder : metaFolders.values()) {
+            if (folder.getInfo().equals(info)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -657,12 +665,21 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder by info, or null if folder is not found
      */
     public Folder getFolder(FolderInfo info) {
-        return folders.get(info);
+        Folder folder = folders.get(info);
+        if (folder != null) {
+            return folder;
+        }
+        for (Folder metaFolder : metaFolders.values()) {
+            if (metaFolder.getInfo().equals(info)) {
+                return metaFolder;
+            }
+        }
+        return null;
     }
 
     /**
      * The indirect reference to the internal concurrect hashmap. Contents may
-     * changed after get. Very fast.
+     * changed after get. Very fast. Excludes metaFolders.
      *
      * @return the folders as unmodifiable collection
      */

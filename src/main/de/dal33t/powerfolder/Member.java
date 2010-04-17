@@ -829,7 +829,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             return ConnectResult.failure("Peer is not set");
         }
         boolean wasHandshaked = handshaked;
-        boolean thisHandshakeCompleted = true;
         Identity identity = peer.getIdentity();
 
         synchronized (peerInitalizeLock) {
@@ -840,8 +839,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             // Send node informations now
             // Send joined folders to synchronize
-            Collection<FolderInfo> folderInfos = new HashSet<FolderInfo>();
-            folderInfos.addAll(getController().getFolderRepository().getJoinedFolderInfos());
             FolderList folderList = new FolderList(getController()
                 .getFolderRepository().getJoinedFolderInfos(), peer
                 .getRemoteMagicId());
@@ -877,6 +874,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         RequestNodeList request = getController().getNodeManager()
             .createDefaultNodeListRequestMessage();
 
+        boolean thisHandshakeCompleted = true;
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
