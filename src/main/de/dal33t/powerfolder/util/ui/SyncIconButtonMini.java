@@ -20,14 +20,15 @@
 package de.dal33t.powerfolder.util.ui;
 
 import java.awt.EventQueue;
+import java.lang.ref.WeakReference;
 import java.util.TimerTask;
 
 import javax.swing.Icon;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Displays a rotating sync icon when spin is true.
@@ -46,7 +47,8 @@ public class SyncIconButtonMini extends JButtonMini {
         super(ICON_ZERO, Translation
             .getTranslation("sync_icon_button_mini.tip"));
         state = 0;
-        controller.scheduleAndRepeat(new MyUpdateTask(), ROTATION_STEP_DELAY);
+        controller.scheduleAndRepeat(new MyUpdateTask(this),
+            ROTATION_STEP_DELAY);
     }
 
     private void rotate() {
@@ -71,13 +73,24 @@ public class SyncIconButtonMini extends JButtonMini {
         spin = b;
     }
 
-    private class MyUpdateTask extends TimerTask {
+    private static class MyUpdateTask extends TimerTask {
+        private WeakReference<SyncIconButtonMini> buttonReference;
+
+        private MyUpdateTask(SyncIconButtonMini button) {
+            buttonReference = new WeakReference<SyncIconButtonMini>(button);
+        }
+
         public void run() {
-            if (isVisible() && isShowing()) {
+            final SyncIconButtonMini button = buttonReference.get();
+            if (button == null) {
+                cancel();
+                return;
+            }
+            if (button.isVisible() && button.isShowing()) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (isVisible() && isShowing()) {
-                            rotate();
+                        if (button.isVisible() && button.isShowing()) {
+                            button.rotate();
                         }
                     }
                 });
