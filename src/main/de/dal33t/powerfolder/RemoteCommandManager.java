@@ -512,7 +512,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                         .getValue(getController())), false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                    .getValueInt(getController()));
+                    .getValueInt(getController()), true);
             getController().getFolderRepository()
                 .createFolder(foInfo, settings);
             if (backupByServer) {

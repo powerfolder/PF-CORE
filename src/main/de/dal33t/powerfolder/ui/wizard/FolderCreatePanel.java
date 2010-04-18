@@ -183,7 +183,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                 int archiveHistory = folderCreateItem.getArchiveHistory();
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                    null, archiveHistory);
+                    null, archiveHistory, true);
                 configurations.put(folderInfo, folderSettings);
             }
         } else {
@@ -211,7 +211,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                     .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                         .getValue(getController())), previewFolder, null,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                    .getValueInt(getController()));
+                    .getValueInt(getController()), true);
             configurations.put(folderInfo, folderSettings);
         }
 

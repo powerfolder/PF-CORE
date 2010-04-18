@@ -240,6 +240,8 @@ public class Folder extends PFComponent {
 
     private final CopyOnWriteArrayList<Problem> problems;
 
+    private boolean syncPatterns;
+
     /**
      * Constructor for folder.
      * 
@@ -270,6 +272,7 @@ public class Folder extends PFComponent {
         localBase = folderSettings.getLocalBaseDir();
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
+        syncPatterns = folderSettings.isSyncPatterns();
 
         // Check base dir
         try {
@@ -3515,6 +3518,21 @@ public class Folder extends PFComponent {
                 removeProblem(ufp);
             }
         }
+    }
+
+    public boolean isSyncPatterns() {
+        return syncPatterns;
+    }
+
+    public void setSyncPatterns(boolean syncPatterns) {
+        this.syncPatterns = syncPatterns;
+        // Store on disk
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
+        getController().getConfig().put(syncProfKey, String.valueOf(syncPatterns));
+        getController().saveConfig();
     }
 
     // Inner classes **********************************************************

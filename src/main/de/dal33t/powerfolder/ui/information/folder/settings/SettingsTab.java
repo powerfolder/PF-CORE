@@ -28,18 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -132,6 +121,7 @@ public class SettingsTab extends PFUIComponent {
     private JButtonMini removeButton;
     private boolean settingFolder = false;
     private JLabel onlineLabel;
+    private JCheckBox syncPatternsCheckBox;
 
     /**
      * Constructor
@@ -200,6 +190,7 @@ public class SettingsTab extends PFUIComponent {
         scriptModel.setValue(folder.getDownloadScript());
         localArchiveModeSelectorPanel.setArchiveMode(folder.getFileArchiver()
             .getArchiveMode(), folder.getFileArchiver().getVersionsPerFile());
+        syncPatternsCheckBox.setSelected(folder.isSyncPatterns());
         settingFolder = false;
         update();
         enableConfigOSAction();
@@ -428,6 +419,12 @@ public class SettingsTab extends PFUIComponent {
         bar.add(removeButton, cc.xy(3, 1));
         bar.add(Help.createWikiLinkButton(getController(),
             WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
+        syncPatternsCheckBox = new JCheckBox(Translation.getTranslation(
+                "settings_tab.sync_patterns"));
+        syncPatternsCheckBox.setToolTipText(Translation.getTranslation(
+                "settings_tab.sync_patterns.tip"));
+        syncPatternsCheckBox.addActionListener(new MyActionListener());
+        bar.add(syncPatternsCheckBox, cc.xy(5, 1));
 
         return bar.getPanel();
     }
@@ -703,7 +700,7 @@ public class SettingsTab extends PFUIComponent {
                 .getSyncProfile(), false, folder.getFileArchiver()
                 .getArchiveMode(), folder.isPreviewOnly(), folder
                 .getDownloadScript(), folder.getFileArchiver()
-                .getVersionsPerFile());
+                .getVersionsPerFile(), folder.isSyncPatterns());
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
@@ -929,8 +926,12 @@ public class SettingsTab extends PFUIComponent {
      */
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource().equals(localFolderButton)) {
-                moveLocalFolder();
+            if (!settingFolder) {
+                if (e.getSource().equals(localFolderButton)) {
+                    moveLocalFolder();
+                } else if (e.getSource().equals(syncPatternsCheckBox)) {
+                    folder.setSyncPatterns(syncPatternsCheckBox.isSelected());
+                }
             }
         }
     }

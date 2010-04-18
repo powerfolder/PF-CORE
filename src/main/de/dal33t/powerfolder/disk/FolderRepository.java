@@ -29,6 +29,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
 
 import java.io.File;
 import java.io.IOException;
@@ -400,7 +401,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
                 .getValue(getController())), preview, dlScript,
             ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                .getValueInt(getController()));
+                .getValueInt(getController()), true);
     }
 
     /**
@@ -553,8 +554,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
+        String syncPatternsSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FOLDER_SETTINGS_SYNC_PATTERNS);
+        // Default syncPatterns to true.
+        boolean syncPatterns = syncPatternsSetting == null
+            || "true".equalsIgnoreCase(syncPatternsSetting);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            archiveMode, preview, dlScript, versions);
+            archiveMode, preview, dlScript, versions, syncPatterns);
     }
 
     /**

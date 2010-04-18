@@ -41,6 +41,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
     public static final String FOLDER_SETTINGS_VERSIONS = ".versions"; // V4 only
+    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns"; // V4 only
 
     /**
      * Base location of files in the folder.
@@ -79,6 +80,8 @@ public class FolderSettings {
      */
     private final String downloadScript;
 
+    private final boolean syncPatterns;
+
     /**
      * Constructor. Creates a new FolderSettings object.
      * 
@@ -88,11 +91,12 @@ public class FolderSettings {
      * @param previewOnly
      * @param downloadScript
      * @param versions
+     * @param syncPatterns
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile,
         ArchiveMode archiveMode, boolean previewOnly,
-        String downloadScript, int versions)
+        String downloadScript, int versions, boolean syncPatterns)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
@@ -104,6 +108,7 @@ public class FolderSettings {
         this.previewOnly = previewOnly;
         this.downloadScript = downloadScript;
         this.versions = versions;
+        this.syncPatterns = syncPatterns;
     }
 
     /**
@@ -119,7 +124,7 @@ public class FolderSettings {
         boolean createInvitationFile, ArchiveMode archiveMode, int versions)
     {
         this(localBaseDir, syncProfile, createInvitationFile,
-            archiveMode, false, null, versions);
+            archiveMode, false, null, versions, true);
     }
 
     // /////////////
@@ -152,5 +157,9 @@ public class FolderSettings {
 
     public String getDownloadScript() {
         return downloadScript;
+    }
+
+    public boolean isSyncPatterns() {
+        return syncPatterns;
     }
 }

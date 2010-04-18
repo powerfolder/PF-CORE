@@ -148,7 +148,8 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         FolderSettings folderSettings = new FolderSettings(invitation
             .getSuggestedLocalBase(getController()), syncProfileSelectorPanel
-            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null, 0);
+            .getSyncProfile(), false, ArchiveMode.NO_BACKUP, true, null, 0,
+                true);
 
         getController().getFolderRepository().createFolder(invitation.folder,
             folderSettings);
