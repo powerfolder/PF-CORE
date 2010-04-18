@@ -1226,6 +1226,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         return false;
     }
 
+    /**
+     * Get the parent folder for a metaFolder's info.
+     *
+     * @param metaFolderInfo
+     * @return
+     */
+    public Folder getParentFolder(FolderInfo metaFolderInfo) {
+        for (Map.Entry<FolderInfo, Folder> entry : metaFolders.entrySet()) {
+            if (entry.getValue().getInfo().equals(metaFolderInfo)) {
+                // This is the metaFolder - return the corresponding folder.
+                return folders.get(entry.getKey());
+            }
+        }
+        return null;
+    }
+
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {

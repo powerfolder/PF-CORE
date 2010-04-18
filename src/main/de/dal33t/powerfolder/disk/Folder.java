@@ -21,18 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -240,6 +229,7 @@ public class Folder extends PFComponent {
 
     private final CopyOnWriteArrayList<Problem> problems;
 
+    /** True if patterns should be synchronized with others */
     private boolean syncPatterns;
 
     /**
@@ -3535,6 +3525,49 @@ public class Folder extends PFComponent {
         getController().saveConfig();
     }
 
+    /**
+     * Save patterns to metaFolder for transfer to other computers.
+     */
+    private void savePatternsToMetaFolder() {
+
+        // Should the patterns be synchronized?
+        if (!syncPatterns) {
+            return;
+        }
+
+        // Only do this for parent folders.
+        FolderRepository folderRepository = getController().getFolderRepository();
+        if (!folderRepository.isMetaFolder(currentInfo)) {
+
+            Folder metaFolder = folderRepository.getMetaFolderForParent(currentInfo);
+            if (metaFolder == null) {
+                logWarning("Could not find metaFolder for " + currentInfo);
+                return;
+            }
+
+            // Write the patterns in the meta directory.
+            List<String> patterns = diskItemFilter.getPatterns();
+            PrintWriter pw = null;
+            try {
+                File f = new File(
+                        metaFolder.localBase, "syncPatterns.txt");
+                pw = new PrintWriter(new FileWriter(f));
+                for (String pattern : patterns) {
+                    pw.println(pattern);
+                }
+                pw.flush();
+                logFine("Wrote new metaFolder patterns for " + currentInfo);
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            } finally {
+                if (pw != null) {
+                    pw.close();
+                }
+            }
+        }
+    }
+
+
     // Inner classes **********************************************************
 
     /**
@@ -3548,6 +3581,7 @@ public class Folder extends PFComponent {
             }
             if (diskItemFilter.isDirty()) {
                 diskItemFilter.savePatternsTo(getSystemSubDir());
+                savePatternsToMetaFolder();
             }
         }
 
