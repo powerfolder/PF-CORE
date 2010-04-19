@@ -89,7 +89,7 @@ public class FolderExpireTest extends ControllerTestCase {
 
         // Change expiry from 3 monthes to 10 seconds.
         ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS.setValue(
-            getController(), "5");
+            getController(), 5);
 
         try {
             Thread.sleep(15000);

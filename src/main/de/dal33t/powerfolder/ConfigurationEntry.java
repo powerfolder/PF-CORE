@@ -555,7 +555,7 @@ public enum ConfigurationEntry {
      * The number of seconds to go on idle between connection tries per
      * Reconnector.
      */
-    CONNECT_WAIT("connect.wait.seconds", "120"),
+    CONNECT_WAIT("connect.wait.seconds", 120),
 
     /**
      * Enable/Disable relayed connections.
@@ -592,25 +592,25 @@ public enum ConfigurationEntry {
      * change to the folder happend. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
      */
-    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", String.valueOf(30)),
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 30),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory
      * before writing it to disk in seconds.
      */
-    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", String.valueOf(30)),
+    FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 30),
 
     /**
      * The number of seconds between db maintenance scans (30 minutes).
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", String.valueOf(1800)),
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 1800),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! Default: 1 year
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", "" + 60L * 60
-        * 24 * 365),
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage",
+        60 * 60 * 24 * 365),
 
     /**
      * The http proxy to use for HTTP tunneled connections
@@ -620,7 +620,7 @@ public enum ConfigurationEntry {
     /**
      * The http proxy port to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PORT("http.proxy.port", "" + 80),
+    HTTP_PROXY_PORT("http.proxy.port", 80),
 
     /**
      * The http proxy username to use for HTTP tunneled connections
@@ -635,18 +635,18 @@ public enum ConfigurationEntry {
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion.
      */
-    UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", "5"),
+    UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", 5),
 
     /**
      * Days until auto cleanup of downloads. Zero = cleanup on completion.
      */
-    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", "5"),
+    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 5),
 
     /** Warning about unsyned folders. */
     FOLDER_SYNC_USE("sync.folder.use", true),
 
     /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN("sync.folder.warn", "10"),
+    FOLDER_SYNC_WARN("sync.folder.warn", 10),
 
     /**
      * TRAC #1776
@@ -674,7 +674,7 @@ public enum ConfigurationEntry {
     BACKUP_ONLY_CLIENT("backup.only.client", false),
 
     /** The number of file versions to use when creating a new folder. */
-    DEFAULT_ARCHIVE_VERIONS("default.archive.versions", "5"),
+    DEFAULT_ARCHIVE_VERIONS("default.archive.versions", 5),
 
     /** The archive mode to use when creating a new folder. */
     DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name());
