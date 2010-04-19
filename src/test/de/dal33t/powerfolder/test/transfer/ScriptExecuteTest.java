@@ -63,7 +63,8 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
     public void testExecuteAfterDownload() throws IOException {
         assertEquals(0, outputFile.length());
-        File f = TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+            .getLocalBase(), "subdir1"));
         scanFolder(getFolderAtBart());
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(f, fInfo, getContollerBart());
@@ -98,7 +99,13 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
         // Content of output file should contain name with full path info of
         // downloaded file
-        assertEquals(fLisa.getAbsolutePath(), content.trim());
+        String expected = fLisa.getAbsolutePath();
+        expected += " ";
+        expected += fLisa.getParent();
+        expected += " ";
+        expected += getFolderAtLisa().getLocalBase().getAbsolutePath();
+
+        assertEquals(expected, content.trim());
     }
 
     private String createTestScript() throws IOException {
@@ -106,15 +113,17 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         outputFile = File.createTempFile("output", ".txt");
         byte[] content;
         String cmdLine;
+        String params = "$file $path $folderpath";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 >" + outputFile.getAbsolutePath() + "\nexit")
+            content = ("echo %1 %2 %3 %4 >" + outputFile.getAbsolutePath() + "\nexit")
                 .getBytes();
-            cmdLine = "cmd /C start " + testScript.getAbsolutePath() + " $file";
+            cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
+                + params;
         } else {
             content = ("echo $* >\"" + outputFile.getAbsolutePath() + '"')
                 .getBytes();
-            cmdLine = "sh " + testScript.getAbsolutePath() + " $file";
+            cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
         }
         FileUtils.copyFromStreamToFile(new ByteArrayInputStream(content),
             testScript);

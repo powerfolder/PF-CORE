@@ -785,8 +785,11 @@ public class TransferManager extends PFComponent {
         Reject
             .ifBlank(folder.getDownloadScript(), "Download script is not set");
         File dlFile = fInfo.getDiskFile(getController().getFolderRepository());
-        String command = folder.getDownloadScript().replace("$file",
-            dlFile.getAbsolutePath());
+        String command = folder.getDownloadScript();
+        command = command.replace("$file", dlFile.getAbsolutePath());
+        command = command.replace("$path", dlFile.getParent());
+        command = command.replace("$folderpath", folder.getLocalBase()
+            .getAbsolutePath());
         try {
             logInfo("Executing command: " + command);
             Runtime.getRuntime().exec(command);
