@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class JNotify_linux
 {
 	static final boolean DEBUG = false;
+	public static boolean WARN = true;
 	
 	static
 	{
@@ -203,6 +204,14 @@ public class JNotify_linux
 		if (DEBUG)
 		{
 			System.out.println(msg);
+		}
+	}
+
+	public static void warn(String warning)
+	{
+		if (WARN)
+		{
+			System.err.println(warning);
 		}
 	}
 

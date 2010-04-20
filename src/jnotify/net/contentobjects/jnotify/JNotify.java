@@ -31,54 +31,104 @@
 
 package net.contentobjects.jnotify;
 
-public class JNotify {
-    public static final int FILE_CREATED = 0x1;
-    public static final int FILE_DELETED = 0x2;
-    public static final int FILE_MODIFIED = 0x4;
-    public static final int FILE_RENAMED = 0x8;
-    public static final int FILE_ANY = FILE_CREATED | FILE_DELETED
-        | FILE_MODIFIED | FILE_RENAMED;
+import java.io.File;
+import java.io.IOException;
 
-    private static IJNotify _instance;
 
-    static {
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.equals("linux")) {
-            try {
-                _instance = (IJNotify) Class.forName(
-                    "net.contentobjects.jnotify.linux.JNotifyAdapterLinux")
-                    .newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else if (osName.startsWith("windows")) {
-            try {
-                _instance = (IJNotify) Class.forName(
-                    "net.contentobjects.jnotify.win32.JNotifyAdapterWin32")
-                    .newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else if (osName.startsWith("mac")) {
-            try {
-                _instance = (IJNotify) Class.forName(
-                    "net.contentobjects.jnotify.macosx.JNotifyAdapterMacOSX")
-                    .newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            throw new RuntimeException("Unsupported OS : " + osName);
-        }
-    }
 
-    public static int addWatch(String path, int mask, boolean watchSubtree,
-        JNotifyListener listener) throws JNotifyException
-    {
-        return _instance.addWatch(path, mask, watchSubtree, listener);
-    }
+public class JNotify
+{
+	public static final int FILE_CREATED 	= 0x1;
+	public static final int FILE_DELETED 	= 0x2;
+	public static final int FILE_MODIFIED 	= 0x4;
+	public static final int FILE_RENAMED 	= 0x8;
+	public static final int FILE_ANY 		= FILE_CREATED | FILE_DELETED | FILE_MODIFIED | FILE_RENAMED;
+	
+	private static IJNotify _instance;
+	
+	static 
+	{
+		String osName = System.getProperty("os.name").toLowerCase();
+		if (osName.equals("linux"))
+		{
+			try
+			{
+				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.linux.JNotifyAdapterLinux").newInstance();
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		else
+		if (osName.startsWith("windows"))
+		{
+			try
+			{
+				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.win32.JNotifyAdapterWin32").newInstance();
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		else
+                if (osName.startsWith("mac os x"))
+		{
+			try
+			{
+				_instance = (IJNotify) Class.forName("net.contentobjects.jnotify.macosx.JNotifyAdapterMacOSX").newInstance();
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
+                else
+		{
+			throw new RuntimeException("Unsupported OS : " + osName);
+		}
+	}
+	
+	
+	public static int addWatch(String path, int mask, boolean watchSubtree, JNotifyListener listener) throws JNotifyException
+	{
+		return _instance.addWatch(path, mask, watchSubtree, listener);
+	}
 
-    public static boolean removeWatch(int watchId) throws JNotifyException {
-        return _instance.removeWatch(watchId);
-    }
+	public static boolean removeWatch(int watchId) throws JNotifyException
+	{
+		return _instance.removeWatch(watchId);
+	}
+	
+	public static void main(String[] args) throws InterruptedException, IOException 
+	{
+		String dir = new File(args.length == 0 ? "." : args[0]).getCanonicalFile().getAbsolutePath();
+		JNotify.addWatch(dir, FILE_ANY, true, new JNotifyListener() 
+		{
+			public void fileRenamed(int wd, String rootPath, String oldName,
+					String newName) 
+			{
+				System.out.println("renamed " + rootPath + " : " + oldName + " -> " + newName);
+			}
+			
+			public void fileModified(int wd, String rootPath, String name) 
+			{
+				System.out.println("modified " + rootPath + " : " + name);
+			}
+			
+			public void fileDeleted(int wd, String rootPath, String name) 
+			{
+				System.out.println("deleted " + rootPath + " : " + name);
+			}
+			
+			public void fileCreated(int wd, String rootPath, String name) 
+			{
+				System.out.println("created " + rootPath + " : " + name);
+			}
+		});
+		
+		System.err.println("Monitoring " + dir + ", ctrl+c to stop");
+		while (true) Thread.sleep(10000);
+	}
 }

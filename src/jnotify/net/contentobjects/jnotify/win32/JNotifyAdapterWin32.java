@@ -42,7 +42,7 @@ import net.contentobjects.jnotify.Util;
 
 public class JNotifyAdapterWin32 implements IJNotify
 {
-	private Hashtable _id2Data;
+	private Hashtable<Integer, WatchData> _id2Data;
 
 	public JNotifyAdapterWin32()
 	{
@@ -53,7 +53,7 @@ public class JNotifyAdapterWin32 implements IJNotify
 				notifyChangeEvent(wd, action, rootPath, filePath);
 			}
 		});
-		_id2Data = new Hashtable();
+		_id2Data = new Hashtable<Integer, WatchData>();
 	}
 
 	public int addWatch(String path, int mask, boolean watchSubtree, JNotifyListener listener)
@@ -68,7 +68,7 @@ public class JNotifyAdapterWin32 implements IJNotify
 				| JNotify_win32.FILE_NOTIFY_CHANGE_ATTRIBUTES
 				| JNotify_win32.FILE_NOTIFY_CHANGE_DIR_NAME
 				| JNotify_win32.FILE_NOTIFY_CHANGE_FILE_NAME, watchSubtree);
-		_id2Data.put(new Integer(wd), new WatchData(wd, mask, listener));
+		_id2Data.put(Integer.valueOf(wd), new WatchData(wd, mask, listener));
 		return wd;
 	}
 
@@ -76,10 +76,9 @@ public class JNotifyAdapterWin32 implements IJNotify
 	{
 		synchronized (_id2Data)
 		{
-			if (_id2Data.containsKey(new Integer(wd)))
+			if (_id2Data.containsKey(Integer.valueOf(wd)))
 			{
-				//System.out.println("JNotifyAdapterWin32: removeWatch(" + wd + ")");
-				_id2Data.remove(new Integer(wd));
+				_id2Data.remove(Integer.valueOf(wd));
 				JNotify_win32.removeWatch(wd);
 				return true;
 			}
@@ -114,7 +113,7 @@ public class JNotifyAdapterWin32 implements IJNotify
 	{
 		synchronized (_id2Data)
 		{
-			WatchData watchData = (WatchData) _id2Data.get(new Integer(wd));
+			WatchData watchData = _id2Data.get(Integer.valueOf(wd));
 			if (watchData != null)
 			{
 				int mask = watchData._mask;
@@ -145,32 +144,31 @@ public class JNotifyAdapterWin32 implements IJNotify
 					watchData.renameOldName = null;
 				}
 			}
-			else
-			{
-				System.out
-					.println("JNotifyAdapterWin32: IGNORED Unregistered : " + wd + " . " +getDebugWinAction(action) + " root=" + rootPath + " , path=" + filePath);
-			}
+//			else
+//			{
+//				System.out.println("JNotifyAdapterWin32: IGNORED Unregistered : " + wd + " . " +getDebugWinAction(action) + " root=" + rootPath + " , path=" + filePath);
+//			}
 		}
 	}
 
-	private static String getDebugWinAction(int action)
-	{
-		switch (action)
-		{
-		case JNotify_win32.FILE_ACTION_ADDED:
-			return "FILE_ACTION_ADDED";
-		case JNotify_win32.FILE_ACTION_MODIFIED:
-			return "FILE_ACTION_MODIFIED";
-		case JNotify_win32.FILE_ACTION_REMOVED:
-			return "FILE_ACTION_REMOVED";
-		case JNotify_win32.FILE_ACTION_RENAMED_NEW_NAME:
-			return "FILE_ACTION_RENAMED_NEW_NAME";
-		case JNotify_win32.FILE_ACTION_RENAMED_OLD_NAME:
-			return "FILE_ACTION_RENAMED_OLD_NAME";
-		default:
-			return "UNKNOWN " + action; 
-		}
-	}	
+//	private static String getDebugWinAction(int action)
+//	{
+//		switch (action)
+//		{
+//		case JNotify_win32.FILE_ACTION_ADDED:
+//			return "FILE_ACTION_ADDED";
+//		case JNotify_win32.FILE_ACTION_MODIFIED:
+//			return "FILE_ACTION_MODIFIED";
+//		case JNotify_win32.FILE_ACTION_REMOVED:
+//			return "FILE_ACTION_REMOVED";
+//		case JNotify_win32.FILE_ACTION_RENAMED_NEW_NAME:
+//			return "FILE_ACTION_RENAMED_NEW_NAME";
+//		case JNotify_win32.FILE_ACTION_RENAMED_OLD_NAME:
+//			return "FILE_ACTION_RENAMED_OLD_NAME";
+//		default:
+//			return "UNKNOWN " + action; 
+//		}
+//	}	
 	
 	private int mapAction(int action)
 	{

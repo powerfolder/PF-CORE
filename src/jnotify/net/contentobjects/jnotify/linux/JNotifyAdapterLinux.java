@@ -47,13 +47,13 @@ import net.contentobjects.jnotify.Util;
 
 public class JNotifyAdapterLinux implements IJNotify
 {
-	private Hashtable _linuxWd2Wd;
-	private Hashtable _id2Data;
+	private Hashtable<Integer, Integer> _linuxWd2Wd;
+	private Hashtable<Integer, WatchData> _id2Data;
 	
 	/**
 	 * A set of files which was added by registerToSubTree (auto-watches)
 	 */
-	private Hashtable _autoWatchesPaths;
+	private Hashtable<String, String> _autoWatchesPaths;
 	private static int _watchIDCounter = 0;
 
 	public JNotifyAdapterLinux()
@@ -73,9 +73,9 @@ public class JNotifyAdapterLinux implements IJNotify
 			}
 		});
 
-		_id2Data = new Hashtable();
-		_linuxWd2Wd = new Hashtable();
-		_autoWatchesPaths = new Hashtable();
+		_id2Data = new Hashtable<Integer, WatchData>();
+		_linuxWd2Wd = new Hashtable<Integer, Integer>();
+		_autoWatchesPaths = new Hashtable<String, String>();
 	}
 
 	public int addWatch(String path, int mask, boolean watchSubtree, JNotifyListener listener)
@@ -139,8 +139,8 @@ public class JNotifyAdapterLinux implements IJNotify
 		int wd = _watchIDCounter++;
 		int linuxWd = JNotify_linux.addWatch(absPath, linuxMask);
 		WatchData watchData = new WatchData(parentWatchData, user, absPath, wd, linuxWd, mask, linuxMask, watchSubtree, listener);
-		_linuxWd2Wd.put(new Integer(linuxWd), new Integer(wd));
-		_id2Data.put(new Integer(wd), watchData);
+		_linuxWd2Wd.put(Integer.valueOf(linuxWd), Integer.valueOf(wd));
+		_id2Data.put(Integer.valueOf(wd), watchData);
 		if (!user)
 		{
 			_autoWatchesPaths.put(absPath, absPath);
@@ -177,8 +177,8 @@ public class JNotifyAdapterLinux implements IJNotify
 				}
 				catch (JNotifyException e)
 				{
-					System.err.println("registerToSubTree : warning, failed to register " + root + " :" + e.getMessage());
 					if (e.getErrorCode() == JNotifyException.ERROR_WATCH_LIMIT_REACHED)
+						JNotify_linux.warn("JNotifyAdapterLinux.registerToSubTree : warning, failed to register " + root + " :" + e.getMessage());
 					{
 						throw e;
 					}
@@ -204,9 +204,9 @@ public class JNotifyAdapterLinux implements IJNotify
 		
 		synchronized (_id2Data)
 		{
-			if (_id2Data.containsKey(new Integer(wd)))
+			if (_id2Data.containsKey(Integer.valueOf(wd)))
 			{
-				WatchData watchData = (WatchData) _id2Data.get(new Integer(wd));
+				WatchData watchData = (WatchData) _id2Data.get(Integer.valueOf(wd));
 				unwatch(watchData);
 				return true;
 			}
@@ -239,7 +239,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			for (int i = 0; i < data._subWd.size(); i++)
 			{
 				
-				int wd = ((Integer)data._subWd.get(i)).intValue();
+				int wd = data._subWd.get(i).intValue();
 				try
 				{
 					JNotify_linux.removeWatch(wd);
@@ -269,7 +269,7 @@ public class JNotifyAdapterLinux implements IJNotify
 		
 		synchronized (_id2Data)
 		{
-			Integer iwd = (Integer) _linuxWd2Wd.get(new Integer(linuxWd));
+			Integer iwd = (Integer) _linuxWd2Wd.get(Integer.valueOf(linuxWd));
 			if (iwd == null)
 			{
 				// This happens if an exception is thrown because used too many watches. 
@@ -277,7 +277,7 @@ public class JNotifyAdapterLinux implements IJNotify
 				return;
 			}
 			
-			WatchData watchData = (WatchData) _id2Data.get(iwd);
+			WatchData watchData = _id2Data.get(iwd);
 			if (watchData != null)
 			{
 				if ((linuxMask & JNotify_linux.IN_CREATE) != 0)
@@ -315,10 +315,11 @@ public class JNotifyAdapterLinux implements IJNotify
 						}
 					}
 				}
-//				else
-//				if ((linuxMask & JNotify_linux.IN_DELETE_SELF) != 0)
-//				{
-//				}
+				else
+				if ((linuxMask & JNotify_linux.IN_DELETE_SELF) != 0)
+				{
+					watchData.notifyFileDeleted(name);
+				}
 				else
 				if ((linuxMask & JNotify_linux.IN_DELETE)  != 0)
 				{
@@ -342,8 +343,8 @@ public class JNotifyAdapterLinux implements IJNotify
 				else
 				if ((linuxMask & JNotify_linux.IN_IGNORED) != 0)
 				{
-					_linuxWd2Wd.remove(new Integer(watchData._linuxWd));
-					_id2Data.remove(new Integer(watchData._wd));
+					_linuxWd2Wd.remove(Integer.valueOf(watchData._linuxWd));
+					_id2Data.remove(Integer.valueOf(watchData._wd));
 					if (!watchData._user)
 					{
 						_autoWatchesPaths.remove(watchData._path);
@@ -391,12 +392,16 @@ public class JNotifyAdapterLinux implements IJNotify
 		if (IN_UNMOUNT) s += "IN_UNMOUNT, ";
 		if (IN_Q_OVERFLOW) s += "IN_Q_OVERFLOW, ";
 		if (IN_IGNORED) s += "IN_IGNORED, ";
-		int wd = ((Integer)_linuxWd2Wd.get(new Integer(linuxWd))).intValue();
-		WatchData wdata = (WatchData) _id2Data.get(new Integer(wd));
+		int wd = _linuxWd2Wd.get(Integer.valueOf(linuxWd)).intValue();
+		WatchData wdata = _id2Data.get(Integer.valueOf(wd));
 		String path;
 		if (wdata != null)
 		{
-			path = wdata._path + File.separator + name; 
+			path = wdata._path;
+			if (path != null && name != "")
+			{
+				path += File.separator + name; 
+			}
 		}
 		else
 		{
@@ -410,12 +415,11 @@ public class JNotifyAdapterLinux implements IJNotify
 		boolean _user;
 		int _wd;
 		private int _linuxWd;
-		private ArrayList _subWd;
+		private ArrayList<Integer> _subWd;
 		int _mask; 
 		int _linuxMask;
 		boolean _watchSubtree;
 		JNotifyListener _listener;
-		public String renameOldName;
         /*
          * if the cookie hashtable is static every WatchData can access the
          * cookies from other WatchData (directories). The static key word wont
@@ -425,7 +429,7 @@ public class JNotifyAdapterLinux implements IJNotify
          * 
          * BUG: discovered by Fabio Bernasconi
          */
-        static Hashtable _cookieToOldName = new Hashtable();
+        static Hashtable<Integer, String> _cookieToOldName = new Hashtable<Integer, String>();
 		String _path;
 		WatchData _parentWatchData;
 
@@ -437,7 +441,7 @@ public class JNotifyAdapterLinux implements IJNotify
 			}
 			_parentWatchData = parentWatchData;
 			_user = user;
-			_subWd = new ArrayList();
+			_subWd = new ArrayList<Integer>();
 			_path = path;
 			_wd = wd;
 			_linuxMask = linuxMask;
@@ -465,12 +469,12 @@ public class JNotifyAdapterLinux implements IJNotify
 
 		public void renaming(int cookie, String name)
 		{
-			_cookieToOldName.put(new Integer(cookie), getOutName(name));
+			_cookieToOldName.put(Integer.valueOf(cookie), getOutName(name));
 		}
 
 		public void notifyFileRenamed(String name, int cookie)
 		{
-			String oldName = (String) _cookieToOldName.remove(new Integer(cookie));
+			String oldName = _cookieToOldName.remove(Integer.valueOf(cookie));
 			String outRoot = getOutRoot();
 			String outNewName = getOutName(name);
 			_listener.fileRenamed(getParentWatchID(), outRoot, oldName, outNewName);
@@ -500,7 +504,7 @@ public class JNotifyAdapterLinux implements IJNotify
 
 		void remveSubwatch(int linuxWd)
 		{
-			if (!_subWd.remove(new Integer(linuxWd)))
+			if (!_subWd.remove(Integer.valueOf(linuxWd)))
 			{
 				throw new RuntimeException("Error removing " + linuxWd + " from list");
 			}
@@ -508,7 +512,7 @@ public class JNotifyAdapterLinux implements IJNotify
 
 		void addSubwatch(int linuxWd)
 		{
-			_subWd.add(new Integer(linuxWd));
+			_subWd.add(Integer.valueOf(linuxWd));
 		}
 		
 		public String toString()
@@ -540,7 +544,11 @@ public class JNotifyAdapterLinux implements IJNotify
 			}
 			else // auto watch.
 			{
-				outName = _path.substring(getParentWatch()._path.length() + 1) + File.separatorChar + name;
+				outName = _path.substring(getParentWatch()._path.length() + 1);
+				if (name != "")
+				{
+					outName += File.separatorChar + name;
+				}
 			}
 			return outName;			
 		}

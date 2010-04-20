@@ -33,16 +33,23 @@
 
 package net.contentobjects.jnotify.win32;
 
-import de.dal33t.powerfolder.util.os.OSUtil;
 import net.contentobjects.jnotify.JNotifyException;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 
 public class JNotify_win32
 {
 	static
 	{
-	    OSUtil.loadLibrary(JNotify_win32.class, "jnotify");
-		//System.loadLibrary("jnotify");
+		try 
+		{
+		    OSUtil.loadLibrary(JNotify_win32.class, "jnotify");
+		}
+		catch (UnsatisfiedLinkError e) 
+		{
+			System.err.println("Error loading library, java.library.path=" + System.getProperty("java.library.path"));
+			throw e;
+		}
 		int res = nativeInit();
 		if (res != 0)
 		{
