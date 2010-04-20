@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -192,6 +193,12 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 socket.receive(inPacket);
 
                 if (isPowerFolderBroadcast(inPacket)) {
+                    if (getController().getNetworkingMode().equals(
+                        NetworkingMode.SERVERONLYMODE))
+                    {
+                        logFiner("Ignoring broadcasts in server only networking mode");
+                        continue;
+                    }
                     processBroadcast(inPacket);
                 }
             } catch (SocketTimeoutException e) {
