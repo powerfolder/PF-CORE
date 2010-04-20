@@ -221,7 +221,7 @@ public class AboutDialog extends PFUIComponent {
             SimpleComponentFactory.BIG_FONT_SIZE);
 
         Object licKey = getApplicationModel().getLicenseModel()
-            .getLicenseKeyModel();
+            .getLicenseKeyModel().getValue();
         String license = licKey != null ? Translation.getTranslation(
             "about_dialog.power_folder.license", licKey.toString()) : "";
         powerFolder = createTextBox(Translation
