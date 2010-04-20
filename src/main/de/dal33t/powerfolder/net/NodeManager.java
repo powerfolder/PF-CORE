@@ -453,6 +453,10 @@ public class NodeManager extends PFComponent {
         if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
             return false;
         }
+        if (NetworkUtil.isNullIP(adr)) {
+            // Unknown / Probably tunneled addresses
+            return false;
+        }
         return NetworkUtil.isOnLanOrLoopback(adr)
             || isNodeOnConfiguredLan(adr)
             || (getController().getBroadcastManager() != null && getController()
