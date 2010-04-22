@@ -99,6 +99,8 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
+    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME =
+            "syncPatterns.txt";
 
     /** The base location of the folder. */
     private final File localBase;
@@ -2030,7 +2032,7 @@ public class Folder extends PFComponent {
         // synchronized (scanLock) {
         for (Member member : members) {
             if (!member.isCompletelyConnected()) {
-                // disconected go to next member
+                // disconnected go to next member
                 continue;
             }
             if (!hasWritePermission(member)) {
@@ -3521,7 +3523,8 @@ public class Folder extends PFComponent {
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
-        getController().getConfig().put(syncProfKey, String.valueOf(syncPatterns));
+        getController().getConfig().put(syncProfKey,
+                String.valueOf(syncPatterns));
         getController().saveConfig();
     }
 
@@ -3549,8 +3552,8 @@ public class Folder extends PFComponent {
             List<String> patterns = diskItemFilter.getPatterns();
             PrintWriter pw = null;
             try {
-                File f = new File(
-                        metaFolder.localBase, "syncPatterns.txt");
+                File f = new File(metaFolder.localBase, 
+                        META_FOLDER_SYNC_PATTERNS_FILE_NAME);
                 pw = new PrintWriter(new FileWriter(f));
                 for (String pattern : patterns) {
                     pw.println(pattern);
