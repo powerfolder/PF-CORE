@@ -814,10 +814,33 @@ public class TransferManager extends PFComponent {
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(syncPatternsFile));
-            parentFolder.getDiskItemFilter().removeAllPatterns();
             String line;
+            List<String> lines = new ArrayList<String>();
             while((line = br.readLine()) != null) {
-                parentFolder.getDiskItemFilter().addPattern(line);
+                lines.add(line);
+            }
+
+            // See if there are any changes.
+            // If no changes, do not update patterns.
+            // Otherwise changes will go back and forth for ever.
+            boolean same = true;
+            List<String> existingPatterns = parentFolder.getDiskItemFilter()
+                    .getPatterns();
+            if (lines.size() == existingPatterns.size()) {
+                for (String thisLine : lines) {
+                    if (!existingPatterns.contains(thisLine)) {
+                        same = false;
+                        break;
+                    }
+                }
+            } else {
+                same = false;
+            }
+            if (!same) {
+                parentFolder.getDiskItemFilter().removeAllPatterns();
+                for (String thisLine : lines) {
+                    parentFolder.getDiskItemFilter().addPattern(thisLine);
+                }
             }
         } catch (Exception e) {
             logSevere(e);
