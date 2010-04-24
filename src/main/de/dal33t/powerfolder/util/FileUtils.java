@@ -236,19 +236,26 @@ public class FileUtils {
     }
 
     /**
-     * Execute the file, uses rundll approach to start on windows
+     * Execute the file.
      * 
      * @param file
-     * @throws IOException
+     * @return true if suceeded. false if not.
      */
-    public static void openFile(File file) throws IOException {
+    public static boolean openFile(File file) {
         Reject.ifNull(file, "File is null");
 
         if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().open(file);
+            try {
+                Desktop.getDesktop().open(file);
+                return true;
+            } catch (IOException e) {
+                log.warning("Unable to open file " + file + ". " + e);
+                return false;
+            }
         } else {
             log.warning("Unable to open file " + file
                 + ". Java Desktop not supported");
+            return false;
         }
     }
 
@@ -844,7 +851,7 @@ public class FileUtils {
 
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
-     *
+     * 
      * @return true if file scan is allowed
      */
     public static boolean isScannable(File file) {
@@ -856,18 +863,21 @@ public class FileUtils {
 
         if (Feature.META_FOLDER.isEnabled()) {
 
-            // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent, like
+            // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent,
+            // like
             // C:\Users\Harry\PowerFolders\1765X\.PowerFolder\meta\xyz
             // So look after the '.PowerFolder\meta' part
-            String metaFolderHome = Constants.POWERFOLDER_SYSTEM_SUBDIR +
-                    File.separator + Constants.METAFOLDER_SUBDIR;
+            String metaFolderHome = Constants.POWERFOLDER_SYSTEM_SUBDIR
+                + File.separator + Constants.METAFOLDER_SUBDIR;
 
             int index = filePath.indexOf(metaFolderHome);
             if (index >= 0) {
                 // File is somewhere in the metaFolder file structure.
                 // Make sure we are not in the metaFolder's system subdir.
-                String afterMetaFolderHome = filePath.substring(index + metaFolderHome.length());
-                return !afterMetaFolderHome.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+                String afterMetaFolderHome = filePath.substring(index
+                    + metaFolderHome.length());
+                return !afterMetaFolderHome
+                    .contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
             }
         }
 
