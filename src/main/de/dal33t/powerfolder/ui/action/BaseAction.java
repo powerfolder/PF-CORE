@@ -23,8 +23,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -37,6 +39,7 @@ import de.dal33t.powerfolder.util.Translation;
 public abstract class BaseAction extends AbstractAction {
 
     private Controller controller;
+    private BoundPermission boundPermission;
 
     /**
      * Initalizes a action tranlated and loaded from the tranlastion/resource
@@ -94,6 +97,27 @@ public abstract class BaseAction extends AbstractAction {
      */
     public String getName() {
         return (String) getValue(NAME);
+    }
+
+    /**
+     * Enables this action only if the user has a certain permission.
+     * <p>
+     * Does actively listen for account changes and re-logins.
+     * 
+     * @param permission
+     */
+    public void allowWith(Permission permission) {
+        if (boundPermission != null) {
+            boundPermission.dispose();
+            boundPermission = null;
+        }
+        if (permission != null) {
+            boundPermission = new BoundPermission(getController(), permission) {
+                public void hasPermission(boolean hasPermission) {
+                    setEnabled(hasPermission);
+                }
+            };
+        }
     }
 
     /**
