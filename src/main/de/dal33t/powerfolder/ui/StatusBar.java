@@ -207,6 +207,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         getController().addPropertyChangeListener(
             Controller.PROPERTY_SILENT_MODE, new MyValueChangeListener());
+        updateSilentMode();
 
         // Behavior when the limited connecvitiy gets checked
         getController().addPropertyChangeListener(
@@ -642,17 +643,21 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             // anywhere, not just from EDT.
             UIUtil.invokeLaterInEDT(new Runnable() {
                 public void run() {
-                    if (getController().isSilentMode()) {
-                        sleepButton.setIcon(Icons.getIconById(Icons.RUN));
-                        sleepButton.setToolTipText(Translation
-                            .getTranslation("status_bar.no_sleep.tips"));
-                    } else {
-                        sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
-                        sleepButton.setToolTipText(Translation
-                            .getTranslation("status_bar.sleep.tips"));
-                    }
+                    updateSilentMode();
                 }
             });
+        }
+    }
+
+    private void updateSilentMode() {
+        if (getController().isSilentMode()) {
+            sleepButton.setIcon(Icons.getIconById(Icons.RUN));
+            sleepButton.setToolTipText(Translation
+                .getTranslation("status_bar.no_sleep.tips"));
+        } else {
+            sleepButton.setIcon(Icons.getIconById(Icons.PAUSE));
+            sleepButton.setToolTipText(Translation
+                .getTranslation("status_bar.sleep.tips"));
         }
     }
 }
