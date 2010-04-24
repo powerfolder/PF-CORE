@@ -120,10 +120,8 @@ public class RemoteServiceStubFactory {
             RemoteMethodCallRequest request = new RemoteMethodCallRequest(
                 serviceId, method, args);
             if (id == null || id.isSupportsSerializedRequest()) {
-                LOG.warning("Using serialized form of request: " + request);
                 request = request.toSerzializedForm();
             } else {
-                LOG.warning("Using LEGACY form of request: " + request);
                 if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                     .getValueBoolean(controller))
                 {
