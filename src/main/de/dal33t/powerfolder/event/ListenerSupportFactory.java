@@ -260,11 +260,11 @@ public class ListenerSupportFactory {
         public void removeListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, remove listener
-                if (listener.fireInEventDispatchThread()) {
-                    listenersInDispatchThread.remove(listener);
-                } else {
-                    listenersNotInDispatchThread.remove(listener);
-                }
+                // if (listener.fireInEventDispatchThread()) {
+                listenersInDispatchThread.remove(listener);
+                // } else {
+                listenersNotInDispatchThread.remove(listener);
+                // }
             }
         }
 
