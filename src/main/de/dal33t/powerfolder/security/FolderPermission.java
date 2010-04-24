@@ -71,6 +71,22 @@ public abstract class FolderPermission implements Permission {
         return true;
     }
 
+    public static FolderReadPermission read(FolderInfo foInfo) {
+        return new FolderReadPermission(foInfo);
+    }
+
+    public static FolderReadWritePermission readWrite(FolderInfo foInfo) {
+        return new FolderReadWritePermission(foInfo);
+    }
+
+    public static FolderAdminPermission admin(FolderInfo foInfo) {
+        return new FolderAdminPermission(foInfo);
+    }
+
+    public static FolderOwnerPermission owner(FolderInfo foInfo) {
+        return new FolderOwnerPermission(foInfo);
+    }
+
     public String toString() {
         return getClass().getSimpleName() + " on " + folder;
     }

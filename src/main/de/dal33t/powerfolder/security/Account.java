@@ -165,9 +165,9 @@ public class Account extends Model implements Serializable {
      *            the folder.
      */
     public void revokeAllFolderPermission(FolderInfo foInfo) {
-        revoke(new FolderReadPermission(foInfo), new FolderReadWritePermission(
-            foInfo), new FolderAdminPermission(foInfo),
-            new FolderOwnerPermission(foInfo));
+        revoke(FolderPermission.read(foInfo), FolderPermission
+            .readWrite(foInfo), FolderPermission.admin(foInfo),
+            FolderPermission.owner(foInfo));
     }
 
     /**
@@ -599,7 +599,7 @@ public class Account extends Model implements Serializable {
      */
     public boolean hasReadPermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderReadPermission(foInfo));
+        return hasPermission(FolderPermission.read(foInfo));
     }
 
     /**
@@ -611,7 +611,7 @@ public class Account extends Model implements Serializable {
      */
     public boolean hasReadWritePermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderReadWritePermission(foInfo));
+        return hasPermission(FolderPermission.readWrite(foInfo));
     }
 
     /**
@@ -631,7 +631,7 @@ public class Account extends Model implements Serializable {
      */
     public boolean hasAdminPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderAdminPermission(foInfo));
+        return hasPermission(FolderPermission.admin(foInfo));
     }
 
     /**
@@ -640,7 +640,7 @@ public class Account extends Model implements Serializable {
      */
     public boolean hasOwnerPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
-        return hasPermission(new FolderOwnerPermission(foInfo));
+        return hasPermission(FolderPermission.owner(foInfo));
     }
 
     private void readObject(java.io.ObjectInputStream stream)

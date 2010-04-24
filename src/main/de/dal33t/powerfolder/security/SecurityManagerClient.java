@@ -122,7 +122,7 @@ public class SecurityManagerClient extends PFComponent implements
                     cache.set(permission, hasPermission);
                     source = "recvd";
                 } else {
-                    hasPermission = isSyncAnyWays();
+                    hasPermission = hasPermissionDisconnected(permission);
                     source = "nocon";
                 }
             } else {
@@ -135,21 +135,32 @@ public class SecurityManagerClient extends PFComponent implements
             return hasPermission;
         } catch (RemoteCallException e) {
             if (isWarning()) {
-                logWarning("Unable to check permission for "
+                logWarning("Unable to check " + permission + " for "
                     + nullSafeGet(accountInfo) + ". " + e);
             }
             if (isFiner()) {
                 logFiner(e);
             }
 
-            return isSyncAnyWays();
+            return hasPermissionDisconnected(permission);
         }
     }
 
-    private boolean isSyncAnyWays() {
-        return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
-            .getValueBoolean(getController())
-            || (getController().isLanOnly() && !client.getServer().isOnLAN());
+    private boolean hasPermissionDisconnected(Permission permission) {
+        boolean noConnectPossible = getController().isLanOnly()
+            && !client.getServer().isOnLAN();
+        if (noConnectPossible) {
+            // Server is not on LAN, but running in LAN only mode. Allow all
+            // since we will never connect at all
+            return true;
+        }
+        if (permission instanceof FolderPermission) {
+            return ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
+                .getValueBoolean(getController());
+        } else {
+            return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                .getValueBoolean(getController());
+        }
     }
 
     private final Object requestLock = new Object();

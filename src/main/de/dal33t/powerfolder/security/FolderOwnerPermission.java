@@ -31,10 +31,15 @@ import de.dal33t.powerfolder.util.Translation;
 public class FolderOwnerPermission extends FolderPermission {
     private static final long serialVersionUID = 100L;
 
-    public FolderOwnerPermission(FolderInfo foInfo) {
+    /**
+     * Construct externally with {@link FolderPermission#owner(FolderInfo)}
+     * 
+     * @param foInfo
+     */
+    FolderOwnerPermission(FolderInfo foInfo) {
         super(foInfo);
     }
-    
+
     public String getName() {
         return Translation.getTranslation("permissions.folder.owner");
     }

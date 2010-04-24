@@ -39,7 +39,12 @@ public class FolderAdminPermission extends FolderPermission {
     @Deprecated
     private FolderInfo folder;
 
-    public FolderAdminPermission(FolderInfo foInfo) {
+    /**
+     * Construct externally with {@link FolderPermission#admin(FolderInfo)}
+     * 
+     * @param foInfo
+     */
+    FolderAdminPermission(FolderInfo foInfo) {
         super(foInfo);
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo;
