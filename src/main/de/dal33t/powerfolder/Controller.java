@@ -119,7 +119,8 @@ import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
- * To extend PFComponent so you always have a refrence to this class.
+ * to extend PFComponent so you always have a reference to the main
+ * {@link Controller}.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.107 $
@@ -129,9 +130,10 @@ public class Controller extends PFComponent {
         .getName());
 
     /**
-     * program version. include "dev" if its a development version.
+     * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.2 - 1.7.0.6"; // 1.7.0.6 / RC2
+    public static final String PROGRAM_VERSION = "4.2.2 - 1.7.0.8"; // 1.7.0.8 /
+    // dev4
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
@@ -1251,6 +1253,7 @@ public class Controller extends PFComponent {
         if (oldValue != newSilentMode) {
             getTransferManager().updateSpeedLimits();
         }
+        preferences.putBoolean("silentMode", newSilentMode);
         firePropertyChange(PROPERTY_SILENT_MODE, oldValue, newSilentMode);
     }
 
