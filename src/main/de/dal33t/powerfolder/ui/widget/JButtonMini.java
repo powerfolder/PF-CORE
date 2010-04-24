@@ -19,13 +19,20 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import com.jgoodies.forms.factories.Borders;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+
+import com.jgoodies.forms.factories.Borders;
+
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 /**
  * Class showing image button with no border, except when hover or pressed. Uses
@@ -34,31 +41,26 @@ import java.awt.event.ActionListener;
 public class JButtonMini extends JButton {
 
     /**
-     * Mini button that is configured from action which does act on it
+     * Mini button that is bound to a an action
      * 
      * @param action
      */
-    public JButtonMini(Action action) {
-        this(action, true);
-    }
-
-    /**
-     * Mini button that is configured from action and also can act on it
-     * 
-     * @param action
-     * @param act
-     */
-    public JButtonMini(final Action action, boolean act) {
+    public JButtonMini(final Action action) {
         this((Icon) action.getValue(Action.SMALL_ICON), (String) action
             .getValue(Action.SHORT_DESCRIPTION));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        if (act) {
-            addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    action.actionPerformed(e);
-                }
-            });
-        }
+
+        addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                action.actionPerformed(e);
+            }
+        });
+        action.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setEnabled(action.isEnabled());
+            }
+        });
+        setEnabled(action.isEnabled());
     }
 
     public JButtonMini(Icon icon, String toolTipText) {
