@@ -67,8 +67,9 @@ public class OnlineStorageComponent extends PFUIComponent {
     private void initialize() {
         syncAction = new MySyncAction(getController());
         syncActionLabel = new ActionLabel(getController(), syncAction);
-        MyWebButtonAction webButtonAction = new MyWebButtonAction(getController());
-        webButton = new JButtonMini(webButtonAction, true);
+        MyWebButtonAction webButtonAction = new MyWebButtonAction(
+            getController());
+        webButton = new JButtonMini(webButtonAction);
     }
 
     private void buildUI() {
