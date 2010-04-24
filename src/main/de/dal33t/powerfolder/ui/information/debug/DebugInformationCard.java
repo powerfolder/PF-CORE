@@ -395,13 +395,13 @@ public class DebugInformationCard extends InformationCard {
 
         openDebugDir.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                FileUtils.openFile(LoggingManager.getDebugDir());
                 try {
-                    FileUtils.openFile(LoggingManager.getDebugDir());
                     BrowserLauncher
                         .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
                             .getValue(getController()));
                 } catch (IOException ex) {
-                    logSevere("Problems opening debug directory ", ex);
+                    logSevere("Problems opening browser ", ex);
                 }
             }
         });
