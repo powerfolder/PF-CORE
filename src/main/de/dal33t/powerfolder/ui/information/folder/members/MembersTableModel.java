@@ -56,11 +56,8 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderReadPermission;
-import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -666,16 +663,16 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             // Use default
             permissionsListModel.getList().add(null);
             permissionsListModel.getList().add(
-                new FolderReadPermission(folder.getInfo()));
+                FolderPermission.read(folder.getInfo()));
             permissionsListModel.getList().add(
-                new FolderReadWritePermission(folder.getInfo()));
+                FolderPermission.readWrite(folder.getInfo()));
             permissionsListModel.getList().add(
-                new FolderAdminPermission(folder.getInfo()));
+                FolderPermission.admin(folder.getInfo()));
             if (getController().getOSClient().getAccount().hasOwnerPermission(
                 folder.getInfo()))
             {
                 permissionsListModel.getList().add(
-                    new FolderOwnerPermission(folder.getInfo()));
+                    FolderPermission.owner(folder.getInfo()));
             }
         }
 
@@ -686,11 +683,11 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             // No access
             defaultPermissionsListModel.getList().add(null);
             defaultPermissionsListModel.getList().add(
-                new FolderReadPermission(folder.getInfo()));
+                FolderPermission.read(folder.getInfo()));
             defaultPermissionsListModel.getList().add(
-                new FolderReadWritePermission(folder.getInfo()));
+                FolderPermission.readWrite(folder.getInfo()));
             defaultPermissionsListModel.getList().add(
-                new FolderAdminPermission(folder.getInfo()));
+                FolderPermission.admin(folder.getInfo()));
             defaultPermissionModel.setValue(defaultPermission);
         }
         updatingDefaultPermissionModel = false;
