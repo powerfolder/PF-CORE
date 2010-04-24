@@ -28,8 +28,10 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallRequest;
 import de.dal33t.powerfolder.message.clientserver.RemoteMethodCallResponse;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -112,10 +114,29 @@ public class RemoteServiceStubFactory {
                     + (args != null ? Arrays.asList(args) : "n/a"),
                     new RuntimeException("here"));
             }
+            Identity id = remoteSide.getIdentity();
             RequestExecutor executor = new RequestExecutor(controller,
                 remoteSide);
             RemoteMethodCallRequest request = new RemoteMethodCallRequest(
                 serviceId, method, args);
+            if (id == null || id.isSupportsSerializedRequest()) {
+                LOG.warning("Using serialized form of request: " + request);
+                request = request.toSerzializedForm();
+            } else {
+                LOG.warning("Using LEGACY form of request: " + request);
+                if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                    .getValueBoolean(controller))
+                {
+                    LOG
+                        .severe("Using strict permission security setting while executing legacy type request."
+                            + "Please check program version of "
+                            + remoteSide
+                            + ": "
+                            + (id == null ? "" : id.getProgramVersion())
+                            + ". Request: " + request);
+                }
+
+            }
             RemoteMethodCallResponse response;
             try {
                 response = (RemoteMethodCallResponse) executor.execute(request);
