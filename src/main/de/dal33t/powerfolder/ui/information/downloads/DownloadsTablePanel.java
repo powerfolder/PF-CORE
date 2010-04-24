@@ -19,32 +19,43 @@
  */
 package de.dal33t.powerfolder.ui.information.downloads;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.UIUtil;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.ui.model.TransferManagerModel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class DownloadsTablePanel extends PFUIComponent {
 
@@ -100,9 +111,9 @@ public class DownloadsTablePanel extends PFUIComponent {
         tableModel = (DownloadManagersTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
 
-        table.registerKeyboardAction(new SelectAllAction(),
-		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
-		JComponent.WHEN_FOCUSED);
+        table.registerKeyboardAction(new SelectAllAction(), KeyStroke
+            .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+            JComponent.WHEN_FOCUSED);
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -148,9 +159,7 @@ public class DownloadsTablePanel extends PFUIComponent {
      */
     private void buildPopupMenus() {
         fileMenu = new JPopupMenu();
-        if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
-            fileMenu.add(openDownloadAction);
-        }
+        fileMenu.add(openDownloadAction);
         fileMenu.add(abortDownloadsAction);
         fileMenu.add(clearCompletedDownloadsAction);
     }
@@ -300,11 +309,7 @@ public class DownloadsTablePanel extends PFUIComponent {
                 File file = downloadManager.getFileInfo().getDiskFile(
                     getController().getFolderRepository());
                 if (file != null && file.exists()) {
-                    try {
-                        FileUtils.openFile(file);
-                    } catch (IOException ex) {
-                        logSevere(ex);
-                    }
+                    FileUtils.openFile(file);
                 }
             }
         }
@@ -411,6 +416,17 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     private class TableMouseListener extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                int row = table.rowAtPoint(e.getPoint());
+                DownloadManager dlMan = tableModel.getDownloadManagerAtRow(row);
+                FileInfo fInfo = dlMan.getFileInfo();
+                File diskFile = fInfo.getDiskFile(getController()
+                    .getFolderRepository());
+                if (diskFile != null && diskFile.exists() && diskFile.isFile())
+                {
+                    FileUtils.openFile(diskFile);
+                }
+            }
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
             }
