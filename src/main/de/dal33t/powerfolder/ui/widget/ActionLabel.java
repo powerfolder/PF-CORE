@@ -25,6 +25,8 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -54,7 +56,7 @@ public class ActionLabel extends PFComponent {
     private Action action;
     private volatile boolean mouseOver;
 
-    public ActionLabel(Controller controller, Action action) {
+    public ActionLabel(Controller controller, final Action action) {
         super(controller);
         this.action = action;
         uiComponent = new JLabel();
@@ -67,6 +69,11 @@ public class ActionLabel extends PFComponent {
         Reject.ifNull(action, "Action listener is null");
         uiComponent.addMouseListener(new MyMouseAdapter());
         uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        action.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setEnabled(action.isEnabled());
+            }
+        });
     }
 
     public JComponent getUIComponent() {
