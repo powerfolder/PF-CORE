@@ -24,7 +24,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.list.SelectionInList;
@@ -36,10 +44,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderReadPermission;
-import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Reject;
@@ -102,9 +107,9 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
         locationDirectoryField.setText(location);
 
         SelectionInList<FolderPermission> permissionsModel = new SelectionInList<FolderPermission>();
-        permissionsModel.getList().add(new FolderReadPermission(foInfo));
-        permissionsModel.getList().add(new FolderReadWritePermission(foInfo));
-        permissionsModel.getList().add(new FolderAdminPermission(foInfo));
+        permissionsModel.getList().add(FolderPermission.read(foInfo));
+        permissionsModel.getList().add(FolderPermission.readWrite(foInfo));
+        permissionsModel.getList().add(FolderPermission.admin(foInfo));
         // permissionsModel.getList().add(new FolderOwnerPermission(foInfo));
         FolderPermission fp = (FolderPermission) permissionsValueModel
             .getValue();
@@ -220,8 +225,8 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 updateButtons();
             } else if (e.getSource() == locationButton) {
                 String initial = (String) locationValueModel.getValue();
-                File file = DialogFactory.chooseDirectory(
-                        getController().getUIController(), initial);
+                File file = DialogFactory.chooseDirectory(getController()
+                    .getUIController(), initial);
                 if (file != null) {
                     location = file.getAbsolutePath();
                     locationDirectoryField.setText(location);
