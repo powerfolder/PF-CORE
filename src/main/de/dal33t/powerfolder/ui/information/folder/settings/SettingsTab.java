@@ -28,7 +28,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -41,6 +53,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -55,6 +68,9 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderAdminPermission;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -116,6 +132,7 @@ public class SettingsTab extends PFUIComponent {
     private final JTextField localFolderField;
     private final JButton localFolderButton;
     private ActionLabel confOSActionLabel;
+    private BaseAction confOSAction;
     private ActionLabel previewFolderActionLabel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
@@ -144,6 +161,7 @@ public class SettingsTab extends PFUIComponent {
         patternChangeListener = new MyPatternChangeListener();
         patternsListModel = new DefaultListModel();
         removeFolderAction = new RemoveFolderAction(getController());
+        removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
         serverClient.addListener(new MyServerClientListener());
         membershipListner = new MyFolderMembershipListener();
         scriptModel = new ValueHolder(null, false);
@@ -306,8 +324,11 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        confOSActionLabel = new ActionLabel(getController(),
-            new FolderOnlineStorageAction(getController()));
+        confOSAction = new FolderOnlineStorageAction(getController());
+        // Permission setting done later enableConfigOSAction. This causes
+        // NPE:
+        // confOSAction.allowWith(FolderPermission.admin(folder.getInfo()));
+        confOSActionLabel = new ActionLabel(getController(), confOSAction);
         confOSActionLabel.convertToBigLabel();
         builder.add(confOSActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
@@ -317,8 +338,10 @@ public class SettingsTab extends PFUIComponent {
         FormLayout layout = new FormLayout("pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
+        BaseAction previewAction = new PreviewFolderAction(getController());
+        previewAction.allowWith(FolderRemovePermission.INSTANCE);
         previewFolderActionLabel = new ActionLabel(getController(),
-            new PreviewFolderAction(getController()));
+            previewAction);
         previewFolderActionLabel.convertToBigLabel();
         builder.add(previewFolderActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
@@ -419,12 +442,13 @@ public class SettingsTab extends PFUIComponent {
         bar.add(removeButton, cc.xy(3, 1));
         bar.add(Help.createWikiLinkButton(getController(),
             WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
-        syncPatternsCheckBox = new JCheckBox(Translation.getTranslation(
-                "settings_tab.sync_patterns"));
-        syncPatternsCheckBox.setToolTipText(Translation.getTranslation(
-                "settings_tab.sync_patterns.tip"));
+        syncPatternsCheckBox = new JCheckBox(Translation
+            .getTranslation("settings_tab.sync_patterns"));
+        syncPatternsCheckBox.setToolTipText(Translation
+            .getTranslation("settings_tab.sync_patterns.tip"));
         syncPatternsCheckBox.addActionListener(new MyActionListener());
         bar.add(syncPatternsCheckBox, cc.xy(5, 1));
+        syncPatternsCheckBox.setVisible(Feature.META_FOLDER.isEnabled());
 
         return bar.getPanel();
     }
@@ -753,6 +777,7 @@ public class SettingsTab extends PFUIComponent {
                         .getTranslation("action_backup_online_storage.description"));
             }
         }
+        confOSAction.allowWith(FolderPermission.admin(folder.getInfo()));
         confOSActionLabel.getUIComponent().setVisible(enabled);
     }
 
@@ -761,7 +786,6 @@ public class SettingsTab extends PFUIComponent {
      * button as required. Also config action on whether already joined OS.
      */
     private void enablePreviewFolderAction() {
-
         boolean enabled = false;
         if (folder != null) {
             enabled = true;
@@ -776,9 +800,8 @@ public class SettingsTab extends PFUIComponent {
                 previewFolderActionLabel.setToolTipText(Translation
                     .getTranslation("action_preview_folder.description"));
             }
-
         }
-        previewFolderActionLabel.setEnabled(enabled);
+        previewFolderActionLabel.getUIComponent().setVisible(enabled);
     }
 
     private void updateLocalArchiveMode(Object oldValue, Object newValue) {
