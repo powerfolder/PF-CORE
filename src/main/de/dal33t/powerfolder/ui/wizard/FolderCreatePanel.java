@@ -37,7 +37,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,9 +72,9 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -111,7 +115,7 @@ public class FolderCreatePanel extends PFWizardPanel {
     /**
      * Folders created; can not change that.
      * 
-     * @return
+     * @return if can go back
      */
     @Override
     public boolean canGoBackTo() {
@@ -274,7 +278,8 @@ public class FolderCreatePanel extends PFWizardPanel {
         public Object construct() {
             ServerClient client = getController().getOSClient();
 
-            Collection<FolderInfo> onlineFolderInfos = client.getAccountFolders();
+            Collection<FolderInfo> onlineFolderInfos = client
+                .getAccountFolders();
 
             for (Map.Entry<FolderInfo, FolderSettings> entry : configurations
                 .entrySet())
@@ -282,19 +287,21 @@ public class FolderCreatePanel extends PFWizardPanel {
                 FolderInfo folderInfo = entry.getKey();
                 FolderSettings folderSettings = entry.getValue();
 
-                // Look for folders where there is already an online folder with 
+                // Look for folders where there is already an online folder with
                 // the same name. Offer to join instead of create duplicates.
                 for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-                    if (onlineFolderInfo.getName().equals(folderInfo.getName())) {
+                    if (onlineFolderInfo.getName().equals(folderInfo.getName()))
+                    {
                         if (!onlineFolderInfo.equals(folderInfo)) {
-                            log.info("Found online folder with same name: " +
-                                    folderInfo.getName() +
-                                    ". Asking user what to do...");
+                            log.info("Found online folder with same name: "
+                                + folderInfo.getName()
+                                + ". Asking user what to do...");
                             if (joinInstead(folderInfo)) {
                                 // User actually wants to join, so use online.
                                 folderInfo = onlineFolderInfo;
-                                log.info("Changed folder info to online version: " +
-                                        folderInfo.getName());
+                                log
+                                    .info("Changed folder info to online version: "
+                                        + folderInfo.getName());
                             }
                             break;
                         }
@@ -341,8 +348,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                         continue;
                     }
 
-                    client.getFolderService().createFolder(
-                        folderInfo,
+                    client.getFolderService().createFolder(folderInfo,
                         SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
                     // Set as default synced folder?
@@ -356,11 +362,7 @@ public class FolderCreatePanel extends PFWizardPanel {
                             folderInfo);
                         createDefaultFolderHelpFile(folder);
                         folder.recommendScanOnNextMaintenance();
-                        try {
-                            FileUtils.openFile(folder.getLocalBase());
-                        } catch (IOException e) {
-                            log.log(Level.FINER, "IOException", e);
-                        }
+                        FileUtils.openFile(folder.getLocalBase());
                     }
                 }
             }
@@ -369,19 +371,26 @@ public class FolderCreatePanel extends PFWizardPanel {
         }
 
         /**
-         * If user appears to be creating a duplicate of online folder,
-         * ask if they actually wish to join existing.
-         *
+         * If user appears to be creating a duplicate of online folder, ask if
+         * they actually wish to join existing.
+         * 
          * @param folderInfo
          * @return
          */
         private boolean joinInstead(FolderInfo folderInfo) {
-            return DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation("wizard.create_folder.found_online.title"),
-                    Translation.getTranslation("wizard.create_folder.found_online.text",
-                            folderInfo.getName()), new String[]{
-                            Translation.getTranslation("wizard.create_folder.found_online.join"),
-                            Translation.getTranslation("wizard.create_folder.found_online.create")},
+            return DialogFactory
+                .genericDialog(
+                    getController(),
+                    Translation
+                        .getTranslation("wizard.create_folder.found_online.title"),
+                    Translation.getTranslation(
+                        "wizard.create_folder.found_online.text", folderInfo
+                            .getName()),
+                    new String[]{
+                        Translation
+                            .getTranslation("wizard.create_folder.found_online.join"),
+                        Translation
+                            .getTranslation("wizard.create_folder.found_online.create")},
                     0, GenericDialogType.QUESTION) == 0;
         }
 
@@ -435,11 +444,14 @@ public class FolderCreatePanel extends PFWizardPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w.write("This is the default synchronized folder of PowerFolder.\r\n");
-                w.write("Simply place files into this directory to sync them\r\n");
+                w
+                    .write("This is the default synchronized folder of PowerFolder.\r\n");
+                w
+                    .write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w
+                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
@@ -468,8 +480,5 @@ public class FolderCreatePanel extends PFWizardPanel {
             getWizard().next();
         }
     }
-
-
-
 
 }
