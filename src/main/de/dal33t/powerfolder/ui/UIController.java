@@ -631,16 +631,10 @@ public class UIController extends PFComponent {
         }
         sysTrayFoldersMenu.setEnabled(true);
         final File localBase = folder.getLocalBase();
-        final String folderName = folder.getName();
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (localBase.exists()) {
-                    try {
-                        FileUtils.openFile(localBase);
-                    } catch (IOException e1) {
-                        log.log(Level.WARNING, "Problem opening folder "
-                            + folderName, e1);
-                    }
+                    FileUtils.openFile(localBase);
                 }
             }
         });
