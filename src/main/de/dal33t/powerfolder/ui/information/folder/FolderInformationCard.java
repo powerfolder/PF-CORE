@@ -19,22 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.information.folder;
 
+import java.awt.Image;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
 import de.dal33t.powerfolder.ui.information.folder.members.MembersTab;
-import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.information.folder.problems.ProblemsTab;
+import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.List;
 
 /**
  * Information card for a folder. Includes files, members and settings tabs.
