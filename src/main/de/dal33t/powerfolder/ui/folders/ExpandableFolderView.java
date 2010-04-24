@@ -28,7 +28,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
@@ -66,6 +65,9 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderRemovePermission;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.ExpandableView;
@@ -425,9 +427,14 @@ public class ExpandableFolderView extends PFUIComponent implements
             getController());
         openExplorerAction = new MyOpenExplorerAction(getController());
         removeFolderAction = new FolderRemoveAction(getController());
+        removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
+
+        Permission folderAdmin = FolderPermission.admin(folderInfo);
         backupOnlineStorageAction = new BackupOnlineStorageAction(
             getController());
+        backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
+        stopOnlineStorageAction.allowWith(folderAdmin);
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         syncFolderAction = new MySyncFolderAction(getController());
@@ -438,16 +445,15 @@ public class ExpandableFolderView extends PFUIComponent implements
         osComponent = new OnlineStorageComponent(getController(), folder);
 
         openSettingsInformationButton = new JButtonMini(
-            openSettingsInformationAction, true);
+            openSettingsInformationAction);
 
-        openFilesInformationButton = new JButtonMini(
-            openFilesInformationAction, true);
-        upperOpenFilesButton = new JButtonMini(openFilesInformationAction, true);
+        openFilesInformationButton = new JButtonMini(openFilesInformationAction);
+        upperOpenFilesButton = new JButtonMini(openFilesInformationAction);
 
-        inviteButton = new JButtonMini(inviteAction, true);
-        upperInviteButton = new JButtonMini(inviteAction, true);
+        inviteButton = new JButtonMini(inviteAction);
+        upperInviteButton = new JButtonMini(inviteAction);
 
-        problemButton = new JButtonMini(myProblemAction, true);
+        problemButton = new JButtonMini(myProblemAction);
         syncFolderButton = new SyncIconButtonMini(getController());
         syncFolderButton.addActionListener(syncFolderAction);
         upperSyncLink = new ActionLabel(getController(), syncFolderAction);
@@ -501,8 +507,9 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
 
-        // Always.
-        removeFolderAction.setEnabled(true);
+        // Controlled by permission system.
+        // removeFolderAction.setEnabled(true);
+
         updateSyncButton();
     }
 
@@ -596,9 +603,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Gets the name of the associated folder.
-     * 
-     * @return
+     * @return the Info of the associated folder.
      */
     public FolderInfo getFolderInfo() {
         return folderInfo;
@@ -875,9 +880,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             contextMenu.add(openFilesInformationAction);
             contextMenu.add(mostRecentChangesAction);
             contextMenu.add(clearCompletedDownloadsAction);
-            contextMenu.addSeparator();
-            contextMenu.add(inviteAction);
-            contextMenu.add(openMembersInformationAction);
+            if (!getController().isBackupOnly()) {
+                contextMenu.addSeparator();
+                contextMenu.add(inviteAction);
+                contextMenu.add(openMembersInformationAction);
+            }
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
@@ -896,11 +903,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void openExplorer() {
-        try {
-            FileUtils.openFile(folder.getLocalBase());
-        } catch (IOException ioe) {
-            logSevere("IOException", ioe);
-        }
+        FileUtils.openFile(folder.getLocalBase());
     }
 
     /**
