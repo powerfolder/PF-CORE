@@ -59,6 +59,12 @@ public class Identity extends Message {
      */
     private boolean acknowledgesHandshakeCompletion;
 
+    /**
+     * Supports Request/Response pattern with serialized arguments. To avoid
+     * problems when class model differs between client and server.
+     */
+    private boolean supportsSerializedRequest = true;
+
     // uses program version. ATTENTION: NEVER MARK THESE FINAL!!!!!
     private String programVersion = Controller.PROGRAM_VERSION;
 
@@ -176,6 +182,10 @@ public class Identity extends Message {
      */
     public boolean isAcknowledgesHandshakeCompletion() {
         return acknowledgesHandshakeCompletion;
+    }
+
+    public boolean isSupportsSerializedRequest() {
+        return supportsSerializedRequest;
     }
 
     /**
