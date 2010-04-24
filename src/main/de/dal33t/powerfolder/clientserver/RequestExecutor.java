@@ -111,7 +111,7 @@ public class RequestExecutor extends PFComponent {
                 return;
             }
             try {
-                waitForResponseLock.wait(seconds * 1000);
+                waitForResponseLock.wait(1000L * seconds);
             } catch (InterruptedException e) {
                 logWarning("Interrupted while waiting for response (" + node
                     + "): " + e);
