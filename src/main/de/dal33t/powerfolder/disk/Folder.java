@@ -21,7 +21,20 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -67,11 +80,7 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
-import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderReadPermission;
-import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -3302,23 +3311,20 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     public boolean hasReadPermission(Member member) {
-        return hasFolderPermission(member,
-            new FolderReadPermission(currentInfo));
+        return hasFolderPermission(member, FolderPermission.read(currentInfo));
     }
 
     public boolean hasWritePermission(Member member) {
-        return hasFolderPermission(member, new FolderReadWritePermission(
-            currentInfo));
+        return hasFolderPermission(member, FolderPermission
+            .readWrite(currentInfo));
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member, new FolderAdminPermission(
-            currentInfo));
+        return hasFolderPermission(member, FolderPermission.admin(currentInfo));
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member, new FolderOwnerPermission(
-            currentInfo));
+        return hasFolderPermission(member, FolderPermission.owner(currentInfo));
     }
 
     private boolean hasFolderPermission(Member member,
