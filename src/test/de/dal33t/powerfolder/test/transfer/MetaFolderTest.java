@@ -17,7 +17,7 @@
  *
  * $Id: MetaFolderTest.java 4282 2008-06-16 03:25:09Z harry $
  */
-package de.dal33t.powerfolder.test.folder;
+package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
 
