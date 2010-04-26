@@ -19,15 +19,15 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.File;
-
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.File;
 
 /**
  * Test cases for MetaFolder synchronization.
@@ -66,7 +66,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
             Folder lisaFolder = getFolderAtLisa();
 
-            // Check the mata folder was created.
+            // Check the meta folder was created.
             localBase = lisaFolder.getLocalBase();
             systemSubdir = new File(localBase,
                     Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -115,6 +115,32 @@ public class MetaFolderTest extends TwoControllerTestCase {
             assertTrue("lisa metafolder file does not exist",
                     lisaMetaFolder.getKnownFiles().iterator().next()
                             .diskFileExists(contollerLisa));
+        }
+    }
+
+    /**
+     * Test that metaFolders sync parent patterns.
+     */
+    public void testMetaFolderSyncPatterns() {
+        if (Feature.META_FOLDER.isEnabled()) {
+            joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            Folder bartFolder = getFolderAtBart();
+            bartFolder.getDiskItemFilter().addPattern("test");
+
+            Folder lisaFolder = getFolderAtLisa();
+            int initialSize =
+                    lisaFolder.getDiskItemFilter().getPatterns().size();
+
+            Controller contollerBart = getContollerBart();
+            Folder bartMetaFolder = contollerBart.getFolderRepository()
+                    .getMetaFolderForParent(bartFolder.getInfo());
+            // Wait for Bart's sync patterns to persist.
+            TestHelper.waitMilliSeconds(31000);
+            scanFolder(bartMetaFolder);
+            TestHelper.waitMilliSeconds(1000);
+
+            assertEquals("Wrong number of patterns", initialSize + 1,
+                    lisaFolder.getDiskItemFilter().getPatterns().size());
         }
     }
 }
