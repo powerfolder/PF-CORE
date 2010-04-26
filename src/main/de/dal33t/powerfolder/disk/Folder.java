@@ -21,20 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2259,6 +2246,74 @@ public class Folder extends PFComponent {
                 }
             }
         }
+    }
+
+    /**
+     * Updated sync patterns have been downloaded to the metaFolder.
+     * Update the sync patterns in this (parent) folder.
+     *
+     * @param fileInfo
+     *               fileInfo of the new sync patterns
+     */
+
+    public void handleMetaFolderSyncPatterns(FileInfo fileInfo) {
+
+        if (!syncPatterns) {
+            logFine("Not syncing patterns: " + getName());
+            return;
+        }
+
+        Folder metaFolder = getController().getFolderRepository()
+                .getMetaFolderForParent(currentInfo);
+        if (metaFolder == null) {
+            logWarning("Could not find metaFolder for " + currentInfo);
+            return;
+        }
+        File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
+
+        logFine("Reading syncPatterns " + syncPatternsFile);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(syncPatternsFile));
+            String line;
+            List<String> lines = new ArrayList<String>();
+            while((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+
+            // See if there are any changes.
+            // If no changes, do not update patterns.
+            // Otherwise changes will go back and forth for ever.
+            boolean same = true;
+            List<String> existingPatterns = diskItemFilter.getPatterns();
+            if (lines.size() == existingPatterns.size()) {
+                for (String thisLine : lines) {
+                    if (!existingPatterns.contains(thisLine)) {
+                        same = false;
+                        break;
+                    }
+                }
+            } else {
+                same = false;
+            }
+            if (!same) {
+                diskItemFilter.removeAllPatterns();
+                for (String thisLine : lines) {
+                    diskItemFilter.addPattern(thisLine);
+                }
+            }
+        } catch (Exception e) {
+            logSevere(e);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+
     }
 
     private interface MessageProvider {

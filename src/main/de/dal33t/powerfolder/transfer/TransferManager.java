@@ -765,93 +765,11 @@ public class TransferManager extends PFComponent {
             clearCompletedDownload(dlManager);
         }
 
-        handleMetaFolderDownload(fInfo);
-    }
-
-    /**
-     * Handle any metaFolder downloads. Files downloaded to a metaFolder
-     * affect the parent folder.
-     *
-     * @param fileInfo
-     */
-    private void handleMetaFolderDownload(FileInfo fileInfo) {
         if (getController().getFolderRepository().isMetaFolder(
-                fileInfo.getFolderInfo())) {
-            if (fileInfo.getFilenameOnly().equals(
-                    Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME)) {
-                handleMetaFolderSyncPatterns(fileInfo);
-            }
-        }
-    }
-
-    /**
-     * Updated sync patterns have been downloaded to the metaFolder.
-     * Update the sync patterns in the parent folder.
-     *
-     * @param fileInfo
-     */
-    private void handleMetaFolderSyncPatterns(FileInfo fileInfo) {
-        Folder parentFolder = getController().getFolderRepository()
-                .getParentFolder(fileInfo.getFolderInfo());
-        if (parentFolder == null) {
-            logWarning("Could not find parent folder for " + fileInfo);
-            return;
-        }
-        if (!parentFolder.isSyncPatterns()) {
-            logFine("Parent folder is not syncing patterns: " +
-                    parentFolder.getName());
-            return;
-        }
-        Folder metaFolder = getController().getFolderRepository()
-                .getMetaFolderForParent(parentFolder.getInfo());
-        if (metaFolder == null) {
-            logWarning("Could not find metaFolder for " +
-                    parentFolder.getInfo());
-            return;
-        }
-        File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
-        logFine("Reading syncPatterns " + syncPatternsFile);
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(syncPatternsFile));
-            String line;
-            List<String> lines = new ArrayList<String>();
-            while((line = br.readLine()) != null) {
-                lines.add(line);
-            }
-
-            // See if there are any changes.
-            // If no changes, do not update patterns.
-            // Otherwise changes will go back and forth for ever.
-            boolean same = true;
-            List<String> existingPatterns = parentFolder.getDiskItemFilter()
-                    .getPatterns();
-            if (lines.size() == existingPatterns.size()) {
-                for (String thisLine : lines) {
-                    if (!existingPatterns.contains(thisLine)) {
-                        same = false;
-                        break;
-                    }
-                }
-            } else {
-                same = false;
-            }
-            if (!same) {
-                parentFolder.getDiskItemFilter().removeAllPatterns();
-                for (String thisLine : lines) {
-                    parentFolder.getDiskItemFilter().addPattern(thisLine);
-                }
-            }
-        } catch (Exception e) {
-            logSevere(e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
+                fInfo.getFolderInfo())) {
+            MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                    getController());
+            mfdh.handleMetaFolderFileInfo(fInfo);
         }
     }
 
