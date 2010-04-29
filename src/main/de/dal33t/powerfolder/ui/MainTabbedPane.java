@@ -19,28 +19,31 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.Icon;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.computers.ComputersTab;
 import de.dal33t.powerfolder.ui.folders.FoldersTab;
-import de.dal33t.powerfolder.ui.status.StatusTab;
 import de.dal33t.powerfolder.ui.start.StartTab;
+import de.dal33t.powerfolder.ui.status.StatusTab;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This is the main tabbed pain component in the PowerFolder GUI.
  */
 public class MainTabbedPane extends PFUIComponent {
 
-    public static final int START_INDEX = 0;
-    public static final int STATUS_INDEX = 1;
-    public static final int FOLDERS_INDEX = 2;
-    public static final int COMPUTERS_INDEX = 3;
+    public static final int START_INDEX = Feature.START_TAB.isEnabled() ? 0 : 0;
+    public static final int STATUS_INDEX = Feature.START_TAB.isEnabled() ? 1 : 0;
+    public static final int FOLDERS_INDEX = Feature.START_TAB.isEnabled() ? 2 : 1;
+    public static final int COMPUTERS_INDEX = Feature.START_TAB.isEnabled() ? 3 : 2;
 
     private StartTab startTab;
     private StatusTab statusTab;
@@ -69,9 +72,11 @@ public class MainTabbedPane extends PFUIComponent {
         if (uiComponent == null) {
             // Initalize components
             initComponents();
-            uiComponent.add(Translation
-                .getTranslation("main_tabbed_pane.start.name"), startTab
-                .getUIComponent());
+            if (Feature.START_TAB.isEnabled()) {
+                uiComponent.add(Translation
+                    .getTranslation("main_tabbed_pane.start.name"), startTab
+                    .getUIComponent());
+            }
 
             uiComponent.add(Translation
                 .getTranslation("main_tabbed_pane.status.name"), statusTab
@@ -91,29 +96,33 @@ public class MainTabbedPane extends PFUIComponent {
                     computersTab.getUIComponent());
             }
 
-            String key = Translation.getTranslation("main_tabbed_pane.start.key");
-            uiComponent.setMnemonicAt(START_INDEX, (int) Character.toUpperCase(
-                    key.charAt(0)));
+            String key = Translation
+                .getTranslation("main_tabbed_pane.start.key");
+            uiComponent.setMnemonicAt(START_INDEX, (int) Character
+                .toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(START_INDEX, Translation
                 .getTranslation("main_tabbed_pane.start.description"));
             uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.START));
 
             key = Translation.getTranslation("main_tabbed_pane.status.key");
-            uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character.toUpperCase(key
-                .charAt(0)));
+            uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character
+                .toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(STATUS_INDEX, Translation
                 .getTranslation("main_tabbed_pane.status.description"));
-            uiComponent.setIconAt(STATUS_INDEX, Icons.getIconById(Icons.STATUS));
+            uiComponent
+                .setIconAt(STATUS_INDEX, Icons.getIconById(Icons.STATUS));
 
             key = Translation.getTranslation("main_tabbed_pane.folders.key");
             uiComponent.setMnemonicAt(FOLDERS_INDEX, (int) Character
                 .toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(FOLDERS_INDEX, Translation
                 .getTranslation("main_tabbed_pane.folders.description"));
-            uiComponent.setIconAt(FOLDERS_INDEX, Icons.getIconById(Icons.FOLDER));
+            uiComponent.setIconAt(FOLDERS_INDEX, Icons
+                .getIconById(Icons.FOLDER));
 
             if (!getController().isBackupOnly()) {
-                key = Translation.getTranslation("main_tabbed_pane.computers.key");
+                key = Translation
+                    .getTranslation("main_tabbed_pane.computers.key");
                 uiComponent.setMnemonicAt(COMPUTERS_INDEX, (int) Character
                     .toUpperCase(key.charAt(0)));
                 uiComponent.setToolTipTextAt(COMPUTERS_INDEX, Translation

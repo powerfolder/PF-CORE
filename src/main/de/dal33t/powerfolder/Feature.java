@@ -89,16 +89,34 @@ public enum Feature {
     TIP_OF_DAY(false),
 
     /**
-     * True if running in beta mode. Basically to identify differences.
+     * True if running in beta mode.
      */
     BETA(false),
 
-    CONFLICT_DETECTION(false),
 
-    CREDITS_SYSTEM(false),
+    /**
+     * TRAC #198
+     */
+    CONFLICT_DETECTION(false),
     
+    /**
+     * TRAC #1901 for internal use only.
+     */
+    CREDITS_SYSTEM(false),
+
+    /**
+     * TRAC #1940 for 4.3.0 release
+     */
+    START_TAB(false),
+
+    /**
+     * TRAC #1962 For later use
+     */
     REGION_SELECTOR(false),
 
+    /**
+     * TRAC #1548 for 4.3.0 release
+     */
     META_FOLDER(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
