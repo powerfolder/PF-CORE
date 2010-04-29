@@ -24,7 +24,6 @@ import java.lang.ref.WeakReference;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.Permission;
@@ -55,8 +54,7 @@ public abstract class BoundPermission extends PFComponent {
         // Hold original listener. Should only be GCed when the BoundPermission
         // object gets collected - NOT earlier.
         this.originalListener = new MyServerClientListener();
-        this.registeredListener = new MyWeakListener(getController()
-            .getOSClient(), originalListener);
+        this.registeredListener = new MyWeakListener(this, originalListener);
         getController().getOSClient().addListener(this.registeredListener);
         getController().schedule(new Runnable() {
             public void run() {
@@ -120,13 +118,13 @@ public abstract class BoundPermission extends PFComponent {
     }
 
     private static final class MyWeakListener implements ServerClientListener {
-        private ServerClient client;
+        private BoundPermission boundPermission;
         private WeakReference<ServerClientListener> delegateRef;
 
-        private MyWeakListener(ServerClient client,
+        private MyWeakListener(BoundPermission boundPermission,
             ServerClientListener listener)
         {
-            this.client = client;
+            this.boundPermission = boundPermission;
             this.delegateRef = new WeakReference<ServerClientListener>(listener);
         }
 
@@ -136,7 +134,7 @@ public abstract class BoundPermission extends PFComponent {
                 deligate.accountUpdated(event);
             } else {
                 // Remove. Delegate was GCed
-                client.removeListener(this);
+                boundPermission.dispose();
             }
         }
 
@@ -146,7 +144,7 @@ public abstract class BoundPermission extends PFComponent {
                 deligate.login(event);
             } else {
                 // Remove. Delegate was GCed
-                client.removeListener(this);
+                boundPermission.dispose();
             }
         }
 
@@ -156,7 +154,7 @@ public abstract class BoundPermission extends PFComponent {
                 deligate.serverConnected(event);
             } else {
                 // Remove. Delegate was GCed
-                client.removeListener(this);
+                boundPermission.dispose();
             }
         }
 
@@ -166,7 +164,7 @@ public abstract class BoundPermission extends PFComponent {
                 deligate.serverDisconnected(event);
             } else {
                 // Remove. Delegate was GCed
-                client.removeListener(this);
+                boundPermission.dispose();
             }
         }
 
