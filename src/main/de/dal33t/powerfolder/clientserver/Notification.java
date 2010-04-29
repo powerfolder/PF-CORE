@@ -24,6 +24,8 @@ import java.util.Date;
 
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Generic notification to Account / User.
@@ -160,6 +162,23 @@ public class Notification implements Serializable {
         this.accountOID = accountOID;
     }
 
+    /**
+     * Save get subject. Try i18ned version. Take plain subject if not found.
+     * 
+     * @return the subject
+     */
+    public String getSubjectI15D() {
+        String i15d = null;
+        if (StringUtils.isNotBlank(subjectTranslationID)) {
+            i15d = Translation.getTranslation(subjectTranslationID);
+        }
+        // Unknown, empty translation or non i15d
+        if (StringUtils.isBlank(i15d) || i15d.startsWith(" -")) {
+            i15d = subject;
+        }
+        return i15d;
+    }
+
     public String getSubject() {
         return subject;
     }
@@ -176,6 +195,23 @@ public class Notification implements Serializable {
         this.subjectTranslationID = subjectTranslationID;
     }
 
+    /**
+     * Save get text. Try i18ned version. Take text if not found.
+     * 
+     * @return the subject
+     */
+    public String getTextI15D() {
+        String i15d = null;
+        if (StringUtils.isNotBlank(textTranslationID)) {
+            i15d = Translation.getTranslation(textTranslationID);
+        }
+        // Unknown, empty translation or non i15d
+        if (StringUtils.isBlank(i15d) || i15d.startsWith(" -")) {
+            i15d = text;
+        }
+        return i15d;
+    }
+
     public String getTextTranslationID() {
         return textTranslationID;
     }
@@ -190,5 +226,30 @@ public class Notification implements Serializable {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((oid == null) ? 0 : oid.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Notification other = (Notification) obj;
+        if (oid == null) {
+            if (other.oid != null)
+                return false;
+        } else if (!oid.equals(other.oid))
+            return false;
+        return true;
     }
 }
