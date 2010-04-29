@@ -47,6 +47,7 @@ public class ApplicationModel extends PFUIComponent {
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
     private ReceivedInvitationsModel receivedInvitationsModel;
+    private ReceivedNotificationsModel receivedNotificationsModel;
     private ReceivedAskedForFriendshipModel receivedAskedForFriendshipModel;
     private ReceivedSingleFileOffersModel receivedSingleFileOffersModel;
     private WarningModel warningsModel;
@@ -76,6 +77,10 @@ public class ApplicationModel extends PFUIComponent {
         receivedInvitationsModel = new ReceivedInvitationsModel(getController());
         receivedInvitationsModel.getReceivedInvitationsCountVM()
             .addValueChangeListener(new MyReceivedInvitationListener());
+        receivedNotificationsModel = new ReceivedNotificationsModel(
+            getController());
+        receivedNotificationsModel.getCountVM().addValueChangeListener(
+            new MyReceivedNotificationListener());
         receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel(
             getController());
         receivedAskedForFriendshipModel.getReceivedAskForFriendshipCountVM()
@@ -196,6 +201,24 @@ public class ApplicationModel extends PFUIComponent {
     }
 
     private class MyReceivedInvitationListener implements
+        PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent evt) {
+            Integer newValue = (Integer) evt.getNewValue();
+            Integer oldValue = (Integer) evt.getOldValue();
+            if (newValue != null && oldValue != null && newValue > oldValue) {
+                getController().getUIController()
+                    .notifyMessage(
+                        Translation
+                            .getTranslation("invitation.notification.title"),
+                        Translation
+                            .getTranslation("invitation.notification.message"),
+                        false);
+            }
+        }
+    }
+
+    private class MyReceivedNotificationListener implements
         PropertyChangeListener
     {
         public void propertyChange(PropertyChangeEvent evt) {
