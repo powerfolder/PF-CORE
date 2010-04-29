@@ -1317,8 +1317,6 @@ public class Folder extends PFComponent {
                         FileInfo fInfo = files[i];
                         files[i] = correctFolderInfo(fInfo);
                         if (fInfo != files[i]) {
-                            logWarning("Instance has changed!"
-                                + fInfo.toDetailString());
                             // Instance has changes.
                             setDBDirty();
                         }
