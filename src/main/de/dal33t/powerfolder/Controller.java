@@ -77,9 +77,9 @@ import de.dal33t.powerfolder.event.SingleFileOfferHandler;
 import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.event.WarningHandler;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.SingleFileOffer;
-import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -132,8 +132,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.2 - 1.7.0.9"; // 1.7.0.9 / dev5
-    // dev4
+    public static final String PROGRAM_VERSION = "4.2.3 RC6"; // 1.7.0.11 / RC5
+
     /**
      * the (java beans like) property, listen to changes of the networking mode
      * by calling addPropertyChangeListener with this as parameter
