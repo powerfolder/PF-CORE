@@ -225,7 +225,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         borderBuilder.add(panel, cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
         borderPanel.setOpaque(false);
-        borderPanel.setBorder(BorderFactory.createEtchedBorder());
+     //   borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one.
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
