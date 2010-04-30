@@ -53,4 +53,5 @@ public interface WikiLinks {
     String LIMITED_CONNECTIVITY = "Limited_connectivity";
     String WEBDAV = "WebDAV";
     String CONNECT_ON_DEMAND = "Connect_on_demand";
+    String LIMITATIONS = "Limitations";
 }
