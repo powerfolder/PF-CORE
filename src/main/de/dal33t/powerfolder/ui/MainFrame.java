@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -134,7 +135,8 @@ public class MainFrame extends PFUIComponent {
             "0dlu, pref, 1dlu, fill:0:grow, 1dlu, pref");
         // menu head body footer
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("3dlu, 2dlu, 2dlu, 2dlu"));
+        builder.setBorder(Borders.createEmptyBorder("3dlu, 0, 2dlu, 0"));
+
         CellConstraints cc = new CellConstraints();
 
         builder.add(menuBar, cc.xyw(1, 1, 4));
@@ -329,8 +331,9 @@ public class MainFrame extends PFUIComponent {
         });
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
-        logoLabel = new LinkLabel(getController(), "", ConfigurationEntry.PROVIDER_URL
-                            .getValue(getController())).getUIComponent();
+        logoLabel = new LinkLabel(getController(), "",
+            ConfigurationEntry.PROVIDER_URL.getValue(getController()))
+            .getUIComponent();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
@@ -590,21 +593,21 @@ public class MainFrame extends PFUIComponent {
             }
             int targetWidth;
             int mainTabbedWidth = (int) mainTabbedPane.getUIComponent()
-                    .getPreferredSize().getWidth();
+                .getPreferredSize().getWidth();
             if (inline == INLINE_INFO_LEFT) {
                 int uiWidth = uiComponent.getWidth();
-                targetWidth = uiWidth -
-                        Math.max(uiWidth - currentDividerLocation, mainTabbedWidth);
+                targetWidth = uiWidth
+                    - Math.max(uiWidth - currentDividerLocation,
+                        mainTabbedWidth);
                 if (targetWidth <= 0) {
                     targetWidth = uiWidth - mainTabbedWidth;
                 }
 
                 // Move so UI right side to original position.
-                uiComponent.setLocation(originalX - uiComponent.getWidth() + originalWidth,
-                        uiComponent.getY());
+                uiComponent.setLocation(originalX - uiComponent.getWidth()
+                    + originalWidth, uiComponent.getY());
             } else {
-                targetWidth = Math.max(currentDividerLocation,
-                        mainTabbedWidth);
+                targetWidth = Math.max(currentDividerLocation, mainTabbedWidth);
                 if (targetWidth <= 0) {
                     targetWidth = mainTabbedWidth;
                 }
@@ -617,7 +620,7 @@ public class MainFrame extends PFUIComponent {
             // Splitpane place holders
             split.setLeftComponent(new JPanel());
             split.setRightComponent(new JPanel());
-            
+
             centralPanel.removeAll();
             centralPanel.add(mainTabbedPane.getUIComponent(),
                 BorderLayout.CENTER);
@@ -629,8 +632,8 @@ public class MainFrame extends PFUIComponent {
             if (inline == INLINE_INFO_LEFT) {
                 // Collapsing of left inline.
                 // Move so UI right side to original position.
-                uiComponent.setLocation(originalX - uiComponent.getWidth() + originalWidth,
-                        uiComponent.getY());
+                uiComponent.setLocation(originalX - uiComponent.getWidth()
+                    + originalWidth, uiComponent.getY());
             }
         }
 
@@ -664,8 +667,8 @@ public class MainFrame extends PFUIComponent {
 
     private void packWidth(boolean wasMaximized) {
         if (!wasMaximized) {
-            uiComponent.setSize(new Dimension(uiComponent.getMinimumSize().width,
-                uiComponent.getHeight()));
+            uiComponent.setSize(new Dimension(
+                uiComponent.getMinimumSize().width, uiComponent.getHeight()));
         }
         packWidthNext = false;
     }
