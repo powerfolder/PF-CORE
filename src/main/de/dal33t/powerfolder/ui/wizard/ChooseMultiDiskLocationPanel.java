@@ -28,7 +28,7 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEX
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
-import java.awt.SystemColor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -37,6 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,6 +65,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.Icons;
@@ -89,7 +91,7 @@ import de.dal33t.powerfolder.util.ui.UserDirectories;
  */
 public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
-    private static Map<String, File> userDirectories;
+    private Map<String, File> userDirectories;
     private WizardPanel next;
     private JLabel folderSizeLabel;
     private JLabel osWarningLabel;
@@ -286,12 +288,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         initialDirectory = getController().getFolderRepository()
             .getFoldersBasedir();
 
-        userDirectories = UserDirectories
-            .getUserDirectoriesFiltered(getController());
+        userDirectories = UserDirectories.getUserDirectories();
 
         folderSizeLabel = new JLabel();
         osWarningLabel = new JLabel();
-        startFolderSizeCalculator();
 
         boxes = new ArrayList<JCheckBox>();
 
@@ -362,6 +362,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         if (listener != null) {
             getController().getOSClient().addListener(listener);
         }
+        startFolderSizeCalculator();
+        startConfigureCheckboxes();
     }
 
     @Override
@@ -383,7 +385,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private void startFolderSizeCalculator() {
-        SwingWorker worker = new MySwingWorker();
+        SwingWorker worker = new MyFolderSizeSwingWorker();
         worker.start();
     }
 
@@ -471,16 +473,20 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         public void accountUpdated(ServerClientEvent event) {
             startFolderSizeCalculator();
+            startConfigureCheckboxes();
         }
 
         public void login(ServerClientEvent event) {
             startFolderSizeCalculator();
+            startConfigureCheckboxes();
         }
 
         public void serverConnected(ServerClientEvent event) {
+            startConfigureCheckboxes();
         }
 
         public void serverDisconnected(ServerClientEvent event) {
+            startConfigureCheckboxes();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -489,7 +495,25 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     }
 
-    private class MySwingWorker extends SwingWorker {
+    /**
+     * Start process to configure userDirectory checkboxes.
+     */
+    private void startConfigureCheckboxes() {
+        SwingWorker worker = new MyConfigureCBSwingWorker();
+        worker.start();
+    }
+
+    private static FolderInfo createFolderInfo(String name) {
+        // Create new folder info
+        String folderId = '[' + IdGenerator.makeId() + ']';
+        return new FolderInfo(name, folderId).intern();
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
+    private class MyFolderSizeSwingWorker extends SwingWorker {
 
         private int recursiveFileCount = 0;
         private long totalDirectorySize = 0;
@@ -598,9 +622,63 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
-    private static FolderInfo createFolderInfo(String name) {
-        // Create new folder info
-        String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId).intern();
+    /**
+     * Worker to gray out checkboxes for synchronized folders
+     * and bold checkboxes for non-sync online folders.
+     */
+    private class MyConfigureCBSwingWorker extends SwingWorker {
+        public Object construct() throws Throwable {
+            Collection<Folder> folders = getController().getFolderRepository()
+                    .getFolders();
+            ServerClient client = getController().getOSClient();
+            for (String name : userDirectories.keySet()) {
+                File file = userDirectories.get(name);
+                boolean local = false;
+                for (Folder folder : folders) {
+                    if (folder.getLocalBase().equals(file)) {
+                        // Locally synchronized.
+                        local = true;
+                        break;
+                    }
+                }
+
+                boolean online = false;
+                if (!local) {
+                    if (client != null && client.isConnected()
+                            && client.isLoggedIn()) {
+                        Collection<FolderInfo> accountFolders =
+                                client.getAccountFolders();
+                        for (FolderInfo accountFolder : accountFolders) {
+                            if (accountFolder.getName().equals(name)) {
+                                online = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Find checkbox
+                for (JCheckBox box : boxes) {
+                    if (box.getText().equals(name)) {
+                        Font font = new Font(box.getFont().getName(),
+                                !local && online ? Font.BOLD : Font.PLAIN,
+                                box.getFont().getSize());
+                        box.setFont(font);
+                        box.setEnabled(!local);
+                        if (local) {
+                            box.setToolTipText(Translation.getTranslation(
+                                    "wizard.choose_disk_location.already_synchronized"));
+                        } else if (online) {
+                            box.setToolTipText(Translation.getTranslation(
+                                    "wizard.choose_disk_location.already_online"));
+                        } else {
+                            box.setToolTipText(null);
+                        }
+                        break;
+                    }
+                }
+            }            
+            return null;
+        }
     }
 }

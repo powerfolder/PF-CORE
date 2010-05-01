@@ -29,9 +29,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFI
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
@@ -47,16 +44,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The start panel of the "what to do" wizard line
@@ -73,14 +65,12 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object backupOption = new Object();
     private static final Object hostOption = new Object();
     private static final Object customOption = new Object();
-    private static final Object onlineOption = new Object();
     private static final Object inviteOption = new Object();
 
     private ActionLabel synchronizedLink;
     private ActionLabel backupLink;
     private ActionLabel hostLink;
     private ActionLabel customLink;
-    private ActionLabel onlineLink;
     private ActionLabel inviteLink;
     private LinkLabel documentationLink;
     private ValueModel decision;
@@ -93,62 +83,21 @@ public class WhatToDoPanel extends PFWizardPanel {
         return decision.getValue() != null;
     }
 
-    public boolean validateNext() {
-        Object option = decision.getValue();
-        if (option == onlineOption) {
-            List<FolderInfo> folderList = findFolderList();
-
-            if (!getController().getOSClient().isLoggedIn()) {
-                DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("wizard.error_title"), Translation
-                    .getTranslation("wizard.what_to_do.no_login"),
-                    GenericDialogType.INFO);
-                return false;
-            } else if (folderList.isEmpty()) {
-                DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("wizard.error_title"), Translation
-                    .getTranslation("wizard.what_to_do.no_os_text"),
-                    GenericDialogType.INFO);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Find list of folders that are online storage but not local.
-     * 
-     * @return
-     */
-    private List<FolderInfo> findFolderList() {
-        List<FolderInfo> folderList = new ArrayList<FolderInfo>();
-        ServerClient client = getController().getOSClient();
-        Collection<FolderInfo> onlineFolderInfos = client.getAccountFolders();
-        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-            Folder folder = onlineFolderInfo.getFolder(getController());
-            if (folder == null) {
-                folderList.add(onlineFolderInfo);
-            }
-        }
-        return folderList;
-    }
-
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("140dlu, 3dlu, pref",
-            "pref, 12dlu, pref, 12dlu, pref, 12dlu, pref");
+            "pref, 12dlu, pref, 12dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(synchronizedLink.getUIComponent(), cc.xy(1, 1));
-        builder.add(backupLink.getUIComponent(), cc.xy(1, 3));
-        builder.add(hostLink.getUIComponent(), cc.xy(1, 5));
-        builder.add(customLink.getUIComponent(), cc.xy(1, 7));
+        builder.add(hostLink.getUIComponent(), cc.xy(1, 3));
+        builder.add(backupLink.getUIComponent(), cc.xy(1, 5));
 
-        builder.add(onlineLink.getUIComponent(), cc.xy(3, 1));
-        builder.add(inviteLink.getUIComponent(), cc.xy(3, 3));
-        builder.add(documentationLink.getUIComponent(), cc.xy(3, 5));
+        builder.add(inviteLink.getUIComponent(), cc.xy(3, 1));
+        builder.add(documentationLink.getUIComponent(), cc.xy(3, 3));
+        builder.add(customLink.getUIComponent(), cc.xy(3, 5));
         builder.getPanel().setOpaque(false);
 
         return builder.getPanel();
@@ -166,27 +115,11 @@ public class WhatToDoPanel extends PFWizardPanel {
             return doHostOption(getController(), getWizardContext());
         } else if (option == customOption) {
             return doCustomAction();
-        } else if (option == onlineOption) {
-            return doOnlineOption();
         } else if (option == inviteOption) {
             return doInviteOption();
         }
 
         return null;
-    }
-
-    private WizardPanel doOnlineOption() {
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
-
-        // Setup success panel of this wizard path
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
-        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
-
-        List<FolderInfo> folderList = findFolderList();
-        return new SelectOnlineStoragePanel(getController(), folderList);
     }
 
     private WizardPanel doInviteOption() {
@@ -378,13 +311,6 @@ public class WhatToDoPanel extends PFWizardPanel {
         customLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.custom_sync.tip"));
         customLink.convertToBigLabel();
-
-        onlineLink = new ActionLabel(getController(), new WhatToDoAction(
-            Translation.getTranslation("wizard.what_to_do.join_online"),
-            onlineOption, decision));
-        onlineLink.setToolTipText(Translation
-            .getTranslation("wizard.what_to_do.join_online.tip"));
-        onlineLink.convertToBigLabel();
 
         inviteLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.load_invite"),
