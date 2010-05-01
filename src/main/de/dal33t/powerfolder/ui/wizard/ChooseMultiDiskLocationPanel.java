@@ -41,15 +41,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.Action;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -58,6 +50,7 @@ import jwf.WizardPanel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -105,6 +98,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private Action addAction;
     private Action removeAction;
     private JButton removeButton;
+    private Action linkAction;
+    private JButton linkButton;
     private String initialDirectory;
     private List<JCheckBox> boxes;
     private ServerClientListener listener;
@@ -236,19 +231,15 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
         row += 3;
 
-        builder
-            .addLabel(
-                Translation
-                    .getTranslation("wizard.choose_multi_disk_location.select_additional"),
+        builder.addLabel(Translation
+                .getTranslation("wizard.choose_multi_disk_location.select_additional"),
                 cc.xyw(1, row, 6));
         row += 2;
 
         builder.add(new JScrollPane(customDirectoryList), cc.xyw(1, row, 7));
         row += 2;
 
-        builder.add(new JButton(addAction), cc.xy(1, row));
-        builder.add(removeButton, cc.xy(3, row));
-        builder.add(folderSizeLabel, cc.xyw(5, row, 3));
+        builder.add(createCustomButtons(), cc.xyw(1, row, 7));
         row += 2;
 
         if (!getController().isLanOnly()
@@ -280,6 +271,21 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         return builder.getPanel();
     }
 
+    private JPanel createCustomButtons() {
+        FormLayout layout = new FormLayout(
+                "pref, 0:grow, pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        JPanel bar = ButtonBarFactory.buildCenteredBar(new JButton(addAction),
+                removeButton, linkButton);
+        bar.setOpaque(false);
+        builder.add(bar, cc.xy(1, 1));
+        builder.add(folderSizeLabel, cc.xy(3, 1));
+        JPanel panel = builder.getPanel();
+        panel.setOpaque(false);
+        return panel;
+    }
+
     /**
      * Initalizes all required components
      */
@@ -298,11 +304,13 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         addAction = new MyAddAction(getController());
         removeAction = new MyRemoveAction(getController());
         removeButton = new JButton(removeAction);
+        linkAction = new MyLinkAction(getController());
+        linkButton = new JButton(linkAction);
 
         customDirectoryListModel = new DefaultListModel();
         customDirectoryList = new JList(customDirectoryListModel);
         customDirectoryList
-            .setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+            .setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         customDirectoryList
             .addListSelectionListener(new MyListSelectionListener());
 
@@ -351,7 +359,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         sendInviteAfterCB.setOpaque(false);
         sendInviteAfterCB.setSelected(sendInvite);
 
-        enableRemoveAction();
+        enableRemoveLinkAction();
 
         listener = new MyServerClientListener();
     }
@@ -389,10 +397,13 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         worker.start();
     }
 
-    private void enableRemoveAction() {
-        removeAction.setEnabled(!customDirectoryList.getSelectionModel()
-            .isSelectionEmpty());
+    private void enableRemoveLinkAction() {
+        boolean enabled =
+                !customDirectoryList.getSelectionModel().isSelectionEmpty();
+        removeAction.setEnabled(enabled);
         removeButton.setVisible(removeAction.isEnabled());
+        linkAction.setEnabled(enabled);
+        linkButton.setVisible(linkAction.isEnabled());
     }
 
     protected void updateButtons() {
@@ -435,6 +446,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             initialDirectory = file.getAbsolutePath();
             if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
                 customDirectoryListModel.addElement(file.getAbsolutePath());
+                customDirectoryList.setSelectedIndex(
+                        customDirectoryListModel.size() - 1);
                 updateButtons();
                 startFolderSizeCalculator();
             }
@@ -448,17 +461,28 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            customDirectoryListModel.removeRange(customDirectoryList
-                .getSelectionModel().getMinSelectionIndex(),
-                customDirectoryList.getSelectionModel().getMaxSelectionIndex());
+            customDirectoryListModel.remove(
+                    customDirectoryList.getSelectedIndex());
             updateButtons();
             startFolderSizeCalculator();
         }
     }
 
+    private class MyLinkAction extends BaseAction {
+
+        MyLinkAction(Controller controller) {
+            super("action_link_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String fileName = (String) customDirectoryList.getSelectedValue();
+            // @todo link
+        }
+    }
+
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
-            enableRemoveAction();
+            enableRemoveLinkAction();
         }
     }
 
