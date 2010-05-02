@@ -62,6 +62,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.dialog.LinkFolderOnlineDialog;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -376,9 +377,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     @Override
     public void finish() {
-        super.finish();
         if (listener != null) {
             getController().getOSClient().removeListener(listener);
+            super.finish();
         }
     }
 
@@ -418,106 +419,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
-    private class MyAddAction extends BaseAction {
-
-        MyAddAction(Controller controller) {
-            super("action_add_directory", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            File file = DialogFactory.chooseDirectory(getUIController(),
-                    initialDirectory);
-            if (file == null) {
-                return;
-            }
-            File localBase = new File(getController().getFolderRepository()
-                .getFoldersBasedir());
-            if (file.equals(localBase)) {
-                DialogFactory
-                    .genericDialog(
-                        getController(),
-                        Translation
-                            .getTranslation("wizard.choose_disk_location.local_base.title"),
-                        Translation
-                            .getTranslation("wizard.choose_disk_location.local_base.text"),
-                        GenericDialogType.ERROR);
-                return;
-            }
-            initialDirectory = file.getAbsolutePath();
-            if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
-                customDirectoryListModel.addElement(file.getAbsolutePath());
-                customDirectoryList.setSelectedIndex(
-                        customDirectoryListModel.size() - 1);
-                updateButtons();
-                startFolderSizeCalculator();
-            }
-        }
-    }
-
-    private class MyRemoveAction extends BaseAction {
-
-        MyRemoveAction(Controller controller) {
-            super("action_remove_directory", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            customDirectoryListModel.remove(
-                    customDirectoryList.getSelectedIndex());
-            updateButtons();
-            startFolderSizeCalculator();
-        }
-    }
-
-    private class MyLinkAction extends BaseAction {
-
-        MyLinkAction(Controller controller) {
-            super("action_link_directory", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String fileName = (String) customDirectoryList.getSelectedValue();
-            // @todo link
-        }
-    }
-
-    private class MyListSelectionListener implements ListSelectionListener {
-        public void valueChanged(ListSelectionEvent e) {
-            enableRemoveLinkAction();
-        }
-    }
-
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            updateButtons();
-            startFolderSizeCalculator();
-        }
-    }
-
-    private class MyServerClientListener implements ServerClientListener {
-
-        public void accountUpdated(ServerClientEvent event) {
-            startFolderSizeCalculator();
-            startConfigureCheckboxes();
-        }
-
-        public void login(ServerClientEvent event) {
-            startFolderSizeCalculator();
-            startConfigureCheckboxes();
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            startConfigureCheckboxes();
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            startConfigureCheckboxes();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-    }
 
     /**
      * Start process to configure userDirectory checkboxes.
@@ -705,4 +606,108 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             return null;
         }
     }
+
+    private class MyLinkAction extends BaseAction {
+
+        MyLinkAction(Controller controller) {
+            super("action_link_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String fileName = (String) customDirectoryList.getSelectedValue();
+            LinkFolderOnlineDialog dialog =
+                    new LinkFolderOnlineDialog(getController(), fileName);
+            dialog.open();
+        }
+    }
+
+    private class MyListSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            enableRemoveLinkAction();
+        }
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            updateButtons();
+            startFolderSizeCalculator();
+        }
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+
+        public void accountUpdated(ServerClientEvent event) {
+            startFolderSizeCalculator();
+            startConfigureCheckboxes();
+        }
+
+        public void login(ServerClientEvent event) {
+            startFolderSizeCalculator();
+            startConfigureCheckboxes();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            startConfigureCheckboxes();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            startConfigureCheckboxes();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+    }
+
+    private class MyAddAction extends BaseAction {
+
+        MyAddAction(Controller controller) {
+            super("action_add_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            File file = DialogFactory.chooseDirectory(getUIController(),
+                    initialDirectory);
+            if (file == null) {
+                return;
+            }
+            File localBase = new File(getController().getFolderRepository()
+                .getFoldersBasedir());
+            if (file.equals(localBase)) {
+                DialogFactory
+                    .genericDialog(
+                        getController(),
+                        Translation
+                            .getTranslation("wizard.choose_disk_location.local_base.title"),
+                        Translation
+                            .getTranslation("wizard.choose_disk_location.local_base.text"),
+                        GenericDialogType.ERROR);
+                return;
+            }
+            initialDirectory = file.getAbsolutePath();
+            if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
+                customDirectoryListModel.addElement(file.getAbsolutePath());
+                customDirectoryList.setSelectedIndex(
+                        customDirectoryListModel.size() - 1);
+                updateButtons();
+                startFolderSizeCalculator();
+            }
+        }
+    }
+
+    private class MyRemoveAction extends BaseAction {
+
+        MyRemoveAction(Controller controller) {
+            super("action_remove_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            customDirectoryListModel.remove(
+                    customDirectoryList.getSelectedIndex());
+            updateButtons();
+            startFolderSizeCalculator();
+        }
+    }
+    
 }
