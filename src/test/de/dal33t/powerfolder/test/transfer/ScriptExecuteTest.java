@@ -104,6 +104,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         expected += fLisa.getParent();
         expected += " ";
         expected += getFolderAtLisa().getLocalBase().getAbsolutePath();
+        expected += " Bart";
 
         assertEquals(expected, content.trim());
     }
@@ -113,10 +114,10 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         outputFile = File.createTempFile("output", ".txt");
         byte[] content;
         String cmdLine;
-        String params = "$file $path $folderpath";
+        String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 >" + outputFile.getAbsolutePath() + "\nexit")
+            content = ("echo %1 %2 %3 %4 %5 >" + outputFile.getAbsolutePath() + "\nexit")
                 .getBytes();
             cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
                 + params;

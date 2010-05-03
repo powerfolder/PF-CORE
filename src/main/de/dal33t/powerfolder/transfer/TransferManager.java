@@ -736,7 +736,7 @@ public class TransferManager extends PFComponent {
 
             if (folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
                 if (StringUtils.isNotBlank(folder.getDownloadScript())) {
-                    executeDownloadScript(fInfo, folder);
+                    executeDownloadScript(fInfo, folder, dlManager);
                 }
             } else {
                 logSevere("Scanning of completed file failed: "
@@ -766,9 +766,10 @@ public class TransferManager extends PFComponent {
         }
 
         if (getController().getFolderRepository().isMetaFolder(
-                fInfo.getFolderInfo())) {
+            fInfo.getFolderInfo()))
+        {
             MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
-                    getController());
+                getController());
             mfdh.handleMetaFolderFileInfo(fInfo);
         }
     }
@@ -781,7 +782,9 @@ public class TransferManager extends PFComponent {
      * @param fInfo
      * @param folder
      */
-    private void executeDownloadScript(FileInfo fInfo, Folder folder) {
+    private void executeDownloadScript(FileInfo fInfo, Folder folder,
+        DownloadManager dlManager)
+    {
         Reject
             .ifBlank(folder.getDownloadScript(), "Download script is not set");
         File dlFile = fInfo.getDiskFile(getController().getFolderRepository());
@@ -790,6 +793,21 @@ public class TransferManager extends PFComponent {
         command = command.replace("$path", dlFile.getParent());
         command = command.replace("$folderpath", folder.getLocalBase()
             .getAbsolutePath());
+
+        StringBuilder sourcesStr = new StringBuilder();
+        for (Download source : dlManager.getSources()) {
+            Member p = source.getPartner();
+            if (p != null) {
+                sourcesStr.append(p.getNick());
+            }
+            sourcesStr.append(",");
+        }
+        if (sourcesStr.length() > 0) {
+            // Cut last ,
+            sourcesStr.setLength(sourcesStr.length() - 1);
+        }
+        command = command.replace("$sources", sourcesStr);
+
         try {
             logInfo("Executing command: " + command);
             Runtime.getRuntime().exec(command);
