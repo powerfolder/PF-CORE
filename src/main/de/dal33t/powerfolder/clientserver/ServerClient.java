@@ -431,6 +431,8 @@ public class ServerClient extends PFComponent {
 
         if (!StringUtils.isBlank(un)) {
             return login(un, pw);
+        } else {
+            logFine("Not logging in. Username blank");
         }
         // Failed!
         return null;
