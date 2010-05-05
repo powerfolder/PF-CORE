@@ -62,12 +62,13 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -102,6 +103,7 @@ public class StatusTab extends PFUIComponent {
     private OnlineStorageSection onlineStorageSection;
     private LicenseInfoSection licenseInfoSection;
     private LinkLabel buyNowLabel;
+    private ActionLabel tellFriendLabel;
 
     private final ValueModel newWarningsCountVM;
     private final ValueModel newFriendRequestsCountVM;
@@ -155,7 +157,8 @@ public class StatusTab extends PFUIComponent {
         if (uiComponent == null) {
             buildUI();
         }
-        uiComponent.setTransferHandler(new FileDropTransferHandler(getController()));
+        uiComponent.setTransferHandler(new FileDropTransferHandler(
+            getController()));
         return uiComponent;
     }
 
@@ -256,6 +259,18 @@ public class StatusTab extends PFUIComponent {
             showBuyNowLink(Translation
                 .getTranslation("pro.status_tab.upgrade_powerfolder"));
         }
+        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
+        {
+            public void actionPerformed(ActionEvent e) {
+                PFWizard wizard = new PFWizard(getController(), Translation
+                    .getTranslation("wizard.pfwizard.tell_friend_title"));
+                wizard.open(new TellFriendPanel(getController()));
+            }
+        });
+        tellFriendLabel.setText(Translation
+            .getTranslation("status_tab.tell_friend.text"));
+        tellFriendLabel.setToolTipText(Translation
+            .getTranslation("status_tab.tell_friend.tip"));
 
         updateTransferText();
         updateFoldersText();
@@ -317,7 +332,7 @@ public class StatusTab extends PFUIComponent {
                 // have
                 // section
                 "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
-                "pref, 3dlu, pref, pref, pref, pref");
+                "pref, 3dlu, pref, pref, pref, pref, 0:grow, pref");
         // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
 
@@ -374,6 +389,8 @@ public class StatusTab extends PFUIComponent {
         builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(buyNowLabel.getUIComponent(), cc.xy(1, row));
+        row+=2;
+        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
         return builder.getPanel();
     }
@@ -844,7 +861,7 @@ public class StatusTab extends PFUIComponent {
             updateOnlineStorageDetails();
         }
     }
-    
+
     private class UseOSModelListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
