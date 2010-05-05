@@ -1112,7 +1112,7 @@ public class NodeManager extends PFComponent {
         if (!node.isOnSameNetwork()) {
             logWarning("Added node with diffrent network id. Our netID: "
                 + getNetworkId() + ", node netID: " + node.getInfo().networkId
-                + ". " + node, new RuntimeException("here"));
+                + ". " + node);
         }
 
         // Fire new node event
