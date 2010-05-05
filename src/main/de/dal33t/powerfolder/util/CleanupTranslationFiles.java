@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -195,6 +196,15 @@ public class CleanupTranslationFiles {
         ExtendedProperties props = new ExtendedProperties();
         try {
             props.load(new FileInputStream(fileName));
+        } catch (FileNotFoundException e) {
+            System.err.print(fileName);
+            try {
+                System.err.println(": Creating new translation file");
+                new File(fileName).createNewFile();
+                return props;
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         } catch (IOException e) {
             System.err.println(fileName);
             e.printStackTrace();
