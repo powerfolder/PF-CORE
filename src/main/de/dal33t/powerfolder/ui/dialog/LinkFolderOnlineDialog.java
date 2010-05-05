@@ -40,7 +40,9 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.wizard.ChooseMultiDiskLocationPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 
 /**
@@ -53,22 +55,31 @@ import de.dal33t.powerfolder.util.ui.BaseDialog;
 public class LinkFolderOnlineDialog extends BaseDialog {
 
     private ServerClientListener listener;
-
     private Action linkAction;
     private JButton linkButton;
+    private JButton clearButton;
     private JButton cancelButton;
     private DefaultComboBoxModel folderListModel;
     private JComboBox folderList;
     private final AtomicBoolean populated = new AtomicBoolean();
+    private final String fileName;
+    private final String currentFolderName;
+    private final ChooseMultiDiskLocationPanel parent;
 
     /**
      * Contructor when used on choosen folder
      *
      * @param controller
+     * @param parent
      * @param fileName
      */
-    public LinkFolderOnlineDialog(Controller controller, String fileName) {
+    public LinkFolderOnlineDialog(Controller controller,
+                                  ChooseMultiDiskLocationPanel parent,
+                                  String fileName, String currentFolderName) {
         super(controller, true);
+        this.parent = parent;
+        this.fileName = fileName;
+        this.currentFolderName = currentFolderName;
         listener = new MyServerClientListener();
         getController().getOSClient().addListener(listener);
     }
@@ -84,8 +95,15 @@ public class LinkFolderOnlineDialog extends BaseDialog {
                 "dialog.link_folder_online.select_text") + " --");
         folderList.addItemListener(new MyItemListener());
 
+        Action clearAction = new MyLinkClearAction(getController());
+        clearButton = new JButton(clearAction);
+        if (StringUtils.isBlank(currentFolderName)) {
+            clearAction.setEnabled(false);
+        }
+
         linkAction = new MyLinkAction(getController());
         linkButton = new JButton(linkAction);
+
         cancelButton = createCancelButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 close();
@@ -118,7 +136,8 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     }
 
     protected Component getButtonBar() {
-        return ButtonBarFactory.buildCenteredBar(linkButton, cancelButton);
+        return ButtonBarFactory.buildCenteredBar(linkButton, clearButton,
+                cancelButton);
     }
 
     protected JButton getDefaultButton() {
@@ -126,6 +145,12 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     }
 
     private void link() {
+        parent.link(fileName, (String) folderList.getSelectedItem());
+        close();
+    }
+
+    private void clearLink() {
+        parent.link(fileName, null);
         close();
     }
 
@@ -136,17 +161,6 @@ public class LinkFolderOnlineDialog extends BaseDialog {
             getController().getOSClient().removeListener(listener);
         }
         super.finalize();
-    }
-
-    private class MyLinkAction extends BaseAction {
-
-        MyLinkAction(Controller controller) {
-            super("action_link_directory", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            link();
-        }
     }
 
     private void populateOnlineFolders() {
@@ -169,6 +183,15 @@ public class LinkFolderOnlineDialog extends BaseDialog {
                         }
                     }
                     populated.set(true);
+                    if (folderList.getSelectedIndex() == 0 &&
+                            !StringUtils.isBlank(currentFolderName)) {
+                        for (int i = 0; i < folderListModel.getSize(); i++) {
+                            if (folderListModel.getElementAt(i).equals(currentFolderName)) {
+                                folderList.setSelectedIndex(i);
+                                break;
+                            }
+                        }
+                    }
                 }
             } else {
                 if (popped) {
@@ -190,6 +213,28 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     // ////////////////
     // Inner classes //
     // ////////////////
+
+    private class MyLinkAction extends BaseAction {
+
+        MyLinkAction(Controller controller) {
+            super("action_link_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            link();
+        }
+    }
+
+    private class MyLinkClearAction extends BaseAction {
+
+        MyLinkClearAction(Controller controller) {
+            super("action_clear_link_directory", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            clearLink();
+        }
+    }
 
     private class MyServerClientListener implements ServerClientListener {
 

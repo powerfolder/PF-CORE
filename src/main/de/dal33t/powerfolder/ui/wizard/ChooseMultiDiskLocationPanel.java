@@ -34,10 +34,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,6 +103,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private List<JCheckBox> boxes;
     private ServerClientListener listener;
 
+    private Map<String, String> links;
+
     /**
      * Creates a new disk location wizard panel. Name of new folder is
      * automatically generated, folder will be secret
@@ -118,6 +118,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         super(controller);
         Reject.ifNull(next, "Next wizard panel is null");
         this.next = next;
+        links = new HashMap<String, String>();
     }
 
     // From WizardPanel *******************************************************
@@ -436,6 +437,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         return new FolderInfo(name, folderId).intern();
     }
 
+    public void link(String fileName, String folderName) {
+        if (StringUtils.isBlank(folderName)) {
+            links.remove(fileName);
+        } else {
+            links.put(fileName, folderName);
+        }
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -618,8 +627,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             String fileName = (String) customDirectoryList.getSelectedValue();
-            LinkFolderOnlineDialog dialog =
-                    new LinkFolderOnlineDialog(getController(), fileName);
+            LinkFolderOnlineDialog dialog = new LinkFolderOnlineDialog(
+                    getController(), ChooseMultiDiskLocationPanel.this,
+                    fileName, links.get(fileName));
             dialog.open();
         }
     }
