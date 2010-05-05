@@ -145,6 +145,20 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     public boolean validateNext() {
 
+        // Disallow if backup checkbox is checked and there are online storage
+        // links set - ambiguous.
+        if (!links.isEmpty() && backupByOnlineStorageBox.isSelected()) {
+            DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation(
+                    "wizard.choose_multi_disk_location.backup_link_error_title"),
+                    Translation.getTranslation(
+                            "wizard.choose_multi_disk_location.backup_link_error_text",
+                            Translation.getTranslation(
+                                    "wizard.choose_disk_location.backup_by_online_storage")),
+                    GenericDialogType.ERROR);
+            return false;
+        }
+
         List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
         SyncProfile syncProfile = (SyncProfile) getWizardContext()
@@ -442,6 +456,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             links.remove(fileName);
         } else {
             links.put(fileName, folderName);
+            backupByOnlineStorageBox.setSelected(false);
         }
     }
 
