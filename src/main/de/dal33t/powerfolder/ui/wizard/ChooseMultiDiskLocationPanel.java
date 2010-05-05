@@ -103,7 +103,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private List<JCheckBox> boxes;
     private ServerClientListener listener;
 
-    private Map<String, String> links;
+    //Map<file, folderName>
+    private Map<File, String> links;
 
     /**
      * Creates a new disk location wizard panel. Name of new folder is
@@ -118,7 +119,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         super(controller);
         Reject.ifNull(next, "Next wizard panel is null");
         this.next = next;
-        links = new HashMap<String, String>();
+        links = new HashMap<File, String>();
     }
 
     // From WizardPanel *******************************************************
@@ -144,20 +145,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-
-        // Disallow if backup checkbox is checked and there are online storage
-        // links set - ambiguous.
-        if (!links.isEmpty() && backupByOnlineStorageBox.isSelected()) {
-            DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation(
-                    "wizard.choose_multi_disk_location.backup_link_error_title"),
-                    Translation.getTranslation(
-                            "wizard.choose_multi_disk_location.backup_link_error_text",
-                            Translation.getTranslation(
-                                    "wizard.choose_disk_location.backup_by_online_storage")),
-                    GenericDialogType.ERROR);
-            return false;
-        }
 
         List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
 
@@ -188,6 +175,16 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             FolderCreateItem item = new FolderCreateItem(file);
             item.setSyncProfile(syncProfile);
             folderCreateItems.add(item);
+        }
+
+        // Add links
+        for (Map.Entry<File, String> entry : links.entrySet()) {
+            entry.getKey();
+            for (FolderCreateItem item : folderCreateItems) {
+                if (item.getLocalBase().equals(entry.getKey())) {
+                    item.setLinkToOnlineFolder(entry.getValue());
+                }
+            }
         }
 
         getWizardContext().setAttribute(FOLDER_CREATE_ITEMS, folderCreateItems);
@@ -451,13 +448,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         return new FolderInfo(name, folderId).intern();
     }
 
-    public void link(String fileName, String folderName) {
+    public void link(File file, String folderName) {
         if (StringUtils.isBlank(folderName)) {
-            links.remove(fileName);
+            links.remove(file);
         } else {
-            links.put(fileName, folderName);
+            links.put(file, folderName);
             backupByOnlineStorageBox.setSelected(false);
         }
+        backupByOnlineStorageBox.setVisible(links.isEmpty());
     }
 
     // ////////////////
@@ -642,9 +640,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         public void actionPerformed(ActionEvent e) {
             String fileName = (String) customDirectoryList.getSelectedValue();
+            File file = new File(fileName);
             LinkFolderOnlineDialog dialog = new LinkFolderOnlineDialog(
                     getController(), ChooseMultiDiskLocationPanel.this,
-                    fileName, links.get(fileName));
+                    file, links.get(file));
             dialog.open();
         }
     }

@@ -37,6 +37,7 @@ public class FolderCreateItem {
     private SyncProfile syncProfile;
     private ArchiveMode archiveMode;
     private int archiveHistory;
+    private String linkToOnlineFolder;
 
     public FolderCreateItem(File localBase) {
         this.localBase = localBase;
@@ -83,5 +84,13 @@ public class FolderCreateItem {
 
     public void setArchiveHistory(int archiveHistory) {
         this.archiveHistory = archiveHistory;
+    }
+
+    public String getLinkToOnlineFolder() {
+        return linkToOnlineFolder;
+    }
+
+    public void setLinkToOnlineFolder(String linkToOnlineFolder) {
+        this.linkToOnlineFolder = linkToOnlineFolder;
     }
 }

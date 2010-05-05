@@ -26,6 +26,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.File;
 
 import javax.swing.*;
 
@@ -62,7 +63,7 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     private DefaultComboBoxModel folderListModel;
     private JComboBox folderList;
     private final AtomicBoolean populated = new AtomicBoolean();
-    private final String fileName;
+    private final File file;
     private final String currentFolderName;
     private final ChooseMultiDiskLocationPanel parent;
 
@@ -71,14 +72,14 @@ public class LinkFolderOnlineDialog extends BaseDialog {
      *
      * @param controller
      * @param parent
-     * @param fileName
+     * @param file
      */
     public LinkFolderOnlineDialog(Controller controller,
                                   ChooseMultiDiskLocationPanel parent,
-                                  String fileName, String currentFolderName) {
+                                  File file, String currentFolderName) {
         super(controller, true);
         this.parent = parent;
-        this.fileName = fileName;
+        this.file = file;
         this.currentFolderName = currentFolderName;
         listener = new MyServerClientListener();
         getController().getOSClient().addListener(listener);
@@ -124,12 +125,15 @@ public class LinkFolderOnlineDialog extends BaseDialog {
         initComponents();
 
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, max(140dlu;pref):grow", "pref");
+            "pref, 3dlu, max(140dlu;pref):grow", "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
-        builder.addLabel(Translation.getTranslation("general.synchonisation"),
+        builder.addLabel(Translation.getTranslation("link_folder.dialog.description"),
+                cc.xyw(1, row, 3));
+        row += 2;
+        builder.addLabel(Translation.getTranslation("link_folder.dialog.link_text"),
             cc.xy(1, row));
         builder.add(folderList, cc.xy(3, row));
         return builder.getPanel();
@@ -145,12 +149,12 @@ public class LinkFolderOnlineDialog extends BaseDialog {
     }
 
     private void link() {
-        parent.link(fileName, (String) folderList.getSelectedItem());
+        parent.link(file, (String) folderList.getSelectedItem());
         close();
     }
 
     private void clearLink() {
-        parent.link(fileName, null);
+        parent.link(file, null);
         close();
     }
 

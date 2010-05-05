@@ -65,11 +65,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -185,6 +181,9 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
                 ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
                 int archiveHistory = folderCreateItem.getArchiveHistory();
+                if (!StringUtils.isBlank(folderCreateItem.getLinkToOnlineFolder())) {
+                    // todo ...
+                }
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
                     null, archiveHistory, true);
