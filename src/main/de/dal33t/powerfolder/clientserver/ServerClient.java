@@ -408,10 +408,28 @@ public class ServerClient extends PFComponent {
      *         login failed.
      */
     public Account loginWithLastKnown() {
-        String un = getController().getPreferences().get(
-            PREFS_PREFIX + '.' + server.getIP() + ".username", null);
-        char[] pw = LoginUtil.deobfuscate(getController().getPreferences().get(
-            PREFS_PREFIX + '.' + server.getIP() + ".info3", null));
+
+        String un;
+        char[] pw;
+
+        if (ConfigurationEntry.SERVER_CONNECT_USERNAME
+            .hasValue(getController()))
+        {
+            un = ConfigurationEntry.SERVER_CONNECT_USERNAME
+                .getValue(getController());
+            pw = LoginUtil
+                .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                    .getValue(getController()));
+        } else {
+            // Old
+            un = getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".username", null);
+            pw = LoginUtil.deobfuscate(getController().getPreferences().get(
+                PREFS_PREFIX + '.' + server.getIP() + ".info3", null));
+        }
+
+        logFine("Logging into server " + getServerString() + ". Username: "
+            + username);
 
         if (pw == null) {
             String pwOld = getController().getPreferences().get(
@@ -836,13 +854,18 @@ public class ServerClient extends PFComponent {
      * TODO Support saving password with md5/salt
      */
     private void saveLastKnowLogin() {
-        if (StringUtils.isBlank(username)) {
-            getController().getPreferences().remove(
-                PREFS_PREFIX + '.' + server.getIP() + ".username");
-        } else {
+        if (StringUtils.isNotBlank(username)) {
             getController().getPreferences().put(
                 PREFS_PREFIX + '.' + server.getIP() + ".username", username);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
+                getController(), username);
+        } else {
+            getController().getPreferences().remove(
+                PREFS_PREFIX + '.' + server.getIP() + ".username");
+            ConfigurationEntry.SERVER_CONNECT_USERNAME
+                .removeValue(getController());
         }
+
         // Remove old (TRAC #1291) (TRAC #1921)
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info");
@@ -850,11 +873,19 @@ public class ServerClient extends PFComponent {
             PREFS_PREFIX + '.' + server.getIP() + ".info2");
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info3");
+
         if (isRememberPassword() && password != null && password.length > 0) {
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
+                getController(), LoginUtil.obfuscate(password));
+
+            // Remove later
             getController().getPreferences().put(
                 PREFS_PREFIX + '.' + server.getIP() + ".info3",
                 LoginUtil.obfuscate(password));
         }
+
+        // Store new username/pw
+        getController().saveConfig();
     }
 
     private void changeToServer(ServerInfo newServerInfo) {
