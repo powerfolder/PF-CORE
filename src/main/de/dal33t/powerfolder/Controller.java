@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.3 RC6"; // 1.7.0.11 / RC5
+    public static final String PROGRAM_VERSION = "4.2.3"; // 1.7.0.11 / RC10
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -541,6 +541,11 @@ public class Controller extends PFComponent {
 
         setLoadingCompletion(90, 100);
 
+        // Login to OS
+        if (Feature.OS_CLIENT.isEnabled()) {
+            osClient.loginWithLastKnown();
+        }
+
         // Start Plugins
         pluginManager.start();
 
@@ -569,20 +574,6 @@ public class Controller extends PFComponent {
         }
         // Start connecting to OS client.
         if (Feature.OS_CLIENT.isEnabled()) {
-            if (ConfigurationEntry.SERVER_CONNECT_USERNAME
-                .hasValue(getController()))
-            {
-                String username = ConfigurationEntry.SERVER_CONNECT_USERNAME
-                    .getValue(getController());
-                String password = ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .getValue(getController());
-                logWarning("Logging into server " + osClient.getServerString()
-                    + ". Username: " + username);
-                osClient.login(username, Util.toCharArray(password));
-            } else {
-                osClient.loginWithLastKnown();
-            }
-
             osClient.start();
         } else {
             logWarning("Not starting Online Storage (reconnection), "
