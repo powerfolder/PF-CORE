@@ -216,9 +216,9 @@ public enum ConfigurationEntry {
     SERVER_CONNECT_USERNAME("server.connect.username"),
 
     /**
-     * Password for connection
+     * Password for connection (obfuscated)
      */
-    SERVER_CONNECT_PASSWORD("server.connect.password"),
+    SERVER_CONNECT_PASSWORD("server.connect.passwordobf"),
 
     // General settings *******************************************************
 
