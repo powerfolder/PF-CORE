@@ -60,9 +60,11 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -256,7 +258,10 @@ public class AboutDialog extends PFUIComponent {
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.used",
                 String
-                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024)));
+                    .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
+            + '\n'
+            + Translation.getTranslation("about_dialog.power_folder.datasize",
+                Format.formatBytesShort(calculateTotalLocalSharedSize())));
 
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
@@ -275,6 +280,15 @@ public class AboutDialog extends PFUIComponent {
             + "Olle Wikstrom\n" + "Zhang Jia\n ");
         translators.setVisible(getController().getDistribution()
             .showCredentials());
+    }
+
+    private long calculateTotalLocalSharedSize() {
+        long totalSize = 0;
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            totalSize += folder.getStatistic().getLocalSize();
+        }
+        return totalSize;
     }
 
     private JPanel createRightPanel() {
