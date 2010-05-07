@@ -181,7 +181,9 @@ public class FolderCreatePanel extends PFWizardPanel {
                 }
                 ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
                 int archiveHistory = folderCreateItem.getArchiveHistory();
-                if (!StringUtils.isBlank(folderCreateItem.getLinkToOnlineFolder())) {
+                if (!StringUtils.isBlank(folderCreateItem
+                    .getLinkToOnlineFolder()))
+                {
                     // todo ...
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
@@ -377,6 +379,10 @@ public class FolderCreatePanel extends PFWizardPanel {
          * @return
          */
         private boolean joinInstead(FolderInfo folderInfo) {
+            if (true) {
+                // #1991 Make is simpler
+                return true;
+            }
             return DialogFactory
                 .genericDialog(
                     getController(),
