@@ -331,7 +331,7 @@ public class StatusTab extends PFUIComponent {
                 "pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 9dlu, " + // You
                 // have
                 // section
-                "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
+                // "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
                 "pref, 3dlu, pref, pref, pref, pref, 0:grow, pref");
         // sep, sync-stat sync-date sep warn, files invs comps singl
         // down upl sep #fol szfo comp sep os-acc osSec tell friend
@@ -369,15 +369,16 @@ public class StatusTab extends PFUIComponent {
         builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation.getTranslation("status_tab.local"), cc
-            .xy(1, row));
-        row += 2;
-        builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
-        row++;
-        builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(1, row));
-        row++;
-        builder.add(computersLine.getUIComponent(), cc.xy(1, row));
-        row += 2;
+        // builder.addSeparator(Translation.getTranslation("status_tab.local"),
+        // cc
+        // .xy(1, row));
+        // row += 2;
+        // builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
+        // row++;
+        // builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(1, row));
+        // row++;
+        // builder.add(computersLine.getUIComponent(), cc.xy(1, row));
+        // row += 2;
 
         builder.addSeparator(Translation
             .getTranslation("status_tab.online_storage.title"), cc.xy(1, row));
@@ -389,7 +390,7 @@ public class StatusTab extends PFUIComponent {
         builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(buyNowLabel.getUIComponent(), cc.xy(1, row));
-        row+=2;
+        row += 2;
         builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
 
         return builder.getPanel();
@@ -399,6 +400,12 @@ public class StatusTab extends PFUIComponent {
      * Updates the text for the number and size of the folders.
      */
     private void updateFoldersText() {
+        if (true) {
+            // #2002: Hide
+            numberOfFoldersLine.setValue(0);
+            sizeOfFoldersLine.setValue(0);
+            return;
+        }
         Collection<Folder> folders = getController().getFolderRepository()
             .getFolders(false);
         int numberOfFolder = folders.size();
@@ -504,9 +511,12 @@ public class StatusTab extends PFUIComponent {
      */
     private void updateComputers() {
         // FIXME This calculation depends on FILTER setting.
-        int nodeCount = getUIController().getApplicationModel()
-            .getNodeManagerModel().getSize();
-        computersLine.setValue(nodeCount);
+        // int nodeCount = getUIController().getApplicationModel()
+        // .getNodeManagerModel().getSize();
+        // computersLine.setValue(nodeCount);
+
+        // #2002 Don't show.
+        computersLine.setValue(0);
     }
 
     private void updateLicenseDetails() {
