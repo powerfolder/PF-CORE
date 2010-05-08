@@ -89,6 +89,7 @@ public class FolderCreatePanel extends PFWizardPanel {
         .getName());
 
     private final Map<FolderInfo, FolderSettings> configurations;
+    private final Map<FolderInfo, String> joinFolders;
     private boolean backupByOS;
     private boolean sendInvitations;
     private boolean createDesktopShortcut;
@@ -100,6 +101,7 @@ public class FolderCreatePanel extends PFWizardPanel {
     public FolderCreatePanel(Controller controller) {
         super(controller);
         configurations = new HashMap<FolderInfo, FolderSettings>();
+        joinFolders = new HashMap<FolderInfo, String>();
         folders = new ArrayList<Folder>();
     }
 
@@ -182,9 +184,9 @@ public class FolderCreatePanel extends PFWizardPanel {
                 ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
                 int archiveHistory = folderCreateItem.getArchiveHistory();
                 if (!StringUtils.isBlank(folderCreateItem
-                    .getLinkToOnlineFolder()))
-                {
-                    // todo ...
+                    .getLinkToOnlineFolder())) {
+                    joinFolders.put(folderInfo, folderCreateItem
+                            .getLinkToOnlineFolder());
                 }
                 FolderSettings folderSettings = new FolderSettings(localBase,
                     syncProfile, saveLocalInvite, archiveMode, previewFolder,
@@ -287,25 +289,44 @@ public class FolderCreatePanel extends PFWizardPanel {
             {
                 FolderInfo folderInfo = entry.getKey();
                 FolderSettings folderSettings = entry.getValue();
+                String joinFolderName = joinFolders.get(folderInfo);
 
-                // Look for folders where there is already an online folder with
-                // the same name. Offer to join instead of create duplicates.
-                for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-                    if (onlineFolderInfo.getName().equals(folderInfo.getName()))
-                    {
-                        if (!onlineFolderInfo.equals(folderInfo)) {
-                            log.info("Found online folder with same name: "
-                                + folderInfo.getName()
-                                + ". Asking user what to do...");
-                            if (joinInstead(folderInfo)) {
-                                // User actually wants to join, so use online.
-                                folderInfo = onlineFolderInfo;
-                                log
-                                    .info("Changed folder info to online version: "
-                                        + folderInfo.getName());
+                if (joinFolderName == null) {
+                    // Look for folders where there is already an online folder with
+                    // the same name. Offer to join instead of create duplicates.
+                    for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                        if (onlineFolderInfo.getName().equals(folderInfo.getName()))
+                        {
+                            if (!onlineFolderInfo.equals(folderInfo)) {
+                                log.info("Found online folder with same name: "
+                                    + folderInfo.getName()
+                                    + ". Asking user what to do...");
+                                if (joinInstead(folderInfo)) {
+                                    // User actually wants to join, so use online.
+                                    folderInfo = onlineFolderInfo;
+                                    log.info("Changed folder info to online version: "
+                                            + folderInfo.getName());
+                                }
+                                break;
                             }
+                        }
+                    }
+                } else {
+                    // User already specified online folder to join - join it.
+                    boolean gotIt = false;
+                    for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                        if (onlineFolderInfo.getName().equals(joinFolderName)) {
+                            log.info("Joining specified folder "
+                                + joinFolderName);
+                            folderInfo = onlineFolderInfo;
+                            gotIt = true;
                             break;
                         }
+                    }
+                    if (!gotIt) {
+                        // Hmmm - link folder specified but can not find it now?
+                        log.warning("Could not find link folder " +
+                                joinFolderName + " for " + folderInfo);
                     }
                 }
 
