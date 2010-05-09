@@ -2,15 +2,17 @@ PowerFolder Version 4.2.3 - http://www.powerfolder.com
 
 = New features =
  * Simplified usage and setup of PowerFolder: Less questions - better defaults.
-   Now much easier to setup by clicking "New Folder" on any computer.
- * Client now automatically switches online to better license key if current
+   Removed option "Sync previously setup folder" from wizard.
+   Now simply choose sync, backup, share or extended setup to
+   setup folders on all computers.
+ * Client now automatically switches to better license key if current
    one is not longer valid (expired or exceeded).
  
 = Improvements ==
  * Cleanup up user interface: Removed boxes around folder and computers.
    Also simplified status / home window.
  * Client configuration options can now be restricted to administrators only.
-   This prevents accidental users from changing client settings.
+   This prevents accidental change of client settings by users.
    Useful when running PowerFolder in-house with own server:
    http://www.powerfolder.com/wiki/Server_Overview
  * Added more placeholder / parameters to script execution after download:
@@ -21,6 +23,7 @@ PowerFolder Version 4.2.3 - http://www.powerfolder.com
  * Several other improvements.
 
 = Bugfixes =
+ * Eliminated a memory leak.
  * Fixed problem when trying to add custom directory to sync, share or backup.
  * Fixed problem while storing preferences.
  * Fixed chat display problems.
@@ -29,6 +32,7 @@ PowerFolder Version 4.2.3 - http://www.powerfolder.com
    under Windows 2003: http://www.powerfolder.com/wiki/System_Service
  * Fixed window resizing behavior.
  * Now correctly remembers pause mode setting after restart.
+
 
 Please give us feedback and request improvements:
 http://www.powerfolder.com/contact.html
@@ -55,6 +59,11 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.2.2
+-------------
+Internal release
+
 
 Version 4.2.1
 -------------
