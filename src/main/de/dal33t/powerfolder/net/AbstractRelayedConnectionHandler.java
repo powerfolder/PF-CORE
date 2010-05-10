@@ -179,7 +179,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      * @throws ConnectionException
      *             if something is broken.
      */
-    @SuppressWarnings("unused")
     protected boolean receivedObject(Object obj) throws ConnectionException {
         return false;
     }
