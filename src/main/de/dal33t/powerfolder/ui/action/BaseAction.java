@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.action;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.ui.Icons;
@@ -107,6 +108,12 @@ public abstract class BaseAction extends AbstractAction {
      * @param permission
      */
     public void allowWith(Permission permission) {
+        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            // Disabled #1958
+            return;
+        }
         if (boundPermission != null) {
             boundPermission.dispose();
             boundPermission = null;
