@@ -465,7 +465,7 @@ public class RelayedConnectionManager extends PFComponent {
                 getController().getNodeManager().acceptConnection(relHan);
             } catch (ConnectionException e) {
                 relHan.shutdown();
-                logWarning("Unable to accept connection: " + relHan + ". "
+                logFine("Unable to accept connection: " + relHan + ". "
                     + e.toString());
                 logFiner("ConnectionException", e);
                 RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
