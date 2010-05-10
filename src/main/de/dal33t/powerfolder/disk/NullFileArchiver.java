@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 
 /**
@@ -52,8 +51,7 @@ public class NullFileArchiver implements FileArchiver {
         throws IOException
     {
         // Not available.
-        throw new IOException("No archive. Unable to restore file "
-            + versionInfo.toDetailString());
+        return false;
     }
 
     public void setVersionsPerFile(int versionsPerFile) {
