@@ -64,6 +64,7 @@ public abstract class BoundPermission extends PFComponent {
     }
 
     public void dispose() {
+        //logWarning("Disposed: " + this + " / " + registeredListener);
         if (registeredListener != null) {
             getController().getOSClient().removeListener(registeredListener);
             registeredListener = null;
@@ -174,6 +175,7 @@ public abstract class BoundPermission extends PFComponent {
                 return deligate.fireInEventDispatchThread();
             } else {
                 // Delegate was GCed
+                //boundPermission.dispose();
                 return false;
             }
         }
