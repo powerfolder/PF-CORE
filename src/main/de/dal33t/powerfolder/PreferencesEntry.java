@@ -82,10 +82,13 @@ public enum PreferencesEntry {
      * and a warning displayed if limited connectivty is given.
      */
     TEST_CONNECTIVITY("test_for_connectivity", true),
+    
+    /** Warn user if connection is poor. */
+    WARN_POOR_QUALITY("warn.poor.quality", true),
 
     DUPLICATE_FOLDER_USE("duplicaet_folder_use", true),
 
-    SETUP_DEFAULT_FOLDER("setup_default_folder", true),
+    SETUP_DEFAULT_FOLDER("setup_default_folder", false),
 
     /**
      * If the last password of login should be reminded.
@@ -125,8 +128,6 @@ public enum PreferencesEntry {
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
 
-    /** Warn user if connection is poor. */
-    WARN_POOR_QUALITY("warn.poor.quality", true),
 
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
