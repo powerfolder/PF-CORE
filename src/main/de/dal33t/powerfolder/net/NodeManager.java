@@ -1550,8 +1550,9 @@ public class NodeManager extends PFComponent {
         @Override
         public void run() {
             Debug.writeStatistics(getController());
-            Debug.writeNodeListCSV(getController().getReconnectManager()
-                .getReconnectionQueue(), "ReconnectionQueue.csv");
+            Debug.writeNodeListCSV(new ArrayList<Member>(getController()
+                .getReconnectManager().getReconnectionQueue()),
+                "ReconnectionQueue.csv");
         }
     }
 
