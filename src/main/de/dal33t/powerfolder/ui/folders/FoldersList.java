@@ -215,9 +215,7 @@ public class FoldersList extends PFUIComponent {
             }
 
             // Remove all folder views.
-            ExpandableFolderView[] list = views
-                .toArray(new ExpandableFolderView[views.size()]);
-            for (ExpandableFolderView view : list) {
+            for (ExpandableFolderView view : views) {
                 views.remove(view);
                 view.removeExpansionListener(expansionListener);
                 view.unregisterListeners();
