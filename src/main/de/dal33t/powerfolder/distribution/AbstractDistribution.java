@@ -26,7 +26,6 @@ import java.util.Properties;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -54,11 +53,6 @@ public abstract class AbstractDistribution extends Loggable implements
 
     public void init(Controller controller) {
         this.controller = controller;
-    }
-
-    public final boolean isRelay(Member node) {
-        // Default: Server also acts as relay. #1488
-        return getController().getOSClient().isServer(node);
     }
 
     public UpdateSetting createUpdateSettings() {
