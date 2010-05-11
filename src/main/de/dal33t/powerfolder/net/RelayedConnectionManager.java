@@ -61,6 +61,7 @@ public class RelayedConnectionManager extends PFComponent {
      * ConnectionHanlder which is not yet connected with it's member (node).
      */
     private Collection<AbstractRelayedConnectionHandler> pendingConHans;
+    private RelayFilter relayFilter;
     private Lock pendingConHansLock = new ReentrantLock();
     private TransferCounter counter;
     private boolean printStats;
@@ -69,6 +70,7 @@ public class RelayedConnectionManager extends PFComponent {
     public RelayedConnectionManager(Controller controller) {
         super(controller);
         pendingConHans = new CopyOnWriteArrayList<AbstractRelayedConnectionHandler>();
+        relayFilter = new ServerIsRelayFilter();
         counter = new TransferCounter();
         printStats = false;
     }
@@ -182,6 +184,16 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     /**
+     * For TESTS only.
+     * 
+     * @param relayFilter
+     */
+    public void setRelayFilter(RelayFilter relayFilter) {
+        Reject.ifNull(relayFilter, "RelayFilter");
+        this.relayFilter = relayFilter;
+    }
+
+    /**
      * @return the relaying node or null if no relay found
      */
     public Member getRelay() {
@@ -208,7 +220,7 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     public boolean isRelay(Member node) {
-        return getController().getDistribution().isRelay(node);
+        return relayFilter.isRelay(node);
     }
 
     public TransferCounter getTransferCounter() {
@@ -515,5 +527,14 @@ public class RelayedConnectionManager extends PFComponent {
                 canidate.markForImmediateConnect();
             }
         }
+    }
+
+    private class ServerIsRelayFilter implements RelayFilter {
+
+        public final boolean isRelay(Member node) {
+            // Default: Server also acts as relay. #1488
+            return getController().getOSClient().isServer(node);
+        }
+
     }
 }
