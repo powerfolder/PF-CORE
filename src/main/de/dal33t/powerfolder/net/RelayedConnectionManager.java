@@ -101,7 +101,8 @@ public class RelayedConnectionManager extends PFComponent {
                     + ". No relay found!");
         }
         if (isFiner()) {
-            logFiner("Using relay " + relay);
+            logFiner("Using relay " + relay + " for connection to "
+                + destination + " / " + destination.id);
         }
         if (isFiner()) {
             logFiner("Sending SYN for relayed connection to "
