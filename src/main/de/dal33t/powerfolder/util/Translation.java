@@ -52,7 +52,8 @@ public class Translation {
     public static final Locale ARABIC = new Locale("ar");
     public static final Locale POLISH = new Locale("pl");
     public static final Locale PORTUGUESE = new Locale("pt");
-
+    public static final Locale TURKISCH = new Locale("tr");
+    
     /** List of all supported locales */
     private static List<Locale> supportedLocales;
 
@@ -91,6 +92,8 @@ public class Translation {
             supportedLocales.add(ARABIC);
             supportedLocales.add(POLISH);
             supportedLocales.add(PORTUGUESE);
+            // Not yet supported:
+            //supportedLocales.add(TURKISCH);
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
