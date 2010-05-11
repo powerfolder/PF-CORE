@@ -231,9 +231,12 @@ public class WhatToDoPanel extends PFWizardPanel {
 
         wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
-        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
+        // #1991: Let the user choose if Backup source or target
+        MultiFolderSetupPanel setupPanel = new MultiFolderSetupPanel(controller);
+        return new ChooseMultiDiskLocationPanel(controller, setupPanel);
 
-        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        // FolderCreatePanel createPanel = new FolderCreatePanel(controller);
+        // return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
     public static PFWizardPanel doSyncOption(Controller controller,
