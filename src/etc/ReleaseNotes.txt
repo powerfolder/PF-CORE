@@ -24,6 +24,8 @@ PowerFolder Version 4.2.3 - http://www.powerfolder.com
 = Bugfixes =
  * Eliminated a memory leak.
  * Fixed problem when trying to sync, share or backup custom directories.
+ * Fixed problem while restoring older files from online cloud:
+   http://www.powerfolder.com/wiki/File_Archive
  * Fixed problem while storing preferences.
  * Fixed chat display problems.
  * Fixed problem while downloading files with zero size.
