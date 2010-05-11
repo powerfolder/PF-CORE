@@ -21,13 +21,9 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderBeta extends AbstractDistribution {
     static final String BETA_SERVER_HOST = "relay001.node.powerfolder.com";
-
-    private Controller controller;
 
     public String getName() {
         return "4.0 Beta";
@@ -38,7 +34,7 @@ public class PowerFolderBeta extends AbstractDistribution {
     }
 
     public void init(Controller controller) {
-        this.controller = controller;
+        super.init(controller);
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
         // distribution
@@ -51,15 +47,6 @@ public class PowerFolderBeta extends AbstractDistribution {
         // if (!isPowerFolderServer(controller)) {
         resetToBetaServer(controller);
         // }
-    }
-
-    public UpdateSetting createUpdateSettings() {
-        return controller.getOSClient().createUpdateSettings();
-    }
-
-    public boolean isRelay(Member node) {
-        // Server also acts as relay. #1488
-        return controller.getOSClient().isServer(node);
     }
 
     public static boolean isBetaServer(Controller c) {
