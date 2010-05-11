@@ -26,9 +26,11 @@ import java.util.Properties;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 /**
  * Offer various helper methods for branding
@@ -40,12 +42,28 @@ public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
 
+    private Controller controller;
+
     public boolean showCredentials() {
         return false;
     }
 
     public boolean showClientPromo() {
         return false;
+    }
+
+    public void init(Controller controller) {
+        this.controller = controller;
+    }
+
+    public final boolean isRelay(Member node) {
+        // Default: Server also acts as relay. #1488
+        return getController().getOSClient().isServer(node);
+    }
+
+    public UpdateSetting createUpdateSettings() {
+        // Default: Load from own server.
+        return getController().getOSClient().createUpdateSettings();
     }
 
     /**
@@ -67,6 +85,10 @@ public abstract class AbstractDistribution extends Loggable implements
             }
         }
         return false;
+    }
+
+    protected Controller getController() {
+        return controller;
     }
 
     protected boolean addTranslation(String language) {
