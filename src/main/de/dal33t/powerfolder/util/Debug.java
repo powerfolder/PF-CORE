@@ -524,19 +524,18 @@ public class Debug {
      * 
      * @see #loadDebugReport(MemberInfo)
      * @param nodeInfo
+     * @return if succeeded
      */
     public static boolean writeNodeInformation(NodeInformation nodeInfo) {
         if (nodeInfo == null) {
             throw new NullPointerException("NodeInfo is null");
         }
-
         String fileName;
         if (nodeInfo.node != null) {
-            fileName = "Node."
-                + FileUtils.removeInvalidFilenameChars(nodeInfo.node.nick)
+            fileName = FileUtils.removeInvalidFilenameChars(nodeInfo.node.nick)
                 + ".report.txt";
         } else {
-            fileName = "Node.-unknown-.report.txt";
+            fileName = "-unknown-.report.txt";
         }
         try {
             // Create in debug directory
