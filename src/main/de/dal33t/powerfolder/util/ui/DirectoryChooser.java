@@ -27,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -80,15 +81,20 @@ class DirectoryChooser extends BaseDialog {
      * 
      * @param controller
      *            for super class
-     * @param valueModel
-     *            a value model with the existing directory path
+     * @param initialValue
+     *            the initial directory to start from
+     * @param onlineFolders
+     *            optional list of online folder names that are rendered as
+     *            globe icons. These are expected to be online folders in the
+     *            PF base dir that a user may want to create.
      */
-    DirectoryChooser(Controller controller, File initialValue) {
+    DirectoryChooser(Controller controller, File initialValue,
+                     List<String> onlineFolders) {
         super(controller, true);
-        this.selectedDir = initialValue;
+        selectedDir = initialValue;
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
         model = new DefaultTreeModel(rootTreeNode);
-        tree = new DirectoryTree(model);
+        tree = new DirectoryTree(model, onlineFolders);
         pathField = new JTextField();
         pathField.setEditable(false);
         newDirectoryAction = new NewDirectoryAction(getController());
@@ -146,6 +152,11 @@ class DirectoryChooser extends BaseDialog {
             if (o instanceof DirectoryTreeNode) {
                 DirectoryTreeNode dtn = (DirectoryTreeNode) o;
                 selectedDir = dtn.getDir();
+
+                // Create any virtual folders now.
+                if (!selectedDir.exists()) {
+                    selectedDir.mkdirs();
+                }
             }
             setVisible(false);
         }
@@ -180,7 +191,7 @@ class DirectoryChooser extends BaseDialog {
                 logFine("Root " + f);
             }
 
-            DirectoryTreeNode treeNode = new DirectoryTreeNode(f, true);
+            DirectoryTreeNode treeNode = new DirectoryTreeNode(getController(), f, true, true);
             ((DefaultMutableTreeNode) tree.getModel().getRoot()).add(treeNode);
         }
 
@@ -244,8 +255,8 @@ class DirectoryChooser extends BaseDialog {
         }
         DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
             .getLastPathComponent();
-        File selectedDir = dtn.getDir();
-        String baseFile = selectedDir.getAbsolutePath();
+        File selected = dtn.getDir();
+        String baseFile = selected.getAbsolutePath();
 
         if (baseFile != null) {
             ValueModel subDirValueModel = new ValueHolder();
@@ -278,9 +289,9 @@ class DirectoryChooser extends BaseDialog {
                                 // Expand parent of new folder, so new child
                                 // shows.
                                 DirectoryTreeNode parentNode = (DirectoryTreeNode) parentComponent;
-                                model.insertNodeInto(new DirectoryTreeNode(f,
-                                    false), parentNode, parentNode
-                                    .getChildCount());
+                                model.insertNodeInto(new DirectoryTreeNode(
+                                        getController(), f, false, true),
+                                        parentNode, parentNode.getChildCount());
 
                                 // Find new folder in parent.
                                 Enumeration children = parentNode.children();

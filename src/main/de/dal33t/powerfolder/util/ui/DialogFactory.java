@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.ui;
 
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -45,7 +46,7 @@ public class DialogFactory {
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled.
-     * 
+     *
      * @param uiController
      *            the ui controller, used to get the parent frame
      * @param initialDirectoryName
@@ -63,7 +64,7 @@ public class DialogFactory {
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
      * selection. Returns null if operation is cancelled.
-     * 
+     *
      * @param uiController
      *            the ui controller, used to get the parent frame
      * @param initialDirectory
@@ -71,10 +72,29 @@ public class DialogFactory {
      * @return the chosen directory
      */
     public static File chooseDirectory(UIController uiController,
-        File initialDirectory)
+        File initialDirectory) {
+        return chooseDirectory(uiController, initialDirectory, null);
+    }
+    /**
+     * Opens a DirectoryChooser with the current dir and returns the new
+     * selection. Returns null if operation is cancelled. Also displays
+     * virtual online folders.
+     * 
+     * @param uiController
+     *            the ui controller, used to get the parent frame
+     * @param initialDirectory
+     *            optional initial selected directory
+     * @param onlineFolders
+     *            optional list of online folder names that are rendered as
+     *            globe icons. These are expected to be online folders in the
+     *            PF base dir that a user may want to create.
+     * @return the chosen directory
+     */
+    public static File chooseDirectory(UIController uiController,
+        File initialDirectory, List<String> onlineFolders)
     {
         DirectoryChooser dc = new DirectoryChooser(
-            uiController.getController(), initialDirectory);
+            uiController.getController(), initialDirectory, onlineFolders);
         dc.open();
         return dc.getSelectedDir();
     }

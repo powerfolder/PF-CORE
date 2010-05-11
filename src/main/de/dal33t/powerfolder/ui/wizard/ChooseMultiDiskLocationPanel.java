@@ -713,8 +713,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
+
+            List<String> onlineFolders = new ArrayList<String>();
+            ServerClient client = getController().getOSClient();
+            if (client.isConnected()) {
+                for (FolderInfo folderInfo : client.getAccountFolders()) {
+                    onlineFolders.add(folderInfo.getName());
+                }
+            }
+            
             File file = DialogFactory.chooseDirectory(getUIController(),
-                initialDirectory);
+                initialDirectory == null ? null : new File(initialDirectory),
+                onlineFolders);
             if (file == null) {
                 return;
             }

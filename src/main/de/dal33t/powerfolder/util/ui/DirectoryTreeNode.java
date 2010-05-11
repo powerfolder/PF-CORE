@@ -19,7 +19,13 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.Controller;
+
 import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.Icon;
 import javax.swing.filechooser.FileSystemView;
@@ -37,6 +43,8 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
     private boolean volume;
     private boolean scanned;
     private Icon icon;
+    private boolean real;
+    private Controller controller;
 
     /**
      * Constructor.
@@ -44,9 +52,12 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
      * @param directory
      * @param volume
      */
-    DirectoryTreeNode(File directory, boolean volume) {
+    DirectoryTreeNode(Controller controller, File directory, boolean volume,
+                      boolean real) {
         super(directory);
+        this.controller = controller;
         this.volume = volume;
+        this.real = real;
         if (volume) {
             add(new DefaultMutableTreeNode());
         } else if (directory != null && directory.isDirectory()
@@ -83,18 +94,36 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
      * Scans the node directory. Remove any dummy node, and add nodes for any
      * subdirectories.
      */
-    public void scan() {
+    public void scan(List<String> virtualDirectories) {
         while (getChildCount() > 0) {
             remove(0);
         }
         File f = getDir();
         if (f != null && f.isDirectory() && f.canRead()) {
-            File[] files = f.listFiles();
-            if (files != null) {
-                for (File f2 : files) {
-                    if (f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
-                        DirectoryTreeNode dtn2 = new DirectoryTreeNode(f2,
-                            false);
+            File[] realFiles = f.listFiles();
+            Map<File, Boolean> files = new TreeMap<File, Boolean>();
+            for (File realFile : realFiles) {
+                files.put(realFile, true);
+            }
+            String baseDir = controller.getFolderRepository().getFoldersBasedir();
+            if (baseDir.equals(getDir().getAbsolutePath()) &&
+                    virtualDirectories != null &&
+                    !virtualDirectories.isEmpty()) {
+                for (String virtualDirectory : virtualDirectories) {
+                    File file = new File(baseDir, virtualDirectory);
+                    if (!file.exists()) {
+                        files.put(file, false);
+                    }
+                }
+            }
+            if (!files.isEmpty()) {
+                for (Map.Entry<File, Boolean> entry : files.entrySet()) {
+                    File f2 = entry.getKey();
+                    boolean realDirectory = entry.getValue();
+                    if (!realDirectory ||
+                            f2.isDirectory() && !f2.isHidden() && f2.canRead()) {
+                        DirectoryTreeNode dtn2 = new DirectoryTreeNode(controller,
+                                f2, false, realDirectory);
                         add(dtn2);
                     }
                 }
@@ -127,7 +156,11 @@ class DirectoryTreeNode extends DefaultMutableTreeNode {
 
     public Icon getIcon() {
         if (icon == null) {
-            icon = FileSystemView.getFileSystemView().getSystemIcon(getDir());
+            if (real) {
+                icon = FileSystemView.getFileSystemView().getSystemIcon(getDir());
+            } else {
+                icon = Icons.getIconById(Icons.ONLINE_FOLDER_SMALL);
+            }
         }
         return icon;
     }

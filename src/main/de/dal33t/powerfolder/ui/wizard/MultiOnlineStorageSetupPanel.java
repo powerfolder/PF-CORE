@@ -34,7 +34,6 @@ import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -150,7 +149,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         localFolderButton = new JButtonMini(
             Icons.getIconById(Icons.DIRECTORY),
             Translation
-                .getTranslation("wizard.multi_online_storage_setup.select_directory"));
+                .getTranslation("wizard.multi_online_storage_setup.ge_setup.select_directory"));
         MyActionListener myActionListener = new MyActionListener();
         localFolderButton.addActionListener(myActionListener);
 

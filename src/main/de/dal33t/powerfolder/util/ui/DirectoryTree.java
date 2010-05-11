@@ -28,9 +28,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.Cursor;
 import java.io.File;
-import java.util.StringTokenizer;
-import java.util.Collection;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Class to render a tree of file system directories.
@@ -41,12 +39,19 @@ import java.util.ArrayList;
 class DirectoryTree extends JTree {
 
     /**
+     * List of online folder names. Display with a different icon in the tree
+     * if they do not exist.
+     */
+    private final List<String> onlineFolders;
+
+    /**
      * Constructor
      *
      * @param newModel
      */
-    DirectoryTree(TreeModel newModel) {
+    DirectoryTree(TreeModel newModel, List<String> onlineFolders) {
         super(newModel);
+        this.onlineFolders = onlineFolders;
     }
 
     /**
@@ -64,7 +69,7 @@ class DirectoryTree extends JTree {
         if (!file.exists()) {
             TreeNode node = (TreeNode) getModel().getRoot();
             if (node instanceof DefaultMutableTreeNode) {
-                TreeNode[] path = new TreeNode[]{node};
+                TreeNode[] path = {node};
                 TreePath tp = new TreePath(path);
                 expandPath(tp);
             }
@@ -123,7 +128,7 @@ class DirectoryTree extends JTree {
                             // Set node for next loop.
                             node = node1;
                             pathElements.add(node);
-                            dtn.scan();
+                            dtn.scan(onlineFolders);
                             found = true;
                             break;
                         }
@@ -214,7 +219,7 @@ class DirectoryTree extends JTree {
                 DirectoryTreeNode dtn = (DirectoryTreeNode) path
                     .getLastPathComponent();
                 if (!dtn.isScanned()) {
-                    dtn.scan();
+                    dtn.scan(onlineFolders);
                 }
             }
         }
