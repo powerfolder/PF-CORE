@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
@@ -37,6 +36,8 @@ public class PowerFolderPro extends AbstractDistribution {
     }
 
     public void init(Controller controller) {
+        super.init(controller);
+
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
         // distribution
@@ -58,6 +59,7 @@ public class PowerFolderPro extends AbstractDistribution {
         }
     }
 
+    @Override
     public UpdateSetting createUpdateSettings() {
         // Pro URLs
         UpdateSetting settings = new UpdateSetting();
@@ -65,11 +67,6 @@ public class PowerFolderPro extends AbstractDistribution {
         settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolderPro_DownloadLocation.txt";
         settings.releaseExeURL = "http://download.powerfolder.com/pro/win/PowerFolder_Latest_Win32_Installer.exe";
         return settings;
-    }
-
-    public boolean isRelay(Member node) {
-        // Our public network strategy. Not very smart.
-        return node.getId().contains("RELAY");
     }
 
     public boolean allowSkinChange() {
