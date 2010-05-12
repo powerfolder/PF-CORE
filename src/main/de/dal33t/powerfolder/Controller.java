@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.3"; // 1.7.0.11 / RC10
+    public static final String PROGRAM_VERSION = "4.2.3"; // 1.7.0.13 RC12
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -543,7 +543,12 @@ public class Controller extends PFComponent {
 
         // Login to OS
         if (Feature.OS_CLIENT.isEnabled()) {
-            osClient.loginWithLastKnown();
+            try {
+                osClient.loginWithLastKnown();
+            } catch (Exception e) {
+                logWarning("Unable to login with last known username. " + e);
+                logFiner(e);
+            }
         }
 
         // Start Plugins
