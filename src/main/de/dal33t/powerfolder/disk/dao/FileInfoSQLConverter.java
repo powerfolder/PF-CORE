@@ -23,12 +23,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -90,7 +88,9 @@ public class FileInfoSQLConverter {
         Reject.ifNull(ps, "Prepared statement is null");
 
         // i = 1: Domain name
-        int i = 2;
+        // i = 2: inSync
+        // i = 3: incoming
+        int i = 4;
         ps.setString(i++, fInfo.getRelativeName());
         ps.setString(i++, fInfo.getRelativeName().toLowerCase());
         ps.setBoolean(i++, fInfo.isDiretory());
@@ -129,20 +129,20 @@ public class FileInfoSQLConverter {
         String fileName = rs.getString(FileInfo.PROPERTYNAME_FILE_NAME);
         String folderId = rs.getString(FIELDNAME_FOLDER_ID);
         boolean dir = rs.getBoolean(FIELDNAME_DIR);
-        FolderInfo foInfo = null;
+        FolderInfo foInfo = new FolderInfo("", folderId).intern();
         // Try to retrieve from repo
         // TODO Speed this UP!
-        if (controller != null) {
-            for (Folder folder : controller.getFolderRepository().getFolders())
-            {
-                if (folder.getId().equals(folderId)) {
-                    foInfo = folder.getInfo();
-                    break;
-                }
-            }
-        }
+        // if (controller != null) {
+        // for (Folder folder : controller.getFolderRepository().getFolders())
+        // {
+        // if (folder.getId().equals(folderId)) {
+        // foInfo = folder.getInfo();
+        // break;
+        // }
+        // }
+        // }
         if (foInfo == null) {
-            // Use the intered one
+            // Use the interend one
             foInfo = new FolderInfo("<unknown>", folderId).intern();
         }
 
