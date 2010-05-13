@@ -104,13 +104,20 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(1, dao.count(null));
     }
 
-    protected static FileInfo createRandomFileInfo(int n, String name) {
+    protected static FileInfo createRandomFileInfo(int n, String name,
+        int version)
+    {
         FolderInfo foInfo = createRandomFolderInfo();
         String fn = "subdir1/SUBDIR2/" + name + "-" + n;
         MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(), IdGenerator
             .makeId(), IdGenerator.makeId());
-        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, (long) Math.random()
-            * Long.MAX_VALUE, mInfo, new Date(), 0, false);
+        return FileInfoFactory.unmarshallExistingFile(foInfo, fn, (long) Math
+            .random()
+            * Long.MAX_VALUE, mInfo, new Date(), version, false);
+    }
+
+    protected static FileInfo createRandomFileInfo(int n, String name) {
+        return createRandomFileInfo(n, name, 0);
     }
 
     protected static FolderInfo createRandomFolderInfo() {
