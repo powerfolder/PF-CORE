@@ -341,7 +341,9 @@ public class InformationFrame extends MagneticFrame {
         }
 
         public void folderCreated(FolderRepositoryEvent e) {
-            // Don't care.
+            if (getUIComponent().isVisible() && showingFolder) {
+                displayFolderFiles(e.getFolderInfo());
+            }
         }
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
