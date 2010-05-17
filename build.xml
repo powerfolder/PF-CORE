@@ -249,7 +249,7 @@ For creation of the installer:
 				<include name="lib/**/*" />
 				<include name="developer_resources/**/*" />
 				<include name="build.xml" />
-				<include name="build-local.properties" />
+				<include name="build-local.properties.sample" />
 				<include name=".project" />
 				<include name=".classpath" />
 			</fileset>
