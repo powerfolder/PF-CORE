@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.Format;
  */
 public class OnlineStorageSubscription extends Model implements Serializable {
     private static final long serialVersionUID = 8695479753037728184L;
-    private static final int UNLIMITED_GB = 9999;
+    public static final int UNLIMITED_GB = 9999;
 
     public static final String PROPERTY_TYPE = "type";
     public static final String PROPERTY_TRIAL = "trial";
