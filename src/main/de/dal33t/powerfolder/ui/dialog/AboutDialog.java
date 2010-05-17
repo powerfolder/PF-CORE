@@ -108,7 +108,6 @@ public class AboutDialog extends PFUIComponent {
     private JDialog dialog;
     private JButton checkForUpdatesButton;
     private JButton systemMonitorButton;
-    private JButton bugReportButton;
     private JButton okButton;
     private JButton activateButton;
     private ActionListener closeAction;
@@ -116,7 +115,6 @@ public class AboutDialog extends PFUIComponent {
     private ActionListener generalAction;
     private ActionListener updateAction;
     private ActionListener systemMonitorAction;
-    private ActionListener bugReportAction;
     private PacmanPanel pacmanPanel;
 
     public AboutDialog(Controller controller) {
@@ -184,8 +182,6 @@ public class AboutDialog extends PFUIComponent {
         generalAction = new GeneralAction();
         updateAction = new UpdateAction();
         systemMonitorAction = new SystemMonitorAction();
-        bugReportAction = new BugReportAction();
-
         pacmanPanel = new PacmanPanel();
 
         logoLabel = new RippleLabel(getController(), Icons
@@ -317,16 +313,14 @@ public class AboutDialog extends PFUIComponent {
         // builder.setBorder(Borders.DLU2_BORDER);
         CellConstraints cc = new CellConstraints();
 
-        createBugReportButton();
         createCheckForUpdatesButton();
         createSystemMonitorButton();
         createActivateButton();
         createOKButton();
-        focusList = new Component[]{okButton, bugReportButton,
-            checkForUpdatesButton, systemMonitorButton};
+        focusList = new Component[]{okButton, checkForUpdatesButton,
+            systemMonitorButton};
         JPanel buttons = ButtonBarFactory.buildRightAlignedBar(activateButton,
-            checkForUpdatesButton, bugReportButton, systemMonitorButton,
-            okButton);
+            checkForUpdatesButton, systemMonitorButton, okButton);
         buttons.setOpaque(false);
 
         builder.add(pacmanPanel, cc.xy(1, 1));
@@ -380,8 +374,6 @@ public class AboutDialog extends PFUIComponent {
                 closeAction.actionPerformed(e);
             } else if (checkForUpdatesButton.hasFocus()) {
                 updateAction.actionPerformed(e);
-            } else if (bugReportButton.hasFocus()) {
-                bugReportAction.actionPerformed(e);
             } else if (systemMonitorButton.hasFocus()) {
                 systemMonitorAction.actionPerformed(e);
             }
@@ -413,19 +405,6 @@ public class AboutDialog extends PFUIComponent {
             getUIController().displaySystemMonitorWindow();
             closeAction.actionPerformed(e);
         }
-    }
-
-    private class BugReportAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            try {
-                BrowserLauncher
-                    .openURL(ConfigurationEntry.PROVIDER_SUPPORT_FILE_TICKET_URL
-                        .getValue(getController()));
-            } catch (IOException e1) {
-                logSevere("IOException", e1);
-            }
-        }
-
     }
 
     private JButton createActivateButton() {
@@ -482,17 +461,6 @@ public class AboutDialog extends PFUIComponent {
             "about_dialog.check_for_updates.key").trim().charAt(0));
         checkForUpdatesButton.addActionListener(updateAction);
         checkForUpdatesButton.setBackground(Color.WHITE);
-    }
-
-    private void createBugReportButton() {
-        bugReportButton = new JButton(Translation
-            .getTranslation("about_dialog.send_bug_report.text"));
-        bugReportButton.setToolTipText(Translation
-            .getTranslation("about_dialog.send_bug_report.tips"));
-        bugReportButton.setMnemonic(Translation.getTranslation(
-            "about_dialog.send_bug_report.key").trim().charAt(0));
-        bugReportButton.addActionListener(bugReportAction);
-        bugReportButton.setBackground(Color.WHITE);
     }
 
     private static JPanel createTextBox(String title, String contents) {
