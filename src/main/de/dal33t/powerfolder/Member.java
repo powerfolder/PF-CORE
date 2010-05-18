@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1923,7 +1924,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             joinedFolders.add(folder.getInfo());
-                            Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                            Folder metaFolder = repo
+                                .getMetaFolderForParent(folder.getInfo());
                             if (metaFolder != null && metaFolder.join(this)) {
                                 joinedFolders.add(metaFolder.getInfo());
                             }
@@ -2004,7 +2006,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if user joined any folder
      */
     public boolean hasJoinedAnyFolder() {
-        for (Folder folder : getController().getFolderRepository().getFolders(true))
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (folder.hasMember(this)) {
                 return true;
@@ -2018,7 +2021,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public List<Folder> getJoinedFolders() {
         List<Folder> joinedFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository().getFolders(true))
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (folder.hasMember(this)) {
                 joinedFolders.add(folder);
@@ -2274,12 +2278,13 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             info.isSupernode = newInfo.isSupernode;
             info.networkId = newInfo.networkId;
-            // if (!isOnLAN()) {
-            // Take his dns address, but only if not on lan
-            // (Otherwise our ip to him will be used as reconnect address)
-            // Commentend until 100% LAN/inet detection accurate
-            info.setConnectAddress(newInfo.getConnectAddress());
-            // }
+            // Update address only if not null IP.
+            if (newInfo.getConnectAddress() != null
+                && NetworkUtil.isNullIP(newInfo.getConnectAddress()
+                    .getAddress()))
+            {
+                info.setConnectAddress(newInfo.getConnectAddress());
+            }
             updated = true;
         }
 
