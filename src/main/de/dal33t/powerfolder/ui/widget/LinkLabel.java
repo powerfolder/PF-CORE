@@ -111,6 +111,10 @@ public class LinkLabel extends PFComponent {
         uiComponent.setToolTipText(tips);
     }
 
+    public void setVisible(boolean visible) {
+        uiComponent.setVisible(visible);
+    }
+
     private class MyMouseAdapter extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             if (StringUtils.isBlank(url)) {

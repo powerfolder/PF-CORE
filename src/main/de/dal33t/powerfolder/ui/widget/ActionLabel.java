@@ -108,6 +108,10 @@ public class ActionLabel extends PFComponent {
         displayText();
     }
 
+    public void setVisible(boolean visible) {
+        uiComponent.setVisible(visible);
+    }
+
     public void setFontSize(int fontSize) {
         SimpleComponentFactory.setFont(uiComponent, fontSize, uiComponent
             .getFont().getStyle());

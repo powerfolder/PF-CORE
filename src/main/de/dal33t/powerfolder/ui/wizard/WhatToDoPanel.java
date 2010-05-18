@@ -33,12 +33,13 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 
-import jwf.WizardPanel;
 import jwf.WizardContext;
+import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -64,12 +65,16 @@ public class WhatToDoPanel extends PFWizardPanel {
     private static final Object synchronizedOption = new Object();
     private static final Object backupOption = new Object();
     private static final Object hostOption = new Object();
+    private static final Object downloadOption = new Object();
     private static final Object customOption = new Object();
     private static final Object inviteOption = new Object();
 
     private ActionLabel synchronizedLink;
     private ActionLabel backupLink;
     private ActionLabel hostLink;
+    private ActionLabel downloadLink;
+
+    private ActionLabel moreLink;
     private ActionLabel customLink;
     private ActionLabel inviteLink;
     private LinkLabel documentationLink;
@@ -85,19 +90,22 @@ public class WhatToDoPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("140dlu, 3dlu, pref",
-            "pref, 12dlu, pref, 12dlu, pref");
+            "pref, 12dlu, pref, 30dlu, pref, 12dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(Borders.createEmptyBorder("10dlu, 10dlu, 0, 0"));
+        builder.setBorder(Borders.createEmptyBorder("20dlu, 10dlu, 0, 0"));
         CellConstraints cc = new CellConstraints();
 
         builder.add(synchronizedLink.getUIComponent(), cc.xy(1, 1));
         builder.add(hostLink.getUIComponent(), cc.xy(1, 3));
-        builder.add(backupLink.getUIComponent(), cc.xy(1, 5));
+        builder.add(backupLink.getUIComponent(), cc.xy(3, 1));
+        builder.add(downloadLink.getUIComponent(), cc.xy(3, 3));
 
-        builder.add(inviteLink.getUIComponent(), cc.xy(3, 1));
-        builder.add(documentationLink.getUIComponent(), cc.xy(3, 3));
-        builder.add(customLink.getUIComponent(), cc.xy(3, 5));
+        builder.add(moreLink.getUIComponent(), cc.xy(1, 5));
+        builder.add(customLink.getUIComponent(), cc.xy(1, 5));
+        builder.add(inviteLink.getUIComponent(), cc.xy(1, 7));
+        builder.add(documentationLink.getUIComponent(), cc.xy(3, 7));
+
         builder.getPanel().setOpaque(false);
 
         return builder.getPanel();
@@ -113,6 +121,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             return doBackupOption(getController(), getWizardContext());
         } else if (option == hostOption) {
             return doHostOption(getController(), getWizardContext());
+        } else if (option == hostOption) {
+            return doDownloadOption(getController(), getWizardContext());
         } else if (option == customOption) {
             return doCustomAction();
         } else if (option == inviteOption) {
@@ -171,7 +181,8 @@ public class WhatToDoPanel extends PFWizardPanel {
     }
 
     public static PFWizardPanel doHostOption(Controller controller,
-                                      WizardContext wizardContext) {
+        WizardContext wizardContext)
+    {
         // Reset folderinfo for disk location
         wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
@@ -180,8 +191,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             SyncProfile.HOST_FILES);
 
         // Setup choose disk location panel
-        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.host_pcs.select"));
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
+            .getTranslation("wizard.what_to_do.host_pcs.select"));
 
         // Prompt for send invitation afterwards
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, true);
@@ -203,8 +214,42 @@ public class WhatToDoPanel extends PFWizardPanel {
         return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
+    public static PFWizardPanel doDownloadOption(Controller controller,
+        WizardContext wizardContext)
+    {
+        // Reset folderinfo for disk location
+        wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
+
+        // This is hosting (manual download) profile!
+        wizardContext.setAttribute(SYNC_PROFILE_ATTRIBUTE,
+            SyncProfile.AUTOMATIC_DOWNLOAD);
+
+        // Setup choose disk location panel
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
+            .getTranslation("wizard.what_to_do.host_pcs.select"));
+
+        // Prompt for send invitation afterwards
+        wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
+
+        // Select backup by OS
+        wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, false);
+
+        // Setup sucess panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.what_to_do.folder_download_sucess"));
+        wizardContext.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+
+        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
+
+        wizardContext.setAttribute(SAVE_INVITE_LOCALLY, false);
+
+        return new ChooseMultiDiskLocationPanel(controller, createPanel);
+    }
+
     public static PFWizardPanel doBackupOption(Controller controller,
-                                      WizardContext wizardContext) {
+        WizardContext wizardContext)
+    {
         // Reset folderinfo for disk location
         wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
@@ -213,8 +258,8 @@ public class WhatToDoPanel extends PFWizardPanel {
             SyncProfile.BACKUP_SOURCE);
 
         // Setup choose disk location panel
-        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.backp.select"));
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
+            .getTranslation("wizard.what_to_do.backp.select"));
 
         // Don't prompt for send invitation afterwards
         wizardContext.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -232,15 +277,17 @@ public class WhatToDoPanel extends PFWizardPanel {
         wizardContext.setAttribute(SAVE_INVITE_LOCALLY, true);
 
         // #1991: Let the user choose if Backup source or target
-        MultiFolderSetupPanel setupPanel = new MultiFolderSetupPanel(controller);
-        return new ChooseMultiDiskLocationPanel(controller, setupPanel);
+        // MultiFolderSetupPanel setupPanel = new
+        // MultiFolderSetupPanel(controller);
+        // return new ChooseMultiDiskLocationPanel(controller, setupPanel);
 
-        // FolderCreatePanel createPanel = new FolderCreatePanel(controller);
-        // return new ChooseMultiDiskLocationPanel(controller, createPanel);
+        FolderCreatePanel createPanel = new FolderCreatePanel(controller);
+        return new ChooseMultiDiskLocationPanel(controller, createPanel);
     }
 
     public static PFWizardPanel doSyncOption(Controller controller,
-                                      WizardContext wizardContext) {
+        WizardContext wizardContext)
+    {
         // Reset folderinfo for disk location
         wizardContext.setAttribute(FOLDERINFO_ATTRIBUTE, null);
 
@@ -255,8 +302,8 @@ public class WhatToDoPanel extends PFWizardPanel {
         wizardContext.setAttribute(BACKUP_ONLINE_STOARGE, true);
 
         // Setup choose disk location panel
-        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE,
-            Translation.getTranslation("wizard.what_to_do.sync_pcs.select"));
+        wizardContext.setAttribute(PROMPT_TEXT_ATTRIBUTE, Translation
+            .getTranslation("wizard.what_to_do.sync_pcs.select"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -308,12 +355,34 @@ public class WhatToDoPanel extends PFWizardPanel {
             .getTranslation("wizard.what_to_do.host_work.tip"));
         hostLink.convertToBigLabel();
 
+        downloadLink = new ActionLabel(getController(), new WhatToDoAction(
+            Translation.getTranslation("wizard.what_to_do.download"),
+            downloadOption, decision));
+        downloadLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.download.tip"));
+        downloadLink.convertToBigLabel();
+
+        moreLink = new ActionLabel(getController(), new AbstractAction(
+            Translation.getTranslation("wizard.what_to_do.more"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                moreLink.setVisible(false);
+                customLink.setVisible(true);
+                inviteLink.setVisible(true);
+                documentationLink.setVisible(true);
+            }
+        });
+        moreLink.setToolTipText(Translation
+            .getTranslation("wizard.what_to_do.more.tip"));
+        moreLink.convertToBigLabel();
+
         customLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.custom_sync"),
             customOption, decision));
         customLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.custom_sync.tip"));
         customLink.convertToBigLabel();
+        customLink.setVisible(false);
 
         inviteLink = new ActionLabel(getController(), new WhatToDoAction(
             Translation.getTranslation("wizard.what_to_do.load_invite"),
@@ -321,6 +390,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         inviteLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.load_invite.tip"));
         inviteLink.convertToBigLabel();
+        inviteLink.setVisible(false);
 
         documentationLink = Help.createQuickstartGuideLabel(getController(),
             Translation
@@ -328,6 +398,7 @@ public class WhatToDoPanel extends PFWizardPanel {
         documentationLink.setToolTipText(Translation
             .getTranslation("wizard.what_to_do.open_online_documentation.tip"));
         documentationLink.convertToBigLabel();
+        documentationLink.setVisible(false);
     }
 
     protected String getTitle() {
