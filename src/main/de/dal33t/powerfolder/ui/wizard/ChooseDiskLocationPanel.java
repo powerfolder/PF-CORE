@@ -69,7 +69,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -96,7 +95,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private JTextField locationTF;
     private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
-    private JCheckBox createDesktopShortcutBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
 
@@ -151,8 +149,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             WizardContextAttributes.BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
         getWizardContext().setAttribute(
-            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT,
-            createDesktopShortcutBox.isSelected());
+            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT, false);
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
 
@@ -177,7 +174,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
+            + "3dlu, pref, 3dlu, pref, 3dlu, pref, 10dlu, pref, 3dlu, pref, 3dlu, pref";
 
         FormLayout layout = new FormLayout(
             "pref, 10dlu, pref, 10dlu, pref, 10dlu, pref, 0:grow",
@@ -255,11 +252,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         } else {
             row += 2;
             builder.add(sendInviteAfterCB, cc.xyw(1, row, 7));
-        }
-
-        if (OSUtil.isWindowsSystem()) {
-            row += 2;
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 7));
         }
 
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
@@ -353,13 +345,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
-
-        // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
-
-        createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
@@ -501,8 +486,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        File file = DialogFactory.chooseDirectory(
-                getController().getUIController(), initial);
+        File file = DialogFactory.chooseDirectory(getController()
+            .getUIController(), initial);
         if (file != null) {
             locationModel.setValue(file.getAbsolutePath());
 

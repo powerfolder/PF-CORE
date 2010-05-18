@@ -19,22 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import jwf.WizardPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 
-import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import jwf.WizardPanel;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -47,7 +56,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     private File localBase;
 
     private JCheckBox backupByOnlineStorageBox;
-    private JCheckBox createDesktopShortcutBox;
     private JCheckBox sendInviteAfterCB;
 
     private JLabel folderSizeLabel;
@@ -69,8 +77,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean validateNext() {
-        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT,
-            createDesktopShortcutBox.isSelected());
+        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
@@ -82,7 +89,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
 
         FormLayout layout = new FormLayout(
             "pref, 3dlu, pref, 3dlu, pref, 0:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -104,11 +111,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
-        }
-
-        if (OSUtil.isWindowsSystem()) {
-            row += 2;
-            builder.add(createDesktopShortcutBox, cc.xyw(1, row, 3));
         }
 
         // Send Invite
@@ -152,13 +154,6 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
-
-        // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
-
-        createDesktopShortcutBox.setOpaque(false);
 
         // Send Invite
         boolean sendInvite = Boolean.TRUE.equals(getWizardContext()

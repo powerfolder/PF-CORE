@@ -78,8 +78,8 @@ public class PFWizard extends PFUIComponent {
      * @param controller
      */
     public static void openBasicSetupWizard(Controller controller) {
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.folder_title"));
         WhatToDoPanel wtdp = new WhatToDoPanel(controller);
         BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
         wizard.open(new LoginOnlineStoragePanel(controller, basicPanel, true));
@@ -91,8 +91,8 @@ public class PFWizard extends PFUIComponent {
      * @param controller
      */
     public static void openWhatToDoWizard(Controller controller) {
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.folder_title"));
         wizard.open(new WhatToDoPanel(controller));
     }
 
@@ -107,8 +107,8 @@ public class PFWizard extends PFUIComponent {
     public static void openSendInvitationWizard(Controller controller,
         FolderInfo foInfo)
     {
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.invitation_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.invitation_title"));
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -125,8 +125,8 @@ public class PFWizard extends PFUIComponent {
         Controller controller, List<FolderInfo> folderInfoList)
     {
 
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.online_storage_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.online_storage_title"));
 
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.FOLDER_INFOS, folderInfoList);
@@ -157,16 +157,16 @@ public class PFWizard extends PFUIComponent {
     {
         ReceivedInvitationPanel panel = new ReceivedInvitationPanel(controller,
             invitation);
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.invitation_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.invitation_title"));
         wizard.open(panel);
     }
 
     public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.login_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.login_title"));
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
@@ -184,8 +184,8 @@ public class PFWizard extends PFUIComponent {
     public static void openMirrorFolderWizard(Controller controller,
         Folder folderToSetup)
     {
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.folder_title"));
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup
             .getInfo()));
     }
@@ -195,8 +195,10 @@ public class PFWizard extends PFUIComponent {
     {
         Reject.ifTrue(directory == null || !directory.exists(),
             "No directory supplied");
-        PFWizard wizard = new PFWizard(controller, Translation.getTranslation(
-                "wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller, Translation
+            .getTranslation("wizard.pfwizard.folder_title"));
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE, true);
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
     }
 

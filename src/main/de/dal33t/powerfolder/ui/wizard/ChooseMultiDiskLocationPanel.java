@@ -80,7 +80,6 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -103,7 +102,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
     private JCheckBox backupByOnlineStorageBox;
-    private JCheckBox createDesktopShortcutBox;
     private JCheckBox manualSyncCheckBox;
     private JCheckBox sendInviteAfterCB;
     private Action addAction;
@@ -203,8 +201,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
-        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT,
-            createDesktopShortcutBox.isSelected());
+        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
 
         // Don't allow send after if 2 or more folders.
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
@@ -277,8 +274,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
-        if (OSUtil.isWindowsSystem()) {
-            builder.add(createDesktopShortcutBox, cc.xyw(5, row, 3));
+        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
+        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
+            builder.add(manualSyncCheckBox, cc.xyw(5, row, 3));
         }
         row += 2;
 
@@ -288,10 +286,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.setSelected(false);
         } else {
             builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
-        }
-        Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
-        if (object != null && object.equals(AUTOMATIC_SYNCHRONIZATION)) {
-            builder.add(manualSyncCheckBox, cc.xyw(5, row, 3));
         }
         row += 2;
 
@@ -365,13 +359,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             }
         });
         backupByOnlineStorageBox.setOpaque(false);
-
-        // Create desktop shortcut
-        createDesktopShortcutBox = new JCheckBox(
-            Translation
-                .getTranslation("wizard.choose_disk_location.create_desktop_shortcut"));
-
-        createDesktopShortcutBox.setOpaque(false);
 
         // Create manual sync cb
         manualSyncCheckBox = new JCheckBox(Translation
@@ -721,7 +708,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     onlineFolders.add(folderInfo.getName());
                 }
             }
-            
+
             File file = DialogFactory.chooseDirectory(getUIController(),
                 initialDirectory == null ? null : new File(initialDirectory),
                 onlineFolders);

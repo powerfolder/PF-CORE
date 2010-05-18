@@ -495,7 +495,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                         syncProfile);
             }
             wizard.getWizardContext().setAttribute(
-                WizardContextAttributes.BACKUP_ONLINE_STOARGE, backupByServer);
+                WizardContextAttributes.BACKUP_ONLINE_STOARGE,
+                backupByServer
+                    || StringUtils.isBlank(config
+                        .get(FOLDER_SCRIPT_CONFIG_BACKUP_BY_SERVER)));
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.FOLDERINFO_ATTRIBUTE, foInfo);
 
