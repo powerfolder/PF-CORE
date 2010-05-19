@@ -117,7 +117,12 @@ public enum Feature {
     /**
      * TRAC #1548 for 4.3.0 release
      */
-    META_FOLDER(false);
+    META_FOLDER(false),
+    
+    /**
+     * Rollback of #2005
+     */
+    NET_USE_POWERFOLDER_RELAY(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

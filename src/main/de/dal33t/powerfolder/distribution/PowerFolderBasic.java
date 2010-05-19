@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
@@ -40,6 +41,9 @@ public class PowerFolderBasic extends AbstractDistribution {
 
     public void init(Controller controller) {
         super.init(controller);
+        
+        // #2005: Rollback
+        Feature.NET_USE_POWERFOLDER_RELAY.enable();
 
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
