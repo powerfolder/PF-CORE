@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -70,7 +71,18 @@ public class RelayedConnectionManager extends PFComponent {
     public RelayedConnectionManager(Controller controller) {
         super(controller);
         pendingConHans = new CopyOnWriteArrayList<AbstractRelayedConnectionHandler>();
+
         relayFilter = new ServerIsRelayFilter();
+        // Rollback of #2005: Caused unstable connections
+        if (Feature.NET_USE_POWERFOLDER_RELAY.isEnabled()) {
+            logWarning("Using PowerFolder relay: RELAY001");
+            relayFilter = new RelayFilter() {
+                public boolean isRelay(Member node) {
+                    return node.getId().equals("RELAY001");
+                }
+            };
+        }
+
         counter = new TransferCounter();
         printStats = false;
     }
@@ -102,8 +114,8 @@ public class RelayedConnectionManager extends PFComponent {
                 "Unable to open relayed connection to " + destination
                     + ". No relay found!");
         }
-        if (isFiner()) {
-            logFiner("Using relay " + relay + " for connection to "
+        if (isWarning()) {
+            logWarning("Using relay " + relay + " for connection to "
                 + destination + " / " + destination.id);
         }
         if (isFiner()) {

@@ -345,8 +345,9 @@ public class UDTSocketConnectionManager extends PFComponent {
                 } else {
                     UDTMessage nack = new UDTMessage(Type.NACK, getController()
                         .getMySelf().getInfo(), sender.getInfo(), -1);
-                    Member relay = getController().getIOProvider()
-                        .getRelayedConnectionManager().getRelay();
+//                    Member relay = getController().getIOProvider()
+//                        .getRelayedConnectionManager().getRelay();
+                    Member relay = sender;
                     if (relay == null) {
                         logSevere("Relay is null");
                         return;
@@ -415,8 +416,9 @@ public class UDTSocketConnectionManager extends PFComponent {
         }
 
         public void run() {
-            Member relay = getController().getIOProvider()
-                .getRelayedConnectionManager().getRelay();
+//            Member relay = getController().getIOProvider()
+//                .getRelayedConnectionManager().getRelay();
+            Member relay = sender;
             if (relay == null) {
                 logSevere("Relay is null!");
                 return;
