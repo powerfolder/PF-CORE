@@ -2280,6 +2280,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             info.networkId = newInfo.networkId;
             // Update address only if not null IP.
             if (newInfo.getConnectAddress() != null
+                && newInfo.getConnectAddress().getAddress() != null
                 && NetworkUtil.isNullIP(newInfo.getConnectAddress()
                     .getAddress()))
             {
