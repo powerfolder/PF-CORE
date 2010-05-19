@@ -106,10 +106,30 @@ public class ServerClient extends PFComponent {
      * @param controller
      */
     public ServerClient(Controller controller) {
-        this(controller, ConfigurationEntry.SERVER_NAME.getValue(controller),
-            ConfigurationEntry.SERVER_HOST.getValue(controller),
-            ConfigurationEntry.SERVER_NODEID.getValue(controller), true,
-            ConfigurationEntry.SERVER_CONFIG_UPDATE.getValueBoolean(controller));
+        super(controller);
+        String name = ConfigurationEntry.SERVER_NAME.getValue(controller);
+        String host = ConfigurationEntry.SERVER_HOST.getValue(controller);
+        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(controller);
+
+        if (!ConfigurationEntry.SERVER_NODEID.hasValue(controller)) {
+            if (ConfigurationEntry.SERVER_HOST.hasValue(controller)) {
+                // Hostname set, but no node id?
+                nodeId = null;
+            }
+        }
+
+        boolean allowServerChange = true;
+        boolean updateConfig = ConfigurationEntry.SERVER_CONFIG_UPDATE
+            .getValueBoolean(controller);
+
+        init(controller, name, host, nodeId, allowServerChange, updateConfig);
+    }
+
+    public ServerClient(Controller controller, String name, String host,
+        String nodeId, boolean allowServerChange, boolean updateConfig)
+    {
+        super(controller);
+        init(controller, name, host, nodeId, allowServerChange, updateConfig);
     }
 
     /**
@@ -122,21 +142,20 @@ public class ServerClient extends PFComponent {
      * @param allowServerChange
      * @param updateConfig
      */
-    public ServerClient(Controller controller, String name, String host,
+    private void init(Controller controller, String name, String host,
         String nodeId, boolean allowServerChange, boolean updateConfig)
     {
-        super(controller);
-
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
 
         // Custom server
         String theName = !StringUtils.isBlank(name) ? name : Translation
             .getTranslation("online_storage.connecting");
+
         boolean temporaryNode = StringUtils.isBlank(nodeId);
         String theNodeId = !temporaryNode ? nodeId : MEMBER_ID_TEMP_PREFIX
             + '|' + IdGenerator.makeId();
-        Member theNode = getController().getNodeManager().getNode(theNodeId);
+        Member theNode = controller.getNodeManager().getNode(theNodeId);
         if (theNode == null) {
             String networkId = getController().getNodeManager().getNetworkId();
             MemberInfo serverNode = new MemberInfo(theName, theNodeId,
@@ -233,12 +252,8 @@ public class ServerClient extends PFComponent {
         if (server.equals(node)) {
             return true;
         }
-        // if (isTempServerNode()
-        // && (node.getId().contains("WEBSER") || node.getId().contains(
-        // "RELAY")))
-        // {
-        // logWarning(
-        // "isServer: node: "
+        // if (node.getId().contains("RELAY")) {
+        // logWarning("isServer: node: "
         // + node.getReconnectAddress()
         // + ". have: "
         // + server.getReconnectAddress()
