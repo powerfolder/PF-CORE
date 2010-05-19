@@ -74,14 +74,14 @@ public class RelayedConnectionManager extends PFComponent {
 
         relayFilter = new ServerIsRelayFilter();
         // Rollback of #2005: Caused unstable connections
-        if (Feature.NET_USE_POWERFOLDER_RELAY.isEnabled()) {
-            logWarning("Using PowerFolder relay: RELAY001");
-            relayFilter = new RelayFilter() {
-                public boolean isRelay(Member node) {
-                    return node.getId().equals("RELAY001");
-                }
-            };
-        }
+        // if (Feature.NET_USE_POWERFOLDER_RELAY.isEnabled()) {
+        // logWarning("Using PowerFolder relay: RELAY001");
+        // relayFilter = new RelayFilter() {
+        // public boolean isRelay(Member node) {
+        // return node.getId().equals("RELAY001");
+        // }
+        // };
+        // }
 
         counter = new TransferCounter();
         printStats = false;
