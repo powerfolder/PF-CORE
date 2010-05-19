@@ -119,11 +119,12 @@ public class UDTSocketConnectionManager extends PFComponent {
                 UDTMessage reply = waitForReply(repMonitor, destination);
                 switch (reply.getType()) {
                     case ACK :
-                        logFine("UDT SYN: Trying to connect...");
+                        logFine("UDT SYN: Trying to connect to " + destination);
                         ConnectionHandler handler = createAndInitRendezvousUDTSocketConnectionHandler(
                             getController(), slot.socket, reply.getSource(),
                             reply.getPort());
-                        logFine("UDT SYN: Successfully connected!");
+                        logFine("UDT SYN: Successfully connected to "
+                            + destination);
                         return handler;
                     case NACK :
                         throw new ConnectionException(
