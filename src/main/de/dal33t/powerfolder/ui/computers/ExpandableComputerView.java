@@ -186,7 +186,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         // Build lower detials with line border.
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
-            "3dlu, pref, pref:grow, 3dlu, pref, pref, pref, 3dlu",
+            "3dlu, pref, pref:grow, 3dlu, pref, 2dlu, pref, 2dlu, pref, 3dlu",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
@@ -195,8 +195,8 @@ public class ExpandableComputerView extends PFUIComponent implements
 
         lowerBuilder.add(usernameLabel, cc.xy(2, 3));
         lowerBuilder.add(chatButton, cc.xywh(5, 3, 1, 3));
-        lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
-        lowerBuilder.add(reconnectButton, cc.xywh(7, 3, 1, 3));
+        lowerBuilder.add(addRemoveButton, cc.xywh(7, 3, 1, 3));
+        lowerBuilder.add(reconnectButton, cc.xywh(9, 3, 1, 3));
         lowerBuilder.add(lastSeenLabel, cc.xy(2, 5));
         if (getController().isVerbose()) {
             lowerBuilder.appendRow("3dlu");
