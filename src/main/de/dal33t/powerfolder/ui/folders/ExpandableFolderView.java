@@ -34,7 +34,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -203,6 +202,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         online = onlineArg;
         osComponent.setFolder(folderArg);
 
+        // Update permissions
+        Permission folderAdmin = FolderPermission.admin(folderInfo);
+        backupOnlineStorageAction.allowWith(folderAdmin);
+        stopOnlineStorageAction.allowWith(folderAdmin);
+        inviteAction.allowWith(folderAdmin);
+        
         updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
@@ -394,7 +399,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         borderBuilder.add(panel, cc.xy(2, 3));
         JPanel borderPanel = borderBuilder.getPanel();
         borderPanel.setOpaque(false);
-    //    borderPanel.setBorder(BorderFactory.createEtchedBorder());
+        // borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
@@ -429,12 +434,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         removeFolderAction = new FolderRemoveAction(getController());
         removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
 
-        Permission folderAdmin = FolderPermission.admin(folderInfo);
         backupOnlineStorageAction = new BackupOnlineStorageAction(
             getController());
-        backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction = new StopOnlineStorageAction(getController());
-        stopOnlineStorageAction.allowWith(folderAdmin);
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         syncFolderAction = new MySyncFolderAction(getController());

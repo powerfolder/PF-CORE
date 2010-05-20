@@ -19,26 +19,31 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.Permission;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 /**
  * Class showing the Online storage sync details for an ExpandableFolderView
@@ -50,6 +55,7 @@ public class OnlineStorageComponent extends PFUIComponent {
     private JButton webButton;
     private MySyncAction syncAction;
     private Folder folder;
+    private MyWebButtonAction webButtonAction;
 
     public OnlineStorageComponent(Controller controller, Folder folder) {
         super(controller);
@@ -67,8 +73,7 @@ public class OnlineStorageComponent extends PFUIComponent {
     private void initialize() {
         syncAction = new MySyncAction(getController());
         syncActionLabel = new ActionLabel(getController(), syncAction);
-        MyWebButtonAction webButtonAction = new MyWebButtonAction(
-            getController());
+        webButtonAction = new MyWebButtonAction(getController());
         webButton = new JButtonMini(webButtonAction);
     }
 
@@ -86,32 +91,43 @@ public class OnlineStorageComponent extends PFUIComponent {
     }
 
     public void setSyncPercentage(double serverSync, boolean warned,
-                                  boolean joined) {
+        boolean joined)
+    {
         if (joined) {
             syncActionLabel.setText(Translation.getTranslation(
-                    "online_storage_component.online_storage_text", Format
-                            .formatDecimal(serverSync)));
+                "online_storage_component.online_storage_text", Format
+                    .formatDecimal(serverSync)));
             syncActionLabel.setForeground(warned ? Color.red : ColorUtil
-                    .getTextForegroundColor());
-            syncActionLabel.setToolTipText(warned ? Translation.getTranslation(
-                    "online_storage_component.online_storage_warning") :
-                    Translation.getTranslation(
-                            "online_storage_component.online_storage_tip"));
-            webButton.setToolTipText(Translation.getTranslation(
-                            "online_storage_component.online_storage_tip"));
+                .getTextForegroundColor());
+            syncActionLabel
+                .setToolTipText(warned
+                    ? Translation
+                        .getTranslation("online_storage_component.online_storage_warning")
+                    : Translation
+                        .getTranslation("online_storage_component.online_storage_tip"));
+            webButton.setToolTipText(Translation
+                .getTranslation("online_storage_component.online_storage_tip"));
         } else {
-            syncActionLabel.setText(Translation.getTranslation(
-                    "online_storage_component.online_storage_unjoined_text"));
-            syncActionLabel.setToolTipText(Translation.getTranslation(
-                    "online_storage_component.online_storage_unjoined_tip"));
-            webButton.setToolTipText(Translation.getTranslation(
-                            "online_storage_component.online_storage_unjoined_tip"));
+            syncActionLabel
+                .setText(Translation
+                    .getTranslation("online_storage_component.online_storage_unjoined_text"));
+            syncActionLabel
+                .setToolTipText(Translation
+                    .getTranslation("online_storage_component.online_storage_unjoined_tip"));
+            webButton
+                .setToolTipText(Translation
+                    .getTranslation("online_storage_component.online_storage_unjoined_tip"));
         }
         syncAction.setJoined(joined);
     }
 
     public void setFolder(Folder folderArg) {
         folder = folderArg;
+        if (folderArg != null) {
+            Permission fa = FolderPermission.admin(folderArg.getInfo());
+            webButtonAction.allowWith(fa);
+            syncAction.allowWith(fa);
+        }
     }
 
     private class MySyncAction extends BaseAction {
@@ -139,6 +155,10 @@ public class OnlineStorageComponent extends PFUIComponent {
 
         public void setJoined(boolean joined) {
             this.joined = joined;
+            if (joined) {
+                syncAction.allowWith(null);
+                syncAction.setEnabled(true);
+            }
         }
     }
 
