@@ -68,7 +68,7 @@ public class MembersTab extends PFUIComponent {
     private JPanel uiComponent;
     private MembersTableModel model;
     private JScrollPane scrollPane;
-    private Action inviteAction;
+    private BaseAction inviteAction;
     private Action openChatAction;
     private Action reconnectAction;
     private JButton refreshButton;
@@ -96,6 +96,7 @@ public class MembersTab extends PFUIComponent {
      */
     public void setFolderInfo(FolderInfo folderInfo) {
         model.setFolderInfo(folderInfo);
+        inviteAction.allowWith(FolderPermission.admin(folderInfo));
     }
 
     /**
