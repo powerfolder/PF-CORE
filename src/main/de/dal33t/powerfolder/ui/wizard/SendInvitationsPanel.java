@@ -149,14 +149,16 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @param invitee
      */
     private void sendInvite(Collection<Member> candidates, String invitee) {
+        RuntimeException rte = null;
         if (Util.isValidEmail(invitee)) {
             // Invitation by email
             try {
                 InvitationUtil.invitationByServer(getController(), invitation,
                     invitee, false);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
                     + ". " + e, e);
+                rte = e;
             }
             for (Member node : candidates) {
                 if (node.getAccountInfo() != null
@@ -175,6 +177,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                         invitation, node);
                 }
             }
+        }
+        if (rte != null) {
+            throw rte;
         }
     }
 
