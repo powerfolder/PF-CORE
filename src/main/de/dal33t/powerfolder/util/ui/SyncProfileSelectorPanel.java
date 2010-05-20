@@ -19,32 +19,38 @@
  */
 package de.dal33t.powerfolder.util.ui;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
-import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
-import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.PFUIPanel;
-import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.security.ChangeTransferModePermission;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.dialog.CreateEditSyncProfileDialog;
+import de.dal33t.powerfolder.ui.dialog.DeleteSyncProfileDialog;
+import de.dal33t.powerfolder.ui.model.BoundPermission;
+import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.PFUIPanel;
+import de.dal33t.powerfolder.util.Translation;
 
 /**
  * Panel for displaying selected sync profile and opening the
@@ -63,6 +69,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     private JButtonMini configureButton;
     private JButtonMini deleteButton;
     private boolean settingSyncProfile;
+    @SuppressWarnings("unused")
+    // Held to prevent gc from collecting it.
+    private BoundPermission changeModePermission;
 
     public SyncProfileSelectorPanel(Controller controller,
         SyncProfile syncProfile)
@@ -78,11 +87,20 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
     /**
      * Builds panel and returns the component.
      * 
-     * @return
+     * @return the component.
      */
     public Component getUIComponent() {
         if (panel == null) {
             buildPanel();
+
+            changeModePermission = new BoundPermission(getController(),
+                ChangeTransferModePermission.INSTANCE)
+            {
+                @Override
+                public void hasPermission(boolean hasPermission) {
+                    setEnabled(hasPermission);
+                }
+            };
         }
         return panel;
     }
