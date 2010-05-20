@@ -202,12 +202,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         online = onlineArg;
         osComponent.setFolder(folderArg);
 
-        // Update permissions
-        Permission folderAdmin = FolderPermission.admin(folderInfo);
-        backupOnlineStorageAction.allowWith(folderAdmin);
-        stopOnlineStorageAction.allowWith(folderAdmin);
-        inviteAction.allowWith(folderAdmin);
-        
         updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
@@ -216,6 +210,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateButtons();
         updateProblems();
         updateNameLabel();
+        updatePermissions();
 
         registerFolderListeners();
     }
@@ -484,8 +479,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateTransferMode();
         updateButtons();
         updateProblems();
+        updatePermissions();
 
         registerListeners();
+    }
+
+    private void updatePermissions() {
+        // Update permissions
+        Permission folderAdmin = FolderPermission.admin(folderInfo);
+        backupOnlineStorageAction.allowWith(folderAdmin);
+        stopOnlineStorageAction.allowWith(folderAdmin);
+        inviteAction.allowWith(folderAdmin);
     }
 
     private void updateButtons() {
@@ -1001,6 +1005,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         updateIconAndOS();
                         updateButtons();
                         updateTransferMode();
+                        updatePermissions();
                     }
                 });
             }
