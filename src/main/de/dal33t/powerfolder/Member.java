@@ -2279,12 +2279,27 @@ public class Member extends PFComponent implements Comparable<Member> {
             info.isSupernode = newInfo.isSupernode;
             info.networkId = newInfo.networkId;
             // Update address only if not null IP.
-            if (newInfo.getConnectAddress() != null
-                && newInfo.getConnectAddress().getAddress() != null
-                && NetworkUtil.isNullIP(newInfo.getConnectAddress()
-                    .getAddress()))
-            {
-                info.setConnectAddress(newInfo.getConnectAddress());
+
+            InetSocketAddress newAddress = newInfo.getConnectAddress();
+            if (newAddress != null) {
+                boolean updateConnectAddress = false;
+
+                if (newAddress.isUnresolved()) {
+                    updateConnectAddress = true;
+                }
+
+                if (newAddress.getAddress() != null
+                    && !NetworkUtil.isNullIP(newAddress.getAddress()))
+                {
+                    updateConnectAddress = true;
+                }
+
+                if (updateConnectAddress) {
+                    info.setConnectAddress(newAddress);
+                } else if (isFiner()) {
+                    logFiner("Not updating address. Got: "
+                        + info.getConnectAddress() + ". New: " + newAddress);
+                }
             }
             updated = true;
         }
