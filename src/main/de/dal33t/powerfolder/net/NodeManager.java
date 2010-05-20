@@ -1103,7 +1103,7 @@ public class NodeManager extends PFComponent {
 
         Member oldNode = knownNodes.get(node.getId());
         if (oldNode != null) {
-            logWarning("Overwriting old node: " + node);
+            logWarning("Overwriting old node: " + oldNode + " with " + node);
             removeNode(oldNode);
         }
 
