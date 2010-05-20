@@ -538,9 +538,8 @@ public class ServerClient extends PFComponent {
             }
 
             if (!loginOk) {
-                logWarning("Login to server server "
-                    + server.getReconnectAddress() + " (user " + theUsername
-                    + ") failed!");
+                logWarning("Login to server " + server.getReconnectAddress()
+                    + " (user " + theUsername + ") failed!");
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
