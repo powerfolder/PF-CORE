@@ -19,20 +19,22 @@
  */
 package de.dal33t.powerfolder.event;
 
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.SwingUtilities;
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
+
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Factory used to created event/listener support upon eventlistner interfaces.
@@ -51,7 +53,7 @@ import java.util.logging.Logger;
  */
 public class ListenerSupportFactory {
 
-    private static final Logger log = Logger
+    private static final Logger LOG = Logger
         .getLogger(ListenerSupportFactory.class.getName());
 
     // AWT system check
@@ -68,6 +70,7 @@ public class ListenerSupportFactory {
      * @param listenerInterface
      * @return the event support
      */
+    @SuppressWarnings("unchecked")
     public static <T> T createListenerSupport(Class<T> listenerInterface) {
         if (listenerInterface == null) {
             throw new NullPointerException("Listener interface is empty");
@@ -81,7 +84,7 @@ public class ListenerSupportFactory {
             listenerInterface);
         T listenerSupportImpl = (T) Proxy.newProxyInstance(cl,
             new Class[]{listenerInterface}, handler);
-        log.finer("Created event listener support for interface '"
+        LOG.finer("Created event listener support for interface '"
             + listenerInterface.getName() + '\'');
         return listenerSupportImpl;
     }
@@ -96,6 +99,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param suspended
      */
+    @SuppressWarnings("unchecked")
     public static void setSuspended(Object listenerSupport, boolean suspended) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
@@ -130,6 +134,28 @@ public class ListenerSupportFactory {
     public static void addListener(CoreListener listenerSupport,
         CoreListener listener)
     {
+        addListener(listenerSupport, listener, false);
+    }
+
+    /**
+     * Adds a listener to a listener support. The listener support has to be
+     * created via <code>createListenerSupport</code> factory method. Also the
+     * listener needs to implement the listener event interface otherwise an
+     * exception is thrown (see ListenerSupportInvocationHandler.checkListener).
+     * 
+     * @param listenerSupport
+     *            The listenerSupport where the listener should be added to.
+     * @param listener
+     *            The event listener to add.
+     * @param weak
+     *            Listener gets removed if not other references to it is hold
+     *            except by this listener support (or any other weak or soft
+     *            reference).
+     */
+    @SuppressWarnings("unchecked")
+    public static void addListener(CoreListener listenerSupport,
+        CoreListener listener, boolean weak)
+    {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
         }
@@ -142,7 +168,11 @@ public class ListenerSupportFactory {
         if (invHandler instanceof ListenerSupportInvocationHandler) {
             ListenerSupportInvocationHandler lsInvHandler = (ListenerSupportInvocationHandler) invHandler;
             // Now add listener
-            lsInvHandler.addListener(listener);
+            if (weak) {
+                lsInvHandler.addWeakListener(listener);
+            } else {
+                lsInvHandler.addListener(listener);
+            }
         } else {
             throw new IllegalArgumentException(
                 "Listener support is not valid. Seems not to be created with createListenerSupport.");
@@ -158,6 +188,7 @@ public class ListenerSupportFactory {
      * @param listenerSupport
      * @param listener
      */
+    @SuppressWarnings("unchecked")
     public static void removeListener(Object listenerSupport,
         CoreListener listener)
     {
@@ -187,6 +218,7 @@ public class ListenerSupportFactory {
      * 
      * @param listenerSupport
      */
+    @SuppressWarnings("unchecked")
     public static void removeAllListeners(Object listenerSupport) {
         if (listenerSupport == null) {
             throw new NullPointerException("Listener support is null");
@@ -219,8 +251,10 @@ public class ListenerSupportFactory {
         InvocationHandler
     {
         private Class<T> listenerInterface;
-        private List<CoreListener> listenersNotInDispatchThread;
-        private List<CoreListener> listenersInDispatchThread;
+        private List<CoreListener> listenersNonEDT;
+        private List<Reference<CoreListener>> weakListenersNonEDT;
+        private List<CoreListener> listenersInEDT;
+        private List<Reference<CoreListener>> weaklistenersInEDT;
         private boolean suspended;
 
         /**
@@ -232,8 +266,10 @@ public class ListenerSupportFactory {
          */
         private ListenerSupportInvocationHandler(Class<T> listenerInterface) {
             this.listenerInterface = listenerInterface;
-            this.listenersInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
-            this.listenersNotInDispatchThread = new CopyOnWriteArrayList<CoreListener>();
+            this.listenersInEDT = new CopyOnWriteArrayList<CoreListener>();
+            this.listenersNonEDT = new CopyOnWriteArrayList<CoreListener>();
+            this.weakListenersNonEDT = new CopyOnWriteArrayList<Reference<CoreListener>>();
+            this.weaklistenersInEDT = new CopyOnWriteArrayList<Reference<CoreListener>>();
         }
 
         /**
@@ -241,13 +277,33 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void addListener(CoreListener listener) {
+        private void addListener(CoreListener listener) {
             if (checkListener(listener)) {
                 // Okay, add listener
                 if (listener.fireInEventDispatchThread()) {
-                    listenersInDispatchThread.add(listener);
+                    listenersInEDT.add(listener);
                 } else {
-                    listenersNotInDispatchThread.add(listener);
+                    listenersNonEDT.add(listener);
+                }
+            }
+        }
+
+        /**
+         * Adds a weak listener to this support impl. Listener gets removed if
+         * not other references to it is hold except by this listener support
+         * (or any other weak or soft referece).
+         * 
+         * @param listener
+         */
+        private void addWeakListener(CoreListener listener) {
+            if (checkListener(listener)) {
+                // Okay, add listener
+                Reference<CoreListener> ref = new WeakReference<CoreListener>(
+                    listener);
+                if (listener.fireInEventDispatchThread()) {
+                    weaklistenersInEDT.add(ref);
+                } else {
+                    weakListenersNonEDT.add(ref);
                 }
             }
         }
@@ -257,23 +313,33 @@ public class ListenerSupportFactory {
          * 
          * @param listener
          */
-        public void removeListener(CoreListener listener) {
+        private void removeListener(CoreListener listener) {
             if (checkListener(listener)) {
-                // Okay, remove listener
-                // if (listener.fireInEventDispatchThread()) {
-                listenersInDispatchThread.remove(listener);
-                // } else {
-                listenersNotInDispatchThread.remove(listener);
-                // }
+                listenersInEDT.remove(listener);
+                listenersNonEDT.remove(listener);
+                for (Reference<CoreListener> ref : weaklistenersInEDT) {
+                    CoreListener candidate = ref.get();
+                    if (candidate != null && candidate.equals(listener)) {
+                        weaklistenersInEDT.remove(ref);
+                    }
+                }
+                for (Reference<CoreListener> ref : weakListenersNonEDT) {
+                    CoreListener candidate = ref.get();
+                    if (candidate != null && candidate.equals(listener)) {
+                        weakListenersNonEDT.remove(ref);
+                    }
+                }
             }
         }
 
         /**
          * Removes all listeners from this support impl
          */
-        public void removeAllListeners() {
-            listenersInDispatchThread.clear();
-            listenersNotInDispatchThread.clear();
+        private void removeAllListeners() {
+            listenersInEDT.clear();
+            listenersNonEDT.clear();
+            weaklistenersInEDT.clear();
+            weakListenersNonEDT.clear();
         }
 
         /**
@@ -307,8 +373,9 @@ public class ListenerSupportFactory {
         public Object invoke(Object proxy, final Method method,
             final Object[] args) throws Throwable
         {
-            if (listenersInDispatchThread.isEmpty()
-                && listenersNotInDispatchThread.isEmpty())
+            if (listenersInEDT.isEmpty() && listenersNonEDT.isEmpty()
+                && weaklistenersInEDT.isEmpty()
+                && weakListenersNonEDT.isEmpty())
             {
                 // No listeners, skip
                 return false;
@@ -324,96 +391,111 @@ public class ListenerSupportFactory {
 
             // Create runner
             if (!suspended) {
-                if (!listenersInDispatchThread.isEmpty()) {
-                    Runnable runner = new Runnable() {
-                        public void run() {
-                            for (CoreListener listener : listenersInDispatchThread)
-                            {
-                                ProfilingEntry profilingEntry = null;
-                                if (Profiling.ENABLED) {
-                                    profilingEntry = Profiling.start(listener
-                                        .getClass().getSimpleName()
-                                        + ':' + method.getName(), "");
-                                }
-                                try {
-                                    method.invoke(listener, args);
-                                } catch (IllegalArgumentException e) {
-                                    log.log(Level.SEVERE,
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'. " + e, e);
-                                } catch (IllegalAccessException e) {
-                                    log.log(Level.SEVERE,
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'. " + e, e);
-                                } catch (InvocationTargetException e) {
-                                    log.log(Level.SEVERE,
-                                        "Received an exception from listener '"
-                                            + listener + "', class '"
-                                            + listener.getClass().getName()
-                                            + "'. " + e, e.getCause());
-                                    // Also log original exception
-                                    log.log(Level.FINER,
-                                        "InvocationTargetException", e);
-                                } finally {
-                                    Profiling.end(profilingEntry, 200);
-                                }
-                            }
-                        }
-                    };
-                    if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
-                        // NO awt system ? do not put in swing thread
-                        // Already in swing thread ? also don't wrap
-                        runner.run();
-                    } else {
-                        // Put runner in swingthread
-                        SwingUtilities.invokeLater(runner);
-                    }
+                if (!listenersInEDT.isEmpty()) {
+                    fireToEDTListeners(method, args);
                 }
-
-                for (CoreListener listener : listenersNotInDispatchThread) {
-                    ProfilingEntry profilingEntry = null;
-                    if (Profiling.ENABLED) {
-                        profilingEntry = Profiling.start(listener.getClass()
-                            .getName()
-                            + ':' + method.getName(), "");
-                    }
-                    try {
-                        method.invoke(listener, args);
-                    } catch (IllegalArgumentException e) {
-                        log.log(Level.SEVERE,
-                            "Received an exception from listener '" + listener
-                                + "', class '" + listener.getClass().getName()
-                                + '\'', e);
-                    } catch (IllegalAccessException e) {
-                        log.log(Level.SEVERE,
-                            "Received an exception from listener '" + listener
-                                + "', class '" + listener.getClass().getName()
-                                + '\'', e);
-                    } catch (InvocationTargetException e) {
-                        log.log(Level.SEVERE,
-                            "Received an exception from listener '" + listener
-                                + "', class '" + listener.getClass().getName()
-                                + '\'', e.getCause());
-                        // Also log original exception
-                        log.log(Level.FINER, "", e);
-                    } finally {
-                        Profiling.end(profilingEntry, 50);
-                    }
+                if (!listenersNonEDT.isEmpty()) {
+                    fireToNonEDTListeners(method, args);
+                }
+                if (!weaklistenersInEDT.isEmpty()) {
+                    fireToWeakEDTListeners(method, args);
+                }
+                if (!weakListenersNonEDT.isEmpty()) {
+                    fireToWeakNonEDTListeners(method, args);
                 }
             }
             return false;
-
         }
 
-        public boolean isSuspended() {
-            return suspended;
+        private void fireToNonEDTListeners(final Method method,
+            final Object[] args)
+        {
+            for (CoreListener listener : listenersNonEDT) {
+                fire(method, args, listener);
+            }
         }
 
-        public void setSuspended(boolean suspended) {
+        private void fireToEDTListeners(final Method method, final Object[] args)
+        {
+            Runnable runner = new Runnable() {
+                public void run() {
+                    for (CoreListener listener : listenersInEDT) {
+                        fire(method, args, listener);
+                    }
+                }
+            };
+            if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
+                // NO awt system ? do not put in swing thread
+                // Already in swing thread ? also don't wrap
+                runner.run();
+            } else {
+                // Put runner in swingthread
+                SwingUtilities.invokeLater(runner);
+            }
+        }
+
+        private void fireToWeakNonEDTListeners(final Method method,
+            final Object[] args)
+        {
+            for (Reference<CoreListener> ref : weakListenersNonEDT) {
+                CoreListener listener = ref.get();
+                if (listener == null) {
+                    LOG.warning("Removed weak GCed core listener");
+                    weakListenersNonEDT.remove(listener);
+                    continue;
+                }
+                fire(method, args, listener);
+            }
+        }
+
+        private void fireToWeakEDTListeners(final Method method,
+            final Object[] args)
+        {
+            Runnable runner = new Runnable() {
+                public void run() {
+                    for (Reference<CoreListener> ref : weaklistenersInEDT) {
+                        CoreListener listener = ref.get();
+                        if (listener == null) {
+                            LOG.warning("Removed weak GCed EDT core listener");
+                            weaklistenersInEDT.remove(listener);
+                            continue;
+                        }
+                        fire(method, args, listener);
+                    }
+                }
+            };
+            if (!AWT_AVAILABLE || EventQueue.isDispatchThread()) {
+                // NO awt system ? do not put in swing thread
+                // Already in swing thread ? also don't wrap
+                runner.run();
+            } else {
+                // Put runner in swingthread
+                SwingUtilities.invokeLater(runner);
+            }
+        }
+
+        private void fire(final Method method, final Object[] args,
+            CoreListener listener)
+        {
+            ProfilingEntry profilingEntry = null;
+            if (Profiling.ENABLED) {
+                profilingEntry = Profiling.start(listener.getClass().getName()
+                    + ':' + method.getName(), "");
+            }
+            try {
+                method.invoke(listener, args);
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Received an exception from listener '"
+                    + listener + "', class '" + listener.getClass().getName()
+                    + '\'', e);
+                // Also log original exception
+                LOG.log(Level.FINER, "", e);
+            } finally {
+                Profiling.end(profilingEntry, 50);
+            }
+        }
+
+        private void setSuspended(boolean suspended) {
             this.suspended = suspended;
         }
     }
