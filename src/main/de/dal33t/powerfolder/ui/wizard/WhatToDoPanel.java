@@ -121,7 +121,7 @@ public class WhatToDoPanel extends PFWizardPanel {
             return doBackupOption(getController(), getWizardContext());
         } else if (option == hostOption) {
             return doHostOption(getController(), getWizardContext());
-        } else if (option == hostOption) {
+        } else if (option == downloadOption) {
             return doDownloadOption(getController(), getWizardContext());
         } else if (option == customOption) {
             return doCustomAction();
