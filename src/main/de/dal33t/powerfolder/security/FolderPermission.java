@@ -71,6 +71,21 @@ public abstract class FolderPermission implements Permission {
         return true;
     }
 
+    public static FolderPermission get(FolderInfo foInfo, AccessMode mode) {
+        if (AccessMode.READ.equals(mode)) {
+            return read(foInfo);
+        } else if (AccessMode.READ_WRITE.equals(mode)) {
+            return readWrite(foInfo);
+        } else if (AccessMode.ADMIN.equals(mode)) {
+            return admin(foInfo);
+        } else if (AccessMode.OWNER.equals(mode)) {
+            return owner(foInfo);
+        } else {
+            // No access / null.
+            return null;
+        }
+    }
+
     public static FolderReadPermission read(FolderInfo foInfo) {
         return new FolderReadPermission(foInfo);
     }
