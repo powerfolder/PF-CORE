@@ -14,10 +14,11 @@ import net.contentobjects.jnotify.IJNotify;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
 import net.contentobjects.jnotify.JNotifyListener;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class JNotifyAdapterMacOSX implements IJNotify
 {
-	/**
+	/**¯
 	 * A JNFile uniquely identifies a file and stores it's mtime.
 	 */
 	private static class JNFile implements Comparable<JNFile>
@@ -29,7 +30,8 @@ public class JNotifyAdapterMacOSX implements IJNotify
 		// load the stat function
 		static
 		{
-			System.loadLibrary("jnotify"); //$NON-NLS-1$
+		    OSUtil.loadLibrary(JNotifyAdapterMacOSX.class, "jnotify");
+			//System.loadLibrary("jnotify"); //$NON-NLS-1$
 		}
 
 		JNFile(File f) throws IOException
