@@ -136,7 +136,8 @@ For creation of the installer:
 
 		<property name="javadoc.packages" value="de.dal33t" />
 		<property name="javadoc.overview" location="${src.main.dir}/overview.html" />
-
+		<property name="mainclass" value="de.dal33t.powerfolder.PowerFolder" />
+		
 		<!-- TODO Dirs need cleanups -->
 		<property name="junit.lib" location="lib/junit.jar" />
 	</target>
