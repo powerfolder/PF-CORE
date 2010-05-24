@@ -8,7 +8,6 @@ PowerFolder Version 4.2.5 - http://www.powerfolder.com
 = Improvements =
 * Simplified "New folder" setup wizard: Advanced setup options now hidden
   under "More options".
-* System service support for 64 bit systems.
 
 = Bugfixes =
 * Fixed several connection problems.
