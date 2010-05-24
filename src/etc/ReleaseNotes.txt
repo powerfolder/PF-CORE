@@ -1,38 +1,14 @@
-PowerFolder Version 4.2.3 - http://www.powerfolder.com
+PowerFolder Version 4.2.5 - http://www.powerfolder.com
 
 = New features =
- * Simplified usage and setup of PowerFolder: Less questions - better defaults.
-   Removed option "Sync previously setup folder" from wizard.
-   Now simply choose sync, backup, share to setup folders on all computers.
- * Client now automatically switches to better license key if current
-   one is no longer valid (expired or exceeded).
- 
-= Improvements ==
- * Cleaned up user interface: Removed boxes around folder and computers.
-   Also simplified status / home window.
- * Client configuration options can now be restricted to administrators only.
-   This prevents accidental change of client settings by users.
-   Useful when running PowerFolder in-house with own server:
-   http://www.powerfolder.com/wiki/Server_Overview
- * Added more placeholder / parameters to script execution after download:
-   http://www.powerfolder.com/wiki/Script_execution
- * Added several enhancements to client/server protocol to make it more
-   robust against further changes.
- * Updated Spanish translation. Big thanks to Javier!
- * Several other improvements.
+*Admins with own PowerFolder Server now have more ways to restrict local setting interaction 
+
+= Improvements =
+*System service support for 64 bit systems
 
 = Bugfixes =
- * Eliminated a memory leak.
- * Fixed problem when trying to sync, share or backup custom directories.
- * Fixed problem while restoring older files from online cloud:
-   http://www.powerfolder.com/wiki/File_Archive
- * Fixed problem while storing preferences.
- * Fixed chat display problems.
- * Fixed problem while downloading files with zero size.
- * Fixed problem while installing PowerFolder as system service
-   under Windows 2003: http://www.powerfolder.com/wiki/System_Service
- * Fixed window resizing behavior.
- * Now correctly remembers pause mode setting after restart.
+*Fixed Bug with UDT connection
+*Several other bugfixing
 
 
 Please give us feedback and request improvements:
@@ -61,6 +37,45 @@ Email      : contact (at) powerfolder.com
 
 == Version History ==
 
+
+Version 4.2.3
+-------------
+
+= New features =
+ * Simplified usage and setup of PowerFolder: Less questions - better defaults.
+   Removed option "Sync previously setup folder" from wizard.
+   Now simply choose sync, backup, share to setup folders on all computers.
+ * Client now automatically switches to better license key if current
+   one is no longer valid (expired or exceeded).
+ 
+= Improvements =
+ * Cleaned up user interface: Removed boxes around folder and computers.
+   Also simplified status / home window.
+ * Client configuration options can now be restricted to administrators only.
+   This prevents accidental change of client settings by users.
+   Useful when running PowerFolder in-house with own server:
+   http://www.powerfolder.com/wiki/Server_Overview
+ * Added more placeholder / parameters to script execution after download:
+   http://www.powerfolder.com/wiki/Script_execution
+ * Added several enhancements to client/server protocol to make it more
+   robust against further changes.
+ * Updated Spanish translation. Big thanks to Javier!
+ * Several other improvements.
+
+= Bugfixes =
+ * Eliminated a memory leak.
+ * Fixed problem when trying to sync, share or backup custom directories.
+ * Fixed problem while restoring older files from online cloud:
+   http://www.powerfolder.com/wiki/File_Archive
+ * Fixed problem while storing preferences.
+ * Fixed chat display problems.
+ * Fixed problem while downloading files with zero size.
+ * Fixed problem while installing PowerFolder as system service
+   under Windows 2003: http://www.powerfolder.com/wiki/System_Service
+ * Fixed window resizing behavior.
+ * Now correctly remembers pause mode setting after restart.
+
+
 Version 4.2.2
 -------------
 Internal release
@@ -74,7 +89,7 @@ Version 4.2.1
    http://www.powerfolder.com/wiki/Connect_on_demand
  * Special Linux client with web interface available. Contact us for details.
  
-= Improvements ==
+= Improvements =
  * Linux client takes hostname instead of username by default as nick/computer name.
  
 = Bugfixes =
