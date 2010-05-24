@@ -1,14 +1,18 @@
 PowerFolder Version 4.2.5 - http://www.powerfolder.com
 
 = New features =
-*Admins with own PowerFolder Server now have more ways to restrict local setting interaction 
+* Administrators with own PowerFolder Server can now disallow user to change
+  the client settings.
+  http://www.powerfolder.com/wiki/Server_configuration_file#Security_parameters
 
 = Improvements =
-*System service support for 64 bit systems
+* Simplified "New folder" setup wizard: Advanced setup options now hidden
+  under "More options".
+* System service support for 64 bit systems.
 
 = Bugfixes =
-*Fixed Bug with UDT connection
-*Several other bugfixing
+* Fixed several connection problems.
+* Several other bug fixes
 
 
 Please give us feedback and request improvements:
@@ -36,7 +40,6 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
-
 
 Version 4.2.3
 -------------
