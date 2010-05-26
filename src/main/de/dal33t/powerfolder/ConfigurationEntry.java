@@ -663,14 +663,6 @@ public enum ConfigurationEntry {
      */
     FOLDER_WATCH_FILESYSTEM("filesystem.watch", false),
 
-    /**
-     * Ugly hack to make it possible to pre-configure client with
-     * "ConfigurationLoaderDialog" to skip the first time wizard.
-     * <p>
-     * TODO Make Preferences pre-configurable too.
-     */
-    PREF_SHOW_FIRST_TIME_WIZARD("pref.openwizard2", true),
-
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", false),
 
