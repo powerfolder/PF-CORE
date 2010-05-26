@@ -67,8 +67,8 @@ public class PowerFolderBasic extends AbstractDistribution {
         try {
             Properties preConfig = ConfigurationLoader
                 .loadPreConfigFromClasspath("config/Basic.config");
-            ConfigurationLoader.mergeConfigs(preConfig, controller.getConfig(),
-                true);
+            ConfigurationLoader.merge(preConfig, controller.getConfig(),
+                controller.getPreferences(), true);
             logInfo("Loaded preconfiguration file config/Basic.config from jar file");
         } catch (IOException e) {
             logSevere("Error while loading config/Basic.config from jar file",

@@ -80,8 +80,10 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     public ConfigurationLoaderDialog(Controller controller) {
         super(controller);
     }
-    
-    public ConfigurationLoaderDialog(Controller controller, Trigger finishedTrigger) {
+
+    public ConfigurationLoaderDialog(Controller controller,
+        Trigger finishedTrigger)
+    {
         super(controller);
         this.finishedTrigger = finishedTrigger;
     }
@@ -283,8 +285,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 && preConfig.containsKey(ConfigurationEntry.SERVER_HOST
                     .getConfigKey()))
             {
-                ConfigurationLoader.mergeConfigs(preConfig, getController()
-                    .getConfig(), true);
+                ConfigurationLoader.merge(preConfig, getController()
+                    .getConfig(), getController().getPreferences(), true);
                 // Seems to be valid, store.
                 getController().saveConfig();
             }

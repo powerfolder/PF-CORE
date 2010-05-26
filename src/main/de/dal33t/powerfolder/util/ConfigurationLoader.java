@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 /**
  * Helper class around configuration
@@ -34,7 +35,9 @@ import java.util.logging.Logger;
  */
 public class ConfigurationLoader {
     // TODO Sync with MaintenanceFolder.CLIENT_CONFIG_FILENAME
+    // TODO #2025
     private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
+    private static final String PREFERENCES_PREFIX = "pref.";
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
@@ -110,6 +113,29 @@ public class ConfigurationLoader {
     }
 
     /**
+     * Convenient method to combine
+     * {@link #mergeConfigs(Properties, Properties, boolean)} and
+     * {@link #mergePreferences(Properties, Preferences, boolean)}
+     * 
+     * @param preConfig
+     *            the pre config
+     * @param targetConfig
+     *            the config file to set the pre-configuration values into.
+     * @param targetPreferences
+     *            the preferences to set the pre-configuration values into.
+     * @param replaceExisting
+     *            if existing key/value pairs will be overwritten by pairs of
+     *            pre config.
+     * @return the sum of merged entries.
+     */
+    public static int merge(Properties preConfig, Properties targetConfig,
+        Preferences targetPreferences, boolean replaceExisting)
+    {
+        return mergeConfigs(preConfig, targetConfig, replaceExisting)
+            + mergePreferences(preConfig, targetPreferences, replaceExisting);
+    }
+
+    /**
      * Merges the give pre configuration properties into the target config
      * properties. It can be choosen if existing keys in the target properties
      * should be replaced or not.
@@ -136,6 +162,48 @@ public class ConfigurationLoader {
                 targetConfig.setProperty(key, value);
                 n++;
                 LOG.finer("Preconfigured " + key + "=" + value);
+            }
+        }
+        LOG.fine("Preconfigs found " + preConfig.size());
+        return n;
+    }
+
+    /**
+     * Merges the give pre configuration properties into the target preferences.
+     * It can be choosen if existing keys in the target preferences should be
+     * replaced or not. Will only set those values from preConfig where the key
+     * begins with "pref." and cut it off. "pref.xxx=true" will be set to
+     * "xxx=true" in preferences.
+     * 
+     * @param preConfig
+     *            the pre config
+     * @param targetPreferences
+     *            the preferences to set the pre-configuration values into.
+     * @param replaceExisting
+     *            if existing key/value pairs will be overwritten by pairs of
+     *            pre config.
+     * @return the number of merged entries.
+     */
+    public static int mergePreferences(Properties preConfig,
+        Preferences targetPreferences, boolean replaceExisting)
+    {
+        Reject.ifNull(preConfig, "PreConfig is null");
+        Reject.ifNull(targetPreferences, "TargetPreferences is null");
+        int n = 0;
+        for (Object obj : preConfig.keySet()) {
+            String key = (String) obj;
+            String value = preConfig.getProperty(key);
+            if (!key.startsWith(PREFERENCES_PREFIX)) {
+                continue;
+            } else {
+                key = key.substring(PREFERENCES_PREFIX.length(), key.length());
+            }
+            boolean entryMissing = "-XXWEIRED-DEFAULT-VALUE"
+                .equals(targetPreferences.get(key, "-XXWEIRED-DEFAULT-VALUE"));
+            if (entryMissing || replaceExisting) {
+                targetPreferences.put(key, value);
+                n++;
+                LOG.warning("Preconfigured " + key + "=" + value);
             }
         }
         LOG.fine("Preconfigs found " + preConfig.size());

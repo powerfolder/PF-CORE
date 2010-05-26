@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
@@ -40,6 +41,7 @@ import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 public abstract class AbstractDistribution extends Loggable implements
     Distribution
 {
+    private static final String DEFAULT_CONFIG_FILENAME = "Default.config";
 
     private Controller controller;
 
@@ -102,24 +104,26 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
-    protected boolean loadPreConfigFromClasspath(Properties config,
+    protected boolean loadPreConfigFromClasspath(Controller controller,
         boolean replaceExisting)
     {
+        Reject.ifNull(controller, "Controller");
         try {
             Properties preConfig = ConfigurationLoader
-                .loadPreConfigFromClasspath("Client.config");
-            ConfigurationLoader
-                .mergeConfigs(preConfig, config, replaceExisting);
+                .loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
+            ConfigurationLoader.merge(preConfig, controller.getConfig(),
+                controller.getPreferences(), replaceExisting);
             logInfo("Loaded preconfiguration file Client.config from jar file");
             return true;
         } catch (IOException e) {
-            logSevere("Error while loading Client.config from jar file", e);
+            logSevere("Error while loading " + DEFAULT_CONFIG_FILENAME
+                + " from jar file", e);
             return false;
         }
     }
 
-    protected boolean loadPreConfigFromClasspath(Properties config) {
-        return loadPreConfigFromClasspath(config, true);
+    protected boolean loadPreConfigFromClasspath(Controller controller) {
+        return loadPreConfigFromClasspath(controller, true);
     }
 
     protected static final void removeValue(Controller c,

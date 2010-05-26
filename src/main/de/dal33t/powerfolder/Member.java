@@ -1727,9 +1727,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                         if (StringUtils.isNotBlank(clr.getConfigURL())) {
                             Properties preConfig = ConfigurationLoader
                                 .loadPreConfiguration(clr.getConfigURL());
-                            ConfigurationLoader.mergeConfigs(preConfig,
-                                getController().getConfig(), clr
-                                    .isReplaceExisting());
+
+                            ConfigurationLoader.merge(preConfig,
+                                getController().getConfig(), getController()
+                                    .getPreferences(), clr.isReplaceExisting());
+
                             // Seems to be valid, store.
                             getController().saveConfig();
                         }
