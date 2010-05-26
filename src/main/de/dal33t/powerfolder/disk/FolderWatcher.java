@@ -44,14 +44,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author sprajc
  */
 public class FolderWatcher extends PFComponent {
-    /**
-     * #1862. Mac 64 libs are taken from a JNotify fork based on 0.90 (which had
-     * the "unregister" bug)
-     */
-    private static final boolean UNREGISTER_WATCHERS = (OSUtil
-        .isWindowsSystem() || OSUtil.isLinux())
-        && !OSUtil.is64BitPlatform();
 
+    private static final boolean UNREGISTER_WATCHERS = true;
     private static Boolean LIB_LOADED;
 
     private Folder folder;
