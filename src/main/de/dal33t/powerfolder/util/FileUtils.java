@@ -39,8 +39,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -835,7 +835,6 @@ public class FileUtils {
     public static File buildFileFromRelativeName(File base, String relativeName)
     {
         Reject.ifNull(base, "Need a base directory");
-        Reject.ifFalse(base.isDirectory(), "Base must be a directory");
         Reject.ifNull(relativeName, "RelativeName required");
         if (relativeName.indexOf('/') == -1) {
             return new File(base, relativeName);
