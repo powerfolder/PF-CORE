@@ -18,7 +18,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class JNotifyAdapterMacOSX implements IJNotify
 {
-	/**¯
+	/**
 	 * A JNFile uniquely identifies a file and stores it's mtime.
 	 */
 	private static class JNFile implements Comparable<JNFile>
