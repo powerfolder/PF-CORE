@@ -253,13 +253,6 @@ public class UIController extends PFComponent {
             // .setCurrentManager(new CheckThreadViolationRepaintManager());
         }
 
-        // Hack for customer
-        boolean openWiz = ConfigurationEntry.PREF_SHOW_FIRST_TIME_WIZARD
-            .getValueBoolean(getController());
-        if (!openWiz) {
-            getController().getPreferences().putBoolean("openwizard2", false);
-        }
-
         // The central application model
         applicationModel = new ApplicationModel(getController());
         applicationModel.initialize();
@@ -386,7 +379,8 @@ public class UIController extends PFComponent {
             + Format.formatBytes(totalFolderSize));
         // A folderCount of 6 == 3 folders plus 3 metaFolders.
         boolean limitHit = totalFolderSize > FIVE_GIG
-            || getController().getFolderRepository().getFoldersCount() > (Feature.META_FOLDER.isEnabled() ? 6 : 3);
+            || getController().getFolderRepository().getFoldersCount() > (Feature.META_FOLDER
+                .isEnabled() ? 6 : 3);
         if (limitHit) {
             getController().getNodeManager().shutdown();
             if (!limitDialogShown || forceOpen) {
