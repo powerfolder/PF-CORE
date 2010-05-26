@@ -19,11 +19,16 @@
  */
 package de.dal33t.powerfolder.test.util;
 
+import java.util.Properties;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -82,7 +87,8 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             .getValueBoolean(getContollerLisa()));
 
         // Now overwrite values.
-        r = new ConfigurationLoadRequest(TEST_CONFIG_URL + "/", true, false, false);
+        r = new ConfigurationLoadRequest(TEST_CONFIG_URL + "/", true, false,
+            false);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -100,4 +106,37 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
         });
     }
 
+    public void testMergePreferences() throws BackingStoreException {
+        Preferences p = Preferences
+            .userNodeForPackage(ConfigurationLoadTest.class);
+        p.put("EXISTING", "existing value");
+
+        Properties preConfig = new Properties();
+        preConfig.put("IGNORED", "VALUE");
+        preConfig.put("pref.APREF", "XXX");
+        preConfig.put("pref.EXISTING", "NU VALUE");
+        preConfig.put("pref.int", "4343");
+        preConfig.put("pref.intBroken", "4x343");
+        preConfig.put("pref.boolean", "true");
+        preConfig.put("pref.booleanBroken", "1");
+        preConfig.put("pref.long", "2343894738925");
+
+        ConfigurationLoader.mergePreferences(preConfig, p, false);
+        assertEquals("XXX", p.get("APREF", null));
+        assertEquals("existing value", p.get("EXISTING", null));
+        assertEquals(4343, p.getInt("int", -1));
+        assertEquals(-1, p.getInt("intBroken", -1));
+        assertTrue(p.getBoolean("boolean", false));
+        assertFalse(p.getBoolean("booleanBroken", false));
+        assertEquals(2343894738925L, p.getLong("long", -1));
+
+        ConfigurationLoader.mergePreferences(preConfig, p, true);
+        assertEquals("XXX", p.get("APREF", null));
+        assertEquals("NU VALUE", p.get("EXISTING", null));
+        assertEquals(4343, p.getInt("int", -1));
+        assertEquals(-1, p.getInt("intBroken", -1));
+        assertTrue(p.getBoolean("boolean", false));
+        assertFalse(p.getBoolean("booleanBroken", false));
+        assertEquals(2343894738925L, p.getLong("long", -1));
+    }
 }
