@@ -27,21 +27,29 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 public class ServerClientEvent extends EventObject {
     private Member node;
     private AccountDetails accountDetails;
+    private boolean loginSuccess;
 
     public ServerClientEvent(ServerClient source) {
         super(source);
     }
 
     public ServerClientEvent(ServerClient source, AccountDetails details) {
-        super(source);
-        accountDetails = details;
+        this(source, details, true);
     }
-    
+
+    public ServerClientEvent(ServerClient source, AccountDetails details,
+        boolean loginSuccess)
+    {
+        super(source);
+        this.accountDetails = details;
+        this.loginSuccess = loginSuccess;
+    }
+
     public ServerClientEvent(ServerClient source, Member node) {
         super(source);
-        this.node= node;
+        this.node = node;
     }
-    
+
     public ServerClient getServerClient() {
         return (ServerClient) getSource();
     }
@@ -49,11 +57,15 @@ public class ServerClientEvent extends EventObject {
     public AccountDetails getAccountDetails() {
         return accountDetails;
     }
-    
+
     public Member getServerNode() {
         return node;
     }
-    
+
+    public boolean isLoginSuccess() {
+        return loginSuccess;
+    }
+
     public ServerClient getClient() {
         return (ServerClient) getSource();
     }

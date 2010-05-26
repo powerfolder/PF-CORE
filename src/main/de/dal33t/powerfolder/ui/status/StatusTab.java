@@ -550,10 +550,15 @@ public class StatusTab extends PFUIComponent {
         }
     }
 
+    private void updateOnlineStorageDetails() {
+        updateOnlineStorageDetails(true);
+    }
+
     /**
      * Updates the Online Storage details.
      */
-    private void updateOnlineStorageDetails() {
+    private void updateOnlineStorageDetails(boolean loginSuccess) {
+        onlineStorageAccountLabel.setIcon(null);
         boolean active = false;
         boolean showBuyNow = false;
         String username = client.getUsername();
@@ -613,14 +618,24 @@ public class StatusTab extends PFUIComponent {
                                 .getTranslation("status_tab.online_storage.account.tips"));
                         active = true;
                     }
-                } else {
+                } else if (loginSuccess) {
                     onlineStorageAccountLabel.setText(Translation
                         .getTranslation(
-                            "status_tab.online_storage.account_not_logged_in",
+                            "status_tab.online_storage.account_connecting",
                             username));
                     onlineStorageAccountLabel
                         .setToolTipText(Translation
-                            .getTranslation("status_tab.online_storage.account_not_logged_in.tips"));
+                            .getTranslation("status_tab.online_storage.account_connecting.tips"));
+                } else {
+                    onlineStorageAccountLabel.setIcon(Icons
+                        .getIconById(Icons.WARNING));
+                    onlineStorageAccountLabel.setText(Translation
+                        .getTranslation(
+                            "status_tab.online_storage.account_login_failed",
+                            username));
+                    onlineStorageAccountLabel
+                        .setToolTipText(Translation
+                            .getTranslation("status_tab.online_storage.account_login_failed.tips"));
                 }
             } else {
                 onlineStorageAccountLabel.setText(Translation.getTranslation(
@@ -860,7 +875,7 @@ public class StatusTab extends PFUIComponent {
         }
 
         public void login(ServerClientEvent event) {
-            updateOnlineStorageDetails();
+            updateOnlineStorageDetails(event.isLoginSuccess());
         }
 
         public void serverConnected(ServerClientEvent event) {

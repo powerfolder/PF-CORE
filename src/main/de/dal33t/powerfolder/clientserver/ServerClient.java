@@ -503,6 +503,9 @@ public class ServerClient extends PFComponent {
             if (!isConnected() || password == null) {
                 setAnonAccount();
                 fireLogin(accountDetails);
+                if (!isConnected()) {
+                    getServer().markForImmediateConnect();
+                }
                 return accountDetails.getAccount();
             }
             boolean loginOk = false;
@@ -541,7 +544,7 @@ public class ServerClient extends PFComponent {
                 logWarning("Login to server " + server.getReconnectAddress()
                     + " (user " + theUsername + ") failed!");
                 setAnonAccount();
-                fireLogin(accountDetails);
+                fireLogin(accountDetails, false);
                 return accountDetails.getAccount();
             }
             AccountDetails newAccountDetails = securityService
@@ -586,7 +589,7 @@ public class ServerClient extends PFComponent {
                 }
             } else {
                 setAnonAccount();
-                fireLogin(accountDetails);
+                fireLogin(accountDetails, false);
             }
             return accountDetails.getAccount();
         }
@@ -648,7 +651,7 @@ public class ServerClient extends PFComponent {
             updateFriendsList(accountDetails.getAccount());
         } else {
             setAnonAccount();
-            fireLogin(accountDetails);
+            fireLogin(accountDetails, false);
         }
         if (isFine()) {
             logFine("Refreshed " + accountDetails);
@@ -946,7 +949,12 @@ public class ServerClient extends PFComponent {
     }
 
     private void fireLogin(AccountDetails details) {
-        listenerSupport.login(new ServerClientEvent(this, details));
+        fireLogin(details, true);
+    }
+
+    private void fireLogin(AccountDetails details, boolean loginSuccess) {
+        listenerSupport
+            .login(new ServerClientEvent(this, details, loginSuccess));
     }
 
     private void fireAccountUpdates(AccountDetails details) {
