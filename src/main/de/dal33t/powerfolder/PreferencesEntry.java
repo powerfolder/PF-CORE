@@ -25,8 +25,8 @@ import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.skin.Snowland;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.MainFrame;
+import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -82,11 +82,14 @@ public enum PreferencesEntry {
      * and a warning displayed if limited connectivty is given.
      */
     TEST_CONNECTIVITY("test_for_connectivity", true),
-    
+
     /** Warn user if connection is poor. */
     WARN_POOR_QUALITY("warn.poor.quality", true),
 
-    DUPLICATE_FOLDER_USE("duplicaet_folder_use", true),
+    /**
+     * Warn if changing a transfer mode for multiple folders
+     */
+    DUPLICATE_FOLDER_USE("duplicate_folder_use", true),
 
     SETUP_DEFAULT_FOLDER("setup_default_folder", false),
 
@@ -127,7 +130,6 @@ public enum PreferencesEntry {
 
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
-
 
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
