@@ -976,7 +976,7 @@ public class NodeManager extends PFComponent {
                 + handler + ", disconnecting").with(handler);
         }
         if (!getNetworkId().equals(remoteIdentity.getMemberInfo().networkId)) {
-            logWarning("Remote client not on same network " + handler
+            logFine("Remote client not on same network " + handler
                 + ", disconnecting. remote network ID: "
                 + remoteIdentity.getMemberInfo().networkId
                 + ". Expected/Ours: " + getNetworkId());
