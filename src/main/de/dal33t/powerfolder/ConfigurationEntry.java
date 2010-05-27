@@ -64,6 +64,13 @@ public enum ConfigurationEntry {
     USER_INTERFACE_LOCKED("uilock.locked", false),
 
     /**
+     * If any running instance should be killed when starting PowerFolder.
+     * <P>
+     * TRAC #2028
+     */
+    KILL_RUNNING_INSTANCE("kill.running.instance", false),
+
+    /**
      * If some client options are available only with permissions such as create
      * folder or change client preferences.
      * <p>
