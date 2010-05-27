@@ -69,6 +69,11 @@ public enum ConfigurationEntry {
      * TRAC #2028
      */
     KILL_RUNNING_INSTANCE("kill.running.instance", false),
+    
+    /**
+     * Don't prompt on update. Simply auto-upgrade silently
+     */
+    AUTO_UPDATE("auto.update", false),
 
     /**
      * If some client options are available only with permissions such as create
