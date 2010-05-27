@@ -64,4 +64,14 @@ public class WinUtilsTest extends TestCase {
         assertTrue(f.exists());
         f.delete();
     }
+
+    public void testGetAllUserAppData() {
+        String appData = WinUtils.getAppDataAllUsers();
+        if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
+            assertEquals("C:\\ProgramData", appData);
+        } else if (OSUtil.isWindowsSystem()) {
+            assertEquals("C:\\Dokumente und Einstellungen\\All Users", appData);
+        }
+        System.out.println(appData);
+    }
 }

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util.os.Win32;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
@@ -235,12 +236,59 @@ public class WinUtils extends Loggable {
      * @return the APPDATA directory for placing application data (All users).
      */
     public static String getAppDataAllUsers() {
+        // "Normal" way. Get it from Windows DLLs directly
         if (WinUtils.getInstance() != null) {
             return WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_COMMON_APP_DATA, false);
-        } else {
-            LOG.severe("Unable to find APPDATA (all users) directory");
-            return null;
         }
+
+        // Windows Vista and Windows 7
+        if (StringUtils.isNotBlank(System.getenv("ProgramData"))) {
+            // Source:
+            // http://en.wikipedia.org/wiki/Environment_variable#Default_Values_on_Microsoft_Windows
+            String appDataAllUsers = System.getenv("ProgramData");
+            File dir = new File(appDataAllUsers);
+            if (dir.exists()) {
+                LOG
+                    .warning("Retrieved APPDATA (all users) via ENV(ProgramData): "
+                        + appDataAllUsers);
+                return appDataAllUsers;
+            }
+        }
+
+        // Windows XP
+        if (StringUtils.isNotBlank(System.getenv("USERPROFILE"))
+            && StringUtils.isNotBlank(System.getenv("APPDATA"))
+            && StringUtils.isNotBlank(System.getenv("ALLUSERSPROFILE")))
+        {
+            // Source:
+            // http://stackoverflow.com/questions/2517940/windows-application-data-directory
+            /*
+             * Tested on WinXP 32 bit: APPDATA=C:\Dokumente und
+             * Einstellungen\Administrator\Anwendungsdaten
+             * USERPROFILE=C:\Dokumente und Einstellungen\Administrator
+             * ALLUSERSPROFILE=C:\Dokumente und Einstellungen\All Users
+             */
+            String userProfile = System.getenv("USERPROFILE");
+            String appData = System.getenv("APPDATA");
+            String allUsersProfile = System.getenv("ALLUSERSPROFILE");
+            String temp = appData.replace(userProfile, "");
+            String appDataAllUsers = allUsersProfile + temp;
+            File dir = new File(appDataAllUsers);
+            if (dir.exists()) {
+                LOG
+                    .warning("Retrieved APPDATA (all users) via ENV(USERPROFILE/APPDATA/ALLUSERSPROFILE): "
+                        + appDataAllUsers);
+                return appDataAllUsers;
+            }
+        }
+
+        // Fail!
+        LOG.severe("Unable to find APPDATA (all users) directory");
+        LOG.warning("Dump of environment variables: ");
+        for (Entry<String, String> entry : System.getenv().entrySet()) {
+            LOG.warning(" " + entry.getKey() + "=" + entry.getValue());
+        }
+        return null;
     }
 }
