@@ -151,8 +151,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         final Folder foLisa = getFolderAtLisa();
         assertTrue(foLisa.hasOwnDatabase());
         assertTrue(getFolderAtLisa().hasOwnDatabase());
-        // 10 MB testfile
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        // 20 MB testfile
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
         for (int i = 0; i < 500; i++) {
             new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
         }
@@ -169,7 +169,6 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                 return foLisa.getKnownDirectories().size();
             }
         });
-
         assertEquals(1, getFolderAtLisa().getIncomingFiles().size());
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
