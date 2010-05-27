@@ -91,8 +91,8 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -423,6 +423,10 @@ public class Controller extends PFComponent {
         logInfo("Build time: " + getBuildTime());
 
         Debug.writeSystemProperties();
+
+        if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
+            killRunningInstance();
+        }
 
         // Initialize plugins
         setupProPlugins();
@@ -2117,11 +2121,8 @@ public class Controller extends PFComponent {
         return base;
     }
 
-    /**
-     * Called if controller has detected a already running instance
-     */
-    private void alreadyRunningCheck() {
-        if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
+    private void killRunningInstance() {
+        if (RemoteCommandManager.hasRunningInstance()) {
             logWarning("Found a running instance. Trying to shut it down...");
             RemoteCommandManager.sendCommand(RemoteCommandManager.QUIT);
             Waiter w = new Waiter(10000L);
@@ -2135,6 +2136,12 @@ public class Controller extends PFComponent {
             }
             logWarning("Was NOT able to shut down running instance.");
         }
+    }
+
+    /**
+     * Called if controller has detected a already running instance
+     */
+    private void alreadyRunningCheck() {
         Component parent = null;
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
@@ -2297,7 +2304,8 @@ public class Controller extends PFComponent {
             // Save unhandled invitations.
             List<Invitation> invitations = new ArrayList<Invitation>();
             for (Notice notice : uiController.getApplicationModel()
-                    .getNoticesModel().getAllNotices()) {
+                .getNoticesModel().getAllNotices())
+            {
                 if (notice instanceof InvitationNotice) {
                     InvitationNotice invitationNotice = (InvitationNotice) notice;
                     invitations.add(invitationNotice.getPayload());
@@ -2349,15 +2357,13 @@ public class Controller extends PFComponent {
                         .readObject();
                     inputStream.close();
                     for (Invitation invitation : invitations) {
-                        Notice notice = new InvitationNotice(
-                                Translation.getTranslation(
-                                        "notice.invitation_title"),
-                                Translation.getTranslation(
-                                "notice.invitation_summary",
-                                        invitation.getInvitor().getNick()),
-                                invitation);
+                        Notice notice = new InvitationNotice(Translation
+                            .getTranslation("notice.invitation_title"),
+                            Translation.getTranslation(
+                                "notice.invitation_summary", invitation
+                                    .getInvitor().getNick()), invitation);
                         uiController.getApplicationModel().getNoticesModel()
-                                .addNotice(notice);
+                            .addNotice(notice);
                     }
                     logInfo("Loaded " + invitations.size() + " invitations.");
                 } catch (FileNotFoundException e) {
