@@ -48,7 +48,6 @@ public class FindComputersTable extends JTable {
         setShowGrid(false);
         setDefaultRenderer(Member.class,
             new MemberTableCellRenderer(controller));
-        getTableHeader().setReorderingAllowed(true);
         // add sorting
         getTableHeader().addMouseListener(
             new TableHeaderMouseListener());

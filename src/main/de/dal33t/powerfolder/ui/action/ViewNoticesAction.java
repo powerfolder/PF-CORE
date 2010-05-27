@@ -15,15 +15,31 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
+* $Id: ActivateWarningAction.java 5419 2008-09-29 12:18:20Z harry $
 */
-package de.dal33t.powerfolder.event;
+package de.dal33t.powerfolder.ui.action;
 
-import de.dal33t.powerfolder.message.SingleFileOffer;
+import java.awt.event.ActionEvent;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.dialog.NoticesDialog;
 
 /**
- * Class to indicate that a single file offer has been received.
+ * This action displays system notices.
  */
-public interface SingleFileOfferHandler {
-    void gotOffer(SingleFileOffer offer);
+public class ViewNoticesAction extends BaseAction {
+
+    public ViewNoticesAction(Controller controller) {
+        super("action_view_notices", controller);
+    }
+
+    /**
+     * Display the notices handler dialog.
+     *
+     * @param e
+     */
+    public void actionPerformed(ActionEvent e) {
+        NoticesDialog dialog = new NoticesDialog(getController());
+        dialog.open();
+    }
 }

@@ -31,7 +31,6 @@ import javax.swing.JWindow;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -47,9 +46,6 @@ public class NotificationHandler extends PFComponent {
 
     /** The notification message */
     private final String message;
-
-    /** The task to perform if the notification is accepted */
-    private final Runnable task;
 
     /** The label for the Accept button */
     private final String acceptOptionLabel;
@@ -75,36 +71,9 @@ public class NotificationHandler extends PFComponent {
         Reject.ifNull(message, "Message must not be null");
         this.title = title;
         this.message = message;
-        task = null;
         acceptOptionLabel = Translation.getTranslation("general.ok");
         cancelOptionLabel = null;
         this.showAccept = showAccept;
-    }
-
-    /**
-     * Constructor. Shows a message with accept and cancel buttons. If the
-     * accept button is clicked, the task runs.
-     * 
-     * @param controller
-     * @param title
-     * @param message
-     * @param task
-     */
-    public NotificationHandler(Controller controller, String title,
-        String message, Runnable task)
-    {
-        super(controller);
-        Reject.ifNull(title, "Title must not be null");
-        Reject.ifNull(message, "Message must not be null");
-        Reject.ifNull(task, "Task must not be null");
-        this.title = title;
-        this.message = message;
-        this.task = task;
-        acceptOptionLabel = Translation
-            .getTranslation("notification_handler.display.text");
-        cancelOptionLabel = Translation
-            .getTranslation("notification_handler.ignore.text");
-        showAccept = true;
     }
 
     /**
@@ -122,16 +91,6 @@ public class NotificationHandler extends PFComponent {
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
-
-                // If task exists, deiconify and run.
-                if (task != null) {
-                    MainFrame mainFrame = getController().getUIController()
-                        .getMainFrame();
-                    if (mainFrame.isIconifiedOrHidden()) {
-                        mainFrame.deiconify();
-                    }
-                    task.run();
-                }
             }
         };
 

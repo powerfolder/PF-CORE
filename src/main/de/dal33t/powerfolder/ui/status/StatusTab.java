@@ -88,10 +88,7 @@ public class StatusTab extends PFUIComponent {
     private StatusTabLine numberOfFoldersLine;
     private StatusTabLine sizeOfFoldersLine;
     private StatusTabLine filesAvailableLine;
-    private StatusTabLine newWarningsLine;
-    private StatusTabLine newInvitationsLine;
-    private StatusTabLine newFriendRequestsLine;
-    private StatusTabLine newSingleFileOffersLine;
+    private StatusTabLine newNoticesLine;
     private StatusTabLine computersLine;
     private StatusTabLine downloadsLine;
     private StatusTabLine uploadsLine;
@@ -105,10 +102,7 @@ public class StatusTab extends PFUIComponent {
     private LinkLabel buyNowLabel;
     private ActionLabel tellFriendLabel;
 
-    private final ValueModel newWarningsCountVM;
-    private final ValueModel newFriendRequestsCountVM;
-    private final ValueModel newInvitationsCountVM;
-    private final ValueModel newSingleFileOffersCountVM;
+    private final ValueModel newNoticesCountVM;
 
     /**
      * Constructor
@@ -123,23 +117,9 @@ public class StatusTab extends PFUIComponent {
             .getAllUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
-        newFriendRequestsCountVM = getUIController().getApplicationModel()
-            .getReceivedAskedForFriendshipModel()
-            .getReceivedAskForFriendshipCountVM();
-        newFriendRequestsCountVM
-            .addValueChangeListener(new MyFriendRequestListener());
-        newInvitationsCountVM = getUIController().getApplicationModel()
-            .getReceivedInvitationsModel().getReceivedInvitationsCountVM();
-        newInvitationsCountVM
-            .addValueChangeListener(new MyInvitationListener());
-        newSingleFileOffersCountVM = getUIController().getApplicationModel()
-            .getReceivedSingleFileOffersModel()
-            .getReceivedSingleFileOfferCountVM();
-        newSingleFileOffersCountVM
-            .addValueChangeListener(new MyOfferPropertyListener());
-        newWarningsCountVM = getUIController().getApplicationModel()
-            .getWarningsModel().getWarningsCountVM();
-        newWarningsCountVM.addValueChangeListener(new MyWarningsListener());
+        newNoticesCountVM = getUIController().getApplicationModel()
+            .getNoticesModel().getReceivedNoticesCountVM();
+        newNoticesCountVM.addValueChangeListener(new MyNoticesListener());
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
         controller.getNodeManager().addNodeManagerListener(
@@ -207,24 +187,10 @@ public class StatusTab extends PFUIComponent {
         filesAvailableLine = new StatusTabLine(getController(), Translation
             .getTranslation("status_tab.files_available"), null, true, true,
             null, null);
-        newWarningsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_warnings"), null, true, true,
-            getApplicationModel().getActionModel().getActivateWarningAction(),
+        newNoticesLine = new StatusTabLine(getController(), Translation
+            .getTranslation("status_tab.new_notices"), null, true, true,
+            getApplicationModel().getActionModel().getViewNoticesAction(),
             Icons.getIconById(Icons.WARNING));
-        newInvitationsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_invitations"), null, true, true,
-            getApplicationModel().getActionModel()
-                .getOpenInvitationReceivedWizardAction(), Icons
-                .getIconById(Icons.INFORMATION));
-        newFriendRequestsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_friend_requests"), null, true,
-            true, getApplicationModel().getActionModel()
-                .getAskForFriendshipAction(), Icons
-                .getIconById(Icons.INFORMATION));
-        newSingleFileOffersLine = new StatusTabLine(getController(),
-            Translation.getTranslation("status_tab.new_single_file_offers"),
-            null, true, true, getApplicationModel().getActionModel()
-                .getSingleFileTransferOfferAction(), null);
         downloadsLine = new StatusTabLine(getController(), Translation
             .getTranslation("status_tab.files_downloads"), null, false, true,
             getApplicationModel().getActionModel()
@@ -278,10 +244,7 @@ public class StatusTab extends PFUIComponent {
         updateComputers();
         updateOnlineStorageDetails();
         updateLicenseDetails();
-        updateNewInvitationsText();
-        updateNewWarningsText();
-        updateNewComputersText();
-        updateNewSingleFileOffersText();
+        updateNewNoticesText();
         updateSyncStats();
         registerListeners();
 
@@ -327,14 +290,9 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 12dlu, " + // Sync section
-                "pref, 3dlu, pref, pref, pref, pref, pref, pref, pref, 9dlu, " + // You
-                // have
-                // section
-                // "pref, 3dlu, pref, pref, pref, 9dlu, " + // Local section
-                "pref, 3dlu, pref, pref, pref, pref, 0:grow, pref");
-        // sep, sync-stat sync-date sep warn, files invs comps singl
-        // down upl sep #fol szfo comp sep os-acc osSec tell friend
+            "pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, pref, " +
+                    "pref, pref, 9dlu, pref, 3dlu, pref, " +
+                    "pref, pref, pref, 0:grow, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -354,31 +312,14 @@ public class StatusTab extends PFUIComponent {
         builder.addSeparator(Translation.getTranslation("status_tab.you_have"),
             cc.xy(1, row));
         row += 2;
-        builder.add(newWarningsLine.getUIComponent(), cc.xy(1, row));
+        builder.add(newNoticesLine.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(filesAvailableLine.getUIComponent(), cc.xy(1, row));
-        row++;
-        builder.add(newInvitationsLine.getUIComponent(), cc.xy(1, row));
-        row++;
-        builder.add(newFriendRequestsLine.getUIComponent(), cc.xy(1, row));
-        row++;
-        builder.add(newSingleFileOffersLine.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(downloadsLine.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
-
-        // builder.addSeparator(Translation.getTranslation("status_tab.local"),
-        // cc
-        // .xy(1, row));
-        // row += 2;
-        // builder.add(numberOfFoldersLine.getUIComponent(), cc.xy(1, row));
-        // row++;
-        // builder.add(sizeOfFoldersLine.getUIComponent(), cc.xy(1, row));
-        // row++;
-        // builder.add(computersLine.getUIComponent(), cc.xy(1, row));
-        // row += 2;
 
         builder.addSeparator(Translation
             .getTranslation("status_tab.online_storage.title"), cc.xy(1, row));
@@ -440,24 +381,9 @@ public class StatusTab extends PFUIComponent {
         uploadsLine.setValue((Integer) uploadsCountVM.getValue());
     }
 
-    private void updateNewWarningsText() {
-        Integer integer = (Integer) newWarningsCountVM.getValue();
-        newWarningsLine.setValue(integer);
-    }
-
-    private void updateNewInvitationsText() {
-        Integer integer = (Integer) newInvitationsCountVM.getValue();
-        newInvitationsLine.setValue(integer);
-    }
-
-    private void updateNewComputersText() {
-        Integer integer = (Integer) newFriendRequestsCountVM.getValue();
-        newFriendRequestsLine.setValue(integer);
-    }
-
-    private void updateNewSingleFileOffersText() {
-        Integer integer = (Integer) newSingleFileOffersCountVM.getValue();
-        newSingleFileOffersLine.setValue(integer);
+    private void updateNewNoticesText() {
+        Integer integer = (Integer) newNoticesCountVM.getValue();
+        newNoticesLine.setValue(integer);
     }
 
     private void showBuyNowLink(String text) {
@@ -900,31 +826,10 @@ public class StatusTab extends PFUIComponent {
         }
     }
 
-    private class MyOfferPropertyListener implements PropertyChangeListener {
+    private class MyNoticesListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNewSingleFileOffersText();
-        }
-    }
-
-    private class MyFriendRequestListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateNewComputersText();
-        }
-    }
-
-    private class MyInvitationListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateNewInvitationsText();
-        }
-    }
-
-    private class MyWarningsListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateNewWarningsText();
+            updateNewNoticesText();
         }
     }
 

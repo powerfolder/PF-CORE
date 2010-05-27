@@ -26,8 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -70,7 +70,10 @@ public class MemoryMonitor implements Runnable {
      * Add a warning event for the user.
      */
     private void addWarning() {
-        WarningEvent event = new WarningEvent(new Runnable() {
+        WarningNotice notice = new WarningNotice(
+                Translation.getTranslation("warning_notice.title"),
+                Translation.getTranslation("warning_notice.low_memory"),
+                new Runnable() {
             public void run() {
                 if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
                     int response = DialogFactory
@@ -98,7 +101,8 @@ public class MemoryMonitor implements Runnable {
                 }
             }
         });
-        controller.pushWarningEvent(event);
+        controller.getUIController().getApplicationModel()
+            .getNoticesModel().addNotice(notice);
     }
 
     /**

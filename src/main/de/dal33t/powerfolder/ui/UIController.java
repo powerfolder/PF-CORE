@@ -82,15 +82,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.WarningEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.skin.Skin;
@@ -107,6 +103,7 @@ import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -216,6 +213,8 @@ public class UIController extends PFComponent {
         systemMonitorFrame = new SystemMonitorFrame(getController());
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
+        getController().addInvitationHandler(new MyInvitationHandler());
+        getController().addAskForFriendshipListener(new MyAskForFriendshipListener());
     }
 
     /**
@@ -736,6 +735,7 @@ public class UIController extends PFComponent {
      * @param oome
      */
     public void showOutOfMemoryError(OutOfMemoryError oome) {
+        // @todo convert this to a warning notification?
         if (!seenOome) {
             seenOome = true;
             // http\://www.powerfolder.com/wiki/Memory_configuration
@@ -1257,17 +1257,15 @@ public class UIController extends PFComponent {
             }
 
             // Disabled popup of sync start.
-            if (changed
-                && PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
-                    .getValueBoolean(getController()))
-            {
+            if (changed) {
                 String text2 = Translation.getTranslation(
                     "check_status.powerfolders", Format
                         .formatBytes(nTotalBytes), String.valueOf(folders
                         .size()));
 
-                notifyMessage(Translation.getTranslation("check_status.title"),
-                    text1 + "\n\n" + text2, false);
+                handleNotice(new SimpleNotificationNotice(
+                        Translation.getTranslation("check_status.title"),
+                    text1 + "\n\n" + text2));
             }
         }
     }
@@ -1286,24 +1284,17 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Shows a notification message only if the UI is minimized.
-     * 
+     * Show a chat message popup notification.
+     *
      * @param title
-     *            The title to display under 'PowerFolder'.
+     *          message title
      * @param message
-     *            Message to show if notification is displayed.
-     * @param chat
-     *            True if this is a chat message, otherwise it is a system
-     *            message
+     *          the message to popup
      */
-    public void notifyMessage(String title, String message, boolean chat) {
+    public void showChatNotification(String title, String message) {
         if (started && !getController().isShuttingDown()) {
-            if (chat
-                ? (Boolean) applicationModel.getChatNotificationsValueModel()
-                    .getValue()
-                : (Boolean) applicationModel.getSystemNotificationsValueModel()
-                    .getValue())
-            {
+            if ((Boolean) applicationModel.getChatNotificationsValueModel()
+                .getValue()) {
                 NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message, true);
                 notificationHandler.show();
@@ -1312,26 +1303,26 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Run a task via the notification system. A notification message will
-     * appear. If the user selects the accept button, the task runs.
-     * 
-     * @param title
-     *            The title to display under 'PowerFolder'.
-     * @param message
-     *            Message to show if notification is displayed.
-     * @param task
-     *            Task to do if user selects 'accept' option or if UI is not
-     *            minimized.
+     * This handles a notice object.
+     * If it is a notification, show in a notification handler.
+     * If it is actionable, add to the app model notices.
+     *
+     * @param notice
+     *          the Notice to handle
      */
-    public void notifyMessage(String title, String message, Runnable task) {
-        if (started
-            && !getController().isShuttingDown()
-            && (Boolean) applicationModel.getSystemNotificationsValueModel()
-                .getValue())
-        {
-            NotificationHandler notificationHandler = new NotificationHandler(
-                getController(), title, message, task);
-            notificationHandler.show();
+    public void handleNotice(Notice notice) {
+        if (started && !getController().isShuttingDown()) {
+            if ((Boolean) applicationModel.getSystemNotificationsValueModel()
+                .getValue() && notice.isNotification()) {
+                NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), notice.getTitle(), notice.getSummary(),
+                        true);
+                notificationHandler.show();
+            }
+
+            if (notice.isActionable()) {
+                applicationModel.getNoticesModel().addNotice(notice);
+            }
         }
     }
 
@@ -1349,7 +1340,10 @@ public class UIController extends PFComponent {
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(final LocalMassDeletionEvent event) {
-            WarningEvent warningEvent = new WarningEvent(new Runnable() {
+            WarningNotice notice = new WarningNotice(
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation.getTranslation("warning_notice.mass_deletion"),
+                    new Runnable() {
                 public void run() {
                     int response = DialogFactory
                         .genericDialog(
@@ -1383,7 +1377,7 @@ public class UIController extends PFComponent {
                     }
                 }
             });
-            applicationModel.getWarningsModel().pushWarning(warningEvent);
+            applicationModel.getNoticesModel().addNotice(notice);
         }
 
         public void remoteMassDeletion(RemoteMassDeletionEvent event) {
@@ -1404,12 +1398,37 @@ public class UIController extends PFComponent {
                         .getName());
             }
 
-            WarningEvent warningEvent = new WarningEvent(
-                getController(),
-                Translation
-                    .getTranslation("uicontroller.remote_mass_delete.warning_title"),
-                message);
-            applicationModel.getWarningsModel().pushWarning(warningEvent);
+            WarningNotice notice = new WarningNotice(
+                    getController(),
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation.getTranslation("warning_notice.mass_deletion"),
+                    message);
+            applicationModel.getNoticesModel().addNotice(notice);
         }
     }
+
+    private class MyInvitationHandler implements InvitationHandler {
+        public void gotInvitation(Invitation invitation, boolean sendIfJoined) {
+            Notice notice = new InvitationNotice(Translation.getTranslation(
+                    "notice.invitation.title"), Translation.getTranslation(
+                    "notice.invitation.summary", invitation.getInvitor()
+                            .getNick()), invitation);
+            handleNotice(notice);
+        }
+    }
+
+    private class MyAskForFriendshipListener implements AskForFriendshipListener {
+        public void askForFriendship(AskForFriendshipEvent event) {
+            if (PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
+                            .getValueBoolean(getController())) {
+                Notice notice = new AskForFriendshipEventNotice(Translation
+                        .getTranslation("notice.ask_for_friendship.title"),
+                        Translation
+                        .getTranslation("notice.ask_for_friendship.summary",
+                        event.getMemberInfo().getNick()), event);
+                handleNotice(notice);
+            }
+        }
+    }
+
 }

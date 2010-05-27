@@ -64,15 +64,9 @@ public class SysTrayBlinkManager extends PFUIComponent {
         getController().scheduleAndRepeat(task, 1000);
         uiController.getApplicationModel().getChatModel().addChatModelListener(
             new MyChatModelListener());
-        uiController.getApplicationModel().getWarningsModel()
-            .getWarningsCountVM().addValueChangeListener(
-                new MyWarningsCountListener());
-        uiController.getApplicationModel().getReceivedInvitationsModel()
-            .getReceivedInvitationsCountVM().addValueChangeListener(
-                new MyInvitationsCountListener());
-        uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
-            .getReceivedAskForFriendshipCountVM().addValueChangeListener(
-                new MyFriendshipCountListener());
+        uiController.getApplicationModel().getNoticesModel()
+            .getReceivedNoticesCountVM().addValueChangeListener(
+                new MyNoticesCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
             new MyWindowListener());
         getController().getFolderRepository().addProblemListenerToAllFolders(
@@ -165,60 +159,17 @@ public class SysTrayBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Listen for incoming warnings.
-     */
-    private class MyWarningsCountListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getWarningsModel().getWarningsCountVM().getValue();
-
-            if (count == null || count == 0
-                || !uiController.getMainFrame().isIconifiedOrHidden())
-            {
-                return;
-            }
-
-            flashTrayIcon(true);
-        }
-    }
-
-    /**
      * Listen for incoming invitations.
      */
-    private class MyInvitationsCountListener implements PropertyChangeListener {
+    private class MyNoticesCountListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                .getReceivedInvitationsModel().getReceivedInvitationsCountVM()
-                .getValue();
+                .getNoticesModel().getReceivedNoticesCountVM().getValue();
 
             if (count == null || count == 0
-                || !uiController.getMainFrame().isIconifiedOrHidden())
-            {
-                return;
-            }
-
-            flashTrayIcon(true);
-        }
-    }
-
-    /**
-     * Listen for friendship messages.
-     */
-    private class MyFriendshipCountListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getReceivedAskedForFriendshipModel()
-                .getReceivedAskForFriendshipCountVM().getValue();
-
-            if (count == null || count == 0
-                || !uiController.getMainFrame().isIconifiedOrHidden())
-            {
+                || !uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
 

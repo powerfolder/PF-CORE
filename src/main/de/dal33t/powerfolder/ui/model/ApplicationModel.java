@@ -46,19 +46,15 @@ public class ApplicationModel extends PFUIComponent {
     private NodeManagerModel nodeManagerModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
-    private ReceivedInvitationsModel receivedInvitationsModel;
-    private ReceivedNotificationsModel receivedNotificationsModel;
-    private ReceivedAskedForFriendshipModel receivedAskedForFriendshipModel;
-    private ReceivedSingleFileOffersModel receivedSingleFileOffersModel;
-    private WarningModel warningsModel;
     private ValueModel chatNotificationsValueModel;
     private ValueModel systemNotificationsValueModel;
     private ValueModel useOSModel;
     private LicenseModel licenseModel;
+    private NoticesModel noticesModel;
 
     /**
-     * Constructs a non-initialized application model. Before the model can used
-     * call {@link #initialize()}
+     * Constructs a non-initialized application model. Before the model can be
+     * used call {@link #initialize()}
      * 
      * @param controller
      * @see #initialize()
@@ -74,20 +70,6 @@ public class ApplicationModel extends PFUIComponent {
             .getTransferManager());
         serverClientModel = new ServerClientModel(getController(),
             getController().getOSClient());
-        receivedInvitationsModel = new ReceivedInvitationsModel(getController());
-        receivedInvitationsModel.getReceivedInvitationsCountVM()
-            .addValueChangeListener(new MyReceivedInvitationListener());
-        receivedNotificationsModel = new ReceivedNotificationsModel(
-            getController());
-        receivedNotificationsModel.getCountVM().addValueChangeListener(
-            new MyReceivedNotificationListener());
-        receivedAskedForFriendshipModel = new ReceivedAskedForFriendshipModel(
-            getController());
-        receivedAskedForFriendshipModel.getReceivedAskForFriendshipCountVM()
-            .addValueChangeListener(new MyReceivedFrendshipListener());
-        receivedSingleFileOffersModel = new ReceivedSingleFileOffersModel(
-            getController());
-        warningsModel = new WarningModel(getController());
 
         chatNotificationsValueModel = new ValueHolder(
             PreferencesEntry.SHOW_CHAT_NOTIFICATIONS
@@ -115,6 +97,7 @@ public class ApplicationModel extends PFUIComponent {
         useOSModel = PreferencesEntry.USE_ONLINE_STORAGE
             .getModel(getController());
         licenseModel = new LicenseModel();
+        noticesModel = new NoticesModel(getController());
     }
 
     /**
@@ -150,23 +133,6 @@ public class ApplicationModel extends PFUIComponent {
         return serverClientModel;
     }
 
-    public ReceivedInvitationsModel getReceivedInvitationsModel() {
-        return receivedInvitationsModel;
-    }
-
-    public ReceivedAskedForFriendshipModel getReceivedAskedForFriendshipModel()
-    {
-        return receivedAskedForFriendshipModel;
-    }
-
-    public ReceivedSingleFileOffersModel getReceivedSingleFileOffersModel() {
-        return receivedSingleFileOffersModel;
-    }
-
-    public WarningModel getWarningsModel() {
-        return warningsModel;
-    }
-
     public ValueModel getChatNotificationsValueModel() {
         return chatNotificationsValueModel;
     }
@@ -190,9 +156,9 @@ public class ApplicationModel extends PFUIComponent {
                 // Ignore status updates and own messages
                 return;
             }
-            getController().getUIController().notifyMessage(
+            getController().getUIController().showChatNotification(
                 Translation.getTranslation("chat.notification.title"),
-                Translation.getTranslation("chat.notification.message"), true);
+                Translation.getTranslation("chat.notification.message"));
         }
 
         public boolean fireInEventDispatchThread() {
@@ -200,57 +166,7 @@ public class ApplicationModel extends PFUIComponent {
         }
     }
 
-    private class MyReceivedInvitationListener implements
-        PropertyChangeListener
-    {
-        public void propertyChange(PropertyChangeEvent evt) {
-            Integer newValue = (Integer) evt.getNewValue();
-            Integer oldValue = (Integer) evt.getOldValue();
-            if (newValue != null && oldValue != null && newValue > oldValue) {
-                getController().getUIController()
-                    .notifyMessage(
-                        Translation
-                            .getTranslation("invitation.notification.title"),
-                        Translation
-                            .getTranslation("invitation.notification.message"),
-                        false);
-            }
-        }
+    public NoticesModel getNoticesModel() {
+        return noticesModel;
     }
-
-    private class MyReceivedNotificationListener implements
-        PropertyChangeListener
-    {
-        public void propertyChange(PropertyChangeEvent evt) {
-            Integer newValue = (Integer) evt.getNewValue();
-            Integer oldValue = (Integer) evt.getOldValue();
-            if (newValue != null && oldValue != null && newValue > oldValue) {
-                getController().getUIController()
-                    .notifyMessage(
-                        Translation
-                            .getTranslation("invitation.notification.title"),
-                        Translation
-                            .getTranslation("invitation.notification.message"),
-                        false);
-            }
-        }
-    }
-
-    private class MyReceivedFrendshipListener implements PropertyChangeListener
-    {
-        public void propertyChange(PropertyChangeEvent evt) {
-            Integer newValue = (Integer) evt.getNewValue();
-            Integer oldValue = (Integer) evt.getOldValue();
-            if (newValue != null && oldValue != null && newValue > oldValue) {
-                getController().getUIController()
-                    .notifyMessage(
-                        Translation
-                            .getTranslation("friendship.notification.title"),
-                        Translation
-                            .getTranslation("friendship.notification.message"),
-                        false);
-            }
-        }
-    }
-
 }

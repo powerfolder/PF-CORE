@@ -73,13 +73,9 @@ import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.MassDeletionHandler;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.SingleFileOfferHandler;
-import de.dal33t.powerfolder.event.WarningEvent;
-import de.dal33t.powerfolder.event.WarningHandler;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.net.BroadcastMananger;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -95,6 +91,8 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -225,8 +223,6 @@ public class Controller extends PFComponent {
 
     private final List<AskForFriendshipListener> askForFriendshipListeners;
     private final List<InvitationHandler> invitationHandlers;
-    private final List<SingleFileOfferHandler> singleFileOfferHandlers;
-    private final List<WarningHandler> warningHandlers;
     private final List<MassDeletionHandler> massDeletionHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
@@ -298,8 +294,6 @@ public class Controller extends PFComponent {
             "PowerFolder");
         askForFriendshipListeners = new CopyOnWriteArrayList<AskForFriendshipListener>();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
-        singleFileOfferHandlers = new CopyOnWriteArrayList<SingleFileOfferHandler>();
-        warningHandlers = new CopyOnWriteArrayList<WarningHandler>();
         massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
     }
 
@@ -364,8 +358,8 @@ public class Controller extends PFComponent {
 
         // Initalize resouce bundle eager
         // check forced language file from commandline
-        if (getCommandLine() != null && getCommandLine().hasOption("f")) {
-            String langfilename = getCommandLine().getOptionValue("f");
+        if (commandLine != null && commandLine.hasOption("f")) {
+            String langfilename = commandLine.getOptionValue("f");
             try {
                 ResourceBundle resourceBundle = new ForcedLanguageFileResourceBundle(
                     langfilename);
@@ -643,33 +637,6 @@ public class Controller extends PFComponent {
         massDeletionHandlers.remove(l);
     }
 
-    /**
-     * Add single file offer listener.
-     * 
-     * @param l
-     */
-    public void addSingleFileOfferHandler(SingleFileOfferHandler l) {
-        singleFileOfferHandlers.add(l);
-    }
-
-    /**
-     * Add single file offer listener.
-     * 
-     * @param l
-     */
-    public void addWarningHandler(WarningHandler l) {
-        warningHandlers.add(l);
-    }
-
-    /**
-     * Remove single file offer listener.
-     * 
-     * @param l
-     */
-    public void removeSingleFileOfferHandler(SingleFileOfferHandler l) {
-        singleFileOfferHandlers.remove(l);
-    }
-
     private void setupProPlugins() {
         String pluginConfig = ConfigurationEntry.PLUGINS.getValue(this);
         boolean autoSetupPlugins = StringUtils.isEmpty(pluginConfig)
@@ -850,7 +817,7 @@ public class Controller extends PFComponent {
      *            the time in ms between executions
      */
     public void scheduleAndRepeat(Runnable task, long period) {
-        if (!isShuttingDown()) {
+        if (!shuttingDown) {
             threadPool.scheduleWithFixedDelay(task, 0, period,
                 TimeUnit.MILLISECONDS);
         }
@@ -869,7 +836,7 @@ public class Controller extends PFComponent {
      */
     public void scheduleAndRepeat(Runnable task, long initialDelay, long period)
     {
-        if (!isShuttingDown()) {
+        if (!shuttingDown) {
             threadPool.scheduleWithFixedDelay(task, initialDelay, period,
                 TimeUnit.MILLISECONDS);
         }
@@ -884,7 +851,7 @@ public class Controller extends PFComponent {
      *            the initial delay in ms
      */
     public void schedule(Runnable task, long delay) {
-        if (!isShuttingDown()) {
+        if (!shuttingDown) {
             threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
         }
     }
@@ -895,7 +862,7 @@ public class Controller extends PFComponent {
      * @param task
      */
     public void removeScheduled(Runnable task) {
-        if (!isShuttingDown()) {
+        if (!shuttingDown) {
             if (threadPool instanceof ScheduledThreadPoolExecutor) {
                 ((ScheduledThreadPoolExecutor) threadPool).remove(task);
             } else {
@@ -1150,7 +1117,7 @@ public class Controller extends PFComponent {
      * Saves the current config to disk
      */
     public synchronized void saveConfig() {
-        if (!isStarted()) {
+        if (!started) {
             return;
         }
         logFine("Saving config (" + getConfigName() + ".config)");
@@ -1241,13 +1208,13 @@ public class Controller extends PFComponent {
      * @param newSilentMode
      */
     public void setSilentMode(boolean newSilentMode) {
-        boolean oldValue = isSilentMode();
+        boolean oldValue = silentMode;
         this.silentMode = newSilentMode;
         if (newSilentMode) {
-            getFolderRepository().getFolderScanner().abortScan();
+            folderRepository.getFolderScanner().abortScan();
         }
         if (oldValue != newSilentMode) {
-            getTransferManager().updateSpeedLimits();
+            transferManager.updateSpeedLimits();
         }
         preferences.putBoolean("silentMode", newSilentMode);
         firePropertyChange(PROPERTY_SILENT_MODE, oldValue, newSilentMode);
@@ -1349,7 +1316,7 @@ public class Controller extends PFComponent {
     }
 
     public void setLimitedConnectivity(boolean limitedConnectivity) {
-        Object oldValue = isLimitedConnectivity();
+        Object oldValue = this.limitedConnectivity;
         this.limitedConnectivity = limitedConnectivity;
         firePropertyChange(PROPERTY_LIMITED_CONNECTIVITY, oldValue,
             this.limitedConnectivity);
@@ -1442,6 +1409,9 @@ public class Controller extends PFComponent {
             logFine(Profiling.dumpStats());
         }
 
+        // Save anything important that has not been handled.
+        savePersistentObjects();
+
         // stop
         boolean wasStarted = started;
         started = false;
@@ -1451,9 +1421,6 @@ public class Controller extends PFComponent {
             logFine("Shutting down task manager");
             taskManager.shutdown();
         }
-
-        // Save anything important that has not bben handled.
-        savePersistentObjects();
 
         if (threadPool != null) {
             logFine("Shutting down global threadpool");
@@ -1674,10 +1641,10 @@ public class Controller extends PFComponent {
             saveConfig();
         }
         // broadcast nickchange
-        getNodeManager().broadcastMessage(new SettingsChange(getMySelf()));
+        nodeManager.broadcastMessage(new SettingsChange(getMySelf()));
         if (isUIOpen()) {
             // Update title
-            getUIController().getMainFrame().updateTitle();
+            uiController.getMainFrame().updateTitle();
         }
     }
 
@@ -1796,7 +1763,7 @@ public class Controller extends PFComponent {
      */
     public Member connect(InetSocketAddress address) throws ConnectionException
     {
-        if (!isStarted()) {
+        if (!started) {
             logInfo("NOT Connecting to " + address + ". Controller not started");
             throw new ConnectionException("NOT Connecting to " + address
                 + ". Controller not started");
@@ -1812,7 +1779,7 @@ public class Controller extends PFComponent {
             .tryToConnect(address);
 
         // Accept new node
-        return getNodeManager().acceptConnection(conHan);
+        return nodeManager.acceptConnection(conHan);
     }
 
     /**
@@ -2305,35 +2272,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Process receipt of a SingleFileOffer.
-     * 
-     * @param singleFileOffer
-     */
-    public void singleFileOfferReceived(SingleFileOffer singleFileOffer) {
-
-        if (!isUIEnabled()) {
-            // This is a UI-only feature.
-            return;
-        }
-
-        for (SingleFileOfferHandler handler : singleFileOfferHandlers) {
-            handler.gotOffer(singleFileOffer);
-        }
-
-    }
-
-    /**
-     * Adds a warning event to the app model.
-     * 
-     * @param event
-     */
-    public void pushWarningEvent(WarningEvent event) {
-        for (WarningHandler warningHandler : warningHandlers) {
-            warningHandler.pushWarning(event);
-        }
-    }
-
-    /**
      * Save anything important that was not handled.
      */
     private void savePersistentObjects() {
@@ -2341,12 +2279,13 @@ public class Controller extends PFComponent {
         if (started && isUIEnabled()) {
 
             // Save unhandled invitations.
-            Invitation invitation;
             List<Invitation> invitations = new ArrayList<Invitation>();
-            while ((invitation = uiController.getApplicationModel()
-                .getReceivedInvitationsModel().popInvitation()) != null)
-            {
-                invitations.add(invitation);
+            for (Notice notice : uiController.getApplicationModel()
+                    .getNoticesModel().getAllNotices()) {
+                if (notice instanceof InvitationNotice) {
+                    InvitationNotice invitationNotice = (InvitationNotice) notice;
+                    invitations.add(invitationNotice.getPayload());
+                }
             }
             String filename = getController().getConfigName() + ".invitations";
             File file = new File(getMiscFilesLocation(), filename);
@@ -2394,9 +2333,15 @@ public class Controller extends PFComponent {
                         .readObject();
                     inputStream.close();
                     for (Invitation invitation : invitations) {
-                        uiController.getApplicationModel()
-                            .getReceivedInvitationsModel().gotInvitation(
-                                invitation, false);
+                        Notice notice = new InvitationNotice(
+                                Translation.getTranslation(
+                                        "notice.invitation_title"),
+                                Translation.getTranslation(
+                                "notice.invitation_summary",
+                                        invitation.getInvitor().getNick()),
+                                invitation);
+                        uiController.getApplicationModel().getNoticesModel()
+                                .addNotice(notice);
                     }
                     logInfo("Loaded " + invitations.size() + " invitations.");
                 } catch (FileNotFoundException e) {

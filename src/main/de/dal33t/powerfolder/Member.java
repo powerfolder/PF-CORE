@@ -77,7 +77,6 @@ import de.dal33t.powerfolder.message.ScanCommand;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.message.SingleFileAccept;
-import de.dal33t.powerfolder.message.SingleFileOffer;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.message.TransferStatus;
@@ -104,7 +103,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
- * member/fried/peer.
+ * member/friend/peer.
  * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.115 $
@@ -1696,11 +1695,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof FileHistoryReply) {
                 getController().getFolderRepository().getFileRequestor()
                     .receivedFileHistory((FileHistoryReply) message);
-
-            } else if (message instanceof SingleFileOffer) {
-                getController().singleFileOfferReceived(
-                    (SingleFileOffer) message);
-                expectedTime = 50;
 
             } else if (message instanceof SingleFileAccept) {
                 // getController().getTransferManager().processSingleFileAcceptance(

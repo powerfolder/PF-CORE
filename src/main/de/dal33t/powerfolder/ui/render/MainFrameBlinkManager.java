@@ -63,15 +63,9 @@ public class MainFrameBlinkManager extends PFUIComponent {
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
-        uiController.getApplicationModel().getWarningsModel()
-            .getWarningsCountVM().addValueChangeListener(
-                new MyWarningsCountListener());
-        uiController.getApplicationModel().getReceivedInvitationsModel()
-            .getReceivedInvitationsCountVM().addValueChangeListener(
-                new MyInvitationsCountListener());
-        uiController.getApplicationModel().getReceivedAskedForFriendshipModel()
-            .getReceivedAskForFriendshipCountVM().addValueChangeListener(
-                new MyFriendshipCountListener());
+        uiController.getApplicationModel().getNoticesModel()
+            .getReceivedNoticesCountVM().addValueChangeListener(
+                new MyNoticesCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
             new MyMainTabChangeListener());
         uiController.getController().getFolderRepository().addProblemListenerToAllFolders(
@@ -150,58 +144,15 @@ public class MainFrameBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Listen for incoming warnings.
-     */
-    private class MyWarningsCountListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getWarningsModel().getWarningsCountVM().getValue();
-
-            if (count == null || count == 0
-                || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)
-            {
-                return;
-            }
-
-            flashStatusTabIcon(true);
-            update();
-        }
-    }
-
-    /**
      * Listen for incoming invitations.
      */
-    private class MyInvitationsCountListener implements PropertyChangeListener {
+    private class MyNoticesCountListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                .getReceivedInvitationsModel().getReceivedInvitationsCountVM()
+                .getNoticesModel().getReceivedNoticesCountVM()
                 .getValue();
-
-            if (count == null || count == 0
-                || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)
-            {
-                return;
-            }
-
-            flashStatusTabIcon(true);
-            update();
-        }
-    }
-
-    /**
-     * Listen for friendship messages.
-     */
-    private class MyFriendshipCountListener implements PropertyChangeListener {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getReceivedAskedForFriendshipModel()
-                .getReceivedAskForFriendshipCountVM().getValue();
 
             if (count == null || count == 0
                 || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)

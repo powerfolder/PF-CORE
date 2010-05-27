@@ -40,11 +40,8 @@ public class ActionModel extends PFComponent {
     private ConnectAction connectAction;
     private OpenDownloadsInformationAction openDownloadsInformationAction;
     private OpenUploadsInformationAction openUploadsInformationAction;
-    private OpenInvitationReceivedWizardAction openInvitationReceivedWizardAction;
-    private ActivateWarningAction activateWarningAction;
-    private AskForFriendshipAction askForFriendshipAction;
+    private ViewNoticesAction viewNoticesAction;
     private OpenDebugInformationAction openDebugInformationAction;
-    private SingleFileTransferOfferAction singleFileTransferOfferAction;
 
     public NewFolderAction getNewFolderAction() {
         if (newFolderAction == null) {
@@ -100,28 +97,11 @@ public class ActionModel extends PFComponent {
         return connectAction;
     }
 
-    public OpenInvitationReceivedWizardAction getOpenInvitationReceivedWizardAction()
-    {
-
-        if (openInvitationReceivedWizardAction == null) {
-            openInvitationReceivedWizardAction = new OpenInvitationReceivedWizardAction(
-                getController());
+    public ViewNoticesAction getViewNoticesAction() {
+        if (viewNoticesAction == null) {
+            viewNoticesAction = new ViewNoticesAction(getController());
         }
-        return openInvitationReceivedWizardAction;
-    }
-
-    public AskForFriendshipAction getAskForFriendshipAction() {
-        if (askForFriendshipAction == null) {
-            askForFriendshipAction = new AskForFriendshipAction(getController());
-        }
-        return askForFriendshipAction;
-    }
-
-    public ActivateWarningAction getActivateWarningAction() {
-        if (activateWarningAction == null) {
-            activateWarningAction = new ActivateWarningAction(getController());
-        }
-        return activateWarningAction;
+        return viewNoticesAction;
     }
 
     public OpenDebugInformationAction getOpenDebugInformationAction() {
@@ -130,13 +110,5 @@ public class ActionModel extends PFComponent {
                 getController());
         }
         return openDebugInformationAction;
-    }
-
-    public SingleFileTransferOfferAction getSingleFileTransferOfferAction() {
-        if (singleFileTransferOfferAction == null) {
-            singleFileTransferOfferAction = new SingleFileTransferOfferAction(
-                getController());
-        }
-        return singleFileTransferOfferAction;
     }
 }

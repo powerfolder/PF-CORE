@@ -54,12 +54,13 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.WarningEvent;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -303,10 +304,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         .showConnectivityWarning(controller);
                 }
             };
-            WarningEvent warningEvent = new WarningEvent(runnable);
+            WarningNotice notice = new WarningNotice(
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation.getTranslation("warning_notice.limited_connectivity"),
+                    runnable);
             controller.getUIController().getApplicationModel()
-                .getWarningsModel().pushWarning(warningEvent);
-
+                .getNoticesModel().addNotice(notice);
         }
     }
 
@@ -424,13 +427,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (newState == DISABLED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.disabled");
-                    getUIController().notifyMessage(title, notificationText,
-                        false);
+                    getUIController().handleNotice(new SimpleNotificationNotice(
+                            title, notificationText));
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.connected");
-                    getUIController().notifyMessage(title, notificationText,
-                        false);
+                    getUIController().handleNotice(new SimpleNotificationNotice(
+                            title, notificationText));
                 } else {
                     // Disconnected
                 }
@@ -465,9 +468,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     }
                 }
             };
-            WarningEvent warningEvent = new WarningEvent(runnable);
+
+            WarningNotice notice = new WarningNotice(
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation.getTranslation("warning_notice.poor_quality"),
+                    runnable);
             controller.getUIController().getApplicationModel()
-                .getWarningsModel().pushWarning(warningEvent);
+                .getNoticesModel().addNotice(notice);
         }
     }
 
