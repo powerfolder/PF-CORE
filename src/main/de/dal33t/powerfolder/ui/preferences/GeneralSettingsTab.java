@@ -447,6 +447,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private void configureFavorite(boolean newValue) {
+        if (!WinUtils.isSupported()) {
+            return;
+        }
         try {
             WinUtils.getInstance().setPFFavorite(newValue, getController());
         } catch (IOException e) {
