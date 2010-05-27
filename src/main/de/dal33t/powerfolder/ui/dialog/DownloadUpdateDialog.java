@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.dialog;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -70,7 +70,8 @@ public class DownloadUpdateDialog extends PFUIComponent {
     public void initComponents() {
         // General dialog initalization
         uiComponent = new JDialog(getUIController().getMainFrame()
-            .getUIComponent(), Translation.getTranslation("dialog.update.updating"), true);
+            .getUIComponent(), Translation
+            .getTranslation("dialog.update.updating"), false);
 
         uiComponent.setResizable(false);
         uiComponent.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -81,8 +82,10 @@ public class DownloadUpdateDialog extends PFUIComponent {
         });
 
         // Cancel buttons
-        JButton cancelButton = new JButton(Translation.getTranslation("general.cancel"));
-        cancelButton.setMnemonic(Translation.getTranslation("general.cancel").charAt(0));
+        JButton cancelButton = new JButton(Translation
+            .getTranslation("general.cancel"));
+        cancelButton.setMnemonic(Translation.getTranslation("general.cancel")
+            .charAt(0));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Callback call to cancel
@@ -103,7 +106,10 @@ public class DownloadUpdateDialog extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         // Add components
-        builder.addLabel(Translation.getTranslation("dialog.update.updating.text"), cc.xywh(1, 1, 4, 1));
+        builder
+            .addLabel(
+                Translation.getTranslation("dialog.update.updating.text"), cc
+                    .xywh(1, 1, 4, 1));
         builder.add(processBar, cc.xywh(2, 3, 2, 1));
         builder.add(buttonBar, cc.xywh(2, 5, 2, 1));
 
