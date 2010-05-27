@@ -106,6 +106,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -130,7 +131,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.5"; // 1.7.1.2 / RC1
+    public static final String PROGRAM_VERSION = "4.2.6 dev2"; // 1.7.1.3
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -396,8 +397,9 @@ public class Controller extends PFComponent {
 
         // initialize logger
         initLogger();
+        String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
         logInfo("PowerFolder v" + PROGRAM_VERSION);
-        logFine("OS: " + System.getProperty("os.name"));
+        logFine("OS: " + System.getProperty("os.name") + " (" + arch + ')');
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
@@ -2119,6 +2121,20 @@ public class Controller extends PFComponent {
      * Called if controller has detected a already running instance
      */
     private void alreadyRunningCheck() {
+        if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
+            logWarning("Found a running instance. Trying to shut it down...");
+            RemoteCommandManager.sendCommand(RemoteCommandManager.QUIT);
+            Waiter w = new Waiter(10000L);
+            while (RemoteCommandManager.hasRunningInstance() && !w.isTimeout())
+            {
+                w.waitABit();
+            }
+            if (!RemoteCommandManager.hasRunningInstance()) {
+                logInfo("Was able to shut down running instance. Continue normal");
+                return;
+            }
+            logWarning("Was NOT able to shut down running instance.");
+        }
         Component parent = null;
         if (isUIOpen()) {
             parent = uiController.getMainFrame().getUIComponent();
