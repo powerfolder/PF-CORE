@@ -46,29 +46,34 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
         String nothingNeverAsk = Translation
             .getTranslation("dialog.update_check.nothingNeverAsk");
 
-        if (OSUtil.isWindowsSystem()) {
-            options.add(downloadAndUpdate);
-            options.add(downloadAndUpdateSilent);
-        }
-        options.add(gotoHomepage);
-        options.add(nothingNeverAsk);
+        if (ConfigurationEntry.AUTO_UPDATE.getValueBoolean(getController())) {
+            // Directly update
+            option = downloadAndUpdateSilent;
+        } else {
+            if (OSUtil.isWindowsSystem()) {
+                options.add(downloadAndUpdateSilent);
+                options.add(downloadAndUpdate);
+            }
+            options.add(gotoHomepage);
+            options.add(nothingNeverAsk);
 
-        updateDialogOpen = true;
-        try {
-            UIUtil.invokeAndWaitInEDT(new Runnable() {
-                public void run() {
-                    option = JOptionPane.showInputDialog(getParentFrame(),
-                        text, Translation
-                            .getTranslation("dialog.update_check.title"),
-                        JOptionPane.OK_CANCEL_OPTION, null, options.toArray(),
-                        options.get(0));
-                }
-            });
-        } catch (InterruptedException ex) {
-            logFiner(ex);
-            return;
+            updateDialogOpen = true;
+            try {
+                UIUtil.invokeAndWaitInEDT(new Runnable() {
+                    public void run() {
+                        option = JOptionPane.showInputDialog(getParentFrame(),
+                            text, Translation
+                                .getTranslation("dialog.update_check.title"),
+                            JOptionPane.OK_CANCEL_OPTION, null, options
+                                .toArray(), options.get(0));
+                    }
+                });
+            } catch (InterruptedException ex) {
+                logFiner(ex);
+                return;
+            }
+            updateDialogOpen = false;
         }
-        updateDialogOpen = false;
 
         if (option == downloadAndUpdate || option == downloadAndUpdateSilent) {
             boolean updateSilently = option == downloadAndUpdateSilent;
