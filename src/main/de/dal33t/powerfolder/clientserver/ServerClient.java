@@ -503,9 +503,6 @@ public class ServerClient extends PFComponent {
             if (!isConnected() || password == null) {
                 setAnonAccount();
                 fireLogin(accountDetails);
-                if (!isConnected()) {
-                    getServer().markForImmediateConnect();
-                }
                 return accountDetails.getAccount();
             }
             boolean loginOk = false;
