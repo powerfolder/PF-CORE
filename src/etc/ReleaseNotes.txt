@@ -1,18 +1,28 @@
-PowerFolder Version 4.2.5 - http://www.powerfolder.com
+PowerFolder Version 4.2.6 - http://www.powerfolder.com
 
 = New features =
-* Administrators with own PowerFolder Server can now disallow user to change
-  the client settings.
-  http://www.powerfolder.com/wiki/Server_configuration_file#Security_parameters
+* It's now possible to pre-configure all settings (also user interface related)
+  centrally by the server administrator.
+  http://www.powerfolder.com/wiki/Server_client_deployment
 
 = Improvements =
-* Simplified "New folder" setup wizard: Advanced setup options now hidden
-  under "More options".
+* Client now clearly shows failed login attempts.
+* Auto-update: Silently download and update is now the default option.
+  For completely non supervised auto update please add the following line to
+  http://www.powerfolder.com/wiki/Configuration_file
+  auto.update=true
+* Added option to automatically shutdown any running instance when starting
+  PowerFolder. Available as entry in config file only. Add the following line to
+  http://www.powerfolder.com/wiki/Configuration_file
+  kill.running.instance=true
+* Several other minor improvements.
 
 = Bugfixes =
-* Fixed several connection problems.
-* Several other bug fixes
-
+* Removed problem when setting up a new folder (e.g. by invitation)
+  when one of the existing folders was inaccessible.
+* Fixed a minor issue with the HTTP-Tunnel.
+  http://www.powerfolder.com/wiki/HTTP-Tunnel
+* Several other minor bugfixes.
 
 Please give us feedback and request improvements:
 http://www.powerfolder.com/contact.html
@@ -39,6 +49,23 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.2.5
+-------------
+
+= New features =
+* Administrators with own PowerFolder Server can now disallow user to change
+  the client settings.
+  http://www.powerfolder.com/wiki/Server_configuration_file#Security_parameters
+
+= Improvements =
+* Simplified "New folder" setup wizard: Advanced setup options now hidden
+  under "More options".
+
+= Bugfixes =
+* Fixed several connection problems.
+* Several other bug fixes
+
 
 Version 4.2.3
 -------------
