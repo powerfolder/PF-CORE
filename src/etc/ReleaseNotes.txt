@@ -1,6 +1,7 @@
 PowerFolder Version 4.2.6 - http://www.powerfolder.com
 
 = New features =
+ * Fully 64 bit support for 64 bit Java installations.
  * It's now possible to pre-configure all settings (also user interface related)
    centrally by the server administrator.
    http://www.powerfolder.com/wiki/Server_client_deployment
