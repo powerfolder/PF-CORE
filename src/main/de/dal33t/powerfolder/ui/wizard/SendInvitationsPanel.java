@@ -29,9 +29,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,7 +116,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         }
         invitation.setPermission(fp);
         boolean theResult = false;
-        Collection<Member> candidates = getCandidates();
+        Set<Member> candidates = getCandidates();
 
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
@@ -385,8 +383,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
         return candidateAddresses;
     }
 
-    private List<Member> getCandidates() {
-        List<Member> candidate = new ArrayList<Member>();
+    private Set<Member> getCandidates() {
+        Set<Member> candidate = new TreeSet<Member>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             candidate.add(friend);
         }
