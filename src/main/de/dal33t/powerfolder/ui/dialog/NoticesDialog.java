@@ -177,10 +177,6 @@ public class NoticesDialog extends BaseDialog {
      */
     private void handleNotice(Notice notice) {
 
-        NoticesModel noticesModel = getController().getUIController()
-                .getApplicationModel().getNoticesModel();
-        noticesModel.clearNotice(notice);
-
         if (notice instanceof InvitationNotice) {
             InvitationNotice invitationNotice = (InvitationNotice) notice;
             handleInvitationNotice(invitationNotice);
@@ -193,10 +189,6 @@ public class NoticesDialog extends BaseDialog {
         } else {
             logWarning("Don't know what to do with notice: " +
                     notice.getClass().getName() + " : " + notice.toString());
-        }
-
-        if (noticesModel.getAllNotices().isEmpty()) {
-            close();
         }
     }
 

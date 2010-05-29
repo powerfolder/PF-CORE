@@ -37,6 +37,7 @@ public class WarningNotice extends NoticeBase {
         this.runnable = runnable;
     }
 
+    @SuppressWarnings({"NonSerializableFieldInSerializableClass"})
     public WarningNotice(final Controller controller , final String title,
                         String summary, final String message) {
         super(title, summary);
@@ -62,5 +63,14 @@ public class WarningNotice extends NoticeBase {
 
     public NoticeSeverity getNoticeSeverity() {
         return NoticeSeverity.WARINING;
+    }
+
+    /**
+     * Cannot persist these because the Runnable is not Serializable.
+     *
+     * @return
+     */
+    public boolean isPersistable() {
+        return false;
     }
 }

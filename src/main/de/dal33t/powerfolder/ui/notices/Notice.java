@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.notices;
 
 import java.util.Date;
 import java.util.UUID;
+import java.io.Serializable;
 
 /**
  * This interface is the generic ui Notice that is used to either show a
@@ -29,7 +30,7 @@ import java.util.UUID;
  *
  * Notices are not used with Chat notifications.
  */
-public interface Notice {
+public interface Notice extends Serializable {
 
     /** uniqu id for class chain. */
     UUID getUuid();
@@ -54,4 +55,7 @@ public interface Notice {
 
     /** Notional severity level. */
     NoticeSeverity getNoticeSeverity();
+
+    /** True if this should be persisted. */
+    boolean isPersistable();
 }

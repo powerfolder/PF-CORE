@@ -2301,25 +2301,24 @@ public class Controller extends PFComponent {
 
         if (started && isUIEnabled()) {
 
-            // Save unhandled invitations.
-            List<Invitation> invitations = new ArrayList<Invitation>();
+            // Save unhandled notices.
+            List<Notice> notices = new ArrayList<Notice>();
             for (Notice notice : uiController.getApplicationModel()
                 .getNoticesModel().getAllNotices())
             {
-                if (notice instanceof InvitationNotice) {
-                    InvitationNotice invitationNotice = (InvitationNotice) notice;
-                    invitations.add(invitationNotice.getPayload());
+                if (notice.isPersistable()) {
+                    notices.add(notice);
                 }
             }
-            String filename = getController().getConfigName() + ".invitations";
+            String filename = getController().getConfigName() + ".notices";
             File file = new File(getMiscFilesLocation(), filename);
             ObjectOutputStream outputStream = null;
             try {
-                logInfo("There are " + invitations.size()
-                    + " unhandled invitations.");
+                logInfo("There are " + notices.size()
+                    + " notices to persist.");
                 outputStream = new ObjectOutputStream(new BufferedOutputStream(
                     new FileOutputStream(file)));
-                outputStream.writeUnshared(invitations);
+                outputStream.writeUnshared(notices);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
@@ -2344,28 +2343,23 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
 
-            // Load invitations.
-            String filename = getController().getConfigName() + ".invitations";
+            // Load notices.
+            String filename = getController().getConfigName() + ".notices";
             File file = new File(getMiscFilesLocation(), filename);
             if (file.exists()) {
-                logInfo("Loading invitations");
+                logInfo("Loading notices");
                 ObjectInputStream inputStream = null;
                 try {
                     inputStream = new ObjectInputStream(
                         new BufferedInputStream(new FileInputStream(file)));
-                    List<Invitation> invitations = (List<Invitation>) inputStream
+                    List<Notice> notices = (List<Notice>) inputStream
                         .readObject();
                     inputStream.close();
-                    for (Invitation invitation : invitations) {
-                        Notice notice = new InvitationNotice(Translation
-                            .getTranslation("notice.invitation_title"),
-                            Translation.getTranslation(
-                                "notice.invitation_summary", invitation
-                                    .getInvitor().getNick()), invitation);
+                    for (Notice notice : notices) {
                         uiController.getApplicationModel().getNoticesModel()
                             .addNotice(notice);
                     }
-                    logInfo("Loaded " + invitations.size() + " invitations.");
+                    logInfo("Loaded " + notices.size() + " notices.");
                 } catch (FileNotFoundException e) {
                     logSevere("FileNotFoundException", e);
                 } catch (IOException e) {
@@ -2384,7 +2378,7 @@ public class Controller extends PFComponent {
                     }
                 }
             } else {
-                logInfo("No invitations found - probably first start of PF.");
+                logInfo("No notices found - probably first start of PF.");
             }
         }
     }

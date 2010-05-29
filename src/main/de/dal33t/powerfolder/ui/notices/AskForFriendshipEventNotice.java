@@ -50,4 +50,8 @@ public class AskForFriendshipEventNotice extends NoticeBase {
     public NoticeSeverity getNoticeSeverity() {
         return NoticeSeverity.INFORMATION;
     }
+
+    public boolean isPersistable() {
+        return true;
+    }
 }

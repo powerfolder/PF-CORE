@@ -72,4 +72,13 @@ public class SimpleNotificationNotice extends NoticeBase {
     public boolean isNotification() {
         return true;
     }
+
+    /**
+     * Not applicable to unactionable notices.
+     * 
+     * @return
+     */
+    public boolean isPersistable() {
+        return false;
+    }
 }
