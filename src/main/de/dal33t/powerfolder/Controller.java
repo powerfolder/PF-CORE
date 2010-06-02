@@ -131,7 +131,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.6"; // 1.7.1.3
+    public static final String PROGRAM_VERSION = "4.2.6 - 1.7.1.7"; // 1.7.1.7
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -886,7 +886,7 @@ public class Controller extends PFComponent {
         LimitedConnectivityChecker.install(this);
 
         // Schedule a task to reconfigure the Logger file every day.
-        Calendar cal = new GregorianCalendar();
+        final Calendar cal = new GregorianCalendar();
         long now = cal.getTime().getTime();
 
         // Midnight tomorrow morning.
@@ -906,10 +906,10 @@ public class Controller extends PFComponent {
         logInfo("Initial log reconfigure in " + secondsToMidnight + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                logInfo("Reconfiguring logs for new day");
+                logInfo("Reconfiguring logs for new day: " + cal.getTime());
                 initLogger();
                 LoggingManager.resetFileLogging();
-                logInfo("Reconfigured logs for new day");
+                logInfo("Reconfigured logs for new day: " + cal.getTime());
             }
         }, secondsToMidnight, 24 * 3600, TimeUnit.SECONDS);
 
