@@ -95,8 +95,7 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
-    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME =
-            "syncPatterns.txt";
+    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = "syncPatterns.txt";
 
     /** The base location of the folder. */
     private final File localBase;
@@ -638,9 +637,8 @@ public class Folder extends PFComponent {
                     logSevere(" not able to create folder(" + getName()
                         + "), (sub) dir (" + localBase + ") creation failed");
                 }
-                throw new FolderException(currentInfo, Translation
-                    .getTranslation("foldercreate.error.unable_to_create",
-                        localBase.getAbsolutePath()));
+                throw new FolderException(currentInfo,
+                    "Unable to create folder at " + localBase.getAbsolutePath());
             }
         } else if (!localBase.isDirectory()) {
             if (!quite) {
@@ -830,7 +828,8 @@ public class Folder extends PFComponent {
         } while (scannerBusy);
 
         if (checkIfDeviceDisconnected()) {
-            logWarning("Device disconnected while scanning folder");
+            logWarning("Device disconnected while scanning folder: "
+                + getLocalBase());
             return false;
         }
 
@@ -902,8 +901,8 @@ public class Folder extends PFComponent {
         Calendar lastScannedCalendar = new GregorianCalendar();
         lastScannedCalendar.setTime(lastScan);
         int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
-        if (isFiner()) {
-            logFiner("Last scanned " + lastScannedCalendar.getTime());
+        if (isWarning()) {
+            logWarning("Last scanned " + lastScannedCalendar.getTime());
         }
 
         Calendar todayCalendar = new GregorianCalendar();
@@ -915,8 +914,8 @@ public class Folder extends PFComponent {
                 .get(Calendar.YEAR))
         {
             // Scanned today, so skip.
-            if (isFiner()) {
-                logFiner("Skipping daily scan (already scanned today)");
+            if (isWarning()) {
+                logWarning("Skipping daily scan (already scanned today)");
             }
             return false;
         }
@@ -925,8 +924,8 @@ public class Folder extends PFComponent {
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
-            if (isFiner()) {
-                logFiner("Skipping daily scan (not correct time)");
+            if (isWarning()) {
+                logWarning("Skipping daily scan (not correct time)");
             }
             return false;
         }
@@ -942,8 +941,8 @@ public class Folder extends PFComponent {
                 if (currentDay == Calendar.SATURDAY
                     || currentDay == Calendar.SUNDAY)
                 {
-                    if (isFiner()) {
-                        logFiner("Skipping daily scan (not weekday)");
+                    if (isWarning()) {
+                        logWarning("Skipping daily scan (not weekday)");
                     }
                     return false;
                 }
@@ -952,15 +951,15 @@ public class Folder extends PFComponent {
                 if (currentDay != Calendar.SATURDAY
                     && currentDay != Calendar.SUNDAY)
                 {
-                    if (isFiner()) {
-                        logFiner("Skipping daily scan (not weekend)");
+                    if (isWarning()) {
+                        logWarning("Skipping daily scan (not weekend)");
                     }
                     return false;
                 }
             } else {
                 if (currentDay != requiredSyncDay) {
-                    if (isFiner()) {
-                        logFiner("Skipping daily scan (not correct day)");
+                    if (isWarning()) {
+                        logWarning("Skipping daily scan (not correct day)");
                     }
                     return false;
                 }
@@ -1794,10 +1793,12 @@ public class Folder extends PFComponent {
      * with remotesides.
      */
     void maintain() {
-        logFiner("Maintaining '" + getName() + '\'');
-
+        if (isFiner()) {
+            logFiner("Maintaining '" + getName() + "' (forced? " + scanForced
+                + ')');
+        }
         // local files
-        logFiner("Forced: " + scanForced);
+
         boolean forcedNow = scanForced;
         scanForced = false;
         if (forcedNow || autoScanRequired()) {
@@ -2247,11 +2248,11 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Updated sync patterns have been downloaded to the metaFolder.
-     * Update the sync patterns in this (parent) folder.
-     *
+     * Updated sync patterns have been downloaded to the metaFolder. Update the
+     * sync patterns in this (parent) folder.
+     * 
      * @param fileInfo
-     *               fileInfo of the new sync patterns
+     *            fileInfo of the new sync patterns
      */
 
     public void handleMetaFolderSyncPatterns(FileInfo fileInfo) {
@@ -2262,7 +2263,7 @@ public class Folder extends PFComponent {
         }
 
         Folder metaFolder = getController().getFolderRepository()
-                .getMetaFolderForParent(currentInfo);
+            .getMetaFolderForParent(currentInfo);
         if (metaFolder == null) {
             logWarning("Could not find metaFolder for " + currentInfo);
             return;
@@ -2275,7 +2276,7 @@ public class Folder extends PFComponent {
             br = new BufferedReader(new FileReader(syncPatternsFile));
             String line;
             List<String> lines = new ArrayList<String>();
-            while((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
 
@@ -3583,7 +3584,7 @@ public class Folder extends PFComponent {
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
             + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
         getController().getConfig().put(syncProfKey,
-                String.valueOf(syncPatterns));
+            String.valueOf(syncPatterns));
         getController().saveConfig();
     }
 
@@ -3598,10 +3599,12 @@ public class Folder extends PFComponent {
         }
 
         // Only do this for parent folders.
-        FolderRepository folderRepository = getController().getFolderRepository();
+        FolderRepository folderRepository = getController()
+            .getFolderRepository();
         if (!folderRepository.isMetaFolder(currentInfo)) {
 
-            Folder metaFolder = folderRepository.getMetaFolderForParent(currentInfo);
+            Folder metaFolder = folderRepository
+                .getMetaFolderForParent(currentInfo);
             if (metaFolder == null) {
                 logWarning("Could not find metaFolder for " + currentInfo);
                 return;
@@ -3611,8 +3614,8 @@ public class Folder extends PFComponent {
             List<String> patterns = diskItemFilter.getPatterns();
             PrintWriter pw = null;
             try {
-                File f = new File(metaFolder.localBase, 
-                        META_FOLDER_SYNC_PATTERNS_FILE_NAME);
+                File f = new File(metaFolder.localBase,
+                    META_FOLDER_SYNC_PATTERNS_FILE_NAME);
                 pw = new PrintWriter(new FileWriter(f));
                 for (String pattern : patterns) {
                     pw.println(pattern);
@@ -3628,7 +3631,6 @@ public class Folder extends PFComponent {
             }
         }
     }
-
 
     // Inner classes **********************************************************
 
