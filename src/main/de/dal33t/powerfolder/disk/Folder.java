@@ -901,8 +901,8 @@ public class Folder extends PFComponent {
         Calendar lastScannedCalendar = new GregorianCalendar();
         lastScannedCalendar.setTime(lastScan);
         int lastScannedDay = lastScannedCalendar.get(Calendar.DAY_OF_YEAR);
-        if (isWarning()) {
-            logWarning("Last scanned " + lastScannedCalendar.getTime());
+        if (isFiner()) {
+            logFiner("Last scanned " + lastScannedCalendar.getTime());
         }
 
         Calendar todayCalendar = new GregorianCalendar();
@@ -914,8 +914,8 @@ public class Folder extends PFComponent {
                 .get(Calendar.YEAR))
         {
             // Scanned today, so skip.
-            if (isWarning()) {
-                logWarning("Skipping daily scan (already scanned today)");
+            if (isFiner()) {
+                logFiner("Skipping daily scan (already scanned today)");
             }
             return false;
         }
@@ -924,8 +924,8 @@ public class Folder extends PFComponent {
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
         if (requiredSyncHour != currentHour) {
             // Not correct time, so skip.
-            if (isWarning()) {
-                logWarning("Skipping daily scan (not correct time)");
+            if (isFiner()) {
+                logFiner("Skipping daily scan (not correct time)");
             }
             return false;
         }
@@ -941,8 +941,8 @@ public class Folder extends PFComponent {
                 if (currentDay == Calendar.SATURDAY
                     || currentDay == Calendar.SUNDAY)
                 {
-                    if (isWarning()) {
-                        logWarning("Skipping daily scan (not weekday)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not weekday)");
                     }
                     return false;
                 }
@@ -951,15 +951,15 @@ public class Folder extends PFComponent {
                 if (currentDay != Calendar.SATURDAY
                     && currentDay != Calendar.SUNDAY)
                 {
-                    if (isWarning()) {
-                        logWarning("Skipping daily scan (not weekend)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not weekend)");
                     }
                     return false;
                 }
             } else {
                 if (currentDay != requiredSyncDay) {
-                    if (isWarning()) {
-                        logWarning("Skipping daily scan (not correct day)");
+                    if (isFiner()) {
+                        logFiner("Skipping daily scan (not correct day)");
                     }
                     return false;
                 }
