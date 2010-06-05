@@ -829,7 +829,7 @@ public class Folder extends PFComponent {
 
         if (checkIfDeviceDisconnected()) {
             logWarning("Device disconnected while scanning folder: "
-                + getLocalBase());
+                + localBase);
             return false;
         }
 
@@ -922,10 +922,11 @@ public class Folder extends PFComponent {
 
         int requiredSyncHour = syncProfile.getConfiguration().getDailyHour();
         int currentHour = todayCalendar.get(Calendar.HOUR_OF_DAY);
-        if (requiredSyncHour != currentHour) {
+        if (requiredSyncHour > currentHour) {
             // Not correct time, so skip.
             if (isFiner()) {
-                logFiner("Skipping daily scan (not correct time)");
+                logFiner("Skipping daily scan (not correct time) " +
+                        requiredSyncHour + " > " + currentHour);
             }
             return false;
         }
@@ -1828,13 +1829,13 @@ public class Folder extends PFComponent {
     public boolean join(Member member) {
         boolean memberRead = hasReadPermission(member);
         if (!memberRead || !hasReadPermission(getController().getMySelf())) {
-            if (!memberRead) {
+            if (memberRead) {
                 logWarning("Not joining " + member + " / "
-                    + member.getAccountInfo() + " no read permission");
+                        + member.getAccountInfo()
+                        + ". Myself got no read permission");
             } else {
                 logWarning("Not joining " + member + " / "
-                    + member.getAccountInfo()
-                    + ". Myself got no read permission");
+                        + member.getAccountInfo() + " no read permission");
             }
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
