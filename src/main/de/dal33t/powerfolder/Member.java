@@ -938,8 +938,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             foldersCommon.remove(folder);
         }
         if (!foldersCommon.isEmpty()) {
-            logWarning("NOT joined: " + foldersCommon);
-            logWarning("Joined: " + foldersJoined);
+            if (isFine()) {
+                logFine("NOT joined: " + foldersCommon);
+                logFine("Joined: " + foldersJoined);
+            }
             for (Folder folder : foldersCommon) {
                 if (isPre4Client()) {
                     sendMessagesAsynchron(FileList
