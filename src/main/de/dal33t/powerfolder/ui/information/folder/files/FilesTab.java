@@ -124,6 +124,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             .getTranslation("files_tab.combo.new_files_only"));
         filterSelectionComboBox.addItem(Translation
             .getTranslation("files_tab.combo.deleted_and_previous_files"));
+        filterSelectionComboBox.addItem(Translation
+            .getTranslation("files_tab.combo.unsynchronized_files"));
         filterSelectionComboBox.addActionListener(new MyActionListener());
 
     }

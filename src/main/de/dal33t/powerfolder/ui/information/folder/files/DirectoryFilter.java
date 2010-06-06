@@ -52,6 +52,7 @@ public class DirectoryFilter extends FilterModel {
     public static final int FILE_FILTER_MODE_INCOMING_ONLY = 2;
     public static final int FILE_FILTER_MODE_NEW_ONLY = 3;
     public static final int FILE_FILTER_MODE_DELETED_PREVIOUS = 4;
+    public static final int FILE_FILTER_MODE_UNSYNCHRONIZED = 5;
 
     public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 10;
     public static final int SEARCH_MODE_FILE_NAME_ONLY = 11;
@@ -315,6 +316,32 @@ public class DirectoryFilter extends FilterModel {
                         break;
                     case FILE_FILTER_MODE_DELETED_PREVIOUS :
                         showFile = isDeleted;
+                        break;
+                    case FILE_FILTER_MODE_UNSYNCHRONIZED :
+                        // See if all peers have this file with this version.
+                        boolean isSynchronized = true;
+                        if (!isDeleted) {
+                            Folder localFolder = fileInfo.getFolder(
+                                    getController().getFolderRepository());
+                            if (localFolder != null) {
+                                for (Member member :
+                                        localFolder.getConnectedMembers()) {
+                                    if (member.hasFile(fileInfo)) {
+                                        FileInfo memberFileInfo =
+                                                member.getFile(fileInfo);
+                                        if (memberFileInfo.getVersion() !=
+                                                fileInfo.getVersion()) {
+                                            isSynchronized = false;
+                                            break;
+                                        }
+                                    } else {
+                                        isSynchronized = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        showFile = !isSynchronized;
                         break;
                     case FILE_FILTER_MODE_LOCAL_AND_INCOMING :
                     default :
