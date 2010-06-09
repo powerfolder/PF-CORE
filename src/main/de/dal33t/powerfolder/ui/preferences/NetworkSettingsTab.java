@@ -231,8 +231,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 1, row));
             builder.add(networkingMode, cc.xy(3, row));
 
-            row += 2;
-            builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
+            if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(
+                    getController())) {
+                row += 2;
+                builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
+            }
 
             row += 2;
             builder.add(relayedConnectionBox, cc.xyw(3, row, 2));

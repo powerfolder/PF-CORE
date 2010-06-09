@@ -63,6 +63,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -269,9 +270,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         row += 2;
 
         if (!getController().isLanOnly()
-            && PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController()))
-        {
+                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
+                getController()) && !ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController())) {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);

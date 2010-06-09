@@ -20,9 +20,14 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 
 import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 
 /**
  * Action which opens folder create wizard.
@@ -39,6 +44,13 @@ public class NewFolderAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         getController().getUIController().getApplicationModel()
             .getServerClientModel().checkAndSetupAccount();
-        PFWizard.openWhatToDoWizard(getController());
+        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.folder_title"));
+            wizard.open(WhatToDoPanel.doBackupOption(getController(),
+                    wizard.getWizardContext()));
+        } else {
+            PFWizard.openWhatToDoWizard(getController());
+        }
     }
 }
