@@ -21,7 +21,22 @@ package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1270,7 +1285,8 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        dao = new FileInfoDAOHashMapImpl();
+        dao = new FileInfoDAOHashMapImpl(getController().getMySelf().getId(),
+            diskItemFilter);
 
         // File daoDir = new File(getSystemSubDir(), "db/h2");
         // try {
@@ -2889,7 +2905,8 @@ public class Folder extends PFComponent {
     }
 
     public int getKnownItemCount() {
-        return dao.count(null);
+        // All! Also excluded items
+        return dao.count(null, true, false);
     }
 
     public boolean isPreviewOnly() {
@@ -3116,9 +3133,6 @@ public class Folder extends PFComponent {
         if (member == null) {
             throw new NullPointerException("Member is null");
         }
-        if (member.isMySelf()) {
-            return dao.findAllFiles(null);
-        }
         return dao.findAllFiles(member.getId());
     }
 
@@ -3129,9 +3143,6 @@ public class Folder extends PFComponent {
     public Collection<DirectoryInfo> getDirectoriesAsCollection(Member member) {
         if (member == null) {
             throw new NullPointerException("Member is null");
-        }
-        if (member.isMySelf()) {
-            return dao.findAllDirectories(null);
         }
         return dao.findAllDirectories(member.getId());
     }
