@@ -168,7 +168,7 @@ public class Constants {
     public static final int MIN_NUMBER_RECONNECTORS = 2;
 
     /** The max number of reconnectors to spawn */
-    public static final int MAX_NUMBER_RECONNECTORS = 10;
+    public static final int MAX_NUMBER_RECONNECTORS = 5;
 
     /**
      * the number of seconds (aprox) of delay till the connection is tested and
@@ -181,6 +181,11 @@ public class Constants {
      * joined folders. About 10 minutes.
      */
     public static final long HOSTING_FOLDERS_REQUEST_INTERVAL = 600;
+
+    /**
+     * The timeout for a service request in seconds
+     */
+    public static final long REQUEST_RESPONSE_TIMEOUT = 10;
 
     // Basic networking options ***********************************************
 
