@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
@@ -163,7 +164,34 @@ public interface FileInfoDAO {
      * Counts all {@link FileInfo} objects of the given domain.
      * 
      * @param domain
+     * @param includeDirs
+     *            if directories should be included in counting or not * @param
+     * @param excludeIgnored
+     *            If files should be counted that are ignored by
+     *            {@link DiskItemFilter}
      * @return the number of FileInfos in this domain
      */
-    int count(String domain);
+    int count(String domain, boolean includeDirs, boolean excludeIgnored);
+
+    /**
+     * Counts all {@link FileInfo} objects of the given domain that are in sync.
+     * 
+     * @param domain
+     * @param includeDirs
+     *            if directories should be included in counting or not
+     * @param excludeIgnored
+     *            If files should be counted that are ignored by
+     *            {@link DiskItemFilter}
+     * @return the number of FileInfos in this domain that are in sync
+     */
+    int countInSync(String domain, boolean includeDirs, boolean excludeIgnored);
+
+    /**
+     * Counts the total size of all {@link FileInfo} objects of the given domain
+     * that are in sync. Ignored files won't be included in the result.
+     * 
+     * @param domain
+     * @return the total number of bytes in this domain that are in sync
+     */
+    long bytesInSync(String domain);
 }

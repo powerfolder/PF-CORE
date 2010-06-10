@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -25,13 +27,95 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private final ConcurrentMap<String, Domain> domains = Util
         .createConcurrentHashMap(4);
 
-    public FileInfoDAOHashMapImpl() {
+    private String selfDomain;
+    private DiskItemFilter filter;
+
+    public FileInfoDAOHashMapImpl(String selfDomain, DiskItemFilter filter) {
         super();
+        this.selfDomain = selfDomain;
+        this.filter = filter;
+        if (filter == null) {
+            this.filter = new DiskItemFilter();
+        }
     }
 
-    public int count(String domain) {
+    public int count(String domain, boolean includeDirs, boolean excludeIgnored)
+    {
         Domain d = getDomain(domain);
-        return d.files.size() + d.directories.size();
+        if (!excludeIgnored) {
+            return d.files.size() + (includeDirs ? d.directories.size() : 0);
+        } else {
+            int c = 0;
+            for (FileInfo fInfo : d.files.keySet()) {
+                if (filter.isRetained(fInfo) && !fInfo.isDeleted()) {
+                    c++;
+                }
+            }
+            if (includeDirs) {
+                for (FileInfo dInfo : d.directories.keySet()) {
+                    if (filter.isRetained(dInfo) && !dInfo.isDeleted()) {
+                        c++;
+                    }
+                }
+            }
+            return c;
+        }
+    }
+
+    public int countInSync(String domain, boolean includeDirs,
+        boolean excludeIgnored)
+    {
+        Domain d = getDomain(domain);
+        int c = 0;
+        for (FileInfo fInfo : d.files.values()) {
+            if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
+                continue;
+            }
+            FileInfo newestFileInfo = findNewestVersion(fInfo, domains.keySet());
+            if (inSync(fInfo, newestFileInfo)) {
+                c++;
+            }
+        }
+        if (includeDirs) {
+            for (FileInfo fInfo : d.directories.values()) {
+                if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
+                    continue;
+                }
+                FileInfo newestFileInfo = findNewestVersion(fInfo, domains
+                    .keySet());
+                if (inSync(fInfo, newestFileInfo)) {
+                    c++;
+                }
+            }
+        }
+        return c;
+    }
+
+    public long bytesInSync(String domain) {
+        Domain d = getDomain(domain);
+        long bytes = 0;
+        for (FileInfo fInfo : d.files.values()) {
+            if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
+                continue;
+            }
+            FileInfo newestFileInfo = findNewestVersion(fInfo, domains.keySet());
+            if (inSync(fInfo, newestFileInfo)) {
+                bytes += fInfo.getSize();
+            }
+        }
+        return bytes;
+    }
+
+    private static boolean inSync(FileInfo fileInfo, FileInfo newestFileInfo) {
+        if (newestFileInfo == null) {
+            // It is intended not to use Reject.ifNull for performance reasons.
+            throw new NullPointerException("Newest FileInfo not found of "
+                + fileInfo.toDetailString());
+        }
+        if (fileInfo == null) {
+            return false;
+        }
+        return !newestFileInfo.isNewerThan(fileInfo);
     }
 
     public void delete(String domain, FileInfo info) {
@@ -66,6 +150,12 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public FileInfo findNewestVersion(FileInfo info, String... domainStrings) {
+        return findNewestVersion(info, Arrays.asList(domainStrings));
+    }
+
+    private FileInfo findNewestVersion(FileInfo info,
+        Collection<String> domainStrings)
+    {
         FileInfo newestVersion = null;
         for (String domain : domainStrings) {
             Domain d = getDomain(domain);
@@ -123,7 +213,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     // Internals **************************************************************
 
     private Domain getDomain(String domain) {
-        String theDomain = domain != null ? domain : "";
+        String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
         synchronized (domains) {
             Domain d = domains.get(theDomain);
             if (d != null) {
