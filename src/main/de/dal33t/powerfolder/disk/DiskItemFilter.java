@@ -81,6 +81,10 @@ public class DiskItemFilter {
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
+    public void addWeakListener(DiskItemFilterListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener, true);
+    }
+
     public void removeListener(DiskItemFilterListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
@@ -295,10 +299,29 @@ public class DiskItemFilter {
      * Returns true if the item is excluded by this filter (is filtered out).
      * 
      * @param diskItem
-     * @return
+     * @return true if filtered out / excluded
      */
     public boolean isExcluded(DiskItem diskItem) {
         return isMatches(diskItem);
+    }
+
+    /**
+     * Returns true if the relative name is excluded by this filter (is filtered
+     * out).
+     * 
+     * @param relativeName
+     * @return true if filtered out / excluded
+     */
+    public boolean isExcluded(String relativeName) {
+        if (patterns.isEmpty()) {
+            return false;
+        }
+        for (Pattern pattern : patterns) {
+            if (pattern.isMatch(relativeName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
