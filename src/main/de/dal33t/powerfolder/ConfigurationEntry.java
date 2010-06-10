@@ -568,7 +568,7 @@ public enum ConfigurationEntry {
      * The number of seconds to go on idle between connection tries per
      * Reconnector.
      */
-    CONNECT_WAIT("connect.wait.seconds", 120),
+    CONNECT_WAIT("connect.wait.seconds", 300),
 
     /**
      * Enable/Disable relayed connections.
