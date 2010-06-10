@@ -1079,8 +1079,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void run() {
 
-        // 500 ms wait
-        long waitTime = Controller.getWaitTime() / 10;
+        // 1000 ms wait
+        long waitTime = Controller.getWaitTime() / 5;
 
         if (getController().isUIEnabled()) {
             // Wait to build up ui
