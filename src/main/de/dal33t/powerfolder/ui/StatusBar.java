@@ -377,7 +377,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         + Translation
                             .getTranslation("general.network_mode.lan_only")
                         + ')';
-                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
+                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE &&
+                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController()))
                 {
                     text += " ("
                         + Translation
@@ -398,7 +399,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 text += " ("
                     + Translation
                         .getTranslation("general.network_mode.lan_only") + ')';
-            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE)
+            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE &&
+                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController()))
             {
                 text += " ("
                     + Translation
@@ -504,7 +506,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         if (networkingMode == NetworkingMode.LANONLYMODE) {
             networkModeLabel.setText(Translation
                 .getTranslation("general.network_mode.lan_only"));
-        } else if (networkingMode == NetworkingMode.SERVERONLYMODE) {
+        } else if (networkingMode == NetworkingMode.SERVERONLYMODE &&
+                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
             networkModeLabel.setText(Translation
                 .getTranslation("general.network_mode.server_only"));
         } else {
