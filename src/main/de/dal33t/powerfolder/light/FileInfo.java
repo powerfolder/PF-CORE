@@ -723,8 +723,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         ClassNotFoundException
     {
         in.defaultReadObject();
-        // Internalized strings are not guaranteed to be garbage collected!
-        fileName = fileName.intern();
+        
+        // #2037: Removed internalization
+        // fileName = fileName.intern();
 
         // Oh! Default value. Better recalculate hashcode cache
         if (hash == 0) {
