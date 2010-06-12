@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk.dao;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
@@ -117,20 +116,6 @@ public interface FileInfoDAO {
     Collection<FileInfo> findAllFiles(String domain);
 
     /**
-     * Finds all files in the given (sub) directory and domain only.
-     * 
-     * @param path
-     *            the path to search for
-     * @param domain
-     *            the domain to check.
-     * @param recursive
-     *            true to recursivly add all files from subdirectory too.
-     * @return the
-     */
-    Collection<FileInfo> findInDirectory(String path, String domain,
-        boolean recursive);
-
-    /**
      * All directories in the given base directory. optionally adds ALL
      * subdirectories recursively.
      * 
@@ -142,23 +127,27 @@ public interface FileInfoDAO {
     Collection<DirectoryInfo> findAllDirectories(String domain);
 
     /**
+     * Finds all files in the given (sub) directory and domain only.
+     * <p>
+     * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
+     * 
+     * @param domain
+     *            the domain to check.
+     * @param path
+     *            the path to search for
+     * @param recursive
+     *            true to recursively add all files from subdirectory too.
+     * @return the
+     */
+    Collection<FileInfo> findInDirectory(String domain, String path,
+        boolean recursive);
+
+    /**
      * @param fileInfo
      *            the <code>FileInfo</code> to retrieve the file history for.
      * @return the FileHistory for the given FileInfo.
      */
     FileHistory getFileHistory(FileInfo fileInfo);
-
-    /**
-     * TODO: return CloseableIterator
-     * 
-     * @param maxResults
-     *            The maximum results to retrieve from the persistence layer.
-     * @param domains
-     *            the Members to be checked.
-     * @return a iterator of FileInfos that are different that in our own domain
-     *         (myself).
-     */
-    Iterator<FileInfo> findDifferentFiles(int maxResults, String... domains);
 
     /**
      * Counts all {@link FileInfo} objects of the given domain.

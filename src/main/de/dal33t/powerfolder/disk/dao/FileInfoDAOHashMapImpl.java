@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -210,6 +209,35 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
+    public Collection<FileInfo> findInDirectory(String domainStr, String path,
+        boolean recursive)
+    {
+        List<FileInfo> items = new ArrayList<FileInfo>();
+        Domain domain = getDomain(domainStr);
+        for (DirectoryInfo dInfo : domain.directories.values()) {
+//            if (filter.isExcluded(dInfo)) {
+//                continue;
+//            }
+            if (isInSubDir(dInfo, path, recursive) && !pathIsDir(dInfo, path)) {
+                items.add(dInfo);
+            }
+        }
+        for (FileInfo fInfo : domain.files.values()) {
+//            if (filter.isExcluded(fInfo)) {
+//                continue;
+//            }
+            if (isInSubDir(fInfo, path, recursive)) {
+                items.add(fInfo);
+            }
+        }
+        return items;
+    }
+
+    public FileHistory getFileHistory(FileInfo fileInfo) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     // Internals **************************************************************
 
     private Domain getDomain(String domain) {
@@ -228,87 +256,32 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    private static class Domain {
-        private final ConcurrentMap<FileInfo, FileInfo> files = new ConcurrentHashMap<FileInfo, FileInfo>();
-        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = new ConcurrentHashMap<DirectoryInfo, DirectoryInfo>();
-    }
-
-    public Iterator<FileInfo> findDifferentFiles(int maxResults,
-        String... domains)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public FileHistory getFileHistory(FileInfo fileInfo) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Collection<FileInfo> findInDirectory(String path, String domainStr,
-        boolean recursive)
-    {
-        List<FileInfo> files = new ArrayList<FileInfo>();
-        Domain domain = getDomain(domainStr);
-        for (FileInfo fInfo : domain.files.values()) {
-            if (isInSubDir(fInfo, path, recursive)) {
-                // In subdir, do not consider
-                continue;
-            }
-            files.add(fInfo);
-        }
-        return files;
-    }
-
-    // public Collection<FileInfo> findInDirectory(String path, String...
-    // domains)
-    // {
-    // Map<FileInfo, FileInfo> files = new HashMap<FileInfo, FileInfo>();
-    // boolean findInOwnDomain = false;
-    // for (String domain : domains) {
-    // if (StringUtils.isBlank(domain)) {
-    // findInOwnDomain = true;
-    // // Add later.
-    // continue;
-    // }
-    // Domain d = getDomain(domain);
-    // for (FileInfo fInfo : d.files.values()) {
-    // if (isInSubDir(fInfo, path)) {
-    // // In subdir, do not consider
-    // continue;
-    // }
-    // FileInfo existingFInfo = files.get(fInfo);
-    // if (existingFInfo == null || fInfo.isNewerThan(fInfo)) {
-    // // Add to files if not in or newer.
-    // files.put(fInfo, fInfo);
-    // }
-    // }
-    // }
-    //
-    // if (findInOwnDomain) {
-    // Domain own = getDomain(null);
-    // for (FileInfo fInfo : own.files.values()) {
-    // if (isInSubDir(fInfo, path)) {
-    // // In subdir, do not consider
-    // continue;
-    // }
-    // files.put(fInfo, fInfo);
-    // }
-    // }
-    // logWarning("Found " + files.size() + " files in subdir '" + path + "'");
-    // return files.keySet();
-    // }
-
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
-        if (!fInfo.getRelativeName().startsWith(path)) {
+        if (path != null && !fInfo.getRelativeName().startsWith(path)) {
             return false;
         }
         if (recursive) {
             return true;
         }
-        int i = fInfo.getRelativeName().indexOf('/', path.length() + 2);
+        int offset = path != null ? path.length() + 2 : 0;
+        int i = fInfo.getRelativeName().indexOf('/', offset);
         // No other subdirectory at end.
-        return i != -1;
+        return i < 0;
+    }
+
+    private boolean pathIsDir(DirectoryInfo dirInfo, String path) {
+        if (path == null) {
+            return false;
+        }
+        if (FileInfo.IGNORE_CASE) {
+            return path.equalsIgnoreCase(dirInfo.getRelativeName());
+        }
+        return path.equals(dirInfo.getRelativeName());
+    }
+
+    private static class Domain {
+        private final ConcurrentMap<FileInfo, FileInfo> files = new ConcurrentHashMap<FileInfo, FileInfo>();
+        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = new ConcurrentHashMap<DirectoryInfo, DirectoryInfo>();
     }
 
 }
