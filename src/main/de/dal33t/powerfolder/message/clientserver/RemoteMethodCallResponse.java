@@ -61,4 +61,9 @@ public class RemoteMethodCallResponse extends Response {
     public Throwable getException() {
         return (Throwable) result;
     }
+    
+
+    public String toString() {
+        return "RemoteResponse result: " + result + ", exception: " + exception;
+    }
 }
