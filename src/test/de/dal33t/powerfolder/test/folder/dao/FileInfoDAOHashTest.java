@@ -45,4 +45,10 @@ public class FileInfoDAOHashTest extends FileInfoDAOTestCase {
         testFindAll(dao, 5000);
     }
 
+    public void testFindInDir() {
+        testFindInDir(dao, 1);
+        testFindInDir(dao, 100);
+        testFindInDir(dao, 5000);
+    }
+
 }
