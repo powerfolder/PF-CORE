@@ -77,7 +77,7 @@ public class Constants {
     /**
      * Threads in threadpool of {@link Controller}
      */
-    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
+    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 3;
 
     /**
      * The maximum number of lines in a chat.
@@ -185,7 +185,7 @@ public class Constants {
     /**
      * The timeout for a service request in seconds
      */
-    public static final long REQUEST_RESPONSE_TIMEOUT = 10;
+    public static final long REQUEST_RESPONSE_TIMEOUT = 20;
 
     // Basic networking options ***********************************************
 
