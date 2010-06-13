@@ -256,6 +256,37 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(1, dao.count(null, true, true));
     }
 
+    protected void testFindInDir(FileInfoDAO dao, int n) {
+        // Some random garbage content
+        for (int i = 0; i < n; i++) {
+            dao.store(null, createRandomFileInfo(i, "MyExcelsheet.xls"));
+            dao.store(null, createRandomFileInfo(i, "A-RandomDirectory", i,
+                true));
+        }
+
+        FileInfo dirInfo = createRandomFileInfo(0, "TheDirectory", 0, true);
+        dao.store(null, dirInfo);
+        for (int i = 0; i < n; i++) {
+            FileInfo fInfo = createRandomFileInfo(i, dirInfo.getFilenameOnly()
+                + "/MyExcelsheet.xls");
+            dao.store(null, fInfo);
+        }
+
+        int nItems = n * 3 + 1;
+        int nFiles = n * 2;
+        assertEquals(nItems, dao.count(null, true, false));
+        assertEquals(nFiles, dao.count(null, false, false));
+
+        assertEquals(0, dao.findInDirectory(null, null, false).size());
+        assertEquals(nItems, dao.findInDirectory(null, null, true).size());
+        assertEquals(nItems, dao
+            .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
+        assertEquals(n * 2 + 1, dao.findInDirectory(null, "subdir1/SUBDIR2/",
+            false).size());
+        assertEquals(n, dao.findInDirectory(null, dirInfo.getRelativeName(),
+            false).size());
+    }
+
     protected static FileInfo createRandomFileInfo(int n, String name,
         int version)
     {
