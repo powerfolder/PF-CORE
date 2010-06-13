@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.distribution;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.Snowland;
@@ -37,6 +38,9 @@ public class PowerFolderPro extends AbstractDistribution {
 
     public void init(Controller controller) {
         super.init(controller);
+
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
+            Boolean.FALSE);
 
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
