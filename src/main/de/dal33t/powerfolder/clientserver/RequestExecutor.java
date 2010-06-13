@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -80,8 +81,7 @@ public class RequestExecutor extends PFComponent {
         node.sendMessagesAsynchron(request);
 
         try {
-            // 60 secs timeout
-            waitForResponse(60);
+            waitForResponse(Constants.REQUEST_RESPONSE_TIMEOUT);
 
             if (response == null) {
                 if (!node.isCompletelyConnected()) {
