@@ -1846,12 +1846,16 @@ public class Folder extends PFComponent {
         boolean memberRead = hasReadPermission(member);
         if (!memberRead || !hasReadPermission(getController().getMySelf())) {
             if (memberRead) {
-                logWarning("Not joining " + member + " / "
+                if (isWarning()) {
+                    logWarning("Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission");
+                }
             } else {
-                logWarning("Not joining " + member + " / "
+                if (isWarning()) {
+                    logWarning("Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission");
+                }
             }
             if (member.isPre4Client()) {
                 member.sendMessagesAsynchron(FileList
@@ -2048,8 +2052,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                logWarning("Not syncing deletions. " + member + " / "
-                    + member.getAccountInfo() + " no write permission");
+                if (isWarning()) {
+                    logWarning("Not syncing deletions. " + member + " / "
+                        + member.getAccountInfo() + " no write permission");
+                }
                 continue;
             }
 
@@ -2656,8 +2662,10 @@ public class Folder extends PFComponent {
                 + remoteFileInfos.size() + " files from " + member);
         }
         if (!hasWritePermission(member)) {
-            logWarning("Not searching same files. " + member + " / "
-                + member.getAccountInfo() + " no write permission");
+            if (isWarning()) {
+                logWarning("Not searching same files. " + member + " / "
+                    + member.getAccountInfo() + " no write permission");
+            }
             return;
         }
 
