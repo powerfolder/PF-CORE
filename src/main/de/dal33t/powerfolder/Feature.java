@@ -106,7 +106,7 @@ public enum Feature {
     /**
      * TRAC #1940 for 4.3.0 release
      */
-    START_TAB(true),
+    START_TAB(false),
 
     /**
      * TRAC #1962 For later use
