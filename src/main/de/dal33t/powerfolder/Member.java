@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
@@ -1279,6 +1280,9 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         int expectedTime = -1;
         try {
+            if (getController().getOSClient().isServer(this)) {
+                ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(true);
+            }
             // related folder is filled if message is a folder related message
             final FolderInfo targetedFolderInfo;
             final Folder targetFolder;
@@ -1756,6 +1760,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // now give the message to all message listeners
             fireMessageToListeners(message);
         } finally {
+            ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(false);
             Profiling.end(profilingEntry, expectedTime);
         }
     }

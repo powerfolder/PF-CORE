@@ -114,6 +114,12 @@ public class RemoteServiceStubFactory {
                     + (args != null ? Arrays.asList(args) : "n/a"),
                     new RuntimeException("here"));
             }
+            if (ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()) {
+                LOG.log(Level.WARNING, "Call to remote service method ("
+                    + method + ") executed Server/Member.handleMessage. Args: "
+                    + (args != null ? Arrays.asList(args) : "n/a"),
+                    new RuntimeException("here"));
+            }
             Identity id = remoteSide.getIdentity();
             RequestExecutor executor = new RequestExecutor(controller,
                 remoteSide);

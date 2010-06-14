@@ -67,6 +67,17 @@ public class ServerClient extends PFComponent {
     private static final String PREFS_PREFIX = "server";
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
+    /**
+     * If the current thread which processes Member.handleMessage is the server.
+     */
+    public static final ThreadLocal<Boolean> SERVER_HANDLE_MESSAGE_THREAD = new ThreadLocal<Boolean>()
+    {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
     private String username;
