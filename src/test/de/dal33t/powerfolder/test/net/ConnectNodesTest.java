@@ -24,11 +24,15 @@ import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
@@ -358,23 +362,23 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     public void noTestPublicInfrastructureConnect() {
         getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerBart(), "");
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
-                final Member battlestar = getContollerBart().connect(
-                    TestHelper.INFRASTRUCTURE_CONNECT_STRING);
+                final Member pegasus = getContollerBart().connect(
+                    TestHelper.DEV_SYSTEM_CONNECT_STRING);
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
-                        return "Unable to connect to battlestar";
+                        return "Unable to connect to pegasus";
                     }
 
                     public boolean reached() {
-                        return battlestar.isCompletelyConnected();
+                        return pegasus.isCompletelyConnected();
                     }
                 });
-                assertTrue(battlestar.isCompletelyConnected());
-                battlestar.shutdown();
+                assertTrue(pegasus.isCompletelyConnected());
+                pegasus.shutdown();
 
-                final Member onlineStorage = getContollerBart().connect(
+                final Member os003 = getContollerBart().connect(
                     TestHelper.ONLINE_STORAGE_ADDRESS);
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
@@ -382,11 +386,26 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                     }
 
                     public boolean reached() {
-                        return onlineStorage.isCompletelyConnected();
+                        return os003.isCompletelyConnected();
                     }
                 });
-                assertTrue(onlineStorage.isCompletelyConnected());
-                onlineStorage.shutdown();
+                assertTrue(os003.isCompletelyConnected());
+
+                ServerClient client = new ServerClient(getContollerBart());
+                client.setServer(os003, false);
+                assertTrue(client.isConnected());
+                Account a = client.login("junit@powerfolder.com", Util
+                    .toCharArray("asdfgh12"));
+                a = client.login("junit@powerfolder.com", Util
+                    .toCharArray("asdfgh12"));
+                a = client.login("junit@powerfolder.com", Util
+                    .toCharArray("asdfgh12"));
+                assertNotNull(a);
+                assertTrue(a.isValid());
+                client.getSecurityService().getFolderPermissions(
+                    new FolderInfo("xx", "xx43kljkfjdffewlkjk345j4kj5öjöj"));
+                assertTrue(os003.isCompletelyConnected());
+                os003.shutdown();
             } catch (ConnectionException e) {
                 e.printStackTrace();
                 fail(e.toString());
