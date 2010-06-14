@@ -83,6 +83,9 @@ public class ProUtil {
     public static final PublicKey getPublicKey(Controller controller,
         MemberInfo node)
     {
+        if (!ProUtil.isRunningProVersion()) {
+            return null;
+        }
         try {
             Class<?> c = Class.forName(Constants.ENCRYPTION_PLUGIN_CLASS);
             Method m = c.getMethod("getPublicKey", Controller.class,
