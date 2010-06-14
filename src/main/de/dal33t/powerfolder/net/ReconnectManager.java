@@ -149,9 +149,9 @@ public class ReconnectManager extends PFComponent {
             reconnectionQueue.notify();
         }
 
-        // Wait 10 ms to let one reconnector grab the node.
+        // Wait 20 ms to let one reconnector grab the node.
         try {
-            Thread.sleep(10);
+            Thread.sleep(20);
         } catch (InterruptedException e) {
             logFiner("InterruptedException", e);
             return;
