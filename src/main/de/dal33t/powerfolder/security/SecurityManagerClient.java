@@ -172,6 +172,9 @@ public class SecurityManagerClient extends PFComponent implements
      * @see de.dal33t.powerfolder.security.SecurityManager#getAccountInfo(de.dal33t.powerfolder.Member)
      */
     public AccountInfo getAccountInfo(Member node) {
+        if (client.isServer(node)) {
+            return NULL_ACCOUNT;
+        }
         Session session = sessions.get(node);
         // Cache hit
         if (session != null) {
