@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
@@ -34,8 +36,11 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -99,6 +104,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         getController().getTransferManager().addListener(
                 myTransferManagerListener);
 
+        getController().getNodeManager().addNodeManagerListener(
+                new MyNodeManagerListener());
 
         syncFolderButton = new SyncIconButtonMini(getController());
         MySyncFolderAction syncFolderAction
@@ -139,6 +146,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         Folder f = getController().getFolderRepository().getFolder(
             folderInfo);
         folder = f;
+        updateNodes();
         directoryFilter.setFolder(f);
         tablePanel.setFolder(f);
         flatViewCB.setSelected(false);
@@ -282,6 +290,21 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     /**
+     * Update the file filter with available nodes.
+     */
+    private void updateNodes() {
+        if (folder != null) {
+            filterTextField.setMembers(folder.getMembersAsCollection());
+        } else {
+            filterTextField.setMembers(null);
+        }
+    }
+
+    // ////////////////
+    // Inner Classes //
+    // ////////////////
+
+    /**
      * Detect changes to the split pane location.
      */
     private class MyPropertyChangeListner implements PropertyChangeListener {
@@ -346,52 +369,52 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     private class MyTransferManagerListener extends TransferAdapter {
 
-        private void updateIfRequired(TransferManagerEvent event) {
+        private void updateIfRequired() {
             updateSyncButton();
         }
 
         public void downloadAborted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void downloadBroken(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void downloadQueued(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void downloadRequested(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void downloadStarted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void uploadAborted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void uploadBroken(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void uploadRequested(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public void uploadStarted(TransferManagerEvent event) {
-            updateIfRequired(event);
+            updateIfRequired();
         }
 
         public boolean fireInEventDispatchThread() {
@@ -400,6 +423,54 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     }
 
+    private class MyNodeManagerListener implements NodeManagerListener {
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
 
+        public void friendAdded(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeConnected(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeConnecting(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeDisconnected(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeOffline(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeOnline(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void nodeRemoved(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void settingsChanged(NodeManagerEvent e) {
+            updateNodes();
+        }
+
+        public void startStop(NodeManagerEvent e) {
+            updateNodes();
+        }
+    }
 
 }

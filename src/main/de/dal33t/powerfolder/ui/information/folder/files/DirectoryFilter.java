@@ -57,6 +57,7 @@ public class DirectoryFilter extends FilterModel {
     public static final int SEARCH_MODE_FILE_NAME_DIRECTORY_NAME = 10;
     public static final int SEARCH_MODE_FILE_NAME_ONLY = 11;
     public static final int SEARCH_MODE_MODIFIER = 12;
+    public static final int SEARCH_MODE_COMPUTER = 13;
 
     private Folder folder;
     private int fileFilterMode;
@@ -484,6 +485,7 @@ public class DirectoryFilter extends FilterModel {
                     }
                 }
             }
+        } else if (searchMode == SEARCH_MODE_COMPUTER) {
         }
         return false;
     }

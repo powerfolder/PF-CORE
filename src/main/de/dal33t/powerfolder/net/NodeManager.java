@@ -482,7 +482,7 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * ATTENTION: May change after returned! Make copy if stable state is
+     * ATTENTION: May change after returned! Make copy if stable state if
      * required.
      * 
      * @return a unmodifiable version of the internal list of connected nodes.
