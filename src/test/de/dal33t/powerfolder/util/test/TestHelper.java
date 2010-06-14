@@ -66,7 +66,7 @@ public class TestHelper {
     /**
      * FIXME: Change to "server.powerfolder.com" after successfully migration.
      */
-    public static final String INFRASTRUCTURE_CONNECT_STRING = "relay001.node.powerfolder.com";
+    public static final String DEV_SYSTEM_CONNECT_STRING = "relay001.node.powerfolder.com";
 
     public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
         "access.powerfolder.com", 1337);
