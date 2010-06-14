@@ -105,9 +105,9 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerMarge(), "");
         assertTrue(getContollerLisa().connect(
-            TestHelper.INFRASTRUCTURE_CONNECT_STRING).isCompletelyConnected());
+            TestHelper.DEV_SYSTEM_CONNECT_STRING).isCompletelyConnected());
         assertTrue(getContollerMarge().connect(
-            TestHelper.INFRASTRUCTURE_CONNECT_STRING).isCompletelyConnected());
+            TestHelper.DEV_SYSTEM_CONNECT_STRING).isCompletelyConnected());
 
         ConnectionHandler conHan = getContollerMarge().getIOProvider()
             .getRelayedConnectionManager().initRelayedConnectionHandler(
@@ -157,7 +157,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         assertTrue(getContollerLisa().connect(
-            TestHelper.INFRASTRUCTURE_CONNECT_STRING).isCompletelyConnected());
+            TestHelper.DEV_SYSTEM_CONNECT_STRING).isCompletelyConnected());
 
         Member os = getContollerLisa().connect(
             TestHelper.ONLINE_STORAGE_ADDRESS);
