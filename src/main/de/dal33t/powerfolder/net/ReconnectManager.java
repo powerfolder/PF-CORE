@@ -160,7 +160,7 @@ public class ReconnectManager extends PFComponent {
         // None has take the node to reconnect.
         // Spawn new reconnector
         if (reconnectionQueue.contains(node)) {
-            logFine("Spawing new Reconnector (" + (reconnectors.size() + 1)
+            logWarning("Spawing new Reconnector (" + (reconnectors.size() + 1)
                 + " total) to get faster reconnect to " + node);
             if (!started) {
                 logSevere("ReconnectManager not started. Unable to spawn new reconnector to "
@@ -225,8 +225,8 @@ public class ReconnectManager extends PFComponent {
             Collections.sort(reconnectionQueue,
                 MemberComparator.BY_RECONNECTION_PRIORITY);
 
-            if (isFine()) {
-                logFine("Freshly filled reconnection queue with "
+            if (isFiner()) {
+                logFiner("Freshly filled reconnection queue with "
                     + reconnectionQueue.size() + " nodes, " + nBefore
                     + " were in queue before");
             }
@@ -390,11 +390,16 @@ public class ReconnectManager extends PFComponent {
                     // We have to less reconnectors, spawning one...
 
                     for (int i = 0; i < reconDiffer; i++) {
-                        Reconnector reconnector = new Reconnector();
+                        final Reconnector reconnector = new Reconnector();
                         // add reconnector to nodemanager
                         reconnectors.add(reconnector);
-                        // and start
-                        reconnector.start();
+                        // and start time shifted
+                        getController().schedule(new Runnable() {
+                            public void run() {
+                                reconnector.start();
+                            }
+                        }, i * 500L);
+
                     }
 
                     logFine("Spawned " + reconDiffer + " reconnectors. "
