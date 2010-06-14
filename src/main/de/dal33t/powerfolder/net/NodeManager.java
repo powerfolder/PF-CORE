@@ -681,15 +681,15 @@ public class NodeManager extends PFComponent {
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
 
-            if (!mySelf.isSupernode()
-                && countConnectedSupernodes() >= Constants.N_SUPERNODES_TO_CONNECT)
-            {
-                // # of necessary connections probably reached, avoid more
-                // reconnection tries.
-                logFine("Max # of connections reached. "
-                    + "Rebuilding reconnection queue");
-                getController().getReconnectManager().buildReconnectionQueue();
-            }
+//            if (!mySelf.isSupernode()
+//                && countConnectedSupernodes() >= Constants.N_SUPERNODES_TO_CONNECT)
+//            {
+//                // # of necessary connections probably reached, avoid more
+//                // reconnection tries.
+//                logFine("Max # of connections reached. "
+//                    + "Rebuilding reconnection queue");
+//                getController().getReconnectManager().buildReconnectionQueue();
+//            }
             if (getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(node.getInfo()))
             {
