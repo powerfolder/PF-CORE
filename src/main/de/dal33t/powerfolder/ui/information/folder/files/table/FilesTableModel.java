@@ -186,7 +186,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized (diskItems) {
-
+                    if (selectedRelativeName == null) {
+                        logWarning("??? selectedRelativeName == null ???");
+                        return;
+                    }
                     List<DiskItem> selectedDiskItems = directories
                         .get(selectedRelativeName);
                     if (selectedDiskItems == null) {

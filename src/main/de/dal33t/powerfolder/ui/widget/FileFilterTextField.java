@@ -263,6 +263,11 @@ public class FileFilterTextField extends PFComponent {
                     if (button.isSelected()) {
                         fileNameDirectoryNameRBMI.setSelected(true);
                         textField.setText("");
+                        externalSearchModeValueModel.setValue(
+                                DirectoryFilter.SEARCH_MODE_FILE_NAME_ONLY);
+                        externalSearchTextValueModel.setValue("");
+                        textField.setEnabled(true);
+                        updateForFocus();
                     }
                     if (isFine()) {
                         logFine("Removed " + member.getNick());
