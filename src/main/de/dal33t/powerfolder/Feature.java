@@ -174,6 +174,6 @@ public enum Feature {
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
-        Feature.META_FOLDER.enable();
+        //Feature.META_FOLDER.enable();
     }
 }
