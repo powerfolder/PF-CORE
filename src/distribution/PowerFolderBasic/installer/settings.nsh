@@ -12,3 +12,4 @@
 !define APPSUPPORT "http://www.powerfolder.com/support.html"
 !define APPUNINSTALL "http://www.powerfolder.com/uninstall.html"
 !define APPDOCU "http://www.powerfolder.com/wiki.html"
+!define APPBUY "http://www.powerfolder.com/buynow.html"
