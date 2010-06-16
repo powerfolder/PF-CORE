@@ -91,7 +91,6 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -131,7 +130,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.6 - 1.7.1.7"; // 1.7.1.7
+    public static final String PROGRAM_VERSION = "4.2.8"; // 1.7.1.9
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
