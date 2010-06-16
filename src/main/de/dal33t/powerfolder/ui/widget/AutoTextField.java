@@ -42,7 +42,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Constructor
-     *
+     * 
      * @param list
      */
     public AutoTextField(List<String> list) {
@@ -54,7 +54,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Try to match against an item in the list.
-     *
+     * 
      * @param text
      * @return
      */
@@ -72,7 +72,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Replace the items in the value list.
-     *
+     * 
      * @param list
      */
     public void setDataList(List<String> list) {
@@ -84,7 +84,7 @@ public class AutoTextField extends JTextField {
 
     /**
      * Replace a section in the text.
-     *
+     * 
      * @param content
      */
     public void replaceSelection(String content) {
@@ -102,12 +102,12 @@ public class AutoTextField extends JTextField {
             String text = getDocument().getText(0, getDocument().getLength());
             // Try to get correct case match from list.
             for (String item : dataList) {
-                if (item.equalsIgnoreCase(text)) {
+                if (item != null && item.equalsIgnoreCase(text)) {
                     return item;
                 }
             }
             return text;
-        } catch (BadLocationException e) {
+        } catch (Exception e) {
             return "";
         }
     }
@@ -126,13 +126,15 @@ public class AutoTextField extends JTextField {
     private class AutoDocument extends PlainDocument {
 
         public void replace(int offset, int length, String text,
-                            AttributeSet attrs) throws BadLocationException {
+            AttributeSet attrs) throws BadLocationException
+        {
             super.remove(offset, length);
             insertString(offset, text, attrs);
         }
 
         public void insertString(int offs, String str, AttributeSet a)
-                throws BadLocationException {
+            throws BadLocationException
+        {
             if (str == null || str.length() == 0) {
                 return;
             }
@@ -152,8 +154,8 @@ public class AutoTextField extends JTextField {
             // Must do this to preserve entered upper/lower case.
             super.insertString(0, startText, a);
             super.insertString(offs, str, a);
-            super.insertString(offs + str.length(), match.substring(
-                    offs + str.length(), match.length()), a);
+            super.insertString(offs + str.length(), match.substring(offs
+                + str.length(), match.length()), a);
 
             // Select the guessed bit.
             setSelectionStart(offs + str.length());
@@ -192,7 +194,7 @@ public class AutoTextField extends JTextField {
                 // Must do this to preserve entered upper/lower case.
                 super.insertString(0, text.substring(0, offs), null);
                 super.insertString(offs, match.substring(offs, match.length()),
-                        null);
+                    null);
             }
             try {
                 setSelectionStart(selectionStart);
@@ -203,4 +205,3 @@ public class AutoTextField extends JTextField {
         }
     }
 }
-
