@@ -192,6 +192,13 @@ public class SecurityManagerClient extends PFComponent implements
             }
             return null;
         }
+        if (ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()) {
+            if (isFiner()) {
+                logFiner("Not trying to refresh account of " + node
+                    + ". Running handleMessage thread of Server");
+            }
+            return null;
+        }
         if (!client.isConnected()) {
             // Not available yet.
             return null;
