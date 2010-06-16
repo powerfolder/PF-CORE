@@ -19,11 +19,33 @@
 */
 package de.dal33t.powerfolder.ui.dialog;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Set;
+import java.util.TimerTask;
+
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -32,23 +54,18 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.model.NoticesTableModel;
-import de.dal33t.powerfolder.ui.model.NoticesModel;
-import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.ui.*;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.util.TimerTask;
-import java.util.Set;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.BaseDialog;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
+import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 
 /**
  * Dialog displaying the notices from the applicatoin model notices model
