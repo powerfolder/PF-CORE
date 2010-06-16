@@ -19,9 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -79,13 +85,19 @@ public class FolderDBDebug {
 
     private static boolean checkForDupes(FileInfo[] list) {
         boolean dupe = false;
-        HashSet<String> lowerCasenames = new HashSet<String>();
+        Map<String, FileInfo> lowerCasenames = new HashMap<String, FileInfo>();
         for (FileInfo file : list) {
-            if (lowerCasenames.contains(file.getRelativeName().toLowerCase())) {
+            if (lowerCasenames
+                .containsKey(file.getRelativeName().toLowerCase()))
+            {
                 dupe = true;
-                System.err.println("Detected dupe: " + file.toDetailString());
+                System.err.println("Detected dupe: "
+                    + file.toDetailString()
+                    + " of "
+                    + lowerCasenames.get(file.getRelativeName().toLowerCase())
+                        .toDetailString());
             }
-            lowerCasenames.add(file.getRelativeName().toLowerCase());
+            lowerCasenames.put(file.getRelativeName().toLowerCase(), file);
         }
         return dupe;
     }
