@@ -221,7 +221,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, fInfoLisaDeleted.getVersion());
         assertTrue(fInfoLisaDeleted.isDeleted());
         assertEquals(0, fInfoLisaDeleted.getSize());
-        
+
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtBart().getKnownFiles().iterator().next()
@@ -586,5 +586,41 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(1000);
         assertTrue(testFile.exists());
+    }
+
+    public void testDupeDeletedDBEntries() {
+        disconnectBartAndLisa();
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        File fBart = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase());
+        scanFolder(getFolderAtBart());
+        assertTrue(fBart.delete());
+        scanFolder(getFolderAtBart());
+        TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
+            .getName(), new byte[0]);
+        scanFolder(getFolderAtBart());
+        assertTrue(fBart.delete());
+        scanFolder(getFolderAtBart());
+        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next()
+            .getVersion());
+
+        File fLisa = TestHelper.createTestFile(
+            getFolderAtLisa().getLocalBase(), fBart.getName().toUpperCase(),
+            new byte[0]); 
+        scanFolder(getFolderAtLisa());
+        assertTrue(fLisa.delete());
+        scanFolder(getFolderAtLisa());
+        assertEquals(1, getFolderAtLisa().getKnownFiles().iterator().next()
+            .getVersion());
+
+        connectBartAndLisa();
+
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+
+        TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
+            .getName(), new byte[0]);
     }
 }
