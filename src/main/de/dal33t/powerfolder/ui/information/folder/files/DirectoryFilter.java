@@ -213,8 +213,7 @@ public class DirectoryFilter extends FilterModel {
         if (!StringUtils.isBlank(textFilter)) {
 
             // Match lower case
-            textFilter = textFilter.toLowerCase();
-            keywords = textFilter.toLowerCase().split("\\s+");
+            keywords = textFilter.split("\\s+");
         }
 
         AtomicLong filteredFileCount = new AtomicLong();
@@ -462,17 +461,24 @@ public class DirectoryFilter extends FilterModel {
         return true;
     }
 
+    /**
+     * keyword should be the member id if searchMode == SEARCH_MODE_COMPUTER.
+     *
+     * @param fileInfo
+     * @param keyword
+     * @param searchMode
+     * @return
+     */
     private boolean matchFileInfo(FileInfo fileInfo, String keyword,
-        int searchMode)
-    {
+        int searchMode) {
         if (searchMode == SEARCH_MODE_FILE_NAME_DIRECTORY_NAME) {
-            String filename = fileInfo.getLowerCaseFilenameOnly();
-            if (filename.contains(keyword)) {
+            String filename = fileInfo.getLowerCaseFilenameOnly().toLowerCase();
+            if (filename.contains(keyword.toLowerCase())) {
                 return true;
             }
         } else if (searchMode == SEARCH_MODE_FILE_NAME_ONLY) {
             String filename = fileInfo.getFilenameOnly().toLowerCase();
-            if (filename.contains(keyword)) {
+            if (filename.contains(keyword.toLowerCase())) {
                 return true;
             }
         } else if (searchMode == SEARCH_MODE_MODIFIER) {
@@ -480,12 +486,18 @@ public class DirectoryFilter extends FilterModel {
             if (modifiedBy != null) {
                 Member node = modifiedBy.getNode(getController(), false);
                 if (node != null) {
-                    if (node.getNick().toLowerCase().contains(keyword)) {
+                    if (node.getNick().toLowerCase().contains(
+                            keyword.toLowerCase())) {
                         return true;
                     }
                 }
             }
         } else if (searchMode == SEARCH_MODE_COMPUTER) {
+            // @todo remove when #1634 works
+            System.out.println("#1634 " + keyword + " has " +
+                    folder.getDAO().findAllFiles(keyword).size());
+            FileInfo remoteFileInfo = folder.getDAO().find(fileInfo, keyword);
+            return remoteFileInfo != null;
         }
         return false;
     }

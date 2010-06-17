@@ -352,8 +352,8 @@ public class FileFilterTextField extends PFComponent {
                     if (entry.getValue() == e.getSource()) {
                         externalSearchModeValueModel.setValue(
                                 DirectoryFilter.SEARCH_MODE_COMPUTER);
-                        externalSearchTextValueModel.setValue(entry.getKey()
-                                .getNick());
+                        externalSearchTextValueModel.setValue(
+                                entry.getKey().getId());
                         textField.setEnabled(false);
                         textField.setText(Translation.getTranslation(
                                     "filter_text_field.menu.computer.text",
