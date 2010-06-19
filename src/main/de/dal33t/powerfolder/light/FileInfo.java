@@ -69,7 +69,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     private static final long serialVersionUID = 100L;
 
     /**
-     * The relativeName of the file relative to the base
+     * Unix-style separated path of the file relative to the folder base dir.
      * <p>
      * Actually 'final'. Only non-final because of serialization readObject()
      * fileName.intern();

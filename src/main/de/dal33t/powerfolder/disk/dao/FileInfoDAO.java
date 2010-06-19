@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * {@link FileInfo} objects is hold per domain. A domain represents the
  * collection of {@link FileInfo} objects related to one {@link Member}. The
  * domain with identified by <code>null</code> represents the {@link FileInfo}s
- * of myself.
+ * of myself. A domain is in fact the Member's id field.
  * 
  * @author sprajc
  * @see FileInfo
@@ -134,10 +134,12 @@ public interface FileInfoDAO {
      * @param domain
      *            the domain to check.
      * @param path
-     *            the path to search for
+     *            the path to search for. In the same format of
+     *            FileInfo.getRelativeName(), unix-style separated path of the
+     *            file relative to the folder base.
      * @param recursive
-     *            true to recursively add all files from subdirectory too.
-     * @return the
+     *            true to recursively include all files from subdirectory too.
+     * @return the collection of mathcing directories.
      */
     Collection<FileInfo> findInDirectory(String domain, String path,
         boolean recursive);
