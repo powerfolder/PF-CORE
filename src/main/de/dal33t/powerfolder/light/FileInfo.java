@@ -54,7 +54,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * #1531: If this system should ignore cases of files in
      * {@link #equals(Object)} and {@link #hashCode()}
      */
-    public static final boolean IGNORE_CASE = OSUtil.isWindowsSystem() || OSUtil.isMacOS();
+    public static final boolean IGNORE_CASE = OSUtil.isWindowsSystem()
+        || OSUtil.isMacOS();
 
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
@@ -70,11 +71,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Unix-style separated path of the file relative to the folder base dir.
-     * <p>
-     * Actually 'final'. Only non-final because of serialization readObject()
-     * fileName.intern();
      */
-    private String fileName;
+    private final String fileName;
 
     /** The size of the file */
     private final Long size;
@@ -723,7 +721,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         ClassNotFoundException
     {
         in.defaultReadObject();
-        
+
         // #2037: Removed internalization
         // fileName = fileName.intern();
 
