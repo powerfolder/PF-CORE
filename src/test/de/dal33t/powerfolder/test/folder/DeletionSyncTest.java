@@ -608,7 +608,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         File fLisa = TestHelper.createTestFile(
             getFolderAtLisa().getLocalBase(), fBart.getName().toUpperCase(),
-            new byte[0]); 
+            new byte[0]);
         scanFolder(getFolderAtLisa());
         assertTrue(fLisa.delete());
         scanFolder(getFolderAtLisa());
@@ -617,8 +617,13 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
 
-        assertEquals(1, getFolderAtBart().getKnownItemCount());
-        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        if (FileInfo.IGNORE_CASE) {
+            assertEquals(1, getFolderAtBart().getKnownItemCount());
+            assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        } else {
+            assertEquals(2, getFolderAtBart().getKnownItemCount());
+            assertEquals(2, getFolderAtLisa().getKnownItemCount());
+        }
 
         TestHelper.createTestFile(getFolderAtBart().getLocalBase(), fBart
             .getName(), new byte[0]);
