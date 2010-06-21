@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 public class ComputersList extends PFUIComponent {
 
@@ -68,6 +69,9 @@ public class ComputersList extends PFUIComponent {
     private JLabel connectedLansLabel;
     private JLabel connectedLansIcon;
 
+    private DelayedUpdater forcedUpdater;
+    private DelayedUpdater lightUpdater;
+
     /**
      * Constructor
      * 
@@ -75,6 +79,9 @@ public class ComputersList extends PFUIComponent {
      */
     public ComputersList(Controller controller, ComputersTab computersTab) {
         super(controller);
+        this.forcedUpdater = new DelayedUpdater(controller, 500L);
+        this.lightUpdater = new DelayedUpdater(controller, 500L);
+
         this.computersTab = computersTab;
         expansionListener = new MyExpansionListener();
         nodeManagerModel = getUIController().getApplicationModel()
@@ -142,6 +149,22 @@ public class ComputersList extends PFUIComponent {
         rebuild(false);
     }
 
+    private void rebuild(boolean expCol) {
+        if (expCol) {
+            forcedUpdater.schedule(new Runnable() {
+                public void run() {
+                    rebuild0(true);
+                }
+            });
+        } else {
+            lightUpdater.schedule(new Runnable() {
+                public void run() {
+                    rebuild0(false);
+                }
+            });
+        }
+    }
+
     /**
      * Rebuild the whole list, if there is a significant change. This detects
      * things like Ln nodes becoming friends, etc.
@@ -150,14 +173,15 @@ public class ComputersList extends PFUIComponent {
      *            true if expand or collapse change - MUST redisplay, even if
      *            previous are all the same.
      */
-    private void rebuild(boolean expCol) {
+    private void rebuild0(boolean expCol) {
 
         // Do nothing until populate command is called.
         if (!populated) {
             return;
         }
 
-        Map<NodeManagerModel.Type, Set<Member>> map = nodeManagerModel.getNodesMap();
+        Map<NodeManagerModel.Type, Set<Member>> map = nodeManagerModel
+            .getNodesMap();
 
         // Split nodes into three groups:
         // 1) My Computers,
@@ -168,7 +192,8 @@ public class ComputersList extends PFUIComponent {
         Map<String, Member> friendsMap = new TreeMap<String, Member>();
         Map<String, Member> connectedLansMap = new TreeMap<String, Member>();
 
-        Set<Member> myComputersSet = map.get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
+        Set<Member> myComputersSet = map
+            .get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
         for (Member member : myComputersSet) {
             myComputersMap.put(member.getNick().toLowerCase(), member);
         }
@@ -178,7 +203,8 @@ public class ComputersList extends PFUIComponent {
             friendsMap.put(member.getNick().toLowerCase(), member);
         }
 
-        Set<Member> connectedLanSet = map.get(NodeManagerModel.Type.CONNECTED_LAN);
+        Set<Member> connectedLanSet = map
+            .get(NodeManagerModel.Type.CONNECTED_LAN);
         for (Member member : connectedLanSet) {
             connectedLansMap.put(member.getNick().toLowerCase(), member);
         }

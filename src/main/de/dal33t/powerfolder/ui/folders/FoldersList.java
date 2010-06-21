@@ -82,6 +82,7 @@ public class FoldersList extends PFUIComponent {
     private JLabel onlineIcon;
 
     private DelayedUpdater transfersUpdater;
+    private DelayedUpdater foldersUpdater;
 
     /**
      * Constructor
@@ -91,6 +92,8 @@ public class FoldersList extends PFUIComponent {
     public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
         this.foldersTab = foldersTab;
+        transfersUpdater = new DelayedUpdater(getController());
+        foldersUpdater = new DelayedUpdater(getController());
         expansionListener = new MyExpansionListener();
         membershipListener = new MyFolderMembershipListener();
 
@@ -109,8 +112,6 @@ public class FoldersList extends PFUIComponent {
         buildUI();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
-
-        transfersUpdater = new DelayedUpdater(getController());
     }
 
     /**
@@ -165,11 +166,19 @@ public class FoldersList extends PFUIComponent {
         getController().getOSClient().addListener(new MyServerClientListener());
     }
 
+    private void updateFolders() {
+        foldersUpdater.schedule(new Runnable() {
+            public void run() {
+                updateFolders0();
+            }
+        });
+    }
+
     /**
      * Makes sure that the folder views are correct for folder repositoy and
      * server client folders.
      */
-    private void updateFolders() {
+    private void updateFolders0() {
 
         // Do nothing until the populate command is received.
         if (!populated) {
