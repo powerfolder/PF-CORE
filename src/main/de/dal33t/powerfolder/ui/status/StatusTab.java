@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -290,9 +291,9 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel buildMainPanel() {
         FormLayout layout = new FormLayout("pref:grow",
-            "pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, pref, " +
-                    "pref, pref, 9dlu, pref, 3dlu, pref, " +
-                    "pref, pref, pref, 0:grow, pref");
+            "pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, pref, "
+                + "pref, pref, 9dlu, pref, 3dlu, pref, "
+                + "pref, pref, pref, 0:grow, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
@@ -331,8 +332,12 @@ public class StatusTab extends PFUIComponent {
         builder.add(licenseInfoSection.getUIComponent(), cc.xy(1, row));
         row++;
         builder.add(buyNowLabel.getUIComponent(), cc.xy(1, row));
-        row += 2;
-        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
+        if (PreferencesEntry.SHOW_TELL_A_FRIEND
+            .getValueBoolean(getController()))
+        {
+            row += 2;
+            builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
+        }
 
         return builder.getPanel();
     }

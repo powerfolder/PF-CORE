@@ -28,6 +28,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -212,12 +213,15 @@ public class StartTab extends PFUIComponent {
 
         row += 2;
 
-        builder.addLabel(Translation.getTranslation("start_tab.drag_hint"),
-                cc.xy(1, row, CellConstraints.CENTER, CellConstraints.CENTER));
+        builder.addLabel(Translation.getTranslation("start_tab.drag_hint"), cc
+            .xy(1, row, CellConstraints.CENTER, CellConstraints.CENTER));
 
-        row += 2;
-
-        builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
+        if (PreferencesEntry.SHOW_TELL_A_FRIEND
+            .getValueBoolean(getController()))
+        {
+            row += 2;
+            builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, row));
+        }
 
         JPanel panel = builder.getPanel();
 

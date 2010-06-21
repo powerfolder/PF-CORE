@@ -141,7 +141,12 @@ public enum PreferencesEntry {
     INLINE_INFO_MODE("inline.info.mode", MainFrame.INLINE_INFO_RIGHT),
 
     FILE_SEARCH_MODE("file.search.mode",
-        DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME);
+        DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
+
+    /**
+     * If the "Tell a friend" / Referral system should be visible.
+     */
+    SHOW_TELL_A_FRIEND("show.tell-a-friend", true);
 
     /** String, Boolean, Integer */
     private Class type;
