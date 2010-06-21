@@ -76,5 +76,7 @@ public class ServerSelectorPanel extends PFUIComponent implements UIPanel {
                 new ConfigurationLoaderDialog(getController()).openAndWait();
             }
         });
+        searchButton.setEnabled(getController().getDistribution()
+            .allowServerChange());
     }
 }

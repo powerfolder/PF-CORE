@@ -262,7 +262,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         connectingLabel.setVisible(!enabled);
         workingBar.setVisible(!enabled);
 
-        if (!AbstractDistribution.isPowerFolderServer(getController())) {
+        if (getController().getDistribution().allowServerChange()) {
             serverLabel.setVisible(true);
             serverInfoLabel.getUIComponent().setVisible(true);
             serverInfoLabel.setText(client.getServerString());

@@ -67,6 +67,12 @@ public interface Distribution {
     boolean allowSkinChange();
 
     /**
+     * @return true if this distribution allows to switch the server. False if
+     *         this distribution is bound to a fix server.
+     */
+    boolean allowServerChange();
+
+    /**
      * @return the update settings for this branded version. return null to use
      *         default location
      */

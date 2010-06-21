@@ -53,6 +53,10 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
+    public boolean allowServerChange() {
+        return false;
+    }
+
     public void init(Controller controller) {
         this.controller = controller;
     }

@@ -59,7 +59,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
@@ -129,7 +128,7 @@ public class UIUnLockDialog extends PFUIComponent {
                 cc.xyw(1, row, 3));
             row += 2;
 
-            if (!AbstractDistribution.isPowerFolderServer(getController())) {
+            if (getController().getDistribution().allowServerChange()) {
                 serverLabel.setBorder(Borders
                     .createEmptyBorder("0, 0, 3dlu, 0"));
                 builder.add(serverLabel, cc.xy(1, row));
