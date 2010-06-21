@@ -289,7 +289,7 @@ public class RelayedConnectionManager extends PFComponent {
         final RelayedMessage message)
     {
         // Deliver to RelayedConnectionHanlder of Remote member
-        AbstractRelayedConnectionHandler peer = resolveRelHan(message);
+        final AbstractRelayedConnectionHandler peer = resolveRelHan(message);
 
         switch (message.getType()) {
             case SYN :
@@ -376,7 +376,12 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         // Actual relay of message
-        peer.receiveRelayedMessage(message);
+        // In own thread because of #2038
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                peer.receiveRelayedMessage(message);
+            }
+        });
     }
 
     private AbstractRelayedConnectionHandler resolveRelHan(
