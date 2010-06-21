@@ -41,7 +41,6 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     public static final String PROPERTY_TRIAL = "trial";
     public static final String PROPERTY_STORAGE_SIZE = "storageSize";
     public static final String PROPERTY_STORAGE_SIZE_GB = "storageSizeGB";
-    public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
     public static final String PROPERTY_WARNED_EXPIRATION_DATE = "warnedExpirationDate";
@@ -50,6 +49,7 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     private long storageSize;
     private boolean trial;
 
+    private Date validFrom;
     private Date validTill;
 
     private Date warnedUsageDate;
@@ -84,27 +84,47 @@ public class OnlineStorageSubscription extends Model implements Serializable {
     }
 
     /**
-     * @return if the subscription has expired = passed the valid date.
+     * @return if the subscription has expired = passed the valid date or is
+     *         before the activation date.
      */
     public boolean isExpired() {
-        if (getValidTill() == null) {
+        if (validTill == null) {
             // never expires
             return false;
         }
-        long timeValid = getValidTill().getTime() - System.currentTimeMillis();
+        long timeValid = validTill.getTime() - System.currentTimeMillis();
         return timeValid <= 0;
     }
 
+    /**
+     * @return true if now is between valid from and to date.
+     */
+    public boolean isValid() {
+        if (isExpired()) {
+            return false;
+        }
+        if (validFrom == null) {
+            return true;
+        }
+        return System.currentTimeMillis() > validFrom.getTime();
+    }
+
     // Getter / Setter ********************************************************
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
 
     public Date getValidTill() {
         return validTill;
     }
 
     public void setValidTill(Date validTill) {
-        Object oldValue = getValidTill();
         this.validTill = validTill;
-        firePropertyChange(PROPERTY_VALID_TILL, oldValue, this.validTill);
     }
 
     public Date getWarnedUsageDate() {
@@ -163,10 +183,17 @@ public class OnlineStorageSubscription extends Model implements Serializable {
             this.disabledExpirationDate);
     }
 
+    /**
+     * @return true if this subscription has been disabled because it expired
+     */
     public boolean isDisabledExpiration() {
         return disabledExpirationDate != null;
     }
 
+    /**
+     * @return true if this subscription has been disabled because of overuse or
+     *         expiration
+     */
     public boolean isDisabled() {
         return isDisabledExpiration() || isDisabledUsage();
     }
