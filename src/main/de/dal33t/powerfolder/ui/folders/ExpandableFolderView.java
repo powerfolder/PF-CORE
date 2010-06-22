@@ -287,8 +287,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         filesAvailableLabel.getUIComponent().addMouseListener(ma);
 
         upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
-        upperBuilder.add(upperOpenFilesButton, cc.xy(9, 1));
-        upperBuilder.add(upperInviteButton, cc.xy(11, 1));
+        upperBuilder.add(upperInviteButton, cc.xy(9, 1));
+        upperBuilder.add(upperOpenFilesButton, cc.xy(11, 1));
         upperBuilder.add(problemButton, cc.xy(13, 1));
 
         upperPanel = upperBuilder.getPanel();
