@@ -376,12 +376,7 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         // Actual relay of message
-        // In own thread because of #2038
-        getController().getIOProvider().startIO(new Runnable() {
-            public void run() {
-                peer.receiveRelayedMessage(message);
-            }
-        });
+        peer.receiveRelayedMessage(message);
     }
 
     private AbstractRelayedConnectionHandler resolveRelHan(
