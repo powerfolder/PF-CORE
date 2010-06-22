@@ -195,18 +195,18 @@ public class ComputersList extends PFUIComponent {
         Set<Member> myComputersSet = map
             .get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
         for (Member member : myComputersSet) {
-            myComputersMap.put(member.getNick().toLowerCase(), member);
+            myComputersMap.put(member.getId(), member);
         }
 
         Set<Member> friendsSet = map.get(NodeManagerModel.Type.FRIENDS_INDEX);
         for (Member member : friendsSet) {
-            friendsMap.put(member.getNick().toLowerCase(), member);
+            friendsMap.put(member.getId(), member);
         }
 
         Set<Member> connectedLanSet = map
             .get(NodeManagerModel.Type.CONNECTED_LAN);
         for (Member member : connectedLanSet) {
-            connectedLansMap.put(member.getNick().toLowerCase(), member);
+            connectedLansMap.put(member.getId(), member);
         }
 
         synchronized (viewList) {
