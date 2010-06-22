@@ -37,6 +37,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -166,7 +167,14 @@ public class SwingWorkerPanel extends PFWizardPanel {
             } catch (InterruptedException e) {
                 return;
             } catch (ExecutionException e) {
-                showProblem(e.getCause().getMessage());
+                String msg = e.getCause().getMessage();
+                if (StringUtils.isBlank(msg)) {
+                    msg = e.getMessage();
+                }
+                if (StringUtils.isBlank(msg)) {
+                    msg = e.toString();
+                }
+                showProblem(msg);
             }
         }
 
