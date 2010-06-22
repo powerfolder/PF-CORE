@@ -285,18 +285,6 @@ public class ComputersList extends PFUIComponent {
                 }
             }
 
-            // Then friends.
-            boolean firstFriend = true;
-            for (Member node : friendsMap.values()) {
-                if (firstFriend && multiGroup) {
-                    firstFriend = false;
-                    addSeparator(collapseFriends, friendsIcon, friendsLabel);
-                }
-                if (!multiGroup || !collapseFriends) {
-                    addView(node, expandedNode);
-                }
-            }
-
             // Then others (connected on LAN).
             boolean firstLan = true;
             for (Member node : connectedLansMap.values()) {
@@ -306,6 +294,18 @@ public class ComputersList extends PFUIComponent {
                         connectedLansLabel);
                 }
                 if (!multiGroup || !collapseConnectedLans) {
+                    addView(node, expandedNode);
+                }
+            }
+
+            // Then friends.
+            boolean firstFriend = true;
+            for (Member node : friendsMap.values()) {
+                if (firstFriend && multiGroup) {
+                    firstFriend = false;
+                    addSeparator(collapseFriends, friendsIcon, friendsLabel);
+                }
+                if (!multiGroup || !collapseFriends) {
                     addView(node, expandedNode);
                 }
             }
