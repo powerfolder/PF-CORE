@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.model.NodeManagerModel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 public class ComputersList extends PFUIComponent {
@@ -88,9 +89,9 @@ public class ComputersList extends PFUIComponent {
             .getNodeManagerModel();
         viewList = new CopyOnWriteArrayList<ExpandableComputerView>();
 
-        previousConnectedLans = new TreeSet<Member>();
-        previousFriends = new TreeSet<Member>();
-        previousMyComputers = new TreeSet<Member>();
+        previousConnectedLans = new TreeSet<Member>(MemberComparator.NICK);
+        previousFriends = new TreeSet<Member>(MemberComparator.NICK);
+        previousMyComputers = new TreeSet<Member>(MemberComparator.NICK);
 
         myComputersLabel = new JLabel(Translation
             .getTranslation("computers_list.my_computers"));
@@ -188,25 +189,25 @@ public class ComputersList extends PFUIComponent {
         // 2) Friends and
         // 3) Connected LAN
         // Use maps to sort by name.
-        Map<String, Member> myComputersMap = new TreeMap<String, Member>();
-        Map<String, Member> friendsMap = new TreeMap<String, Member>();
-        Map<String, Member> connectedLansMap = new TreeMap<String, Member>();
+        Map<Member, Member> myComputersMap = new TreeMap<Member, Member>(MemberComparator.NICK);
+        Map<Member, Member> friendsMap = new TreeMap<Member, Member>(MemberComparator.NICK);
+        Map<Member, Member> connectedLansMap = new TreeMap<Member, Member>(MemberComparator.NICK);
 
         Set<Member> myComputersSet = map
             .get(NodeManagerModel.Type.MY_COMPUTERS_INDEX);
         for (Member member : myComputersSet) {
-            myComputersMap.put(member.getId(), member);
+            myComputersMap.put(member, member);
         }
 
         Set<Member> friendsSet = map.get(NodeManagerModel.Type.FRIENDS_INDEX);
         for (Member member : friendsSet) {
-            friendsMap.put(member.getId(), member);
+            friendsMap.put(member, member);
         }
 
         Set<Member> connectedLanSet = map
             .get(NodeManagerModel.Type.CONNECTED_LAN);
         for (Member member : connectedLanSet) {
-            connectedLansMap.put(member.getId(), member);
+            connectedLansMap.put(member, member);
         }
 
         synchronized (viewList) {
