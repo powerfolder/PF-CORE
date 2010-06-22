@@ -72,12 +72,12 @@ public abstract class AbstractDistribution extends Loggable implements
      *         (non inhouse server).
      */
     public static boolean isPowerFolderServer(Controller c) {
-        String host = ConfigurationEntry.SERVER_HOST.getValue(c);
-        if (host != null) {
-            if (host.toLowerCase().contains("powerfolder.com")) {
-                return true;
-            }
-        }
+        // String host = ConfigurationEntry.SERVER_HOST.getValue(c);
+        // if (host != null) {
+        // if (host.toLowerCase().contains("powerfolder.com")) {
+        // return true;
+        // }
+        // }
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
         if (nodeId != null) {
             if (nodeId.toLowerCase().contains("WEBSERVICE")) {
