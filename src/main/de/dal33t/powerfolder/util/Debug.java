@@ -51,6 +51,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.NodeInformation;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -438,7 +440,19 @@ public class Debug {
             if (m.isOnLAN()) {
                 b.append("(local)  ");
             } else {
-                b.append("(i-net)  ");
+                ConnectionHandler peer = m.getPeer();
+                if (peer != null) {
+                    ConnectionQuality q = peer.getConnectionQuality();
+                    if (q.equals(ConnectionQuality.GOOD)) {
+                        b.append("(***)   ");
+                    } else if (q.equals(ConnectionQuality.MEDIUM)) {
+                        b.append("(** )   ");
+                    } else {
+                        b.append("(*  )   ");
+                    }
+                } else {
+                    b.append("(?????)  ");
+                }
             }
         } else if (m.isConnectedToNetwork()) {
             b.append("(online) ");
