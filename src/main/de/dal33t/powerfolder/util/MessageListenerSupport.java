@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.8 $
  */
-public class MessageListenerSupport {
+public class MessageListenerSupport extends Loggable {
 
     // AWT system check
     private static final boolean AWT_AVAILABLE = UIUtil.isAwtAvailable();
@@ -60,9 +60,7 @@ public class MessageListenerSupport {
      */
     public MessageListenerSupport(Loggable source) {
         this.source = source;
-        if (this.source == null) {
-            throw new NullPointerException("Source in null");
-        }
+        Reject.ifNull(source, "Source");
         messageListenersNotInDispatchThread = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
             2, 0.75f, 8);
         messageListenersInDispatchThread = new ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<MessageListener>>(
@@ -180,7 +178,13 @@ public class MessageListenerSupport {
             .get(All.class);
         if (generalListeners != null && !generalListeners.isEmpty()) {
             for (MessageListener genListener : generalListeners) {
-                genListener.handleMessage(theSource, message);
+                try {
+                    genListener.handleMessage(theSource, message);
+                } catch (Exception e) {
+                    logSevere(source
+                        + ": Exception while handling message in listener of "
+                        + theSource + ". msg: " + message + ". " + e, e);
+                }
             }
         }
 
@@ -189,7 +193,13 @@ public class MessageListenerSupport {
             .get(message.getClass());
         if (specialListeners != null && !specialListeners.isEmpty()) {
             for (MessageListener specListener : specialListeners) {
-                specListener.handleMessage(theSource, message);
+                try {
+                    specListener.handleMessage(theSource, message);
+                } catch (Exception e) {
+                    logSevere(source
+                        + ": Exception while handling message in listener of "
+                        + theSource + ". msg: " + message + ". " + e, e);
+                }
             }
         }
 
@@ -212,7 +222,15 @@ public class MessageListenerSupport {
                 if (generalEDTListener != null && !generalEDTListener.isEmpty())
                 {
                     for (MessageListener genListener : generalEDTListener) {
-                        genListener.handleMessage(theSource, message);
+                        try {
+                            genListener.handleMessage(theSource, message);
+                        } catch (Exception e) {
+                            logSevere(
+                                source
+                                    + ": Exception while handling message in listener of "
+                                    + theSource + ". msg: " + message + ". "
+                                    + e, e);
+                        }
                     }
                 }
 
@@ -220,7 +238,15 @@ public class MessageListenerSupport {
                 if (specialEDTListener != null && !specialEDTListener.isEmpty())
                 {
                     for (MessageListener specListener : specialEDTListener) {
-                        specListener.handleMessage(theSource, message);
+                        try {
+                            specListener.handleMessage(theSource, message);
+                        } catch (Exception e) {
+                            logSevere(
+                                source
+                                    + ": Exception while handling message in listener of "
+                                    + theSource + ". msg: " + message + ". "
+                                    + e, e);
+                        }
                     }
                 }
             }
