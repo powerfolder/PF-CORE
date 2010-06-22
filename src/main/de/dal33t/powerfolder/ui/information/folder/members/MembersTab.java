@@ -151,8 +151,15 @@ public class MembersTab extends PFUIComponent {
                     membersTable.cancelCellEditing();
                     refreshBar.setVisible(refreshing);
                     refreshButton.setVisible(!refreshing);
-                    defaultPermissionBox.setEnabled(!refreshing
-                        && permissionsRetrieved);
+                    boolean enabled = !refreshing && permissionsRetrieved;
+                    FolderInfo folderInfo = model.getFolderInfo();
+                    if (folderInfo != null) {
+                        boolean admin = getController().getOSClient().getAccount()
+                            .hasAdminPermission(folderInfo);
+                        enabled = enabled && admin;
+                    }
+                    defaultPermissionBox.setEnabled(enabled);
+
                 }
             });
     }
