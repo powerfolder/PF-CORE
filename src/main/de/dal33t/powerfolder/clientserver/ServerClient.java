@@ -582,7 +582,7 @@ public class ServerClient extends PFComponent {
 
                 // Fire login success
                 fireLogin(accountDetails);
-                updateFriendsList(accountDetails.getAccount());
+                updateLocalSettings(accountDetails.getAccount());
 
                 // Possible switch to new server
                 ServerInfo targetServer = accountDetails.getAccount()
@@ -656,7 +656,7 @@ public class ServerClient extends PFComponent {
         if (newDetails != null) {
             accountDetails = newDetails;
             fireAccountUpdates(accountDetails);
-            updateFriendsList(accountDetails.getAccount());
+            updateLocalSettings(accountDetails.getAccount());
         } else {
             setAnonAccount();
             fireLogin(accountDetails, false);
@@ -665,6 +665,28 @@ public class ServerClient extends PFComponent {
             logFine("Refreshed " + accountDetails);
         }
         return accountDetails;
+    }
+
+    private void updateLocalSettings(Account a) {
+        updateFriendsList(a);
+        updateFolders(a);
+    }
+
+    private void updateFolders(Account a) {
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            for (Folder folder : getController().getFolderRepository()
+                .getFolders())
+            {
+                if (!a.hasReadPermissions(folder.getInfo())) {
+                    logWarning("Removing local " + folder + " " + a
+                        + " does not have read permission");
+                    getController().getFolderRepository().removeFolder(folder,
+                        false);
+                }
+            }
+        }
     }
 
     private void updateFriendsList(Account a) {
