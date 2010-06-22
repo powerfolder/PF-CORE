@@ -642,6 +642,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
     // Receiving **************************************************************
 
+    private ConcurrentLinkedQueue<RelayedMessage> receiveQueue = new ConcurrentLinkedQueue<RelayedMessage>();
+
     /**
      * Receives and processes the relayed message.
      * 
@@ -649,6 +651,24 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      *            the message received from a relay.
      */
     public void receiveRelayedMessage(RelayedMessage message) {
+        //  in queue for later processing in own thread
+        receiveQueue.offer(message);
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                while (!receiveQueue.isEmpty()) {
+                    receiveRelayedMessage0(receiveQueue.poll());
+                }
+            }
+        });
+    }
+
+    /**
+     * Receives and processes the relayed message.
+     * 
+     * @param message
+     *            the message received from a relay.
+     */
+    private void receiveRelayedMessage0(RelayedMessage message) {
         try {
             // if (!started) {
             // // Do not process this message
