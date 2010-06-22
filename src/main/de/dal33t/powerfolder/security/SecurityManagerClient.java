@@ -193,8 +193,8 @@ public class SecurityManagerClient extends PFComponent implements
             return null;
         }
         if (ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()) {
-            if (isFiner()) {
-                logFiner("Not trying to refresh account of " + node
+            if (isWarning()) {
+                logWarning("Not trying to refresh account of " + node
                     + ". Running handleMessage thread of Server");
             }
             return null;
@@ -206,7 +206,7 @@ public class SecurityManagerClient extends PFComponent implements
         AccountInfo aInfo;
         try {
             // TODO Check if really required
-            synchronized (requestLock) {
+            //synchronized (requestLock) {
                 // After we are request lock owner. Check if other thread
                 // probably has refreshed the session we are looking for.
                 session = sessions.get(node);
@@ -228,7 +228,7 @@ public class SecurityManagerClient extends PFComponent implements
                 if (CACHE_ENABLED) {
                     sessions.put(node, new Session(aInfo));
                 }
-            }
+            //}
         } catch (RemoteCallException e) {
             logWarning("Unable to retrieve account info for " + node + ". " + e);
             logFiner(e);
