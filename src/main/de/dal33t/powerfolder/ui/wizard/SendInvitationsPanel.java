@@ -29,7 +29,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -159,9 +163,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 rte = e;
             }
             for (Member node : candidates) {
-                if (node.getAccountInfo() != null
-                    && node.getAccountInfo().getUsername().equalsIgnoreCase(
-                        invitee))
+                AccountInfo aInfo = node.getAccountInfo();
+                if (aInfo != null && aInfo.getUsername() != null
+                    && aInfo.getUsername().equalsIgnoreCase(invitee))
                 {
                     InvitationUtil.invitationToNode(getController(),
                         invitation, node);
@@ -362,7 +366,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         List<String> candidateAddresses = new ArrayList<String>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             AccountInfo aInfo = friend.getAccountInfo();
-            if (aInfo != null) {
+            if (aInfo != null && aInfo.getUsername() != null) {
                 // FIXME Shows email unscrambled!
                 candidateAddresses.add(aInfo.getUsername());
             }
@@ -374,7 +378,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 continue;
             }
             AccountInfo aInfo = node.getAccountInfo();
-            if (aInfo != null) {
+            if (aInfo != null && aInfo.getUsername() != null) {
                 // FIXME Shows email unscrambled!
                 candidateAddresses.add(aInfo.getUsername());
             }

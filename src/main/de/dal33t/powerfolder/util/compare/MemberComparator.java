@@ -184,6 +184,12 @@ public class MemberComparator implements Comparator<Member> {
             if (a2 == null) {
                 return -1;
             }
+            if (a1.getUsername() == null) {
+                return a2.getUsername() == null ? 0 : 1;
+            }
+            if (a2.getUsername() == null) {
+                return -1;
+            }
             return a1.getUsername().compareTo(a2.getUsername());
         } else {
             LOG.severe("Unknow comparing type: " + type);

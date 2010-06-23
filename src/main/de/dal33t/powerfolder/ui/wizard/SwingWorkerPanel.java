@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
@@ -174,6 +175,8 @@ public class SwingWorkerPanel extends PFWizardPanel {
                 if (StringUtils.isBlank(msg)) {
                     msg = e.toString();
                 }
+                LOG.warning(msg);
+                LOG.log(Level.FINE, e.toString(), e);
                 showProblem(msg);
             }
         }

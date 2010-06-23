@@ -49,8 +49,10 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
             // Sort by type.
             boolean m1f = member1.isFriend();
             boolean m2f = member2.isFriend();
-            boolean m1cc = member1.isCompletelyConnected() || member1.isMySelf();
-            boolean m2cc = member2.isCompletelyConnected() || member2.isMySelf();
+            boolean m1cc = member1.isCompletelyConnected()
+                || member1.isMySelf();
+            boolean m2cc = member2.isCompletelyConnected()
+                || member2.isMySelf();
             if (m1f != m2f) {
                 return m1f ? 1 : -1;
             }
@@ -120,6 +122,12 @@ public enum FolderMemberComparator implements Comparator<FolderMember> {
                 return a2 == null ? 0 : 1;
             }
             if (a2 == null) {
+                return -1;
+            }
+            if (a1.getUsername() == null) {
+                return a2.getUsername() == null ? 0 : 1;
+            }
+            if (a2.getUsername() == null) {
                 return -1;
             }
             return a1.getUsername().compareTo(a2.getUsername());
