@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: DownloadsInformationCard.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: DownloadsInformationCard.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.downloads;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -44,8 +45,9 @@ import java.util.TimerTask;
 /**
  * Information card for a folder. Includes files, members and settings tabs.
  */
-public class DownloadsInformationCard extends InformationCard
-        implements HasDetailsPanel {
+public class DownloadsInformationCard extends InformationCard implements
+    HasDetailsPanel
+{
 
     private JPanel uiComponent;
     private JPanel toolBar;
@@ -63,19 +65,21 @@ public class DownloadsInformationCard extends InformationCard
     private JLabel downloadCounterLabel;
     private JLabel activeDownloadCountLabel;
     private JLabel completedDownloadCountLabel;
-
+    private DelayedUpdater updater;
+    
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public DownloadsInformationCard(Controller controller) {
         super(controller);
+        updater = new DelayedUpdater(controller);
     }
 
     /**
      * Gets the image for the card.
-     *
+     * 
      * @return
      */
     public Image getCardImage() {
@@ -84,7 +88,7 @@ public class DownloadsInformationCard extends InformationCard
 
     /**
      * Gets the title for the card.
-     *
+     * 
      * @return
      */
     public String getCardTitle() {
@@ -93,7 +97,7 @@ public class DownloadsInformationCard extends InformationCard
 
     /**
      * Gets the ui component after initializing and building if necessary
-     *
+     * 
      * @return
      */
     public JComponent getUIComponent() {
@@ -109,12 +113,13 @@ public class DownloadsInformationCard extends InformationCard
      */
     private void initialize() {
         cleanupLabel = new JLabel();
-        cleanupLabel.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+        cleanupLabel
+            .setToolTipText(Translation
+                .getTranslation("downloads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
-        tablePanel = new DownloadsTablePanel(getController(), 
-                openDownloadAction, abortDownloadsAction,
-                clearCompletedDownloadsAction);
+        tablePanel = new DownloadsTablePanel(getController(),
+            openDownloadAction, abortDownloadsAction,
+            clearCompletedDownloadsAction);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         fileDetailsPanel = new FileDetailsPanel(getController(), true);
@@ -122,24 +127,25 @@ public class DownloadsInformationCard extends InformationCard
         detailsPanel = createDetailsPanel();
         detailsPanel.setVisible(false);
         buildStatsPanel();
-        update();
+        update0();
     }
 
     private void buildStatsPanel() {
-        FormLayout layout = new FormLayout("3dlu, pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
-                "pref");                          //         active      sep1        comp        sep2        count
+        FormLayout layout = new FormLayout(
+            "3dlu, pref:grow, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
+            "pref"); // active sep1 comp sep2 count
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         activeDownloadCountLabel = new JLabel();
         builder.add(activeDownloadCountLabel, cc.xy(3, 1));
         JSeparator sep1 = new JSeparator(SwingConstants.VERTICAL);
-                    sep1.setPreferredSize(new Dimension(2, 12));
+        sep1.setPreferredSize(new Dimension(2, 12));
         builder.add(sep1, cc.xy(5, 1));
         completedDownloadCountLabel = new JLabel();
         builder.add(completedDownloadCountLabel, cc.xy(7, 1));
         JSeparator sep2 = new JSeparator(SwingConstants.VERTICAL);
-                    sep2.setPreferredSize(new Dimension(2, 12));
+        sep2.setPreferredSize(new Dimension(2, 12));
         builder.add(sep2, cc.xy(9, 1));
         downloadCounterLabel = new JLabel();
         builder.add(downloadCounterLabel, cc.xy(11, 1));
@@ -155,22 +161,25 @@ public class DownloadsInformationCard extends InformationCard
         abortDownloadsAction = new AbortDownloadAction();
         openDownloadAction = new OpenFileAction();
 
-        clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(getController());
+        clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(
+            getController());
 
         autoCleanupCB = new JCheckBox(Translation
             .getTranslation("downloads_information_card.auto_cleanup.name"));
-        autoCleanupCB.setToolTipText(Translation
-            .getTranslation("downloads_information_card.auto_cleanup.description"));
+        autoCleanupCB
+            .setToolTipText(Translation
+                .getTranslation("downloads_information_card.auto_cleanup.description"));
         autoCleanupCB.setSelected(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
             .getValueBoolean(getController()));
         autoCleanupCB.addActionListener(new MyActionListener());
 
         cleanupSlider = new JSlider(0, 10,
-                ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                        .getValueInt(getController())) {
+            ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController()))
+        {
             public Dimension getPreferredSize() {
                 return new Dimension(20, (int) super.getPreferredSize()
-                        .getSize().getHeight());
+                    .getSize().getHeight());
             }
         };
         cleanupSlider.setMinorTickSpacing(1);
@@ -178,8 +187,9 @@ public class DownloadsInformationCard extends InformationCard
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
-        cleanupSlider.setToolTipText(Translation.getTranslation(
-                "downloads_information_card.auto_cleanup.frequency_tip"));
+        cleanupSlider
+            .setToolTipText(Translation
+                .getTranslation("downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         bar.addGridded(new JToggleButton(new DetailsAction(getController())));
@@ -202,8 +212,8 @@ public class DownloadsInformationCard extends InformationCard
      */
     private void buildUIComponent() {
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref:grow, 3dlu",
-                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref, pref");
-                //     tools       sep         table                 dets  sep   stats
+            "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu, pref, pref, pref");
+        // tools sep table dets sep stats
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -230,11 +240,18 @@ public class DownloadsInformationCard extends InformationCard
         detailsPanel.setVisible(!detailsPanel.isVisible());
     }
 
+    public void update() {
+        updater.schedule(new Runnable() {
+            public void run() {
+                update0();
+            }
+        });
+    }
+
     /**
      * Update actions and details.
      */
-    public void update() {
-
+    private void update0() {
         boolean singleCompleteSelected = tablePanel.isSingleCompleteSelected();
         boolean rowsExist = tablePanel.isRowsExist();
         boolean incompleteSelected = tablePanel.isIncompleteSelected();
@@ -248,16 +265,17 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     private void updateCleanupLabel() {
-        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .setValue(getController(), String.valueOf(cleanupSlider.getValue()));
+        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
+            getController(), String.valueOf(cleanupSlider.getValue()));
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
-            cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.immediate"));
+            cleanupLabel
+                .setText(Translation
+                    .getTranslation("downloads_information_card.auto_cleanup.immediate"));
         } else {
             cleanupLabel.setText(Translation.getTranslation(
-                    "downloads_information_card.auto_cleanup.days",
-                    String.valueOf(cleanupSlider.getValue())));
+                "downloads_information_card.auto_cleanup.days", String
+                    .valueOf(cleanupSlider.getValue())));
         }
     }
 
@@ -269,29 +287,29 @@ public class DownloadsInformationCard extends InformationCard
     private void displayStats() {
 
         int activeDownloadCount = tablePanel.countActiveDownloadCount();
-        activeDownloadCountLabel.setText(Translation.getTranslation(
-                "status.active_download_count", String.valueOf(
-                        activeDownloadCount)));
+        activeDownloadCountLabel.setText(Translation
+            .getTranslation("status.active_download_count", String
+                .valueOf(activeDownloadCount)));
 
         int completedDownloadCount = tablePanel.countCompletedDownloadCount();
         completedDownloadCountLabel.setText(Translation.getTranslation(
-                "status.completed_download_count", String.valueOf(
-                        completedDownloadCount)));
+            "status.completed_download_count", String
+                .valueOf(completedDownloadCount)));
 
         double kbs = getController().getTransferManager().getDownloadCounter()
-                .calculateCurrentKBS();
+            .calculateCurrentKBS();
         downloadCounterLabel.setText(Translation.getTranslation(
-                "status.download", Format.formatDecimal(kbs)));
+            "status.download", Format.formatDecimal(kbs)));
     }
 
-    ///////////////////
+    // /////////////////
     // Inner Classes //
-    ///////////////////
+    // /////////////////
 
     private class OpenFileAction extends BaseAction {
         OpenFileAction() {
-            super("action_open_file",
-                    DownloadsInformationCard.this.getController());
+            super("action_open_file", DownloadsInformationCard.this
+                .getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -301,15 +319,15 @@ public class DownloadsInformationCard extends InformationCard
 
     /**
      * Aborts the selected downloads
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.3 $
      */
     private class AbortDownloadAction extends BaseAction {
 
         AbortDownloadAction() {
-            super("action_abort_download", 
-                    DownloadsInformationCard.this.getController());
+            super("action_abort_download", DownloadsInformationCard.this
+                .getController());
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -373,8 +391,8 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     /**
-     * Listener to the underlying table model.
-     * Detects changes to row details and updates actions.
+     * Listener to the underlying table model. Detects changes to row details
+     * and updates actions.
      */
     private class MyTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
@@ -383,8 +401,8 @@ public class DownloadsInformationCard extends InformationCard
     }
 
     /**
-     * Listener to the underlying table.
-     * Detects changes to row selections and updates actions.
+     * Listener to the underlying table. Detects changes to row selections and
+     * updates actions.
      */
     private class MyListSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
@@ -401,11 +419,10 @@ public class DownloadsInformationCard extends InformationCard
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             getUIController().getTransferManagerModel()
-                    .getDownloadsAutoCleanupModel().setValue(
-                autoCleanupCB.isSelected());
-            ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                .setValue(getController(), String.valueOf(autoCleanupCB
-                    .isSelected()));
+                .getDownloadsAutoCleanupModel().setValue(
+                    autoCleanupCB.isSelected());
+            ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP.setValue(getController(),
+                String.valueOf(autoCleanupCB.isSelected()));
             getController().saveConfig();
             enableCleanupComponents();
         }
