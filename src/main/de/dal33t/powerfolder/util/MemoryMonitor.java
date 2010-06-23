@@ -128,13 +128,14 @@ public class MemoryMonitor implements Runnable {
             // }
             // }
 
-            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 500;
+            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 1023;
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter(controller.getL4JININame()));
                 log.fine("Writing new ini...");
                 pw.println("-Xms16m");
-                pw.println("-Xmx512m");
+                pw.println("-Xmx1024m");
+                pw.println("-XX:MaxPermSize=256m");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
