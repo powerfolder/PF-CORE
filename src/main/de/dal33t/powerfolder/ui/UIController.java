@@ -214,7 +214,8 @@ public class UIController extends PFComponent {
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
         getController().addInvitationHandler(new MyInvitationHandler());
-        getController().addAskForFriendshipListener(new MyAskForFriendshipListener());
+        getController().addAskForFriendshipListener(
+            new MyAskForFriendshipListener());
     }
 
     /**
@@ -904,6 +905,7 @@ public class UIController extends PFComponent {
             // Ask for more sync options on that folder if on project sync
             new SyncFolderPanel(getController(), folder).open();
         } else {
+            getController().setSilentMode(false);
 
             // Let other nodes scan now!
             folder.broadcastScanCommand();
@@ -1263,9 +1265,9 @@ public class UIController extends PFComponent {
                         .formatBytes(nTotalBytes), String.valueOf(folders
                         .size()));
 
-                handleNotice(new SimpleNotificationNotice(
-                        Translation.getTranslation("check_status.title"),
-                    text1 + "\n\n" + text2));
+                handleNotice(new SimpleNotificationNotice(Translation
+                    .getTranslation("check_status.title"), text1 + "\n\n"
+                    + text2));
             }
         }
     }
@@ -1285,16 +1287,17 @@ public class UIController extends PFComponent {
 
     /**
      * Show a chat message popup notification.
-     *
+     * 
      * @param title
-     *          message title
+     *            message title
      * @param message
-     *          the message to popup
+     *            the message to popup
      */
     public void showChatNotification(String title, String message) {
         if (started && !getController().isShuttingDown()) {
             if ((Boolean) applicationModel.getChatNotificationsValueModel()
-                .getValue()) {
+                .getValue())
+            {
                 NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message, true);
                 notificationHandler.show();
@@ -1303,20 +1306,21 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * This handles a notice object.
-     * If it is a notification, show in a notification handler.
-     * If it is actionable, add to the app model notices.
-     *
+     * This handles a notice object. If it is a notification, show in a
+     * notification handler. If it is actionable, add to the app model notices.
+     * 
      * @param notice
-     *          the Notice to handle
+     *            the Notice to handle
      */
     public void handleNotice(Notice notice) {
         if (started && !getController().isShuttingDown()) {
             if ((Boolean) applicationModel.getSystemNotificationsValueModel()
-                .getValue() && notice.isNotification()) {
+                .getValue()
+                && notice.isNotification())
+            {
                 NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), notice.getTitle(), notice.getSummary(),
-                        true);
+                    true);
                 notificationHandler.show();
             }
 
@@ -1340,10 +1344,10 @@ public class UIController extends PFComponent {
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(final LocalMassDeletionEvent event) {
-            WarningNotice notice = new WarningNotice(
-                    Translation.getTranslation("warning_notice.title"),
-                    Translation.getTranslation("warning_notice.mass_deletion"),
-                    new Runnable() {
+            WarningNotice notice = new WarningNotice(Translation
+                .getTranslation("warning_notice.title"), Translation
+                .getTranslation("warning_notice.mass_deletion"), new Runnable()
+            {
                 public void run() {
                     int response = DialogFactory
                         .genericDialog(
@@ -1398,34 +1402,35 @@ public class UIController extends PFComponent {
                         .getName());
             }
 
-            WarningNotice notice = new WarningNotice(
-                    getController(),
-                    Translation.getTranslation("warning_notice.title"),
-                    Translation.getTranslation("warning_notice.mass_deletion"),
-                    message);
+            WarningNotice notice = new WarningNotice(getController(),
+                Translation.getTranslation("warning_notice.title"), Translation
+                    .getTranslation("warning_notice.mass_deletion"), message);
             applicationModel.getNoticesModel().addNotice(notice);
         }
     }
 
     private class MyInvitationHandler implements InvitationHandler {
         public void gotInvitation(Invitation invitation, boolean sendIfJoined) {
-            Notice notice = new InvitationNotice(Translation.getTranslation(
-                    "notice.invitation.title"), Translation.getTranslation(
-                    "notice.invitation.summary", invitation.getInvitor()
-                            .getNick()), invitation);
+            Notice notice = new InvitationNotice(Translation
+                .getTranslation("notice.invitation.title"), Translation
+                .getTranslation("notice.invitation.summary", invitation
+                    .getInvitor().getNick()), invitation);
             handleNotice(notice);
         }
     }
 
-    private class MyAskForFriendshipListener implements AskForFriendshipListener {
+    private class MyAskForFriendshipListener implements
+        AskForFriendshipListener
+    {
         public void askForFriendship(AskForFriendshipEvent event) {
             if (PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
-                            .getValueBoolean(getController())) {
+                .getValueBoolean(getController()))
+            {
                 Notice notice = new AskForFriendshipEventNotice(Translation
-                        .getTranslation("notice.ask_for_friendship.title"),
-                        Translation
-                        .getTranslation("notice.ask_for_friendship.summary",
-                        event.getMemberInfo().getNick()), event);
+                    .getTranslation("notice.ask_for_friendship.title"),
+                    Translation.getTranslation(
+                        "notice.ask_for_friendship.summary", event
+                            .getMemberInfo().getNick()), event);
                 handleNotice(notice);
             }
         }
