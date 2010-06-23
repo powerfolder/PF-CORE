@@ -265,7 +265,7 @@ public class Icons {
 
     /**
      * Returns the icons for the specified id.
-     *
+     * 
      * @param id
      *            the icon id
      * @return the icon
@@ -320,8 +320,8 @@ public class Icons {
         }
 
         icon = new ImageIcon(iconURL);
-        if (log.isLoggable(Level.FINE)) {
-            log.fine("Cached icon " + id);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Cached icon " + id);
         }
         ID_ICON_MAP.put(id, icon);
         return icon;
@@ -350,7 +350,9 @@ public class Icons {
         URL imageURL = Thread.currentThread().getContextClassLoader()
             .getResource(iconId);
         image = Toolkit.getDefaultToolkit().getImage(imageURL);
-        log.fine("Cached image " + id);
+        if (log.isLoggable(Level.FINER)) {
+            log.finer("Cached image " + id);
+        }
         ID_IMAGE_MAP.put(id, image);
 
         return image;
