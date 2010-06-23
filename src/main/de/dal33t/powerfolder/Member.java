@@ -233,7 +233,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (aInfo == null) {
             return false;
         }
-        return aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0;
+        return aInfo.getUsername() != null
+            && aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0;
     }
 
     public String getHostName() {
