@@ -313,7 +313,9 @@ public class UDTSocketConnectionManager extends PFComponent {
     }
 
     private void relayMessage(final Member sender, final UDTMessage msg) {
-        logFiner("Relaying UDT message: " + msg);
+        if (isFiner()) {
+            logFiner("Relaying UDT message: " + msg);
+        }
         // Relay message
         Member dMember = msg.getDestination().getNode(getController(), false);
         if (dMember == null || !dMember.isCompletelyConnected()) {
