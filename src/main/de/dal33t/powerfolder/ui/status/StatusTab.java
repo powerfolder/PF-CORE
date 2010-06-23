@@ -55,7 +55,6 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerModelListener;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -90,7 +89,6 @@ public class StatusTab extends PFUIComponent {
     private StatusTabLine sizeOfFoldersLine;
     private StatusTabLine filesAvailableLine;
     private StatusTabLine newNoticesLine;
-    private StatusTabLine computersLine;
     private StatusTabLine downloadsLine;
     private StatusTabLine uploadsLine;
     private final ValueModel downloadsCountVM;
@@ -200,9 +198,6 @@ public class StatusTab extends PFUIComponent {
             .getTranslation("status_tab.files_uploads"), null, false, true,
             getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction(), null);
-        computersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.computers"), Translation
-            .getTranslation("status_tab.no_computers"), false, true, null, null);
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
@@ -242,7 +237,6 @@ public class StatusTab extends PFUIComponent {
         updateTransferText();
         updateFoldersText();
         recalculateFilesAvailable();
-        updateComputers();
         updateOnlineStorageDetails();
         updateLicenseDetails();
         updateNewNoticesText();
@@ -279,8 +273,6 @@ public class StatusTab extends PFUIComponent {
             new MyTransferManagerListener());
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
-        getUIController().getApplicationModel().getNodeManagerModel()
-            .addNodeManagerModelListener(new MyNodeManagerModelListener());
         client.addListener(new MyServerClientListener());
     }
 
@@ -434,20 +426,6 @@ public class StatusTab extends PFUIComponent {
             }
         }
         filesAvailableLine.setValue(count);
-    }
-
-    /**
-     * Updates the information about the number of computers. This is affected
-     * by the type selection in the computers tab.
-     */
-    private void updateComputers() {
-        // FIXME This calculation depends on FILTER setting.
-        // int nodeCount = getUIController().getApplicationModel()
-        // .getNodeManagerModel().getSize();
-        // computersLine.setValue(nodeCount);
-
-        // #2002 Don't show.
-        computersLine.setValue(0);
     }
 
     private void updateLicenseDetails() {
@@ -784,15 +762,6 @@ public class StatusTab extends PFUIComponent {
             updateTransferText();
         }
 
-    }
-
-    private class MyNodeManagerModelListener implements
-        NodeManagerModelListener
-    {
-
-        public void changed() {
-            updateComputers();
-        }
     }
 
     private class MyServerClientListener implements ServerClientListener {
