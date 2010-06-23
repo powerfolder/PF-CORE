@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -363,12 +364,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     private List<String> getCandidatesAddresses() {
-        List<String> candidateAddresses = new ArrayList<String>();
+        List<String> candidateAddresses = new LinkedList<String>();
         for (Member friend : getController().getNodeManager().getFriends()) {
             AccountInfo aInfo = friend.getAccountInfo();
             if (aInfo != null && aInfo.getUsername() != null) {
                 // FIXME Shows email unscrambled!
-                candidateAddresses.add(aInfo.getUsername());
+                candidateAddresses.add(0, aInfo.getUsername());
             }
             candidateAddresses.add(friend.getNick());
         }
@@ -380,7 +381,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
             AccountInfo aInfo = node.getAccountInfo();
             if (aInfo != null && aInfo.getUsername() != null) {
                 // FIXME Shows email unscrambled!
-                candidateAddresses.add(aInfo.getUsername());
+                candidateAddresses.add(0, aInfo.getUsername());
             }
             candidateAddresses.add(node.getNick());
         }
