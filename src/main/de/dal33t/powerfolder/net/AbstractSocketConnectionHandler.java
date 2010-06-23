@@ -1033,7 +1033,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         + AbstractSocketConnectionHandler.this);
                     // do not break connection
                 } catch (RuntimeException e) {
-                    logSevere("RuntimeException", e);
+                    logSevere("RuntimeException. " + e, e);
                     shutdownWithMember();
                     throw e;
                 }
