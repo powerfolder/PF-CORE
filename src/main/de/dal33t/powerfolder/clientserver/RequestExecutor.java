@@ -71,8 +71,8 @@ public class RequestExecutor extends PFComponent {
         response = null;
         requestId = request.getRequestId();
 
-        if (isFiner()) {
-            logFiner("Sending request to " + node.getNick() + " (" + requestId
+        if (isInfo()) {
+            logInfo("Sending request to " + node.getNick() + " (" + requestId
                 + "): " + request);
         }
         // Listen to receive the response
@@ -91,9 +91,9 @@ public class RequestExecutor extends PFComponent {
                 throw new ConnectionException("Timeout to " + node.getNick());
             }
 
-            if (isFiner()) {
-                logFiner("Response from " + node.getNick() + " (" + requestId
-                    + "): " + response);
+            if (isInfo()) {
+                logInfo("Response from " + node.getNick() + " (" + requestId
+                    + "): " + response + " to " + request);
             }
         } finally {
             notifyAndcleanup();
