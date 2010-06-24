@@ -67,6 +67,7 @@ import de.dal33t.powerfolder.task.RemoveComputerFromAccountTask;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Filter;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
@@ -681,15 +682,16 @@ public class NodeManager extends PFComponent {
             // add to broadcastlist
             nodesWentOnline.add(node.getInfo());
 
-//            if (!mySelf.isSupernode()
-//                && countConnectedSupernodes() >= Constants.N_SUPERNODES_TO_CONNECT)
-//            {
-//                // # of necessary connections probably reached, avoid more
-//                // reconnection tries.
-//                logFine("Max # of connections reached. "
-//                    + "Rebuilding reconnection queue");
-//                getController().getReconnectManager().buildReconnectionQueue();
-//            }
+            // if (!mySelf.isSupernode()
+            // && countConnectedSupernodes() >=
+            // Constants.N_SUPERNODES_TO_CONNECT)
+            // {
+            // // # of necessary connections probably reached, avoid more
+            // // reconnection tries.
+            // logFine("Max # of connections reached. "
+            // + "Rebuilding reconnection queue");
+            // getController().getReconnectManager().buildReconnectionQueue();
+            // }
             if (getController().getIOProvider().getRelayedConnectionManager()
                 .isRelay(node.getInfo()))
             {
@@ -1126,6 +1128,20 @@ public class NodeManager extends PFComponent {
      * @param message
      */
     public void broadcastMessage(final Message message) {
+        broadcastMessage(message, null);
+    }
+
+    /**
+     * Broadcasts a message to all nodes, does not block. Message enqueued to be
+     * sent asynchron
+     * 
+     * @param message
+     * @param filter
+     *            to filter the members to send the messages to
+     */
+    public void broadcastMessage(final Message message,
+        final Filter<Member> filter)
+    {
         if (!started) {
             logWarning("Not started. Not broadcasting message: " + message);
             return;
@@ -1137,6 +1153,10 @@ public class NodeManager extends PFComponent {
             public void run() {
                 for (Member node : knownNodes.values()) {
                     if (node.isCompletelyConnected()) {
+                        if (filter != null && !filter.accept(node)) {
+                            // Skip
+                            continue;
+                        }
                         // Only broadcast after completely connected
                         node.sendMessageAsynchron(message, null);
                         try {
