@@ -154,11 +154,10 @@ public class FolderWatcher extends PFComponent {
         }
 
         String path = folder.getLocalBase().getAbsolutePath();
-        int mask = JNotify.FILE_CREATED | JNotify.FILE_DELETED
-            | JNotify.FILE_MODIFIED | JNotify.FILE_RENAMED;
         boolean watchSubtree = true;
         try {
-            watchID = JNotify.addWatch(path, mask, watchSubtree, listener);
+            watchID = JNotify.addWatch(path, JNotify.FILE_ANY, watchSubtree,
+                listener);
             logFine("Initialized filesystem watch on " + path + " / " + folder);
         } catch (JNotifyException e) {
             logSevere("Unable to initialize filesystem watch for " + folder
