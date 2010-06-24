@@ -1723,7 +1723,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         new Filter<Member>() {
                             // Don't send the message back to the source.
                             public boolean accept(Member item) {
-                                return !this.equals(item);
+                                return !this.equals(item) && !item.isServer();
                             }
                         });
                 }
