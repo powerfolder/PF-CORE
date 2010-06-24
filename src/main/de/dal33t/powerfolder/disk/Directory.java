@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.DiskItem;
@@ -413,9 +414,11 @@ public class Directory implements Comparable<Directory>, DiskItem {
         String theRest = relativePath.substring(index + 1);
 
         if (StringUtils.isBlank(dirName) || StringUtils.isBlank(theRest)) {
-            log.warning("Got empty directory " + this + ", dirname: " + dirName
-                + ", rest: " + theRest + ", relpath: " + relativePath + " "
-                + fileInfo.toDetailString());
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Got empty directory " + this + ", dirname: "
+                    + dirName + ", rest: " + theRest + ", relpath: "
+                    + relativePath + " " + fileInfo.toDetailString());
+            }
         }
 
         Directory dir;
