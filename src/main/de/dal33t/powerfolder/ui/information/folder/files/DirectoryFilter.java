@@ -387,6 +387,7 @@ public class DirectoryFilter extends FilterModel {
                 localCount);
 
             // Add FileInfos from subdirs to flat model.
+            // Performance bottleneck. This runs O(n^2) !!!
             if (flatFilteredDirectoryModel != null) {
                 for (FileInfo fileInfo : subModel.getFilesRecursive()) {
                     if (!flatFilteredDirectoryModel.getFileInfos().contains(
