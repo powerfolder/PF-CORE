@@ -92,6 +92,8 @@ public class SecurityManagerClient extends PFComponent implements
                 + username);
     }
 
+    private final Object requestPermissionLock = new Object();
+
     public boolean hasPermission(Account account, Permission permission) {
         return hasPermission(account != null ? account.createInfo() : null,
             permission);
@@ -117,10 +119,22 @@ public class SecurityManagerClient extends PFComponent implements
             }
             if (hasPermission == null) {
                 if (client.isConnected()) {
-                    hasPermission = Boolean.valueOf(client.getSecurityService()
-                        .hasPermission(accountInfo, permission));
-                    cache.set(permission, hasPermission);
-                    source = "recvd";
+                    synchronized (requestPermissionLock) {
+                        // Re-check cache
+                        PermissionsCacheSegment secondCheck = permissionsCacheAccounts
+                            .get(nullSafeGet(accountInfo));
+                        hasPermission = secondCheck != null ? secondCheck
+                            .hasPermission(permission) : null;
+                        if (hasPermission == null) {
+                            hasPermission = Boolean.valueOf(client
+                                .getSecurityService().hasPermission(
+                                    accountInfo, permission));
+                            cache.set(permission, hasPermission);
+                            source = "recvd";
+                        } else {
+                            source = "cache";
+                        }
+                    }
                 } else {
                     hasPermission = hasPermissionDisconnected(permission);
                     source = "nocon";
@@ -163,7 +177,7 @@ public class SecurityManagerClient extends PFComponent implements
         }
     }
 
-    private final Object requestLock = new Object();
+    private final Object requestAccountInfoLock = new Object();
 
     /**
      * Gets the {@link AccountInfo} for the given node. Retrieves it from server
@@ -206,7 +220,7 @@ public class SecurityManagerClient extends PFComponent implements
         AccountInfo aInfo;
         try {
             // TODO Check if really required
-            //synchronized (requestLock) {
+            synchronized (requestAccountInfoLock) {
                 // After we are request lock owner. Check if other thread
                 // probably has refreshed the session we are looking for.
                 session = sessions.get(node);
@@ -228,7 +242,7 @@ public class SecurityManagerClient extends PFComponent implements
                 if (CACHE_ENABLED) {
                     sessions.put(node, new Session(aInfo));
                 }
-            //}
+            }
         } catch (RemoteCallException e) {
             logWarning("Unable to retrieve account info for " + node + ". " + e);
             logFiner(e);
@@ -270,10 +284,12 @@ public class SecurityManagerClient extends PFComponent implements
             if (reqNodes.isEmpty()) {
                 return;
             }
+            logWarning("Pre-fetching account infos for " + nodes.size()
+                + " nodes");
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
-            if (isFine()) {
-                logFine("Retrieved " + res.size() + " AccountInfos for "
+            if (isWarning()) {
+                logWarning("Retrieved " + res.size() + " AccountInfos for "
                     + reqNodes.size() + " requested of " + nodes.size()
                     + " nodes: " + res);
             }
