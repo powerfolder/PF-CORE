@@ -92,6 +92,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.Filter;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -1718,7 +1719,13 @@ public class Member extends PFComponent implements Comparable<Member> {
                 asc.decreaseTTL();
                 if (asc.isAlive()) {
                     // Continue broadcast.
-                    getController().getNodeManager().broadcastMessage(asc);
+                    getController().getNodeManager().broadcastMessage(asc,
+                        new Filter<Member>() {
+                            // Don't send the message back to the source.
+                            public boolean accept(Member item) {
+                                return !this.equals(item);
+                            }
+                        });
                 }
             } else if (message instanceof ConfigurationLoadRequest) {
                 if (isServer()) {
