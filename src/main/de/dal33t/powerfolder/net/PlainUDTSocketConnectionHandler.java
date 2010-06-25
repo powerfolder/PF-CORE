@@ -106,6 +106,6 @@ public class PlainUDTSocketConnectionHandler extends
         } else {
             remoteInfo = "<unknown>";
         }
-        return "PSUDTConnectionHandler " + remoteInfo;
+        return getClass().getName() + " " + remoteInfo;
     }
 }
