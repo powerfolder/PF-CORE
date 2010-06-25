@@ -102,7 +102,7 @@ public class MainTabbedPane extends PFUIComponent {
                 .toUpperCase(key.charAt(0)));
             uiComponent.setToolTipTextAt(START_INDEX, Translation
                 .getTranslation("main_tabbed_pane.start.description"));
-            uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.START));
+            uiComponent.setIconAt(START_INDEX, Icons.getIconById(Icons.STATUS));
 
             key = Translation.getTranslation("main_tabbed_pane.status.key");
             uiComponent.setMnemonicAt(STATUS_INDEX, (int) Character
