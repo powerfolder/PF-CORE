@@ -110,6 +110,6 @@ public class PlainSocketConnectionHandler extends
         } else {
             remoteInfo = "<unknown>";
         }
-        return "PSConnectionHandler " + remoteInfo;
+        return getClass().getName() + " " + remoteInfo;
     }
 }
