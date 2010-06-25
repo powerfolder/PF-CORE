@@ -160,7 +160,6 @@ public class Icons {
     public static final String INACTIVE = "inactive.icon";
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
-    public static final String START = "powerfolder_16.icon";
 
     // Sync icons
     public static final String SYNC = "sync.icon";
