@@ -215,17 +215,17 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         List<FileInfo> items = new ArrayList<FileInfo>();
         Domain domain = getDomain(domainStr);
         for (DirectoryInfo dInfo : domain.directories.values()) {
-//            if (filter.isExcluded(dInfo)) {
-//                continue;
-//            }
+            // if (filter.isExcluded(dInfo)) {
+            // continue;
+            // }
             if (isInSubDir(dInfo, path, recursive) && !pathIsDir(dInfo, path)) {
                 items.add(dInfo);
             }
         }
         for (FileInfo fInfo : domain.files.values()) {
-//            if (filter.isExcluded(fInfo)) {
-//                continue;
-//            }
+            // if (filter.isExcluded(fInfo)) {
+            // continue;
+            // }
             if (isInSubDir(fInfo, path, recursive)) {
                 items.add(fInfo);
             }
@@ -282,6 +282,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private static class Domain {
         private final ConcurrentMap<FileInfo, FileInfo> files = new ConcurrentHashMap<FileInfo, FileInfo>();
         private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = new ConcurrentHashMap<DirectoryInfo, DirectoryInfo>();
+
+        public String toString() {
+            return "Domain: " + files.size() + " files, " + directories.size()
+                + " dirs";
+        }
     }
 
 }
