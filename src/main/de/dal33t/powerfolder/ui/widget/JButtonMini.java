@@ -32,6 +32,8 @@ import javax.swing.JButton;
 
 import com.jgoodies.forms.factories.Borders;
 
+import de.dal33t.powerfolder.event.WeakActionListener;
+import de.dal33t.powerfolder.event.WeakPropertyChangeListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 
 /**
@@ -39,6 +41,9 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
  * Synthetica features to do border.
  */
 public class JButtonMini extends JButton {
+
+    private MyActionListener actionListener;
+    private MyPropertyChangeListener propChangeListener;
 
     /**
      * Mini button that is bound to a an action
@@ -50,16 +55,11 @@ public class JButtonMini extends JButton {
             .getValue(Action.SHORT_DESCRIPTION));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                action.actionPerformed(e);
-            }
-        });
-        action.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                setEnabled(action.isEnabled());
-            }
-        });
+        actionListener = new MyActionListener(action);
+        addActionListener(new WeakActionListener(actionListener, this));
+        propChangeListener = new MyPropertyChangeListener(action);
+        action.addPropertyChangeListener(new WeakPropertyChangeListener(
+            propChangeListener, action));
         setEnabled(action.isEnabled());
     }
 
@@ -90,6 +90,32 @@ public class JButtonMini extends JButton {
         if (value != null && value instanceof String) {
             String text = (String) value;
             setToolTipText(text);
+        }
+    }
+
+    private final class MyPropertyChangeListener implements
+        PropertyChangeListener
+    {
+        private final Action action;
+
+        private MyPropertyChangeListener(Action action) {
+            this.action = action;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            setEnabled(action.isEnabled());
+        }
+    }
+
+    private final class MyActionListener implements ActionListener {
+        private final Action action;
+
+        private MyActionListener(Action action) {
+            this.action = action;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            action.actionPerformed(e);
         }
     }
 }
