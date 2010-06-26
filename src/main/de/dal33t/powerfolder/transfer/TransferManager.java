@@ -19,7 +19,14 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -111,7 +119,7 @@ public class TransferManager extends PFComponent {
     /** A set of pending files, which should be downloaded */
     private final List<Download> pendingDownloads;
     /** The list of completed download */
-    private final List<DownloadManager> completedDownloads;
+    private final Collection<DownloadManager> completedDownloads;
 
     /** The trigger, where transfermanager waits on */
     private final Object waitTrigger = new Object();
@@ -170,7 +178,7 @@ public class TransferManager extends PFComponent {
         this.completedUploads = new CopyOnWriteArrayList<Upload>();
         this.dlManagers = new ConcurrentHashMap<FileInfo, DownloadManager>();
         this.pendingDownloads = new CopyOnWriteArrayList<Download>();
-        this.completedDownloads = new CopyOnWriteArrayList<DownloadManager>();
+        this.completedDownloads = new ConcurrentLinkedQueue<DownloadManager>();
         this.downloadsCount = new ConcurrentHashMap<Member, Integer>();
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
@@ -2295,8 +2303,8 @@ public class TransferManager extends PFComponent {
      * @return an unmodifiable collection reffering to the internal completed
      *         downloads list. May change after returned.
      */
-    public List<DownloadManager> getCompletedDownloadsCollection() {
-        return Collections.unmodifiableList(completedDownloads);
+    public Collection<DownloadManager> getCompletedDownloadsCollection() {
+        return Collections.unmodifiableCollection(completedDownloads);
     }
 
     /**
@@ -2422,7 +2430,7 @@ public class TransferManager extends PFComponent {
                     List<DownloadManager> dlms = tempMap
                         .get(download.getFile());
                     if (dlms == null) {
-                        dlms = new ArrayList<DownloadManager>();
+                        dlms = new ArrayList<DownloadManager>(1);
                         tempMap.put(download.getFile(), dlms);
                     }
 
@@ -2483,7 +2491,7 @@ public class TransferManager extends PFComponent {
         // Store pending downloads
         try {
             // Collect all download infos
-            List<Download> storedDownloads = new ArrayList<Download>(
+            List<Download> storedDownloads = new LinkedList<Download>(
                 pendingDownloads);
             int nPending = countActiveDownloads();
             int nCompleted = completedDownloads.size();
