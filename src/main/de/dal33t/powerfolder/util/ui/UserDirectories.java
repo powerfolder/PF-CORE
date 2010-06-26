@@ -127,7 +127,7 @@ public class UserDirectories {
             // No reason to show if already subscribed.
             for (Folder folder : controller.getFolderRepository().getFolders())
             {
-                if (folder.getDirectory().getAbsoluteFile().equals(directory)) {
+                if (folder.getLocalBase().equals(directory)) {
                     it.remove();
                     break;
                 }
