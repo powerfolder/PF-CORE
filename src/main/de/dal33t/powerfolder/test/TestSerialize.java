@@ -83,8 +83,7 @@ public class TestSerialize {
             files[i] = generateFileInfo();
         }
         FileList list = (FileList) FileList.createFileListMessagesForTest(
-            generateFolderInfo(), Arrays.asList(files),
-            new DiskItemFilter())[0];
+            generateFolderInfo(), Arrays.asList(files), new DiskItemFilter())[0];
         return list;
     }
 
@@ -98,10 +97,7 @@ public class TestSerialize {
     }
 
     private static MemberInfo generateMemberInfo() {
-        MemberInfo mInfo = new MemberInfo();
-        mInfo.nick = "noob";
-        mInfo.id = IdGenerator.makeId();
-        return mInfo;
+        return new MemberInfo("noob", IdGenerator.makeId(), null);
     }
 
     private static FolderInfo generateFolderInfo() {
