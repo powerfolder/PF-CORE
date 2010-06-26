@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -184,11 +185,13 @@ public class Directory implements Comparable<Directory>, DiskItem {
             }
         }
         if (hasSubDirectories()) {
-            for (String key : getSubdirectriesMap().keySet()) {
-                Directory dir = getSubdirectriesMap().get(key);
+            for (Entry<String, Directory> entry : getSubdirectriesMap()
+                .entrySet())
+            {
+                Directory dir = entry.getValue();
                 boolean dirRemoved = dir.removeUnusedFileInfoHolders();
                 if (dir.fileInfoHolderMap.isEmpty()) {
-                    getSubdirectriesMap().remove(key);
+                    getSubdirectriesMap().remove(entry.getKey());
                 }
                 removed = removed || dirRemoved;
             }
