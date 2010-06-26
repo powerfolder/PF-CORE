@@ -80,7 +80,7 @@ public abstract class AbstractDistribution extends Loggable implements
         // }
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
         if (nodeId != null) {
-            if (nodeId.toLowerCase().contains("WEBSERVICE")) {
+            if (nodeId.toUpperCase().contains("WEBSERVICE")) {
                 return true;
             }
         }
