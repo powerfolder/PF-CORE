@@ -26,6 +26,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -293,8 +294,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     private void clearCompletedDownloadsAtLisa() {
         // Clear completed downloads
-        List<DownloadManager> list = getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection();
+        Collection<DownloadManager> list = getContollerLisa()
+            .getTransferManager().getCompletedDownloadsCollection();
         for (DownloadManager download : list) {
             getContollerLisa().getTransferManager().clearCompletedDownload(
                 download);
@@ -915,7 +916,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        assertTrue("Tempfile does exist although MD5_ERROR has been observed:" + tempFile, !tempFile.exists());
+        assertTrue("Tempfile does exist although MD5_ERROR has been observed:"
+            + tempFile, !tempFile.exists());
 
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
