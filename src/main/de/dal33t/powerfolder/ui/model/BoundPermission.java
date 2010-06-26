@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import java.lang.ref.WeakReference;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -40,8 +38,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public abstract class BoundPermission extends PFComponent {
 
-    private ServerClientListener registeredListener;
-    private ServerClientListener originalListener;
+    private ServerClientListener listener;
     private Permission permission;
     private boolean hasPermission;
 
@@ -53,23 +50,13 @@ public abstract class BoundPermission extends PFComponent {
         this.permission = permission;
         // Hold original listener. Should only be GCed when the BoundPermission
         // object gets collected - NOT earlier.
-        this.originalListener = new MyServerClientListener();
-        this.registeredListener = new MyWeakListener(this, originalListener);
-        getController().getOSClient().addListener(this.registeredListener);
+        this.listener = new MyServerClientListener();
+        getController().getOSClient().addWeakListener(this.listener);
         getController().schedule(new Runnable() {
             public void run() {
                 checkPermission(true);
             }
         }, 0);
-    }
-
-    public void dispose() {
-        //logWarning("Disposed: " + this + " / " + registeredListener);
-        if (registeredListener != null) {
-            getController().getOSClient().removeListener(registeredListener);
-            registeredListener = null;
-            originalListener = null;
-        }
     }
 
     // Abstract behavior ******************************************************
@@ -116,70 +103,6 @@ public abstract class BoundPermission extends PFComponent {
                 }
             });
         }
-    }
-
-    private static final class MyWeakListener implements ServerClientListener {
-        private BoundPermission boundPermission;
-        private WeakReference<ServerClientListener> delegateRef;
-
-        private MyWeakListener(BoundPermission boundPermission,
-            ServerClientListener listener)
-        {
-            this.boundPermission = boundPermission;
-            this.delegateRef = new WeakReference<ServerClientListener>(listener);
-        }
-
-        public void accountUpdated(ServerClientEvent event) {
-            ServerClientListener deligate = delegateRef.get();
-            if (deligate != null) {
-                deligate.accountUpdated(event);
-            } else {
-                // Remove. Delegate was GCed
-                boundPermission.dispose();
-            }
-        }
-
-        public void login(ServerClientEvent event) {
-            ServerClientListener deligate = delegateRef.get();
-            if (deligate != null) {
-                deligate.login(event);
-            } else {
-                // Remove. Delegate was GCed
-                boundPermission.dispose();
-            }
-        }
-
-        public void serverConnected(ServerClientEvent event) {
-            ServerClientListener deligate = delegateRef.get();
-            if (deligate != null) {
-                deligate.serverConnected(event);
-            } else {
-                // Remove. Delegate was GCed
-                boundPermission.dispose();
-            }
-        }
-
-        public void serverDisconnected(ServerClientEvent event) {
-            ServerClientListener deligate = delegateRef.get();
-            if (deligate != null) {
-                deligate.serverDisconnected(event);
-            } else {
-                // Remove. Delegate was GCed
-                boundPermission.dispose();
-            }
-        }
-
-        public boolean fireInEventDispatchThread() {
-            ServerClientListener deligate = delegateRef.get();
-            if (deligate != null) {
-                return deligate.fireInEventDispatchThread();
-            } else {
-                // Delegate was GCed
-                //boundPermission.dispose();
-                return false;
-            }
-        }
-
     }
 
     private final class MyServerClientListener implements ServerClientListener {
