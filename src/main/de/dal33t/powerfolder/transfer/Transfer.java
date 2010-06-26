@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -28,6 +29,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -439,6 +442,7 @@ public abstract class Transfer extends Loggable implements Serializable {
     public double getStateProgress() {
         return state == null ? 0 : state.getProgress();
     }
+
     //
     // // General
     // ****************************************************************
@@ -449,4 +453,11 @@ public abstract class Transfer extends Loggable implements Serializable {
     // getRelativeFile().getFilenameOnly()
     // + "'";
     // }
+
+    private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException
+    {
+        in.defaultReadObject();
+        this.partnerInfo = partnerInfo.intern();
+    }
 }

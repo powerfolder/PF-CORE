@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.intern.Internalizer;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -41,6 +42,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  */
 public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
+    public static Internalizer<MemberInfo> INTERNALIZER;
 
     public static final String PROPERTYNAME_NICK = "nick";
     public static final String PROPERTYNAME_ID = "id";
@@ -48,7 +50,7 @@ public class MemberInfo implements Serializable {
     // some identification marks
     public String nick;
     // The world wide unique id / logical address
-    public String id;
+    public final String id;
     /**
      * The network Id of this node. #1373
      * 
@@ -72,9 +74,11 @@ public class MemberInfo implements Serializable {
 
     // Transient caches
     private transient Boolean hasNullIP;
-
-    public MemberInfo() {
-    }
+    
+    /**
+     * The cached hash info.
+     */
+    private transient int hash;
 
     public MemberInfo(String nick, String id, String networkId) {
         this.nick = nick;
@@ -101,11 +105,11 @@ public class MemberInfo implements Serializable {
     public InetSocketAddress getConnectAddress() {
         return this.connectAddress;
     }
-    
+
     public String getId() {
         return id;
     }
-    
+
     public String getNick() {
         return nick;
     }
@@ -237,7 +241,24 @@ public class MemberInfo implements Serializable {
      * General
      */
 
+    public MemberInfo intern() {
+        if (INTERNALIZER == null) {
+            // No actual intern
+            return this;
+        }
+        return INTERNALIZER.intern(this);
+    }
+
+    @Override
     public int hashCode() {
+        if (hash == 0) {
+            // Cache the hashcode
+            hash = hashCode0();
+        }
+        return hash;
+    }
+
+    public int hashCode0() {
         return id != null ? id.hashCode() : 0;
     }
 
@@ -262,12 +283,12 @@ public class MemberInfo implements Serializable {
         ClassNotFoundException
     {
         in.defaultReadObject();
-        this.id = id.intern();
-        this.nick = nick.intern();
+        // this.id = id.intern();
+        // this.nick = nick.intern();
         if (this.networkId == null) {
             this.networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
         } else {
-            this.networkId = networkId.intern();
+            // this.networkId = networkId.intern();
         }
     }
 }

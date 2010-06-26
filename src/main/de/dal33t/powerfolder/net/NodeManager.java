@@ -72,6 +72,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -191,6 +192,22 @@ public class NodeManager extends PFComponent {
         }
     }
 
+    public void init() {
+        // load local nodes
+        loadNodes();
+        // Okay nodefile is loaded
+        nodefileLoaded = true;
+
+        // #1976
+        if (Feature.MEMBER_INFO_INTERNALIZE.isEnabled()) {
+            if (MemberInfo.INTERNALIZER != null) {
+                logSevere("Overwriting old MemberInfo internalizer: "
+                    + MemberInfo.INTERNALIZER);
+            }
+            MemberInfo.INTERNALIZER = new MemberInfoInternalizer(this);
+        }
+    }
+
     /**
      * Starts the node manager thread
      */
@@ -201,16 +218,6 @@ public class NodeManager extends PFComponent {
             logWarning("Not starting NodeManager. disabled by config");
             return;
         }
-
-        // load local nodes
-        Thread nodefileLoader = new Thread("Nodefile loader") {
-            public void run() {
-                loadNodes();
-                // Okay nodefile is loaded
-                nodefileLoaded = true;
-            }
-        };
-        nodefileLoader.start();
 
         setupPeridicalTasks();
 

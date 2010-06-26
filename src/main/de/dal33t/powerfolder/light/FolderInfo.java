@@ -21,12 +21,12 @@ package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
+import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * A Folder hash info
@@ -36,7 +36,7 @@ import de.dal33t.powerfolder.util.Util;
  */
 public class FolderInfo implements Serializable, Cloneable {
     private static final long serialVersionUID = 102L;
-    private static final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
+    private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
     public final String name;
     public final String id;
@@ -129,29 +129,7 @@ public class FolderInfo implements Serializable, Cloneable {
     }
 
     public FolderInfo intern() {
-        FolderInfo internInstance = INSTANCES.get(this);
-        if (internInstance != null) {
-            // if (internInstance != this) {
-            // hits++;
-            // if (hits % 100 == 0) {
-            // System.out.println(hits + " INTERN HITs. GOT "
-            // + INSTANCES.size());
-            // }
-            // }
-            return internInstance;
-        }
-
-        // New Intern
-        synchronized (INSTANCES) {
-            internInstance = INSTANCES.get(this);
-            if (internInstance == null) {
-                INSTANCES.put(this, this);
-                // System.out.println("GOT " + INSTANCES.size()
-                // + " INTERNAL FolderInfos");
-                internInstance = this;
-            }
-        }
-        return internInstance;
+        return INTERNALIZER.intern(this);
     }
 
     // used for sorting ignores case

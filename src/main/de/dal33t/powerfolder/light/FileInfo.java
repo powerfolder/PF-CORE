@@ -77,8 +77,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /** The size of the file */
     private final Long size;
 
-    /** modified info */
-    private final MemberInfo modifiedBy;
+    /**
+     * modified info *
+     * <p>
+     * Actually 'final'. Only non-final because of serialization readObject()
+     * MemberInfo.intern();
+     */
+    private MemberInfo modifiedBy;
     /** modified in folder on date */
     private final Date lastModifiedDate;
 
@@ -118,7 +123,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         folderInfo = null;
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        this.hash = hashCode0();
+        // this.hash = hashCode0();
     }
 
     protected FileInfo(String relativeName, long size, MemberInfo modifiedBy,
@@ -142,7 +147,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         validate();
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        this.hash = hashCode0();
+        // NOT LONGER NEEDED this.hash = hashCode0();
     }
 
     protected FileInfo(FolderInfo folder, String relativeName) {
@@ -163,7 +168,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         deleted = false;
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        this.hash = hashCode0();
+       // this.hash = hashCode0();
     }
 
     /**
@@ -613,6 +618,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     @Override
     public int hashCode() {
+        if (hash == 0) {
+            // Cache the hashcode
+            hash = hashCode0();
+        }
         return hash;
     }
 
@@ -726,13 +735,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // fileName = fileName.intern();
 
         // Oh! Default value. Better recalculate hashcode cache
-        if (hash == 0) {
-            hash = hashCode0();
-        }
+        // if (hash == 0) {
+        // hash = hashCode0();
+        // }
 
         folderInfo = folderInfo.intern();
-
-        // TODO MemberInfo.intern
+        modifiedBy = modifiedBy.intern();
 
         // validate();
     }
