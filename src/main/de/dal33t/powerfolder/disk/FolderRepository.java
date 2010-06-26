@@ -433,8 +433,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        // Load with 6 concurrent threads.
-        final Semaphore loadPermit = new Semaphore(6);
+        // Load on all processor
+        int loaders = Math.min(Runtime.getRuntime().availableProcessors(), 8);
+        final Semaphore loadPermit = new Semaphore(loaders);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
         for (final String folderMD5 : allFolderMD5s) {
@@ -1082,29 +1083,31 @@ public class FolderRepository extends PFComponent implements Runnable {
         // 1000 ms wait
         long waitTime = Controller.getWaitTime() / 5;
 
-        if (getController().isUIEnabled()) {
-            // Wait to build up ui
-            Waiter w = new Waiter(30L * 1000);
-            while (!w.isTimeout()) {
-                if (getController().isUIOpen()) {
-                    break;
-                }
-                try {
-                    w.waitABit();
-                } catch (Exception e) {
-                    return;
-                }
+        // Wait to build up ui
+        Waiter w = new Waiter(30L * 1000);
+        while (!w.isTimeout()) {
+            if (getController().isUIEnabled() && getController().isUIOpen()) {
+                break;
+            }
+            if (getController().isStarted()) {
+                break;
             }
             try {
-                // initial wait before first scan
-                synchronized (scanTrigger) {
-                    scanTrigger.wait(Controller.getWaitTime() * 4);
-                }
-            } catch (InterruptedException e) {
-                logFiner(e);
+                w.waitABit();
+            } catch (Exception e) {
                 return;
             }
         }
+        try {
+            // initial wait before first scan
+            synchronized (scanTrigger) {
+                scanTrigger.wait(Controller.getWaitTime() * 4);
+            }
+        } catch (InterruptedException e) {
+            logFiner(e);
+            return;
+        }
+
         List<Folder> scanningFolders = new ArrayList<Folder>();
         Controller controller = getController();
 
@@ -1199,12 +1202,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Gets a metaFolder for a FolderInfo.
-     * NOTE: the folderInfo is the parent Folder's FolderInfo,
-     * NOT the FolderInfo of the metaFolder.
-     *
+     * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the parent
+     * Folder's FolderInfo, NOT the FolderInfo of the metaFolder.
+     * 
      * @param parentFolderInfo
-     *          parent Folder's FolderInfo
+     *            parent Folder's FolderInfo
      * @return
      */
     public Folder getMetaFolderForParent(FolderInfo parentFolderInfo) {
@@ -1228,7 +1230,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Get the parent folder for a metaFolder's info.
-     *
+     * 
      * @param metaFolderInfo
      * @return
      */
