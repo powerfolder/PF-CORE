@@ -524,15 +524,19 @@ public class DirectoryFilter extends FilterModel {
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
-            checkAndQueue(folderEvent);
+            if (folderEvent.getScanResult().isChangeDetected()) {
+                checkAndQueue(folderEvent);
+            }
         }
 
         public void statisticsCalculated(FolderEvent folderEvent) {
-            checkAndQueue(folderEvent);
+            // Not really needed?!
+            // checkAndQueue(folderEvent);
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-            checkAndQueue(folderEvent);
+            // Why this?
+            // checkAndQueue(folderEvent);
         }
 
         private void checkAndQueue(FolderEvent folderEvent) {
