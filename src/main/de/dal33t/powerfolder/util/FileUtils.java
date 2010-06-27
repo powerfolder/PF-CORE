@@ -66,7 +66,7 @@ public class FileUtils {
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        return file.getName().equalsIgnoreCase("DESKTOP.INI");
+        return file.getName().equalsIgnoreCase(DESKTOP_INI_FILENAME);
     }
 
     /**
