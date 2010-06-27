@@ -130,7 +130,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.2.9"; // 1.7.1.12
+    public static final String PROGRAM_VERSION = "4.3.0 dev7"; // 1.7.1.19 /
+    // 4.3.0 dev3
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -486,6 +487,7 @@ public class Controller extends PFComponent {
         setLoadingCompletion(30, 35);
 
         // Start the nodemanager
+        nodeManager.init();
         if (!ProUtil.isRunningProVersion()) {
             // Nodemanager gets later (re) started by ProLoader.
             nodeManager.start();
@@ -2313,8 +2315,7 @@ public class Controller extends PFComponent {
             File file = new File(getMiscFilesLocation(), filename);
             ObjectOutputStream outputStream = null;
             try {
-                logInfo("There are " + notices.size()
-                    + " notices to persist.");
+                logInfo("There are " + notices.size() + " notices to persist.");
                 outputStream = new ObjectOutputStream(new BufferedOutputStream(
                     new FileOutputStream(file)));
                 outputStream.writeUnshared(notices);
