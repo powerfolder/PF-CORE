@@ -21,6 +21,8 @@ package de.dal33t.powerfolder;
 
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.light.MemberInfo;
+
 /**
  * Available features to enable/disable. Primary for testing.
  * <p>
@@ -121,7 +123,12 @@ public enum Feature {
     /**
      * Temporary feature for #1634.
      */
-    SET_FILTER_MEMBERS(false);
+    SET_FILTER_MEMBERS(false),
+
+    /**
+     * #1976 If {@link MemberInfo} should be internalized.
+     */
+    MEMBER_INFO_INTERNALIZE();
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
@@ -174,6 +181,6 @@ public enum Feature {
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
-        //Feature.META_FOLDER.enable();
+        // Feature.META_FOLDER.enable();
     }
 }
