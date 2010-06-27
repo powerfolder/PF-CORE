@@ -866,6 +866,10 @@ public class ServerClient extends PFComponent {
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
+    public void addWeakListener(ServerClientListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener, true);
+    }
+
     public void removeListener(ServerClientListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
