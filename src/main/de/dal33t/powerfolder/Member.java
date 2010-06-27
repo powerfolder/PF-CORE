@@ -646,6 +646,19 @@ public class Member extends PFComponent implements Comparable<Member> {
                 .failure("Remote side did not accept our identity");
         }
 
+        if (!identity.getMemberInfo().id.equals(info.id)) {
+            logSevere("Got wrong indentity from peer. Expected: " + info
+                + ". got: " + identity.getMemberInfo());
+            newPeer.shutdown();
+            return ConnectResult
+                .failure("Got wrong indentity from peer. Expected: " + info
+                    + ". got: " + identity.getMemberInfo());
+        }
+
+        info.nick = identity.getMemberInfo().nick;
+        // Reset the last connect time
+        info.lastConnectTime = new Date();
+        
         synchronized (peerInitalizeLock) {
             ConnectionHandler oldPeer = peer;
             // Set the new peer
@@ -687,11 +700,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             info.setConnectAddress(null);
             // Don't change the connection address on a tunneled connection.
         }
-
-        info.id = identity.getMemberInfo().id;
-        info.nick = identity.getMemberInfo().nick;
-        // Reset the last connect time
-        info.lastConnectTime = new Date();
 
         return completeHandshake();
     }
