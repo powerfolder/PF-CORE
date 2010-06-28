@@ -163,7 +163,7 @@ public class UIUnLockDialog extends PFUIComponent {
             frame.setAlwaysOnTop(true);
             // frame.setUndecorated(true);
             frame.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
-            frame.setIconImage(Icons.getImageById(Icons.LOGO128X128));
+            frame.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
             frame.setResizable(false);
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {

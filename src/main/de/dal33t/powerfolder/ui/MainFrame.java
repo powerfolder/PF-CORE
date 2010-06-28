@@ -329,7 +329,7 @@ public class MainFrame extends PFUIComponent {
                 }
             }
         });
-        uiComponent.setIconImage(Icons.getImageById(Icons.LOGO128X128));
+        uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
         logoLabel = new LinkLabel(getController(), "",
             ConfigurationEntry.PROVIDER_URL.getValue(getController()))
