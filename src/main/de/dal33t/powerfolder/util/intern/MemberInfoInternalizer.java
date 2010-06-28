@@ -49,7 +49,7 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
         if (misses > hits && misses > 100) {
             Logger.getLogger(MemberInfoInternalizer.class.getName()).warning(
                 "Hits: " + hits + " Misses: " + misses + ": "
-                    + (hits / (hits + misses)) + "%");
+                    + (100L * hits / (hits + misses)) + "%");
         }
         // System.err.println("Hits: " + hits + " Misses: " + misses + ": "
         // + (hits / (hits + misses)) + "%");
