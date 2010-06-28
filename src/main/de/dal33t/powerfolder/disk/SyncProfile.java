@@ -313,7 +313,7 @@ public class SyncProfile implements Serializable {
             + configuration.getDailyHour() + FIELD_LIST_DELIMITER
             + configuration.getDailyDay() + FIELD_LIST_DELIMITER
             + configuration.getRegularTimeType() + FIELD_LIST_DELIMITER
-            + getName();
+            + getName() + FIELD_LIST_DELIMITER + configuration.isInstantSync();
     }
 
     /**
@@ -468,11 +468,15 @@ public class SyncProfile implements Serializable {
         if (st.hasMoreTokens()) {
             profileName = st.nextToken();
         }
+        boolean instantSync = false;
+        if (st.hasMoreTokens()) {
+            instantSync = Boolean.parseBoolean(st.nextToken());
+        }
 
         return retrieveSyncProfile(profileName, new SyncProfileConfiguration(
             autoDownloadFromFriends, autoDownloadFromOthers,
             syncDeletionWithFriends, syncDeletionWithOthers, timeBetweenScans,
-            dailySync, dailyHour, dailyDay, timeType));
+            dailySync, dailyHour, dailyDay, timeType, instantSync));
     }
 
     /**
@@ -559,21 +563,21 @@ public class SyncProfile implements Serializable {
         boolean slowDetection = fileCount > 5000 || useFilesystemWatch;
         if (slowDetection) {
             // Turn sync profiles into slower ones
-            if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
-                return SyncProfile.BACKUP_SOURCE_HOUR;
+            if (syncProfile.equals(BACKUP_SOURCE)) {
+                return BACKUP_SOURCE_HOUR;
             } else if (syncProfile
-                .equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION))
+                .equals(AUTOMATIC_SYNCHRONIZATION))
             {
-                return SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN;
+                return AUTOMATIC_SYNCHRONIZATION_10MIN;
             }
         } else {
             // Turn sync profiles into faster ones
-            if (syncProfile.equals(SyncProfile.BACKUP_SOURCE_HOUR)) {
-                return SyncProfile.BACKUP_SOURCE;
+            if (syncProfile.equals(BACKUP_SOURCE_HOUR)) {
+                return BACKUP_SOURCE;
             } else if (syncProfile
-                .equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN))
+                .equals(AUTOMATIC_SYNCHRONIZATION_10MIN))
             {
-                return SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+                return AUTOMATIC_SYNCHRONIZATION;
             }
         }
 

@@ -60,6 +60,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
     private JLabel scanInfoLabel;
     private JRadioButton periodicRadioButton;
     private JRadioButton dailyRadioButton;
+    private JRadioButton instantRadioButton;
     private SpinnerNumberModel hourModel;
     private JSpinner hourSpinner;
     private JComboBox dayCombo;
@@ -120,7 +121,7 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         initComponents();
         FormLayout layout = new FormLayout(
             "right:pref, 3dlu, pref",
-            "pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+            "pref, 15dlu, pref, 15dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setDefaultDialogBorder();
         CellConstraints cc = new CellConstraints();
@@ -161,9 +162,12 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             .xy(1, 19));
         builder.add(createDailyComboPanel(), cc.xy(3, 19));
 
+        builder.add(instantRadioButton, cc.xy(3, 21));
+
         ButtonGroup bg = new ButtonGroup();
         bg.add(periodicRadioButton);
         bg.add(dailyRadioButton);
+        bg.add(instantRadioButton);
 
         return builder.getPanel();
     }
@@ -244,9 +248,14 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         periodicRadioButton = new JRadioButton(Translation
             .getTranslation("dialog.create_edit_profile.periodic_sync"));
         periodicRadioButton.addActionListener(this);
+
         dailyRadioButton = new JRadioButton(Translation
             .getTranslation("dialog.create_edit_profile.daily_sync"));
         dailyRadioButton.addActionListener(this);
+
+        instantRadioButton = new JRadioButton(Translation
+            .getTranslation("dialog.create_edit_profile.instant_sync"));
+        instantRadioButton.addActionListener(this);
 
         dayCombo = new JComboBox(new Object[]{
             Translation.getTranslation("dialog.create_edit_profile.every_day"),
@@ -279,7 +288,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
         syncDeletionBox.setSelected(configuration.isSyncDeletion());
         scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
         dailyRadioButton.setSelected(configuration.isDailySync());
-        periodicRadioButton.setSelected(!configuration.isDailySync());
+        periodicRadioButton.setSelected(configuration.isPeriodicSync());
+        instantRadioButton.setSelected(configuration.isInstantSync());
         hourModel.setValue(configuration.getDailyHour());
         dayCombo.setSelectedIndex(configuration.getDailyDay());
         if (configuration.getRegularTimeType().equals(
@@ -294,10 +304,10 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             timeTypeCombo.setSelectedIndex(1);
         }
 
-        scanTimeSpinner.setEnabled(!configuration.isDailySync());
+        scanTimeSpinner.setEnabled(configuration.isPeriodicSync());
         hourSpinner.setEnabled(configuration.isDailySync());
         dayCombo.setEnabled(configuration.isDailySync());
-        timeTypeCombo.setEnabled(!configuration.isDailySync());
+        timeTypeCombo.setEnabled(configuration.isPeriodicSync());
 
         infoTypeVisible();
     }
@@ -374,7 +384,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             autoDownloadBox.setSelected(configuration.isAutoDownload());
             syncDeletionBox.setSelected(configuration.isSyncDeletion());
             scanTimeModel.setValue(configuration.getTimeBetweenRegularScans());
-            periodicRadioButton.setSelected(!configuration.isDailySync());
+            periodicRadioButton.setSelected(configuration.isPeriodicSync());
+            periodicRadioButton.setSelected(configuration.isInstantSync());
             dailyRadioButton.setSelected(configuration.isDailySync());
             hourModel.setValue(configuration.getDailyHour());
             dayCombo.setSelectedIndex(configuration.getDailyDay());
@@ -440,12 +451,15 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             timeType = SyncProfileConfiguration.REGULAR_TIME_TYPE_SECONDS;
         }
 
+        boolean instantMode = instantRadioButton.isSelected();
+        boolean dailyMode = !instantMode && dailyRadioButton.isSelected();
         SyncProfileConfiguration newConfiguration = new SyncProfileConfiguration(
             autoDownloadBox.isSelected(), autoDownloadBox.isSelected(),
             syncDeletionBox.isSelected(), syncDeletionBox.isSelected(),
             scanTimeModel.getNumber().intValue(),
-            dailyRadioButton.isSelected(), hourModel.getNumber().intValue(),
-            dayCombo.getSelectedIndex(), timeType);
+            dailyMode, hourModel.getNumber().intValue(),
+            dayCombo.getSelectedIndex(), timeType,
+                instantMode);
 
         String newProfileName = syncProfileName.getText().trim();
 

@@ -150,25 +150,27 @@ public class SyncProfileTest extends TestCase {
     public void testConfigEquals() {
         
         SyncProfileConfiguration base = new SyncProfileConfiguration(
-                false, false, false, false, 0, false, 0, 0, "m");
+                false, false, false, false, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta1 = new SyncProfileConfiguration(
-                true, false, false, false, 0, false, 0, 0, "m");
+                true, false, false, false, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta2 = new SyncProfileConfiguration(
-                false, true, false, false, 0, false, 0, 0, "m");
+                false, true, false, false, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta3 = new SyncProfileConfiguration(
-                false, false, true, false, 0, false, 0, 0, "m");
+                false, false, true, false, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta4 = new SyncProfileConfiguration(
-                false, false, false, true, 0, false, 0, 0, "m");
+                false, false, false, true, 0, false, 0, 0, "m", false);
         SyncProfileConfiguration delta5 = new SyncProfileConfiguration(
-                false, false, false, false, 9, false, 0, 0, "m");
+                false, false, false, false, 9, false, 0, 0, "m", false);
         SyncProfileConfiguration delta6 = new SyncProfileConfiguration(
-                false, false, false, false, 0, true, 0, 0, "m");
+                false, false, false, false, 0, true, 0, 0, "m", false);
         SyncProfileConfiguration delta7 = new SyncProfileConfiguration(
-                false, false, false, false, 0, false, 9, 0, "m");
+                false, false, false, false, 0, false, 9, 0, "m", false);
         SyncProfileConfiguration delta8 = new SyncProfileConfiguration(
-                false, false, false, false, 0, false, 0, 9, "m");
+                false, false, false, false, 0, false, 0, 9, "m", false);
         SyncProfileConfiguration delta9 = new SyncProfileConfiguration(
-                false, false, false, false, 0, false, 0, 0, "h");
+                false, false, false, false, 0, false, 0, 0, "h", false);
+        SyncProfileConfiguration delta10 = new SyncProfileConfiguration(
+                false, false, false, false, 0, false, 0, 0, "h", true);
 
         assertFalse("delta1", base.equals(delta1));
         assertFalse("delta2", base.equals(delta2));
@@ -179,6 +181,7 @@ public class SyncProfileTest extends TestCase {
         assertFalse("delta7", base.equals(delta7));
         assertFalse("delta8", base.equals(delta8));
         assertFalse("delta9", base.equals(delta9));
+        assertFalse("delta10", base.equals(delta10));
     }
 
 }

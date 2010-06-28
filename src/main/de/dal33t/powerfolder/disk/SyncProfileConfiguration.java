@@ -99,7 +99,8 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Whther this scan is regular (every n hours, minutes or seconds), or daily
-     * (once per day / week period at a particular hour of the day).
+     * (once per day / week period at a particular hour of the day). Tied to
+     * instantSync.
      */
     private final boolean dailySync;
 
@@ -122,6 +123,13 @@ public class SyncProfileConfiguration implements Serializable {
     private final String regularTimeType;
 
     /**
+     * True if synchronization is instant. Not this is tied to daily sync.
+     * Sync mode is effectively instantSync ? true : dailySync;
+     * Need to do this to keep good serialization.
+     */
+    private final boolean instantSync;
+
+    /**
      * Simple construtor. Default values set for advanced configuration.
      * 
      * @param autoDownloadFromFriends
@@ -138,7 +146,7 @@ public class SyncProfileConfiguration implements Serializable {
         this(autoDownloadFromFriends, autoDownloadFromOthers,
             syncDeletionWithFriends, syncDeletionWithOthers,
             timeBetweenRegularScans, false, DAILY_HOUR_DEFAULT,
-            DAILY_DAY_EVERY_DAY, REGULAR_TIME_TYPE_MINUTES);
+            DAILY_DAY_EVERY_DAY, REGULAR_TIME_TYPE_MINUTES, false);
     }
 
     /**
@@ -153,11 +161,13 @@ public class SyncProfileConfiguration implements Serializable {
      * @param dailyHour
      * @param dailyDay
      * @param regularTimeType
+     * @param instantSync
      */
     public SyncProfileConfiguration(boolean autoDownloadFromFriends,
         boolean autoDownloadFromOthers, boolean syncDeletionWithFriends,
         boolean syncDeletionWithOthers, int timeBetweenRegularScans,
-        boolean dailySync, int dailyHour, int dailyDay, String regularTimeType)
+        boolean dailySync, int dailyHour, int dailyDay, String regularTimeType,
+        boolean instantSync)
     {
 
         Reject.ifBlank(regularTimeType, "Missing regularTimeType");
@@ -171,6 +181,7 @@ public class SyncProfileConfiguration implements Serializable {
         this.dailyHour = dailyHour;
         this.dailyDay = dailyDay;
         this.regularTimeType = regularTimeType;
+        this.instantSync = instantSync;
     }
 
     /**
@@ -198,13 +209,31 @@ public class SyncProfileConfiguration implements Serializable {
     }
 
     /**
+     * Whther this scan is periodic.
+     *
+     * @return
+     */
+    public boolean isPeriodicSync() {
+        return !instantSync && !dailySync;
+    }
+
+    /**
      * Whther this scan is regular (every n hours, minutes or seconds), or daily
      * (once per day / week period at a particular hour of the day).
-     * 
+     *
      * @return
      */
     public boolean isDailySync() {
-        return dailySync;
+        return !instantSync && dailySync;
+    }
+
+    /**
+     * Whther this scan is instant.
+     *
+     * @return
+     */
+    public boolean isInstantSync() {
+        return instantSync;
     }
 
     /**
@@ -269,6 +298,9 @@ public class SyncProfileConfiguration implements Serializable {
         if (dailySync != that.dailySync) {
             return false;
         }
+        if (instantSync != that.instantSync) {
+            return false;
+        }
         if (syncDeletionWithFriends != that.syncDeletionWithFriends) {
             return false;
         }
@@ -299,6 +331,7 @@ public class SyncProfileConfiguration implements Serializable {
         result = 31 * result + (syncDeletionWithOthers ? 1 : 0);
         result = 31 * result + timeBetweenRegularScans;
         result = 31 * result + (dailySync ? 1 : 0);
+        result = 31 * result + (instantSync ? 1 : 0);
         result = 31 * result + dailyHour;
         result = 31 * result + dailyDay;
         result = 31 * result
@@ -306,19 +339,19 @@ public class SyncProfileConfiguration implements Serializable {
         return result;
     }
 
-    /**
-     * String representation.
-     * 
-     * @return
-     */
+    @Override
     public String toString() {
-        return "SyncProfileConfiguration [" + " autoDownloadFromFriends = "
-            + autoDownloadFromFriends + " autoDownloadFromOthers = "
-            + autoDownloadFromOthers + " syncDeletionWithFriends = "
-            + syncDeletionWithFriends + " syncDeletionWithOthers = "
-            + syncDeletionWithOthers + " timeBetweenRegularScans = "
-            + timeBetweenRegularScans + " dailySync = " + dailySync
-            + " dailyHour = " + dailyHour + " dailyDay = " + dailyDay
-            + " regularTimeType =     " + regularTimeType + ']';
+        return "SyncProfileConfiguration{" +
+                "autoDownloadFromFriends=" + autoDownloadFromFriends +
+                ", autoDownloadFromOthers=" + autoDownloadFromOthers +
+                ", syncDeletionWithFriends=" + syncDeletionWithFriends +
+                ", syncDeletionWithOthers=" + syncDeletionWithOthers +
+                ", timeBetweenRegularScans=" + timeBetweenRegularScans +
+                ", dailySync=" + dailySync +
+                ", dailyHour=" + dailyHour +
+                ", dailyDay=" + dailyDay +
+                ", regularTimeType='" + regularTimeType + '\'' +
+                ", instantSync=" + instantSync +
+                '}';
     }
 }
