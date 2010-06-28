@@ -152,6 +152,10 @@ public class FolderWatcher extends PFComponent {
             remove();
             return;
         }
+        if (folder.checkIfDeviceDisconnected()) {
+            remove();
+            return;
+        }
 
         String path = folder.getLocalBase().getAbsolutePath();
         boolean watchSubtree = true;

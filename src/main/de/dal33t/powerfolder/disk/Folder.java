@@ -820,6 +820,8 @@ public class Folder extends PFComponent {
             initFileInfoDAO();
             // Try to load db from connected device now.
             loadMetadata();
+            // Re-attach folder watcher
+            watcher.reconfigure(syncProfile);
         }
 
         ScanResult result;
