@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -257,7 +258,8 @@ public class ServerClient extends PFComponent {
 
     /**
      * @param node
-     * @return true if the node is the server.
+     * @return true if the node is the primary login server for the current
+     *         account. account.
      */
     public boolean isServer(Member node) {
         if (server.equals(node)) {
@@ -274,6 +276,14 @@ public class ServerClient extends PFComponent {
         // }
         return isTempServerNode(server)
             && server.getReconnectAddress().equals(node.getReconnectAddress());
+    }
+
+    /**
+     * @param node
+     * @return true if the node is a part of the server cloud.
+     */
+    public boolean isCloudServer(Member node) {
+        return node.isServer() || isServer(node);
     }
 
     /**
@@ -722,11 +732,11 @@ public class ServerClient extends PFComponent {
     /**
      * @return the joined folders by the Server.
      */
-    public List<Folder> getJoinedFolders() {
+    public List<Folder> getJoinedCloudFolders() {
         List<Folder> mirroredFolders = new ArrayList<Folder>();
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
-            if (hasJoined(folder)) {
+            if (joinedByCloud(folder)) {
                 mirroredFolders.add(folder);
             }
         }
@@ -744,10 +754,18 @@ public class ServerClient extends PFComponent {
     /**
      * @param folder
      *            the folder to check.
-     * @return true if the server has joined the folder.
+     * @return true if the cloud has joined the folder.
      */
-    public boolean hasJoined(Folder folder) {
-        return folder.hasMember(server);
+    public boolean joinedByCloud(Folder folder) {
+        if (folder.hasMember(server)) {
+            return true;
+        }
+        for (Member member : folder.getMembersAsCollection()) {
+            if (member.isServer()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
