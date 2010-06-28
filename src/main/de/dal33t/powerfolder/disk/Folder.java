@@ -112,6 +112,8 @@ public class Folder extends PFComponent {
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
     public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = "syncPatterns.txt";
 
+    public static final int TEN_MINUTES = 60 * 10;
+
     /** The base location of the folder. */
     private final File localBase;
 
@@ -888,7 +890,19 @@ public class Folder extends PFComponent {
             return true;
         }
 
-        if (syncProfile.getConfiguration().isDailySync()) {
+        if (syncProfile.getConfiguration().isInstantSync()) {
+            // @todo the actual instant sync. ()#2040
+            // Even though sync should be instant, do a scan every ten minutes
+            // in case anything was missed. Somethimes happens...
+            long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
+                .getTime()) / 1000;
+            if (secondsSinceLastSync < TEN_MINUTES) {
+                if (isFiner()) {
+                    logFiner("Skipping regular scan");
+                }
+                return false;
+            }
+        } else if (syncProfile.getConfiguration().isDailySync()) {
             if (!shouldDoDailySync()) {
                 if (isFiner()) {
                     logFiner("Skipping daily scan");
@@ -896,7 +910,7 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-        } else {
+        } else if (syncProfile.getConfiguration().isPeriodicSync()) {
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {
@@ -905,6 +919,15 @@ public class Folder extends PFComponent {
                 }
                 return false;
             }
+        } else {
+            logSevere("Do not know what sort of sync to do!!! Folder = " +
+                    getName() +
+                    ", instant = " +
+                    syncProfile.getConfiguration().isInstantSync() +
+                    ", daily = " +
+                    syncProfile.getConfiguration().isDailySync() +
+                    ", periodic = " +
+                    syncProfile.getConfiguration().isDailySync());
         }
         return true;
     }
@@ -1067,13 +1090,13 @@ public class Folder extends PFComponent {
 
                     if (deleted) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
-                            currentInfo, fInfo.getRelativeName(), modifiedBy,
-                            modDate, fInfo.getVersion(), file.isDirectory());
+                                currentInfo, fInfo.getRelativeName(), modifiedBy,
+                                modDate, fInfo.getVersion(), file.isDirectory());
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
-                            currentInfo, fInfo.getRelativeName(), size,
-                            modifiedBy, modDate, fInfo.getVersion(), file
-                                .isDirectory());
+                                currentInfo, fInfo.getRelativeName(), size,
+                                modifiedBy, modDate, fInfo.getVersion(), file
+                                        .isDirectory());
                     }
 
                     store(getController().getMySelf(), fInfo);
@@ -1088,13 +1111,13 @@ public class Folder extends PFComponent {
 
                     if (isFiner()) {
                         logFiner(toString() + ": Local file scanned: "
-                            + fInfo.toDetailString());
+                                + fInfo.toDetailString());
                     }
                     return fInfo;
-                } else {
-                    if (isFiner()) {
-                        logFiner("Scan known file: " + fInfo.toDetailString());
-                    }
+                }
+                
+                if (isFiner()) {
+                    logFiner("Scan known file: " + fInfo.toDetailString());
                 }
 
                 FileInfo syncFile = localFile.syncFromDiskIfRequired(
