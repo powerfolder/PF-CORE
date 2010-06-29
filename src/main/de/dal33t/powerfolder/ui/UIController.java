@@ -187,7 +187,7 @@ public class UIController extends PFComponent {
         initSkin();
 
         if (OSUtil.isMacOS()) {
-            UIUtil.setMacDockImage(Icons.getImageById(Icons.SMALL_LOGO));
+            UIUtil.setMacDockImage(Icons.getImageById(Icons.LOGO128X128));
         }
 
         pendingJobs = Collections.synchronizedList(new LinkedList<Runnable>());
