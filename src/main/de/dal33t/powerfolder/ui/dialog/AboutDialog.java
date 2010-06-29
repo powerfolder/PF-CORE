@@ -58,6 +58,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -239,6 +240,15 @@ public class AboutDialog extends PFUIComponent {
                     .getDistribution().getName()) + '\n' + license);
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+
+        long dbSize = 0;
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            for (Member member : folder.getMembersAsCollection()) {
+                dbSize += folder.getDAO().count(member.getId(), true, false);
+            }
+        }
+
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
         system = createTextBox(Translation
             .getTranslation("about_dialog.your_system.title"), Translation
@@ -262,7 +272,10 @@ public class AboutDialog extends PFUIComponent {
                     .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
             + '\n'
             + Translation.getTranslation("about_dialog.power_folder.datasize",
-                Format.formatBytesShort(calculateTotalLocalSharedSize())));
+                Format.formatBytesShort(calculateTotalLocalSharedSize()))
+            + '\n'
+            + Translation.getTranslation("about_dialog.power_folder.dbsize",
+                String.valueOf(dbSize)));
 
         team = createTextBox(
             Translation.getTranslation("about_dialog.team"),
