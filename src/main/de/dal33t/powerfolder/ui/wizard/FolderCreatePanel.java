@@ -368,7 +368,7 @@ public class FolderCreatePanel extends PFWizardPanel {
 
                 if (backupByOS && client.isLoggedIn()) {
                     // Try to back this up by online storage.
-                    if (client.hasJoined(folder)) {
+                    if (client.joinedByCloud(folder)) {
                         // Already have this os folder.
                         log.log(Level.WARNING, "Already have os folder "
                             + folderInfo.name);
