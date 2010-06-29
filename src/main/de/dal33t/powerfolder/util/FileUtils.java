@@ -260,72 +260,52 @@ public class FileUtils {
     }
 
     /**
-     * Makes a file hidden on windows system
-     * 
-     * @param file
-     * @return true if succeeded
-     */
-    public static boolean makeHiddenOnWindows(File file) {
-        if (!OSUtil.isWindowsSystem()) {
-            return false;
-        }
-        try {
-            Process proc = Runtime.getRuntime().exec(
-                "attrib.exe +h \"" + file.getAbsolutePath() + '\"');
-            proc.waitFor();
-            return true;
-        } catch (IOException e) {
-            log.log(Level.FINER, "IOException", e);
-            return false;
-        } catch (InterruptedException e) {
-            log.log(Level.FINER, "InterruptedException", e);
-            return false;
-        }
-    }
-
-    /**
-     * Makes a directory 'system' on windows system
-     * 
-     * @param file
-     * @return true if succeeded
-     */
-    public static boolean makeSystemOnWindows(File file) {
-        if (!OSUtil.isWindowsSystem()) {
-            return false;
-        }
-        try {
-            Process proc = Runtime.getRuntime().exec(
-                "attrib.exe +s \"" + file.getAbsolutePath() + '\"');
-            proc.waitFor();
-            return true;
-        } catch (IOException e) {
-            log.log(Level.FINER, "IOException", e);
-            return false;
-        } catch (InterruptedException e) {
-            log.log(Level.FINER, "InterruptedException", e);
-            return false;
-        }
-    }
-
-    /**
      * Sets file attributes on windows system
      * 
      * @param file
+     *            the file to change
      * @param hidden
+     *            true if file should be hidden, false if it should be unhidden,
+     *            null if no change to the hidden status should be done.
      * @param system
+     *            true if file should be system, false if it should be marked as
+     *            non-system, null if no change to the system status should be
+     *            done.
      * @return true if succeeded
      */
-    public static boolean setAttributesOnWindows(File file, boolean hidden,
-        boolean system)
+    public static boolean setAttributesOnWindows(File file, Boolean hidden,
+        Boolean system)
     {
         if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsMEorOlder()) {
             // Not set attributes on non-windows systems or win ME or older
             return false;
         }
+        if (hidden == null && system == null) {
+            // No actual change.
+            return true;
+        }
         try {
-            Process proc = Runtime.getRuntime().exec(
-                "attrib " + (hidden ? "+h" : "") + ' ' + (system ? "+s" : "")
-                    + " \"" + file.getAbsolutePath() + '\"');
+            String s = "attrib ";
+            if (hidden != null) {
+                if (hidden) {
+                    s += '+';
+                } else {
+                    s += '-';
+                }
+                s += 'h';
+                s += ' ';
+            }
+            if (system != null) {
+                if (system) {
+                    s += '+';
+                } else {
+                    s += '-';
+                }
+                s += 's';
+                s += ' ';
+            }
+            s += " \"" + file.getAbsolutePath() + '\"';
+            Process proc = Runtime.getRuntime().exec(s);
             proc.getOutputStream();
             proc.waitFor();
             return true;
@@ -411,7 +391,7 @@ public class FileUtils {
 
         // Hide target if original is hidden.
         if (sourceFile.isHidden()) {
-            makeHiddenOnWindows(targetFile);
+            setAttributesOnWindows(targetFile, true, null);
         }
     }
 
@@ -517,7 +497,8 @@ public class FileUtils {
                 // Hide the files
                 setAttributesOnWindows(desktopIniFile, true, true);
 
-                // #2047: Now need to set folder as system for desktop.ini to work.
+                // #2047: Now need to set folder as system for desktop.ini to
+                // work.
                 // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
                 log.log(Level.SEVERE, "Problem writing Desktop.ini file(s)", e);
