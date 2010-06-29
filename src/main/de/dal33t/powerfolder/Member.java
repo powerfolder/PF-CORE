@@ -371,8 +371,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean isRelay = getController().getIOProvider()
             .getRelayedConnectionManager().isRelay(getInfo());
-        boolean isServer = isServer()
-            || getController().getOSClient().isServer(this);
+        boolean isServer = getController().getOSClient().isCloudServer(this);
         boolean isRelayOrServer = isServer || isRelay;
 
         if (getController().getNetworkingMode().equals(
@@ -1872,7 +1871,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         folderJoinLock.lock();
         try {
-            FolderList folderList = getLastFolderList();
+            FolderList folderList = lastFolderList;
             if (folderList != null) {
                 // Rejoin to local folders
                 joinToLocalFolders(folderList, thisPeer);
@@ -2055,7 +2054,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public List<Folder> getFoldersInCommon() {
         String magicId = getPeer().getMyMagicId();
-        FolderList fList = getLastFolderList();
+        FolderList fList = lastFolderList;
         if (fList == null) {
             return Collections.emptyList();
         }
