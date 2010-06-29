@@ -219,7 +219,9 @@ public class SettingsTab extends PFUIComponent {
     private void loadOnlineArchiveMode() {
         // Do this offline so it does not slow the main display.
         FolderInfo fi = folder == null ? null : folder.getInfo();
-        if (serverClient.hasJoined(folder) && serverClient.isConnected()) {
+        if (folder.hasMember(serverClient.getServer())
+            && serverClient.isConnected())
+        {
             new MyServerModeSwingWorker(fi).start();
         } else {
             onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
@@ -763,7 +765,7 @@ public class SettingsTab extends PFUIComponent {
             && serverClient.isLoggedIn())
         {
             enabled = true;
-            boolean osConfigured = serverClient.hasJoined(folder);
+            boolean osConfigured = serverClient.joinedByCloud(folder);
             if (osConfigured) {
                 confOSActionLabel.setText(Translation
                     .getTranslation("action_stop_online_storage.name"));
@@ -1089,14 +1091,16 @@ public class SettingsTab extends PFUIComponent {
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            if (getController().getOSClient().isCloudServer(
+                folderEvent.getMember()))
             {
                 enableConfigOSAction();
             }
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            if (getController().getOSClient().isCloudServer(
+                folderEvent.getMember()))
             {
                 enableConfigOSAction();
             }
