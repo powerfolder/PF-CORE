@@ -197,7 +197,7 @@ public class FoldersList extends PFUIComponent {
             FolderBean bean = new FolderBean(folderInfo);
             bean.setFolder(folder);
             bean.setLocal(true);
-            bean.setOnline(getController().getOSClient().hasJoined(folder));
+            bean.setOnline(getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
@@ -393,14 +393,16 @@ public class FoldersList extends PFUIComponent {
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            if (getController().getOSClient().isCloudServer(
+                folderEvent.getMember()))
             {
                 updateFolders();
             }
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isServer(folderEvent.getMember()))
+            if (getController().getOSClient().isCloudServer(
+                folderEvent.getMember()))
             {
                 updateFolders();
             }
