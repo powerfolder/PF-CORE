@@ -323,6 +323,8 @@ public class Folder extends PFComponent {
 
         // Check desktop ini in Windows environments
         FileUtils.maintainDesktopIni(getController(), localBase);
+        // #2047 Remove later after 4.3.0 
+        FileUtils.setAttributesOnWindows(localBase, false, false);
 
         // Force the next time scan.
         recommendScanOnNextMaintenance();
