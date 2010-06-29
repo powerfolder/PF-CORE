@@ -160,9 +160,8 @@ public class MembersTable extends JTable {
             setForeground(ColorUtil.getTextForegroundColor());
 
             boolean isServer = folderMember.getMember() != null
-                && (model.getController().getOSClient().isServer(
-                    folderMember.getMember()) || folderMember.getMember()
-                    .isServer());
+                && (model.getController().getOSClient()
+                    .isCloudServer(folderMember.getMember()));
 
             if (actualColumn == MembersTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
