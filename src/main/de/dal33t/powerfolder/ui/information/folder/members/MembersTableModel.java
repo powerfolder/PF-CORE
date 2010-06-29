@@ -538,7 +538,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
 
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
-            if (getController().getOSClient().isServer(e.getNode())) {
+            if (getController().getOSClient().isCloudServer(e.getNode())) {
                 refreshModel();
             }
         }
