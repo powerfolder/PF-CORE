@@ -323,8 +323,8 @@ public class Folder extends PFComponent {
 
         // Check desktop ini in Windows environments
         FileUtils.maintainDesktopIni(getController(), localBase);
-        // #2047 Remove later after 4.3.0 
-        FileUtils.setAttributesOnWindows(localBase, false, false);
+        // #2047 Remove later after 4.3.0
+        FileUtils.setAttributesOnWindows(localBase, null, false);
 
         // Force the next time scan.
         recommendScanOnNextMaintenance();
@@ -924,14 +924,12 @@ public class Folder extends PFComponent {
                 return false;
             }
         } else {
-            logSevere("Do not know what sort of sync to do!!! Folder = " +
-                    getName() +
-                    ", instant = " +
-                    syncProfile.getConfiguration().isInstantSync() +
-                    ", daily = " +
-                    syncProfile.getConfiguration().isDailySync() +
-                    ", periodic = " +
-                    syncProfile.getConfiguration().isDailySync());
+            logSevere("Do not know what sort of sync to do!!! Folder = "
+                + getName() + ", instant = "
+                + syncProfile.getConfiguration().isInstantSync() + ", daily = "
+                + syncProfile.getConfiguration().isDailySync()
+                + ", periodic = "
+                + syncProfile.getConfiguration().isDailySync());
         }
         return true;
     }
@@ -967,8 +965,8 @@ public class Folder extends PFComponent {
         if (requiredSyncHour > currentHour) {
             // Not correct time, so skip.
             if (isFiner()) {
-                logFiner("Skipping daily scan (not correct time) " +
-                        requiredSyncHour + " > " + currentHour);
+                logFiner("Skipping daily scan (not correct time) "
+                    + requiredSyncHour + " > " + currentHour);
             }
             return false;
         }
@@ -1045,9 +1043,6 @@ public class Folder extends PFComponent {
         if (file.getName().equals(DB_FILENAME)
             || file.getName().equals(DB_BACKUP_FILENAME))
         {
-            if (!file.isHidden()) {
-                FileUtils.makeHiddenOnWindows(file);
-            }
             logFiner("Ignoring folder database file: " + file);
             return null;
         }
@@ -1094,13 +1089,13 @@ public class Folder extends PFComponent {
 
                     if (deleted) {
                         fInfo = FileInfoFactory.unmarshallDeletedFile(
-                                currentInfo, fInfo.getRelativeName(), modifiedBy,
-                                modDate, fInfo.getVersion(), file.isDirectory());
+                            currentInfo, fInfo.getRelativeName(), modifiedBy,
+                            modDate, fInfo.getVersion(), file.isDirectory());
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
-                                currentInfo, fInfo.getRelativeName(), size,
-                                modifiedBy, modDate, fInfo.getVersion(), file
-                                        .isDirectory());
+                            currentInfo, fInfo.getRelativeName(), size,
+                            modifiedBy, modDate, fInfo.getVersion(), file
+                                .isDirectory());
                     }
 
                     store(getController().getMySelf(), fInfo);
@@ -1115,11 +1110,11 @@ public class Folder extends PFComponent {
 
                     if (isFiner()) {
                         logFiner(toString() + ": Local file scanned: "
-                                + fInfo.toDetailString());
+                            + fInfo.toDetailString());
                     }
                     return fInfo;
                 }
-                
+
                 if (isFiner()) {
                     logFiner("Scan known file: " + fInfo.toDetailString());
                 }
@@ -2871,7 +2866,7 @@ public class Folder extends PFComponent {
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
             if (systemSubDir.mkdirs()) {
-                FileUtils.makeHiddenOnWindows(systemSubDir);
+                FileUtils.setAttributesOnWindows(systemSubDir, true, true);
             } else {
                 logSevere("Failed to create system subdir: " + systemSubDir);
             }
