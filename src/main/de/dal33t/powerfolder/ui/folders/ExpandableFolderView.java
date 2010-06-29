@@ -842,15 +842,22 @@ public class ExpandableFolderView extends PFUIComponent implements
                 .getValueBoolean(getController());
             osComponent.getUIComponent().setVisible(osComponentVisible);
             if (osComponentVisible) {
-                Member server = serverClient.getServer();
                 double sync = 0;
-                if (folder != null && server != null) {
-                    sync = folder.getStatistic().getSyncPercentage(server);
+                if (folder != null) {
+                    for (Member member : folder.getMembersAsCollection()) {
+                        if (!getController().getOSClient()
+                            .isCloudServer(member))
+                        {
+                            continue;
+                        }
+                        sync = Math.max(folder.getStatistic()
+                            .getSyncPercentage(member), sync);
+                    }
                 }
                 boolean warned = serverClient.getAccountDetails().getAccount()
                     .getOSSubscription().isDisabledUsage();
                 boolean joined = folder != null
-                    && serverClient.hasJoined(folder);
+                    && serverClient.joinedByCloud(folder);
                 osComponent.setSyncPercentage(sync, warned, joined);
             }
         }
@@ -897,7 +904,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (folder != null && serverClient.isConnected()
                 && serverClient.isLoggedIn())
             {
-                boolean osConfigured = serverClient.hasJoined(folder);
+                boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
                     contextMenu.add(stopOnlineStorageAction);
                 } else {
