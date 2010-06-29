@@ -515,10 +515,10 @@ public class FileUtils {
                 pw.flush();
 
                 // Hide the files
-                makeHiddenOnWindows(desktopIniFile);
+                setAttributesOnWindows(desktopIniFile, true, true);
 
                 // Now need to set folder as system for desktop.ini to work.
-                makeSystemOnWindows(directory);
+                // makeSystemOnWindows(desktopIniFile);
             } catch (IOException e) {
                 log.log(Level.SEVERE, "Problem writing Desktop.ini file(s)", e);
             } finally {
