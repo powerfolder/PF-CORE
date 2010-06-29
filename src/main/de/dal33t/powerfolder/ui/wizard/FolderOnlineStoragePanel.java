@@ -59,7 +59,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         this.foInfo = foInfo;
         Folder folder = getController().getFolderRepository().getFolder(foInfo);
         boolean osJoined = folder != null
-            && controller.getOSClient().hasJoined(folder);
+            && controller.getOSClient().joinedByCloud(folder);
         removeFolder = osJoined;
     }
 
@@ -175,7 +175,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
         ServerClient ws = getController().getOSClient();
         List<Folder> folders = new ArrayList<Folder>(getController()
             .getFolderRepository().getFolders());
-        folders.removeAll(ws.getJoinedFolders());
+        folders.removeAll(ws.getJoinedCloudFolders());
         folderLabel = new JLabel(foInfo.name);
         updateButtons();
     }
