@@ -346,7 +346,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         }
 
         AccountInfo aInfo = node.getAccountInfo();
-        if (aInfo != null) {
+        if (aInfo != null && !node.isServer()) {
             usernameLabel.setText(Translation.getTranslation(
                 "exp_computer_view.account", aInfo.getScrabledUsername()));
         } else {
