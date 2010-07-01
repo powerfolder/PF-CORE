@@ -488,28 +488,20 @@ public class ReconnectManager extends PFComponent {
                     logFine("Stopping " + this + ". NodeManager is down");
                     break;
                 }
-
-                boolean goIdle = false;
                 synchronized (reconnectionQueue) {
                     if (reconnectionQueue.isEmpty()) {
-                        // Rebuilds reconnection queue if required
-                        buildReconnectionQueue();
-                        if (reconnectionQueue.isEmpty()) {
-                            goIdle = true;
-
-                        }
-                    }
-                }
-                if (goIdle) {
-                    int idleSeconds = getIdleWaitSeconds();
-                    logFine("Reconnection queue empty after rebuild."
-                        + "Going on idle for " + idleSeconds + " seconds");
-                    synchronized (reconnectionQueue) {
+                        int idleSeconds = getIdleWaitSeconds();
+                        logFine("Reconnection queue empty. " + this
+                            + " going on idle for " + idleSeconds + " seconds");
                         try {
                             reconnectionQueue.wait(1000L * idleSeconds);
                         } catch (InterruptedException e) {
                             logFiner(e);
                             break;
+                        }
+                        if (reconnectionQueue.isEmpty()) {
+                            // Rebuilds reconnection queue if required
+                            buildReconnectionQueue();
                         }
                     }
                 }
