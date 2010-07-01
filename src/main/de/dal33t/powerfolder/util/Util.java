@@ -31,7 +31,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -48,6 +47,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -138,6 +138,21 @@ public class Util {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return the line feed characters depending on the system architecture.
+     */
+    public static String getLineFeed() {
+        String lf = System.getProperty("line.separator");
+        if (StringUtils.isNotBlank(lf)) {
+            return lf;
+        }
+        if (OSUtil.isWindowsSystem()) {
+            return "\r\n";
+        } else {
+            return "\n";
+        }
     }
 
     /**
