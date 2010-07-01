@@ -435,29 +435,29 @@ public class Debug {
         Reject.ifNull(m, "Member is null");
         StringBuilder b = new StringBuilder();
         if (m.isMySelf()) {
-            b.append("(myself) ");
+            b.append("(mee) ");
         } else if (m.isConnected()) {
             if (m.isOnLAN()) {
-                b.append("(local)  ");
+                b.append("(LAN) ");
             } else {
                 ConnectionHandler peer = m.getPeer();
                 if (peer != null) {
                     ConnectionQuality q = peer.getConnectionQuality();
                     if (q.equals(ConnectionQuality.GOOD)) {
-                        b.append("(***)   ");
+                        b.append("(***) ");
                     } else if (q.equals(ConnectionQuality.MEDIUM)) {
-                        b.append("(** )   ");
+                        b.append("(** ) ");
                     } else {
-                        b.append("(*  )   ");
+                        b.append("(*  ) ");
                     }
                 } else {
-                    b.append("(?????)  ");
+                    b.append("(???) ");
                 }
             }
         } else if (m.isConnectedToNetwork()) {
-            b.append("(online) ");
+            b.append("(on ) ");
         } else {
-            b.append("(offl.)  ");
+            b.append("(off) ");
         }
         if (m.getInfo().isSupernode) {
             b.append("(s) ");
