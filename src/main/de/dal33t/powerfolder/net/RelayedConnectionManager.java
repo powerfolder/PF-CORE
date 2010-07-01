@@ -409,7 +409,9 @@ public class RelayedConnectionManager extends PFComponent {
             return (AbstractRelayedConnectionHandler) peer;
         }
 
-        if (message.getType().equals(Type.DATA_ZIPPED)) {
+        if (message.getType().equals(Type.DATA_ZIPPED)
+            && sourceMember.isInteresting())
+        {
             logWarning("Unable to resolved pending con handler for "
                 + message.getSource().nick + ", conId: "
                 + message.getConnectionId() + ". Got these: " + pendingConHans
