@@ -27,6 +27,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import de.dal33t.powerfolder.util.Util;
+
 /**
  * Class to format a LogRecord in a readable form.
  * Displays as [hh:mm:ss] level [logger name] message.
@@ -72,7 +74,7 @@ public class LoggingFormatter extends Formatter {
         }
         buf.append("]: ");
         buf.append(record.getMessage());
-        buf.append('\n');
+        buf.append(Util.getLineFeed());
         if (record.getThrown() != null) {
             Throwable throwable = record.getThrown();
             StringWriter sw = new StringWriter();
@@ -88,10 +90,9 @@ public class LoggingFormatter extends Formatter {
             }
             sw.flush();
             String trace = sw.toString();
-            buf.append(trace).append('\n');
+            buf.append(trace).append(Util.getLineFeed());
         }
         return buf.toString();
     }
 }
-
 
