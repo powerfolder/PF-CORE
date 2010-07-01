@@ -89,7 +89,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         Reject.ifNull(mySelf, "Myself");
         this.archiveDirectory = archiveDirectory;
         // Default: Store unlimited # of files
-        versionsPerFile = Integer.MAX_VALUE;
+        versionsPerFile = -1;
         this.mySelf = mySelf;
     }
 
@@ -147,6 +147,10 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
     private void checkArchivedFile(File[] versions) throws IOException {
         assert versions != null;
+        if (versionsPerFile < 0) {
+            // Unlimited. Don't check
+            return;
+        }
         if (versions.length <= versionsPerFile) {
             return;
         }

@@ -2,8 +2,8 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-import de.dal33t.powerfolder.disk.CopyOrMoveFileArchiver;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -171,10 +171,42 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertFalse(ver[2].exists());
         assertFalse(ver[3].exists());
         assertFalse(ver[4].exists());
-
     }
 
-    private void modLisaFile(File file, final FileInfo fInfo) {
+    public void testUnlimitedFileArchive() throws IOException {
+        int nVersion = 20;
+        getFolderAtBart().setArchiveVersions(-1);
+
+        File f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
+        scanFolder(getFolderAtLisa());
+        FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
+        modLisaFile(f, fInfo);
+
+        FileArchiver aBart = getFolderAtBart().getFileArchiver();
+        for (int i = 0; i < nVersion; i++) {
+            assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
+            assertTrue("Archived versions not found. Got: "
+                + aBart.getArchivedFilesInfos(fInfo), aBart
+                .getArchivedFilesInfos(fInfo).size() > 0);
+        }
+        assertTrue(getFolderAtBart().getFileArchiver().getSize() > 0);
+        assertEquals(nVersion, aBart.getArchivedFilesInfos(fInfo).size());
+
+        List<FileInfo> archived = aBart.getArchivedFilesInfos(fInfo);
+        assertEquals(nVersion, archived.size());
+
+        // Now restore
+        FileInfo versionInfo = archived.get(4);
+        File restoreTo = versionInfo.getDiskFile(getContollerBart()
+            .getFolderRepository());
+        aBart.restore(versionInfo, restoreTo);
+        getFolderAtBart().scanChangedFile(versionInfo);
+
+        archived = aBart.getArchivedFilesInfos(fInfo);
+        assertEquals(nVersion, archived.size());
+    }
+
+    private FileInfo modLisaFile(File file, final FileInfo fInfo) {
         TestHelper.changeFile(file);
         scanFolder(getFolderAtLisa());
 
@@ -190,5 +222,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
                 return false;
             }
         });
+        return fInfo.getLocalFileInfo(getContollerLisa().getFolderRepository());
     }
 }
