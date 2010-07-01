@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -138,12 +139,13 @@ public class DiskItemFilter {
             }
             file.renameTo(backup);
         }
-        FileWriter writer = null;
+        BufferedWriter writer = null;
         try {
             file.createNewFile();
-            writer = new FileWriter(file);
+            writer = new BufferedWriter(new FileWriter(file));
             for (Pattern pattern : patterns) {
-                writer.write(pattern.getPatternText() + "\r\n");
+                writer.write(pattern.getPatternText());
+                writer.newLine();
             }
             dirty = false;
         } catch (IOException e) {
