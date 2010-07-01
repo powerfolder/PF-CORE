@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
@@ -101,7 +102,7 @@ public class ConfigurationLoadRequest extends Message {
                 // No need to update
                 return;
             }
-            iniContents += "\r\n";
+            iniContents += Util.getLineFeed();
             iniContents += allConfigLine;
             FileUtils.copyFromStreamToFile(new ByteArrayInputStream(iniContents
                 .getBytes(Convert.UTF8)), iniFile);
