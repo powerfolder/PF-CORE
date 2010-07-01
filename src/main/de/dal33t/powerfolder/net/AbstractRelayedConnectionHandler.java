@@ -304,14 +304,6 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         // }
         started = false;
 
-        // Inform remote host via relay about EOF.
-        if (getMember() != null) {
-            RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
-                getController().getMySelf().getInfo(), getMember().getInfo(),
-                connectionId, null);
-            relay.sendMessagesAsynchron(eofMsg);
-        }
-
         // Clear magic ids
         // myMagicId = null;
         // identity = null;
@@ -651,7 +643,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      *            the message received from a relay.
      */
     public void receiveRelayedMessage(RelayedMessage message) {
-        //  in queue for later processing in own thread
+        // in queue for later processing in own thread
         receiveQueue.offer(message);
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
