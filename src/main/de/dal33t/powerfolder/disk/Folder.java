@@ -897,7 +897,7 @@ public class Folder extends PFComponent {
         if (syncProfile.getConfiguration().isInstantSync()) {
             // @todo the actual instant sync. ()#2040
             // Even though sync should be instant, do a scan every ten minutes
-            // in case anything was missed. Somethimes happens...
+            // in case anything was missed. Sometimes happens...
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < TEN_MINUTES) {
@@ -913,7 +913,6 @@ public class Folder extends PFComponent {
                 }
                 return false;
             }
-
         } else if (syncProfile.getConfiguration().isPeriodicSync()) {
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;

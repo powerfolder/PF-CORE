@@ -439,9 +439,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             true);
         LoggingManager.setConsoleLogging(Level.WARNING);
         getFolderAtBart().setSyncProfile(
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();

@@ -643,7 +643,7 @@ public class ScanFolderTest extends ControllerTestCase {
             return;
         }
         LoggingManager.setConsoleLogging(Level.WARNING);
-        getFolder().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN);
+        getFolder().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         // Subdir with 2 files
         File subdir1 = new File(getFolder().getLocalBase(), "subdir1");

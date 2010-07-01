@@ -86,17 +86,12 @@ public class SyncProfile implements Serializable {
 
     /**
      * Automatic synchronization preset profile.
+     * Uses JNotify to do instant sync.
      */
     public static final SyncProfile AUTOMATIC_SYNCHRONIZATION = new SyncProfile(
-        "automatic_synchronization", false, new SyncProfileConfiguration(true,
-            true, true, true, 1));
-
-    /**
-     * Automatic synchronization preset profile.
-     */
-    public static final SyncProfile AUTOMATIC_SYNCHRONIZATION_10MIN = new SyncProfile(
-        "automatic_synchronization_10min", false, new SyncProfileConfiguration(
-            true, true, true, true, 10));
+        "auto_sync", false, new SyncProfileConfiguration(true,
+            true, true, true, 1, false, 12, 1,
+                    SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
      * Backup source preset profile - 5 minute.
@@ -128,9 +123,8 @@ public class SyncProfile implements Serializable {
 
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
-        AUTOMATIC_SYNCHRONIZATION, AUTOMATIC_SYNCHRONIZATION_10MIN,
-        MANUAL_SYNCHRONIZATION, BACKUP_SOURCE, BACKUP_SOURCE_HOUR,
-        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
+            BACKUP_SOURCE_HOUR, BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
@@ -565,19 +559,11 @@ public class SyncProfile implements Serializable {
             // Turn sync profiles into slower ones
             if (syncProfile.equals(BACKUP_SOURCE)) {
                 return BACKUP_SOURCE_HOUR;
-            } else if (syncProfile
-                .equals(AUTOMATIC_SYNCHRONIZATION))
-            {
-                return AUTOMATIC_SYNCHRONIZATION_10MIN;
             }
         } else {
             // Turn sync profiles into faster ones
             if (syncProfile.equals(BACKUP_SOURCE_HOUR)) {
                 return BACKUP_SOURCE;
-            } else if (syncProfile
-                .equals(AUTOMATIC_SYNCHRONIZATION_10MIN))
-            {
-                return AUTOMATIC_SYNCHRONIZATION;
             }
         }
 

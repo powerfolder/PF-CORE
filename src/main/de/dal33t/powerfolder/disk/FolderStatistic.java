@@ -461,9 +461,7 @@ public class FolderStatistic extends PFComponent {
         }
 
         if (SyncProfile.AUTOMATIC_SYNCHRONIZATION.equals(folder
-            .getSyncProfile())
-            || SyncProfile.AUTOMATIC_SYNCHRONIZATION_10MIN.equals(folder
-                .getSyncProfile()))
+            .getSyncProfile()))
         {
             // Average of all folder member sync percentages.
             return getAverageSyncPercentage();

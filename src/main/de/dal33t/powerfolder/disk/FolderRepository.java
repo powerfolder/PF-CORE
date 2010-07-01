@@ -111,7 +111,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Field list for backup taget pre #777. Used to convert to new backup
      * target for #787.
      */
-    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
+    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST =
+            "true,true,true,true,0,false,12,0,m";
+    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST =
+            "true,true,true,true,1,false,12,0,m," +
+                    Translation.getTranslation("transfer_mode.automatic_synchronization.name");
+    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST =
+            "true,true,true,true,10,false,12,0,m," +
+                    Translation.getTranslation("transfer_mode.automatic_synchronization_10min.name");
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -385,6 +392,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Migration for #787 (backup target timeBetweenScans changed
             // from 0 to 60).
             syncProfile = SyncProfile.BACKUP_TARGET;
+        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST.equals(syncProfConfig) ||
+                PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST.equals(syncProfConfig)) {
+                // Migration for #2040 (new auto sync uses JNotify).
+                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
@@ -518,6 +529,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Migration for #787 (backup target timeBetweenScans changed
             // from 0 to 60).
             syncProfile = SyncProfile.BACKUP_TARGET;
+        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST.equals(
+                syncProfConfig) ||
+                PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST.equals(
+                        syncProfConfig)) {
+                // Migration for #2040 (new auto sync uses JNotify).
+                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
