@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import java.awt.Dimension;
@@ -24,13 +24,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import jwf.WizardPanel;
 
@@ -50,7 +65,6 @@ import de.dal33t.powerfolder.ui.wizard.table.RestoreFilesTableModel;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -58,11 +72,11 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class MultiFileRestorePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(MultiFileRestorePanel
-            .class.getName());
+    private static final Logger log = Logger
+        .getLogger(MultiFileRestorePanel.class.getName());
 
     private final Folder folder;
-    private final List<FileInfo> deletedFileInfos;
+    private final List<FileInfo> filesToRestore;
     private JProgressBar bar;
     private final JLabel infoLabel;
     private boolean hasNext;
@@ -75,26 +89,30 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private JRadioButton latestVersionButton;
     private JRadioButton dateVersionButton;
 
+    private SwingWorker worker;
+
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param folder
-     * @param deletedFileInfos
+     * @param filesToRestore
      */
     public MultiFileRestorePanel(Controller controller, Folder folder,
-                                 List<FileInfo> deletedFileInfos) {
+        List<FileInfo> filesToRestore)
+    {
         super(controller);
         infoLabel = new JLabel();
         this.folder = folder;
-        this.deletedFileInfos = deletedFileInfos;
+        this.filesToRestore = filesToRestore;
         tableModel = new RestoreFilesTableModel(controller);
         fileInfosToRestore = new ArrayList<FileInfo>();
     }
 
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout("140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
-                "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
+        FormLayout layout = new FormLayout(
+            "140dlu, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow",
+            "pref, 3dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -113,7 +131,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         row += 2;
         builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
-                CellConstraints.DEFAULT));
+            CellConstraints.DEFAULT));
 
         row += 2;
 
@@ -134,7 +152,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation("wizard.multi_file_restore_panel.title");
+        return Translation
+            .getTranslation("wizard.multi_file_restore_panel.title");
     }
 
     protected void afterDisplay() {
@@ -146,32 +165,35 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     protected void initComponents() {
         bar = new JProgressBar();
-        latestVersionButton = new JRadioButton(Translation.getTranslation(
-                "wizard.multi_file_restore_panel.button_latest"));
-        latestVersionButton.setToolTipText(Translation.getTranslation(
-                "wizard.multi_file_restore_panel.button_latest.tip"));
+        latestVersionButton = new JRadioButton(Translation
+            .getTranslation("wizard.multi_file_restore_panel.button_latest"));
+        latestVersionButton
+            .setToolTipText(Translation
+                .getTranslation("wizard.multi_file_restore_panel.button_latest.tip"));
         latestVersionButton.setSelected(true);
-        dateVersionButton = new JRadioButton(Translation.getTranslation(
-                "wizard.multi_file_restore_panel.button_date"));
-        dateVersionButton.setToolTipText(Translation.getTranslation(
-                "wizard.multi_file_restore_panel.button_date.tip"));
+        dateVersionButton = new JRadioButton(Translation
+            .getTranslation("wizard.multi_file_restore_panel.button_date"));
+        dateVersionButton.setToolTipText(Translation
+            .getTranslation("wizard.multi_file_restore_panel.button_date.tip"));
         ButtonGroup bg = new ButtonGroup();
         bg.add(latestVersionButton);
         bg.add(dateVersionButton);
 
         dateChooser = new JDateChooser();
         Calendar cal = new GregorianCalendar();
-        hourSpinner = new JSpinner(new SpinnerNumberModel(cal.get(
-                Calendar.HOUR_OF_DAY), 0, 23, 1));
+        hourSpinner = new JSpinner(new SpinnerNumberModel(cal
+            .get(Calendar.HOUR_OF_DAY), 0, 23, 1));
         hourSpinner.setToolTipText(Translation.getTranslation("general.hours"));
-        minuteSpinner = new JSpinner(new SpinnerNumberModel(cal.get(
-                Calendar.MINUTE), 0, 59, 1));
-        minuteSpinner.setToolTipText(Translation.getTranslation("general.minutes"));
+        minuteSpinner = new JSpinner(new SpinnerNumberModel(cal
+            .get(Calendar.MINUTE), 0, 59, 1));
+        minuteSpinner.setToolTipText(Translation
+            .getTranslation("general.minutes"));
 
         MyActionListener actionListener = new MyActionListener();
         latestVersionButton.addActionListener(actionListener);
         dateVersionButton.addActionListener(actionListener);
-        dateChooser.addPropertyChangeListener("date", new MyPropertyChangeListener());
+        dateChooser.addPropertyChangeListener("date",
+            new MyPropertyChangeListener());
         MyChangeListener changeListener = new MyChangeListener();
         hourSpinner.addChangeListener(changeListener);
         minuteSpinner.addChangeListener(changeListener);
@@ -188,7 +210,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     public WizardPanel next() {
         return new MultiFileRestoringPanel(getController(), folder,
-                fileInfosToRestore, latestVersionButton.isSelected());
+            fileInfosToRestore, latestVersionButton.isSelected());
     }
 
     private void updateDateChooser() {
@@ -200,16 +222,20 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     private void loadVersions() {
         hasNext = false;
         updateButtons();
-        SwingWorker worker = new VersionLoaderWorker();
-        worker.start();
+        if (worker != null) {
+            worker.cancel(false);
+        }
+        worker = new VersionLoaderWorker();
+        worker.execute();
     }
 
     // ////////////////
     // Inner Classes //
     // ////////////////
 
-    private class VersionLoaderWorker extends SwingWorker {
-        public Object construct() {
+    private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, Void>
+    {
+        public List<FileInfo> doInBackground() {
             bar.setVisible(true);
             scrollPane.setVisible(false);
             infoLabel.setVisible(true);
@@ -217,13 +243,14 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             try {
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 // Also try getting versions from OnlineStorage.
-                boolean online = folder.hasMember(getController()
-                        .getOSClient().getServer());
+                boolean online = folder.hasMember(getController().getOSClient()
+                    .getServer());
                 FolderService service = null;
                 if (online) {
                     ServerClient client = getController().getOSClient();
                     if (client != null && client.isConnected()
-                            && client.isLoggedIn()) {
+                        && client.isLoggedIn())
+                    {
                         service = client.getFolderService();
                     }
                 }
@@ -233,22 +260,30 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                 if (dateVersionButton.isSelected()) {
                     Calendar cal = new GregorianCalendar();
                     cal.setTime(DateUtil.zeroTime(dateChooser.getDate()));
-                    cal.set(Calendar.HOUR_OF_DAY, ((SpinnerNumberModel)
-                            hourSpinner.getModel()).getNumber().intValue());
-                    cal.set(Calendar.MINUTE, ((SpinnerNumberModel)
-                            minuteSpinner.getModel()).getNumber().intValue());
+                    cal.set(Calendar.HOUR_OF_DAY,
+                        ((SpinnerNumberModel) hourSpinner.getModel())
+                            .getNumber().intValue());
+                    cal.set(Calendar.MINUTE,
+                        ((SpinnerNumberModel) minuteSpinner.getModel())
+                            .getNumber().intValue());
                     targetDate = cal.getTime();
                 }
 
                 int count = 1;
-                for (FileInfo fileInfo : deletedFileInfos) {
+                for (FileInfo fileInfo : filesToRestore) {
+                    if (!getParent().isShowing()) {
+                        return Collections.emptyList();
+                    }
+                    if (isCancelled()) {
+                        return Collections.emptyList();
+                    }
                     infoLabel.setText(Translation.getTranslation(
-                            "wizard.multi_file_restore_panel.retrieving",
-                            Format.formatLong(count++),
-                            Format.formatLong(deletedFileInfos.size())));
+                        "wizard.multi_file_restore_panel.retrieving", Format
+                            .formatLong(count++), Format
+                            .formatLong(filesToRestore.size())));
 
                     List<FileInfo> infoList = fileArchiver
-                            .getArchivedFilesInfos(fileInfo);
+                        .getArchivedFilesInfos(fileInfo);
                     FileInfo mostRecent = null;
                     for (FileInfo info : infoList) {
                         if (isBetterVersion(mostRecent, info, targetDate)) {
@@ -258,7 +293,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
                     if (service != null) {
                         List<FileInfo> serviceList = service
-                                .getArchivedFilesInfos(fileInfo);
+                            .getArchivedFilesInfos(fileInfo);
                         for (FileInfo info : serviceList) {
                             if (isBetterVersion(mostRecent, info, targetDate)) {
                                 mostRecent = info;
@@ -277,37 +312,51 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Exception", e);
-                infoLabel.setText(Translation.getTranslation(
-                        "wizard.multi_file_restore_panel.retrieving_failure"));
+                infoLabel
+                    .setText(Translation
+                        .getTranslation("wizard.multi_file_restore_panel.retrieving_failure"));
             }
             return versions;
         }
 
         private boolean isBetterVersion(FileInfo mostRecent, FileInfo info,
-                                   Date targetDate) {
-            if (mostRecent == null || mostRecent.getVersion()
-                    < info.getVersion()) {
-                return targetDate == null || DateUtil.isBeforeEndOfDate(
-                        info.getModifiedDate(), targetDate);
+            Date targetDate)
+        {
+            if (mostRecent == null
+                || mostRecent.getVersion() < info.getVersion())
+            {
+                return targetDate == null
+                    || DateUtil.isBeforeEndOfDate(info.getModifiedDate(),
+                        targetDate);
             }
             return false;
         }
 
         @SuppressWarnings({"unchecked"})
-        protected void afterConstruct() {
-            final List<FileInfo> versions = (List<FileInfo>) getValue();
+        protected void done() {
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    List<FileInfo> versions;
+                    try {
+                        versions = get();
+                    } catch (Exception e) {
+                        log.severe("Unable to check archived file versions. "
+                            + e);
+                        return;
+                    }
                     scrollPane.setVisible(true);
                     bar.setVisible(false);
                     tableModel.setVersions(versions);
                     hasNext = !versions.isEmpty();
                     if (versions.isEmpty()) {
-                        infoLabel.setText(Translation.getTranslation(
-                                "wizard.multi_file_restore_panel.retrieving_none"));
+                        infoLabel
+                            .setText(Translation
+                                .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
                     } else {
-                        infoLabel.setText(Translation.getTranslation(
-                                "wizard.multi_file_restore_panel.retrieving_success"));
+                        infoLabel
+                            .setText(Translation
+                                .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
                     }
                     fileInfosToRestore.clear();
                     fileInfosToRestore.addAll(versions);
@@ -320,8 +369,9 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource().equals(latestVersionButton) ||
-                    e.getSource().equals(dateVersionButton)) {
+            if (e.getSource().equals(latestVersionButton)
+                || e.getSource().equals(dateVersionButton))
+            {
                 updateDateChooser();
                 loadVersions();
             }
