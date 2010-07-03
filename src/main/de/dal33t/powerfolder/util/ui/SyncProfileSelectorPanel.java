@@ -276,6 +276,17 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
         if (updateFolder) {
             if (updateableFolder != null) {
                 updateableFolder.setSyncProfile(syncProfile);
+
+                // Also need to persist for any other folders that have this
+                // profile. This ensures that any minor changes are persisted
+                // for all affected folders.
+                for (Folder folder :
+                        getController().getFolderRepository().getFolders()) {
+                    if (folder.getSyncProfile().equals(syncProfile) &&
+                            !updateableFolder.equals(folder)) {
+                             folder.setSyncProfile(syncProfile);
+                    }
+                }
             }
         }
 
