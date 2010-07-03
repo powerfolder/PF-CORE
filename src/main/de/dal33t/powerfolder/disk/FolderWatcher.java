@@ -148,7 +148,7 @@ public class FolderWatcher extends PFComponent {
         if (!isSupported()) {
             return;
         }
-        if (!syncProfile.isAutoDetectLocalChanges()) {
+        if (!syncProfile.isInstantSync()) {
             remove();
             return;
         }

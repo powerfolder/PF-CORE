@@ -811,7 +811,6 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
-
         boolean wasDeviceDisconnected = deviceDisconnected;
         checkIfDeviceDisconnected();
 
@@ -829,7 +828,7 @@ public class Folder extends PFComponent {
         ScanResult result;
         FolderScanner scanner = getController().getFolderRepository()
             .getFolderScanner();
-        // Aquire the folder wait
+        // Acquire the folder wait
         boolean scannerBusy;
         do {
             synchronized (scanLock) {
@@ -860,8 +859,8 @@ public class Folder extends PFComponent {
                 // Push any file problems into the Folder's problems.
                 Map<FileInfo, List<Problem>> filenameProblems = result
                     .getProblemFiles();
-                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry : filenameProblems
-                    .entrySet())
+                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry :
+                        filenameProblems.entrySet())
                 {
                     for (Problem problem : fileInfoListEntry.getValue()) {
                         addProblem(problem);
@@ -883,7 +882,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (!syncProfile.isAutoDetectLocalChanges()) {
+        if (!syncProfile.isInstantSync()) {
             if (isFiner()) {
                 logFiner("Skipping scan");
             }
@@ -895,9 +894,6 @@ public class Folder extends PFComponent {
         }
 
         if (syncProfile.getConfiguration().isInstantSync()) {
-            // @todo the actual instant sync. ()#2040
-            // Even though sync should be instant, do a scan every ten minutes
-            // in case anything was missed. Sometimes happens...
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < TEN_MINUTES) {
@@ -1816,8 +1812,7 @@ public class Folder extends PFComponent {
      * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
-        return syncProfile.isAutoDetectLocalChanges()
-            && !syncProfile.getConfiguration().isDailySync()
+        return syncProfile.isInstantSync()
             && !getController().isSilentMode();
     }
 

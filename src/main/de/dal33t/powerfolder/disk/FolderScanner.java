@@ -103,7 +103,7 @@ public class FolderScanner extends PFComponent {
     private volatile boolean abort = false;
 
     /**
-     * The semaphore to aquire = means this thread got the folder scan now.
+     * The semaphore to acquire = means this thread got the folder scan now.
      */
     private Semaphore threadOwnership;
 

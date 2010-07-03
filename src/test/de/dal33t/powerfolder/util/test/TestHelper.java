@@ -536,7 +536,7 @@ public class TestHelper {
      * @param folder
      */
     public static void scanFolder(final Folder folder) {
-        if (!folder.getSyncProfile().isAutoDetectLocalChanges()) {
+        if (!folder.getSyncProfile().isInstantSync()) {
             throw new IllegalStateException(
                 "Folder has auto-detect of local files disabled: " + folder
                     + ". sync profile: " + folder.getSyncProfile());

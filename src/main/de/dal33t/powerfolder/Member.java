@@ -1354,7 +1354,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
-                    && targetFolder.getSyncProfile().isAutoDetectLocalChanges())
+                    && targetFolder.getSyncProfile().isInstantSync())
                 {
                     logFiner("Remote sync command received on " + targetFolder);
                     getController().setSilentMode(false);

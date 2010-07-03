@@ -475,11 +475,11 @@ public class SyncProfile implements Serializable {
 
     /**
      * If folder automatically detects changes to files on disk
-     * 
+     *
      * @return
      */
-    public boolean isAutoDetectLocalChanges() {
-        return configuration.getTimeBetweenRegularScans() > 0;
+    public boolean isInstantSync() {
+        return configuration.isInstantSync();
     }
 
     /**
