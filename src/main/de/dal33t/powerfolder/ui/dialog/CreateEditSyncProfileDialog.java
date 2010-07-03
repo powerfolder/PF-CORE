@@ -499,6 +499,9 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
                 // Update the profile with configuration changes.
                 syncProfile.setConfiguration(newConfiguration);
 
+                // Set in the selector panel so it gets persisted.
+                syncProfileSelectorPanel.setSyncProfile(syncProfile, true);
+
             }
 
             if (!originalProfileName.equals(newProfileName)) {

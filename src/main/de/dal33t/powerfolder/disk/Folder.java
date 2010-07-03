@@ -1739,17 +1739,12 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Sets the synchronisation profile for this folder
+     * Sets the synchronisation profile for this folder.
      * 
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
         Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
-
-        if (aSyncProfile.equals(syncProfile)) {
-            // Not changed
-            return;
-        }
         Reject.ifTrue(previewOnly,
             "Can not change Sync Profile in Preview mode.");
 
