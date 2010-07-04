@@ -474,12 +474,18 @@ public class SyncProfile implements Serializable {
     }
 
     /**
-     * If folder automatically detects changes to files on disk
-     *
-     * @return
+     * @return true if folder automatically detects changes to files on disk
      */
     public boolean isInstantSync() {
         return configuration.isInstantSync();
+    }
+
+    /**
+     * @return true if folder detects changes in periodic timeframes (e.g. every
+     *         hour).
+     */
+    public boolean isPeriodicSync() {
+        return configuration.isPeriodicSync();
     }
 
     /**
