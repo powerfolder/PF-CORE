@@ -82,6 +82,18 @@ public class RestoreFilesTableModel extends PFComponent implements TableModel,
         }
         update();
     }
+    
+    /**
+     * Adds the folder for the model to get details from.
+     *
+     * @param versions
+     */
+    public void addVersions(List<FileInfo> versions) {
+        synchronized (this.versions) {
+            this.versions.addAll(versions);
+        }
+        update();
+    }
 
     /**
      * Update the model in response to a change.

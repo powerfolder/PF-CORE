@@ -225,6 +225,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         if (worker != null) {
             worker.cancel(false);
         }
+        tableModel.setVersions(new ArrayList<FileInfo>());
+        bar.setVisible(true);
+        scrollPane.setVisible(false);
+        infoLabel.setVisible(true);
+        infoLabel.setText(Translation
+            .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
+
         worker = new VersionLoaderWorker();
         worker.execute();
     }
@@ -233,13 +240,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     // Inner Classes //
     // ////////////////
 
-    private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, Void>
+    private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, FileInfo>
     {
+        int count = 1;
+        
         public List<FileInfo> doInBackground() {
-            bar.setVisible(true);
-            scrollPane.setVisible(false);
-            infoLabel.setVisible(true);
-            List<FileInfo> versions = new ArrayList<FileInfo>();
+            List<FileInfo> versions = new ArrayList<FileInfo>(
+                fileInfosToRestore.size());
             try {
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 // Also try getting versions from OnlineStorage.
@@ -269,19 +276,10 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     targetDate = cal.getTime();
                 }
 
-                int count = 1;
                 for (FileInfo fileInfo : filesToRestore) {
-                    if (!getParent().isShowing()) {
-                        return Collections.emptyList();
-                    }
                     if (isCancelled()) {
                         return Collections.emptyList();
                     }
-                    infoLabel.setText(Translation.getTranslation(
-                        "wizard.multi_file_restore_panel.retrieving", Format
-                            .formatLong(count++), Format
-                            .formatLong(filesToRestore.size())));
-
                     List<FileInfo> infoList = fileArchiver
                         .getArchivedFilesInfos(fileInfo);
                     FileInfo mostRecent = null;
@@ -303,13 +301,13 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
                     if (mostRecent != null) {
                         versions.add(mostRecent);
+                        publish(mostRecent);
                     } else if (latestVersionButton.isSelected()) {
                         // No archives? Add fileInfo so it will be redownloaded.
                         versions.add(fileInfo);
+                        publish(fileInfo);
                     }
                 }
-                bar.setVisible(false);
-
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Exception", e);
                 infoLabel
@@ -317,6 +315,29 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         .getTranslation("wizard.multi_file_restore_panel.retrieving_failure"));
             }
             return versions;
+        }
+
+        @Override
+        protected void process(List<FileInfo> versions) {
+            scrollPane.setVisible(true);
+            bar.setVisible(false);
+            tableModel.addVersions(versions);
+            hasNext = false;
+            if (versions.isEmpty()) {
+                infoLabel
+                    .setText(Translation
+                        .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
+            } else {
+                infoLabel.setText(Translation.getTranslation(
+                    "wizard.multi_file_restore_panel.retrieving", Format
+                        .formatLong(count++), Format.formatLong(filesToRestore
+                        .size())));
+                // infoLabel
+                // .setText(Translation
+                // .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
+            }
+            bar.setVisible(false);
+            updateButtons();
         }
 
         private boolean isBetterVersion(FileInfo mostRecent, FileInfo info,
@@ -332,38 +353,25 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             return false;
         }
 
-        @SuppressWarnings({"unchecked"})
         protected void done() {
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    List<FileInfo> versions;
-                    try {
-                        versions = get();
-                    } catch (Exception e) {
-                        log.severe("Unable to check archived file versions. "
-                            + e);
-                        return;
-                    }
-                    scrollPane.setVisible(true);
-                    bar.setVisible(false);
-                    tableModel.setVersions(versions);
-                    hasNext = !versions.isEmpty();
-                    if (versions.isEmpty()) {
-                        infoLabel
-                            .setText(Translation
-                                .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
-                    } else {
-                        infoLabel
-                            .setText(Translation
-                                .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
-                    }
-                    fileInfosToRestore.clear();
-                    fileInfosToRestore.addAll(versions);
-                    bar.setVisible(false);
-                    updateButtons();
-                }
-            });
+            // No need to push this code into the EDT.
+            // SwingWorker.done() gets always executed in EDT.
+            scrollPane.setVisible(true);
+            bar.setVisible(false);
+            boolean empty = tableModel.getRowCount() == 0;
+            hasNext = !empty;
+            fileInfosToRestore.clear();
+            try {
+                fileInfosToRestore.addAll(get());
+            } catch (Exception e) {
+                log.log(Level.WARNING, "Unable to add files to restore. " + e,
+                    e);
+            }
+            infoLabel
+                .setText(Translation
+                    .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
+            bar.setVisible(false);
+            updateButtons();
         }
     }
 
