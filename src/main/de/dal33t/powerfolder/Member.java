@@ -657,7 +657,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         info.nick = identity.getMemberInfo().nick;
         // Reset the last connect time
         info.lastConnectTime = new Date();
-        
+
         synchronized (peerInitalizeLock) {
             ConnectionHandler oldPeer = peer;
             // Set the new peer
@@ -943,8 +943,17 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            sendMessagesAsynchron(FileList.createFileListMessages(folder,
-                !isPre4Client()));
+            Message[] filelistMsgs = FileList.createFileListMessages(folder,
+                !isPre4Client());
+            for (Message message : filelistMsgs) {
+                try {
+                    sendMessage(message);
+                } catch (ConnectionException e) {
+                    shutdown();
+                    return ConnectResult.failure("Unable to send filelist of "
+                        + folder + ". " + e);
+                }
+            }
             foldersCommon.remove(folder);
         }
         if (!foldersCommon.isEmpty()) {
@@ -1354,7 +1363,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null
-                    && targetFolder.getSyncProfile().isInstantSync())
+                    && (targetFolder.getSyncProfile().isInstantSync() || targetFolder
+                        .getSyncProfile().isPeriodicSync()))
                 {
                     logFiner("Remote sync command received on " + targetFolder);
                     getController().setSilentMode(false);
