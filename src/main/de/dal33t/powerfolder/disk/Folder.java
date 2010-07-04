@@ -54,6 +54,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -82,6 +83,7 @@ import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
@@ -1892,8 +1894,18 @@ public class Folder extends PFComponent {
         if (!wasMember && member.isCompletelyConnected()) {
             // FIX for #924
             waitForScan();
-            member.sendMessagesAsynchron(FileList.createFileListMessages(this,
-                !member.isPre4Client()));
+            
+            Message[] filelistMsgs = FileList.createFileListMessages(this,
+                !member.isPre4Client());
+            for (Message message : filelistMsgs) {
+                try {
+                    member.sendMessage(message);
+                } catch (ConnectionException e) {
+                    logWarning("Unable to send filelist to " + member + ". "
+                        + e);
+                    break;
+                }
+            }
         }
         if (!wasMember) {
             // Fire event if this member is new
