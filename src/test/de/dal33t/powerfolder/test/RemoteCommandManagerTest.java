@@ -111,7 +111,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
             .getFolders().iterator().next();
         assertEquals("XXX", folderAtBart.getName());
         assertEquals(
-            "false,false,false,false,5,true,22,0,m,Backup daily at 2200",
+            "false,false,false,false,5,true,22,0,m,Backup daily at 2200,false",
             folderAtBart.getSyncProfile().getFieldList());
 
         // Test if dupes don't appear:
@@ -142,7 +142,7 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
         folderAtBart = getContollerBart().getFolderRepository().getFolders()
             .iterator().next();
         assertEquals("XXX", folderAtBart.getName());
-        assertEquals("true,true,true,true,5,false,22,0,m,Auto-sync",
+        assertEquals("true,true,true,true,5,false,22,0,m,Auto-sync,false",
             folderAtBart.getSyncProfile().getFieldList());
         // Should be the same
         assertEquals(oldFolderAtBart.getId(), folderAtBart.getId());
