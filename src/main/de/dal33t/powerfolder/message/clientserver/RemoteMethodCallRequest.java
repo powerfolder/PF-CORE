@@ -116,8 +116,8 @@ public class RemoteMethodCallRequest extends Request {
     }
 
     public String toString() {
-        return "RemoteCall on '" + serviceId + "', Method " + methodName
-            + ", args "
+        return "RemoteCall(" + getRequestId() + ") on '" + serviceId
+            + "', Method " + methodName + ", args "
             + (methodParamTypes != null ? methodParamTypes.length : "n/a");
     }
 }
