@@ -882,12 +882,6 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (!syncProfile.isInstantSync()) {
-            if (isFiner()) {
-                logFiner("Skipping scan");
-            }
-            return false;
-        }
         Date wasLastScan = lastScan;
         if (wasLastScan == null) {
             return true;
@@ -1812,7 +1806,7 @@ public class Folder extends PFComponent {
      * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
-        return syncProfile.isInstantSync()
+        return (syncProfile.isInstantSync() || syncProfile.isPeriodicSync())
             && !getController().isSilentMode();
     }
 
