@@ -56,12 +56,11 @@ public class ReconnectManager extends PFComponent {
     /** The collection of reconnector */
     private List<Reconnector> reconnectors;
     // Counter for started reconntor, running number
-    private static AtomicInteger reconnectorCounter = new AtomicInteger(0);
+    private AtomicInteger reconnectorCounter = new AtomicInteger(0);
     private boolean started;
 
     public ReconnectManager(Controller controller) {
         super(controller);
-
         // Linkedlist, faster for queue useage
         reconnectionQueue = new LinkedList<Member>();
         // All reconnectors
@@ -128,7 +127,6 @@ public class ReconnectManager extends PFComponent {
      * @param node
      */
     public void markNodeForImmediateReconnection(Member node) {
-
         if (!started) {
             logFine("ReconnectManager not started. Unable to spawn new reconnector to "
                 + node + ". Queue: " + reconnectionQueue);
@@ -137,7 +135,7 @@ public class ReconnectManager extends PFComponent {
         if (isFiner()) {
             logFiner("Marking node for immediate reconnect: " + node);
         }
-        if (node.isCompletelyConnected() || node.isConnecting()) {
+        if (node.isConnected() || node.isConnecting()) {
             // Skip, not neccessary.
             return;
         }
@@ -541,10 +539,10 @@ public class ReconnectManager extends PFComponent {
                     }
                 }
 
+                long start = System.currentTimeMillis();
                 try { // UNMARK connecting try/finally ***
                     // A node could be obtained from the reconnection queue, try
                     // to connect now
-                    long start = System.currentTimeMillis();
                     if (!ServerClient.isTempServerNode(currentNode.getInfo())) {
                         try {
                             // Reconnect, Don't mark connecting. already done.
@@ -600,29 +598,10 @@ public class ReconnectManager extends PFComponent {
                             logFiner("ConnectionException", e1);
                         }
                     }
-
-                    long reconnectTook = System.currentTimeMillis() - start;
-                    long waitUntilNextTry = Constants.SOCKET_CONNECT_TIMEOUT
-                        / 2 - reconnectTook;
-                    if (waitUntilNextTry > 0) {
-                        synchronized (reconnectionQueue) {
-                            try {
-                                if (isFiner()) {
-                                    logFiner(this + ": Going on idle for "
-                                        + waitUntilNextTry + "ms");
-                                }
-                                reconnectionQueue.wait(waitUntilNextTry);
-                            } catch (InterruptedException e) {
-                                logFiner(this + " interrupted, breaking");
-                                break;
-                            }
-                        }
-                    }
                 } finally {
                     currentNode.unmarkConnecting();
                 }
             }
-
         }
 
         public String toString() {
