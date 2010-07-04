@@ -673,7 +673,7 @@ public enum ConfigurationEntry {
      * #711: Watch for changes on the filesystem for auto-detecting sync
      * profiles.
      */
-    FOLDER_WATCH_FILESYSTEM("filesystem.watch", false),
+    FOLDER_WATCH_FILESYSTEM("filesystem.watch", true),
 
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", false),
