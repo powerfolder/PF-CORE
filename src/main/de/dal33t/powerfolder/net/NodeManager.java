@@ -711,6 +711,11 @@ public class NodeManager extends PFComponent {
             nodesWentOnline.remove(node.getInfo());
 
             getController().getTransferManager().breakTransfers(node);
+
+            if (node.isFriend()) {
+                getController().getReconnectManager().considerReconnectionTo(
+                    node);
+            }
         }
 
         // Event handling
