@@ -44,6 +44,9 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
     }
 
     public MemberInfo intern(MemberInfo item) {
+        if (item == null) {
+            return null;
+        }
         Member node = nodeManager.getNode(item);
 
         if (misses > hits && misses > 100) {

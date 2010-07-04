@@ -33,6 +33,9 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
     private static final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
+        if (folderInfo == null) {
+            return null;
+        }
         FolderInfo internInstance = INSTANCES.get(folderInfo);
         if (internInstance != null) {
             return internInstance;
