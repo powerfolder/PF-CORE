@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -140,8 +141,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     }
 
     public void testAutoReconnectAfterDisconnect() {
-        // Reconnect manager has to be started therefore!
-        getContollerHomer().getReconnectManager().start();
 
         connectSimpsons();
         assertEquals(4, getContollerBart().getNodeManager().getConnectedNodes()
@@ -149,8 +148,14 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         assertEquals(4, getContollerLisa().getNodeManager().getConnectedNodes()
             .size());
 
+        // Start Reconnector. Currently empty.
+        TestHelper.waitMilliSeconds(500);
+        getContollerHomer().getReconnectManager().start();
+
         final Member lisaAtHomer = getContollerHomer().getNodeManager()
             .getNode(getContollerLisa().getMySelf().getInfo());
+        final Member homerAtLisa = getContollerLisa().getNodeManager().getNode(
+            getContollerHomer().getMySelf().getInfo());
         assertTrue(lisaAtHomer.isCompletelyConnected());
         lisaAtHomer.shutdown();
 
@@ -158,6 +163,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Both are not friends so no connect!
         TestHelper.waitMilliSeconds(10000);
         assertFalse(lisaAtHomer.isCompletelyConnected());
+        assertFalse(homerAtLisa.isCompletelyConnected());
 
         // Make friend
         lisaAtHomer.setFriend(true, "");
@@ -173,13 +179,24 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 return lisaAtHomer.isCompletelyConnected();
             }
         });
+        // W8 until reconnecting has stopped.
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return !lisaAtHomer.isConnecting();
+            }
+        });
 
         // Again shutdown
+        System.err.println("Shutting down: " + lisaAtHomer);
         lisaAtHomer.shutdown();
+        assertFalse(lisaAtHomer.isConnected());
+        assertFalse(homerAtLisa.isConnected());
+
+        System.out.println("Waiting for reconnect...");
 
         // RECONNECT should happen!
         // Both are friends so connect!
-        TestHelper.waitForCondition(100, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Lisa has not beed reconnected. Nodes in recon queue at Homer: "
                     + getContollerHomer().getReconnectManager()
