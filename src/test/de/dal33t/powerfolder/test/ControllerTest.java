@@ -19,15 +19,52 @@
  */
 package de.dal33t.powerfolder.test;
 
+import java.awt.event.ActionEvent;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.security.AdminPermission;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 public class ControllerTest extends ControllerTestCase {
     private volatile boolean run;
+
+    public void testActionMemoryLeak() {
+        BaseAction action;
+        ConfigurationEntry.SECURITY_PERMISSIONS_STRICT.setValue(
+            getController(), true);
+        for (int i = 0; i < 200; i++) {
+            action = new MyAction(getController());
+            action.allowWith(AdminPermission.INSTANCE);
+        }
+
+        // System.gc();
+        // TestHelper.waitMilliSeconds(10000);
+        getController().getOSClient().login("xxx", "dd".toCharArray());
+        // TestHelper.waitMilliSeconds(60000);
+        //
+        // ------------------
+        // Test with Profiler comes here:
+        // No BoundPermission objects should exists here after forcing
+        // GC ---------------
+    }
+
+    private static final class MyAction extends BaseAction {
+
+        protected MyAction(Controller controller) {
+            super("Name", null, controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+
+        }
+
+    }
 
     public void testRestart() {
         getController().shutdown();
