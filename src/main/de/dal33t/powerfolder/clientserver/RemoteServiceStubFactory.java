@@ -41,7 +41,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
 public class RemoteServiceStubFactory {
     private static final Logger LOG = Logger
         .getLogger(RemoteServiceStubFactory.class.getName());
-    private static final boolean CHECK_EXECUTION_IN_HANDLE_MESSAGE = false;
 
     private RemoteServiceStubFactory() {
         // No instance allowed
@@ -90,24 +89,6 @@ public class RemoteServiceStubFactory {
         public Object invoke(Object proxy, Method method, Object[] args)
             throws Throwable
         {
-            if (CHECK_EXECUTION_IN_HANDLE_MESSAGE) {
-                StackTraceElement[] te = Thread.currentThread().getStackTrace();
-                for (StackTraceElement stackTraceElement : te) {
-                    if (stackTraceElement.getMethodName().contains(
-                        "handleMessage"))
-                    {
-                        LOG
-                            .warning("Executing remote request in handleMessage method. Thread: "
-                                + Thread.currentThread());
-                        // throw new RemoteCallException(
-                        // "Illegal to call remote service method ("
-                        // + serviceId + " " + method
-                        // + ") in message handling code ("
-                        // + stackTraceElement + ").",
-                        // new RuntimeException("here"));
-                    }
-                }
-            }
             if (UIUtil.isAwtAvailable() && EventQueue.isDispatchThread()) {
                 LOG.log(Level.WARNING, "Call to remote service method ("
                     + method + ") executed in EDT thread. Args: "
