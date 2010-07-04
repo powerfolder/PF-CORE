@@ -816,7 +816,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             setConnectedToNetwork(true);
             connectionRetries = 0;
         } else {
-            if (connectionRetries >= 15 && isConnectedToNetwork) {
+            if (connectionRetries >= 5 && isConnectedToNetwork) {
                 logWarning("Unable to connect directly");
                 // FIXME: Find a better ways
                 setConnectedToNetwork(false);
