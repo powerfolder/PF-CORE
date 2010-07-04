@@ -458,6 +458,6 @@ public abstract class Transfer extends Loggable implements Serializable {
         ClassNotFoundException
     {
         in.defaultReadObject();
-        this.partnerInfo = partnerInfo.intern();
+        this.partnerInfo = partnerInfo != null ? partnerInfo.intern() : null;
     }
 }
