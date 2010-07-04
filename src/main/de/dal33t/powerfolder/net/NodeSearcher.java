@@ -261,7 +261,7 @@ public class NodeSearcher extends PFComponent {
                     try {
                         searchThread.wait();
                     } catch (InterruptedException e) {
-                        logWarning("Search was interrupted", e);
+                        logFine("Search was interrupted", e);
                         break;
                     }
                 }
