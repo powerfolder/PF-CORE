@@ -859,8 +859,8 @@ public class Folder extends PFComponent {
                 // Push any file problems into the Folder's problems.
                 Map<FileInfo, List<Problem>> filenameProblems = result
                     .getProblemFiles();
-                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry :
-                        filenameProblems.entrySet())
+                for (Map.Entry<FileInfo, List<Problem>> fileInfoListEntry : filenameProblems
+                    .entrySet())
                 {
                     for (Problem problem : fileInfoListEntry.getValue()) {
                         addProblem(problem);
@@ -882,12 +882,14 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
+        if (syncProfile.isManualSync()) {
+            return false;
+        }
         Date wasLastScan = lastScan;
         if (wasLastScan == null) {
             return true;
         }
-
-        if (syncProfile.getConfiguration().isInstantSync()) {
+        if (syncProfile.isInstantSync()) {
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < TEN_MINUTES) {
@@ -896,14 +898,14 @@ public class Folder extends PFComponent {
                 }
                 return false;
             }
-        } else if (syncProfile.getConfiguration().isDailySync()) {
+        } else if (syncProfile.isDailySync()) {
             if (!shouldDoDailySync()) {
                 if (isFiner()) {
                     logFiner("Skipping daily scan");
                 }
                 return false;
             }
-        } else if (syncProfile.getConfiguration().isPeriodicSync()) {
+        } else if (syncProfile.isPeriodicSync()) {
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
             if (secondsSinceLastSync < syncProfile.getSecondsBetweenScans()) {

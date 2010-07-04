@@ -210,7 +210,7 @@ public class SyncProfileConfiguration implements Serializable {
 
     /**
      * Whther this scan is periodic.
-     *
+     * 
      * @return
      */
     public boolean isPeriodicSync() {
@@ -218,9 +218,17 @@ public class SyncProfileConfiguration implements Serializable {
     }
 
     /**
+     * @return true if this profile only detects changes when user presses
+     *         manually the sync button.
+     */
+    public boolean isManualSync() {
+        return isPeriodicSync() && timeBetweenRegularScans == 0;
+    }
+
+    /**
      * Whther this scan is regular (every n hours, minutes or seconds), or daily
      * (once per day / week period at a particular hour of the day).
-     *
+     * 
      * @return
      */
     public boolean isDailySync() {

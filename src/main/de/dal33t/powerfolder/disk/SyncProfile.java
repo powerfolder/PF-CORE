@@ -85,13 +85,13 @@ public class SyncProfile implements Serializable {
             false, false, 30));
 
     /**
-     * Automatic synchronization preset profile.
-     * Uses JNotify to do instant sync.
+     * Automatic synchronization preset profile. Uses JNotify to do instant
+     * sync.
      */
     public static final SyncProfile AUTOMATIC_SYNCHRONIZATION = new SyncProfile(
-        "auto_sync", false, new SyncProfileConfiguration(true,
-            true, true, true, 1, false, 12, 1,
-                    SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
+        "auto_sync", false, new SyncProfileConfiguration(true, true, true,
+            true, 1, false, 12, 1,
+            SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
      * Backup source preset profile - 5 minute.
@@ -124,7 +124,7 @@ public class SyncProfile implements Serializable {
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
-            BACKUP_SOURCE_HOUR, BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        BACKUP_SOURCE_HOUR, BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
@@ -486,6 +486,22 @@ public class SyncProfile implements Serializable {
      */
     public boolean isPeriodicSync() {
         return configuration.isPeriodicSync();
+    }
+
+    /**
+     * @return true if this profile only detects changes when user presses
+     *         manually the sync button.
+     */
+    public boolean isManualSync() {
+        return configuration.isManualSync();
+    }
+
+    /**
+     * @return true if folder detects changes in daily/scheduled timeframes
+     *         (e.g. Mo / 1200 pm).
+     */
+    public boolean isDailySync() {
+        return configuration.isDailySync();
     }
 
     /**
