@@ -197,6 +197,11 @@ public class FolderWatcher extends PFComponent {
                         // Ignore.
                         continue;
                     }
+                    if (folder.checkIfDeviceDisconnected()) {
+                        logFine("Device disconnected while scanning " + folder
+                            + ": " + folder.getLocalBase());
+                        continue;
+                    }
                     FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
                     if (fileInfo == null) {
                         if (isFine()) {

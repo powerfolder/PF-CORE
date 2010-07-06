@@ -54,7 +54,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -850,7 +849,7 @@ public class Folder extends PFComponent {
         } while (scannerBusy);
 
         if (checkIfDeviceDisconnected()) {
-            logWarning("Device disconnected while scanning folder: "
+            logFine("Device disconnected while scanning folder: "
                 + localBase);
             return false;
         }
