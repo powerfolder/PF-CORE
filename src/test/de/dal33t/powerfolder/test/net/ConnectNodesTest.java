@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.test.net;
 
-import java.util.logging.Level;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Feature;
@@ -35,7 +33,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -260,7 +257,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-        assertTrue(!margeAtLisa.isPre4Client());
+        assertFalse("Marge should not be a pre 4.0 client", margeAtLisa.isPre4Client());
 
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
@@ -274,8 +271,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // Should connect, because friendship message is pending.
         margeAtLisa.shutdown();
-        assertTrue(margeAtLisa.reconnect().isSuccess());
-        assertTrue(margeAtLisa.isCompletelyConnected());
+        assertTrue("Marge was not sucessfully reconnected", margeAtLisa.reconnect().isSuccess());
+        assertTrue("marge is not connected", margeAtLisa.isCompletelyConnected());
         margeAtLisa.shutdown();
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
