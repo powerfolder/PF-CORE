@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.test.net;
 
+import java.util.logging.Level;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ConnectResult;
 import de.dal33t.powerfolder.Feature;
@@ -33,6 +35,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -187,9 +190,20 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
 
         // Again shutdown
-        lisaAtHomer.shutdown();
-        assertFalse("Lisa at homer is still connected", lisaAtHomer.isCompletelyConnected());
-        assertFalse("Homer at lisa is still connected", homerAtLisa.isCompletelyConnected());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
+            public boolean reached() {        lisaAtHomer.shutdown();
+                return !lisaAtHomer.isCompletelyConnected()
+                    && !homerAtLisa.isCompletelyConnected();
+            }
+
+            public String message() {
+                return "Lisa at homer is still connected? "
+                    + lisaAtHomer.isCompletelyConnected()
+                    + ". Homer at lisa is still connected? "
+                    + homerAtLisa.isCompletelyConnected();
+            }
+        });
 
         System.out.println("Waiting for reconnect...");
 
