@@ -156,14 +156,14 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             .getNode(getContollerLisa().getMySelf().getInfo());
         final Member homerAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerHomer().getMySelf().getInfo());
-        assertTrue(lisaAtHomer.isCompletelyConnected());
+        assertTrue("Lisa not completely connected at Homer", lisaAtHomer.isCompletelyConnected());
         lisaAtHomer.shutdown();
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
         TestHelper.waitMilliSeconds(10000);
-        assertFalse(lisaAtHomer.isCompletelyConnected());
-        assertFalse(homerAtLisa.isCompletelyConnected());
+        assertFalse("Lisa still connected at Homer",lisaAtHomer.isCompletelyConnected());
+        assertFalse("Homer still connected at Lisa", homerAtLisa.isCompletelyConnected());
 
         // Make friend
         lisaAtHomer.setFriend(true, "");
@@ -187,10 +187,9 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
 
         // Again shutdown
-        System.err.println("Shutting down: " + lisaAtHomer);
         lisaAtHomer.shutdown();
-        assertFalse(lisaAtHomer.isConnected());
-        assertFalse(homerAtLisa.isConnected());
+        assertFalse("Lisa at homer is still connected", lisaAtHomer.isCompletelyConnected());
+        assertFalse("Homer at lisa is still connected", homerAtLisa.isCompletelyConnected());
 
         System.out.println("Waiting for reconnect...");
 
@@ -230,7 +229,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerLisa(), true);
-        assertFalse(margeAtLisa.isCompletelyConnected());
+        assertFalse("Marge at lisa should not be connected", margeAtLisa.isCompletelyConnected());
 
         // Make friend
         margeAtLisa.setFriend(true, "");
