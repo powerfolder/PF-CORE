@@ -2862,7 +2862,7 @@ public class Folder extends PFComponent {
         File systemSubDir = new File(localBase,
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (!systemSubDir.exists()) {
-            if (systemSubDir.mkdirs()) {
+            if (!deviceDisconnected && systemSubDir.mkdirs()) {
                 FileUtils.setAttributesOnWindows(systemSubDir, true, true);
             } else {
                 logSevere("Failed to create system subdir: " + systemSubDir);

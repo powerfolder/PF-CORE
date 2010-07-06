@@ -21,7 +21,7 @@ public enum ArchiveMode {
         @Override
         public FileArchiver getInstance(Folder f) {
             File archive = new File(f.getSystemSubDir(), "archive");
-            if (!archive.exists() && !archive.mkdirs()) {
+            if (!f.checkIfDeviceDisconnected() && !archive.exists() && !archive.mkdirs()) {
                 log
                     .warning("Failed to create archive directory in system subdirectory: "
                         + archive);
