@@ -24,6 +24,8 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 
@@ -80,21 +82,30 @@ public class LoginUtil {
         if (passwordOBF == null) {
             return null;
         }
-        byte[] buf = Base64.decode(passwordOBF, Base64.DONT_BREAK_LINES);
-        for (int i = 0; i < buf.length; i++) {
-            buf[i] = (byte) (buf[i] - 127);
-            buf[i] = (byte) (buf[i] ^ OBF_BYTE);
+        try {
+            byte[] buf = Base64.decode(passwordOBF, Base64.DONT_BREAK_LINES);
+            for (int i = 0; i < buf.length; i++) {
+                buf[i] = (byte) (buf[i] - 127);
+                buf[i] = (byte) (buf[i] ^ OBF_BYTE);
+            }
+            ByteBuffer bBuf = ByteBuffer.wrap(buf);
+            char[] ca = new char[buf.length];
+            CharBuffer cBuf = CharBuffer.wrap(ca);
+            CharsetDecoder dec = Convert.UTF8.newDecoder();
+            dec.decode(bBuf, cBuf, true);
+            int len = cBuf.position();
+            if (len != ca.length) {
+                ca = Arrays.copyOf(ca, len);
+            }
+            return ca;
+        } catch (Exception e) {
+            Logger.getLogger(LoginUtil.class.getName()).log(
+                Level.SEVERE,
+                "Unable to decode obfuscated password: " + passwordOBF + ". "
+                    + e, e);
+            return null;
         }
-        ByteBuffer bBuf = ByteBuffer.wrap(buf);
-        char[] ca = new char[buf.length];
-        CharBuffer cBuf = CharBuffer.wrap(ca);
-        CharsetDecoder dec = Convert.UTF8.newDecoder();
-        dec.decode(bBuf, cBuf, true);
-        int len = cBuf.position();
-        if (len != ca.length) {
-            ca = Arrays.copyOf(ca, len);
-        }
-        return ca;
+
     }
 
     /**

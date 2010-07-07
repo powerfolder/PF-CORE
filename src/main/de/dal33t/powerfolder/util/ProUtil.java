@@ -24,8 +24,10 @@ import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -37,6 +39,35 @@ public class ProUtil {
     private static final Logger LOG = Logger.getLogger(Util.class.getName());
 
     private ProUtil() {
+    }
+
+    /**
+     * @param controller
+     * @return the primary buy now URL
+     */
+    public static final String getBuyNowURL(Controller controller) {
+        String simpleURL = ConfigurationEntry.PROVIDER_BUY_URL
+            .getValue(controller);
+        if (simpleURL == null) {
+            return null;
+        }
+        ServerClient client = controller.getOSClient();
+        if (StringUtils.isBlank(client.getUsername())
+            && client.getPassword() != null)
+        {
+            return simpleURL;
+        }
+
+        String url = simpleURL;
+        String loginURL = client.getLoginURLWithCredentials();
+        url = loginURL;
+        if (loginURL.contains("?")) {
+            url += '&';
+        } else {
+            url += '?';
+        }
+        url += "originalURL=" + Util.encodeURI(simpleURL);
+        return url;
     }
 
     /**
