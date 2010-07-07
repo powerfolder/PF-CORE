@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
@@ -73,14 +74,14 @@ public class FolderSetupPanel extends PFWizardPanel {
      * Can procede if an invitation exists.
      */
     public boolean hasNext() {
-        return folderNameTextField.getText().trim().length() > 0;
+        return StringUtils.isNotBlank(folderNameTextField.getText());
     }
 
     public WizardPanel next() {
 
         // Set FolderInfo
         FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
-            .trim(), '[' + IdGenerator.makeId() + ']').intern();
+            .trim(), '[' + IdGenerator.makeId() + ']');
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
         // Set sync profile
