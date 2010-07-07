@@ -1594,6 +1594,10 @@ public class NodeManager extends PFComponent {
         ListenerSupportFactory.addListener(listenerSupport, listener);
     }
 
+    public void addWeakNodeManagerListener(NodeManagerListener listener) {
+        ListenerSupportFactory.addListener(listenerSupport, listener, true);
+    }
+
     public void removeNodeManagerListener(NodeManagerListener listener) {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
