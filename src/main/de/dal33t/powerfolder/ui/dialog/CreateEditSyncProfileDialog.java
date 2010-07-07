@@ -148,21 +148,21 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
             .getTranslation("dialog.create_edit_profile.change_detection"), cc
             .xyw(1, 11, 3));
 
-        builder.add(periodicRadioButton, cc.xy(3, 13));
+        builder.add(instantRadioButton, cc.xy(3, 13));
+
+        builder.add(periodicRadioButton, cc.xy(3, 15));
 
         builder.add(new JLabel(Translation
             .getTranslation("dialog.create_edit_profile.time_between_scans")),
-            cc.xy(1, 15));
-        builder.add(createRegularPanel(), cc.xy(3, 15));
+            cc.xy(1, 17));
+        builder.add(createRegularPanel(), cc.xy(3, 17));
 
-        builder.add(dailyRadioButton, cc.xy(3, 17));
+        builder.add(dailyRadioButton, cc.xy(3, 19));
 
         builder.add(new JLabel(Translation
             .getTranslation("dialog.create_edit_profile.hour_day_sync")), cc
-            .xy(1, 19));
-        builder.add(createDailyComboPanel(), cc.xy(3, 19));
-
-        builder.add(instantRadioButton, cc.xy(3, 21));
+            .xy(1, 21));
+        builder.add(createDailyComboPanel(), cc.xy(3, 21));
 
         ButtonGroup bg = new ButtonGroup();
         bg.add(periodicRadioButton);

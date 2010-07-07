@@ -672,12 +672,6 @@ public enum ConfigurationEntry {
      */
     FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", false),
 
-    /**
-     * #711: Watch for changes on the filesystem for auto-detecting sync
-     * profiles.
-     */
-    FOLDER_WATCH_FILESYSTEM("filesystem.watch", true),
-
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", false),
 

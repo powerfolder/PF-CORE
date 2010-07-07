@@ -29,7 +29,6 @@ import java.io.File;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
 import net.contentobjects.jnotify.JNotifyListener;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -65,9 +64,7 @@ public class FolderWatcher extends PFComponent {
     }
 
     public boolean isSupported() {
-        return ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
-            .getValueBoolean(getController())
-            && isLibLoaded();
+        return isLibLoaded();
     }
 
     /**
