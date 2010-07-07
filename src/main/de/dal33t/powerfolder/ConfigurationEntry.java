@@ -33,6 +33,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -69,7 +70,7 @@ public enum ConfigurationEntry {
      * TRAC #2028
      */
     KILL_RUNNING_INSTANCE("kill.running.instance", false),
-    
+
     /**
      * Don't prompt on update. Simply auto-upgrade silently
      */
@@ -158,10 +159,12 @@ public enum ConfigurationEntry {
         "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4"),
 
     /**
-     * URL of the PowerFolder Pro page
+     * URL of the PowerFolder Pro page.
+     * <p>
+     * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
     PROVIDER_BUY_URL("provider.url.buy",
-        "http://www.powerfolder.com/buynow.html"),
+        "https://access.powerfolder.com/upgrade.html"),
 
     /**
      * URL where the contact form resides
