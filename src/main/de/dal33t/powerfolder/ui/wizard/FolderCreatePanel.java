@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
@@ -45,15 +44,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-
 import jwf.WizardPanel;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -64,7 +55,6 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -73,9 +63,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -88,170 +75,18 @@ import de.dal33t.powerfolder.util.ui.SwingWorker;
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class FolderCreatePanel extends PFWizardPanel {
+public class FolderCreatePanel extends SwingWorkerPanel {
 
     private static final Logger log = Logger.getLogger(FolderCreatePanel.class
         .getName());
 
-    private final Map<FolderInfo, FolderSettings> configurations;
-    private final Map<FolderInfo, String> joinFolders;
-    private boolean backupByOS;
     private boolean sendInvitations;
-    private boolean createDesktopShortcut;
-
     private final List<Folder> folders;
 
-    private JProgressBar bar;
-
     public FolderCreatePanel(Controller controller) {
-        super(controller);
-        configurations = new HashMap<FolderInfo, FolderSettings>();
-        joinFolders = new HashMap<FolderInfo, String>();
+        super(controller, null, "Title", "Text", null);
+        setTask(new MyFolderCreateWorker());
         folders = new ArrayList<Folder>();
-    }
-
-    @Override
-    public boolean canFinish() {
-        return false;
-    }
-
-    /**
-     * Folders created; can not change that.
-     * 
-     * @return if can go back
-     */
-    @Override
-    public boolean canGoBackTo() {
-        return false;
-    }
-
-    @Override
-    protected JPanel buildContent() {
-        FormLayout layout = new FormLayout("140dlu, $lcg, $wfield",
-            "pref, 3dlu, pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.setBorder(createFewContentBorder());
-        CellConstraints cc = new CellConstraints();
-
-        int row = 1;
-
-        row += 2;
-        bar = new JProgressBar();
-        bar.setIndeterminate(true);
-        builder.add(bar, cc.xy(1, row));
-
-        return builder.getPanel();
-    }
-
-    @Override
-    protected void afterDisplay() {
-        // Mandatory
-        Boolean saveLocalInvite = (Boolean) getWizardContext().getAttribute(
-            SAVE_INVITE_LOCALLY);
-        Reject.ifNull(saveLocalInvite,
-            "Save invite locally attribute is null/not set");
-
-        // Optional
-        Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
-            PREVIEW_FOLDER_ATTIRBUTE);
-        boolean previewFolder = prevAtt != null && prevAtt;
-
-        createDesktopShortcut = (Boolean) getWizardContext().getAttribute(
-            CREATE_DESKTOP_SHORTCUT);
-        Boolean osAtt = (Boolean) getWizardContext().getAttribute(
-            BACKUP_ONLINE_STOARGE);
-        backupByOS = osAtt != null && osAtt;
-        if (backupByOS) {
-            getController().getUIController().getApplicationModel()
-                .getServerClientModel().checkAndSetupAccount();
-        }
-        Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
-            SEND_INVIATION_AFTER_ATTRIBUTE);
-        sendInvitations = sendInvsAtt == null || sendInvsAtt;
-
-        // Either we have FOLDER_CREATE_ITEMS ...
-        List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
-            .getAttribute(FOLDER_CREATE_ITEMS);
-        if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
-            for (FolderCreateItem folderCreateItem : folderCreateItems) {
-                File localBase = folderCreateItem.getLocalBase();
-                Reject.ifNull(localBase,
-                    "Local base for folder is null/not set");
-                SyncProfile syncProfile = folderCreateItem.getSyncProfile();
-                Reject.ifNull(syncProfile,
-                    "Sync profile for folder is null/not set");
-                syncProfile = adjustSyncProfile(syncProfile);
-                FolderInfo folderInfo = folderCreateItem.getFolderInfo();
-                if (folderInfo == null) {
-                    folderInfo = createFolderInfo(localBase);
-                }
-                ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
-                int archiveHistory = folderCreateItem.getArchiveHistory();
-                if (!StringUtils.isBlank(folderCreateItem
-                    .getLinkToOnlineFolder())) {
-                    joinFolders.put(folderInfo, folderCreateItem
-                            .getLinkToOnlineFolder());
-                }
-                FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, archiveMode, previewFolder,
-                    null, archiveHistory, true);
-                configurations.put(folderInfo, folderSettings);
-            }
-        } else {
-
-            // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
-            // FOLDERINFO_ATTRIBUTE...
-            File localBase = (File) getWizardContext().getAttribute(
-                FOLDER_LOCAL_BASE);
-            Reject.ifNull(localBase, "Local base for folder is null/not set");
-            SyncProfile syncProfile = (SyncProfile) getWizardContext()
-                .getAttribute(SYNC_PROFILE_ATTRIBUTE);
-            Reject.ifNull(syncProfile,
-                "Sync profile for folder is null/not set");
-            syncProfile = adjustSyncProfile(syncProfile);
-
-            // Optional
-            FolderInfo folderInfo = (FolderInfo) getWizardContext()
-                .getAttribute(FOLDERINFO_ATTRIBUTE);
-            if (folderInfo == null) {
-                folderInfo = createFolderInfo(localBase);
-            }
-
-            FolderSettings folderSettings = new FolderSettings(localBase,
-                syncProfile, saveLocalInvite, ArchiveMode
-                    .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                        .getValue(getController())), previewFolder, null,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                    .getValueInt(getController()), true);
-            configurations.put(folderInfo, folderSettings);
-        }
-
-        // Reset
-        folders.clear();
-
-        SwingWorker worker = new MyFolderCreateWorker();
-        bar.setVisible(true);
-        worker.start();
-        updateButtons();
-    }
-
-    private SyncProfile adjustSyncProfile(SyncProfile syncProfile) {
-        Integer fileCount = (Integer) getWizardContext().getAttribute(
-            FILE_COUNT);
-        if (fileCount == null) {
-            fileCount = 0;
-        }
-        return SyncProfile.adjust(syncProfile, fileCount,
-            ConfigurationEntry.FOLDER_WATCH_FILESYSTEM
-                .getValueBoolean(getController()), false);
-    }
-
-    private static FolderInfo createFolderInfo(File localBase) {
-        // Create new folder info
-        String name = localBase.getName();
-        String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId).intern();
     }
 
     @Override
@@ -280,10 +115,107 @@ public class FolderCreatePanel extends PFWizardPanel {
         return next;
     }
 
-    private class MyFolderCreateWorker extends SwingWorker {
+    private static FolderInfo createFolderInfo(File localBase) {
+        // Create new folder info
+        String name = FileUtils.getSuggestedFolderName(localBase);
+        String folderId = '[' + IdGenerator.makeId() + ']';
+        return new FolderInfo(name, folderId);
+    }
 
-        @Override
-        public Object construct() {
+    private class MyFolderCreateWorker implements Runnable {
+
+        public void run() {
+            final Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
+            final Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
+            boolean backupByOS;
+
+            boolean createDesktopShortcut;
+
+            // Mandatory
+            Boolean saveLocalInvite = (Boolean) getWizardContext()
+                .getAttribute(SAVE_INVITE_LOCALLY);
+            Reject.ifNull(saveLocalInvite,
+                "Save invite locally attribute is null/not set");
+
+            // Optional
+            Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
+                PREVIEW_FOLDER_ATTIRBUTE);
+            boolean previewFolder = prevAtt != null && prevAtt;
+
+            createDesktopShortcut = (Boolean) getWizardContext().getAttribute(
+                CREATE_DESKTOP_SHORTCUT);
+            Boolean osAtt = (Boolean) getWizardContext().getAttribute(
+                BACKUP_ONLINE_STOARGE);
+            backupByOS = osAtt != null && osAtt;
+            if (backupByOS) {
+                getController().getUIController().getApplicationModel()
+                    .getServerClientModel().checkAndSetupAccount();
+            }
+            Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
+                SEND_INVIATION_AFTER_ATTRIBUTE);
+            sendInvitations = sendInvsAtt == null || sendInvsAtt;
+
+            // Either we have FOLDER_CREATE_ITEMS ...
+            List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
+                .getAttribute(FOLDER_CREATE_ITEMS);
+            if (folderCreateItems != null && !folderCreateItems.isEmpty()) {
+                for (FolderCreateItem folderCreateItem : folderCreateItems) {
+                    File localBase = folderCreateItem.getLocalBase();
+                    Reject.ifNull(localBase,
+                        "Local base for folder is null/not set");
+                    SyncProfile syncProfile = folderCreateItem.getSyncProfile();
+                    Reject.ifNull(syncProfile,
+                        "Sync profile for folder is null/not set");
+                    FolderInfo folderInfo = folderCreateItem.getFolderInfo();
+                    if (folderInfo == null) {
+                        folderInfo = createFolderInfo(localBase);
+                    }
+                    ArchiveMode archiveMode = folderCreateItem.getArchiveMode();
+                    int archiveHistory = folderCreateItem.getArchiveHistory();
+                    if (!StringUtils.isBlank(folderCreateItem
+                        .getLinkToOnlineFolder()))
+                    {
+                        joinFolders.put(folderInfo, folderCreateItem
+                            .getLinkToOnlineFolder());
+                    }
+                    FolderSettings folderSettings = new FolderSettings(
+                        localBase, syncProfile, saveLocalInvite, archiveMode,
+                        previewFolder, null, archiveHistory, true);
+                    configurations.put(folderInfo, folderSettings);
+                }
+            } else {
+
+                // ... or FOLDER_LOCAL_BASE + SYNC_PROFILE_ATTRIBUTE + optional
+                // FOLDERINFO_ATTRIBUTE...
+                File localBase = (File) getWizardContext().getAttribute(
+                    FOLDER_LOCAL_BASE);
+                Reject.ifNull(localBase,
+                    "Local base for folder is null/not set");
+                SyncProfile syncProfile = (SyncProfile) getWizardContext()
+                    .getAttribute(SYNC_PROFILE_ATTRIBUTE);
+                Reject.ifNull(syncProfile,
+                    "Sync profile for folder is null/not set");
+
+                // Optional
+                FolderInfo folderInfo = (FolderInfo) getWizardContext()
+                    .getAttribute(FOLDERINFO_ATTRIBUTE);
+                if (folderInfo == null) {
+                    folderInfo = createFolderInfo(localBase);
+                }
+
+                FolderSettings folderSettings = new FolderSettings(localBase,
+                    syncProfile, saveLocalInvite, ArchiveMode
+                        .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                            .getValue(getController())), previewFolder, null,
+                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                        .getValueInt(getController()), true);
+                configurations.put(folderInfo, folderSettings);
+            }
+
+            // Reset
+            folders.clear();
+            updateButtons();
+
             ServerClient client = getController().getOSClient();
 
             Collection<FolderInfo> onlineFolderInfos = client
@@ -297,21 +229,23 @@ public class FolderCreatePanel extends PFWizardPanel {
                 String joinFolderName = joinFolders.get(folderInfo);
 
                 if (joinFolderName == null) {
-                    // Look for folders where there is already an online folder with
-                    // the same name. Offer to join instead of create duplicates.
+                    // Look for folders where there is already an online folder
+                    // with
+                    // the same name. Offer to join instead of create
+                    // duplicates.
                     for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-                        if (onlineFolderInfo.getName().equals(folderInfo.getName()))
+                        if (onlineFolderInfo.getName().equals(
+                            folderInfo.getName()))
                         {
                             if (!onlineFolderInfo.equals(folderInfo)) {
                                 log.info("Found online folder with same name: "
-                                    + folderInfo.getName()
-                                    + ". Asking user what to do...");
-                                if (joinInstead(folderInfo)) {
-                                    // User actually wants to join, so use online.
-                                    folderInfo = onlineFolderInfo;
-                                    log.info("Changed folder info to online version: "
-                                            + folderInfo.getName());
-                                }
+                                    + folderInfo.getName() + ". Using it");
+
+                                // User actually wants to join, so use online.
+                                folderInfo = onlineFolderInfo;
+                                log
+                                    .info("Changed folder info to online version: "
+                                        + folderInfo.getName());
                                 break;
                             }
                         }
@@ -330,8 +264,8 @@ public class FolderCreatePanel extends PFWizardPanel {
                     }
                     if (!gotIt) {
                         // Hmmm - link folder specified but can not find it now?
-                        log.warning("Could not find link folder " +
-                                joinFolderName + " for " + folderInfo);
+                        log.warning("Could not find link folder "
+                            + joinFolderName + " for " + folderInfo);
                     }
                 }
 
@@ -393,36 +327,6 @@ public class FolderCreatePanel extends PFWizardPanel {
                     }
                 }
             }
-
-            return null;
-        }
-
-        /**
-         * If user appears to be creating a duplicate of online folder, ask if
-         * they actually wish to join existing.
-         * 
-         * @param folderInfo
-         * @return
-         */
-        private boolean joinInstead(FolderInfo folderInfo) {
-            if (true) {
-                // #1991 Make is simpler
-                return true;
-            }
-            return DialogFactory
-                .genericDialog(
-                    getController(),
-                    Translation
-                        .getTranslation("wizard.create_folder.found_online.title"),
-                    Translation.getTranslation(
-                        "wizard.create_folder.found_online.text", folderInfo
-                            .getName()),
-                    new String[]{
-                        Translation
-                            .getTranslation("wizard.create_folder.found_online.join"),
-                        Translation
-                            .getTranslation("wizard.create_folder.found_online.create")},
-                    0, GenericDialogType.QUESTION) == 0;
         }
 
         private void createShortcutToFolder(FolderInfo folderInfo,
@@ -448,21 +352,21 @@ public class FolderCreatePanel extends PFWizardPanel {
             String filePath = folderSettings.getLocalBaseDir()
                 .getAbsolutePath();
 
-            if (!WinUtils.isSupported()) {
-                log.warning("WinUtils not supported");
-                return;
-            }
-            WinUtils winUtils = WinUtils.getInstance();
-            ShellLink shellLink = new ShellLink(null, null, filePath, null);
-            try {
-                log.info(String.format(
-                    "Attempting to create shortcut %s to %s", shortcutPath,
-                    filePath));
-                winUtils.createLink(shellLink, shortcutPath);
-            } catch (IOException e) {
-                log.warning(String.format(
-                    "An exception was thrown when creating shortcut %s to %s",
-                    shortcutPath, filePath));
+            if (WinUtils.isSupported()) {
+                WinUtils winUtils = WinUtils.getInstance();
+                ShellLink shellLink = new ShellLink(null, null, filePath, null);
+                try {
+                    log.info(String.format(
+                        "Attempting to create shortcut %s to %s", shortcutPath,
+                        filePath));
+                    winUtils.createLink(shellLink, shortcutPath);
+                } catch (IOException e) {
+                    log
+                        .warning(String
+                            .format(
+                                "An exception was thrown when creating shortcut %s to %s",
+                                shortcutPath, filePath));
+                }
             }
         }
 
@@ -497,19 +401,6 @@ public class FolderCreatePanel extends PFWizardPanel {
             }
         }
 
-        @Override
-        public void finished() {
-            bar.setVisible(false);
-            for (Folder folder : folders) {
-                if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder
-                    .getSyncProfile()))
-                {
-                    // Show sync folder panel after created a project folder
-                    new SyncFolderPanel(getController(), folder).open();
-                }
-            }
-            getWizard().next();
-        }
     }
 
 }
