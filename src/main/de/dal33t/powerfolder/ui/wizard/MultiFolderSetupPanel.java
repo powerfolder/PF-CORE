@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -239,13 +240,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
      */
     private static void createFolderInfo(FolderCreateItem item) {
         // Default sync folder has user name...
-        String name = item.getLocalBase().getName();
-        if (name.length() == 0) {
-            // Must be a drive - use the drive name.
-            name = item.getLocalBase().getAbsolutePath(); 
-        }
+        String name = FileUtils.getSuggestedFolderName(item.getLocalBase());
         FolderInfo folderInfo = new FolderInfo(name,
-            '[' + IdGenerator.makeId() + ']').intern();
+            '[' + IdGenerator.makeId() + ']');
         item.setFolderInfo(folderInfo);
     }
 
