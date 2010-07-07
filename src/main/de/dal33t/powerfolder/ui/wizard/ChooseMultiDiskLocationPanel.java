@@ -445,7 +445,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private static FolderInfo createFolderInfo(String name) {
         // Create new folder info
         String folderId = '[' + IdGenerator.makeId() + ']';
-        return new FolderInfo(name, folderId).intern();
+        return new FolderInfo(name, folderId);
     }
 
     public void link(File file, String folderName) {
