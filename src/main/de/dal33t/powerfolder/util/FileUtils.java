@@ -88,6 +88,22 @@ public class FileUtils {
     }
 
     /**
+     * #1882 Correct solution
+     * 
+     * @param f
+     * @return the suggested folder name
+     */
+    public static String getSuggestedFolderName(File f) {
+        if (f == null) {
+            return null;
+        }
+        if (StringUtils.isNotBlank(f.getName())) {
+            return f.getName();
+        }
+        return f.getAbsolutePath();
+    }
+
+    /**
      * Copies a file
      * 
      * @param from
