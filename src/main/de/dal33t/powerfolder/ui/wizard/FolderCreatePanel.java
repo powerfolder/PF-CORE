@@ -84,7 +84,9 @@ public class FolderCreatePanel extends SwingWorkerPanel {
     private final List<Folder> folders;
 
     public FolderCreatePanel(Controller controller) {
-        super(controller, null, "Title", "Text", null);
+        super(controller, null, Translation
+            .getTranslation("wizard.create_folder.title"), Translation
+            .getTranslation("wizard.create_folder.working"), null);
         setTask(new MyFolderCreateWorker());
         folders = new ArrayList<Folder>();
     }
