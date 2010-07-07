@@ -66,7 +66,7 @@ public class ProUtil {
         } else {
             url += '?';
         }
-        url += "originalURL=" + Util.encodeURI(simpleURL);
+        url += "originalURI=" + Util.endcodeForURL(simpleURL);
         return url;
     }
 
