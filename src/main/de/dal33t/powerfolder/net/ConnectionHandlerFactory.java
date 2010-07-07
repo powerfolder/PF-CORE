@@ -283,7 +283,8 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     protected boolean useUDTConnections() {
-        return !getController().isLanOnly()
+        return UDTSocket.isSupported()
+            && !getController().isLanOnly()
             && ConfigurationEntry.UDT_CONNECTIONS_ENABLED
                 .getValueBoolean(getController())
             && !getController().getIOProvider().getRelayedConnectionManager()
