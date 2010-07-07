@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -443,7 +444,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (StringUtils.isNotBlank(config.get(FOLDER_SCRIPT_CONFIG_NAME))) {
             name = config.get(FOLDER_SCRIPT_CONFIG_NAME);
         } else {
-            name = dir.getName();
+            name = FileUtils.getSuggestedFolderName(dir);
         }
 
         // ID
