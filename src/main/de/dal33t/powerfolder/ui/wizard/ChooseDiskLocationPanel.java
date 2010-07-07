@@ -153,8 +153,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
 
-        String lastPart = localBase.getName();
-        getWizardContext().setAttribute(INITIAL_FOLDER_NAME, lastPart);
+        getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
+            FileUtils.getSuggestedFolderName(localBase));
 
         // Change to manual sync if requested.
         if (manualSyncCheckBox.isSelected()) {
