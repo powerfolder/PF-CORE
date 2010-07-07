@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -82,6 +83,7 @@ public class FolderStatistic extends PFComponent {
     // Used to calculate ETA
     private TransferCounter downloadCounter;
     private MyCalculatorTask calculatorTask;
+    private NodeManagerListener nodeManagerListener;
 
     FolderStatistic(Folder folder) {
         super(folder.getController());
@@ -100,9 +102,10 @@ public class FolderStatistic extends PFComponent {
         folder.addMembershipListener(listener);
         folder.getDiskItemFilter().addListener(listener);
 
+        nodeManagerListener = new MyNodeManagerListener();
         // Add to NodeManager
-        getController().getNodeManager().addNodeManagerListener(
-            new MyNodeManagerListener());
+        getController().getNodeManager().addWeakNodeManagerListener(
+            nodeManagerListener);
     }
 
     // package protected called from Folder
