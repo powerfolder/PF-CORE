@@ -40,7 +40,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -218,8 +217,8 @@ public class StatusTab extends PFUIComponent {
         buyNowLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("20dlu, 0, 0, 0"));
         if (!ProUtil.isRunningProVersion() && Feature.BETA.isDisabled()) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"));
+            updateBuyNowLink(Translation
+                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
         }
         tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
         {
@@ -338,36 +337,9 @@ public class StatusTab extends PFUIComponent {
      * Updates the text for the number and size of the folders.
      */
     private void updateFoldersText() {
-        if (true) {
-            // #2002: Hide
-            numberOfFoldersLine.setValue(0);
-            sizeOfFoldersLine.setValue(0);
-            return;
-        }
-        Collection<Folder> folders = getController().getFolderRepository()
-            .getFolders(false);
-        int numberOfFolder = folders.size();
-        numberOfFoldersLine.setValue(numberOfFolder);
-        long totalSize = 0;
-        for (Folder folder : folders) {
-            totalSize += folder.getStatistic().getTotalSize();
-        }
-        // Copied from Format.formatBytesShort()
-        totalSize /= 1024;
-        String suffix = "KB";
-        if (totalSize >= 1024) {
-            totalSize += 512;
-            totalSize /= 1024;
-            suffix = "MB";
-        }
-        if (totalSize >= 1024) {
-            totalSize += 512;
-            totalSize /= 1024;
-            suffix = "GB";
-        }
-        sizeOfFoldersLine.setValue(totalSize);
-        sizeOfFoldersLine.setNormalLabelText(Translation.getTranslation(
-            "status_tab.total", suffix));
+        // #2002: Hide
+        numberOfFoldersLine.setValue(0);
+        sizeOfFoldersLine.setValue(0);
     }
 
     /**
@@ -383,10 +355,11 @@ public class StatusTab extends PFUIComponent {
         newNoticesLine.setValue(integer);
     }
 
-    private void showBuyNowLink(String text) {
-        buyNowLabel.setTextAndURL(text, ConfigurationEntry.PROVIDER_BUY_URL
-            .getValue(getController()));
-        buyNowLabel.getUIComponent().setVisible(true);
+    private void updateBuyNowLink(String text, boolean visible) {
+        logWarning("Update: " + text + ". viz? " + visible + ". ",
+            new RuntimeException());
+        buyNowLabel.setTextAndURL(text, ProUtil.getBuyNowURL(getController()));
+        buyNowLabel.getUIComponent().setVisible(visible);
     }
 
     /**
@@ -439,8 +412,8 @@ public class StatusTab extends PFUIComponent {
         }
 
         if (!ProUtil.isRunningProVersion()) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"));
+            updateBuyNowLink(Translation
+                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
             return;
         }
 
@@ -451,11 +424,11 @@ public class StatusTab extends PFUIComponent {
         boolean aboutToExpire = daysValid != null && daysValid != -1
             && daysValid < 30;
         if (trial || !allowed) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"));
+            updateBuyNowLink(Translation
+                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
         } else if (aboutToExpire) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.status_tab.renew_license"));
+            updateBuyNowLink(Translation
+                .getTranslation("pro.status_tab.renew_license"), true);
         }
     }
 
@@ -468,8 +441,9 @@ public class StatusTab extends PFUIComponent {
      */
     private void updateOnlineStorageDetails(boolean loginSuccess) {
         onlineStorageAccountLabel.setIcon(null);
+        AccountDetails ad = client.getAccountDetails();
         boolean active = false;
-        boolean showBuyNow = false;
+        boolean showBuyNow = !client.isLoggedIn();
         String username = client.getUsername();
         if (username == null || username.trim().length() == 0) {
             onlineStorageAccountLabel.setText(Translation
@@ -560,7 +534,6 @@ public class StatusTab extends PFUIComponent {
             getController().getNodeManager().isStarted());
 
         if (active) {
-            AccountDetails ad = client.getAccountDetails();
             OnlineStorageSubscription storageSubscription = ad.getAccount()
                 .getOSSubscription();
             long totalStorage = storageSubscription.getStorageSize();
@@ -575,11 +548,10 @@ public class StatusTab extends PFUIComponent {
         }
 
         // Show Buy now link if: Disabled OR >80%
-        if (showBuyNow) {
-            showBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"));
-        }
-
+        updateBuyNowLink(Translation
+            .getTranslation("pro.status_tab.upgrade_powerfolder"), showBuyNow);
+        // Make sure to display buy now if license is about to expire.
+        updateLicenseDetails();
     }
 
     private void displaySyncStats(Date syncDate, boolean syncing,
