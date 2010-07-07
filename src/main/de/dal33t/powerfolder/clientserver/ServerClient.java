@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TimerTask;
 
@@ -924,18 +923,16 @@ public class ServerClient extends PFComponent {
      */
     private void saveLastKnowLogin() {
         if (StringUtils.isNotBlank(username)) {
-            getController().getPreferences().put(
-                PREFS_PREFIX + '.' + server.getIP() + ".username", username);
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
                 getController(), username);
         } else {
-            getController().getPreferences().remove(
-                PREFS_PREFIX + '.' + server.getIP() + ".username");
             ConfigurationEntry.SERVER_CONNECT_USERNAME
                 .removeValue(getController());
         }
 
         // Remove old (TRAC #1291) (TRAC #1921)
+        getController().getPreferences().remove(
+            PREFS_PREFIX + '.' + server.getIP() + ".username");
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info");
         getController().getPreferences().remove(
@@ -946,11 +943,6 @@ public class ServerClient extends PFComponent {
         if (isRememberPassword() && password != null && password.length > 0) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
                 getController(), LoginUtil.obfuscate(password));
-
-            // Remove later
-            getController().getPreferences().put(
-                PREFS_PREFIX + '.' + server.getIP() + ".info3",
-                LoginUtil.obfuscate(password));
         }
 
         // Store new username/pw
