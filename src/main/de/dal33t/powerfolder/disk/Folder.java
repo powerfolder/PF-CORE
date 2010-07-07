@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -242,7 +243,7 @@ public class Folder extends PFComponent {
 
     private final ProblemListener problemListenerSupport;
 
-    private final CopyOnWriteArrayList<Problem> problems;
+    private final List<Problem> problems;
 
     /** True if patterns should be synchronized with others */
     private boolean syncPatterns;
@@ -269,15 +270,19 @@ public class Folder extends PFComponent {
             .createListenerSupport(FolderListener.class);
         folderMembershipListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderMembershipListener.class);
-
+        problemListenerSupport = ListenerSupportFactory
+        .createListenerSupport(ProblemListener.class);
+        
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-
+        rootDirectory = new Directory(this, null, "");
+        problems = new CopyOnWriteArrayList<Problem>();
         localBase = folderSettings.getLocalBaseDir();
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
+        previewOnly = folderSettings.isPreviewOnly();
 
         // Check base dir
         try {
@@ -310,6 +315,7 @@ public class Folder extends PFComponent {
 
         // Initialize the DAO
         initFileInfoDAO();
+        checkIfDeviceDisconnected();
 
         members = new ConcurrentHashMap<Member, Member>();
 
@@ -359,14 +365,6 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        previewOnly = folderSettings.isPreviewOnly();
-
-        rootDirectory = new Directory(this, null, "");
-
-        problems = new CopyOnWriteArrayList<Problem>();
-
-        problemListenerSupport = ListenerSupportFactory
-            .createListenerSupport(ProblemListener.class);
         setArchiveMode(folderSettings.getArchiveMode());
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
@@ -849,8 +847,7 @@ public class Folder extends PFComponent {
         } while (scannerBusy);
 
         if (checkIfDeviceDisconnected()) {
-            logFine("Device disconnected while scanning folder: "
-                + localBase);
+            logFine("Device disconnected while scanning folder: " + localBase);
             return false;
         }
 
@@ -1893,7 +1890,7 @@ public class Folder extends PFComponent {
         if (!wasMember && member.isCompletelyConnected()) {
             // FIX for #924
             waitForScan();
-            
+
             Message[] filelistMsgs = FileList.createFileListMessages(this,
                 !member.isPre4Client());
             for (Message message : filelistMsgs) {
@@ -2902,11 +2899,9 @@ public class Folder extends PFComponent {
          */
         try {
             checkBaseDir(localBase, true);
-            deviceDisconnected = false;
         } catch (FolderException e) {
             logFiner("invalid local base: " + e);
-            deviceDisconnected = true;
-            return deviceDisconnected;
+            return setDeviceDisconnected(true);
         }
 
         // #1249
@@ -2916,13 +2911,31 @@ public class Folder extends PFComponent {
             if (inaccessible) {
                 logWarning("Local base empty on linux file system, but has known files. "
                     + localBase);
-                deviceDisconnected = true;
-                return deviceDisconnected;
+                return setDeviceDisconnected(true);
             }
         }
 
         // Is OK!
-        deviceDisconnected = false;
+        return setDeviceDisconnected(false);
+    }
+
+    private boolean setDeviceDisconnected(boolean disconnected) {
+        deviceDisconnected = disconnected;
+
+        boolean addProblem = disconnected;
+        for (Problem problem : problems) {
+            if (problem instanceof DeviceDisconnectedProblem) {
+                if (!deviceDisconnected) {
+                    removeProblem(problem);
+                } else {
+                    addProblem = false;
+                }
+            }
+        }
+        if (addProblem) {
+            addProblem(new DeviceDisconnectedProblem());
+        }
+
         return deviceDisconnected;
     }
 
