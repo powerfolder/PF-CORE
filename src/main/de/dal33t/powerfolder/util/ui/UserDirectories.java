@@ -57,6 +57,7 @@ public class UserDirectories {
     private static final String USER_DIR_DOWNLOADS = "Downloads";
     private static final String USER_DIR_PUBLIC = "Public";
     private static final String USER_DIR_SITES = "Sites";
+    private static final String USER_DIR_DROPBOX = "My Dropbox";
 
     // Vista has issues with these, so instantiate separately
     private static String userDirMyDocuments;
@@ -166,6 +167,9 @@ public class UserDirectories {
             .getTranslation("user.dir.public"), false);
         addTargetDirectory(userHome, USER_DIR_SITES, Translation
             .getTranslation("user.dir.sites"), false);
+        addTargetDirectory(userHome, USER_DIR_DROPBOX, Translation
+            .getTranslation("user.dir.dropbox"), false);
+        
 
         // Hidden by Vista.
         if (!OSUtil.isWindowsVistaSystem() && !OSUtil.isWindows7System()) {
