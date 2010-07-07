@@ -512,21 +512,6 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         if (current != useWatchFileSystem) {
             ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(
                 getController(), useWatchFileSystem);
-            if (FolderWatcher.isLibLoaded()) {
-                for (Folder folder : getController().getFolderRepository()
-                    .getFolders())
-                {
-                    SyncProfile newProfile = SyncProfile.adjust(folder
-                        .getSyncProfile(), folder.getKnownFiles().size(),
-                        useWatchFileSystem, true);
-
-                    if (!newProfile.equals(folder.getSyncProfile())) {
-                        folder.setSyncProfile(newProfile);
-                        logWarning("Adjusted sync profile for " + folder
-                            + " to " + folder.getSyncProfile());
-                    }
-                }
-            }
             needsRestart = true;
         }
 

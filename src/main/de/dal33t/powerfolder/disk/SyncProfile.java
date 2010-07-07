@@ -560,39 +560,6 @@ public class SyncProfile implements Serializable {
     }
 
     /**
-     * If 'backup source' for lots of files, switch to 'backup source hour'. If
-     * 'auto sync' for lots of files, switch to 'auto sync 10min'.
-     * 
-     * @param syncProfile
-     * @param fileCount
-     *            the number of files
-     * @param useFilesystemWatch
-     *            if file system watching is enabled.
-     * @param adjustToFasterIfRequired
-     *            true if to adjust to faster scanning speed if recommended
-     * @return the new sync profile or the original one if now adjustment has
-     *         been made.
-     */
-    public static SyncProfile adjust(SyncProfile syncProfile, int fileCount,
-        boolean useFilesystemWatch, boolean adjustToFasterIfRequired)
-    {
-        boolean slowDetection = fileCount > 5000 || useFilesystemWatch;
-        if (slowDetection) {
-            // Turn sync profiles into slower ones
-            if (syncProfile.equals(BACKUP_SOURCE)) {
-                return BACKUP_SOURCE_HOUR;
-            }
-        } else {
-            // Turn sync profiles into faster ones
-            if (syncProfile.equals(BACKUP_SOURCE_HOUR)) {
-                return BACKUP_SOURCE;
-            }
-        }
-
-        return syncProfile;
-    }
-
-    /**
      * Check equality on configuration only. This is the important field.
      * 
      * @param obj
