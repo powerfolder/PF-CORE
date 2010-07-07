@@ -66,10 +66,13 @@ public class SwingWorkerPanel extends PFWizardPanel {
         String text, WizardPanel nextPanel)
     {
         super(controller);
-        Reject.ifNull(task, "Task");
         this.title = title;
         this.text = text;
         this.nextPanel = nextPanel;
+        this.task = task;
+    }
+
+    public void setTask(Runnable task) {
         this.task = task;
     }
 
@@ -105,6 +108,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     @Override
     protected void afterDisplay() {
         if (worker != null) {
+            worker.cancel(true);
             // Back one more.
             getWizard().back();
         } else {
@@ -129,7 +133,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     @Override
     public boolean hasNext() {
         // Always automatically goes to next
-        return false;
+        return nextPanel != null;
     }
 
     @Override
@@ -176,13 +180,14 @@ public class SwingWorkerPanel extends PFWizardPanel {
                     msg = e.toString();
                 }
                 LOG.warning(msg);
-                LOG.log(Level.FINE, e.toString(), e);
+                LOG.log(Level.WARNING, e.toString(), e);
                 showProblem(msg);
             }
         }
 
         @Override
         protected Void doInBackground() throws Exception {
+            Reject.ifNull(task, "No task found to execute");
             task.run();
             return null;
         }
