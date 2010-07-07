@@ -356,8 +356,6 @@ public class StatusTab extends PFUIComponent {
     }
 
     private void updateBuyNowLink(String text, boolean visible) {
-        logWarning("Update: " + text + ". viz? " + visible + ". ",
-            new RuntimeException());
         buyNowLabel.setTextAndURL(text, ProUtil.getBuyNowURL(getController()));
         buyNowLabel.getUIComponent().setVisible(visible);
     }
