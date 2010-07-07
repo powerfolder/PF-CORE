@@ -42,6 +42,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
@@ -68,7 +69,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     public WizardPanel next() {
         getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBase);
         getWizardContext().setAttribute(INITIAL_FOLDER_NAME,
-            localBase.getName());
+            FileUtils.getSuggestedFolderName(localBase));
         return new FolderSetupPanel(getController());
     }
 
@@ -88,7 +89,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
     protected JPanel buildContent() {
 
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu, pref, 0:grow",
+            "pref, 3dlu, pref, 3dlu, max(pref;100dlu), 0",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
@@ -103,14 +104,14 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
         builder.add(new JLabel(localBase.getAbsolutePath()), cc.xy(3, row));
 
         row += 2;
-        builder.add(folderSizeLabel, cc.xyw(1, row, 3));
+        builder.add(folderSizeLabel, cc.xyw(1, row, 5));
 
         if (!getController().isLanOnly()
             && PreferencesEntry.USE_ONLINE_STORAGE
                 .getValueBoolean(getController()))
         {
             row += 2;
-            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
+            builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 5));
         }
 
         // Send Invite
@@ -119,7 +120,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
-            builder.add(sendInviteAfterCB, cc.xyw(1, row, 3));
+            builder.add(sendInviteAfterCB, cc.xyw(1, row, 5));
         }
 
         return builder.getPanel();
