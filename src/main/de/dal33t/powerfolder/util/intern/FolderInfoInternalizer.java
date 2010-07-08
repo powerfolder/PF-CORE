@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
-    private static final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
+    private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
         if (folderInfo == null) {

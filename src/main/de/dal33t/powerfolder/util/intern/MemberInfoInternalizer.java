@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.intern;
 
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeManager;
@@ -48,20 +46,12 @@ public class MemberInfoInternalizer implements Internalizer<MemberInfo> {
             return null;
         }
         Member node = nodeManager.getNode(item);
-
-        if (misses > hits && misses > 100) {
-            Logger.getLogger(MemberInfoInternalizer.class.getName()).warning(
-                "Hits: " + hits + " Misses: " + misses + ": "
-                    + (100L * hits / (hits + misses)) + "%");
-        }
-        // System.err.println("Hits: " + hits + " Misses: " + misses + ": "
-        // + (hits / (hits + misses)) + "%");
-
         if (node != null) {
             hits++;
             return node.getInfo();
+        } else {
+            hits++;
+            return nodeManager.addNode(item).getInfo();
         }
-        misses++;
-        return item;
     }
 }
