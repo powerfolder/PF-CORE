@@ -647,8 +647,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         receiveQueue.offer(message);
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                while (!receiveQueue.isEmpty()) {
-                    receiveRelayedMessage0(receiveQueue.poll());
+                RelayedMessage rm;
+                while ((rm = receiveQueue.poll()) != null) {
+                    receiveRelayedMessage0(rm);
                 }
             }
         });
