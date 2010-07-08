@@ -636,8 +636,6 @@ public class ScanFolderTest extends ControllerTestCase {
      */
     public void testScanDirMovementWithWatcher() throws IOException {
         getController().setSilentMode(false);
-        ConfigurationEntry.FOLDER_WATCH_FILESYSTEM.setValue(getController(),
-            true);
         if (!FolderWatcher.isLibLoaded()) {
             System.err.println("NOT testing with file watcher. Lib not loaded");
             return;
