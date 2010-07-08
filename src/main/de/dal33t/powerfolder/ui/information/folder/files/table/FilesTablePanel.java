@@ -523,7 +523,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                     singleFileTransferAction.setEnabled(true);
 
-                    restoreArchiveAction.setEnabled(fileInfo.isDeleted());
+                    restoreArchiveAction.setEnabled(true);
 
                     done = true;
                 } else if (diskItem != null && diskItem instanceof Directory) {
