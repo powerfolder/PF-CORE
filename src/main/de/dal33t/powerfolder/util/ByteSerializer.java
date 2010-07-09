@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,8 +55,8 @@ public class ByteSerializer extends Loggable {
 
     private static final boolean CACHE_OUT_BUFFER = false;
 
-    private SoftReference<ByteArrayOutputStream> outBufferRef;
-    private SoftReference<byte[]> inBufferRef;
+    private Reference<ByteArrayOutputStream> outBufferRef;
+    private Reference<byte[]> inBufferRef;
 
     private static final boolean BENCHMARK = false;
     private static Map<Class, Integer> CLASS_STATS;
@@ -202,7 +203,7 @@ public class ByteSerializer extends Loggable {
                     + Format.formatBytes(expectedSize));
             }
             byteIn = new byte[expectedSize];
-            // Chache buffer
+            // Cache buffer
             inBufferRef = new SoftReference<byte[]>(byteIn);
         }
 
@@ -303,7 +304,7 @@ public class ByteSerializer extends Loggable {
             }
 
             in = new ObjectInputStream(targetIn);
-            result = in.readObject();
+            result = in.readUnshared();
             return result;
         } finally {
             if (in != null) {
