@@ -431,8 +431,8 @@ public class ServerClient extends PFComponent {
      *         fallback
      */
     public boolean isLastLoginKnown() {
-        return getController().getPreferences().get(
-            PREFS_PREFIX + '.' + server.getIP() + ".username", null) != null;
+        return ConfigurationEntry.SERVER_CONNECT_USERNAME
+            .hasValue(getController());
     }
 
     /**
