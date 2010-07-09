@@ -283,7 +283,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Both are friends so connect!
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
-                return "Marge has not beed reconnected. Nodes in recon queue at Lisa: "
+                return "Marge has not been reconnected. Nodes in recon queue at Lisa: "
                     + getContollerLisa().getReconnectManager()
                         .getReconnectionQueue().size();
             }
