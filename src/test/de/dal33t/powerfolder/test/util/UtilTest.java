@@ -28,7 +28,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 import de.dal33t.powerfolder.util.ui.TimeEstimator;
@@ -99,7 +98,10 @@ public class UtilTest extends TestCase {
             Date value = estimator.updateEstimate(i);
             if (value != null) {
                 // Allow for minor time calculation rounding varaitions.
-                assertTrue(Math.abs(target / 1000 - value.getTime() / 1000 - 6) < 2);
+                double var = Math.abs(target / 1000 - value.getTime() / 1000
+                    - 6);
+                assertTrue("Target: " + target + ", Value: " + value.getTime()
+                    + ", Var: " + var, var < 2);
             }
             if (value == null) {
                 // First attempt cannot calculate a date.
