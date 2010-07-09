@@ -153,7 +153,6 @@ public class FolderWatcher extends PFComponent {
             remove();
             return;
         }
-
         String path = folder.getLocalBase().getAbsolutePath();
         boolean watchSubtree = true;
         try {
