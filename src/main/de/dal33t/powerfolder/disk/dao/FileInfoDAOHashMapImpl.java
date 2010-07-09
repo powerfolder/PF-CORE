@@ -280,8 +280,10 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     private static class Domain {
-        private final ConcurrentMap<FileInfo, FileInfo> files = new ConcurrentHashMap<FileInfo, FileInfo>();
-        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = new ConcurrentHashMap<DirectoryInfo, DirectoryInfo>();
+        private final ConcurrentMap<FileInfo, FileInfo> files = Util
+            .createConcurrentHashMap(4);
+        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = Util
+            .createConcurrentHashMap(4);
 
         public String toString() {
             return "Domain: " + files.size() + " files, " + directories.size()
