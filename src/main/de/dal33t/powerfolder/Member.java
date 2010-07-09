@@ -742,7 +742,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!getController().isStarted()) {
             return ConnectResult.failure("Controller is not started");
         }
-        if (isConnected()) {
+        if (isCompletelyConnected()) {
             return ConnectResult.success();
         }
         // #1334
