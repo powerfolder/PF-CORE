@@ -712,7 +712,10 @@ public class NodeManager extends PFComponent {
 
             getController().getTransferManager().breakTransfers(node);
 
-            if (node.isFriend()) {
+            // Try instant reconnect (if not dupe connection detection).
+            if (node.isInteresting()
+                && node.getLastProblem().problemCode != Problem.DUPLICATE_CONNECTION)
+            {
                 getController().getReconnectManager().considerReconnectionTo(
                     node);
             }
