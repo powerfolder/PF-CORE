@@ -1512,6 +1512,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // Switch!
+        LoggingManager.setConsoleLogging(Level.FINE);
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Download should break
@@ -1537,8 +1538,6 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(11, new ConditionWithMessage() {
             public boolean reached() {
-                getContollerLisa().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting();
                 return getContollerLisa().getTransferManager()
                     .countCompletedDownloads() == 1;
             }

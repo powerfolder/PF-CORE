@@ -173,6 +173,10 @@ public class Upload extends Transfer {
             logWarning("Upload already started. " + this);
             return;
         }
+        if (isAborted() || isBroken()) {
+            logWarning("Upload already broken/aborted. " + this);
+            return;
+        }
 
         debugState = "Starting";
         // Mark upload as started
@@ -187,6 +191,11 @@ public class Upload extends Transfer {
                             getController().getFolderRepository()), "r");
                     } catch (FileNotFoundException e) {
                         throw new TransferException(e);
+                    }
+                    if (isAborted() || isBroken()) {
+                        throw new TransferException(
+                            "Upload broken/aborted while starting. "
+                                + Upload.this);
                     }
 
                     // If our partner supports requests, let him request. This
@@ -332,10 +341,12 @@ public class Upload extends Transfer {
         }
         state.setState(TransferState.UPLOADING);
         RequestPart pr = null;
+        long waitTime = Constants.UPLOAD_FIRST_PART_REQUEST_TIMEOUT;
         synchronized (pendingRequests) {
             while (pendingRequests.isEmpty() && !isBroken() && !isAborted()) {
                 try {
-                    pendingRequests.wait(Constants.UPLOAD_PART_REQUEST_TIMEOUT);
+                    pendingRequests.wait(waitTime);
+                    waitTime = Constants.UPLOAD_FOLLOWING_PART_REQUEST_TIMEOUT;
                 } catch (InterruptedException e) {
                     logWarning("Interrupted on " + this + ". " + e);
                     logFiner(e);
