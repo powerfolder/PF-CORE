@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -1314,7 +1315,7 @@ public class TransferManager extends PFComponent {
      * @param to
      *            the member where is file is going to
      */
-    public void abortUpload(FileInfo fInfo, Member to) {
+    public boolean abortUpload(FileInfo fInfo, Member to) {
         if (fInfo == null) {
             throw new NullPointerException(
                 "Unable to abort upload, file is null");
@@ -1325,7 +1326,6 @@ public class TransferManager extends PFComponent {
         }
 
         Upload abortedUpload = null;
-
         for (Upload upload : queuedUploads) {
             if (upload.getFile().isVersionDateAndSizeIdentical(fInfo)
                 && to.equals(upload.getPartner()))
@@ -1360,11 +1360,12 @@ public class TransferManager extends PFComponent {
 
         if (abortedUpload != null) {
             fireUploadAborted(new TransferManagerEvent(this, abortedUpload));
-
             // Trigger check
             triggerTransfersCheck();
+            return true;
         } else {
-            logWarning("Failed to abort upload: " + fInfo + " to " + to);
+            logSevere("Failed to abort upload: " + fInfo + " to " + to);
+            return false;
         }
     }
 
@@ -2691,9 +2692,13 @@ public class TransferManager extends PFComponent {
 
                         // Enqueue upload to friends and lan members first
 
-                        logFiner("Starting upload: " + upload);
-                        upload.start();
-                        uploadsStarted++;
+                        if (!upload.isAborted()) {
+                            logFiner("Starting upload: " + upload);
+                            upload.start();
+                            uploadsStarted++;
+                        } else {
+                            logWarning("Not starting aborted: " + upload);
+                        }
                     }
                 }
             } catch (Exception e) {
