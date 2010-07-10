@@ -101,7 +101,7 @@ public class UtilTest extends TestCase {
                 double var = Math.abs(target / 1000 - value.getTime() / 1000
                     - 6);
                 assertTrue("Target: " + target + ", Value: " + value.getTime()
-                    + ", Var: " + var, var < 2);
+                    + ", Var: " + var, var <= 2);
             }
             if (value == null) {
                 // First attempt cannot calculate a date.
