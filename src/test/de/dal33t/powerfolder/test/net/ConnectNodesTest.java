@@ -269,9 +269,21 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-        // Should connect, because friendship message is pending.
+      
         margeAtLisa.shutdown();
-        assertTrue("Marge was not sucessfully reconnected", margeAtLisa.reconnect().isSuccess());
+        // Marge is already friend. So auto-reconnect should happen
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public String message() {
+                return "Marge has not been reconnected. Nodes in recon queue at Lisa: "
+                    + getContollerLisa().getReconnectManager()
+                        .getReconnectionQueue().size();
+            }
+
+            public boolean reached() {
+                return margeAtLisa.isCompletelyConnected();
+            }
+        });
+       
         assertTrue("marge is not connected", margeAtLisa.isCompletelyConnected());
         margeAtLisa.shutdown();
 
