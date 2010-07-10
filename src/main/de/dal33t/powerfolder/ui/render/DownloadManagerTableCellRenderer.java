@@ -186,9 +186,9 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
                     setText(nickText);
                 } else {
                     setText(Translation.getTranslation("transfers.swarm",
-                            String.valueOf(sources.size())));
+                        String.valueOf(sources.size())));
                 }
-                setIcon(Icons.getSimpleIconFor(primaryDownload.getPartner()));
+                setIcon(Icons.getIconFor(primaryDownload.getPartner()));
                 setHorizontalAlignment(LEFT);
             }
         } else if (value instanceof EstimatedTime) {
