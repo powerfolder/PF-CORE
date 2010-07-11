@@ -85,9 +85,9 @@ public class Download extends Transfer {
         this.queued = false;
         this.markedBroken = false;
     }
-
+    
     /**
-     * Re-initalized the Transfer with the TransferManager. Use this only if you
+     * Re-initialized the Transfer with the TransferManager. Use this only if you
      * are know what you are doing .
      * 
      * @param aTransferManager
@@ -132,9 +132,12 @@ public class Download extends Transfer {
     public void uploadStarted(FileInfo fileInfo) {
         checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
+        
+        // Maybe remove this check?
         if (isStarted()) {
             logWarning("Received multiple upload start messages: "
                 + fileInfo.toDetailString());
+                
             return;
         }
 
@@ -228,7 +231,13 @@ public class Download extends Transfer {
 
         // donwload begins to start
         if (!isStarted()) {
-            setStarted();
+            if (Util.useSwarming(getController(), getPartner())) {
+                // Old passive downloads=Started with the first file chunk
+                setStarted();
+            } else {
+                logWarning("Ignoring file chunk for non-started " + this);
+                return false;
+            }
         }
         lastTouch.setTime(System.currentTimeMillis());
 
@@ -449,7 +458,7 @@ public class Download extends Transfer {
 
     @Override
     public String toString() {
-        String msg = getFile().toDetailString();
+        String msg = "Download: " + getFile().toDetailString();
         if (getPartner() != null) {
             msg += " from '" + getPartner().getNick() + "'";
             if (getPartner().isOnLAN()) {
