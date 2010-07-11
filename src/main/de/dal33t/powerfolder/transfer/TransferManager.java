@@ -75,7 +75,6 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Validate;
-import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -524,7 +523,7 @@ public class TransferManager extends PFComponent {
                 (Download) transfer));
         }
 
-        logFine("Transfer started: " + transfer);
+        logFine("Started: " + transfer);
     }
 
     /**
@@ -956,7 +955,7 @@ public class TransferManager extends PFComponent {
         triggerTransfersCheck();
 
         if (isFiner()) {
-            logFiner("Transfer completed: " + transfer);
+            logFiner("Completed: " + transfer);
         }
     }
 
@@ -1267,8 +1266,8 @@ public class TransferManager extends PFComponent {
                 queuedUploads.remove(oldUploadIndex);
             }
 
-            logFine("Upload enqueud: " + dl.file.toDetailString()
-                + ", startOffset: " + dl.startOffset + ", to: " + from);
+            logFine("Queued: " + upload + ", startOffset: " + dl.startOffset
+                + ", to: " + from);
             queuedUploads.add(upload);
         } finally {
             uploadsLock.unlock();
