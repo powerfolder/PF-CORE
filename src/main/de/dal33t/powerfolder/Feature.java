@@ -121,11 +121,6 @@ public enum Feature {
     META_FOLDER(false),
 
     /**
-     * Temporary feature for #1634.
-     */
-    SET_FILTER_MEMBERS(false),
-
-    /**
      * #1976 If {@link MemberInfo} should be internalized.
      */
     MEMBER_INFO_INTERNALIZE();
