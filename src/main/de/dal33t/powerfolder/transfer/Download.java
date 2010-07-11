@@ -132,12 +132,12 @@ public class Download extends Transfer {
     public void uploadStarted(FileInfo fileInfo) {
         checkFileInfo(fileInfo);
         lastTouch.setTime(System.currentTimeMillis());
-        
+
         // Maybe remove this check?
         if (isStarted()) {
-            logWarning("Received multiple upload start messages: "
-                + fileInfo.toDetailString());
-                
+            logWarning("Aborting. Received multiple upload start messages: "
+                + this);
+            abort();
             return;
         }
 
