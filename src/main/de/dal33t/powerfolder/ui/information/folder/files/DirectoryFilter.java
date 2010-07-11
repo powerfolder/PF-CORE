@@ -494,9 +494,6 @@ public class DirectoryFilter extends FilterModel {
                 }
             }
         } else if (searchMode == SEARCH_MODE_COMPUTER) {
-            // @todo remove when #1634 works
-            System.out.println("#1634 " + keyword + " has " +
-                    folder.getDAO().findAllFiles(keyword).size());
             FileInfo remoteFileInfo = folder.getDAO().find(fileInfo, keyword);
             return remoteFileInfo != null;
         }

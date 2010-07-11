@@ -231,9 +231,6 @@ public class FileFilterTextField extends PFComponent {
      * @param members
      */
     public void setMembers(Collection<Member> members) {
-        if (Feature.SET_FILTER_MEMBERS.isDisabled()) {
-            return;
-        }
         if (members == null || members.isEmpty()) {
             for (JRadioButtonMenuItem computerButton :
                     computerButtons.values()) {
