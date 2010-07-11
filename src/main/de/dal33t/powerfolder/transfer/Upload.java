@@ -230,7 +230,9 @@ public class Upload extends Transfer {
                             waitForRequests();
                         }
                         debugState = "Starting to send parts";
-                        logInfo("Upload started " + this);
+                        if (isFine()) {
+                            logFine("Started " + this);
+                        }
                         long startTime = System.currentTimeMillis();
 
                         // FIXME: It shouldn't be possible to loop endlessly
