@@ -713,9 +713,13 @@ public class NodeManager extends PFComponent {
             getController().getTransferManager().breakTransfers(node);
 
             // Try instant reconnect (if not dupe connection detection).
-            if (node.isInteresting()
-                && node.getLastProblem().problemCode != Problem.DUPLICATE_CONNECTION)
-            {
+            Problem lastProblem = node.getLastProblem();
+            boolean instantReconnect = true;
+            if (lastProblem != null) {
+                instantReconnect = lastProblem.problemCode != Problem.DUPLICATE_CONNECTION
+                    && lastProblem.problemCode != Problem.DO_NOT_LONGER_CONNECT;
+            }
+            if (instantReconnect && node.isInteresting()) {
                 getController().getReconnectManager().considerReconnectionTo(
                     node);
             }
