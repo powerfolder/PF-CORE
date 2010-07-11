@@ -39,7 +39,11 @@ import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StartUpload;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.ProgressListener;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 /**
@@ -425,7 +429,7 @@ public class Upload extends Transfer {
             try {
                 while (pendingRequests.isEmpty() && !isBroken() && !isAborted())
                 {
-                    pendingRequests.wait();
+                    pendingRequests.wait(100);
                 }
             } catch (InterruptedException e) {
                 logSevere("InterruptedException", e);
@@ -524,9 +528,10 @@ public class Upload extends Transfer {
     }
 
     public String toString() {
-        String msg = "State: " + debugState + ", TransferState: "
-            + state.getState() + " " + getFile().toDetailString() + " to '"
-            + getPartner().getNick() + "'";
+        String msg = "Upload: State: " + debugState
+            + ", TransferState: " + state.getState() + " "
+            + getFile().toDetailString() + " to '" + getPartner().getNick()
+            + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
         }
