@@ -171,7 +171,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerBart);
         controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerBart, false);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerBart,
+            false);
     }
 
     protected void startControllerLisa() {
@@ -183,7 +184,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
         controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
             false);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa, false);
+        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa,
+            false);
     }
 
     /**
@@ -378,7 +380,12 @@ public abstract class TwoControllerTestCase extends TestCase {
         System.out.println("Con to: "
             + cont2.getConnectionListener().getAddress());
 
-        cont1.connect(cont2.getConnectionListener().getAddress());
+        try {
+            cont1.connect(cont2.getConnectionListener().getAddress());
+        } catch (Exception e) {
+            // Try harder.
+            cont1.connect(cont2.getConnectionListener().getAddress());
+        }
         try {
             TestHelper.waitForCondition(20, new Condition() {
                 public boolean reached() {
