@@ -27,7 +27,11 @@ import java.util.UUID;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
-import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -274,13 +278,16 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(nItems, dao.count(null, true, false));
         assertEquals(nFiles, dao.count(null, false, false));
 
-        assertEquals(0, dao.findInDirectory(null, null, false).size());
-        assertEquals(nItems, dao.findInDirectory(null, null, true).size());
-//        assertEquals(nItems, dao
-//            .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
-//        assertEquals(n * 2 + 1, dao.findInDirectory(null, "subdir1/SUBDIR2/",
-//            false).size());
-        assertEquals(n, dao.findInDirectory(null, (DirectoryInfo) dirInfo, false).size());
+        assertEquals(0, dao.findInDirectory(null, (DirectoryInfo) null, false)
+            .size());
+        assertEquals(nItems, dao.findInDirectory(null, (String) null, true)
+            .size());
+        assertEquals(nItems, dao
+            .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
+        assertEquals(n * 2 + 1, dao.findInDirectory(null, "subdir1/SUBDIR2/",
+            false).size());
+        assertEquals(n, dao.findInDirectory(null, (DirectoryInfo) dirInfo,
+            false).size());
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name,
