@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * An implementation of {@link FileArchiver} that tries to move a file to an
@@ -294,9 +295,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     private static boolean belongsTo(String name, String baseName) {
         Matcher m = BASE_NAME_PATTERN.matcher(name);
         if (m.matches()) {
-            return FileInfo.IGNORE_CASE
-                && m.group(1).equalsIgnoreCase(baseName)
-                || m.group(1).equals(baseName);
+            return Util.equalsRelativeName(m.group(1), baseName);
         }
         return false;
     }
