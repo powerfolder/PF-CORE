@@ -116,9 +116,8 @@ public class DirectoryInfo extends FileInfo {
         }
         if (other instanceof DirectoryInfo) {
             DirectoryInfo otherInfo = (DirectoryInfo) other;
-            boolean caseMatch = IGNORE_CASE ?
-                    Util.equalsIgnoreCase(getRelativeName(), otherInfo.getRelativeName()) :
-                    Util.equals(getRelativeName(), otherInfo.getRelativeName());
+            boolean caseMatch = Util.equalsRelativeName(getRelativeName(),
+                otherInfo.getRelativeName());
             return caseMatch
                 && Util.equals(getFolderInfo(), otherInfo.getFolderInfo());
         }

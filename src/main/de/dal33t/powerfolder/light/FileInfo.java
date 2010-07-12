@@ -639,8 +639,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, Comparable<F
         }
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
-            boolean caseMatch = IGNORE_CASE ? Util.equalsIgnoreCase(fileName,
-                otherInfo.fileName) : Util.equals(fileName, otherInfo.fileName);
+            boolean caseMatch = Util.equalsRelativeName(fileName,
+                otherInfo.fileName);
             return caseMatch && Util.equals(folderInfo, otherInfo.folderInfo);
         }
 
