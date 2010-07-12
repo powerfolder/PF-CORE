@@ -222,6 +222,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (path == null) {
             path = "";
         }
+        if (path.equals("/")) {
+            path = "";
+        }
         List<FileInfo> items = new ArrayList<FileInfo>();
         Domain domain = getDomain(domainStr);
         for (DirectoryInfo dInfo : domain.directories.values()) {
