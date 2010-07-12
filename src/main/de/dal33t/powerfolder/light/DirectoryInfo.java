@@ -5,7 +5,6 @@ import java.util.Date;
 
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.disk.Folder;
 
 /**
  * A lightweight object representing a actual directory in the PowerFolder.
@@ -125,7 +124,4 @@ public class DirectoryInfo extends FileInfo {
         return false;
     }
 
-    public static DirectoryInfo createBaseDirectoryInfo(Folder folder) {
-        return new DirectoryInfo(folder.getInfo(), "");
-    }
 }

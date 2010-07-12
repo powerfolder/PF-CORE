@@ -225,6 +225,10 @@ public final class FileInfoFactory {
             original.isDeleted(), original.getFolderInfo());
     }
 
+    public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {
+        return new DirectoryInfo(foInfo, "");
+    }
+
     protected static String buildFileName(File baseDirectory, File file) {
         String fn = file.getName();
         File parent = file.getParentFile();
