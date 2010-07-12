@@ -131,10 +131,26 @@ public interface FileInfoDAO {
      * 
      * @param domain
      *            the domain to check.
+     * @param path the path/relative name of the sub directory.
+     * @param recursive
+     *            true to recursively include all files from subdirectory too.
+     * @return the collection of matching directories.
+     */
+    Collection<FileInfo> findInDirectory(String domain,
+                                         String path,
+                                         boolean recursive);
+    
+    /**
+     * Finds all files in the given (sub) directory and domain only.
+     * <p>
+     * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
+     * 
+     * @param domain
+     *            the domain to check.
      * @param directoryInfo
      * @param recursive
      *            true to recursively include all files from subdirectory too.
-     * @return the collection of mathcing directories.
+     * @return the collection of matching directories.
      */
     Collection<FileInfo> findInDirectory(String domain,
                                          DirectoryInfo directoryInfo,

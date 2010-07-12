@@ -209,16 +209,28 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    public Collection<FileInfo> findInDirectory(String domainStr, DirectoryInfo directoryInfo,
+    public Collection<FileInfo> findInDirectory(String domainStr,
+        DirectoryInfo directoryInfo, boolean recursive)
+    {
+        return findInDirectory(domainStr, directoryInfo != null ? directoryInfo
+            .getRelativeName() : null, recursive);
+    }
+
+    public Collection<FileInfo> findInDirectory(String domainStr, String path,
         boolean recursive)
     {
+        if (path == null) {
+            path = "";
+        }
         List<FileInfo> items = new ArrayList<FileInfo>();
         Domain domain = getDomain(domainStr);
         for (DirectoryInfo dInfo : domain.directories.values()) {
             // if (filter.isExcluded(dInfo)) {
             // continue;
             // }
-            if (isInSubDir(dInfo, directoryInfo, recursive) && !dInfo.equals(directoryInfo)) {
+            if (isInSubDir(dInfo, path, recursive)
+                && !Util.equalsRelativeName(dInfo.getRelativeName(), path))
+            {
                 items.add(dInfo);
             }
         }
@@ -226,7 +238,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             // if (filter.isExcluded(fInfo)) {
             // continue;
             // }
-            if (isInSubDir(fInfo, directoryInfo, recursive)) {
+            if (isInSubDir(fInfo, path, recursive)) {
                 items.add(fInfo);
             }
         }
@@ -256,14 +268,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    private boolean isInSubDir(FileInfo fInfo, DirectoryInfo directoryInfo, boolean recursive) {
-        if (!fInfo.getRelativeName().startsWith(directoryInfo.getRelativeName())) {
+    private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
+        if (!fInfo.getRelativeName().startsWith(path)) {
             return false;
         }
         if (recursive) {
             return true;
         }
-        int offset = directoryInfo.getRelativeName() != null ? directoryInfo.getRelativeName().length() + 2 : 0;
+        int offset = path != null ? path.length() + 2 : 0;
         int i = fInfo.getRelativeName().indexOf('/', offset);
         // No other subdirectory at end.
         return i < 0;
