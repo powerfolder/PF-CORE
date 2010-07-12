@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @version $Revision: 1.15 $
  */
 public class DiskItemComparator extends Loggable implements
-    Comparator<DiskItem>
+    Comparator<FileInfo>
 {
 
     // All the available file comparators
@@ -79,7 +79,7 @@ public class DiskItemComparator extends Loggable implements
      * @param o2
      * @return the value
      */
-    public int compare(DiskItem o1, DiskItem o2) {
+    public int compare(FileInfo o1, FileInfo o2) {
 
         switch (sortBy) {
             case BY_FILE_TYPE :
@@ -181,7 +181,8 @@ public class DiskItemComparator extends Loggable implements
             return 1;
         }
         if (fullName) {
-            return o1.getRelativeName().compareToIgnoreCase(o2.getRelativeName());
+            return o1.getRelativeName().compareToIgnoreCase(
+                o2.getRelativeName());
         } else {
             return o1.getFilenameOnly().compareToIgnoreCase(
                 o2.getFilenameOnly());
