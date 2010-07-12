@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -91,6 +92,33 @@ public class Util {
             return true;
         }
         return a.equalsIgnoreCase(b);
+    }
+
+    /**
+     * @param relativeNameA
+     * @param relativeNameB
+     * @return true if the relative names are equals on this system. Respects
+     *         {@link FileInfo#IGNORE_CASE}
+     */
+    public static final boolean equalsRelativeName(String relativeNameA,
+        String relativeNameB)
+    {
+        if (relativeNameA == null) {
+            // a == null
+            return relativeNameB == null;
+        }
+        if (relativeNameB == null) {
+            // a != null
+            return false;
+        }
+        if (relativeNameA == relativeNameB) {
+            return true;
+        }
+        if (FileInfo.IGNORE_CASE) {
+            return relativeNameA.equalsIgnoreCase(relativeNameB);
+        } else {
+            return relativeNameA.equals(relativeNameB);
+        }
     }
 
     /**
