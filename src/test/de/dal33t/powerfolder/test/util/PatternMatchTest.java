@@ -173,6 +173,8 @@ public class PatternMatchTest extends TestCase {
             .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
         assertTrue(new EndMatchPattern("*aab")
             .isMatch("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"));
+        assertTrue(new EndMatchPattern("*.tmp")
+            .isMatch("Eigene Musik/iTunes/iT 3.tmp"));
     }
 
     public void testStartMatchPattern() {
