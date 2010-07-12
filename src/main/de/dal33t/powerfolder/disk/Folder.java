@@ -2337,7 +2337,7 @@ public class Folder extends PFComponent {
     }
 
     public DirectoryInfo getBaseDirectoryInfo() {
-        return DirectoryInfo.createBaseDirectoryInfo(this);
+        return FileInfoFactory.createBaseDirectoryInfo(currentInfo);
     }
 
     private interface MessageProvider {
