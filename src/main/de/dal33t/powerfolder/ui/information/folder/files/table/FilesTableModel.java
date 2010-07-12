@@ -19,14 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files.table;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
@@ -34,15 +44,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class to model files selected from the tree.
@@ -66,8 +67,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private Folder folder;
     private DirectoryInfo selectedDirectoryInfo;
     /** A map of relativeName, DiskItem */
-    private final ConcurrentMap<DirectoryInfo, List<DiskItem>> directories;
-    private final List<DiskItem> diskItems;
+    private final ConcurrentMap<DirectoryInfo, List<FileInfo>> directories;
+    private final List<FileInfo> diskItems;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
@@ -82,7 +83,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     public FilesTableModel(Controller controller) {
         super(controller);
         directories = Util.createConcurrentHashMap();
-        diskItems = new ArrayList<DiskItem>();
+        diskItems = new ArrayList<FileInfo>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
     }
@@ -116,6 +117,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      * Pass the filtered directory model to get the file infos from.
      * 
      * @param model
+     * @param flat
      */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model,
         boolean flat)
@@ -136,10 +138,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
         if (model == null) {
             return;
         }
-        List<DiskItem> diskItemList = new ArrayList<DiskItem>();
+        List<FileInfo> diskItemList = new ArrayList<FileInfo>();
         diskItemList.addAll(model.getFileInfos());
         if (!flat) {
-            for (FilteredDirectoryModel directoryModel : model.getSubdirectories()) {
+            for (FilteredDirectoryModel directoryModel : model
+                .getSubdirectories())
+            {
                 diskItemList.add(directoryModel.getDirectoryInfo());
             }
         }
@@ -150,9 +154,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Returns the set folder.
-     * 
-     * @return
+     * @return the set folder.
      */
     public Folder getFolder() {
         return folder;
@@ -190,10 +192,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
                         logWarning("??? selectedDirectoryInfo == null ???");
                         return;
                     }
-                    List<DiskItem> selectedDiskItems = directories
+                    List<FileInfo> selectedDiskItems = directories
                         .get(selectedDirectoryInfo);
                     if (selectedDiskItems == null) {
-                        selectedDiskItems = new ArrayList<DiskItem>();
+                        selectedDiskItems = new ArrayList<FileInfo>();
                     }
 
                     if (diskItems.size() != selectedDiskItems.size()) {
