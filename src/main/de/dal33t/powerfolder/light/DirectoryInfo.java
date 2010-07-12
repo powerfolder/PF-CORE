@@ -5,6 +5,7 @@ import java.util.Date;
 
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.disk.Folder;
 
 /**
  * A lightweight object representing a actual directory in the PowerFolder.
@@ -50,7 +51,7 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public String toString() {
-        return "[" + getFolderInfo().name + "]:"
+        return '[' + getFolderInfo().name + "]:"
             + (isDeleted() ? "(del) /" : "/") + getRelativeName() + " (D)";
     }
 
@@ -78,7 +79,7 @@ public class DirectoryInfo extends FileInfo {
         } else {
             str.append(getModifiedBy().nick);
         }
-        str.append("'");
+        str.append('\'');
     }
 
     public String toDetailString() {
@@ -93,7 +94,7 @@ public class DirectoryInfo extends FileInfo {
      * @return if this file is newer than the other one. By file version ONLY.
      */
     public boolean isNewerThan(FileInfo ofInfo) {
-        return super.isNewerThan(ofInfo, true);
+        return isNewerThan(ofInfo, true);
     }
 
     /**
@@ -103,7 +104,7 @@ public class DirectoryInfo extends FileInfo {
      */
     public boolean inSyncWithDisk(File diskFile) {
         Reject.ifNull(diskFile, "Diskfile is null");
-        return super.inSyncWithDisk0(diskFile, true);
+        return inSyncWithDisk0(diskFile, true);
     }
 
     // hashCode() is used from FileInfo
@@ -115,14 +116,17 @@ public class DirectoryInfo extends FileInfo {
         }
         if (other instanceof DirectoryInfo) {
             DirectoryInfo otherInfo = (DirectoryInfo) other;
-            boolean caseMatch = IGNORE_CASE ? Util.equalsIgnoreCase(this
-                .getRelativeName(), otherInfo.getRelativeName()) : Util.equals(
-                this.getRelativeName(), otherInfo.getRelativeName());
+            boolean caseMatch = IGNORE_CASE ?
+                    Util.equalsIgnoreCase(getRelativeName(), otherInfo.getRelativeName()) :
+                    Util.equals(getRelativeName(), otherInfo.getRelativeName());
             return caseMatch
-                && Util.equals(this.getFolderInfo(), otherInfo.getFolderInfo());
+                && Util.equals(getFolderInfo(), otherInfo.getFolderInfo());
         }
 
         return false;
     }
 
+    public static DirectoryInfo createBaseDirectoryInfo(Folder folder) {
+        return new DirectoryInfo(folder.getInfo(), "");
+    }
 }

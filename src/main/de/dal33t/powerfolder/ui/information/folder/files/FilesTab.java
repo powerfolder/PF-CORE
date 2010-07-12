@@ -23,8 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.ArrayList;
 
 import javax.swing.*;
 
@@ -36,14 +34,13 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
@@ -267,10 +264,10 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     /**
      * Set the selected tree node to this directory.
      * 
-     * @param directory
+     * @param directoryInfo
      */
-    public void setSelection(Directory directory) {
-        treePanel.setSelection(directory);
+    public void setSelection(DirectoryInfo directoryInfo) {
+        treePanel.setSelection(directoryInfo);
     }
 
     private void updateSyncButton() {

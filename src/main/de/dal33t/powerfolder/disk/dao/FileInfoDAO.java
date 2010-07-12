@@ -119,8 +119,6 @@ public interface FileInfoDAO {
      * All directories in the given base directory. optionally adds ALL
      * subdirectories recursively.
      * 
-     * @param dir
-     * @param recursive
      * @param domain
      * @return the collection of available directories
      */
@@ -133,16 +131,14 @@ public interface FileInfoDAO {
      * 
      * @param domain
      *            the domain to check.
-     * @param path
-     *            the path to search for. In the same format of
-     *            FileInfo.getRelativeName(), unix-style separated path of the
-     *            file relative to the folder base.
+     * @param directoryInfo
      * @param recursive
      *            true to recursively include all files from subdirectory too.
      * @return the collection of mathcing directories.
      */
-    Collection<FileInfo> findInDirectory(String domain, String path,
-        boolean recursive);
+    Collection<FileInfo> findInDirectory(String domain,
+                                         DirectoryInfo directoryInfo,
+                                         boolean recursive);
 
     /**
      * @param fileInfo

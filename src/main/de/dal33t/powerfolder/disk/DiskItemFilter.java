@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
@@ -229,9 +230,9 @@ public class DiskItemFilter {
      * @return
      */
     private boolean isMatches(DiskItem diskItem) {
-        if (diskItem instanceof Directory) {
-            Directory dir = (Directory) diskItem;
-            String dirName = dir.getRelativeName() + "/*";
+        if (diskItem instanceof DirectoryInfo) {
+            DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
+            String dirName = directoryInfo.getRelativeName() + "/*";
 
             for (Pattern pattern : patterns) {
                 if (pattern.isMatch(dirName)) {
@@ -263,22 +264,6 @@ public class DiskItemFilter {
             result.add(pattern.getPatternText());
         }
         return result;
-    }
-
-    /**
-     * Returns the number of items that were filtered out(removed) from the List
-     * when the patterns were applied.
-     */
-    public int filterDirectories(List<Directory> directories) {
-        int n = 0;
-        for (Iterator<Directory> it = directories.iterator(); it.hasNext();) {
-            DiskItem diskItem = it.next();
-            if (isExcluded(diskItem)) {
-                it.remove();
-                n++;
-            }
-        }
-        return n;
     }
 
     /**

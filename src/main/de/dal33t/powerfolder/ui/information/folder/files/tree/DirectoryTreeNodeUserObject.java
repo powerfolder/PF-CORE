@@ -19,39 +19,37 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.tree;
 
+import de.dal33t.powerfolder.light.DirectoryInfo;
+
 /**
  * User object for the directory tree.
  */
 public class DirectoryTreeNodeUserObject {
 
-    /**
-     * The display name for the node. May not be a true path or file name.
-     */
+    private final DirectoryInfo directoryInfo;
     private final String displayName;
-
-    /** The relative name of the directory from the root, like /bob/test/sub */
-    private final String relativeName;
-
     private final boolean newFiles;
 
-    public DirectoryTreeNodeUserObject(String displayName, String relativeName, boolean newFiles) {
+    public DirectoryTreeNodeUserObject(DirectoryInfo directoryInfo,
+                                       String displayName, boolean newFiles) {
+        this.directoryInfo = directoryInfo;
         this.displayName = displayName;
-        this.relativeName = relativeName;
         this.newFiles = newFiles;
     }
 
-    public String getRelativeName() {
-        return relativeName;
-    }
-
-    public String getDisplayName() {
-        return displayName;
+    public DirectoryInfo getDirectoryInfo() {
+        return directoryInfo;
     }
 
     public boolean hasNewFiles() {
         return newFiles;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -65,15 +63,20 @@ public class DirectoryTreeNodeUserObject {
         if (newFiles != that.newFiles) {
             return false;
         }
-        if (!relativeName.equals(that.relativeName)) {
+        if (directoryInfo != null ? !directoryInfo.equals(that.directoryInfo) : that.directoryInfo != null) {
+            return false;
+        }
+        if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) {
             return false;
         }
 
         return true;
     }
 
+    @Override
     public int hashCode() {
-        int result = relativeName.hashCode();
+        int result = directoryInfo != null ? directoryInfo.hashCode() : 0;
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (newFiles ? 1 : 0);
         return result;
     }

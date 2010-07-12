@@ -41,9 +41,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public int count(String domain, boolean includeDirs, boolean excludeIgnored)
     {
         Domain d = getDomain(domain);
-        if (!excludeIgnored) {
-            return d.files.size() + (includeDirs ? d.directories.size() : 0);
-        } else {
+        if (excludeIgnored) {
             int c = 0;
             for (FileInfo fInfo : d.files.keySet()) {
                 if (filter.isRetained(fInfo) && !fInfo.isDeleted()) {
@@ -58,6 +56,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 }
             }
             return c;
+        } else {
+            return d.files.size() + (includeDirs ? d.directories.size() : 0);
         }
     }
 
@@ -209,7 +209,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    public Collection<FileInfo> findInDirectory(String domainStr, String path,
+    public Collection<FileInfo> findInDirectory(String domainStr, DirectoryInfo directoryInfo,
         boolean recursive)
     {
         List<FileInfo> items = new ArrayList<FileInfo>();
@@ -218,7 +218,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             // if (filter.isExcluded(dInfo)) {
             // continue;
             // }
-            if (isInSubDir(dInfo, path, recursive) && !pathIsDir(dInfo, path)) {
+            if (isInSubDir(dInfo, directoryInfo, recursive) && !dInfo.equals(directoryInfo)) {
                 items.add(dInfo);
             }
         }
@@ -226,7 +226,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             // if (filter.isExcluded(fInfo)) {
             // continue;
             // }
-            if (isInSubDir(fInfo, path, recursive)) {
+            if (isInSubDir(fInfo, directoryInfo, recursive)) {
                 items.add(fInfo);
             }
         }
@@ -256,27 +256,17 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
-        if (path != null && !fInfo.getRelativeName().startsWith(path)) {
+    private boolean isInSubDir(FileInfo fInfo, DirectoryInfo directoryInfo, boolean recursive) {
+        if (!fInfo.getRelativeName().startsWith(directoryInfo.getRelativeName())) {
             return false;
         }
         if (recursive) {
             return true;
         }
-        int offset = path != null ? path.length() + 2 : 0;
+        int offset = directoryInfo.getRelativeName() != null ? directoryInfo.getRelativeName().length() + 2 : 0;
         int i = fInfo.getRelativeName().indexOf('/', offset);
         // No other subdirectory at end.
         return i < 0;
-    }
-
-    private boolean pathIsDir(DirectoryInfo dirInfo, String path) {
-        if (path == null) {
-            return false;
-        }
-        if (FileInfo.IGNORE_CASE) {
-            return path.equalsIgnoreCase(dirInfo.getRelativeName());
-        }
-        return path.equals(dirInfo.getRelativeName());
     }
 
     private static class Domain {

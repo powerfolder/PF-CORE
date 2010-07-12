@@ -51,7 +51,6 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -167,15 +166,6 @@ public class Folder extends PFComponent {
     private final Map<Member, Member> members;
 
     /**
-     * Cached Directory object. NOTE - all access to rootDirectory MUST be
-     * preceded with a call to commissionRootFolder().
-     */
-    private final Directory rootDirectory;
-
-    /** Lock for commissioning rootDirectory */
-    private final AtomicBoolean rootDirectoryLock = new AtomicBoolean();
-
-    /**
      * the folder info, contains important information about
      * id/hash/name/filescount
      */
@@ -276,7 +266,6 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        rootDirectory = new Directory(this, null, "");
         problems = new CopyOnWriteArrayList<Problem>();
         localBase = folderSettings.getLocalBaseDir();
         syncProfile = folderSettings.getSyncProfile();
@@ -1179,7 +1168,7 @@ public class Folder extends PFComponent {
     /**
      * Corrects the folder info
      * 
-     * @param fInfo
+     * @param theFInfo
      */
     private FileInfo correctFolderInfo(FileInfo theFInfo) {
         // Add to this folder
@@ -1599,8 +1588,6 @@ public class Folder extends PFComponent {
                 expired++;
                 // Remove
                 dao.delete(null, file);
-                commissionRootFolder();
-                rootDirectory.removeFileInfo(file);
                 for (Member member : members.values()) {
                     dao.delete(member.getId(), file);
                 }
@@ -1941,8 +1928,6 @@ public class Folder extends PFComponent {
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId());
-        commissionRootFolder();
-        rootDirectory.removeUnusedFileInfoHolders();
 
         // Fire event
         fireMemberLeft(member);
@@ -1960,8 +1945,6 @@ public class Folder extends PFComponent {
             "Should only be removing deleted infos.");
         dao.delete(null, fileInfo);
         dirty = true;
-        commissionRootFolder();
-        rootDirectory.removeFileInfo(fileInfo);
     }
 
     /**
@@ -2353,6 +2336,10 @@ public class Folder extends PFComponent {
 
     }
 
+    public DirectoryInfo getBaseDirectoryInfo() {
+        return DirectoryInfo.createBaseDirectoryInfo(this);
+    }
+
     private interface MessageProvider {
         Message[] getMessages(boolean pre4Client);
     }
@@ -2362,7 +2349,7 @@ public class Folder extends PFComponent {
      */
     public void broadcastScanCommand() {
         if (isFiner()) {
-            logFiner("Broadcasting remote scan commando");
+            logFiner("Broadcasting remote scan command");
         }
         Message scanCommand = new ScanCommand(currentInfo);
         broadcastMessages(scanCommand);
@@ -2448,8 +2435,6 @@ public class Folder extends PFComponent {
         if (newList.isNull()) {
             // Delete files in domain and do nothing
             dao.deleteDomain(from.getId());
-            commissionRootFolder();
-            rootDirectory.removeUnusedFileInfoHolders();
             return;
         }
         // Store but also deleted/clear domain before.
@@ -2593,8 +2578,6 @@ public class Folder extends PFComponent {
             }
             dao.store(domainID, fileInfos);
         }
-        commissionRootFolder();
-        rootDirectory.addAll(member, fileInfos);
     }
 
     private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
@@ -2974,35 +2957,6 @@ public class Folder extends PFComponent {
      */
     public Collection<DirectoryInfo> getKnownDirectories() {
         return dao.findAllDirectories(null);
-    }
-
-    /**
-     * get the Directories in this folder (including the subs and files)
-     * 
-     * @return Directory with all sub dirs and files set
-     */
-    public Directory getDirectory() {
-        commissionRootFolder();
-        return rootDirectory;
-    }
-
-    /**
-     * Build up the root directory 'just in time' before use.
-     */
-    private void commissionRootFolder() {
-        if (rootDirectoryLock.get()) {
-            // #1705 Performance optimizatiom. Don't hang on lock
-            return;
-        }
-        synchronized (rootDirectoryLock) {
-            if (!rootDirectoryLock.getAndSet(true)) {
-                rootDirectory.addAll(getController().getMySelf(), dao
-                    .findAllFiles(null));
-                if (isFiner()) {
-                    logFiner("Commissioned folder " + getName());
-                }
-            }
-        }
     }
 
     /**

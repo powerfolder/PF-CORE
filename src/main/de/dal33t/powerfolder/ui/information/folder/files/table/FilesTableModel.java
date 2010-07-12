@@ -25,11 +25,10 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.Directory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
-import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.DiskItemComparator;
@@ -65,9 +64,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private static final int COL_MODIFIED_DATE = 4;
 
     private Folder folder;
-    private String selectedRelativeName;
+    private DirectoryInfo selectedDirectoryInfo;
     /** A map of relativeName, DiskItem */
-    private final ConcurrentMap<String, List<DiskItem>> directories;
+    private final ConcurrentMap<DirectoryInfo, List<DiskItem>> directories;
     private final List<DiskItem> diskItems;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
@@ -106,10 +105,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
     /**
      * Set the directory selected in the tree.
      * 
-     * @param selectedRelativeName
+     * @param selectedDirectoryInfo
      */
-    public void setSelectedRelativeName(String selectedRelativeName) {
-        this.selectedRelativeName = selectedRelativeName;
+    public void setSelectedDirectoryInfo(DirectoryInfo selectedDirectoryInfo) {
+        this.selectedDirectoryInfo = selectedDirectoryInfo;
         update();
     }
 
@@ -137,13 +136,14 @@ public class FilesTableModel extends PFComponent implements TableModel,
         if (model == null) {
             return;
         }
-        String relativeName = model.getRelativeName();
         List<DiskItem> diskItemList = new ArrayList<DiskItem>();
         diskItemList.addAll(model.getFileInfos());
         if (!flat) {
-            diskItemList.addAll(model.getSubdirectoryDirectories());
+            for (FilteredDirectoryModel directoryModel : model.getSubdirectories()) {
+                diskItemList.add(directoryModel.getDirectoryInfo());
+            }
         }
-        directories.putIfAbsent(relativeName, diskItemList);
+        directories.putIfAbsent(model.getDirectoryInfo(), diskItemList);
         for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
             walkFilteredDirectoryModel(subModel, flat);
         }
@@ -167,7 +167,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        if (selectedRelativeName == null) {
+        if (selectedDirectoryInfo == null) {
             return;
         }
 
@@ -175,9 +175,9 @@ public class FilesTableModel extends PFComponent implements TableModel,
             return;
         }
 
-        if (directories.keySet().contains(selectedRelativeName)) {
-            if (StringUtils.isNotBlank(selectedRelativeName)) {
-                logFine("Found '" + selectedRelativeName + "' in directories");
+        if (directories.keySet().contains(selectedDirectoryInfo)) {
+            if (isFine()) {
+                logFine("Found '" + selectedDirectoryInfo + "' in directories");
             }
         } else {
             return;
@@ -186,12 +186,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized (diskItems) {
-                    if (selectedRelativeName == null) {
-                        logWarning("??? selectedRelativeName == null ???");
+                    if (selectedDirectoryInfo == null) {
+                        logWarning("??? selectedDirectoryInfo == null ???");
                         return;
                     }
                     List<DiskItem> selectedDiskItems = directories
-                        .get(selectedRelativeName);
+                        .get(selectedDirectoryInfo);
                     if (selectedDiskItems == null) {
                         selectedDiskItems = new ArrayList<DiskItem>();
                     }
@@ -275,10 +275,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
         int i = 0;
         for (int row : rows) {
             Object at = getValueAt(row, COL_NAME);
-            if (at instanceof FileInfo) {
+            if (at instanceof DirectoryInfo) {
+                items[i] = (DirectoryInfo) at;
+            } else if (at instanceof FileInfo) {
                 items[i] = (FileInfo) at;
-            } else if (at instanceof Directory) {
-                items[i] = (Directory) at;
             } else {
                 logSevere("Object was a " + at.getClass().getName() + "???");
             }

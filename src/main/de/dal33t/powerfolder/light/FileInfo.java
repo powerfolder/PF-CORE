@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem, Cloneable {
+public class FileInfo implements Serializable, DiskItem, Cloneable, Comparable<FileInfo> {
 
     /**
      * #1531: If this system should ignore cases of files in
@@ -137,7 +137,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "relativeName must not contain ../: " + relativeName);
         }
 
-        this.fileName = relativeName;
+        fileName = relativeName;
         this.size = size;
         this.modifiedBy = modifiedBy;
         this.lastModifiedDate = lastModifiedDate;
@@ -158,7 +158,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 "relativeName must not contain ../: " + relativeName);
         }
 
-        this.fileName = relativeName;
+        fileName = relativeName;
         folderInfo = folder;
 
         size = null;
@@ -191,7 +191,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             throw new NullPointerException("diskFile is null");
         }
         String diskFileName = diskFile.getName();
-        boolean nameMatch = getRelativeName().endsWith(diskFileName);
+        boolean nameMatch = fileName.endsWith(diskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
             // Try harder if ignore case
@@ -202,7 +202,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (!nameMatch) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
-                    + "', details: " + this.toDetailString()
+                    + "', details: " + toDetailString()
                     + ", diskfile name '" + diskFile.getName() + "', path: "
                     + diskFile);
         }
@@ -331,7 +331,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return strings.getFileNameOnly();
     }
 
-    private final String getFilenameOnly0() {
+    private String getFilenameOnly0() {
         int index = fileName.lastIndexOf('/');
         if (index > -1) {
             return fileName.substring(index + 1);
@@ -659,7 +659,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @param str
      *            the stringbuilder to add the detail info to.
      */
-    private final void toDetailString(StringBuilder str) {
+    private void toDetailString(StringBuilder str) {
         str.append(toString());
         str.append(", size: ");
         str.append(size);
@@ -744,4 +744,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
         // validate();
     }
+
+    public int compareTo(FileInfo o) {
+        return fileName.compareTo(o.fileName);
+    }
+
 }
