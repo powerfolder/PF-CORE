@@ -111,7 +111,7 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
-    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = "syncPatterns.txt";
+    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = DiskItemFilter.PATTERNS_FILENAME;
 
     public static final int TEN_MINUTES = 60 * 10;
 
@@ -351,6 +351,7 @@ public class Folder extends PFComponent {
         Persister persister = new Persister();
         getController().scheduleAndRepeat(
             persister,
+            1000L,
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
@@ -3597,44 +3598,25 @@ public class Folder extends PFComponent {
      * Save patterns to metaFolder for transfer to other computers.
      */
     private void savePatternsToMetaFolder() {
-
         // Should the patterns be synchronized?
         if (!syncPatterns) {
+            return;
+        }
+        if (currentInfo.isMetaFolder()) {
             return;
         }
 
         // Only do this for parent folders.
         FolderRepository folderRepository = getController()
             .getFolderRepository();
-        if (!folderRepository.isMetaFolder(currentInfo)) {
-
-            Folder metaFolder = folderRepository
-                .getMetaFolderForParent(currentInfo);
-            if (metaFolder == null) {
-                logWarning("Could not find metaFolder for " + currentInfo);
-                return;
-            }
-
-            // Write the patterns in the meta directory.
-            List<String> patterns = diskItemFilter.getPatterns();
-            PrintWriter pw = null;
-            try {
-                File f = new File(metaFolder.localBase,
-                    META_FOLDER_SYNC_PATTERNS_FILE_NAME);
-                pw = new PrintWriter(new FileWriter(f));
-                for (String pattern : patterns) {
-                    pw.println(pattern);
-                }
-                pw.flush();
-                logFine("Wrote new metaFolder patterns for " + currentInfo);
-            } catch (IOException e) {
-                logSevere("IOException", e);
-            } finally {
-                if (pw != null) {
-                    pw.close();
-                }
-            }
+        Folder metaFolder = folderRepository
+            .getMetaFolderForParent(currentInfo);
+        if (metaFolder == null) {
+            logWarning("Could not find metaFolder for " + currentInfo, new RuntimeException());
+            return;
         }
+        // Write the patterns in the meta directory.
+        diskItemFilter.savePatternsTo(metaFolder.getLocalBase());
     }
 
     // Inner classes **********************************************************
