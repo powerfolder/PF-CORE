@@ -113,16 +113,13 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     /**
      * UI does not care about metaFolder events.
-     *
+     * 
      * @param upload
      * @return
      */
     private boolean isMetaFolderUpload(Upload upload) {
-        FolderInfo folderInfo = upload.getFile().getFolderInfo();
-        return getController().getFolderRepository().isMetaFolder(folderInfo);
+        return upload.getFile().getFolderInfo().isMetaFolder();
     }
-
-
 
     // Public exposing ********************************************************
 
