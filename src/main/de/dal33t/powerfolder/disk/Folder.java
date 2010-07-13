@@ -95,7 +95,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -2078,8 +2078,9 @@ public class Folder extends PFComponent {
                         + " possible files");
                 }
                 List<FileInfo> list = new ArrayList<FileInfo>(dirList);
-                Collections.sort(list, new ReverseComparator(DiskItemComparator
-                    .getComparator(DiskItemComparator.BY_RELATIVE_NAME)));
+                Collections.sort(list, new ReverseComparator<FileInfo>(
+                    FileInfoComparator
+                        .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
                 // logWarning("" + list.size());
                 synchronized (scanLock) {
                     for (FileInfo remoteDir : list) {
@@ -3018,7 +3019,7 @@ public class Folder extends PFComponent {
         // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
         // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
-            new DiskItemComparator(DiskItemComparator.BY_RELATIVE_NAME));
+            new FileInfoComparator(FileInfoComparator.BY_RELATIVE_NAME));
         // add0 expeced files
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
