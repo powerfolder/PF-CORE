@@ -283,7 +283,7 @@ public class Debug {
             if (c.isStarted()) {
                 // All folders
                 Collection<Folder> folders = c.getFolderRepository()
-                    .getFolders();
+                    .getFolders(true);
 
                 b.append("\nFolders (" + folders.size() + " joined)");
                 for (Folder folder : folders) {
