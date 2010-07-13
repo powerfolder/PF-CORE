@@ -57,7 +57,7 @@ import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
@@ -156,8 +156,8 @@ public class Debug {
 
         // Copy & Sort
         FileInfo[] list = fileInfos.toArray(new FileInfo[fileInfos.size()]);
-        Arrays.sort(list, new DiskItemComparator(
-            DiskItemComparator.BY_MODIFIED_DATE));
+        Arrays.sort(list, new FileInfoComparator(
+            FileInfoComparator.BY_MODIFIED_DATE));
 
         try {
             OutputStream fOut = new BufferedOutputStream(new FileOutputStream(
