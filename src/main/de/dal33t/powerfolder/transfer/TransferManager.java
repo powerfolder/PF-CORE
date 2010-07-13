@@ -773,9 +773,7 @@ public class TransferManager extends PFComponent {
             clearCompletedDownload(dlManager);
         }
 
-        if (getController().getFolderRepository().isMetaFolder(
-            fInfo.getFolderInfo()))
-        {
+        if (fInfo.getFolderInfo().isMetaFolder()) {
             MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
                 getController());
             mfdh.handleMetaFolderFileInfo(fInfo);
