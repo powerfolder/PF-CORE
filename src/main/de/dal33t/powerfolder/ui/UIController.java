@@ -388,10 +388,8 @@ public class UIController extends PFComponent {
         long totalFolderSize = calculateTotalLocalSharedSize();
         logFine("Local shared folder size: "
             + Format.formatBytes(totalFolderSize));
-        // A folderCount of 6 == 3 folders plus 3 metaFolders.
         boolean limitHit = totalFolderSize > FIVE_GIG
-            || getController().getFolderRepository().getFoldersCount() > (Feature.META_FOLDER
-                .isEnabled() ? 6 : 3);
+            || getController().getFolderRepository().getFoldersCount() > 3;
         if (limitHit) {
             getController().getNodeManager().shutdown();
             if (!limitDialogShown || forceOpen) {
