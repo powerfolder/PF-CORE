@@ -114,8 +114,7 @@ public class DownloadManagersTableModel extends PFComponent implements
      * @return
      */
     private boolean isMetaFolderDownload(DownloadManager downloadManager) {
-        FolderInfo folderInfo = downloadManager.getFileInfo().getFolderInfo();
-        return getController().getFolderRepository().isMetaFolder(folderInfo);
+        return downloadManager.getFileInfo().getFolderInfo().isMetaFolder();
     }
 
     public boolean isPeriodicUpdate() {
