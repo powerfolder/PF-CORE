@@ -36,27 +36,37 @@ public class MetaFolderDataHandler extends PFComponent {
 
     /**
      * Handle file change to metaFolder files.
-     *
+     * 
      * @param fileInfo
-     *               metaFolder file info
+     *            metaFolder file info
      */
     public void handleMetaFolderFileInfo(FileInfo fileInfo) {
+        if (!fileInfo.getFolderInfo().isMetaFolder()) {
+            logSevere("Unable to handle meta data file. Not in meta folder: "
+                + fileInfo.toDetailString());
+            return;
+        }
+
+        Folder parentFolder = getController().getFolderRepository()
+            .getParentFolder(fileInfo.getFolderInfo());
+
         if (fileInfo.getFilenameOnly().equals(
-                Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME)) {
-            handleMetaFolderSyncPatterns(fileInfo);
+            Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME))
+        {
+            handleMetaFolderSyncPatterns(parentFolder, fileInfo);
         }
     }
 
     /**
-     * Updated sync patterns have been downloaded to the metaFolder.
-     * Update the sync patterns in the parent folder.
-     *
+     * Updated sync patterns have been downloaded to the metaFolder. Update the
+     * sync patterns in the parent folder.
+     * 
      * @param fileInfo
-     *               fileInfo of the new sync patterns
+     *            fileInfo of the new sync patterns
      */
-    private void handleMetaFolderSyncPatterns(FileInfo fileInfo) {
-        Folder parentFolder = getController().getFolderRepository()
-                .getParentFolder(fileInfo.getFolderInfo());
+    private void handleMetaFolderSyncPatterns(Folder parentFolder,
+        FileInfo fileInfo)
+    {
         parentFolder.handleMetaFolderSyncPatterns(fileInfo);
     }
 }
