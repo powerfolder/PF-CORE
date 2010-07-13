@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -61,6 +63,52 @@ public class FolderJoinTest extends TwoControllerTestCase {
             testFolder).getMembersCount());
     }
 
+    public void testJoinMetaFolder() {
+        if (Feature.META_FOLDER.isDisabled()) {
+            return;
+        }
+        joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
+
+        FolderRepository bartRepo = getContollerBart().getFolderRepository();
+        assertEquals(1, bartRepo.getFoldersCount());
+        assertEquals(2, bartRepo.getFoldersCount(true));
+        assertEquals(1, bartRepo.getFolders().size());
+        assertEquals(2, bartRepo.getFolders(true).size());
+        assertTrue(bartRepo.getFolders().contains(getFolderAtBart()));
+        assertTrue(bartRepo.getFolders(true).contains(getFolderAtBart()));
+
+        Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtLisa()
+            .getInfo());
+        assertTrue(bartRepo.hasJoinedFolder(bartMeta.getInfo()));
+        assertTrue(bartMeta.getInfo().isMetaFolder());
+        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, bartMeta
+            .getSyncProfile());
+        assertEquals(getFolderAtBart(), bartRepo.getParentFolder(bartMeta
+            .getInfo()));
+        assertNotNull(bartRepo.getFolder(bartMeta.getInfo()));
+        assertEquals(2, bartMeta.getMembersCount());
+
+        // Same tests for lisa
+        FolderRepository lisaRepo = getContollerLisa().getFolderRepository();
+        assertEquals(1, lisaRepo.getFoldersCount());
+        assertEquals(2, lisaRepo.getFoldersCount(true));
+        assertEquals(1, lisaRepo.getFolders().size());
+        assertEquals(2, lisaRepo.getFolders(true).size());
+        assertTrue(lisaRepo.getFolders().contains(getFolderAtLisa()));
+        assertTrue(lisaRepo.getFolders(true).contains(getFolderAtLisa()));
+
+        Folder lisaMeta = lisaRepo.getMetaFolderForParent(getFolderAtLisa()
+            .getInfo());
+        assertTrue(lisaRepo.hasJoinedFolder(lisaMeta.getInfo()));
+        assertTrue(lisaMeta.getInfo().isMetaFolder());
+        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, lisaMeta
+            .getSyncProfile());
+        assertEquals(getFolderAtLisa(), lisaRepo.getParentFolder(lisaMeta
+            .getInfo()));
+        assertNotNull(lisaRepo.getFolder(lisaMeta.getInfo()));
+        assertEquals(2, lisaMeta.getMembersCount());
+    }
+
     public void testJoinMultipleFolders() {
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
@@ -86,11 +134,13 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 SyncProfile.HOST_FILES, false, ArchiveMode.NO_BACKUP, 0);
             folder1 = getContollerBart().getFolderRepository().createFolder(
                 testFolder, folderSettings1);
+            folder1.addDefaultExcludes();
 
             FolderSettings folderSettings2 = new FolderSettings(folderDirLisa,
                 SyncProfile.HOST_FILES, false, ArchiveMode.NO_BACKUP, 0);
             folder2 = getContollerLisa().getFolderRepository().createFolder(
                 testFolder, folderSettings2);
+            folder2.addDefaultExcludes();
             if (folder1.isDeviceDisconnected()
                 || folder2.isDeviceDisconnected())
             {
