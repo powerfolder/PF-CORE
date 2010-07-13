@@ -109,7 +109,8 @@ public class FileRequestor extends PFComponent {
      */
     public void triggerFileRequesting() {
         ProfilingEntry pe = Profiling.start();
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (folderQueue.contains(folder)) {
                 continue;
