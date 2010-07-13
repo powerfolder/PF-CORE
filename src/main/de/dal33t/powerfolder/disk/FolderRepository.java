@@ -27,9 +27,9 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +50,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
@@ -68,6 +74,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -111,14 +118,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Field list for backup taget pre #777. Used to convert to new backup
      * target for #787.
      */
-    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST =
-            "true,true,true,true,0,false,12,0,m";
-    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST =
-            "true,true,true,true,1,false,12,0,m," +
-                    Translation.getTranslation("transfer_mode.automatic_synchronization.name");
-    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST =
-            "true,true,true,true,10,false,12,0,m," +
-                    Translation.getTranslation("transfer_mode.automatic_synchronization_10min.name");
+    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
+    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST = "true,true,true,true,1,false,12,0,m,"
+        + Translation
+            .getTranslation("transfer_mode.automatic_synchronization.name");
+    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST = "true,true,true,true,10,false,12,0,m,"
+        + Translation
+            .getTranslation("transfer_mode.automatic_synchronization_10min.name");
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -392,10 +398,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Migration for #787 (backup target timeBetweenScans changed
             // from 0 to 60).
             syncProfile = SyncProfile.BACKUP_TARGET;
-        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST.equals(syncProfConfig) ||
-                PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST.equals(syncProfConfig)) {
-                // Migration for #2040 (new auto sync uses JNotify).
-                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST
+            .equals(syncProfConfig)
+            || PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST
+                .equals(syncProfConfig))
+        {
+            // Migration for #2040 (new auto sync uses JNotify).
+            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
@@ -529,12 +538,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Migration for #787 (backup target timeBetweenScans changed
             // from 0 to 60).
             syncProfile = SyncProfile.BACKUP_TARGET;
-        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST.equals(
-                syncProfConfig) ||
-                PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST.equals(
-                        syncProfConfig)) {
-                // Migration for #2040 (new auto sync uses JNotify).
-                syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST
+            .equals(syncProfConfig)
+            || PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST
+                .equals(syncProfConfig))
+        {
+            // Migration for #2040 (new auto sync uses JNotify).
+            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
@@ -572,8 +582,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
-        String syncPatternsSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_SYNC_PATTERNS);
+        String syncPatternsSetting = config
+            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
+                + FOLDER_SETTINGS_SYNC_PATTERNS);
         // Default syncPatterns to true.
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
@@ -673,8 +684,8 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return if folder is in repo
      */
     public boolean hasJoinedFolder(FolderInfo info) {
-        if (folders.containsKey(info)) {
-            return true;
+        if (!info.isMetaFolder()) {
+            return folders.containsKey(info);
         }
         for (Folder folder : metaFolders.values()) {
             if (folder.getInfo().equals(info)) {
@@ -697,10 +708,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder by info, or null if folder is not found
      */
     public Folder getFolder(FolderInfo info) {
-        Folder folder = folders.get(info);
-        if (folder != null) {
-            return folder;
+        if (!info.isMetaFolder()) {
+            return folders.get(info);
         }
+        // #1548: Speed this up.
         for (Folder metaFolder : metaFolders.values()) {
             if (metaFolder.getInfo().equals(info)) {
                 return metaFolder;
@@ -712,11 +723,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * The indirect reference to the internal concurrect hashmap. Contents may
      * changed after get.
-     *
+     * 
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFolders() {
-        return getFolders(true);
+        return getFolders(false);
     }
 
     /**
@@ -730,18 +741,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!includeMetaFolders) {
             return Collections.unmodifiableCollection(folders.values());
         }
-        Collection<Folder> mergedFolders = new ArrayList<Folder>(folders.size()
-            + metaFolders.size());
-        mergedFolders.addAll(folders.values());
-        mergedFolders.addAll(metaFolders.values());
-        return Collections.unmodifiableCollection(mergedFolders);
+        CompositeCollection<Folder> composite = new CompositeCollection<Folder>();
+        composite.addComposited(folders.values(), metaFolders.values());
+        return Collections.unmodifiableCollection(composite);
     }
 
     /**
-     * @return the number of folders
+     * @return the number of folders. Does NOT include the metadata folders.
      */
     public int getFoldersCount() {
-        return getFoldersCount(true);
+        return getFoldersCount(false);
     }
 
     /**
@@ -863,22 +872,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Now create metaFolder and map to the same FolderInfo key.
         if (Feature.META_FOLDER.isEnabled() && !folderSettings.isPreviewOnly())
         {
-            FolderInfo metaFolderInfo = new FolderInfo("meta" +
-                    folderInfo.getName(), Constants.METAFOLDER_SUBDIR +
-                    folderInfo.id);
+            FolderInfo metaFolderInfo = new FolderInfo(
+                Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
+                Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
             File systemSubdir = new File(folderSettings.getLocalBaseDir(),
-                    Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            FolderSettings metaFolderSettings = new FolderSettings(
-                    new File(systemSubdir, Constants.METAFOLDER_SUBDIR),
-                    SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-                    ArchiveMode.NO_BACKUP, 0);
+                Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            FolderSettings metaFolderSettings = new FolderSettings(new File(
+                systemSubdir, Constants.METAFOLDER_SUBDIR),
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                ArchiveMode.NO_BACKUP, 0);
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
-                    metaFolderSettings);
+                metaFolderSettings);
             metaFolders.put(folderInfo, metaFolder);
 
-            logInfo("Created metaFolder " + metaFolderInfo.name +
-                    ", local copy at '" + metaFolderSettings.getLocalBaseDir() +
-                    '\'');
+            logInfo("Created metaFolder " + metaFolderInfo.name
+                + ", local copy at '" + metaFolderSettings.getLocalBaseDir()
+                + '\'');
         }
 
         // Synchronize folder memberships
@@ -1041,7 +1050,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (isFiner()) {
             logFiner("Removing node from all folders: " + member);
         }
-        for (Folder folder : getFolders()) {
+        for (Folder folder : getFolders(true)) {
             folder.remove(member);
         }
         if (isFiner()) {
@@ -1075,7 +1084,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (log.isLoggable(Level.FINE)) {
             logFine("Sending remote scan commando");
         }
-        for (Folder folder : getFolders()) {
+        for (Folder folder : getFolders(true)) {
             folder.broadcastScanCommand();
         }
     }
@@ -1241,27 +1250,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Is this a metaFolder?
-     * 
-     * @param folderInfo
-     * @return
-     */
-    public boolean isMetaFolder(FolderInfo folderInfo) {
-        for (Folder metaFolder : metaFolders.values()) {
-            if (metaFolder.getInfo().equals(folderInfo)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Get the parent folder for a metaFolder's info.
      * 
      * @param metaFolderInfo
      * @return
      */
     public Folder getParentFolder(FolderInfo metaFolderInfo) {
+        // #1548 Speed this up.
         for (Map.Entry<FolderInfo, Folder> entry : metaFolders.entrySet()) {
             if (entry.getValue().getInfo().equals(metaFolderInfo)) {
                 // This is the metaFolder - return the corresponding folder.
