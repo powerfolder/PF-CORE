@@ -3372,20 +3372,23 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     public boolean hasReadPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission.read(currentInfo));
+        return hasFolderPermission(member, FolderPermission
+            .read(getParentFolderInfo()));
     }
 
     public boolean hasWritePermission(Member member) {
         return hasFolderPermission(member, FolderPermission
-            .readWrite(currentInfo));
+            .readWrite(getParentFolderInfo()));
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission.admin(currentInfo));
+        return hasFolderPermission(member, FolderPermission
+            .admin(getParentFolderInfo()));
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission.owner(currentInfo));
+        return hasFolderPermission(member, FolderPermission
+            .owner(getParentFolderInfo()));
     }
 
     private boolean hasFolderPermission(Member member,
@@ -3396,6 +3399,10 @@ public class Folder extends PFComponent {
         }
         return getController().getSecurityManager().hasPermission(
             member.getAccountInfo(), permission);
+    }
+
+    private FolderInfo getParentFolderInfo() {
+        return currentInfo.getParentFolderInfo(getController());
     }
 
     // General stuff **********************************************************

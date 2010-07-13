@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
@@ -62,6 +63,16 @@ public class FolderInfo implements Serializable, Cloneable {
     public boolean isMetaFolder() {
         // #1548: Convert this into boolean flag?
         return id.startsWith(Constants.METAFOLDER_ID_PREFIX);
+    }
+
+    public FolderInfo getParentFolderInfo(Controller controller) {
+        if (!isMetaFolder()) {
+            return this;
+        }
+        Folder parentFolder = controller.getFolderRepository().getParentFolder(
+            this);
+        Reject.ifNull(parentFolder, "Parent folder for " + this + " not found");
+        return parentFolder.getInfo();
     }
 
     public String getName() {
