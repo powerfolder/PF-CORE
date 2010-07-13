@@ -24,7 +24,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -157,13 +157,13 @@ public class RestoreFilesTableModel extends PFComponent implements TableModel,
         sortColumn = columnIndex;
         switch (columnIndex) {
             case COL_FILE_NAME:
-                return sortMe(DiskItemComparator.BY_NAME);
+                return sortMe(FileInfoComparator.BY_NAME);
             case COL_VERION:
-                return sortMe(DiskItemComparator.BY_VERSION);
+                return sortMe(FileInfoComparator.BY_VERSION);
             case COL_SIZE:
-                return sortMe(DiskItemComparator.BY_SIZE);
+                return sortMe(FileInfoComparator.BY_SIZE);
             case COL_MODIFIED_DATE:
-                return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
+                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
         }
 
         sortColumn = -1;
@@ -202,14 +202,14 @@ public class RestoreFilesTableModel extends PFComponent implements TableModel,
 
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            DiskItemComparator comparator = new DiskItemComparator(
-                    fileInfoComparatorType);
+            FileInfoComparator comparator = new FileInfoComparator(
+                fileInfoComparatorType);
             synchronized (versions) {
                 if (sortAscending) {
                     Collections.sort(versions, comparator);
                 } else {
-                    Collections.sort(versions, new ReverseComparator(
-                            comparator));
+                    Collections.sort(versions, new ReverseComparator<FileInfo>(
+                        comparator));
                 }
             }
             return true;
