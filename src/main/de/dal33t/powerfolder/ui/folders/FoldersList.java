@@ -192,7 +192,7 @@ public class FoldersList extends PFUIComponent {
         List<FolderBean> localFolders = new ArrayList<FolderBean>();
         List<FolderBean> onlineFolders = new ArrayList<FolderBean>();
 
-        for (Folder folder : repo.getFolders(false)) {
+        for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
             FolderBean bean = new FolderBean(folderInfo);
             bean.setFolder(folder);
