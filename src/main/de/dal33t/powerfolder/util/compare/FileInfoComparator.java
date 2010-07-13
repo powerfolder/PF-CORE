@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class DiskItemComparator extends Loggable implements
+public class FileInfoComparator extends Loggable implements
     Comparator<FileInfo>
 {
 
@@ -49,25 +49,25 @@ public class DiskItemComparator extends Loggable implements
     private static final int AFTER = 1;
 
     private int sortBy;
-    private static final DiskItemComparator[] comparators;
+    private static final FileInfoComparator[] comparators;
 
     static {
-        comparators = new DiskItemComparator[8];
-        comparators[BY_FILE_TYPE] = new DiskItemComparator(BY_FILE_TYPE);
-        comparators[BY_NAME] = new DiskItemComparator(BY_NAME);
-        comparators[BY_RELATIVE_NAME] = new DiskItemComparator(BY_RELATIVE_NAME);
-        comparators[BY_SIZE] = new DiskItemComparator(BY_SIZE);
-        comparators[BY_MEMBER] = new DiskItemComparator(BY_MEMBER);
-        comparators[BY_MODIFIED_DATE] = new DiskItemComparator(BY_MODIFIED_DATE);
-        comparators[BY_FOLDER] = new DiskItemComparator(BY_FOLDER);
-        comparators[BY_VERSION] = new DiskItemComparator(BY_VERSION);
+        comparators = new FileInfoComparator[8];
+        comparators[BY_FILE_TYPE] = new FileInfoComparator(BY_FILE_TYPE);
+        comparators[BY_NAME] = new FileInfoComparator(BY_NAME);
+        comparators[BY_RELATIVE_NAME] = new FileInfoComparator(BY_RELATIVE_NAME);
+        comparators[BY_SIZE] = new FileInfoComparator(BY_SIZE);
+        comparators[BY_MEMBER] = new FileInfoComparator(BY_MEMBER);
+        comparators[BY_MODIFIED_DATE] = new FileInfoComparator(BY_MODIFIED_DATE);
+        comparators[BY_FOLDER] = new FileInfoComparator(BY_FOLDER);
+        comparators[BY_VERSION] = new FileInfoComparator(BY_VERSION);
     }
 
-    public DiskItemComparator(int sortBy) {
+    public FileInfoComparator(int sortBy) {
         this.sortBy = sortBy;
     }
 
-    public static DiskItemComparator getComparator(int sortByArg) {
+    public static FileInfoComparator getComparator(int sortByArg) {
         return comparators[sortByArg];
     }
 
