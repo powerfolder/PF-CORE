@@ -59,7 +59,7 @@ public class DiskItemFilter {
     /**
      * Patterns file name.
      */
-    private static final String PATTERNS_FILENAME = "ignore.patterns";
+    public static final String PATTERNS_FILENAME = "ignore.patterns";
 
     /**
      * The patterns that will be used to match DiskItems with.
