@@ -50,6 +50,11 @@ public class Constants {
      * The name of the 'meta' subdirectory, home of the metaFolder files.
      */
     public static final String METAFOLDER_SUBDIR = "meta";
+    
+    /**
+     * The prefix for meta folder IDs.
+     */
+    public static final String METAFOLDER_ID_PREFIX = "meta|";
 
     /**
      * The subdir name that will be used by default for the PowerFolders base
