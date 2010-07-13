@@ -520,7 +520,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void run() {
                 boolean anySynchronizing = false;
                 for (Folder folder : getController().getFolderRepository()
-                    .getFolders())
+                    .getFolders(true))
                 {
                     if (folder.isSyncing()) {
                         anySynchronizing = true;
@@ -638,7 +638,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void syncAllFolders() {
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (folder.isPreviewOnly()) {
                 continue;

@@ -1230,7 +1230,7 @@ public class UIController extends PFComponent {
         private void checkStatus() {
             long nTotalBytes = 0;
             FolderRepository repo = getController().getFolderRepository();
-            Collection<Folder> folders = repo.getFolders();
+            Collection<Folder> folders = repo.getFolders(true);
 
             int synchronizingFolders = 0;
             for (Folder folder : folders) {

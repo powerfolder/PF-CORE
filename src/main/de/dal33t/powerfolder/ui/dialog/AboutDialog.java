@@ -242,7 +242,8 @@ public class AboutDialog extends PFUIComponent {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 
         long dbSize = 0;
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             for (Member member : folder.getMembersAsCollection()) {
                 dbSize += folder.getDAO().count(member.getId(), true, false);
