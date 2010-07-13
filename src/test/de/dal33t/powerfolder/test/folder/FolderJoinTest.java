@@ -77,7 +77,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertTrue(bartRepo.getFolders().contains(getFolderAtBart()));
         assertTrue(bartRepo.getFolders(true).contains(getFolderAtBart()));
 
-        Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtLisa()
+        Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtBart()
             .getInfo());
         assertTrue(bartRepo.hasJoinedFolder(bartMeta.getInfo()));
         assertTrue(bartMeta.getInfo().isMetaFolder());
