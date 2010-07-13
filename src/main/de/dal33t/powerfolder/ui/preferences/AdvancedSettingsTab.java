@@ -592,7 +592,7 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
                 // Make sure that the user is not setting this to the base dir
                 // of an existing folder.
                 for (Folder folder : getController().getFolderRepository()
-                    .getFolders())
+                    .getFolders(true))
                 {
                     if (folder.getLocalBase().equals(newLocation)) {
                         DialogFactory
