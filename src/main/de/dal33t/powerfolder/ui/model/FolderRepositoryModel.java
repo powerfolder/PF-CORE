@@ -44,7 +44,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         calculateOverallStats();
         FolderRepository repo = controller.getController()
             .getFolderRepository();
-        for (Folder folder : repo.getFolders()) {
+        for (Folder folder : repo.getFolders(true)) {
             folder.addFolderListener(folderListener);
         }
         controller.getController().getFolderRepository()
@@ -97,7 +97,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         // future estimated date.
         Date calcLastSyncDate = null;
         Date calcEtaDate = null;
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(true))
         {
             Date tmpLastSync = folder.getLastSyncDate();
             Date tmpEtaDate = folder.getStatistic().getEstimatedSyncDate();
