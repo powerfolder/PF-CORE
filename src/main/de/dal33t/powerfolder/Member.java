@@ -2053,7 +2053,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private List<Folder> getJoinedFolders() {
         List<Folder> joinedFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (folder.hasMember(this)) {
                 joinedFolders.add(folder);
@@ -2069,10 +2070,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         String magicId = getPeer().getMyMagicId();
         FolderList fList = lastFolderList;
         if (fList == null) {
+            logWarning("Unable to get last folder list");
             return Collections.emptyList();
         }
         List<Folder> joinedFolders = new ArrayList<Folder>();
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository().getFolders(
+            true))
         {
             if (fList.contains(folder.getInfo(), magicId)) {
                 joinedFolders.add(folder);
