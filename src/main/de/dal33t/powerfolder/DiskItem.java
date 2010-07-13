@@ -19,15 +19,13 @@
  */
 package de.dal33t.powerfolder;
 
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
-
 import java.util.Date;
 
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+
 /**
- * Common interface for FileInfo and Directory, for doing comparisons in
- * {@link DiskItemComparator}.
+ * Common interface for FileInfo and Directory.
  */
 public interface DiskItem {
     String getExtension();
