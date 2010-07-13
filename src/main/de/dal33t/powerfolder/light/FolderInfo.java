@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.light;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Util;
@@ -56,6 +57,11 @@ public class FolderInfo implements Serializable, Cloneable {
         this.name = name;
         this.id = id;
         hash = hashCode0();
+    }
+
+    public boolean isMetaFolder() {
+        // #1548: Convert this into boolean flag?
+        return id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
 
     public String getName() {
