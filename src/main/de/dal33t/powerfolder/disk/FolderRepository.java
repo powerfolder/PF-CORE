@@ -685,6 +685,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * @param folderId
+     * @return the folder by folder id, or null if folder is not found
+     */
+    public Folder getFolder(String folderId) {
+        return getFolder(new FolderInfo("", folderId));
+    }
+
+    /**
      * @param info
      * @return the folder by info, or null if folder is not found
      */
@@ -714,16 +722,18 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * The indirect reference to the internal concurrect hashmap. Contents may
      * changed after get.
-     *
+     * 
      * @param includeMetaFolders
      * @return the folders as unmodifiable collection
      */
     public Collection<Folder> getFolders(boolean includeMetaFolders) {
-        Collection<Folder> mergedFolders = new ArrayList<Folder>();
-        mergedFolders.addAll(folders.values());
-        if (includeMetaFolders) {
-            mergedFolders.addAll(metaFolders.values());
+        if (!includeMetaFolders) {
+            return Collections.unmodifiableCollection(folders.values());
         }
+        Collection<Folder> mergedFolders = new ArrayList<Folder>(folders.size()
+            + metaFolders.size());
+        mergedFolders.addAll(folders.values());
+        mergedFolders.addAll(metaFolders.values());
         return Collections.unmodifiableCollection(mergedFolders);
     }
 
