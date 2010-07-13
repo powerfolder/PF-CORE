@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -40,6 +41,12 @@ public class FolderList extends Message {
 
     /** Secret folders, Folder IDs are encrypted with magic Id */
     public FolderInfo[] secretFolders;
+
+    /**
+     * Boolean to indicate that the source also has joined matching meta
+     * folders.
+     */
+    public boolean joinedMetaFolders;
 
     public FolderList() {
         // Serialisation constructor
@@ -71,6 +78,7 @@ public class FolderList extends Message {
             secretFos.add(secretFolder);
         }
         this.secretFolders = new FolderInfo[secretFos.size()];
+        this.joinedMetaFolders = Feature.META_FOLDER.isEnabled();
         secretFos.toArray(secretFolders);
     }
 
