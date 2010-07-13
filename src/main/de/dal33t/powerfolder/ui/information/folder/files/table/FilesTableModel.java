@@ -41,7 +41,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.compare.DiskItemComparator;
+import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -313,15 +313,15 @@ public class FilesTableModel extends PFComponent implements TableModel,
         sortColumn = columnIndex;
         switch (columnIndex) {
             case COL_FILE_TYPE :
-                return sortMe(DiskItemComparator.BY_FILE_TYPE);
+                return sortMe(FileInfoComparator.BY_FILE_TYPE);
             case COL_NAME :
-                return sortMe(DiskItemComparator.BY_NAME);
+                return sortMe(FileInfoComparator.BY_NAME);
             case COL_SIZE :
-                return sortMe(DiskItemComparator.BY_SIZE);
+                return sortMe(FileInfoComparator.BY_SIZE);
             case COL_MEMBER :
-                return sortMe(DiskItemComparator.BY_MEMBER);
+                return sortMe(FileInfoComparator.BY_MEMBER);
             case COL_MODIFIED_DATE :
-                return sortMe(DiskItemComparator.BY_MODIFIED_DATE);
+                return sortMe(FileInfoComparator.BY_MODIFIED_DATE);
         }
 
         sortColumn = -1;
@@ -364,7 +364,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     @SuppressWarnings({"unchecked"})
     private boolean sort() {
         if (fileInfoComparatorType != -1) {
-            DiskItemComparator comparator = new DiskItemComparator(
+            FileInfoComparator comparator = new FileInfoComparator(
                 fileInfoComparatorType);
             synchronized (diskItems) {
                 if (sortAscending) {
