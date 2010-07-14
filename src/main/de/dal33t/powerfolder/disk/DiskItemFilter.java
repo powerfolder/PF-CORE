@@ -94,15 +94,15 @@ public class DiskItemFilter {
     /**
      * Loads patterns from file.
      * 
-     * @param directory
+     * @param file
      */
-    public void loadPatternsFrom(File directory) {
-        File file = new File(directory, PATTERNS_FILENAME);
+    public void loadPatternsFrom(File file) {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new FileReader(file));
                 String pattern;
+                removeAllPatterns();
                 while ((pattern = reader.readLine()) != null) {
                     String trimmedPattern = pattern.trim();
                     if (trimmedPattern.length() > 0) {
@@ -110,8 +110,8 @@ public class DiskItemFilter {
                     }
                 }
             } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Problem loading pattern from "
-                    + directory, ioe);
+                log.log(Level.SEVERE, "Problem loading pattern from " + file,
+                    ioe);
             } finally {
                 dirty = false;
                 if (reader != null) {
@@ -119,7 +119,7 @@ public class DiskItemFilter {
                         reader.close();
                     } catch (IOException e) {
                         log.log(Level.SEVERE, "Problem loading pattern from "
-                            + directory, e);
+                            + file, e);
                     }
                 }
             }
@@ -127,13 +127,12 @@ public class DiskItemFilter {
     }
 
     /**
-     * Saves patterns to a directory.
+     * Saves patterns to a file.
      * 
-     * @param directory
+     * @param file
      */
-    public void savePatternsTo(File directory) {
-        File file = new File(directory, PATTERNS_FILENAME);
-        File backup = new File(directory, PATTERNS_FILENAME + ".backup");
+    public void savePatternsTo(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".backup");
         if (file.exists()) {
             if (backup.exists()) {
                 backup.delete();
@@ -150,16 +149,16 @@ public class DiskItemFilter {
             }
             dirty = false;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Problem saving pattern to " + directory
-                + ". " + e);
+            log.log(Level.SEVERE, "Problem saving pattern to " + file + ". "
+                + e);
             log.log(Level.FINER, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    log.log(Level.SEVERE, "Problem saving pattern to "
-                        + directory, e);
+                    log.log(Level.SEVERE, "Problem saving pattern to " + file,
+                        e);
                 }
             }
         }
