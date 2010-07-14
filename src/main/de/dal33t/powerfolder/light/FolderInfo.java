@@ -62,7 +62,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public boolean isMetaFolder() {
         // #1548: Convert this into boolean flag?
-        return id.startsWith(Constants.METAFOLDER_ID_PREFIX);
+        return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
 
     public FolderInfo getParentFolderInfo(Controller controller) {
