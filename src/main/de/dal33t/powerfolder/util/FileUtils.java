@@ -41,7 +41,7 @@ import java.util.zip.ZipOutputStream;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FileUtils {
@@ -848,32 +848,46 @@ public class FileUtils {
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
      * 
+     * @param file
+     *            Guess what
+     * @param foInfo
+     *            Guess what
      * @return true if file scan is allowed
      */
-    public static boolean isScannable(File file) {
+    public static boolean isScannable(File file, FolderInfo foInfo) {
+        return isScannable(file.getPath(), foInfo);
+    }
 
-        String filePath = file.getPath();
-        if (!filePath.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+    /**
+     * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
+     * 
+     * @param filePath
+     *            Guess what
+     * @param foInfo
+     *            Guess what
+     * @return true if file scan is allowed
+     */
+    public static boolean isScannable(String filePath, FolderInfo foInfo) {
+        int firstSystemDir = filePath
+            .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        if (firstSystemDir < 0) {
             return true;
         }
 
-        if (Feature.META_FOLDER.isEnabled()) {
-
+        if (foInfo.isMetaFolder()) {
             // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent,
             // like
             // C:\Users\Harry\PowerFolders\1765X\.PowerFolder\meta\xyz
             // So look after the '.PowerFolder\meta' part
-            String metaFolderHome = Constants.POWERFOLDER_SYSTEM_SUBDIR
-                + File.separator + Constants.METAFOLDER_SUBDIR;
-
-            int index = filePath.indexOf(metaFolderHome);
-            if (index >= 0) {
+            int metaDir = filePath.indexOf(Constants.METAFOLDER_SUBDIR,
+                firstSystemDir);
+            if (metaDir >= 0) {
                 // File is somewhere in the metaFolder file structure.
                 // Make sure we are not in the metaFolder's system subdir.
-                String afterMetaFolderHome = filePath.substring(index
-                    + metaFolderHome.length());
-                return !afterMetaFolderHome
-                    .contains(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+                int secondSystemDir = filePath.indexOf(
+                    Constants.POWERFOLDER_SYSTEM_SUBDIR, metaDir
+                        + Constants.METAFOLDER_SUBDIR.length());
+                return secondSystemDir < 0;
             }
         }
 
