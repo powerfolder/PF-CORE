@@ -23,20 +23,16 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -261,8 +257,8 @@ public class Folder extends PFComponent {
         folderMembershipListenerSupport = ListenerSupportFactory
             .createListenerSupport(FolderMembershipListener.class);
         problemListenerSupport = ListenerSupportFactory
-        .createListenerSupport(ProblemListener.class);
-        
+            .createListenerSupport(ProblemListener.class);
+
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
@@ -1412,7 +1408,8 @@ public class Folder extends PFComponent {
         loadFolderDB();
         loadLastSyncDate();
         diskItemFilter.removeAllPatterns();
-        diskItemFilter.loadPatternsFrom(getSystemSubDir());
+        diskItemFilter.loadPatternsFrom(new File(getSystemSubDir(),
+            DiskItemFilter.PATTERNS_FILENAME));
         if (diskItemFilter.getPatterns().isEmpty()) {
             logWarning("Ignore patterns empty. Adding default patterns");
             addDefaultExcludes();
@@ -1450,7 +1447,9 @@ public class Folder extends PFComponent {
         shutdown = true;
         dao.stop();
         if (diskItemFilter.isDirty()) {
-            diskItemFilter.savePatternsTo(getSystemSubDir());
+            diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
+                DiskItemFilter.PATTERNS_FILENAME));
+            savePatternsToMetaFolder();
         }
         removeAllListeners();
     }
@@ -2291,51 +2290,10 @@ public class Folder extends PFComponent {
             logWarning("Could not find metaFolder for " + currentInfo);
             return;
         }
+
         File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
-
         logFine("Reading syncPatterns " + syncPatternsFile);
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(syncPatternsFile));
-            String line;
-            List<String> lines = new ArrayList<String>();
-            while ((line = br.readLine()) != null) {
-                lines.add(line);
-            }
-
-            // See if there are any changes.
-            // If no changes, do not update patterns.
-            // Otherwise changes will go back and forth for ever.
-            boolean same = true;
-            List<String> existingPatterns = diskItemFilter.getPatterns();
-            if (lines.size() == existingPatterns.size()) {
-                for (String thisLine : lines) {
-                    if (!existingPatterns.contains(thisLine)) {
-                        same = false;
-                        break;
-                    }
-                }
-            } else {
-                same = false;
-            }
-            if (!same) {
-                diskItemFilter.removeAllPatterns();
-                for (String thisLine : lines) {
-                    diskItemFilter.addPattern(thisLine);
-                }
-            }
-        } catch (Exception e) {
-            logSevere(e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-        }
-
+        diskItemFilter.loadPatternsFrom(syncPatternsFile);
     }
 
     public DirectoryInfo getBaseDirectoryInfo() {
@@ -3612,18 +3570,24 @@ public class Folder extends PFComponent {
         if (currentInfo.isMetaFolder()) {
             return;
         }
-
         // Only do this for parent folders.
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         Folder metaFolder = folderRepository
             .getMetaFolderForParent(currentInfo);
         if (metaFolder == null) {
-            logWarning("Could not find metaFolder for " + currentInfo, new RuntimeException());
+            logWarning("Could not find metaFolder for " + currentInfo,
+                new RuntimeException());
             return;
         }
         // Write the patterns in the meta directory.
-        diskItemFilter.savePatternsTo(metaFolder.getLocalBase());
+        File file = new File(metaFolder.getLocalBase(),
+            DiskItemFilter.PATTERNS_FILENAME);
+        FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
+        metaFolder.watcher.addIgnoreFile(fInfo);
+        diskItemFilter.savePatternsTo(file);
+        metaFolder.scanChangedFile(fInfo);
+        metaFolder.watcher.removeIgnoreFile(fInfo);
     }
 
     // Inner classes **********************************************************
@@ -3638,7 +3602,8 @@ public class Folder extends PFComponent {
                 persist();
             }
             if (diskItemFilter.isDirty()) {
-                diskItemFilter.savePatternsTo(getSystemSubDir());
+                diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
+                    DiskItemFilter.PATTERNS_FILENAME));
                 savePatternsToMetaFolder();
             }
         }

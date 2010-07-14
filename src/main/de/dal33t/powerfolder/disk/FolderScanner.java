@@ -416,7 +416,9 @@ public class FolderScanner extends PFComponent {
                 break;
             }
             if (file.isFile()) { // the files in the root
-                if (FileUtils.isScannable(file)) {
+                if (FileUtils
+                    .isScannable(file, currentScanningFolder.getInfo()))
+                {
                     if (!scanFile(file, "")) {
                         failure = true;
                         return false;
@@ -765,7 +767,9 @@ public class FolderScanner extends PFComponent {
                     break;
                 }
                 if (subFile.isFile()) {
-                    if (FileUtils.isScannable(subFile)) {
+                    if (FileUtils.isScannable(subFile, currentScanningFolder
+                        .getInfo()))
+                    {
                         if (!scanFile(subFile, currentDirName)) {
                             // hardware failure
                             failure = true;

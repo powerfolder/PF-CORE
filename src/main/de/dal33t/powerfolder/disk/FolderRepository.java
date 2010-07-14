@@ -471,9 +471,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         String folderId = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
                                 + FOLDER_SETTINGS_ID);
+                        Reject.ifNull(folderId, "Folder id");
                         String folderName = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
                                 + FOLDER_SETTINGS_NAME);
+                        Reject.ifNull(folderName, "Folder name");
                         FolderInfo foInfo = new FolderInfo(folderName, folderId)
                             .intern();
                         FolderSettings folderSettings = loadV4FolderSettings(folderMD5);

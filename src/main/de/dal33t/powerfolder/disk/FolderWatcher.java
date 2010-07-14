@@ -258,7 +258,7 @@ public class FolderWatcher extends PFComponent {
                 // Not allowed
                 return;
             }
-            if (!FileUtils.isScannable(new File(name))) {
+            if (!FileUtils.isScannable(name, folder.getInfo())) {
                 return;
             }
             if (dirtyFiles.containsKey(name)) {
