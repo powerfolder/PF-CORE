@@ -49,10 +49,9 @@ public class MetaFolderDataHandler extends PFComponent {
 
         Folder parentFolder = getController().getFolderRepository()
             .getParentFolder(fileInfo.getFolderInfo());
+        String filename = fileInfo.getFilenameOnly();
 
-        if (fileInfo.getFilenameOnly().equals(
-            Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME))
-        {
+        if (filename.equals(Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME)) {
             handleMetaFolderSyncPatterns(parentFolder, fileInfo);
         }
     }

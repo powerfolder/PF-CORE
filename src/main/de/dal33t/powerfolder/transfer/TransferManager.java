@@ -761,12 +761,14 @@ public class TransferManager extends PFComponent {
         removeDownloadManager(dlManager);
 
         // Auto cleanup of Downloads
-
-        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController())
+        boolean autoClean = dlManager.getFileInfo().getFolderInfo()
+            .isMetaFolder();
+        autoClean = autoClean
+            || ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
+                .getValueBoolean(getController())
             && ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController()) == 0)
-        {
+                .getValueInt(getController()) == 0;
+        if (autoClean) {
             if (isFiner()) {
                 logFiner("Auto-cleaned " + dlManager.getSources());
             }
