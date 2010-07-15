@@ -3588,6 +3588,10 @@ public class Folder extends PFComponent {
                 new RuntimeException());
             return;
         }
+        if (metaFolder.isDeviceDisconnected()) {
+            logFiner("Not writing synced ignored patterns. Meta folder disconnected");
+            return;
+        }
         // Write the patterns in the meta directory.
         File file = new File(metaFolder.getLocalBase(),
             DiskItemFilter.PATTERNS_FILENAME);
