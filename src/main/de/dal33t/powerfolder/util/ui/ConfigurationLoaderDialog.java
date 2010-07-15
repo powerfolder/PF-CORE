@@ -281,10 +281,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         public Object construct() throws IOException {
             Properties preConfig = ConfigurationLoader
                 .loadPreConfiguration((String) addressBox.getSelectedItem());
-            if (!preConfig.isEmpty()
-                && preConfig.containsKey(ConfigurationEntry.SERVER_HOST
-                    .getConfigKey()))
-            {
+            if (!preConfig.isEmpty() && containsServerHost(preConfig)) {
                 ConfigurationLoader.merge(preConfig, getController()
                     .getConfig(), getController().getPreferences(), true);
                 // Seems to be valid, store.
@@ -321,9 +318,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             } else if (preConfig.size() == 0) {
                 errorMsg = Translation
                     .getTranslation("config.loader.dialog.error.config.empty");
-            } else if (!preConfig.containsKey(ConfigurationEntry.SERVER_HOST
-                .getConfigKey()))
-            {
+            } else if (!containsServerHost(preConfig)) {
                 errorMsg = Translation
                     .getTranslation("config.loader.dialog.error.server.missing");
             }
@@ -346,6 +341,11 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             if (getController().isStarted()) {
                 handleRestartRequest();
             }
+        }
+
+        private boolean containsServerHost(Properties props) {
+            return props.containsKey(ConfigurationEntry.SERVER_HOST
+                .getConfigKey());
         }
 
         /**
