@@ -939,11 +939,14 @@ public class TransferManager extends PFComponent {
             }
 
             // Auto cleanup of uploads
-            if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController())
+            boolean autoClean = transfer.getFile().getFolderInfo()
+                .isMetaFolder();
+            autoClean = autoClean
+                || ConfigurationEntry.UPLOADS_AUTO_CLEANUP
+                    .getValueBoolean(getController())
                 && ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-                    .getValueInt(getController()) == 0)
-            {
+                    .getValueInt(getController()) == 0;
+            if (autoClean) {
                 if (isFiner()) {
                     logFiner("Auto-cleaned " + transfer);
                 }
