@@ -1796,7 +1796,7 @@ public class Folder extends PFComponent {
      * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
-        return (syncProfile.isInstantSync() || syncProfile.isPeriodicSync())
+        return (!syncProfile.isManualSync() && !syncProfile.isDailySync())
             && !getController().isSilentMode();
     }
 
