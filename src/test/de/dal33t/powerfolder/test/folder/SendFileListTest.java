@@ -58,10 +58,14 @@ public class SendFileListTest extends TwoControllerTestCase {
                 return !lisasListener.messages.isEmpty();
             }
         });
-        assertEquals("Received: " + lisasListener.messages, 1,
+        assertEquals("Received: " + lisasListener.messages, 2,
             lisasListener.messages.size());
         assertTrue(lisasListener.messages.get(0) instanceof FileList);
+        assertTrue(lisasListener.messages.get(1) instanceof FileList);
         FileList list = (FileList) lisasListener.messages.get(0);
+        assertEquals(0, list.nFollowingDeltas);
+        assertEquals(0, list.files.length);
+        list = (FileList) lisasListener.messages.get(1);
         assertEquals(0, list.nFollowingDeltas);
         assertEquals(0, list.files.length);
     }
