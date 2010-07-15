@@ -833,7 +833,10 @@ public class Folder extends PFComponent {
         } while (scannerBusy);
 
         if (checkIfDeviceDisconnected()) {
-            logFine("Device disconnected while scanning folder: " + localBase);
+            if (isFiner()) {
+                logFiner("Device disconnected while scanning folder: "
+                    + localBase);
+            }
             return false;
         }
 
@@ -2869,6 +2872,7 @@ public class Folder extends PFComponent {
         for (Problem problem : problems) {
             if (problem instanceof DeviceDisconnectedProblem) {
                 if (!deviceDisconnected) {
+                    logInfo("Device connected again");
                     removeProblem(problem);
                 } else {
                     addProblem = false;
@@ -2876,6 +2880,7 @@ public class Folder extends PFComponent {
             }
         }
         if (addProblem) {
+            logInfo("Device disconnected");
             addProblem(new DeviceDisconnectedProblem());
         }
 
