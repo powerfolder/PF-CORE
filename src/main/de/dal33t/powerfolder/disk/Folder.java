@@ -1449,7 +1449,7 @@ public class Folder extends PFComponent {
         }
         shutdown = true;
         dao.stop();
-        if (diskItemFilter.isDirty()) {
+        if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
             diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
                 DiskItemFilter.PATTERNS_FILENAME));
             savePatternsToMetaFolder();
@@ -2806,11 +2806,12 @@ public class Folder extends PFComponent {
         if (!systemSubDir.exists()) {
             if (!deviceDisconnected && systemSubDir.mkdirs()) {
                 FileUtils.setAttributesOnWindows(systemSubDir, true, true);
-            } else {
+            } else if (!deviceDisconnected) {
                 logSevere("Failed to create system subdir: " + systemSubDir);
+            } else if (isFine()) {
+                logFine("Failed to create system subdir: " + systemSubDir);
             }
         }
-
         return systemSubDir;
     }
 
@@ -3613,7 +3614,7 @@ public class Folder extends PFComponent {
             if (dirty) {
                 persist();
             }
-            if (diskItemFilter.isDirty()) {
+            if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
                 diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
                     DiskItemFilter.PATTERNS_FILENAME));
                 savePatternsToMetaFolder();
