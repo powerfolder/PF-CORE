@@ -178,8 +178,18 @@ public class FileRequestor extends PFComponent {
         }
 
         // Dont request files until has own database
+        if (folder.isDeviceDisconnected()) {
+            if (isFine()) {
+                logFine("Not requesting files. Device disconnected of "
+                    + folder);
+            }
+            return;
+        }
         if (!folder.hasOwnDatabase()) {
-            logWarning("Not requesting files. No own database for " + folder);
+            if (isWarning()) {
+                logWarning("Not requesting files. No own database for "
+                    + folder);
+            }
             return;
         }
         if (folder.getConnectedMembersCount() == 0) {
