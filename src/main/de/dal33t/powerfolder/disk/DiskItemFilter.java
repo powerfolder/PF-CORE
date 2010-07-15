@@ -92,7 +92,7 @@ public class DiskItemFilter {
     }
 
     /**
-     * Loads patterns from file.
+     * Loads patterns from file. Removes all previous patterns.
      * 
      * @param file
      */
@@ -102,11 +102,11 @@ public class DiskItemFilter {
             try {
                 reader = new BufferedReader(new FileReader(file));
                 String pattern;
-                removeAllPatterns();
+                removeAllPatterns0();
                 while ((pattern = reader.readLine()) != null) {
                     String trimmedPattern = pattern.trim();
                     if (trimmedPattern.length() > 0) {
-                        addPattern(trimmedPattern);
+                        addPattern0(trimmedPattern);
                     }
                 }
             } catch (IOException ioe) {
@@ -170,12 +170,23 @@ public class DiskItemFilter {
      * @param patternText
      */
     public void addPattern(String patternText) {
+        if (addPattern0(patternText)) {
+            dirty = true;
+        }
+    }
+
+    /**
+     * Add a patterns to the list for filtering.
+     * 
+     * @param patternText
+     */
+    private boolean addPattern0(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
         Pattern pattern = PatternFactory.createPattern(patternText.replaceAll(
             "\\\\", "/").toLowerCase());
         if (patterns.contains(pattern)) {
             // Already contained
-            return;
+            return false;
         }
         try {
             patterns.add(pattern);
@@ -185,16 +196,20 @@ public class DiskItemFilter {
             log.log(Level.SEVERE, "Problem adding pattern "
                 + pattern.getPatternText(), e);
         }
-        dirty = true;
+        return true;
     }
 
     public void removeAllPatterns() {
+        removeAllPatterns0();
+        dirty = true;
+    }
+
+    private void removeAllPatterns0() {
         for (Pattern patternMatch : patterns) {
             patterns.remove(patternMatch);
             listenerSupport.patternRemoved(new PatternChangedEvent(this,
                 patternMatch.getPatternText(), false));
         }
-        dirty = true;
     }
 
     /**

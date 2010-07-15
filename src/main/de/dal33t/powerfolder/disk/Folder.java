@@ -1410,10 +1410,11 @@ public class Folder extends PFComponent {
     private void loadMetadata() {
         loadFolderDB();
         loadLastSyncDate();
-        diskItemFilter.removeAllPatterns();
         diskItemFilter.loadPatternsFrom(new File(getSystemSubDir(),
             DiskItemFilter.PATTERNS_FILENAME));
-        if (diskItemFilter.getPatterns().isEmpty()) {
+        if (diskItemFilter.getPatterns().isEmpty()
+            && Feature.ADD_DEFAULT_EXCLUDES_IF_EMPTY.isEnabled())
+        {
             logWarning("Ignore patterns empty. Adding default patterns");
             addDefaultExcludes();
         }

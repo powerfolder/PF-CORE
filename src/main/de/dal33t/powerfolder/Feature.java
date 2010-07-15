@@ -121,6 +121,12 @@ public enum Feature {
     META_FOLDER(true),
 
     /**
+     * If default ignored file patterns should be added on startup if the ignore
+     * list is empty.
+     */
+    ADD_DEFAULT_EXCLUDES_IF_EMPTY(true),
+
+    /**
      * #1976 If {@link MemberInfo} should be internalized.
      */
     MEMBER_INFO_INTERNALIZE(true);
