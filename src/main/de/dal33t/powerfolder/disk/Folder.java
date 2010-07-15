@@ -3568,6 +3568,9 @@ public class Folder extends PFComponent {
      * Save patterns to metaFolder for transfer to other computers.
      */
     private void savePatternsToMetaFolder() {
+        if (Feature.META_FOLDER.isDisabled()) {
+            return;
+        }
         // Should the patterns be synchronized?
         if (!syncPatterns) {
             return;
