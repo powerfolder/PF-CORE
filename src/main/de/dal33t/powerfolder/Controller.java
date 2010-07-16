@@ -130,7 +130,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 dev15"; // 1.7.1.19 /
+    public static final String PROGRAM_VERSION = "4.3.0 BETA17"; // 1.7.1.19 /
     // 4.3.0 dev3
 
     /**

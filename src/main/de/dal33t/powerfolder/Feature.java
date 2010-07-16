@@ -118,7 +118,7 @@ public enum Feature {
     /**
      * TRAC #1548 for 4.3.0 release
      */
-    META_FOLDER(true),
+    META_FOLDER(false),
 
     /**
      * If default ignored file patterns should be added on startup if the ignore
