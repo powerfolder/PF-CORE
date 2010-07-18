@@ -351,7 +351,11 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        setArchiveMode(folderSettings.getArchiveMode());
+        if (folderSettings.getArchiveMode() != null) {
+            archiver = folderSettings.getArchiveMode().getInstance(this);
+        } else {
+            archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+        }
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         // Create invitation
