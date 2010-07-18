@@ -110,6 +110,7 @@ public class Folder extends PFComponent {
     public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = DiskItemFilter.PATTERNS_FILENAME;
 
     public static final int TEN_MINUTES = 60 * 10;
+    public static final int ONE_MINUTE = 60;
 
     /** The base location of the folder. */
     private final File localBase;
@@ -881,9 +882,12 @@ public class Folder extends PFComponent {
             return true;
         }
         if (syncProfile.isInstantSync()) {
+            // On supportes systems, scan every ten minutes in case an instant
+            // detection got missed. On unsupported systems, scan every minue.
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
-            if (secondsSinceLastSync < TEN_MINUTES) {
+            int frequency = watcher.isSupported() ? TEN_MINUTES : ONE_MINUTE; 
+            if (secondsSinceLastSync < frequency) {
                 if (isFiner()) {
                     logFiner("Skipping regular scan");
                 }
