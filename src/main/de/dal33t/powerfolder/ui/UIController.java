@@ -1332,7 +1332,20 @@ public class UIController extends PFComponent {
             }
 
             if (notice.isActionable()) {
-                applicationModel.getNoticesModel().addNotice(notice);
+
+                // Invitations are a special case. We do not care about
+                // invitations to folders that we have already joined.
+                if (notice instanceof InvitationNotice) {
+                    InvitationNotice in = (InvitationNotice) notice;
+                    Invitation i = in.getPayload();
+                    FolderInfo fi = i.folder;
+                    if (!getController().getFolderRepository()
+                            .hasJoinedFolder(fi)) {
+                        applicationModel.getNoticesModel().addNotice(notice);
+                    }
+                } else {
+                    applicationModel.getNoticesModel().addNotice(notice);
+                }
             }
         }
     }
