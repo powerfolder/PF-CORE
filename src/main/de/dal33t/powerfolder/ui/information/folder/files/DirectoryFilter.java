@@ -382,16 +382,21 @@ public class DirectoryFilter extends FilterModel {
                 FilteredDirectoryModel sub = new FilteredDirectoryModel(folder,
                         subDirectoryinfo);
                 // @todo replace with a faster dao.areThereAnyFilesInAnySubdirectories() that ends and returns true on the first file it finds ?
-                if (!dao.findInDirectory(domain, subDirectoryinfo,
-                        true).isEmpty()) {
-                    if (!filteredDirectoryModel.getSubdirectories().contains(
-                            sub)) {
-                        filteredDirectoryModel.getSubdirectories().add(sub);
+                if (!dao.findInDirectory(domain, subDirectoryinfo, true)
+                        .isEmpty()) {
+                    boolean include = fileFilterMode ==
+                            FILE_FILTER_MODE_DELETED_PREVIOUS ^
+                            !subDirectoryinfo.isDeleted();
+                    if (include) {
+                        if (!filteredDirectoryModel.getSubdirectories().contains(
+                                sub)) {
+                            filteredDirectoryModel.getSubdirectories().add(sub);
+                        }
+                        filterDirectory(dao, subDirectoryinfo, sub,
+                                flatFilteredDirectoryModel, keywords, originalCount,
+                                filteredCount, deletedCount, incomingCount,
+                                localCount);
                     }
-                    filterDirectory(dao, subDirectoryinfo, sub,
-                            flatFilteredDirectoryModel, keywords, originalCount,
-                            filteredCount, deletedCount, incomingCount,
-                            localCount);
                 }
             }
         }
