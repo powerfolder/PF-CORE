@@ -63,6 +63,8 @@ import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.model.NoticesModel;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -351,7 +353,42 @@ public class StatusTab extends PFUIComponent {
     }
 
     private void updateNewNoticesText() {
+
         Integer integer = (Integer) newNoticesCountVM.getValue();
+        NoticesModel noticesModel = getUIController().getApplicationModel().getNoticesModel();
+
+        // See if they are all one type
+        Class clazz = null;
+        boolean variety = false;
+        for (Notice notice : noticesModel.getAllNotices()) {
+            if (clazz == null) {
+                clazz = notice.getClass();
+            } else if (clazz != notice.getClass()) {
+                variety = true;
+                break;
+            }
+        }
+
+        // Adjust status text if they are all one variety.
+        String noticesText;
+        if (clazz != null && !variety) {
+            if (clazz == AskForFriendshipEventNotice.class) {
+                noticesText = Translation.getTranslation(
+                        "status_tab.new_friendship_notices");
+            } else if (clazz == WarningNotice.class) {
+                noticesText = Translation.getTranslation(
+                        "status_tab.new_warning_notices");
+            } else if (clazz == InvitationNotice.class) {
+                noticesText = Translation.getTranslation(
+                        "status_tab.new_invitation_notices");
+            } else {
+                // Default
+                noticesText = Translation.getTranslation("status_tab.new_notices");
+            }
+        } else {
+            noticesText = Translation.getTranslation("status_tab.new_notices");
+        }
+        newNoticesLine.setNormalLabelText(noticesText);
         newNoticesLine.setValue(integer);
     }
 
