@@ -41,8 +41,9 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private final Controller controller;
     private final List<Notice> notices = new ArrayList<Notice>();
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private final NoticeComparator[] columComparators = {NoticeComparator.BY_DATE,
-            NoticeComparator.BY_SEVERITY, NoticeComparator.BY_SUMMARY};
+    private final NoticeComparator[] columComparators = {NoticeComparator.BY_SEVERITY,
+            NoticeComparator.BY_DATE, NoticeComparator.BY_SEVERITY,
+            NoticeComparator.BY_SUMMARY};
     private NoticeComparator comparator;
 
     private boolean sortAscending;

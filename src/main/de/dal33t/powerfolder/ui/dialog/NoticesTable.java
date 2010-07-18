@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.ui.dialog;
 
 import de.dal33t.powerfolder.ui.model.NoticesTableModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
@@ -45,6 +47,9 @@ public class NoticesTable extends JTable {
         setShowGrid(false);
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setDefaultRenderer(Notice.class, new MyDefaultTreeCellRenderer());
+
+        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED)
+            .getIconHeight() + 3);
 
         // add sorting
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -88,6 +93,17 @@ public class NoticesTable extends JTable {
                         myValue = Translation.getTranslation(
                                 notice.getNoticeSeverity().getDescriptionKey());
                         setHorizontalAlignment(LEFT);
+                        Icon icon;
+                        if (notice.getNoticeSeverity() ==
+                                NoticeSeverity.INFORMATION) {
+                            icon = Icons.getIconById(Icons.INFORMATION);
+                        } else if (notice.getNoticeSeverity() ==
+                                NoticeSeverity.WARINING) {
+                            icon = Icons.getIconById(Icons.WARNING);
+                        } else {
+                            icon = Icons.getIconById(Icons.BLANK);
+                        }
+                        setIcon(icon);
                         break;
                     case 2:  // summary
                         myValue = notice.getSummary();
