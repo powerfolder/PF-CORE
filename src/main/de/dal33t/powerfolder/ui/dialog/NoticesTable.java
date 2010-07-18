@@ -89,11 +89,7 @@ public class NoticesTable extends JTable {
                                 notice.getNoticeSeverity().getDescriptionKey());
                         setHorizontalAlignment(LEFT);
                         break;
-                    case 2:  // title
-                        myValue = notice.getTitle();
-                        setHorizontalAlignment(LEFT);
-                        break;
-                    case 3:  // summary
+                    case 2:  // summary
                         myValue = notice.getSummary();
                         setHorizontalAlignment(LEFT);
                         break;
@@ -150,8 +146,6 @@ public class NoticesTable extends JTable {
         column = getColumn(getColumnName(1));
         column.setPreferredWidth(20);
         column = getColumn(getColumnName(2));
-        column.setPreferredWidth(20);
-        column = getColumn(getColumnName(3));
         column.setPreferredWidth(80);
     }
 }
