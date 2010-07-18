@@ -581,8 +581,8 @@ public class CreateEditSyncProfileDialog extends BaseDialog implements
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(periodicRadioButton)
-            || e.getSource().equals(dailyRadioButton))
-        {
+            || e.getSource().equals(dailyRadioButton)
+                || e.getSource().equals(instantRadioButton)) {
             enableTimeDate();
         }
     }
