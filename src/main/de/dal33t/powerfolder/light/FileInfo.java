@@ -44,11 +44,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
  * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem, Cloneable, Comparable<FileInfo> {
+public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * #1531: If this system should ignore cases of files in
@@ -744,9 +744,4 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, Comparable<F
 
         // validate();
     }
-
-    public int compareTo(FileInfo o) {
-        return fileName.compareTo(o.fileName);
-    }
-
 }
