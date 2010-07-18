@@ -346,6 +346,7 @@ For creation of the installer:
 		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="512m">
 			<classpath>
 				<pathelement location="${build.dir}" />
+				<pathelement location="${junit.lib}" />
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
 			</classpath>
