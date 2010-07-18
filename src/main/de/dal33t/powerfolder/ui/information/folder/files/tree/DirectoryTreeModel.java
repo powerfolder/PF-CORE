@@ -81,7 +81,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 boolean subNewFiles = subModel.hasDescendantNewFiles();
                 DirectoryTreeNodeUserObject newSubUO =
                         new DirectoryTreeNodeUserObject(subModel.getDirectoryInfo(),
-                                subModel.getDirectoryInfo().getRelativeName(),
+                                subModel.getDirectoryInfo().getFilenameOnly(),
                                 subNewFiles);
                 DefaultMutableTreeNode newSubNode =
                         new DefaultMutableTreeNode(newSubUO);
@@ -117,7 +117,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
             // Updating branch
             candidateNode = new DirectoryTreeNodeUserObject(
                     existingNode.getDirectoryInfo(),
-                    existingNode.getDirectoryInfo().getRelativeName(),
+                    existingNode.getDirectoryInfo().getFilenameOnly(),
                     model.hasDescendantNewFiles());
         }
         if (!candidateNode.equals(existingNode)) {
@@ -150,7 +150,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                     boolean subNewFiles = subModel.hasDescendantNewFiles();
                     DirectoryTreeNodeUserObject newSubUO =
                             new DirectoryTreeNodeUserObject(subModel.getDirectoryInfo(),
-                                    subModel.getDirectoryInfo().getRelativeName(),
+                                    subModel.getDirectoryInfo().getFilenameOnly(),
                                     subNewFiles);
                     DefaultMutableTreeNode newSubNode =
                             new DefaultMutableTreeNode(newSubUO);
