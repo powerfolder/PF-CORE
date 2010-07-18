@@ -23,6 +23,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Set;
@@ -113,6 +115,8 @@ public class NoticesDialog extends BaseDialog {
                         enableActivate();
                     }
                 });
+
+        noticesTable.addMouseListener(new TableMouseListener());
     }
 
     public void close() {
@@ -400,6 +404,20 @@ public class NoticesDialog extends BaseDialog {
         SwingUtilities.invokeLater(worker);
     }
 
+    /**
+     * When a user double-clicks a row
+     */
+    private void handleDoubleClick() {
+        int row = noticesTable.getSelectedRow();
+        if (row >= 0) {
+            Object at = noticesTableModel.getValueAt(row, 0);
+            if (at != null && at instanceof Notice) {
+                Notice notice = (Notice) at;
+                handleNotice(notice);
+            }
+        }
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -449,4 +467,32 @@ public class NoticesDialog extends BaseDialog {
             updateTableModel();
         }
     }
+
+    private class TableMouseListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showContextMenu(e);
+            }
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                if (e.getClickCount() == 2) {
+                    handleDoubleClick();
+                }
+            }
+        }
+
+        private void showContextMenu(MouseEvent evt) {
+            // @todo ???
+        }
+    }
+
 }
