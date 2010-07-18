@@ -64,7 +64,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaMeta.getKnownItemCount() == 1
                     && getContollerBart().getTransferManager()
-                        .getCompletedUploadsCollection().size() == 1;
+                        .getCompletedUploadsCollection().size() == 0;
             }
 
             public String message() {
@@ -72,7 +72,16 @@ public class MetaFolderTest extends TwoControllerTestCase {
             }
         });
 
-        assertTrue(bartFile.delete());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return bartFile.delete();
+            }
+
+            public String message() {
+                return "Unable to delete file: " + bartFile;
+            }
+        });
+
         scanFolder(bartMeta);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
