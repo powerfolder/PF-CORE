@@ -1147,11 +1147,32 @@ public class SettingsTab extends PFUIComponent {
     private class AddAction extends BaseAction {
         private AddAction(Controller controller) {
             super("action_add_ignore", controller);
+            // #2054
+            setIcon(Icons.getIconById("action_remove_ignore.icon"));
         }
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
                 .getTranslation("settings_tab.add_a_pattern.example"));
+        }
+    }
+
+    /**
+     * removes the selected pattern from the blacklist
+     */
+    private class RemoveAction extends BaseAction {
+        private RemoveAction(Controller controller) {
+            super("action_remove_ignore", controller);
+            // #2054
+            setIcon(Icons.getIconById("action_add_ignore.icon"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            for (Object object : selectionModel.getSelections()) {
+                String selection = (String) object;
+                folder.getDiskItemFilter().removePattern(selection);
+            }
+            patternsList.getSelectionModel().clearSelection();
         }
     }
 
@@ -1172,23 +1193,6 @@ public class SettingsTab extends PFUIComponent {
                 String script = chooser.getSelectedFile().getAbsolutePath();
                 scriptModel.setValue(script);
             }
-        }
-    }
-
-    /**
-     * removes the selected pattern from the blacklist
-     */
-    private class RemoveAction extends BaseAction {
-        private RemoveAction(Controller controller) {
-            super("action_remove_ignore", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            for (Object object : selectionModel.getSelections()) {
-                String selection = (String) object;
-                folder.getDiskItemFilter().removePattern(selection);
-            }
-            patternsList.getSelectionModel().clearSelection();
         }
     }
 
