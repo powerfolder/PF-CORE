@@ -140,7 +140,7 @@ public class WinUtils extends Loggable {
      * dir.
      * 
      * @param setup
-     * @param baseDir
+     * @param controller
      * @throws IOException
      */
     public void setPFFavorite(boolean setup, Controller controller)
@@ -149,14 +149,14 @@ public class WinUtils extends Loggable {
         String userHome = System.getProperty("user.home");
         File linksDir = new File(userHome, "Links");
         if (!linksDir.exists()) {
-            logWarning("Could not locate the Links directory");
+            logWarning("Could not locate the Links directory in " + userHome);
             return;
         }
-        File shortCut = new File(linksDir, "PowerFolders.lnk");
+        File baseDir = new File(controller.getFolderRepository()
+            .getFoldersBasedir());
+        File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
         if (setup) {
-            File baseDir = new File(controller.getFolderRepository()
-                .getFoldersBasedir());
-            ShellLink link = new ShellLink(null, "PowerFolders", baseDir
+            ShellLink link = new ShellLink(null, baseDir.getName(), baseDir
                 .getAbsolutePath(), null);
             createLink(link, shortCut.getAbsolutePath());
         } else {
@@ -164,9 +164,12 @@ public class WinUtils extends Loggable {
         }
     }
 
-    public void setPFStartup(boolean setup) throws IOException {
+    public void setPFStartup(boolean setup, Controller controller)
+        throws IOException
+    {
         File pfile = new File(new File(System.getProperty("java.class.path"))
-            .getParentFile(), "PowerFolder.exe");
+            .getParentFile(), controller.getDistribution().getBinaryName()
+            + ".exe");
         if (!pfile.exists()) {
             logSevere("Couldn't find PowerFolder executable! "
                 + "Note: Setting up a shortcut only works "
