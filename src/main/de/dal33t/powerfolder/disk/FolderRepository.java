@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
@@ -267,6 +268,18 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Set the folders base with a desktop ini.
         FileUtils.maintainDesktopIni(getController(), new File(
             getFoldersBasedir()));
+
+        // Maintain link
+        boolean useFavLink = ConfigurationEntry.USE_PF_LINK
+            .getValueBoolean(getController());
+        if (useFavLink && WinUtils.isSupported()) {
+            try {
+                WinUtils.getInstance().setPFFavorite(useFavLink,
+                    getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
     }
 
     /**
