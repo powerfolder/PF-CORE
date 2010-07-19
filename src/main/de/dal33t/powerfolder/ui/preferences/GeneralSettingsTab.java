@@ -421,13 +421,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         if (usePowerFolderLink != null) {
-            boolean oldValue = Boolean
-                .parseBoolean(ConfigurationEntry.USE_PF_LINK
-                    .getValue(getController()));
             boolean newValue = usePowerFolderLink.isSelected();
-            if (oldValue ^ newValue) {
-                configureFavorite(newValue);
-            }
+            configureFavorite(newValue);
             // PowerFolder favorite
             ConfigurationEntry.USE_PF_LINK.setValue(getController(), Boolean
                 .toString(usePowerFolderLink.isSelected()));
