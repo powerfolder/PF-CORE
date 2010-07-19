@@ -492,9 +492,11 @@ public class FileUtils {
                 // directory?
                 File hereFile = new File("");
                 String herePath = hereFile.getAbsolutePath();
-                File powerFolderFile = new File(herePath, "PowerFolder.exe");
+                File powerFolderFile = new File(herePath, controller
+                    .getDistribution().getBinaryName()
+                    + ".exe");
                 if (!powerFolderFile.exists()) {
-                    log.fine("Could not find PowerFolder.exe at "
+                    log.warning("Could not find PowerFolder.exe at "
                         + powerFolderFile.getAbsolutePath());
                     return;
                 }
