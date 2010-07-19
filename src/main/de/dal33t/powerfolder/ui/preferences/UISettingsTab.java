@@ -235,7 +235,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                             try {
                                 if (WinUtils.getInstance() != null) {
                                     WinUtils.getInstance().setPFStartup(
-                                        evt.getNewValue().equals(true));
+                                        evt.getNewValue().equals(true),
+                                        getController());
                                 }
                             } catch (IOException e) {
                                 logSevere("IOException", e);
