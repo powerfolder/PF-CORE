@@ -28,6 +28,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.SwingWorker;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -209,7 +210,7 @@ public class FolderRemovePanel extends BaseDialog {
             || removeFromServerBox.isSelected());
     }
 
-    private void confirmedFolderLeave(boolean removeLocal,
+    private void confirmedFolderLeave(final boolean removeLocal,
         boolean deleteSystemSubFolder, boolean removeFromOS)
     {
 
@@ -229,10 +230,18 @@ public class FolderRemovePanel extends BaseDialog {
         }
 
         if (removeFromOS) {
-            ServerClient client = getController().getOSClient();
             // If remove local means = total removal of folder, also remove
             // permissions.
-            client.getFolderService().removeFolder(foInfo, true, removeLocal);
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    ServerClient client = getController().getOSClient();
+                    client.getFolderService().removeFolder(foInfo, true,
+                        removeLocal);
+                    return null;
+                }
+            };
+            worker.execute();
 
             if (!removeLocal) {
                 // TODO For what is that?
