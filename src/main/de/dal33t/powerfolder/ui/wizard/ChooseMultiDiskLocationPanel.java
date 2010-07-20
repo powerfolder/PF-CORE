@@ -61,9 +61,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -217,10 +217,21 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     protected JPanel buildContent() {
+        // Create boxes.
+        JCheckBox allBox = new JCheckBox(Translation.getTranslation("wizard.choose_multi_disk_location.all_files"));
+        allBox.setOpaque(false);
+        allBox.addActionListener(new MyAllActionListner());
+        boxes.add(allBox);
+        for (String name : userDirectories.keySet()) {
+            JCheckBox box = new JCheckBox(name);
+            box.setOpaque(false);
+            box.addActionListener(new MyActionListener());
+            boxes.add(box);
+        }
 
         StringBuilder verticalUserDirectoryLayout = new StringBuilder();
         // Four buttons every row.
-        for (int i = 0; i < 1 + userDirectories.size() / 4; i++) {
+        for (int i = 0; i < 1 + boxes.size() / 4; i++) {
             verticalUserDirectoryLayout.append("pref, 3dlu, ");
         }
 
@@ -237,11 +248,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         int row = 1;
         int col = 1;
 
-        for (String name : userDirectories.keySet()) {
-            JCheckBox box = new JCheckBox(name);
-            box.setOpaque(false);
-            box.addActionListener(new MyActionListener());
-            boxes.add(box);
+        for (JCheckBox box : boxes) {
             builder.add(box, cc.xy(col, row));
             if (col == 1) {
                 col = 3;
@@ -270,9 +277,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         row += 2;
 
         if (!getController().isLanOnly()
-                && PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
-                getController()) && !ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController())) {
+            && PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController())
+            && !ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController()))
+        {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
         Object object = getWizardContext().getAttribute(SYNC_PROFILE_ATTRIBUTE);
@@ -662,6 +671,19 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            updateButtons();
+            startFolderSizeCalculator();
+        }
+    }
+
+    private class MyAllActionListner implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            boolean selected = ((JCheckBox) e.getSource()).isSelected();
+            for (JCheckBox box : boxes) {
+                if (box.isEnabled()) {
+                    box.setSelected(selected);
+                }
+            }
             updateButtons();
             startFolderSizeCalculator();
         }
