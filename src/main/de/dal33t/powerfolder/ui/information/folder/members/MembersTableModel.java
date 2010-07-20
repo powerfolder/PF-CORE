@@ -191,7 +191,7 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
     }
 
     public FolderInfo getFolderInfo() {
-        return folder.getInfo();
+        return folder != null ? folder.getInfo() : null;
     }
 
     /**
