@@ -1456,13 +1456,13 @@ public class Folder extends PFComponent {
         if (dirty) {
             persist();
         }
-        shutdown = true;
-        dao.stop();
         if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
             diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
                 DiskItemFilter.PATTERNS_FILENAME));
             savePatternsToMetaFolder();
         }
+        shutdown = true;
+        dao.stop();
         removeAllListeners();
     }
 
@@ -3620,6 +3620,9 @@ public class Folder extends PFComponent {
     private class Persister extends TimerTask {
         @Override
         public void run() {
+            if (shutdown) {
+                return;
+            }
             if (dirty) {
                 persist();
             }
