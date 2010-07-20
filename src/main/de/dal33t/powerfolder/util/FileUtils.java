@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 public class FileUtils {
 
@@ -492,13 +493,23 @@ public class FileUtils {
                 // directory?
                 File hereFile = new File("");
                 String herePath = hereFile.getAbsolutePath();
-                File powerFolderFile = new File(herePath, controller
-                    .getDistribution().getBinaryName()
-                    + ".exe");
+                String exeName = controller.getDistribution().getBinaryName()
+                    + ".exe";
+                File powerFolderFile = new File(herePath, exeName);
                 if (!powerFolderFile.exists()) {
-                    log.warning("Could not find PowerFolder.exe at "
-                        + powerFolderFile.getAbsolutePath());
-                    return;
+                    // Try harder
+                    powerFolderFile = new File(WinUtils
+                        .getProgramInstallationPath(), exeName);
+
+                    if (!powerFolderFile.exists()) {
+                        powerFolderFile = new File(WinUtils
+                            .getProgramInstallationPath(), exeName);
+
+                        log.warning("Could not find "
+                            + powerFolderFile.getName() + " at "
+                            + powerFolderFile.getAbsolutePath());
+                        return;
+                    }
                 }
 
                 // Write desktop ini directory

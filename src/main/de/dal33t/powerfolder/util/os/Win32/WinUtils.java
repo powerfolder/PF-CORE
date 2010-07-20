@@ -209,7 +209,10 @@ public class WinUtils extends Loggable {
      * @return the path on a Windows installation or null if unable to resolve.
      */
     public static File getProgramInstallationPath() {
-        String programFiles = System.getenv("PROGRAMFILES");
+        String envEntry = OSUtil.is64BitPlatform()
+            ? "ProgramFiles(x86)"
+            : "PROGRAMFILES";
+        String programFiles = System.getenv(envEntry);
         if (StringUtils.isBlank(programFiles)) {
             LOG
                 .severe("Unable to update Windows installation of PowerFolder. Program files directory not found");
