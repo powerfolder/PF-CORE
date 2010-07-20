@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.clientserver;
 import java.util.Collection;
 import java.util.List;
 
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -95,44 +94,6 @@ public interface AccountService {
      */
     void removeComputer(MemberInfo node);
 
-    // DAO related / admin methods ********************************************
-
-    /**
-     * @param filterModel
-     *            the filter to apply
-     * @return the filtered list of accounts.
-     */
-    List<AccountDetails> getAccounts(AccountFilterModel filterModel);
-
-    /**
-     * Saves or updates the given Account.
-     * 
-     * @param user
-     */
-    void store(Account user);
-
-    /**
-     * Enables the selected account:
-     * <p>
-     * The Online Storage subscription
-     * <P>
-     * Sets all folders to SyncProfile.BACKUP_TARGET.
-     * 
-     * @see Account#enable(de.dal33t.powerfolder.Controller)
-     * @param username
-     *            the username of the account to enable
-     */
-    void enable(String username);
-
-    /**
-     * Removes a user with the given username from the database
-     * 
-     * @param username
-     * @return true if the user existed and is now removed. false if the
-     *         username could not be found.
-     */
-    boolean delete(String username);
-
     /**
      * Performs all checks on the given online storage user accounts.
      * 
@@ -140,16 +101,4 @@ public interface AccountService {
      */
     void checkAccounts(Collection<Account> accounts);
 
-    /**
-     * @return the folder containing the license keys.
-     */
-    @Deprecated
-    FolderInfo getLicenseKeyFolder();
-
-    /**
-     * http://www.powerfolder.com/wiki/Server_maintenance_folder
-     * 
-     * @return the maint folder.
-     */
-    FolderInfo getMaintenanceFolder();
 }
