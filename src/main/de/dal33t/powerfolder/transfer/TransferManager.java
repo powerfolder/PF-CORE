@@ -595,7 +595,9 @@ public class TransferManager extends PFComponent {
 
         // Tell remote peer if possible
         if (upload.getPartner().isCompletelyConnected()) {
-            logWarning("Sending abort upload of " + upload);
+            if (isFine()) {
+                logFine("Sending abort upload of " + upload);
+            }
             upload.getPartner().sendMessagesAsynchron(
                 new AbortUpload(upload.getFile()));
         }
