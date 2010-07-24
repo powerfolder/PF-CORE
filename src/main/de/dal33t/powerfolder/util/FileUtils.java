@@ -293,8 +293,7 @@ public class FileUtils {
     public static boolean setAttributesOnWindows(File file, Boolean hidden,
         Boolean system)
     {
-        // @todo hghg DO NOT CHECK IN
-        if (OSUtil.isWindowsSystem() || OSUtil.isWindowsMEorOlder()) {
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsMEorOlder()) {
             // Not set attributes on non-windows systems or win ME or older
             return false;
         }
