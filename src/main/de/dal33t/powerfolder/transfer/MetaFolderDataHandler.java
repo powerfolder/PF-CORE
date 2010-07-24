@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.transfer;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
@@ -51,7 +52,7 @@ public class MetaFolderDataHandler extends PFComponent {
             .getParentFolder(fileInfo.getFolderInfo());
         String filename = fileInfo.getFilenameOnly();
 
-        if (filename.equals(Folder.META_FOLDER_SYNC_PATTERNS_FILE_NAME)) {
+        if (filename.equals(DiskItemFilter.PATTERNS_FILENAME)) {
             handleMetaFolderSyncPatterns(parentFolder, fileInfo);
         }
     }

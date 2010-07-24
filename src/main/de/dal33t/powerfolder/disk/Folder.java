@@ -107,7 +107,6 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
-    public static final String META_FOLDER_SYNC_PATTERNS_FILE_NAME = DiskItemFilter.PATTERNS_FILENAME;
 
     public static final int TEN_MINUTES = 60 * 10;
     public static final int ONE_MINUTE = 60;
