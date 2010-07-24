@@ -88,14 +88,14 @@ public class NetUtilTest extends TestCase {
         assertEquals("os005.node.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
-        addr = new InetSocketAddress("85.25.126.249", 1337);
-        assertEquals("/85.25.126.249", addr.getAddress().toString());
-        assertEquals("85.25.126.249", NetworkUtil.getHostAddressNoResolve(addr
+        addr = new InetSocketAddress("188.40.135.117", 1337);
+        assertEquals("/188.40.135.117", addr.getAddress().toString());
+        assertEquals("188.40.135.117", NetworkUtil.getHostAddressNoResolve(addr
             .getAddress()));
         // Do reverse lookup
         assertEquals("os004.node.powerfolder.com", addr.getAddress()
             .getHostName());
-        assertEquals("os004.node.powerfolder.com/85.25.126.249", addr
+        assertEquals("os004.node.powerfolder.com/188.40.135.117", addr
             .getAddress().toString());
         assertEquals("os004.node.powerfolder.com", NetworkUtil
             .getHostAddressNoResolve(addr.getAddress()));
@@ -103,7 +103,7 @@ public class NetUtilTest extends TestCase {
         assertEquals("os004.node.powerfolder.com", addr.getHostName());
         assertEquals("os004.node.powerfolder.com", addr.getAddress()
             .getHostName());
-        assertEquals("85.25.126.249", addr.getAddress().getHostAddress());
+        assertEquals("188.40.135.117", addr.getAddress().getHostAddress());
         assertEquals("os004.node.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
