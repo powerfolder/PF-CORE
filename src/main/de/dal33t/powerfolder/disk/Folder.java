@@ -1418,7 +1418,7 @@ public class Folder extends PFComponent {
         loadFolderDB();
         loadLastSyncDate();
         diskItemFilter.loadPatternsFrom(new File(getSystemSubDir(),
-            DiskItemFilter.PATTERNS_FILENAME));
+            DiskItemFilter.PATTERNS_FILENAME), false);
         if (diskItemFilter.getPatterns().isEmpty()
             && Feature.ADD_DEFAULT_EXCLUDES_IF_EMPTY.isEnabled())
         {
@@ -2304,7 +2304,7 @@ public class Folder extends PFComponent {
 
         File syncPatternsFile = metaFolder.getDiskFile(fileInfo);
         logFine("Reading syncPatterns " + syncPatternsFile);
-        diskItemFilter.loadPatternsFrom(syncPatternsFile);
+        diskItemFilter.loadPatternsFrom(syncPatternsFile, true);
     }
 
     public DirectoryInfo getBaseDirectoryInfo() {

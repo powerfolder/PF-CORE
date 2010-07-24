@@ -95,14 +95,18 @@ public class DiskItemFilter {
      * Loads patterns from file. Removes all previous patterns.
      * 
      * @param file
+     *          file to read patterns from
+     * @param dirtyArg
+     *          true if local patters are now dirty (i.e., we just loaded
+     *          metafolder patterns perhaps)
      */
-    public void loadPatternsFrom(File file) {
+    public void loadPatternsFrom(File file, boolean dirtyArg) {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new FileReader(file));
-                String pattern;
                 removeAllPatterns0();
+                String pattern;
                 while ((pattern = reader.readLine()) != null) {
                     String trimmedPattern = pattern.trim();
                     if (trimmedPattern.length() > 0) {
@@ -113,7 +117,7 @@ public class DiskItemFilter {
                 log.log(Level.SEVERE, "Problem loading pattern from " + file,
                     ioe);
             } finally {
-                dirty = false;
+                dirty = dirtyArg;
                 if (reader != null) {
                     try {
                         reader.close();
