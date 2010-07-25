@@ -885,7 +885,7 @@ public class Folder extends PFComponent {
             // detection got missed. On unsupported systems, scan every minue.
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
-            int frequency = watcher.isSupported() ? TEN_MINUTES : ONE_MINUTE; 
+            int frequency = watcher.isSupported() ? TEN_MINUTES : ONE_MINUTE;
             if (secondsSinceLastSync < frequency) {
                 if (isFiner()) {
                     logFiner("Skipping regular scan");
@@ -1450,7 +1450,11 @@ public class Folder extends PFComponent {
      * Shuts down the folder
      */
     public void shutdown() {
-        logFine("shutting down folder " + this);
+        if (isFine()) {
+            logFine("Shutting down folder " + this);
+        }
+        shutdown = true;
+        
         watcher.remove();
         if (dirty) {
             persist();
@@ -1460,7 +1464,6 @@ public class Folder extends PFComponent {
                 DiskItemFilter.PATTERNS_FILENAME));
             savePatternsToMetaFolder();
         }
-        shutdown = true;
         dao.stop();
         removeAllListeners();
     }
@@ -1860,12 +1863,14 @@ public class Folder extends PFComponent {
                         + member.getAccountInfo() + " no read permission");
                 }
             }
-            if (member.isPre4Client()) {
-                member.sendMessagesAsynchron(FileList
-                    .createNullListForPre4Client(currentInfo));
-            } else {
-                member.sendMessagesAsynchron(FileList
-                    .createNullList(currentInfo));
+            if (member.isCompletelyConnected()) {
+                if (member.isPre4Client()) {
+                    member.sendMessagesAsynchron(FileList
+                        .createNullListForPre4Client(currentInfo));
+                } else {
+                    member.sendMessagesAsynchron(FileList
+                        .createNullList(currentInfo));
+                }
             }
             return false;
         }
