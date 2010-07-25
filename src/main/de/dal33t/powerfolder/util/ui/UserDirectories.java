@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -60,12 +61,12 @@ public class UserDirectories {
     private static final String USER_DIR_DROPBOX = "My Dropbox";
 
     // Vista has issues with these, so instantiate separately
-    private static String userDirMyDocuments;
-    private static String userDirMyMusic;
-    private static String userDirMyPictures;
-    private static String userDirMyVideos;
-    private static String appsDirOutlook;
-    private static String appsDirWindowsMail;
+    private static final String USER_DIR_MY_DOCUMENTS;
+    private static final String USER_DIR_MY_MUSIC;
+    private static final String USER_DIR_MY_PICTURES;
+    private static final String USER_DIR_MY_VIDEOS;
+    private static final String APPS_DIR_OUTLOOK;
+    private static final String APPS_DIR_WINDOWS_MAIL;
 
     private static final String APPS_DIR_FIREFOX = "Mozilla" + File.separator
         + "Firefox";
@@ -78,23 +79,38 @@ public class UserDirectories {
 
     static {
         if (WinUtils.getInstance() != null) {
-            appsDirOutlook = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_LOCAL_APP_DATA, false)
-                + File.separator + "Microsoft" + File.separator + "Outlook";
-            userDirMyDocuments = WinUtils.getInstance().getSystemFolderPath(
+            if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
+                APPS_DIR_OUTLOOK = WinUtils.getInstance().getSystemFolderPath(
+                    WinUtils.CSIDL_LOCAL_APP_DATA, false)
+                    + File.separator + "Microsoft" + File.separator + "Outlook";
+            } else {
+                APPS_DIR_OUTLOOK = null;
+            }
+            USER_DIR_MY_DOCUMENTS = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_PERSONAL, false);
-            userDirMyMusic = WinUtils.getInstance().getSystemFolderPath(
+            USER_DIR_MY_MUSIC = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_MYMUSIC, false);
-            userDirMyPictures = WinUtils.getInstance().getSystemFolderPath(
+            USER_DIR_MY_PICTURES = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_MYPICTURES, false);
-            userDirMyVideos = WinUtils.getInstance().getSystemFolderPath(
+            USER_DIR_MY_VIDEOS = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_MYVIDEO, false);
-            appsDirWindowsMail = WinUtils.getInstance().getSystemFolderPath(
-                WinUtils.CSIDL_LOCAL_APP_DATA, false)
-                + File.separator
-                + "Microsoft"
-                + File.separator
-                + "Windows Mail";
+            if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
+                APPS_DIR_WINDOWS_MAIL = WinUtils.getInstance()
+                    .getSystemFolderPath(WinUtils.CSIDL_LOCAL_APP_DATA, false)
+                    + File.separator
+                    + "Microsoft"
+                    + File.separator
+                    + "Windows Mail";
+            } else {
+                APPS_DIR_WINDOWS_MAIL = null;
+            }
+        } else {
+            USER_DIR_MY_DOCUMENTS = null;
+            USER_DIR_MY_MUSIC = null;
+            USER_DIR_MY_PICTURES = null;
+            USER_DIR_MY_VIDEOS = null;
+            APPS_DIR_OUTLOOK = null;
+            APPS_DIR_WINDOWS_MAIL = null;
         }
     }
 
@@ -169,24 +185,23 @@ public class UserDirectories {
             .getTranslation("user.dir.sites"), false);
         addTargetDirectory(userHome, USER_DIR_DROPBOX, Translation
             .getTranslation("user.dir.dropbox"), false);
-        
 
         // Hidden by Vista.
         if (!OSUtil.isWindowsVistaSystem() && !OSUtil.isWindows7System()) {
-            if (userDirMyDocuments != null) {
-                addTargetDirectory(new File(userDirMyDocuments), Translation
+            if (USER_DIR_MY_DOCUMENTS != null) {
+                addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS), Translation
                     .getTranslation("user.dir.my_documents"), false);
             }
-            if (userDirMyMusic != null) {
-                addTargetDirectory(new File(userDirMyMusic), Translation
+            if (USER_DIR_MY_MUSIC != null) {
+                addTargetDirectory(new File(USER_DIR_MY_MUSIC), Translation
                     .getTranslation("user.dir.my_music"), false);
             }
-            if (userDirMyPictures != null) {
-                addTargetDirectory(new File(userDirMyPictures), Translation
+            if (USER_DIR_MY_PICTURES != null) {
+                addTargetDirectory(new File(USER_DIR_MY_PICTURES), Translation
                     .getTranslation("user.dir.my_pictures"), false);
             }
-            if (userDirMyVideos != null) {
-                addTargetDirectory(new File(userDirMyVideos), Translation
+            if (USER_DIR_MY_VIDEOS != null) {
+                addTargetDirectory(new File(USER_DIR_MY_VIDEOS), Translation
                     .getTranslation("user.dir.my_videos"), false);
             }
         }
@@ -208,14 +223,17 @@ public class UserDirectories {
                     .getTranslation("apps.dir.firefox"), false);
                 addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
                     .getTranslation("apps.dir.sunbird"), false);
-                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
-                    .getTranslation("apps.dir.thunderbird"), false);
-                if (appsDirOutlook != null) {
-                    addTargetDirectory(new File(appsDirOutlook), Translation
+                if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
+                    addTargetDirectory(appData, APPS_DIR_THUNDERBIRD,
+                        Translation.getTranslation("apps.dir.thunderbird"),
+                        false);
+                }
+                if (APPS_DIR_OUTLOOK != null) {
+                    addTargetDirectory(new File(APPS_DIR_OUTLOOK), Translation
                         .getTranslation("apps.dir.outlook"), false);
                 }
-                if (appsDirWindowsMail != null) {
-                    addTargetDirectory(new File(appsDirWindowsMail),
+                if (APPS_DIR_WINDOWS_MAIL != null) {
+                    addTargetDirectory(new File(APPS_DIR_WINDOWS_MAIL),
                         Translation.getTranslation("apps.dir.windows_mail"),
                         false);
                 }
@@ -229,16 +247,20 @@ public class UserDirectories {
                 .getTranslation("apps.dir.firefox"), false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD2, Translation
                 .getTranslation("apps.dir.sunbird"), false);
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
-                .getTranslation("apps.dir.thunderbird"), false);
+            if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
+                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
+                    .getTranslation("apps.dir.thunderbird"), false);
+            }
         } else if (OSUtil.isMacOS()) {
             File appData = new File(userHome, "Library");
             addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
                 .getTranslation("apps.dir.firefox"), false);
             addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
                 .getTranslation("apps.dir.sunbird"), false);
-            addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
-                .getTranslation("apps.dir.thunderbird"), false);
+            if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
+                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
+                    .getTranslation("apps.dir.thunderbird"), false);
+            }
         }
     }
 
