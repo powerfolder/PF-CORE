@@ -660,13 +660,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         fileRequestor.shutdown();
 
         // shutdown all folders
-        for (Folder folder : folders.values()) {
-            folder.shutdown();
-        }
         for (Folder metaFolder : metaFolders.values()) {
             metaFolder.shutdown();
         }
-
+        for (Folder folder : folders.values()) {
+            folder.shutdown();
+        }
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
         metaFolders.clear();
