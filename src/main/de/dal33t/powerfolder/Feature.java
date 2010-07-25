@@ -69,16 +69,6 @@ public enum Feature {
      */
     // CACHE_FILEINFO_STRINGS,
 
-    /**
-     * If file updates get detected newer using the version counter. Otherwise
-     * the last modification date is uesd.
-     * <P>
-     * #658
-     * <P>
-     * Disabled FileInfo:442
-     * <p>
-     */
-    // DETECT_UPDATE_BY_VERSION,
 
     /**
      * Writes the debug filelist CSV into debug directory
@@ -119,12 +109,6 @@ public enum Feature {
      * TRAC #1548 for 4.3.0 release
      */
     META_FOLDER(true),
-
-    /**
-     * If default ignored file patterns should be added on startup if the ignore
-     * list is empty.
-     */
-    ADD_DEFAULT_EXCLUDES_IF_EMPTY(true),
     
     /**
      * #2051: Disable email client directories until fully supported.
