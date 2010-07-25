@@ -133,7 +133,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
     @Override
     public boolean hasNext() {
         // Always automatically goes to next
-        return nextPanel != null;
+        return false;
     }
 
     @Override
