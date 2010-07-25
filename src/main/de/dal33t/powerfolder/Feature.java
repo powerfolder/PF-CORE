@@ -125,6 +125,11 @@ public enum Feature {
      * list is empty.
      */
     ADD_DEFAULT_EXCLUDES_IF_EMPTY(true),
+    
+    /**
+     * #2051: Disable email client directories until fully supported.
+     */
+    USER_DIRECTORIES_EMAIL_CLIENTS(false),
 
     /**
      * #1976 If {@link MemberInfo} should be internalized.
