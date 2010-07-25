@@ -1419,12 +1419,6 @@ public class Folder extends PFComponent {
         loadLastSyncDate();
         diskItemFilter.loadPatternsFrom(new File(getSystemSubDir(),
             DiskItemFilter.PATTERNS_FILENAME), false);
-        if (diskItemFilter.getPatterns().isEmpty()
-            && Feature.ADD_DEFAULT_EXCLUDES_IF_EMPTY.isEnabled())
-        {
-            logWarning("Ignore patterns empty. Adding default patterns");
-            addDefaultExcludes();
-        }
     }
 
     /**
@@ -1454,7 +1448,7 @@ public class Folder extends PFComponent {
             logFine("Shutting down folder " + this);
         }
         shutdown = true;
-        
+
         watcher.remove();
         if (dirty) {
             persist();
