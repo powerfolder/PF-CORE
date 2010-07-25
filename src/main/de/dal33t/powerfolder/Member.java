@@ -1362,9 +1362,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     public void run() {
                         folderJoinLock.lock();
                         try {
+                            lastFolderList = fList;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
-                            lastFolderList = fList;
                         } finally {
                             folderJoinLock.unlock();
                         }
