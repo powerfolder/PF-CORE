@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -325,6 +326,16 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (stateChanged) {
             getController().getNodeManager().friendStateChanged(this,
                 newFriend, personalMessage);
+
+            // Remove from folders.
+            if (!newFriend && !isCompletelyConnected() && hasJoinedAnyFolder())
+            {
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders(true))
+                {
+                    folder.remove(this);
+                }
+            }
         }
     }
 
@@ -856,7 +867,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // My messages sent, now wait for his folder list.
-        boolean receivedFolderList = waitForFolderList();
+        boolean receivedFolderList = waitForFoldersJoin();
         synchronized (peerInitalizeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
@@ -929,8 +940,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             return ConnectResult.failure(message);
         }
 
-        List<Folder> foldersJoined = getJoinedFolders();
-        List<Folder> foldersCommon = getFoldersInCommon();
+        List<Folder> foldersJoined = getFoldersActuallyJoined();
+        List<Folder> foldersCommon = getFoldersRequestedToJoin();
         if (isFine() && !foldersJoined.isEmpty()) {
             logFine("Joined " + foldersJoined.size() + " folders: "
                 + foldersJoined);
@@ -958,8 +969,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         if (!foldersCommon.isEmpty()) {
             if (isFine()) {
-                logFine("NOT joined: " + foldersCommon);
-                logFine("Joined: " + foldersJoined);
+                logWarning("NOT joined: " + foldersCommon);
+                logWarning("Joined: " + foldersJoined);
             }
             for (Folder folder : foldersCommon) {
                 if (isPre4Client()) {
@@ -975,7 +986,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean ok = waitForFileLists(foldersJoined);
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
-                + foldersJoined.size() + " folders";
+                + foldersJoined.size()
+                + " folders: "
+                + foldersJoined
+                + ", not joined: " + foldersCommon;
             logWarning(reason);
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
@@ -1129,7 +1143,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * 
      * @return true if list was received successfully
      */
-    private boolean waitForFolderList() {
+    private boolean waitForFoldersJoin() {
         synchronized (folderListWaiter) {
             if (lastFolderList == null) {
                 try {
@@ -1142,6 +1156,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
         }
+        // Wait for joinToLocalFolders
+        folderJoinLock.lock();
+        folderJoinLock.unlock();
         return lastFolderList != null;
     }
 
@@ -1193,7 +1210,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         messageListenerSupport = null;
 
         // Remove filelist to save memory.
-        for (Folder folder : getJoinedFolders()) {
+        for (Folder folder : getFoldersActuallyJoined()) {
             folder.getDAO().deleteDomain(getId());
         }
 
@@ -1345,10 +1362,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     public void run() {
                         folderJoinLock.lock();
                         try {
-                            lastFolderList = fList;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
-                            // TODO: Set AFTER the list has been processed
+                            lastFolderList = fList;
                         } finally {
                             folderJoinLock.unlock();
                         }
@@ -1907,6 +1923,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     private void joinToLocalFolders(FolderList folderList,
         ConnectionHandler fromPeer)
     {
+        logWarning("joinToLocalFolders: " + folderList);
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
@@ -1947,10 +1964,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 for (int i = 0; i < folderList.secretFolders.length; i++) {
                     FolderInfo secretFolder = folderList.secretFolders[i];
                     if (localSecretFolders.containsKey(secretFolder)) {
-                        logFiner("Also has secret folder: " + secretFolder);
+
                         Folder folder = localSecretFolders.get(secretFolder);
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
+                            logWarning("Joined folder: " + secretFolder);
                             joinedFolders.add(folder.getInfo());
                             if (folderList.joinedMetaFolders) {
                                 Folder metaFolder = repo
@@ -1959,9 +1977,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     if (!metaFolder.join(this)) {
                                         logSevere("Unable to join meta folder of "
                                             + folder);
+                                    } else {
+                                        logWarning("Joined meta folder: "
+                                            + metaFolder);
                                     }
                                 }
                             }
+
+                        } else {
+                            logWarning(this + " did not join into: " + folder);
                         }
                     }
                 }
@@ -2051,8 +2075,8 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * @return the list of joined folders.
      */
-    private List<Folder> getJoinedFolders() {
-        List<Folder> joinedFolders = new ArrayList<Folder>();
+    private List<Folder> getFoldersActuallyJoined() {
+        List<Folder> joinedFolders = new LinkedList<Folder>();
         for (Folder folder : getController().getFolderRepository().getFolders(
             true))
         {
@@ -2066,18 +2090,28 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * @return the list folders in common.
      */
-    private List<Folder> getFoldersInCommon() {
+    private List<Folder> getFoldersRequestedToJoin() {
         String magicId = getPeer().getMyMagicId();
         FolderList fList = lastFolderList;
         if (fList == null) {
             logWarning("Unable to get last folder list");
             return Collections.emptyList();
         }
-        List<Folder> joinedFolders = new ArrayList<Folder>();
+        List<Folder> joinedFolders = new LinkedList<Folder>();
         for (Folder folder : getController().getFolderRepository().getFolders(
-            true))
+            false))
         {
-            if (fList.contains(folder.getInfo(), magicId)) {
+            FolderInfo foInfo = folder.getInfo();
+
+            if (lastFolderList.joinedMetaFolders && foInfo.isMetaFolder()) {
+                Folder parentFolder = getController().getFolderRepository()
+                    .getParentFolder(folder.getInfo());
+                if (parentFolder != null) {
+                    foInfo = parentFolder.getInfo();
+                }
+            }
+
+            if (fList.contains(foInfo, magicId)) {
                 joinedFolders.add(folder);
             }
         }
