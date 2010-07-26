@@ -253,6 +253,9 @@ public class FolderStatistic extends PFComponent {
         // Total size of files completely in sync at the member.
         long memberSizeInSync = 0;
         for (FileInfo fileInfo : files) {
+            if (!folder.isStarted()) {
+                return false;
+            }
             calculating.analyzedFiles++;
             if (fileInfo.isDeleted()) {
                 continue;

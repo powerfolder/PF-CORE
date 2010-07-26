@@ -481,6 +481,13 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return the watcher of this folder.
+     */
+    public FolderWatcher getFolderWatcher() {
+        return watcher;
+    }
+
+    /**
      * Commits the scan results into the internal file database. Changes get
      * broadcasted to other members if necessary.
      * 
@@ -1528,8 +1535,8 @@ public class Folder extends PFComponent {
             oOut.close();
             fOut.close();
 
-            if (isFine()) {
-                logFine("Successfully wrote folder database file ("
+            if (isWarning()) {
+                logWarning("Successfully wrote folder database file ("
                     + diskItems.length + " disk items)");
             }
 
@@ -1954,6 +1961,13 @@ public class Folder extends PFComponent {
             "Should only be removing deleted infos.");
         dao.delete(null, fileInfo);
         dirty = true;
+    }
+    
+    /**
+     * @return true if this folder has beend start. false if shut down
+     */
+    public boolean isStarted() {
+        return !shutdown;
     }
 
     /**
@@ -2744,6 +2758,7 @@ public class Folder extends PFComponent {
      */
     private void setDBDirty() {
         dirty = true;
+        // logWarning("DB dirty", new RuntimeException());
     }
 
     /**
@@ -2753,10 +2768,6 @@ public class Folder extends PFComponent {
         if (checkIfDeviceDisconnected()) {
             logWarning("Unable to persist database. Device is disconnected: "
                 + localBase);
-            return;
-        }
-        if (shutdown) {
-            logFine("Unable to persist database. Already shut down");
             return;
         }
         logFiner("Persisting settings");
@@ -3342,23 +3353,20 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     public boolean hasReadPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .read(getParentFolderInfo()));
+        return hasFolderPermission(member, FolderPermission.read(currentInfo));
     }
 
     public boolean hasWritePermission(Member member) {
         return hasFolderPermission(member, FolderPermission
-            .readWrite(getParentFolderInfo()));
+            .readWrite(currentInfo));
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .admin(getParentFolderInfo()));
+        return hasFolderPermission(member, FolderPermission.admin(currentInfo));
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .owner(getParentFolderInfo()));
+        return hasFolderPermission(member, FolderPermission.owner(currentInfo));
     }
 
     private boolean hasFolderPermission(Member member,
@@ -3369,10 +3377,6 @@ public class Folder extends PFComponent {
         }
         return getController().getSecurityManager().hasPermission(
             member.getAccountInfo(), permission);
-    }
-
-    private FolderInfo getParentFolderInfo() {
-        return currentInfo.getParentFolderInfo(getController());
     }
 
     // General stuff **********************************************************

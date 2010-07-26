@@ -52,6 +52,7 @@ public class FolderWatcher extends PFComponent {
     private int watchID = -1;
     private NotifyListener listener;
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
+    private volatile boolean ignoreAll;
     private Map<FileInfo, FileInfo> ignoreFiles = Util
         .createConcurrentHashMap();
     private AtomicBoolean scheduled = new AtomicBoolean(false);
@@ -107,6 +108,15 @@ public class FolderWatcher extends PFComponent {
                 }
             }
         }, 500);
+    }
+
+    /**
+     * @param ignoreAll
+     *            if ignore all file system events. Basically suspends the
+     *            FolderWatcher.
+     */
+    public void setIngoreAll(boolean ignoreAll) {
+        this.ignoreAll = ignoreAll;
     }
 
     public synchronized static boolean isLibLoaded() {
@@ -194,7 +204,7 @@ public class FolderWatcher extends PFComponent {
                 int scanned = 0;
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
-                    if (ignoreFiles.containsKey(dirtyFile)) {
+                    if (ignoreAll || ignoreFiles.containsKey(dirtyFile)) {
                         // Ignore.
                         continue;
                     }
@@ -272,7 +282,7 @@ public class FolderWatcher extends PFComponent {
             }
             try {
                 FileInfo lookup = lookupInstance(rootPath, name);
-                if (ignoreFiles.containsKey(lookup)) {
+                if (ignoreAll || ignoreFiles.containsKey(lookup)) {
                     // Skipping ignored file
                     return;
                 }

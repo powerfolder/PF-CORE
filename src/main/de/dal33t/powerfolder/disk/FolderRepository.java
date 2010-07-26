@@ -1264,20 +1264,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Get the parent folder for a metaFolder's info.
-     * 
      * @param metaFolderInfo
-     * @return
+     * @return the parent folder for a metaFolder's info.
      */
     public Folder getParentFolder(FolderInfo metaFolderInfo) {
-        // #1548 Speed this up.
-        for (Map.Entry<FolderInfo, Folder> entry : metaFolders.entrySet()) {
-            if (entry.getValue().getInfo().equals(metaFolderInfo)) {
-                // This is the metaFolder - return the corresponding folder.
-                return folders.get(entry.getKey());
-            }
-        }
-        return null;
+        return folders.get(metaFolderInfo);
     }
 
     // Event support **********************************************************
