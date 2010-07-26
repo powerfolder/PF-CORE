@@ -190,15 +190,7 @@ public class AboutDialog extends PFUIComponent {
             .getImageById(Icons.ABOUT_ANIMATION));
         logoLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 1 && !e.isAltDown()) {
-                    try {
-                        // Open explorer
-                        BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
-                            .getValue(getController()));
-                    } catch (IOException ex) {
-                        logFiner(ex);
-                    }
-                } else if (e.getClickCount() >= 2 && e.isAltDown()) {
+                if (e.getClickCount() >= 2) {
                     pacmanPanel.activate();
                 }
             }
