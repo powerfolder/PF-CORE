@@ -1448,7 +1448,6 @@ public class Folder extends PFComponent {
             logFine("Shutting down folder " + this);
         }
         shutdown = true;
-
         watcher.remove();
         if (dirty) {
             persist();
@@ -3604,10 +3603,8 @@ public class Folder extends PFComponent {
         File file = new File(metaFolder.getLocalBase(),
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
-        metaFolder.watcher.addIgnoreFile(fInfo);
         diskItemFilter.savePatternsTo(file);
         metaFolder.scanChangedFile(fInfo);
-        metaFolder.watcher.removeIgnoreFile(fInfo);
     }
 
     // Inner classes **********************************************************

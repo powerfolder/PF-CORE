@@ -24,7 +24,6 @@ import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-import java.io.File;
 
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
@@ -32,13 +31,15 @@ import net.contentobjects.jnotify.JNotifyListener;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * TRAC #711: Automatic change detection by watching the filesystem.
+ * <p>
+ * Does NOT watch Meta Folders.
  * 
  * @author sprajc
  */
@@ -146,6 +147,10 @@ public class FolderWatcher extends PFComponent {
             return;
         }
         if (!syncProfile.isInstantSync()) {
+            remove();
+            return;
+        }
+        if (folder.getInfo().isMetaFolder()) {
             remove();
             return;
         }
