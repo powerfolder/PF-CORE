@@ -117,7 +117,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.directory"), cc
+        builder.addLabel(Translation.getTranslation("general.folder"), cc
             .xy(1, 1));
         builder.add(folderInfoCombo, cc.xy(3, 1));
 
