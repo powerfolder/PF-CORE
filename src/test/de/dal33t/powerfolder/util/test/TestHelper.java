@@ -254,7 +254,7 @@ public class TestHelper {
             StringBuilder b = new StringBuilder();
             listFiles(testDir, b);
             throw new IllegalStateException(
-                "cleaning test dir not succeded. Files left:" + b.toString());
+                "cleaning test dir not succeded. Files left: " + b.toString());
         }
     }
 
