@@ -1253,11 +1253,12 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the parent
-     * Folder's FolderInfo, NOT the FolderInfo of the metaFolder.
+     * Folder's FolderInfo, NOT the FolderInfo of the metaFolder. BUT the
+     * metaFolders Map key holds the parent FolderInfo
      * 
      * @param parentFolderInfo
      *            parent Folder's FolderInfo
-     * @return
+     * @return the meta folder.
      */
     public Folder getMetaFolderForParent(FolderInfo parentFolderInfo) {
         return metaFolders.get(parentFolderInfo);
@@ -1268,7 +1269,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the parent folder for a metaFolder's info.
      */
     public Folder getParentFolder(FolderInfo metaFolderInfo) {
-        return folders.get(metaFolderInfo);
+        // #1548 Speed this up.
+        for (Map.Entry<FolderInfo, Folder> entry : metaFolders.entrySet()) {
+            if (entry.getValue().getInfo().equals(metaFolderInfo)) {
+                // This is the metaFolder - return the corresponding folder.
+                return folders.get(entry.getKey());
+            }
+        }
+        return null;
     }
 
     // Event support **********************************************************

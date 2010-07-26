@@ -47,12 +47,16 @@ public class MetaFolderDataHandler extends PFComponent {
                 + fileInfo.toDetailString());
             return;
         }
-
         Folder parentFolder = getController().getFolderRepository()
             .getParentFolder(fileInfo.getFolderInfo());
-        String filename = fileInfo.getFilenameOnly();
-
-        if (filename.equals(DiskItemFilter.PATTERNS_FILENAME)) {
+        if (parentFolder == null) {
+            logSevere("Parent folder for meta folder not found: "
+                + fileInfo.getFolderInfo() + "/" + fileInfo.getFolderInfo().id);
+            return;
+        }
+        if (fileInfo.getRelativeName().endsWith(
+            DiskItemFilter.PATTERNS_FILENAME))
+        {
             handleMetaFolderSyncPatterns(parentFolder, fileInfo);
         }
     }
