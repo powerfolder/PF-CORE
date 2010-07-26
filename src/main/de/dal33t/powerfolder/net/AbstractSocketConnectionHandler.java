@@ -701,12 +701,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      */
     private void analyseConnection() {
         if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
-            logWarning("ON LAN because of correct connection analyse disabled");
+            logFine("ON LAN because of correct connection analyse disabled");
             setOnLAN(true);
             return;
         }
         if (Feature.CORRECT_INTERNET_DETECTION.isDisabled()) {
-            logWarning("ON Internet because of correct connection analyse disabled");
+            logFine("ON Internet because of correct connection analyse disabled");
             setOnLAN(false);
             return;
         }
@@ -813,13 +813,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 return;
             }
 
-            // logWarning(
-            // "Sender started with " + messagesToSendQueue.size()
-            // + " messages in queue");
-
             int i = 0;
             Message msg;
-            // long start = System.currentTimeMillis();
             while (true) {
                 senderSpawnLock.lock();
                 msg = messagesToSendQueue.poll();
@@ -840,12 +835,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     break;
                 }
                 try {
-                    // logWarning(
-                    // "Sending async (" + messagesToSendQueue.size()
-                    // + "): " + asyncMsg.getMessage());
                     sendMessage(msg);
-                    // logWarning("Send complete: " +
-                    // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
                     logWarning("Unable to send message asynchronly. " + e);
                     logFiner("ConnectionException", e);
@@ -865,7 +855,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     break;
                 }
             }
-            // logWarning("Sender finished after sending " + i + " messages");
         }
     }
 
@@ -896,9 +885,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         throw new IOException("Client has old protocol version");
                     }
                     if (totalSize == -1) {
-                        // logFiner(
-                        // "Connection closed (-1) to "
-                        // + ConnectionHandler.this);
                         break;
                     }
                     if (totalSize <= 0) {
