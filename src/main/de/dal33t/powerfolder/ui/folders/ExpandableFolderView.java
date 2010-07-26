@@ -1229,6 +1229,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                         getController().getUIController().openFilesInformation(
                             folderInfo);
                     }
+                    if (folder == null && folderInfo != null) {
+                        PFWizard.openSingletonOnlineStorageJoinWizard(
+                            getController(), Collections
+                                .singletonList(folderInfo));
+                    }
                 }
             }
         }
@@ -1439,4 +1444,5 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
     }
+
 }
