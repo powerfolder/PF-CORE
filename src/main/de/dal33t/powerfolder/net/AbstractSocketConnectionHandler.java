@@ -549,7 +549,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         senderSpawnLock.lock();
         try {
             messagesToSendQueue.offer(message);
-            if (messagesToSendQueue.size() > 10 && isWarning()) {
+            if (messagesToSendQueue.size() > 20 && isWarning()) {
                 logWarning("Many messages in send queue: "
                     + messagesToSendQueue.size() + ": " + messagesToSendQueue);
             }
