@@ -1923,7 +1923,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     private void joinToLocalFolders(FolderList folderList,
         ConnectionHandler fromPeer)
     {
-        logWarning("joinToLocalFolders: " + folderList);
+        // logWarning("joinToLocalFolders: " + folderList);
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
@@ -1968,7 +1968,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                         Folder folder = localSecretFolders.get(secretFolder);
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
-                            logWarning("Joined folder: " + secretFolder);
+                            if (isFiner()) {
+                                logFiner("Joined folder: " + secretFolder);
+                            }
                             joinedFolders.add(folder.getInfo());
                             if (folderList.joinedMetaFolders) {
                                 Folder metaFolder = repo
@@ -1977,8 +1979,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     if (!metaFolder.join(this)) {
                                         logSevere("Unable to join meta folder of "
                                             + folder);
-                                    } else {
-                                        logWarning("Joined meta folder: "
+                                    } else if (isFiner()) {
+                                        logFiner("Joined meta folder: "
                                             + metaFolder);
                                     }
                                 }
