@@ -152,7 +152,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertTrue(foLisa.hasOwnDatabase());
         assertTrue(getFolderAtLisa().hasOwnDatabase());
         // 20 MB testfile
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
         for (int i = 0; i < 500; i++) {
             new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
         }
@@ -187,7 +189,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(500, foLisa.getKnownItemCount());
         getContollerLisa().getFolderRepository().removeFolder(foLisa, false);
 
-        // DB Must have beend stored
+        // DB Must have been stored
         assertTrue(
             "Database file was NOT saved at Lisa although directory have been synced",
             new File(foLisa.getSystemSubDir(), Folder.DB_FILENAME).exists());
