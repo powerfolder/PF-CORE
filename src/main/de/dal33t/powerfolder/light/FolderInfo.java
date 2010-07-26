@@ -65,16 +65,6 @@ public class FolderInfo implements Serializable, Cloneable {
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
 
-    public FolderInfo getParentFolderInfo(Controller controller) {
-        if (!isMetaFolder()) {
-            return this;
-        }
-        Folder parentFolder = controller.getFolderRepository().getParentFolder(
-            this);
-        Reject.ifNull(parentFolder, "Parent folder for " + this + " not found");
-        return parentFolder.getInfo();
-    }
-
     public String getName() {
         return name;
     }
