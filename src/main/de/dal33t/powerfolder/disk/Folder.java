@@ -1535,8 +1535,8 @@ public class Folder extends PFComponent {
             oOut.close();
             fOut.close();
 
-            if (isWarning()) {
-                logWarning("Successfully wrote folder database file ("
+            if (isFine()) {
+                logFine("Successfully wrote folder database file ("
                     + diskItems.length + " disk items)");
             }
 

@@ -151,13 +151,16 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         final Folder foLisa = getFolderAtLisa();
         assertTrue(foLisa.hasOwnDatabase());
         assertTrue(getFolderAtLisa().hasOwnDatabase());
-        // 20 MB testfile
-        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
-        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
+
         for (int i = 0; i < 500; i++) {
             new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
         }
+        
+        // 20 MB testfile
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 2000000);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
+
         scanFolder(getFolderAtBart());
 
         Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
