@@ -39,5 +39,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSilverMoon.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaSkyMetallic.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaWhiteVision.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate-annotations.jar"/>
+	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate3-strip.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

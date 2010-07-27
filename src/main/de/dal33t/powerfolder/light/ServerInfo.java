@@ -21,23 +21,34 @@ package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Contains important information about a server
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
+@Entity
 public class ServerInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_NODE = "node";
 
+    @Id
+    private String id;
+
+    @ManyToOne
+    @JoinColumn(name = "memberInfo_id")
     private MemberInfo node;
     private String webUrl;
     private String httpTunnelUrl;
 
-    public ServerInfo() {
+    ServerInfo() {
     }
 
     public ServerInfo(MemberInfo node, String webUrl, String httpTunnelUrl) {
@@ -46,6 +57,7 @@ public class ServerInfo implements Serializable {
         this.node = node;
         this.webUrl = webUrl;
         this.httpTunnelUrl = httpTunnelUrl;
+        this.id = node.id;
     }
 
     public MemberInfo getNode() {
@@ -54,6 +66,7 @@ public class ServerInfo implements Serializable {
 
     public void setNode(MemberInfo node) {
         this.node = node;
+        this.id = node.id;
     }
 
     public String getWebUrl() {
@@ -70,6 +83,14 @@ public class ServerInfo implements Serializable {
 
     public void setHTTPTunnelUrl(String httpTunnelUrl) {
         this.httpTunnelUrl = httpTunnelUrl;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void migrateId() {
+        this.id = node.id;
     }
 
     @Override
@@ -99,6 +120,6 @@ public class ServerInfo implements Serializable {
 
     public String toString() {
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+        + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 }

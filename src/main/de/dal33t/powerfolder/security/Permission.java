@@ -28,5 +28,10 @@ import java.io.Serializable;
  * @version $Revision: 1.5 $
  */
 public interface Permission extends Serializable {
+
+    public static long serialVersionUID = -7019372990245242530l;
+
     boolean implies(Permission impliedPermision);
+
+    String getId();
 }

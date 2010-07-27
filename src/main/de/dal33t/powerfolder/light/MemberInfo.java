@@ -25,12 +25,19 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.db.InetSocketAddressUserType;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
@@ -40,17 +47,23 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
+@TypeDef(
+    name = "socketAddressType",
+    typeClass = InetSocketAddressUserType.class)
+@Entity
 public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
 
     public static final String PROPERTYNAME_NICK = "nick";
     public static final String PROPERTYNAME_ID = "id";
+    public static final String PROPERTYNAME_CONNECT_ADDRESS = "connectAddress";
 
     // some identification marks
     public String nick;
     // The world wide unique id / logical address
-    public final String id;
+    @Id
+    public String id;
     /**
      * The network Id of this node. #1373
      * 
@@ -59,6 +72,7 @@ public class MemberInfo implements Serializable {
     public String networkId;
 
     // last know address
+    @Type(type = "socketAddressType")
     private InetSocketAddress connectAddress;
     /**
      * The last time a successfull (physical) connection was possible. Just the
@@ -74,11 +88,15 @@ public class MemberInfo implements Serializable {
 
     // Transient caches
     private transient Boolean hasNullIP;
-    
+
     /**
      * The cached hash info.
      */
     private transient int hash;
+
+    private MemberInfo() {
+        // NOP - only for hibernate
+    }
 
     public MemberInfo(String nick, String id, String networkId) {
         this.nick = nick;
@@ -280,7 +298,7 @@ public class MemberInfo implements Serializable {
     // Serialization optimization *********************************************
 
     private void readObject(ObjectInputStream in) throws IOException,
-        ClassNotFoundException
+    ClassNotFoundException
     {
         in.defaultReadObject();
         // this.id = id.intern();

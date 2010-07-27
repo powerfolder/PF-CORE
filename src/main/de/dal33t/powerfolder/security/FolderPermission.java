@@ -46,6 +46,10 @@ public abstract class FolderPermission implements Permission {
         return folder;
     }
 
+    public String getId() {
+        return folder.id + "_FP_" + getClass().getSimpleName();
+    }
+
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -85,7 +89,7 @@ public abstract class FolderPermission implements Permission {
             return null;
         }
     }
-
+    
     public static FolderReadPermission read(FolderInfo foInfo) {
         return new FolderReadPermission(foInfo);
     }

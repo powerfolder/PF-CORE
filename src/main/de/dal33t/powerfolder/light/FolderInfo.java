@@ -22,6 +22,11 @@ package de.dal33t.powerfolder.light;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+import org.hibernate.annotations.Immutable;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -36,18 +41,27 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
+@Entity
+@Immutable
 public class FolderInfo implements Serializable, Cloneable {
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
-    public final String name;
-    public final String id;
+    public static final String PROPERTYNAME_ID = "id";
+    
+    public String name;
+    @Id
+    public String id;
 
     /**
      * The cached hash info.
      */
     private transient int hash;
 
+    private FolderInfo() {
+        // NOP - for Hibernate
+    }
+    
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();

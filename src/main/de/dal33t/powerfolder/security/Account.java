@@ -31,7 +31,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.jgoodies.binding.beans.Model;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.CollectionOfElements;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Index;
+import org.hibernate.annotations.IndexColumn;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -44,14 +63,19 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class Account extends Model implements Serializable {
+@TypeDef(
+    name = "permissionType",
+    typeClass = PermissionUserType.class)
+@Entity
+public class Account implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(Account.class.getName());
     private static final long serialVersionUID = 100L;
@@ -69,15 +93,25 @@ public class Account extends Model implements Serializable {
     public static final String PROPERTYNAME_NOTES = "notes";
     public static final String PROPERTYNAME_SERVER = "server";
     public static final String PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER = "defaultSynchronizedFolder";
-    public static final String PROPERTYNAME_OS_SUBSCRIPTION = "OSSubscription";
+    public static final String PROPERTYNAME_OS_SUBSCRIPTION = "osSubscription";
     public static final String PROPERTYNAME_LICENSE_KEY_FILES = "licenseKeyFiles";
+    public static final String PROPERTYNAME_COMPUTERS = "computers";
 
+    @Id
     private String oid;
+    @Index(name = "IDX_USERNAME")
+    @Column(
+        nullable = false,
+        unique = true
+    )
     private String username;
     private String password;
     private Date registerDate;
     private Date lastLoginDate;
+    @ManyToOne
+    @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
+    @Transient
     private boolean newsLetter;
     private boolean proUser;
     private String notes;
@@ -85,27 +119,52 @@ public class Account extends Model implements Serializable {
     /**
      * The list of computers associated with this account.
      */
+    @ManyToMany
+    @JoinTable(
+        name = "Account_Computers",
+        joinColumns = @JoinColumn(name = "oid"),
+        inverseJoinColumns = @JoinColumn(name = "id")
+    )
     private Collection<MemberInfo> computers;
 
     /**
      * Server where the folders of this account are hosted on.
      */
+    @ManyToOne
+    @JoinColumn(name = "serverInfo_id")
     private ServerInfo server;
+
+    @Deprecated
+    @Transient
+    private Collection<String> licenseKeyFiles;
 
     /**
      * The possible license key files of this account.
      * <code>AccountService.getValidLicenseKey</code>.
      */
-    private Collection<String> licenseKeyFiles;
+    @CollectionOfElements(fetch = FetchType.EAGER)
+    @IndexColumn(
+        name = "IDX_LICENSE",
+        base = 0,
+        nullable = false
+    )
+    @Cascade(value = CascadeType.ALL)
+    private List<String> licenseKeyFileList;
 
     /**
      * The default-synced folder of the user. May be null.
      * <p>
      * TRAC #991.
      */
+    @ManyToOne
+    @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
 
+    @CollectionOfElements
+    @Type(type = "permissionType")
     private Collection<Permission> permissions;
+    @Embedded
+    @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
 
     public Account() {
@@ -120,6 +179,7 @@ public class Account extends Model implements Serializable {
         this.osSubscription = new OnlineStorageSubscription();
         this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
         this.computers = new CopyOnWriteArrayList<MemberInfo>();
+        this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
     }
 
     /**
@@ -145,7 +205,6 @@ public class Account extends Model implements Serializable {
         }
         LOG.fine("Granted permission to " + this + ": "
             + Arrays.asList(newPermissions));
-        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public void revoke(Permission... revokePermissions) {
@@ -155,12 +214,11 @@ public class Account extends Model implements Serializable {
                 LOG.fine("Revoked permission from " + this + ": " + p);
             }
         }
-        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     /**
      * Revokes any permission to a folders.
-     * 
+     *
      * @param foInfo
      *            the folder.
      */
@@ -185,7 +243,6 @@ public class Account extends Model implements Serializable {
     public void revokeAllPermissions() {
         LOG.fine("Revoking all permission from " + this + ": " + permissions);
         permissions.clear();
-        firePropertyChange(PROPERTYNAME_PERMISSIONS, null, null);
     }
 
     public boolean hasPermission(Permission permission) {
@@ -276,9 +333,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setUsername(String username) {
-        Object oldValue = getUsername();
         this.username = username;
-        firePropertyChange(PROPERTYNAME_USERNAME, oldValue, this.username);
     }
 
     public String getPassword() {
@@ -290,9 +345,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setPassword(String password) {
-        Object oldValue = getPassword();
         this.password = password;
-        firePropertyChange(PROPERTYNAME_PASSWORD, oldValue, this.password);
     }
 
     public Date getRegisterDate() {
@@ -300,10 +353,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setRegisterDate(Date registerDate) {
-        Object oldValue = getRegisterDate();
         this.registerDate = registerDate;
-        firePropertyChange(PROPERTYNAME_REGISTER_DATE, oldValue,
-            this.registerDate);
     }
 
     public boolean isNewsLetter() {
@@ -311,9 +361,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setNewsLetter(boolean newsLetter) {
-        Object oldValue = isNewsLetter();
         this.newsLetter = newsLetter;
-        firePropertyChange(PROPERTYNAME_NEWSLETTER, oldValue, this.newsLetter);
     }
 
     public OnlineStorageSubscription getOSSubscription() {
@@ -325,10 +373,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setOSSubscription(OnlineStorageSubscription osSubscription) {
-        Object oldValue = getOSSubscription();
         this.osSubscription = osSubscription;
-        firePropertyChange(PROPERTYNAME_OS_SUBSCRIPTION, oldValue,
-            this.osSubscription);
     }
 
     public boolean isProUser() {
@@ -336,9 +381,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setProUser(boolean proUser) {
-        Object oldValue = isProUser();
         this.proUser = proUser;
-        firePropertyChange(PROPERTYNAME_PRO_USER, oldValue, this.proUser);
     }
 
     public String getNotes() {
@@ -346,9 +389,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setNotes(String notes) {
-        Object oldValue = getNotes();
         this.notes = notes;
-        firePropertyChange(PROPERTYNAME_NOTES, oldValue, this.notes);
     }
 
     public ServerInfo getServer() {
@@ -356,9 +397,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setServer(ServerInfo server) {
-        Object oldValue = getServer();
         this.server = server;
-        firePropertyChange(PROPERTYNAME_SERVER, oldValue, this.server);
     }
 
     public FolderInfo getDefaultSynchronizedFolder() {
@@ -368,10 +407,7 @@ public class Account extends Model implements Serializable {
     public void setDefaultSynchronizedFolder(
         FolderInfo defaultSynchronizedFolder)
     {
-        Object oldValue = getDefaultSynchronizedFolder();
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
-        firePropertyChange(PROPERTYNAME_DEFAULT_SYNCHRONIZED_FOLDER, oldValue,
-            this.defaultSynchronizedFolder);
     }
 
     public MemberInfo getLastLoginFrom() {
@@ -379,10 +415,7 @@ public class Account extends Model implements Serializable {
     }
 
     public void setLastLoginFrom(MemberInfo lastLoginFrom) {
-        Object oldValue = getLastLoginFrom();
         this.lastLoginFrom = lastLoginFrom;
-        firePropertyChange(PROPERTYNAME_LAST_LOGIN_FROM, oldValue,
-            this.lastLoginFrom);
 
         // Set login date
         touchLogin();
@@ -409,18 +442,16 @@ public class Account extends Model implements Serializable {
      * @return the computers this account is associated with.
      */
     public Collection<MemberInfo> getComputers() {
-        if (computers == null) {
-            computers = new CopyOnWriteArrayList<MemberInfo>();
-        }
         return computers;
     }
 
-    public List<String> getLicenseKeyFiles() {
-        if (licenseKeyFiles == null) {
-            // Migrate
-            licenseKeyFiles = new CopyOnWriteArrayList<String>();
-        }
-        return (List<String>) licenseKeyFiles;
+    @Deprecated
+    public Collection<String> getLicenseKeyFiles() {
+        return licenseKeyFiles;
+    }
+
+    public List<String> getLicenseKeyFileList() {
+        return licenseKeyFileList;
     }
 
     /**
@@ -445,6 +476,7 @@ public class Account extends Model implements Serializable {
         return toString() + ", pro? " + proUser + ", regdate: "
             + Format.formatDateShort(registerDate) + ", licenses: "
             + (licenseKeyFiles != null ? licenseKeyFiles.size() : "n/a") + ", "
+            + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a") + ", "
             + osSubscription;
     }
 
@@ -468,7 +500,7 @@ public class Account extends Model implements Serializable {
      */
     public long calculateTotalUsage(Controller controller) {
         return calculateTotalFoldersSize(controller)
-            + calculateArchiveSize(controller);
+        + calculateArchiveSize(controller);
     }
 
     /**
@@ -519,7 +551,7 @@ public class Account extends Model implements Serializable {
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
-     * 
+     *
      * @param controller
      *            the controller
      */
@@ -537,7 +569,7 @@ public class Account extends Model implements Serializable {
     /**
      * Sets all folders that have SyncProfile.DISABLED to
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was re-enabled.
      */
@@ -560,7 +592,7 @@ public class Account extends Model implements Serializable {
     /**
      * Sets all folders that don't have SyncProfile.DISABLED to
      * SyncProfile.DISABLED.
-     * 
+     *
      * @param controller
      * @return the number of folder the sync was disabled.
      */
@@ -592,7 +624,7 @@ public class Account extends Model implements Serializable {
 
     /**
      * Answers if the user is allowed to read the folder contents.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to read the folder contents
@@ -604,7 +636,7 @@ public class Account extends Model implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -616,7 +648,7 @@ public class Account extends Model implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     * 
+     *
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -641,6 +673,41 @@ public class Account extends Model implements Serializable {
     public boolean hasOwnerPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.owner(foInfo));
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Account)) {
+            return false;
+        }
+
+        Account otherAccount = (Account) obj;
+
+        if (this.oid.equals(otherAccount.oid)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void loadCollections() {
+        Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(permissions);
+        permissions = newPermissions;
+
+        Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(computers);
+        computers = newComputers;
+    }
+
+    public void migrateLicenseKeyFiles() {
+        if (licenseKeyFiles != null) {
+            licenseKeyFileList = new CopyOnWriteArrayList<String>(licenseKeyFiles);
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+
+        licenseKeyFiles = new CopyOnWriteArrayList<String>(licenseKeyFileList);
     }
 
     private void readObject(java.io.ObjectInputStream stream)

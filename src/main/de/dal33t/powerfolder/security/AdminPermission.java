@@ -19,18 +19,21 @@
  */
 package de.dal33t.powerfolder.security;
 
+
+
 /**
  * Administration permission
  * 
  * @author Christian Sprajc
  * @version $Revision$
  */
-public class AdminPermission implements Permission {
+public class AdminPermission extends SingeltonPermission {
     private static final long serialVersionUID = 100L;
 
     public static final AdminPermission INSTANCE = new AdminPermission();
 
-    public AdminPermission() {
+    private AdminPermission() {
+        super();
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -38,21 +41,7 @@ public class AdminPermission implements Permission {
         return true;
     }
     
-    @Override
-    public int hashCode() {
-        return 31;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        return getClass() == obj.getClass();
-    }
-
     public String toString() {
-        return "AdminPermission";
+        return getClass().getSimpleName();
     }
 }

@@ -22,6 +22,9 @@ package de.dal33t.powerfolder.clientserver;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -32,6 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
  * 
  * @author sprajc
  */
+@Entity
 public class Notification implements Serializable {
 
     private static final long serialVersionUID = 100L;
@@ -51,6 +55,7 @@ public class Notification implements Serializable {
     /**
      * Absolutely unique ID.
      */
+    @Id
     private String oid;
 
     /**
@@ -102,6 +107,10 @@ public class Notification implements Serializable {
      * different languages.
      */
     private String textTranslationID;
+
+    Notification() {
+        // NOP - for hibernate
+    }
 
     public Notification(String typeId) {
         Reject.ifBlank(typeId, "typeId id is blank");

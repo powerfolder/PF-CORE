@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
+
 /**
  * Permission for simple yes/no rights on actions without resources such as
  * folders.
@@ -33,13 +34,17 @@ public class SingeltonPermission implements Permission {
         return false;
     }
 
+    public String getId() {
+        return getClass().getSimpleName();
+    }
+
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return 31;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
