@@ -70,43 +70,43 @@ public class FolderJoinTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         FolderRepository bartRepo = getContollerBart().getFolderRepository();
-        assertEquals(1, bartRepo.getFoldersCount());
-        assertEquals(2, bartRepo.getFoldersCount(true));
-        assertEquals(1, bartRepo.getFolders().size());
-        assertEquals(2, bartRepo.getFolders(true).size());
-        assertTrue(bartRepo.getFolders().contains(getFolderAtBart()));
-        assertTrue(bartRepo.getFolders(true).contains(getFolderAtBart()));
+        assertEquals("Bart count", 1, bartRepo.getFoldersCount());
+        assertEquals("Bart count with meta", 2, bartRepo.getFoldersCount(true));
+        assertEquals("Bart folders", 1, bartRepo.getFolders().size());
+        assertEquals("Bart folders with meta", 2, bartRepo.getFolders(true).size());
+        assertTrue("Bart contains", bartRepo.getFolders().contains(getFolderAtBart()));
+        assertTrue("Bart contains with meta", bartRepo.getFolders(true).contains(getFolderAtBart()));
 
         Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtBart()
             .getInfo());
-        assertTrue(bartRepo.hasJoinedFolder(bartMeta.getInfo()));
-        assertTrue(bartMeta.getInfo().isMetaFolder());
-        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, bartMeta
+        assertTrue("Bart joined", bartRepo.hasJoinedFolder(bartMeta.getInfo()));
+        assertTrue("Bart is meta", bartMeta.getInfo().isMetaFolder());
+        assertEquals("Bart profile", SyncProfile.AUTOMATIC_SYNCHRONIZATION, bartMeta
             .getSyncProfile());
-        assertEquals(getFolderAtBart(), bartRepo.getParentFolder(bartMeta
+        assertEquals("Bart parent", getFolderAtBart(), bartRepo.getParentFolder(bartMeta
             .getInfo()));
-        assertNotNull(bartRepo.getFolder(bartMeta.getInfo()));
-        assertEquals(2, bartMeta.getMembersCount());
+        assertNotNull("Bart info not null", bartRepo.getFolder(bartMeta.getInfo()));
+        assertEquals("Bart members", 2, bartMeta.getMembersCount());
 
         // Same tests for lisa
         FolderRepository lisaRepo = getContollerLisa().getFolderRepository();
-        assertEquals(1, lisaRepo.getFoldersCount());
-        assertEquals(2, lisaRepo.getFoldersCount(true));
-        assertEquals(1, lisaRepo.getFolders().size());
-        assertEquals(2, lisaRepo.getFolders(true).size());
-        assertTrue(lisaRepo.getFolders().contains(getFolderAtLisa()));
-        assertTrue(lisaRepo.getFolders(true).contains(getFolderAtLisa()));
+        assertEquals("Lisa count", 1, lisaRepo.getFoldersCount());
+        assertEquals("Lisa count with meta", 2, lisaRepo.getFoldersCount(true));
+        assertEquals("Lisa folders", 1, lisaRepo.getFolders().size());
+        assertEquals("Lisa folders with meta", 2, lisaRepo.getFolders(true).size());
+        assertTrue("Lisa contains", lisaRepo.getFolders().contains(getFolderAtLisa()));
+        assertTrue("Lisa contains with meta", lisaRepo.getFolders(true).contains(getFolderAtLisa()));
 
         Folder lisaMeta = lisaRepo.getMetaFolderForParent(getFolderAtLisa()
             .getInfo());
-        assertTrue(lisaRepo.hasJoinedFolder(lisaMeta.getInfo()));
-        assertTrue(lisaMeta.getInfo().isMetaFolder());
-        assertEquals(SyncProfile.AUTOMATIC_SYNCHRONIZATION, lisaMeta
+        assertTrue("Lisa joined", lisaRepo.hasJoinedFolder(lisaMeta.getInfo()));
+        assertTrue("Lisa is meta", lisaMeta.getInfo().isMetaFolder());
+        assertEquals("Lisa profile", SyncProfile.AUTOMATIC_SYNCHRONIZATION, lisaMeta
             .getSyncProfile());
-        assertEquals(getFolderAtLisa(), lisaRepo.getParentFolder(lisaMeta
+        assertEquals("Lisa parent", getFolderAtLisa(), lisaRepo.getParentFolder(lisaMeta
             .getInfo()));
-        assertNotNull(lisaRepo.getFolder(lisaMeta.getInfo()));
-        assertEquals(2, lisaMeta.getMembersCount());
+        assertNotNull("Lisa info not null", lisaRepo.getFolder(lisaMeta.getInfo()));
+        assertEquals("Lisa members", 2, lisaMeta.getMembersCount());
     }
 
     public void testJoinMultipleFolders() {
