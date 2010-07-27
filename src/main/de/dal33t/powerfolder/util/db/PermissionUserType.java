@@ -155,7 +155,7 @@ public class PermissionUserType extends Loggable implements UserType {
 
             if (p instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) p;
-                FOLDER_INFO_DAO.persistOrMerge(fp.getFolder());
+                FOLDER_INFO_DAO.store(fp.getFolder());
             }
         }
     }

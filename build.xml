@@ -98,6 +98,9 @@ For creation of the installer:
 			<include name="validation-2.0.1.jar" />
 			<!--<include name="h2-1.1.109.jar" />-->
 			<include name="jcalendar.jar" />
+			<include name="ejb3-persistence.jar" />
+			<include name="hibernate-annotations.jar" />
+			<include name="hibernate3-strip.jar" />
 
 			<include name="synthetica/commons-logging-1.1.jar" />
 			<include name="synthetica/flexdock.jar" />

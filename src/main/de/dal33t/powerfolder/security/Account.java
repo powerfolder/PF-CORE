@@ -148,7 +148,10 @@ public class Account implements Serializable {
         base = 0,
         nullable = false
     )
-    @Cascade(value = CascadeType.ALL)
+    @Cascade(value =
+        {CascadeType.ALL,
+        CascadeType.DELETE_ORPHAN}
+    )
     private List<String> licenseKeyFileList;
 
     /**
@@ -447,7 +450,11 @@ public class Account implements Serializable {
 
     @Deprecated
     public Collection<String> getLicenseKeyFiles() {
-        return licenseKeyFiles;
+        if (licenseKeyFileList == null || licenseKeyFileList.isEmpty()) {
+            migrateLicenseKeyFiles();
+        }
+
+        return licenseKeyFileList;
     }
 
     public List<String> getLicenseKeyFileList() {
@@ -475,7 +482,6 @@ public class Account implements Serializable {
     public String toDetailString() {
         return toString() + ", pro? " + proUser + ", regdate: "
             + Format.formatDateShort(registerDate) + ", licenses: "
-            + (licenseKeyFiles != null ? licenseKeyFiles.size() : "n/a") + ", "
             + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a") + ", "
             + osSubscription;
     }
@@ -676,18 +682,17 @@ public class Account implements Serializable {
     }
 
     public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
         if (obj == null || !(obj instanceof Account)) {
             return false;
         }
 
         Account otherAccount = (Account) obj;
 
-        if (this.oid.equals(otherAccount.oid)) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return (this.oid.equals(otherAccount.oid));
     }
 
     public void loadCollections() {
