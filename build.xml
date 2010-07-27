@@ -38,7 +38,11 @@ For creation of the installer:
 	<condition property="isWindows">
 		<os family="windows" />
 	</condition>
-
+	
+	<target name="debug">
+		<property name="Debug" location="on" />
+	</target>
+	
 	<target name="loadproperties0">
 		<!-- Load build-local.properties -->
 		<available property="build.local.properties.ok" file="build-local.properties" type="file" />
@@ -145,7 +149,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}">
 
 			<!-- javac 1.5 specific warnings -->
 			<compilerarg value="-Xlint:${Unchecked}" />
@@ -326,11 +330,11 @@ For creation of the installer:
 
 	<!-- Setup for test ******************************************************-->
 
-	<target name="run-tests" depends="compile" description="Runs all JUnit tests">
+	<target name="run-tests" depends="debug, compile" description="Runs all JUnit tests">
 		<mkdir dir="${build.reports.dir}" />
 
 		<!-- Compile tests -->
-		<javac destdir="${build.dir}" debug="${Debug}" deprecation="false" optimize="false" failonerror="true" encoding="UTF-8">
+		<javac destdir="${build.dir}" debug="${Debug}" deprecation="false" failonerror="true" encoding="UTF-8">
 			<src path="${test.src.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
@@ -398,7 +402,7 @@ For creation of the installer:
 	<mkdir dir="${dist.dir}" />
 	<mkdir dir="${build.dir}" />
 
-	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}" optimize="${Optimize}">
+	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}">
 		<compilerarg value="-Xlint:${Unchecked}" />
 		<compilerarg value="-Xlint:${Fallthrough}" />
 
