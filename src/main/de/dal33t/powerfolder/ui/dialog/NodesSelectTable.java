@@ -38,13 +38,14 @@ public class NodesSelectTable extends JTable {
         super(dm);
         setShowGrid(false);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        setRowHeight(Icons.getIconById(Icons.NODE_NON_FRIEND_CONNECTED).getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED)
+            .getIconHeight() + 3);
         setDefaultRenderer(Member.class, new NodesSelectTableCellRenderer());
     }
 
     /**
      * Make the height same as viewport (JScrollPane) if bigger than this.
-     *
+     * 
      * @return
      */
     public boolean getScrollableTracksViewportHeight() {

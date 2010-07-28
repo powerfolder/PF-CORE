@@ -366,16 +366,9 @@ public class ExpandableComputerView extends PFUIComponent implements
         String text;
         if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
-            if (node.isFriend()) {
-                iconName = Icons.NODE_FRIEND_CONNECTED;
-                text = Translation
-                    .getTranslation("exp_computer_view.node_friend_connected_text");
-            } else {
-                iconName = Icons.NODE_NON_FRIEND_CONNECTED;
-                text = Translation
-                    .getTranslation("exp_computer_view.node_non_friend_connected_text");
-            }
-
+            iconName = Icons.NODE_FRIEND_CONNECTED;
+            text = Translation
+                .getTranslation("exp_computer_view.node_friend_connected_text");
             if (node.isOnLAN()) {
                 iconName = Icons.NODE_FRIEND_LAN;
                 text = Translation.getTranslation("connection_lan.text");
@@ -406,15 +399,9 @@ public class ExpandableComputerView extends PFUIComponent implements
             text = Translation
                 .getTranslation("exp_computer_view.node_connecting_text");
         } else {
-            if (node.isFriend()) {
-                iconName = Icons.NODE_FRIEND_DISCONNECTED;
-                text = Translation
-                    .getTranslation("exp_computer_view.node_friend_disconnected_text");
-            } else {
-                iconName = Icons.NODE_NON_FRIEND_DISCONNECTED;
-                text = Translation
-                    .getTranslation("exp_computer_view.node_non_friend_disconnected_text");
-            }
+            iconName = Icons.NODE_FRIEND_DISCONNECTED;
+            text = Translation
+                .getTranslation("exp_computer_view.node_friend_disconnected_text");
         }
         pictoLabel.setIcon(Icons.getIconById(iconName));
         pictoLabel.setToolTipText(text);

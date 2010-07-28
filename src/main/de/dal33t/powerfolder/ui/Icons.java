@@ -136,8 +136,6 @@ public class Icons {
     public static final String NODE_MYSELF = "node_myself.icon";
     public static final String NODE_FRIEND_CONNECTED = "node_friend_connected.icon";
     public static final String NODE_FRIEND_DISCONNECTED = "node_friend_disconnected.icon";
-    public static final String NODE_NON_FRIEND_CONNECTED = "node_non_friend_connected.icon";
-    public static final String NODE_NON_FRIEND_DISCONNECTED = "node_non_friend_disconnected.icon";
     public static final String NODE_CONNECTING = NODE_FRIEND_DISCONNECTED;
     public static final String NODE_FRIEND_POOR = "node_friend_poor.icon";
     public static final String NODE_FRIEND_MEDIUM = "node_friend_medium.icon";
@@ -382,7 +380,7 @@ public class Icons {
     public static Icon getSimpleIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return getIconById(NODE_NON_FRIEND_CONNECTED);
+            return getIconById(NODE_FRIEND_CONNECTED);
         }
         Icon icon;
         // Render friendship things
@@ -391,7 +389,7 @@ public class Icons {
 
         } else {
             // Orange head for non-friends
-            icon = getIconById(NODE_NON_FRIEND_CONNECTED);
+            icon = getIconById(NODE_FRIEND_CONNECTED);
         }
         if (!node.isOnSameNetwork()) {
             icon = new OverlayedIcon(icon, getIconById(DELETE), 0, 0);
@@ -408,7 +406,7 @@ public class Icons {
     public static Icon getIconFor(Member node) {
         if (node == null) {
             // Unknown
-            return getIconById(NODE_NON_FRIEND_CONNECTED);
+            return getIconById(NODE_FRIEND_CONNECTED);
         }
 
         String iconID;
@@ -416,12 +414,7 @@ public class Icons {
             iconID = NODE_MYSELF;
         } else if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
-            if (node.isFriend()) {
-                iconID = NODE_FRIEND_CONNECTED;
-            } else {
-                iconID = NODE_NON_FRIEND_CONNECTED;
-            }
-
+            iconID = NODE_FRIEND_CONNECTED;
             if (node.isOnLAN()) {
                 iconID = NODE_FRIEND_LAN;
             } else if (peer != null) {
@@ -441,11 +434,7 @@ public class Icons {
                 }
             }
         } else {
-            if (node.isFriend()) {
-                iconID = NODE_FRIEND_DISCONNECTED;
-            } else {
-                iconID = NODE_NON_FRIEND_DISCONNECTED;
-            }
+            iconID = NODE_FRIEND_DISCONNECTED;
         }
         Icon icon = getIconById(iconID);
         if (!node.isOnSameNetwork()) {
