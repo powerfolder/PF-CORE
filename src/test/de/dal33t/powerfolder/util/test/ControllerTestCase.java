@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.util.test;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.UUID;
 
@@ -74,17 +73,15 @@ public abstract class ControllerTestCase extends TestCase {
         // Start controllers
         System.out.println("Starting controller...");
         controller = Controller.createController();
-        InputStream is = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("test-resources/ControllerBart.config");
+        File source = new File("src/test-resources/ControllerBart.config");
         File target = new File(Controller.getMiscFilesLocation(),
             "ControllerBart.config");
-        FileUtils.copyFromStreamToFile(is, target);
+        FileUtils.copyFile(source, target);
         assertTrue(target.exists());
-        is = Thread.currentThread().getContextClassLoader()
-            .getResourceAsStream("test-resources/Accounts_test.h2.db");
+        source = new File("src/test-resources/Accounts_test.h2.db");
         target = new File(Controller.getMiscFilesLocation(),
             "Accounts.h2.db");
-        FileUtils.copyFromStreamToFile(is, target);
+        FileUtils.copyFile(source, target);
         assertTrue(target.exists());
 
         controller.startConfig("ControllerBart");
