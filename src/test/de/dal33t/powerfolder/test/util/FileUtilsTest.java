@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.test.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -339,6 +341,126 @@ public class FileUtilsTest extends TestCase {
 
         assertFalse(success);
 
+    }
+
+    public void testRecursiveMirror() throws IOException {
+        File baseDir = new File("build/test");
+        FileUtils.recursiveDelete(baseDir);
+
+        // Setup base dir with dirs and files.
+        assertTrue(baseDir.mkdirs());
+        File source = new File(baseDir, "source");
+        assertTrue(source.mkdir());
+        File sub = new File(source, "sub");
+        assertTrue(sub.mkdir());
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(source, "b");
+        TestHelper.createRandomFile(source, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Move
+        File copyDir = new File("build/test/sub");
+        boolean done;
+        try {
+            FileUtils.recursiveMirror(baseDir, copyDir);
+            done = true;
+        } catch (IOException e) {
+            System.err.println(e.toString());
+            done = false;
+        }
+        assertFalse(done);
+
+        // Move
+        copyDir = new File("build/test/sub/subsub");
+        copyDir.mkdirs();
+        try {
+            FileUtils.recursiveMirror(baseDir, copyDir);
+            done = true;
+        } catch (IOException e) {
+            System.err.println(e.toString());
+            done = false;
+        }
+        assertFalse(done);
+
+        // Now actual copy
+        File target = new File(baseDir, "target");
+        long souceSum = buildCheckSum(source, 0);
+        long targetSum = buildCheckSum(target, 0);
+        assertFalse(souceSum == targetSum);
+        FileUtils.recursiveMirror(source, target);
+        souceSum = buildCheckSum(source, 0);
+        targetSum = buildCheckSum(target, 0);
+        assertEquals(souceSum, targetSum);
+        // Should be OK!
+
+        int nFiles = 1000;
+        int nDirs = 0; // Count them
+        Set<File> testFiles = new HashSet<File>();
+        // Create a initial folder structure
+        File currentSubDir = source;
+        nDirs++;
+        for (int i = 0; i < nFiles; i++) {
+            if (Math.random() > 0.95) {
+                // Change subdir
+                boolean madeDir = false;
+                do {
+                    int depth = (int) (Math.random() * 10);
+                    String fileName = "";
+                    for (int j = 0; j < depth; j++) {
+                        fileName += TestHelper.createRandomFilename() + "/";
+                    }
+                    fileName += TestHelper.createRandomFilename();
+                    currentSubDir = new File(source, fileName);
+                    madeDir = currentSubDir.mkdirs();
+                    if (madeDir) {
+                        nDirs++;
+                    }
+                } while (!madeDir);
+                System.err.println("New subdir: "
+                    + currentSubDir.getAbsolutePath());
+            }
+
+            if (!currentSubDir.equals(source)) {
+                if (Math.random() > 0.9) {
+                    // Go one directory up
+                    // System.err.println("Moving up from "
+                    // + currentSubDir.getAbsoluteFile());
+                    currentSubDir = currentSubDir.getParentFile();
+                } else if (Math.random() > 0.95) {
+                    // Go one directory up
+                    File subDirCanidate = new File(currentSubDir, TestHelper
+                        .createRandomFilename());
+                    // System.err.println("Moving down to "
+                    // + currentSubDir.getAbsoluteFile());
+                    if (!subDirCanidate.isFile()) {
+                        currentSubDir = subDirCanidate;
+                        currentSubDir.mkdirs();
+                        nDirs++;
+                    }
+                }
+            }
+
+            File file = TestHelper.createRandomFile(currentSubDir);
+            testFiles.add(file);
+        }
+
+        souceSum = buildCheckSum(source, 0);
+        targetSum = buildCheckSum(target, 0);
+        assertFalse(souceSum == targetSum);
+        FileUtils.recursiveMirror(source, target);
+        souceSum = buildCheckSum(source, 0);
+        targetSum = buildCheckSum(target, 0);
+        assertEquals(souceSum, targetSum);
+    }
+
+    private long buildCheckSum(File file, long baseSum) throws IOException {
+        baseSum += file.length() + file.getCanonicalPath().length();
+        if (file.isDirectory()) {
+            for (File subDir : file.listFiles()) {
+                baseSum += buildCheckSum(subDir, baseSum);
+            }
+        }
+        return baseSum;
     }
 
     public void testIsSubdirectory() {

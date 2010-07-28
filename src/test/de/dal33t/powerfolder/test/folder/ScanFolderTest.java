@@ -446,7 +446,7 @@ public class ScanFolderTest extends ControllerTestCase {
                     fileName += TestHelper.createRandomFilename();
                     currentSubDir = new File(getFolder().getLocalBase(),
                         fileName);
-                    madeDir = currentSubDir.mkdir();
+                    madeDir = currentSubDir.mkdirs();
                     if (madeDir) {
                         nDirs++;
                     }

@@ -31,6 +31,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.security.MessageDigest;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -440,8 +442,8 @@ public class FileUtils {
                 // avoid infinite recursion.
                 throw new IOException("Copy to a subdirectory not permitted");
             } else {
-                File[] files = sourceFile.listFiles();
-                for (File nextOriginalFile : files) {
+                File[] sourceFiles = sourceFile.listFiles();
+                for (File nextOriginalFile : sourceFiles) {
                     // Synthesize target file name.
                     String lastPart = nextOriginalFile.getName();
                     File nextTargetFile = new File(targetFile, lastPart);
@@ -455,6 +457,70 @@ public class FileUtils {
                 "Can only copy directory to directory or file to file: "
                     + sourceFile.getAbsolutePath() + " --> "
                     + targetFile.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Creates a recursive mirror of one directory to another. Files in target
+     * that do not exist in source will be deleted.
+     * 
+     * @param source
+     * @param target
+     * @throws IOException
+     */
+    public static void recursiveMirror(File source, File target)
+        throws IOException
+    {
+        Reject.ifNull(source, "Source directory is null");
+        Reject.ifNull(target, "Target directory is null");
+
+        if (!source.exists()) {
+            // Do nothing.
+            return;
+        }
+
+        if (source.isDirectory() && !target.exists()) {
+            target.mkdirs();
+        }
+
+        if (source.isDirectory() && target.isDirectory()) {
+            if (isSubdirectory(source, target)) {
+                // Need to be careful if copying to a subdirectory,
+                // avoid infinite recursion.
+                throw new IOException("Copy to a subdirectory not permitted");
+            } else {
+                File[] sourceDirFiles = source.listFiles();
+                Set<String> copied = new HashSet<String>(sourceDirFiles.length);
+                for (File sourceDirFile : sourceDirFiles) {
+                    // Synthesize target file name.
+                    String lastPart = sourceDirFile.getName();
+                    File targetDirFile = new File(target, lastPart);
+                    recursiveCopy(sourceDirFile, targetDirFile);
+                    copied.add(lastPart);
+                }
+                for (File targetDirFile : target.listFiles()) {
+                    String lastPart = targetDirFile.getName();
+                    if (copied.contains(lastPart)) {
+                        continue;
+                    }
+                    if (targetDirFile.isFile() && !targetDirFile.delete()) {
+                        throw new IOException(
+                            "Unable to delete file in target directory: "
+                                + targetDirFile);
+                    } else if (targetDirFile.isDirectory()) {
+                        recursiveDelete(targetDirFile);
+                    }
+                }
+
+            }
+        } else if (!source.isDirectory() && !target.isDirectory()) {
+            copyFile(source, target);
+            // Preserve modification date.
+        } else {
+            throw new UnsupportedOperationException(
+                "Can only copy directory to directory or file to file: "
+                    + source.getAbsolutePath() + " --> "
+                    + target.getAbsolutePath());
         }
     }
 
