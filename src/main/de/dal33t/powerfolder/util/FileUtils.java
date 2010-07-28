@@ -461,8 +461,10 @@ public class FileUtils {
     }
 
     /**
-     * Creates a recursive mirror of one directory to another. Files in target
+     * Creates a recursive mirror of one directory into another. Files in target
      * that do not exist in source will be deleted.
+     * <p>
+     * Does not mirror last modification dates.
      * 
      * @param source
      * @param target
