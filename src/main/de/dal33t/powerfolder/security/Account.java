@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -142,7 +141,7 @@ public class Account implements Serializable {
      * The possible license key files of this account.
      * <code>AccountService.getValidLicenseKey</code>.
      */
-    @CollectionOfElements(fetch = FetchType.EAGER)
+    @CollectionOfElements
     @IndexColumn(
         name = "IDX_LICENSE",
         base = 0,
@@ -448,16 +447,11 @@ public class Account implements Serializable {
         return computers;
     }
 
-    @Deprecated
     public Collection<String> getLicenseKeyFiles() {
         if (licenseKeyFileList == null || licenseKeyFileList.isEmpty()) {
             migrateLicenseKeyFiles();
         }
 
-        return licenseKeyFileList;
-    }
-
-    public List<String> getLicenseKeyFileList() {
         return licenseKeyFileList;
     }
 
@@ -701,6 +695,9 @@ public class Account implements Serializable {
 
         Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(computers);
         computers = newComputers;
+
+        List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(licenseKeyFileList);
+        licenseKeyFileList = newLicenseKeyFileList;
     }
 
     public void migrateLicenseKeyFiles() {

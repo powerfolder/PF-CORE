@@ -66,23 +66,18 @@ public abstract class ControllerTestCase extends TestCase {
         Feature.setupForTests();
 
         // Cleanup
-        TestHelper.cleanTestDir();
+//        TestHelper.cleanTestDir();
 
         // Copy fresh configs
-
-        // Start controllers
-        System.out.println("Starting controller...");
-        controller = Controller.createController();
         File source = new File("src/test-resources/ControllerBart.config");
         File target = new File(Controller.getMiscFilesLocation(),
             "ControllerBart.config");
         FileUtils.copyFile(source, target);
         assertTrue(target.exists());
-        source = new File("src/test-resources/Accounts_test.h2.db");
-        target = new File(Controller.getMiscFilesLocation(),
-            "Accounts.h2.db");
-        FileUtils.copyFile(source, target);
-        assertTrue(target.exists());
+
+        // Start controllers
+        System.out.println("Starting controller...");
+        controller = Controller.createController();
 
         controller.startConfig("ControllerBart");
         waitForStart(controller);
