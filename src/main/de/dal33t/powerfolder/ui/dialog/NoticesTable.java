@@ -48,7 +48,7 @@ public class NoticesTable extends JTable {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setDefaultRenderer(Notice.class, new MyDefaultTreeCellRenderer());
 
-        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED)
+        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
             .getIconHeight() + 3);
 
         // add sorting

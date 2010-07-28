@@ -366,28 +366,28 @@ public class ExpandableComputerView extends PFUIComponent implements
         String text;
         if (node.isCompletelyConnected()) {
             ConnectionHandler peer = node.getPeer();
-            iconName = Icons.NODE_FRIEND_CONNECTED;
+            iconName = Icons.NODE_CONNECTED;
             text = Translation
                 .getTranslation("exp_computer_view.node_friend_connected_text");
             if (node.isOnLAN()) {
-                iconName = Icons.NODE_FRIEND_LAN;
+                iconName = Icons.NODE_LAN;
                 text = Translation.getTranslation("connection_lan.text");
             } else if (peer != null) {
                 ConnectionQuality quality = peer.getConnectionQuality();
                 if (quality != null) {
                     switch (quality) {
                         case GOOD :
-                            iconName = Icons.NODE_FRIEND_CONNECTED;
+                            iconName = Icons.NODE_CONNECTED;
                             text = Translation
                                 .getTranslation("connection_quality_good.text");
                             break;
                         case MEDIUM :
-                            iconName = Icons.NODE_FRIEND_MEDIUM;
+                            iconName = Icons.NODE_MEDIUM;
                             text = Translation
                                 .getTranslation("connection_quality_medium.text");
                             break;
                         case POOR :
-                            iconName = Icons.NODE_FRIEND_POOR;
+                            iconName = Icons.NODE_POOR;
                             text = Translation
                                 .getTranslation("connection_quality_poor.text");
                             break;
@@ -399,7 +399,7 @@ public class ExpandableComputerView extends PFUIComponent implements
             text = Translation
                 .getTranslation("exp_computer_view.node_connecting_text");
         } else {
-            iconName = Icons.NODE_FRIEND_DISCONNECTED;
+            iconName = Icons.NODE_DISCONNECTED;
             text = Translation
                 .getTranslation("exp_computer_view.node_friend_disconnected_text");
         }

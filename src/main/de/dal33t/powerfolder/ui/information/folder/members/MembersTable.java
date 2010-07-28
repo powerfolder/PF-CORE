@@ -62,7 +62,7 @@ public class MembersTable extends JTable {
     public MembersTable(MembersTableModel model) {
         super(model);
 
-        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED)
+        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
             .getIconHeight() + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
@@ -166,7 +166,7 @@ public class MembersTable extends JTable {
             if (actualColumn == MembersTableModel.COL_TYPE) {
                 Member member = folderMember.getMember();
                 Icon icon = member != null ? Icons.getIconFor(member) : Icons
-                    .getIconById(Icons.NODE_FRIEND_DISCONNECTED);
+                    .getIconById(Icons.NODE_DISCONNECTED);
                 setIcon(icon);
                 setText("");
             } else if (actualColumn == MembersTableModel.COL_COMPUTER_NAME) {

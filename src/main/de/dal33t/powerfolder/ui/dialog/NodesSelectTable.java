@@ -38,7 +38,7 @@ public class NodesSelectTable extends JTable {
         super(dm);
         setShowGrid(false);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED)
+        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
             .getIconHeight() + 3);
         setDefaultRenderer(Member.class, new NodesSelectTableCellRenderer());
     }

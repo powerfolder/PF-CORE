@@ -235,7 +235,7 @@ public class FolderInformationCard extends InformationCard {
                 .getTranslation("folder_information_card.members.title"),
                 membersTab.getUIComponent());
             tabbedPane.setIconAt(getMembersTabIndex(), Icons
-                .getIconById(Icons.NODE_FRIEND_CONNECTED));
+                .getIconById(Icons.NODE_CONNECTED));
             tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
                 .getTranslation("folder_information_card.members.tips"));
         }

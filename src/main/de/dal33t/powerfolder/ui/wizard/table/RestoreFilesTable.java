@@ -49,7 +49,7 @@ public class RestoreFilesTable extends JTable {
     public RestoreFilesTable(RestoreFilesTableModel model) {
         super(model);
 
-        setRowHeight(Icons.getIconById(Icons.NODE_FRIEND_CONNECTED).getIconHeight()
+        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED).getIconHeight()
                 + 3);
         setColumnSelectionAllowed(false);
         setShowGrid(false);
