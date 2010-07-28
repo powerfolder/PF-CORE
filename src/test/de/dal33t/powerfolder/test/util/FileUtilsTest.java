@@ -451,6 +451,18 @@ public class FileUtilsTest extends TestCase {
         souceSum = buildCheckSum(source, 0);
         targetSum = buildCheckSum(target, 0);
         assertEquals(souceSum, targetSum);
+
+        for (int i = 0; i < 100; i++) {
+            TestHelper.createRandomFile(target);
+        }
+        // Again
+        souceSum = buildCheckSum(source, 0);
+        targetSum = buildCheckSum(target, 0);
+        assertFalse(souceSum == targetSum);
+        FileUtils.recursiveMirror(source, target);
+        souceSum = buildCheckSum(source, 0);
+        targetSum = buildCheckSum(target, 0);
+        assertEquals(souceSum, targetSum);
     }
 
     private long buildCheckSum(File file, long baseSum) throws IOException {
