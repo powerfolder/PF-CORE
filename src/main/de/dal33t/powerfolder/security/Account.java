@@ -421,7 +421,7 @@ public class Account implements Serializable {
         return computers;
     }
 
-    public Collection<String> getLicenseKeyFiles() {
+    public List<String> getLicenseKeyFiles() {
         if (licenseKeyFileList == null || licenseKeyFileList.isEmpty()) {
             migrateLicenseKeyFiles();
         }
