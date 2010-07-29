@@ -20,9 +20,10 @@
 package de.dal33t.powerfolder;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -157,8 +158,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private HandshakeCompleted lastHandshakeCompleted;
 
-    /** Last folder memberships */
-    private FolderList lastFolderList;
+    /** Folder memberships received? */
+    private volatile boolean folderListReceived;
+    private Reference<FolderList> lastFolderList;
 
     /**
      * The number of expected deltas to receive to have the filelist completed
@@ -1145,7 +1147,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private boolean waitForFoldersJoin() {
         synchronized (folderListWaiter) {
-            if (lastFolderList == null) {
+            if (!folderListReceived) {
                 try {
                     if (isFiner()) {
                         logFiner("Waiting for folderlist");
@@ -1159,7 +1161,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Wait for joinToLocalFolders
         folderJoinLock.lock();
         folderJoinLock.unlock();
-        return lastFolderList != null;
+        return folderListReceived;
     }
 
     /**
@@ -1200,6 +1202,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         shutdownPeer();
 
+        folderListReceived = false;
         lastFolderList = null;
         // Disco, assume completely
         setConnectedToNetwork(false);
@@ -1362,7 +1365,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                     public void run() {
                         folderJoinLock.lock();
                         try {
-                            lastFolderList = fList;
+                            lastFolderList = new SoftReference<FolderList>(
+                                fList);
+                            fList.store(Member.this);
+                            folderListReceived = true;
                             // Send filelist only during handshake
                             joinToLocalFolders(fList, fromPeer);
                         } finally {
@@ -1897,7 +1903,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         folderJoinLock.lock();
         try {
-            FolderList folderList = lastFolderList;
+            FolderList folderList = getLastFolderList();
             if (folderList != null) {
                 // Rejoin to local folders
                 joinToLocalFolders(folderList, thisPeer);
@@ -2026,7 +2032,13 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
-        return lastFolderList;
+        FolderList list = lastFolderList.get();
+        if (list != null) {
+            return list;
+        }
+        list = FolderList.load(this);
+        lastFolderList = new SoftReference<FolderList>(list);
+        return list;
     }
 
     /**
@@ -2094,7 +2106,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private List<Folder> getFoldersRequestedToJoin() {
         String magicId = getPeer().getMyMagicId();
-        FolderList fList = lastFolderList;
+        // TODO Think about a better way
+        FolderList fList = getLastFolderList();
         if (fList == null) {
             logWarning("Unable to get last folder list");
             return Collections.emptyList();
@@ -2105,7 +2118,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         {
             FolderInfo foInfo = folder.getInfo();
 
-            if (lastFolderList.joinedMetaFolders && foInfo.isMetaFolder()) {
+            if (fList.joinedMetaFolders && foInfo.isMetaFolder()) {
                 Folder parentFolder = getController().getFolderRepository()
                     .getParentFolder(folder.getInfo());
                 if (parentFolder != null) {
