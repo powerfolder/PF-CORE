@@ -130,7 +130,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 BETA 20"; // 1.7.1.19 /
+    public static final String PROGRAM_VERSION = "4.3.0 BETA 21"; // 1.7.1.19 /
     // 4.3.0 dev3
 
     /**
@@ -1527,6 +1527,8 @@ public class Controller extends PFComponent {
         // config = null;
         shuttingDown = false;
         logInfo("Shutting down done");
+        
+        LoggingManager.closeFileLogging();
     }
 
     public ScheduledExecutorService getThreadPool() {
@@ -2028,7 +2030,9 @@ public class Controller extends PFComponent {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
-        if (OSUtil.isWindowsSystem()) {
+        if (OSUtil.isWindowsSystem()
+            && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
+        {
             String appData;
             if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
                 appData = WinUtils.getAppDataAllUsers();

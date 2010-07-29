@@ -42,6 +42,11 @@ public enum Feature {
     CONFIGURATION_ALL_USERS(false),
 
     /**
+     * Tries to use the APPDATA directory on Windows systems.
+     */
+    WINDOWS_MISC_DIR_USE_APP_DATA,
+
+    /**
      * If the nodes of a server clusters should automatically connect.
      */
     CLUSTER_NODES_CONNECT,
