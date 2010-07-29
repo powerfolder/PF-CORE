@@ -66,13 +66,11 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
  * A access to the system indentified by username & password.
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-@TypeDef(
-    name = "permissionType",
-    typeClass = PermissionUserType.class)
+@TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
 public class Account implements Serializable {
 
@@ -99,10 +97,7 @@ public class Account implements Serializable {
     @Id
     private String oid;
     @Index(name = "IDX_USERNAME")
-    @Column(
-        nullable = false,
-        unique = true
-    )
+    @Column(nullable = false, unique = true)
     private String username;
     private String password;
     private Date registerDate;
@@ -110,8 +105,6 @@ public class Account implements Serializable {
     @ManyToOne
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
-    @Transient
-    private boolean newsLetter;
     private boolean proUser;
     private String notes;
 
@@ -119,11 +112,7 @@ public class Account implements Serializable {
      * The list of computers associated with this account.
      */
     @ManyToMany
-    @JoinTable(
-        name = "Account_Computers",
-        joinColumns = @JoinColumn(name = "oid"),
-        inverseJoinColumns = @JoinColumn(name = "id")
-    )
+    @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
     private Collection<MemberInfo> computers;
 
     /**
@@ -142,15 +131,8 @@ public class Account implements Serializable {
      * <code>AccountService.getValidLicenseKey</code>.
      */
     @CollectionOfElements
-    @IndexColumn(
-        name = "IDX_LICENSE",
-        base = 0,
-        nullable = false
-    )
-    @Cascade(value =
-        {CascadeType.ALL,
-        CascadeType.DELETE_ORPHAN}
-    )
+    @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
+    @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
     private List<String> licenseKeyFileList;
 
     /**
@@ -220,7 +202,7 @@ public class Account implements Serializable {
 
     /**
      * Revokes any permission to a folders.
-     *
+     * 
      * @param foInfo
      *            the folder.
      */
@@ -358,14 +340,6 @@ public class Account implements Serializable {
         this.registerDate = registerDate;
     }
 
-    public boolean isNewsLetter() {
-        return newsLetter;
-    }
-
-    public void setNewsLetter(boolean newsLetter) {
-        this.newsLetter = newsLetter;
-    }
-
     public OnlineStorageSubscription getOSSubscription() {
         if (osSubscription == null) {
             // osSubscription = new OnlineStorageSubscription();
@@ -476,8 +450,8 @@ public class Account implements Serializable {
     public String toDetailString() {
         return toString() + ", pro? " + proUser + ", regdate: "
             + Format.formatDateShort(registerDate) + ", licenses: "
-            + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a") + ", "
-            + osSubscription;
+            + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a")
+            + ", " + osSubscription;
     }
 
     // Convenience/Applogic ***************************************************
@@ -500,7 +474,7 @@ public class Account implements Serializable {
      */
     public long calculateTotalUsage(Controller controller) {
         return calculateTotalFoldersSize(controller)
-        + calculateArchiveSize(controller);
+            + calculateArchiveSize(controller);
     }
 
     /**
@@ -551,7 +525,7 @@ public class Account implements Serializable {
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
-     *
+     * 
      * @param controller
      *            the controller
      */
@@ -569,7 +543,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that have SyncProfile.DISABLED to
      * SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT.
-     *
+     * 
      * @param controller
      * @return the number of folder the sync was re-enabled.
      */
@@ -592,7 +566,7 @@ public class Account implements Serializable {
     /**
      * Sets all folders that don't have SyncProfile.DISABLED to
      * SyncProfile.DISABLED.
-     *
+     * 
      * @param controller
      * @return the number of folder the sync was disabled.
      */
@@ -624,7 +598,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to read the folder contents.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to read the folder contents
@@ -636,7 +610,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -648,7 +622,7 @@ public class Account implements Serializable {
 
     /**
      * Answers if the user is allowed to write into the folder.
-     *
+     * 
      * @param foInfo
      *            the folder to check
      * @return true if the user is allowed to write into the folder.
@@ -690,23 +664,29 @@ public class Account implements Serializable {
     }
 
     public void loadCollections() {
-        Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(permissions);
+        Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
+            permissions);
         permissions = newPermissions;
 
-        Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(computers);
+        Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(
+            computers);
         computers = newComputers;
 
-        List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(licenseKeyFileList);
+        List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(
+            licenseKeyFileList);
         licenseKeyFileList = newLicenseKeyFileList;
     }
 
     public void migrateLicenseKeyFiles() {
         if (licenseKeyFiles != null) {
-            licenseKeyFileList = new CopyOnWriteArrayList<String>(licenseKeyFiles);
+            licenseKeyFileList = new CopyOnWriteArrayList<String>(
+                licenseKeyFiles);
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+    private void writeObject(java.io.ObjectOutputStream stream)
+        throws IOException
+    {
         stream.defaultWriteObject();
 
         licenseKeyFiles = new CopyOnWriteArrayList<String>(licenseKeyFileList);
