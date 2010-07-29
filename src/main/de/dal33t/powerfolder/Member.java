@@ -2032,7 +2032,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the latest received folder list
      */
     public FolderList getLastFolderList() {
-        FolderList list = lastFolderList.get();
+        FolderList list = lastFolderList != null ? lastFolderList.get() : null;
         if (list != null) {
             return list;
         }
