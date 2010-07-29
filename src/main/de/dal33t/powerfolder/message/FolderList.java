@@ -118,8 +118,9 @@ public class FolderList extends Message {
     public synchronized boolean store(Member member) {
         String idPath = new String(Util.encodeHex(Util.md5(member.getId()
             .getBytes(Convert.UTF8))));
-        File file = new File(Controller.getMiscFilesLocation(), "nodes/"
-            + idPath + ".FolderList");
+        File file = new File(Controller.getMiscFilesLocation(), member
+            .getController().getConfigName()
+            + "/nodes/" + idPath + ".FolderList");
         return store(file);
     }
 
