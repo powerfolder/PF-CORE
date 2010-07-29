@@ -331,9 +331,7 @@ public class MainFrame extends PFUIComponent {
         });
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
 
-        logoLabel = new LinkLabel(getController(), "",
-            ConfigurationEntry.PROVIDER_URL.getValue(getController()))
-            .getUIComponent();
+        logoLabel = new JLabel();
         logoLabel.setIcon(Icons.getIconById(Icons.LOGO400UI));
         logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
