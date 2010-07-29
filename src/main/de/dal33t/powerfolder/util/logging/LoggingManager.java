@@ -388,4 +388,13 @@ public class LoggingManager {
             createFileHandler();
         }
     }
+    
+    public static void closeFileLogging() {
+        if (fileLoggingLevel != null && fileHandler != null) {
+
+            // Close off the old one first.
+            fileHandler.flush();
+            fileHandler.close();
+        }
+    }
 }
