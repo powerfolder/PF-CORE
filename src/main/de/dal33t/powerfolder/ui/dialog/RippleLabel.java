@@ -19,17 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
-import de.dal33t.powerfolder.Controller;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.MediaTracker;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageProducer;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.Date;
+
+import javax.swing.JLabel;
+
+import de.dal33t.powerfolder.Controller;
 
 /**
  * This class displays an Image in a JLabel and animates a ripple effect when
@@ -48,10 +52,11 @@ public class RippleLabel extends JLabel {
     private int newInd;
 
     private volatile boolean active = true;
+    private ScheduledFuture<?> rippler;
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param image
      */
@@ -86,7 +91,8 @@ public class RippleLabel extends JLabel {
 
         addMouseMotionListener(new MyMouseListener());
 
-        controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
+        rippler = controller.getThreadPool().scheduleAtFixedRate(new Runnable()
+        {
             public void run() {
                 if (active) {
                     doRipple();
@@ -97,6 +103,7 @@ public class RippleLabel extends JLabel {
 
     public void deactivate() {
         active = false;
+        rippler.cancel(false);
     }
 
     private void doRipple() {
@@ -117,10 +124,9 @@ public class RippleLabel extends JLabel {
         int mapind = oldInd;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                short data = (short) (rippleMap[mapind - width] +
-                        rippleMap[mapind + width] +
-                        rippleMap[mapind - 1] +
-                        rippleMap[mapind + 1] >> 1);
+                short data = (short) (rippleMap[mapind - width]
+                    + rippleMap[mapind + width] + rippleMap[mapind - 1]
+                    + rippleMap[mapind + 1] >> 1);
                 data -= rippleMap[newInd + i];
                 data -= data >> 5;
                 rippleMap[newInd + i] = data;
