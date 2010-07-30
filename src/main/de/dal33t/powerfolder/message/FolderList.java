@@ -167,6 +167,9 @@ public class FolderList extends Message {
      */
     public static FolderList load(File file) {
         Reject.ifNull(file, "File");
+        if (!file.exists()) {
+            return null;
+        }
         InputStream in = null;
         try {
             in = new BufferedInputStream(new FileInputStream(file));
