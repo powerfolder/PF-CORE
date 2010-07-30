@@ -423,7 +423,7 @@ public class Account implements Serializable {
 
     public List<String> getLicenseKeyFiles() {
         if (licenseKeyFileList == null || licenseKeyFileList.isEmpty()) {
-            migrateLicenseKeyFiles();
+            migrate();
         }
 
         return licenseKeyFileList;
@@ -677,19 +677,21 @@ public class Account implements Serializable {
         licenseKeyFileList = newLicenseKeyFileList;
     }
 
-    public void migrateLicenseKeyFiles() {
+    public void migrate() {
         if (licenseKeyFiles != null) {
             licenseKeyFileList = new CopyOnWriteArrayList<String>(
                 licenseKeyFiles);
+        }
+        if (server != null) {
+            server.migrateId();
         }
     }
 
     private void writeObject(java.io.ObjectOutputStream stream)
         throws IOException
     {
-        stream.defaultWriteObject();
-
         licenseKeyFiles = new CopyOnWriteArrayList<String>(licenseKeyFileList);
+        stream.defaultWriteObject();
     }
 
     private void readObject(java.io.ObjectInputStream stream)
