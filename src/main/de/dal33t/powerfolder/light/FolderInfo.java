@@ -30,14 +30,13 @@ import org.hibernate.annotations.Immutable;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * A Folder hash info
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
@@ -48,7 +47,7 @@ public class FolderInfo implements Serializable, Cloneable {
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
     public static final String PROPERTYNAME_ID = "id";
-    
+
     public String name;
     @Id
     public String id;
@@ -58,10 +57,11 @@ public class FolderInfo implements Serializable, Cloneable {
      */
     private transient int hash;
 
+    @SuppressWarnings("unused")
     private FolderInfo() {
         // NOP - for Hibernate
     }
-    
+
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
@@ -85,7 +85,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Returns the joined folder, or null if folder is not joined
-     * 
+     *
      * @param controller
      * @return the folder
      */
@@ -97,7 +97,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Calculates the secure Id for this folder with magicid from remote
-     * 
+     *
      * @param magicId
      * @return the secure Id for this folder with magicid from remote
      */

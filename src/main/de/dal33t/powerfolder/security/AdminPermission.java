@@ -19,11 +19,9 @@
  */
 package de.dal33t.powerfolder.security;
 
-
-
 /**
  * Administration permission
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision$
  */
@@ -40,7 +38,7 @@ public class AdminPermission extends SingeltonPermission {
         // ADMIN, All permissions implied
         return true;
     }
-    
+
     public String toString() {
         return getClass().getSimpleName();
     }

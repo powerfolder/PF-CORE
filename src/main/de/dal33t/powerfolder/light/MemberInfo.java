@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Member information class. contains all important informations about a member
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
@@ -66,7 +66,7 @@ public class MemberInfo implements Serializable {
     public String id;
     /**
      * The network Id of this node. #1373
-     * 
+     *
      * @see ConfigurationEntry#NETWORK_ID
      */
     public String networkId;
@@ -94,6 +94,7 @@ public class MemberInfo implements Serializable {
      */
     private transient int hash;
 
+    @SuppressWarnings("unused")
     private MemberInfo() {
         // NOP - only for hibernate
     }
@@ -240,7 +241,7 @@ public class MemberInfo implements Serializable {
      * is not longer known to the NodeManager. If flagged with addIfNessesary a
      * new node will be created if not available @ NodeManager. Calling with
      * addIfNessesary = true always returns a valid node (Member).
-     * 
+     *
      * @param controller
      * @param addIfNessesary
      *            if a new node should be added if not available @ nodemanager

@@ -48,7 +48,9 @@ public class ServerInfo implements Serializable {
     private String webUrl;
     private String httpTunnelUrl;
 
-    ServerInfo() {
+    @SuppressWarnings("unused")
+    private ServerInfo() {
+        // NOP - only for Hibernate
     }
 
     public ServerInfo(MemberInfo node, String webUrl, String httpTunnelUrl) {
