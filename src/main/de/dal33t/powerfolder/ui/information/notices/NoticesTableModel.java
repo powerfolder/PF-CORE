@@ -42,8 +42,9 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private final Controller controller;
     private final List<Notice> notices = new ArrayList<Notice>();
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
-    private final NoticeComparator[] columComparators = {NoticeComparator.BY_SEVERITY,
-            NoticeComparator.BY_DATE, NoticeComparator.BY_SEVERITY,
+    private final NoticeComparator[] columComparators = {
+            NoticeComparator.BY_SEVERITY,
+            NoticeComparator.BY_DATE,
             NoticeComparator.BY_SUMMARY};
     private NoticeComparator comparator;
 
@@ -51,8 +52,8 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private int sortColumn;
 
     private static final String[] COLUMN_NAMES = {
+            "",
             Translation.getTranslation("notices_table.date"),
-            Translation.getTranslation("notices_table.severity"),
             Translation.getTranslation("notices_table.summary")
     };
 

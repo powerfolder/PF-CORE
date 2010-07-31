@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.ui.information.notices;
 
-import de.dal33t.powerfolder.ui.information.notices.NoticesTableModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
@@ -59,7 +58,7 @@ public class NoticesTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
-                        getColumnModel(), 0, true);
+                        getColumnModel(), 0, false);
     }
 
     /**
@@ -85,11 +84,7 @@ public class NoticesTable extends JTable {
                 Notice notice = (Notice) value;
                 setIcon(null);
                 switch (column) {
-                    case 0:  // date
-                        myValue = Format.formatDateShort(notice.getDate());
-                        setHorizontalAlignment(RIGHT);
-                        break;
-                    case 1:  // severity
+                    case 0:  // severity
                         myValue = Translation.getTranslation(
                                 notice.getNoticeSeverity().getDescriptionKey());
                         setHorizontalAlignment(LEFT);
@@ -104,6 +99,10 @@ public class NoticesTable extends JTable {
                             icon = Icons.getIconById(Icons.BLANK);
                         }
                         setIcon(icon);
+                        break;
+                    case 1:  // date
+                        myValue = Format.formatDateShort(notice.getDate());
+                        setHorizontalAlignment(RIGHT);
                         break;
                     case 2:  // summary
                         myValue = notice.getSummary();
@@ -137,7 +136,8 @@ public class NoticesTable extends JTable {
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof NoticesTableModel) {
-                    NoticesTableModel noticesTableModel = (NoticesTableModel) model;
+                    NoticesTableModel noticesTableModel =
+                            (NoticesTableModel) model;
                     boolean freshSorted = noticesTableModel
                         .sortBy(modelColumnNo);
                     if (!freshSorted) {
@@ -159,9 +159,11 @@ public class NoticesTable extends JTable {
 
         TableColumn column = getColumn(getColumnName(0));
         column.setPreferredWidth(20);
+        column.setMinWidth(20);
+        column.setMaxWidth(20);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(20);
-        column = getColumn(getColumnName(2));
         column.setPreferredWidth(80);
+        column = getColumn(getColumnName(2));
+        column.setPreferredWidth(200);
     }
 }
