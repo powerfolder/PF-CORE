@@ -41,6 +41,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.CollectionOfElements;
@@ -113,6 +114,7 @@ public class Account implements Serializable {
      */
     @ManyToMany
     @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
+    @BatchSize(size = 1337)
     private Collection<MemberInfo> computers;
 
     /**
@@ -133,6 +135,7 @@ public class Account implements Serializable {
     @CollectionOfElements
     @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
+    @BatchSize(size = 1337)
     private List<String> licenseKeyFileList;
 
     /**
@@ -146,7 +149,9 @@ public class Account implements Serializable {
 
     @CollectionOfElements
     @Type(type = "permissionType")
+    @BatchSize(size = 1337)
     private Collection<Permission> permissions;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
