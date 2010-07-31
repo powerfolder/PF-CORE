@@ -370,7 +370,7 @@ public class NoticesCard extends InformationCard {
     /**
      * When a user double-clicks a row
      */
-    private void handleDoubleClick() {
+    private void activateNotice() {
         int row = noticesTable.getSelectedRow();
         if (row >= 0) {
             Object at = noticesTableModel.getValueAt(row, 0);
@@ -448,7 +448,11 @@ public class NoticesCard extends InformationCard {
         public void mouseClicked(MouseEvent e) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 if (e.getClickCount() == 2) {
-                    handleDoubleClick();
+                    activateNotice();
+                } else if (e.getClickCount() == 1) {
+                    if (noticesTableModel.getRowCount() == 1) {
+                        activateNotice();
+                    }
                 }
             }
         }
