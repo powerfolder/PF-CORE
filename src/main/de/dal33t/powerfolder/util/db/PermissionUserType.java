@@ -194,12 +194,11 @@ public class PermissionUserType extends Loggable implements UserType {
     }
 
     public static void setFolderInfoDAO(FolderInfoDAO fdao) {
-        if (FOLDER_INFO_DAO == null) {
-            FOLDER_INFO_DAO = fdao;
-        }
-        else {
+        if (FOLDER_INFO_DAO != null && fdao != null) {
             Logger log = Logger.getLogger(PermissionUserType.class.getName());
-            log.severe("FolderInfoDAO was already set! The reset should not happen!");
+            log
+                .severe("FolderInfoDAO was already set! The reset should not happen!");
         }
+        FOLDER_INFO_DAO = fdao;
     }
 }
