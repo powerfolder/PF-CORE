@@ -284,12 +284,14 @@ public class SecurityManagerClient extends PFComponent implements
             if (reqNodes.isEmpty()) {
                 return;
             }
-            logWarning("Pre-fetching account infos for " + nodes.size()
-                + " nodes");
+            if (isFine()) {
+                logFine("Pre-fetching account infos for " + nodes.size()
+                    + " nodes");
+            }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
-            if (isWarning()) {
-                logWarning("Retrieved " + res.size() + " AccountInfos for "
+            if (isFine()) {
+                logFine("Retrieved " + res.size() + " AccountInfos for "
                     + reqNodes.size() + " requested of " + nodes.size()
                     + " nodes: " + res);
             }
