@@ -31,8 +31,7 @@ public class WarningNotice extends NoticeBase {
 
     private final Runnable runnable;
 
-    public WarningNotice(String title, String summary,
-                            Runnable runnable) {
+    public WarningNotice(String title, String summary, Runnable runnable) {
         super(title, summary);
         this.runnable = runnable;
     }

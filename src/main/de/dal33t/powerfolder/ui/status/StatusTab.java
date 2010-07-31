@@ -27,11 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.TimerTask;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -390,6 +386,17 @@ public class StatusTab extends PFUIComponent {
         }
         newNoticesLine.setNormalLabelText(noticesText);
         newNoticesLine.setValue(integer);
+
+        // If there are any warnings, set icon as warning, else information.
+        Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
+        for (Notice notice : getUIController().getApplicationModel()
+                .getNoticesModel().getAllNotices()) {
+            if (notice.getNoticeSeverity() == NoticeSeverity.WARINING) {
+                noticesIcon = Icons.getIconById(Icons.WARNING);
+                break;
+            }
+        }
+        newNoticesLine.setNzIcon(noticesIcon);
     }
 
     private void updateBuyNowLink(String text, boolean visible) {

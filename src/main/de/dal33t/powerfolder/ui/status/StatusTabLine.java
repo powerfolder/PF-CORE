@@ -62,7 +62,7 @@ public class StatusTabLine extends PFUIComponent {
     private ActionLabel normalActionLabel;
     private JLabel zeroLabel;
     private final Action normalAction;
-    private final Icon nzIcon;
+    private final JLabel nzIconLabel;
 
     /**
      * Constructor - shows zeroLabelText if value is zero.
@@ -91,7 +91,11 @@ public class StatusTabLine extends PFUIComponent {
         this.hideOnZero = hideOnZero;
         this.castInt = castInt;
         this.normalAction = normalAction;
-        this.nzIcon = nzIcon;
+        if (nzIcon == null) {
+            nzIconLabel = new JLabel();
+        } else {
+            nzIconLabel = new JLabel(nzIcon);
+        }
     }
 
     /**
@@ -162,6 +166,10 @@ public class StatusTabLine extends PFUIComponent {
         cardLayout.show(cardPanel, ZERO_CARD);
     }
 
+    public void setNzIcon(Icon nzIcon) {
+        nzIconLabel.setIcon(nzIcon);
+    }
+
     /**
      * Display the normal value card.
      * @param value
@@ -203,9 +211,7 @@ public class StatusTabLine extends PFUIComponent {
         PanelBuilder nzBuilder = new PanelBuilder(nzLayout);
         CellConstraints cc = new CellConstraints();
 
-        if (nzIcon != null) {
-            nzBuilder.add(new JLabel(nzIcon), cc.xy(1, 1));
-        }
+        nzBuilder.add(nzIconLabel, cc.xy(1, 1));
 
         nzBuilder.add(valueLabel, cc.xy(3, 1));
 
