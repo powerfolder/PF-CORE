@@ -121,7 +121,7 @@ public class NoticesCard extends InformationCard {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
         JScrollPane pane = new JScrollPane(noticesTable);
-        builder.add(buildToolbar().getPanel(), cc.xy(2, 4));
+        builder.add(buildToolbar().getPanel(), cc.xy(2, 2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
         builder.add(pane, cc.xy(2, 6));
         uiComponent = builder.getPanel();
