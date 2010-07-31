@@ -17,9 +17,9 @@
 *
 * $Id$
 */
-package de.dal33t.powerfolder.ui.dialog;
+package de.dal33t.powerfolder.ui.information.notices;
 
-import de.dal33t.powerfolder.ui.model.NoticesTableModel;
+import de.dal33t.powerfolder.ui.information.notices.NoticesTableModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;

@@ -15,14 +15,13 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: ActivateWarningAction.java 5419 2008-09-29 12:18:20Z harry $
+* $Id: ViewNoticesAction.java 5419 2008-09-29 12:18:20Z harry $
 */
 package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.dialog.NoticesDialog;
 
 /**
  * This action displays system notices.
@@ -39,7 +38,6 @@ public class ViewNoticesAction extends BaseAction {
      * @param e
      */
     public void actionPerformed(ActionEvent e) {
-        NoticesDialog dialog = new NoticesDialog(getController());
-        dialog.open();
+        getController().getUIController().openNoticesCard();
     }
 }

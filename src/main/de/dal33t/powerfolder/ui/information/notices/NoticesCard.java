@@ -1,114 +1,104 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
-package de.dal33t.powerfolder.ui.dialog;
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: NoticesCard.java 5457 2008-10-17 14:25:41Z harry $
+ */
+package de.dal33t.powerfolder.ui.information.notices;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Set;
-import java.util.TimerTask;
-
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.action.BaseAction;
-import de.dal33t.powerfolder.ui.model.NoticesTableModel;
-import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.BaseDialog;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
-/**
- * Dialog displaying the notices from the applicatoin model notices model
- * Allows a Notice payload to be actioned.
- */
-public class NoticesDialog extends BaseDialog {
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.TimerTask;
+import java.util.Set;
 
-    private NoticesTable noticesTable;
-    private JButton okButton;
-    private Action activateAction;
-    private PropertyChangeListener noticesListener;
+public class NoticesCard extends InformationCard {
+
+    private JPanel uiComponent;
     private NoticesTableModel noticesTableModel;
-    /**
-     * Initialize
-     *
-     * @param controller
-     */
-    public NoticesDialog(Controller controller) {
-        super(controller, true);
-        initialize();
+    private NoticesTable noticesTable;
+    private Action activateAction;
+
+    public NoticesCard(Controller controller) {
+        super(controller);
     }
 
-    public String getTitle() {
+    public Image getCardImage() {
+        return Icons.getImageById(Icons.WARNING);
+    }
+
+    public String getCardTitle() {
         return Translation.getTranslation("dialog.notices.title");
     }
 
-    protected Icon getIcon() {
-        return null;
+    /**
+     * Gets the ui component after initializing and building if necessary
+     *
+     * @return
+     */
+    public JComponent getUIComponent() {
+        if (uiComponent == null) {
+            initialize();
+            buildUIComponent();
+        }
+        return uiComponent;
     }
 
+    /**
+     * Initialize components
+     */
     private void initialize() {
-        activateAction = new ActivateNoticeAction(getController());
-        noticesListener = new MyPropertyChangeListener();
+        PropertyChangeListener noticesListener = new MyPropertyChangeListener();
         getController().getUIController().getApplicationModel()
                 .getNoticesModel().getReceivedNoticesCountVM()
                 .addValueChangeListener(noticesListener);
-
         noticesTableModel = new NoticesTableModel(getController());
-
         noticesTable = new NoticesTable(noticesTableModel);
-
         noticesTable.getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
                     public void valueChanged(ListSelectionEvent e) {
@@ -117,39 +107,42 @@ public class NoticesDialog extends BaseDialog {
                 });
 
         noticesTable.addMouseListener(new TableMouseListener());
-    }
-
-    public void close() {
-        if (noticesListener != null) {
-            getController().getUIController().getApplicationModel()
-                    .getNoticesModel().getReceivedNoticesCountVM()
-                    .removeValueChangeListener(noticesListener);
-        }
-        super.close();
-    }
-
-    protected JComponent getContent() {
-        // Layout
-        FormLayout layout = new FormLayout(
-                "pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 6dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        // Autoselect row if there is only one notice.
-        if (noticesTableModel.getRowCount() == 1) {
-            noticesTable.setRowSelectionInterval(0, 0);
-        }
-        JScrollPane pane = new JScrollPane(noticesTable);
-        pane.setPreferredSize(new Dimension(600, 300));
-
-        builder.add(buildToolBar(), cc.xy(1, 1));
-        builder.addSeparator(null, cc.xy(1, 3));
-        builder.add(pane, cc.xy(1, 5));
-
+        activateAction = new ActivateNoticeAction(getController());
         enableActivate();
+    }
 
-        return builder.getPanel();
+    /**
+     * Build the ui component pane.
+     */
+    private void buildUIComponent() {
+        FormLayout layout = new FormLayout("3dlu, pref:grow, 3dlu",
+                "3dlu, pref, 3dlu, pref, 3dlu, fill:pref:grow, 3dlu");
+        // tools sep table dets sep stats
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        JScrollPane pane = new JScrollPane(noticesTable);
+        builder.add(buildToolbar().getPanel(), cc.xy(2, 4));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
+        builder.add(pane, cc.xy(2, 6));
+        uiComponent = builder.getPanel();
+    }
+
+    /**
+     * Build the toolbar component.
+     */
+    private ButtonBarBuilder buildToolbar() {
+        JButton activateButton = new JButton(activateAction);
+        JButton clearAllButton = new JButton(new CleanupNoticesAction(getController()));
+
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(activateButton);
+        bar.addRelatedGap();
+        bar.addGridded(clearAllButton);
+        return bar;
+    }
+
+    private void updateTableModel() {
+        noticesTableModel.reset();
     }
 
     private void enableActivate() {
@@ -159,36 +152,6 @@ public class NoticesDialog extends BaseDialog {
                         0);
             }
         });
-    }
-
-    private Component buildToolBar() {
-
-        JButton activateButton = new JButton(activateAction);
-        JButton clearAllButton = new JButton(new CleanupNoticesAction(getController()));
-
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(activateButton);
-        bar.addRelatedGap();
-        bar.addGridded(clearAllButton);
-        return bar.getPanel();
-    }
-
-    protected JButton getDefaultButton() {
-        return okButton;
-    }
-
-    protected Component getButtonBar() {
-        okButton = createOKButton(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
-        });
-
-        return ButtonBarFactory.buildCenteredBar(okButton);
-    }
-
-    private void updateTableModel() {
-        noticesTableModel.reset();
     }
 
     /**
@@ -215,7 +178,7 @@ public class NoticesDialog extends BaseDialog {
 
     /**
      * Handle a warning event notice by running its runnable.
-     * 
+     *
      * @param eventNotice
      */
     private static void handleWarningEventNotice(WarningNotice eventNotice) {

@@ -103,6 +103,7 @@ import de.dal33t.powerfolder.ui.dialog.SingleFileTransferDialog;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderPanel;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
+import de.dal33t.powerfolder.ui.information.notices.NoticesCard;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
@@ -893,6 +894,11 @@ public class UIController extends PFComponent {
 
     public void openInformationCard(InformationCard card) {
         informationFrame.displayCard(card);
+        displayInformationWindow();
+    }
+
+    public void openNoticesCard() {
+        informationFrame.displayNotices();
         displayInformationWindow();
     }
 

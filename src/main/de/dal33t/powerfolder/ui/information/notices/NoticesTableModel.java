@@ -17,7 +17,7 @@
  *
  * $Id$
  */
-package de.dal33t.powerfolder.ui.model;
+package de.dal33t.powerfolder.ui.information.notices;
 
 import java.util.*;
 
@@ -28,6 +28,7 @@ import javax.swing.*;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.NoticeComparator;
