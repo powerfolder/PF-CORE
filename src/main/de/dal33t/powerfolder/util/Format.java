@@ -71,6 +71,10 @@ public class Format extends PFComponent {
             number /= 1024;
             suffix = "GBytes";
         }
+        if (number >= 1024) {
+            number /= 1024;
+            suffix = "TBytes";
+        }
         String str = formatDecimal(number);
         return str + ' ' + suffix;
     }
@@ -91,6 +95,10 @@ public class Format extends PFComponent {
         if (number >= 1024) {
             number /= 1024;
             suffix = "GB";
+        }
+        if (number >= 1024) {
+            number /= 1024;
+            suffix = "TB";
         }
         String str = formatDecimal(number);
         return str + ' ' + suffix;
