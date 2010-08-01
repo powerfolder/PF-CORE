@@ -684,8 +684,7 @@ public enum ConfigurationEntry {
     /**
      * Notices card view selection.
      */
-    NOTICES_VIEW("notices.view", 0);
-
+    AUTO_CLEAN_NOTICES("auto.clean.notices", false);
 
     // Methods/Constructors ***************************************************
 

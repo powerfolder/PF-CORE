@@ -204,16 +204,4 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
             TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
         fireTableModelEvent(te);
     }
-
-    public void setRead(Notice notice) {
-        // @todo hghg
-    }
-
-    public void showUnread(boolean show) {
-        // @todo hghg
-    }
-
-    public void clearUnread() {
-        // @todo hghg
-    }
 }

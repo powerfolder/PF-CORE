@@ -62,7 +62,7 @@ public class NoticesInformationCard extends InformationCard {
     private NoticesTableModel noticesTableModel;
     private NoticesTable noticesTable;
     private Action activateAction;
-    private JComboBox viewCB;
+    private JCheckBox autoCleanupCB;
 
     public NoticesInformationCard(Controller controller) {
         super(controller);
@@ -108,17 +108,9 @@ public class NoticesInformationCard extends InformationCard {
 
         noticesTable.addMouseListener(new TableMouseListener());
         activateAction = new ActivateNoticeAction(getController());
-        DefaultComboBoxModel viewModel = new DefaultComboBoxModel();
-        viewModel.addElement(Translation.getTranslation(
-                "notices_information_card.view.all"));
-        viewModel.addElement(Translation.getTranslation(
-                "notices_information_card.view.unread"));
-        viewModel.addElement(Translation.getTranslation(
-                "notices_information_card.view.auto"));
-        viewCB = new JComboBox(viewModel);
-        viewCB.setSelectedIndex(ConfigurationEntry.NOTICES_VIEW
-                .getValueInt(getController()));
-        viewCB.addItemListener(new MyItemListener());
+        autoCleanupCB = new JCheckBox(Translation.getTranslation("notices_information_card.view.auto"));
+        autoCleanupCB.setSelected(ConfigurationEntry.AUTO_CLEAN_NOTICES.getValueBoolean(getController()));
+        autoCleanupCB.addItemListener(new MyItemListener());
 
         enableActivate();
     }
@@ -151,7 +143,7 @@ public class NoticesInformationCard extends InformationCard {
         bar.addRelatedGap();
         bar.addGridded(clearAllButton);
         bar.addRelatedGap();
-        bar.addGridded(viewCB);
+        bar.addGridded(autoCleanupCB);
         return bar;
     }
 
@@ -391,7 +383,10 @@ public class NoticesInformationCard extends InformationCard {
             if (at != null && at instanceof Notice) {
                 Notice notice = (Notice) at;
                 handleNotice(notice);
-                noticesTableModel.setRead(notice);
+                if (autoCleanupCB.isSelected()) {
+                    getController().getUIController().getApplicationModel()
+                            .getNoticesModel().popNotice();
+                }
             }
         }
     }
@@ -479,16 +474,8 @@ public class NoticesInformationCard extends InformationCard {
 
     private class MyItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            if (viewCB.getSelectedIndex() == 0) {
-                noticesTableModel.showUnread(true);
-            } else if (viewCB.getSelectedIndex() == 1) {
-                noticesTableModel.showUnread(false);
-            } else if (viewCB.getSelectedIndex() == 2) {
-                noticesTableModel.showUnread(true);
-                noticesTableModel.clearUnread();
-            }
-            ConfigurationEntry.NOTICES_VIEW
-                .setValue(getController(), viewCB.getSelectedIndex());
+            ConfigurationEntry.AUTO_CLEAN_NOTICES.setValue(getController(),
+                    autoCleanupCB.isSelected());
         }
     }
 }
