@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.ui.information.debug.DebugInformationCard;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
-import de.dal33t.powerfolder.ui.information.notices.NoticesCard;
+import de.dal33t.powerfolder.ui.information.notices.NoticesInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
@@ -53,7 +53,7 @@ public class InformationFrame extends MagneticFrame {
     private DownloadsInformationCard downloadsInformationCard;
     private UploadsInformationCard uploadsInformationCard;
     private DebugInformationCard debugInformationCard;
-    private NoticesCard noticesCard;
+    private NoticesInformationCard noticesCard;
 
     private boolean showingFolder;
 
@@ -332,7 +332,7 @@ public class InformationFrame extends MagneticFrame {
      */
     private void buildNoticesCard() {
         if (noticesCard == null) {
-            noticesCard = new NoticesCard(getController());
+            noticesCard = new NoticesInformationCard(getController());
         }
     }
 

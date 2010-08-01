@@ -205,4 +205,15 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
         fireTableModelEvent(te);
     }
 
+    public void setRead(Notice notice) {
+        // @todo hghg
+    }
+
+    public void showUnread(boolean show) {
+        // @todo hghg
+    }
+
+    public void clearUnread() {
+        // @todo hghg
+    }
 }

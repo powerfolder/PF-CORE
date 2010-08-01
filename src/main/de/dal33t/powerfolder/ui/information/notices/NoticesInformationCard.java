@@ -27,6 +27,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -49,27 +50,26 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
 import java.util.Set;
 
-public class NoticesCard extends InformationCard {
+public class NoticesInformationCard extends InformationCard {
 
     private JPanel uiComponent;
     private NoticesTableModel noticesTableModel;
     private NoticesTable noticesTable;
     private Action activateAction;
+    private JComboBox viewCB;
 
-    public NoticesCard(Controller controller) {
+    public NoticesInformationCard(Controller controller) {
         super(controller);
     }
 
     public Image getCardImage() {
-        return Icons.getImageById(Icons.WARNING);
+        return Icons.getImageById(Icons.INFORMATION);
     }
 
     public String getCardTitle() {
@@ -108,6 +108,18 @@ public class NoticesCard extends InformationCard {
 
         noticesTable.addMouseListener(new TableMouseListener());
         activateAction = new ActivateNoticeAction(getController());
+        DefaultComboBoxModel viewModel = new DefaultComboBoxModel();
+        viewModel.addElement(Translation.getTranslation(
+                "notices_information_card.view.all"));
+        viewModel.addElement(Translation.getTranslation(
+                "notices_information_card.view.unread"));
+        viewModel.addElement(Translation.getTranslation(
+                "notices_information_card.view.auto"));
+        viewCB = new JComboBox(viewModel);
+        viewCB.setSelectedIndex(ConfigurationEntry.NOTICES_VIEW
+                .getValueInt(getController()));
+        viewCB.addItemListener(new MyItemListener());
+
         enableActivate();
     }
 
@@ -138,6 +150,8 @@ public class NoticesCard extends InformationCard {
         bar.addGridded(activateButton);
         bar.addRelatedGap();
         bar.addGridded(clearAllButton);
+        bar.addRelatedGap();
+        bar.addGridded(viewCB);
         return bar;
     }
 
@@ -377,6 +391,7 @@ public class NoticesCard extends InformationCard {
             if (at != null && at instanceof Notice) {
                 Notice notice = (Notice) at;
                 handleNotice(notice);
+                noticesTableModel.setRead(notice);
             }
         }
     }
@@ -462,4 +477,18 @@ public class NoticesCard extends InformationCard {
         }
     }
 
+    private class MyItemListener implements ItemListener {
+        public void itemStateChanged(ItemEvent e) {
+            if (viewCB.getSelectedIndex() == 0) {
+                noticesTableModel.showUnread(true);
+            } else if (viewCB.getSelectedIndex() == 1) {
+                noticesTableModel.showUnread(false);
+            } else if (viewCB.getSelectedIndex() == 2) {
+                noticesTableModel.showUnread(true);
+                noticesTableModel.clearUnread();
+            }
+            ConfigurationEntry.NOTICES_VIEW
+                .setValue(getController(), viewCB.getSelectedIndex());
+        }
+    }
 }
