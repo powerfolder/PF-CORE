@@ -2178,8 +2178,8 @@ public class Controller extends PFComponent {
             parent = uiController.getMainFrame().getUIComponent();
         }
         if (isUIEnabled()) {
-            Object[] options = new Object[]{Translation
-                .getTranslation("dialog.already_running.exit_button")};
+            Object[] options = {Translation.getTranslation(
+                    "dialog.already_running.exit_button")};
             JOptionPane.showOptionDialog(parent, message, Translation
                 .getTranslation("dialog.fatal_error.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
@@ -2254,11 +2254,22 @@ public class Controller extends PFComponent {
      * @param event
      */
     public void addAskForFriendship(AskForFriendshipEvent event) {
-        if (networkingMode.equals(NetworkingMode.SERVERONLYMODE)) {
+        if (networkingMode == NetworkingMode.SERVERONLYMODE) {
             logFine("Ignoring ask for friendship from client "
                 + event.getMemberInfo() + ". Running in server only mode");
             return;
         }
+
+        // Is this a friend already?
+        for (Member member : nodeManager.getFriends()) {
+            if (member.getInfo().equals(event.getMemberInfo())) {
+                log.fine("Ignoring ask for friendship from " +
+                        event.getMemberInfo().getNick() +
+                        ". Already friend.");
+                return;
+            }
+        }
+
         for (AskForFriendshipListener listener : askForFriendshipListeners) {
             listener.askForFriendship(event);
         }
