@@ -41,6 +41,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -108,6 +109,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
+    private JPanel borderPanel;
     private JPanel lowerOuterPanel;
     private AtomicBoolean expanded;
     private AtomicBoolean mouseOver;
@@ -234,6 +236,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateNameLabel();
         lowerOuterPanel.setVisible(true);
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
+        borderPanel.setBorder(Borders.createEmptyBorder("0, 0, 10dlu, 0"));
     }
 
     /**
@@ -246,6 +249,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             .getTranslation("exp_folder_view.expand"));
         updateNameLabel();
         lowerOuterPanel.setVisible(false);
+        borderPanel.setBorder(null);
     }
 
     /**
@@ -400,9 +404,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         JPanel panel = lowerOuterBuilder.getPanel();
         panel.setOpaque(false);
         borderBuilder.add(panel, cc.xy(2, 3));
-        JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel = borderBuilder.getPanel();
         borderPanel.setOpaque(false);
-        // borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",

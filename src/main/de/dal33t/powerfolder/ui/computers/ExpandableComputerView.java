@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -45,6 +44,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -105,6 +105,7 @@ public class ExpandableComputerView extends PFUIComponent implements
     private ExpansionListener listenerSupport;
 
     private JPopupMenu contextMenu;
+    private JPanel borderPanel;
 
     /**
      * Constructor
@@ -127,6 +128,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_computer_view.collapse"));
         lowerOuterPanel.setVisible(true);
+        borderPanel.setBorder(Borders.createEmptyBorder("0, 0, 10dlu, 0"));
         listenerSupport.collapseAllButSource(new ExpansionEvent(this));
     }
 
@@ -138,6 +140,7 @@ public class ExpandableComputerView extends PFUIComponent implements
         upperPanel.setToolTipText(Translation
             .getTranslation("exp_computer_view.expand"));
         lowerOuterPanel.setVisible(false);
+        borderPanel.setBorder(null);
     }
 
     /**
@@ -223,9 +226,9 @@ public class ExpandableComputerView extends PFUIComponent implements
         JPanel panel = lowerOuterBuilder.getPanel();
         panel.setOpaque(false);
         borderBuilder.add(panel, cc.xy(2, 3));
-        JPanel borderPanel = borderBuilder.getPanel();
+        borderPanel = borderBuilder.getPanel();
         borderPanel.setOpaque(false);
-     //   borderPanel.setBorder(BorderFactory.createEtchedBorder());
+        // borderPanel.setBorder(BorderFactory.createEtchedBorder());
 
         // Build ui with vertical space before the next one.
         FormLayout outerLayout = new FormLayout("3dlu, pref:grow, 3dlu",
