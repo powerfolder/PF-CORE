@@ -21,22 +21,22 @@ package de.dal33t.powerfolder.util.pattern;
 
 /**
  * Matching on any texts that end with the given pattern.
+ *
  */
 public interface Pattern {
 
-    static final String THUMBS_DB = "*thumbs.db";
-    static final String OFFICE_TEMP = "*~*.tmp";
-    static final String DS_STORE = "*.DS_Store";
+    String THUMBS_DB = "*thumbs.db";
+    String OFFICE_TEMP = "*~*.tmp";
+    String DS_STORE = "*.DS_Store";
 
     /**
      * @return the pattern text, e.g. "*thumbs.db"
      */
-    public abstract String getPatternText();
+    String getPatternText();
 
     /**
      * @param matchString
      * @return true if this pattern matches on the matchString. false if not.
      */
-    public abstract boolean isMatch(String matchString);
-
+    boolean isMatch(String matchString);
 }

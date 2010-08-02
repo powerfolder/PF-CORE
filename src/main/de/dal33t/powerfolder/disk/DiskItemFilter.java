@@ -25,9 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +65,7 @@ public class DiskItemFilter {
     private final List<Pattern> patterns = new CopyOnWriteArrayList<Pattern>();
 
     /**
-     * Whether the pattens have been modified since the last save.
+     * Whether the patterns have been modified since the last save.
      */
     private boolean dirty;
 
@@ -93,31 +91,53 @@ public class DiskItemFilter {
 
     /**
      * Loads patterns from file. Removes all previous patterns.
+     * Only if there is actually a change to the patterns.
      * 
      * @param file
      *          file to read patterns from
-     * @param dirtyArg
-     *          true if local patters are now dirty (i.e., we just loaded
-     *          metafolder patterns perhaps)
      */
-    public void loadPatternsFrom(File file, boolean dirtyArg) {
+    public void loadPatternsFrom(File file) {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
+                List<Pattern> tempPatterns = new ArrayList<Pattern>();
                 reader = new BufferedReader(new FileReader(file));
-                removeAllPatterns0();
                 String pattern;
                 while ((pattern = reader.readLine()) != null) {
                     String trimmedPattern = pattern.trim();
                     if (trimmedPattern.length() > 0) {
-                        addPattern0(trimmedPattern);
+                        tempPatterns.add(createPattern(trimmedPattern));
                     }
                 }
+
+                // Did anything change?
+                boolean allTheSame = true;
+                if (tempPatterns.size() == patterns.size()) {
+                    for (Pattern tempPattern : tempPatterns) {
+                        if (!patterns.contains(tempPattern)) {
+                            allTheSame = false;
+                            break;
+                        }
+                    }
+                } else {
+                    allTheSame = false;
+                }
+
+                if (allTheSame) {
+                    log.fine("Received a pattern file identical to own, so ignoring it.");
+                } else {
+                    // Something changed. Redo the patterns.
+                    log.fine("Received a pattern file different to own, so loading it.");
+                    removeAllPatterns();
+                    for (Pattern tempPattern : tempPatterns) {
+                        addPattern0(tempPattern);
+                    }
+                }
+
             } catch (IOException ioe) {
                 log.log(Level.SEVERE, "Problem loading pattern from " + file,
                     ioe);
             } finally {
-                dirty = dirtyArg;
                 if (reader != null) {
                     try {
                         reader.close();
@@ -168,34 +188,36 @@ public class DiskItemFilter {
         }
     }
 
+    private static Pattern createPattern(String patternText) {
+        Reject.ifBlank(patternText, "Pattern is blank");
+        return PatternFactory.createPattern(patternText.replaceAll(
+            "\\\\", "/").toLowerCase());
+    }
+
     /**
      * Add a patterns to the list for filtering.
-     * 
+     *
      * @param patternText
      */
     public void addPattern(String patternText) {
-        if (addPattern0(patternText)) {
-            dirty = true;
-        }
+        addPattern0(createPattern(patternText));
     }
 
     /**
      * Add a patterns to the list for filtering.
      * 
-     * @param patternText
+     * @param pattern
      */
-    private boolean addPattern0(String patternText) {
-        Reject.ifBlank(patternText, "Pattern is blank");
-        Pattern pattern = PatternFactory.createPattern(patternText.replaceAll(
-            "\\\\", "/").toLowerCase());
+    private boolean addPattern0(Pattern pattern) {
         if (patterns.contains(pattern)) {
             // Already contained
             return false;
         }
         try {
             patterns.add(pattern);
+            dirty = true;
             listenerSupport.patternAdded(new PatternChangedEvent(this,
-                patternText, true));
+                pattern.getPatternText(), true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE, "Problem adding pattern "
                 + pattern.getPatternText(), e);
@@ -204,15 +226,11 @@ public class DiskItemFilter {
     }
 
     public void removeAllPatterns() {
-        removeAllPatterns0();
-        dirty = true;
-    }
-
-    private void removeAllPatterns0() {
-        for (Pattern patternMatch : patterns) {
-            patterns.remove(patternMatch);
+        for (Pattern pattern : patterns) {
+            patterns.remove(pattern);
+            dirty = true;
             listenerSupport.patternRemoved(new PatternChangedEvent(this,
-                patternMatch.getPatternText(), false));
+                pattern.getPatternText(), false));
         }
     }
 
@@ -222,15 +240,15 @@ public class DiskItemFilter {
      * @param patternText
      */
     public void removePattern(String patternText) {
-        for (Pattern patternMatch : patterns) {
-            String text = patternMatch.getPatternText();
-            if (text.equals(patternText.toLowerCase())) {
-                patterns.remove(patternMatch);
+        Pattern targetPattern = createPattern(patternText);
+        for (Pattern pattern : patterns) {
+            if (pattern.equals(targetPattern)) {
+                patterns.remove(pattern);
+                dirty = true;
+                listenerSupport.patternRemoved(new PatternChangedEvent(this,
+                    pattern.getPatternText(), false));
             }
         }
-        listenerSupport.patternRemoved(new PatternChangedEvent(this,
-            patternText, false));
-        dirty = true;
     }
 
     /**

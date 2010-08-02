@@ -34,7 +34,7 @@ public abstract class AbstractPattern implements Pattern {
      * 
      * @param patternStringArg
      */
-    public AbstractPattern(String patternStringArg) {
+    protected AbstractPattern(String patternStringArg) {
         patternText = patternStringArg.toLowerCase().trim();
     }
 
@@ -45,12 +45,6 @@ public abstract class AbstractPattern implements Pattern {
     public final String getPatternText() {
         return patternText;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see de.dal33t.powerfolder.util.pattern.Pattern#isMatch(java.lang.String)
-     */
-    public abstract boolean isMatch(String matchString);
 
     // Internal helper ********************************************************
 
