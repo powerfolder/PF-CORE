@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import java.awt.Desktop;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -424,6 +425,26 @@ public class FileUtils {
     public static void recursiveCopy(File sourceFile, File targetFile)
         throws IOException
     {
+        recursiveCopy(sourceFile, targetFile, new FileFilter() {
+            public boolean accept(File pathname) {
+                return true;
+            }
+        });
+    }
+
+    /**
+     * A recursive copy of one directory to another.
+     * 
+     * @param sourceFile
+     * @param targetFile
+     * @param filter
+     *            the filter to apply while coping. null if all files should be
+     *            copied.
+     * @throws IOException
+     */
+    public static void recursiveCopy(File sourceFile, File targetFile,
+        FileFilter filter) throws IOException
+    {
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
@@ -431,26 +452,29 @@ public class FileUtils {
             // Do nothing.
             return;
         }
-
+        if (!filter.accept(sourceFile)) {
+            return;
+        }
         if (sourceFile.isDirectory() && !targetFile.exists()) {
             targetFile.mkdirs();
         }
-
         if (sourceFile.isDirectory() && targetFile.isDirectory()) {
             if (isSubdirectory(sourceFile, targetFile)) {
                 // Need to be careful if copying to a subdirectory,
                 // avoid infinite recursion.
                 throw new IOException("Copy to a subdirectory not permitted");
             } else {
-                File[] sourceFiles = sourceFile.listFiles();
+                File[] sourceFiles = sourceFile.listFiles(filter);
                 for (File nextOriginalFile : sourceFiles) {
                     // Synthesize target file name.
                     String lastPart = nextOriginalFile.getName();
                     File nextTargetFile = new File(targetFile, lastPart);
-                    recursiveCopy(nextOriginalFile, nextTargetFile);
+                    recursiveCopy(nextOriginalFile, nextTargetFile, filter);
                 }
             }
-        } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()) {
+        } else if (!sourceFile.isDirectory() && !targetFile.isDirectory()
+            && filter.accept(sourceFile))
+        {
             copyFile(sourceFile, targetFile);
         } else {
             throw new UnsupportedOperationException(
@@ -473,36 +497,60 @@ public class FileUtils {
     public static void recursiveMirror(File source, File target)
         throws IOException
     {
+        recursiveMirror(source, target, new FileFilter() {
+            public boolean accept(File pathname) {
+                return true;
+            }
+        });
+    }
+
+    /**
+     * Creates a recursive mirror of one directory into another. Files in target
+     * that do not exist in source will be deleted.
+     * <p>
+     * Does not mirror last modification dates.
+     * 
+     * @param source
+     * @param target
+     * @param filter
+     *            the filter which answers to check
+     * @throws IOException
+     */
+    public static void recursiveMirror(File source, File target,
+        FileFilter filter) throws IOException
+    {
         Reject.ifNull(source, "Source directory is null");
         Reject.ifNull(target, "Target directory is null");
+        Reject.ifNull(filter, "Filter is null");
 
         if (!source.exists()) {
             // Do nothing.
             return;
         }
-
+        if (!filter.accept(source)) {
+            return;
+        }
         if (source.isDirectory() && !target.exists()) {
             target.mkdirs();
         }
-
         if (source.isDirectory() && target.isDirectory()) {
             if (isSubdirectory(source, target)) {
                 // Need to be careful if copying to a subdirectory,
                 // avoid infinite recursion.
                 throw new IOException("Copy to a subdirectory not permitted");
             } else {
-                File[] sourceDirFiles = source.listFiles();
-                Set<String> copied = new HashSet<String>(sourceDirFiles.length);
+                File[] sourceDirFiles = source.listFiles(filter);
+                Set<String> done = new HashSet<String>(sourceDirFiles.length);
                 for (File sourceDirFile : sourceDirFiles) {
                     // Synthesize target file name.
                     String lastPart = sourceDirFile.getName();
                     File targetDirFile = new File(target, lastPart);
-                    recursiveCopy(sourceDirFile, targetDirFile);
-                    copied.add(lastPart);
+                    recursiveCopy(sourceDirFile, targetDirFile, filter);
+                    done.add(lastPart);
                 }
-                for (File targetDirFile : target.listFiles()) {
+                for (File targetDirFile : target.listFiles(filter)) {
                     String lastPart = targetDirFile.getName();
-                    if (copied.contains(lastPart)) {
+                    if (done.contains(lastPart)) {
                         continue;
                     }
                     if (targetDirFile.isFile() && !targetDirFile.delete()) {
@@ -515,7 +563,9 @@ public class FileUtils {
                 }
 
             }
-        } else if (!source.isDirectory() && !target.isDirectory()) {
+        } else if (!source.isDirectory() && !target.isDirectory()
+            && filter.accept(source))
+        {
             copyFile(source, target);
             // Preserve modification date.
         } else {
