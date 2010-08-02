@@ -42,6 +42,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.CollectionOfElements;
@@ -73,6 +75,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
  */
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Account implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(Account.class.getName());
@@ -115,6 +118,7 @@ public class Account implements Serializable {
     @ManyToMany
     @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
     @BatchSize(size = 1337)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Collection<MemberInfo> computers;
 
     /**
@@ -136,6 +140,7 @@ public class Account implements Serializable {
     @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
     @BatchSize(size = 1337)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> licenseKeyFileList;
 
     /**
@@ -150,6 +155,7 @@ public class Account implements Serializable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Collection<Permission> permissions;
 
     @Embedded
