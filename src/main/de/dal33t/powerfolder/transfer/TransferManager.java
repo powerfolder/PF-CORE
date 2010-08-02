@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.AtomicCommitProcessor;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -748,6 +749,8 @@ public class TransferManager extends PFComponent {
                 if (StringUtils.isNotBlank(folder.getDownloadScript())) {
                     executeDownloadScript(fInfo, folder, dlManager);
                 }
+                // #2056
+                AtomicCommitProcessor.INSTANCE.perform(folder);
             } else {
                 logSevere("Scanning of completed file failed: "
                     + fInfo.toDetailString() + " at " + dlManager.getTempFile());
