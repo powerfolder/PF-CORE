@@ -91,6 +91,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -113,6 +114,12 @@ public class Folder extends PFComponent {
 
     /** The base location of the folder. */
     private final File localBase;
+
+    /**
+     * #2056: The directory to commit/mirror the whole folder to when in reaches
+     * 100% sync.
+     */
+  //  private final File commitDir;
 
     /**
      * TRAC #1422: The DAO to store the FileInfos in.
@@ -1962,7 +1969,7 @@ public class Folder extends PFComponent {
         dao.delete(null, fileInfo);
         dirty = true;
     }
-    
+
     /**
      * @return true if this folder has beend start. false if shut down
      */
@@ -3099,6 +3106,71 @@ public class Folder extends PFComponent {
         }
 
         return Collections.unmodifiableCollection(incomingFiles.keySet());
+    }
+
+    /**
+     * Visits all remote {@link FileInfo}s and {@link DirectoryInfo}s, that
+     * <p>
+     * 1) Do not exist locally or
+     * <p>
+     * 2) Are newer than the local version.
+     * 
+     * @param vistor
+     *            the {@link Visitor} to pass the incoming files to.
+     */
+    public void visitIncomingFiles(Visitor<FileInfo> vistor) {
+        // add0 expeced files
+        for (Member member : getMembersAsCollection()) {
+            if (!member.isCompletelyConnected()) {
+                // disconnected or myself (=skip)
+                continue;
+            }
+            if (!member.hasCompleteFileListFor(currentInfo)) {
+                if (isFine()) {
+                    logFine("Skipping " + member
+                        + " no complete filelist from him");
+                }
+                continue;
+            }
+            if (!hasWritePermission(member)) {
+                if (isWarning()) {
+                    logWarning("Not downloading files. " + member + " / "
+                        + member.getAccountInfo() + " no write permission");
+                }
+                continue;
+            }
+
+            Collection<FileInfo> memberFiles = getFilesAsCollection(member);
+            if (memberFiles != null) {
+                for (FileInfo fileInfo : memberFiles) {
+                    visitFileIfNewer(fileInfo, vistor);
+                }
+            }
+            Collection<DirectoryInfo> memberDirs = dao
+                .findAllDirectories(member.getId());
+            if (memberDirs != null) {
+                for (FileInfo fileInfo : memberDirs) {
+                    visitFileIfNewer(fileInfo, vistor);
+                }
+            }
+        }
+    }
+
+    private void visitFileIfNewer(FileInfo fileInfo, Visitor<FileInfo> vistor) {
+        // Check if remote file is newer
+        FileInfo localFile = getFile(fileInfo);
+        boolean notLocal = localFile == null;
+        boolean remoteNewerThanLocal = localFile != null
+            && fileInfo.isNewerThan(localFile);
+        if (notLocal && fileInfo.isDeleted()) {
+            return;
+        }
+        if (notLocal || remoteNewerThanLocal) {
+            // Okay this one is expected
+            if (!diskItemFilter.isExcluded(fileInfo)) {
+                vistor.visit(fileInfo);
+            }
+        }
     }
 
     /**
