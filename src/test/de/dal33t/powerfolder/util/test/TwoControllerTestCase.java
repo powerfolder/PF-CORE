@@ -62,9 +62,9 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  */
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
-    protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
+    public static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
         .getTestDir(), "ControllerBart/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
+    public static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
         .getTestDir(), "ControllerLisa/testFolder");
 
     private Controller controllerBart;
@@ -431,6 +431,28 @@ public abstract class TwoControllerTestCase extends TestCase {
         File lisaFolderDir)
     {
         joinFolder(foInfo, bartFolderDir, lisaFolderDir, SyncProfile.HOST_FILES);
+    }
+
+    /**
+     * Let both controller join the specified folder.
+     * <p>
+     * After the method is invoked, it is ensured that folders on both
+     * controllers have two members. Otherwise the test will fail.
+     * 
+     * @param foInfo
+     *            the folder to join
+     * @param baseDir1
+     *            the local base dir for the first controller
+     * @param baseDir2
+     *            the local base dir for the second controller
+     * @param profile
+     *            the profile to use
+     */
+    protected void joinTestFolder(File baseDir1, File baseDir2,
+        SyncProfile profile)
+    {
+        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        joinFolder(testFolder, baseDir1, baseDir2, profile);
     }
 
     /**
