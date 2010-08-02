@@ -31,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
@@ -64,6 +65,7 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
@@ -111,6 +113,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private AtomicBoolean mouseOver;
 
     private ActionLabel filesLabel;
+    private ActionLabel deletedFilesLabel;
     private ActionLabel transferModeLabel;
     private JLabel syncPercentLabel;
     private ActionLabel syncDateLabel;
@@ -211,7 +214,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateProblems();
         updateNameLabel();
         updatePermissions();
-
+        updateDeletedFiles();
+            
         registerFolderListeners();
     }
 
@@ -311,11 +315,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Skip computers stuff
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         } else {
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         }
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
@@ -344,6 +348,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         row += 2;
 
         lowerBuilder.add(totalSizeLabel, cc.xy(2, row));
+
+        row += 2;
+
+        lowerBuilder.add(deletedFilesLabel.getUIComponent(), cc.xy(2, row));
 
         row += 2;
 
@@ -461,7 +469,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperOpenFilesButton.setVisible(false);
 
         filesLabel = new ActionLabel(getController(),
-                new MyFilesAvailableAction());
+                openFilesInformationAction);
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         syncPercentLabel = new JLabel();
@@ -473,7 +481,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             openMembersInformationAction);
         filesAvailableLabel = new ActionLabel(getController(),
             new MyFilesAvailableAction());
-
+        deletedFilesLabel = new ActionLabel(getController(),
+                new MyDeletedFilesAction());
         updateNumberOfFiles();
         updateStatsDetails();
         updateFolderMembershipDetails();
@@ -759,6 +768,27 @@ public class ExpandableFolderView extends PFUIComponent implements
         filesLabel.setText(filesText);
     }
 
+    private void updateDeletedFiles() {
+        String deletedFileText;
+        if (folder == null) {
+            deletedFileText = Translation
+                .getTranslation("exp_folder_view.deleted_files", "?");
+        } else {
+            Collection<FileInfo> allFiles = folder.getDAO().findAllFiles(
+                    getController().getMySelf().getId());
+            int deletedCount = 0;
+            for (FileInfo file : allFiles) {
+                if (file.isDeleted()) {
+                    deletedCount++;
+                }
+            }
+            deletedFileText = Translation.getTranslation(
+                    "exp_folder_view.deleted_files",
+                    String.valueOf(deletedCount));
+        }
+        deletedFilesLabel.setText(deletedFileText);
+    }
+
     /**
      * Updates transfer mode of the folder.
      */
@@ -1009,6 +1039,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 folderUpdater.schedule(new Runnable() {
                     public void run() {
                         updateNumberOfFiles();
+                        updateDeletedFiles();
                         updateStatsDetails();
                         updateIconAndOS();
                         updateButtons();
@@ -1392,6 +1423,14 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openFilesInformationIncoming(
+                folderInfo);
+        }
+    }
+
+    private class MyDeletedFilesAction extends AbstractAction {
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().openFilesInformationDeleted(
                 folderInfo);
         }
     }

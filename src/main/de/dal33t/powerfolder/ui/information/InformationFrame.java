@@ -183,6 +183,15 @@ public class InformationFrame extends MagneticFrame {
         currentFolderInfo = folderInfo;
     }
 
+    public void displayFolderFilesDeleted(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfoDeleted(folderInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
+    }
+
     /**
      * Displays file info for a folder with filter set to new and sort set to
      * date descending.
@@ -348,6 +357,10 @@ public class InformationFrame extends MagneticFrame {
             getUIComponent().setVisible(false);
         }
     }
+
+    ///////////////////
+    // Inner classes //
+    ///////////////////
 
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener

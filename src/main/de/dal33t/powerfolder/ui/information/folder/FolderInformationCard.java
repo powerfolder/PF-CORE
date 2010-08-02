@@ -109,6 +109,15 @@ public class FolderInformationCard extends InformationCard {
         updateProblems();
     }
 
+
+    public void setFolderInfoDeleted(FolderInfo folderInfo) {
+        detachProblemListener();
+        setFolderInfo0(folderInfo);
+        filesTab.setFolderInfoDeleted(folderInfo);
+        atachProblemListener();
+        updateProblems();
+    }
+
     /**
      * Sets the folder in the tabs with incoming set.
      * 

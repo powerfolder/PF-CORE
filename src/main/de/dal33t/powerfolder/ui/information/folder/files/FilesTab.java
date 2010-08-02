@@ -178,6 +178,21 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
     }
 
+
+    public void setFolderInfoDeleted(FolderInfo folderInfo) {
+
+        Folder f = getController().getFolderRepository().getFolder(folderInfo);
+        directoryFilter.setFolder(f);
+        tablePanel.setFolder(f);
+        tablePanel.sortLatestDate();
+        flatViewCB.setSelected(true);
+        flatMode.setValue(flatViewCB.isSelected());
+
+        // Triggers mode change and schedule filtering (MyActionListener).
+        filterSelectionComboBox.setSelectedIndex(
+                DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
+    }
+
     /**
      * Set the tab with details for a folder with incoming files.
      *

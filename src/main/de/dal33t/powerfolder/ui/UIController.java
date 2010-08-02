@@ -814,6 +814,12 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
+
+    public void openFilesInformationDeleted(FolderInfo folderInfo) {
+        informationFrame.displayFolderFilesDeleted(folderInfo);
+        displayInformationWindow();
+    }
+
     /**
      * Opens the Files information for a folder.
      * 
