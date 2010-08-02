@@ -110,7 +110,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private AtomicBoolean expanded;
     private AtomicBoolean mouseOver;
 
-    private JLabel filesLabel;
+    private ActionLabel filesLabel;
     private ActionLabel transferModeLabel;
     private JLabel syncPercentLabel;
     private ActionLabel syncDateLabel;
@@ -335,7 +335,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         row += 2;
 
-        lowerBuilder.add(filesLabel, cc.xy(2, row));
+        lowerBuilder.add(filesLabel.getUIComponent(), cc.xy(2, row));
 
         row += 2;
 
@@ -460,7 +460,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperInviteButton.setVisible(false);
         upperOpenFilesButton.setVisible(false);
 
-        filesLabel = new JLabel();
+        filesLabel = new ActionLabel(getController(),
+                new MyFilesAvailableAction());
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         syncPercentLabel = new JLabel();
