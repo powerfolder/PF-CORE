@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.test.util;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -463,6 +464,15 @@ public class FileUtilsTest extends TestCase {
         souceSum = buildCheckSum(source, 0);
         targetSum = buildCheckSum(target, 0);
         assertEquals(souceSum, targetSum);
+
+        final File tempDir = new File(source, "temp");
+        assertTrue(tempDir.mkdir());
+        FileUtils.recursiveMirror(source, target, new FileFilter() {
+            public boolean accept(File pathname) {
+                return !pathname.equals(tempDir);
+            }
+        });
+        assertFalse(new File(target, tempDir.getName()).exists());
     }
 
     private long buildCheckSum(File file, long baseSum) throws IOException {
