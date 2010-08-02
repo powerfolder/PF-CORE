@@ -452,9 +452,6 @@ public class FileUtils {
             // Do nothing.
             return;
         }
-        if (!filter.accept(sourceFile)) {
-            return;
-        }
         if (sourceFile.isDirectory() && !targetFile.exists()) {
             targetFile.mkdirs();
         }
@@ -525,9 +522,6 @@ public class FileUtils {
 
         if (!source.exists()) {
             // Do nothing.
-            return;
-        }
-        if (!filter.accept(source)) {
             return;
         }
         if (source.isDirectory() && !target.exists()) {
