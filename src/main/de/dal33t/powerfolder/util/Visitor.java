@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 /**
- * General visitor of a class of objects
+ * General visitor of a class of objects.
  * 
  * @author sprajc
  * @param <T>
@@ -28,5 +28,10 @@ package de.dal33t.powerfolder.util;
  */
 public interface Visitor<T> {
 
-    void visit(T object);
+    /**
+     * @param object
+     * @return true if more objects should be visited. false if the visiting
+     *         process should stop.
+     */
+    boolean visit(T object);
 }
