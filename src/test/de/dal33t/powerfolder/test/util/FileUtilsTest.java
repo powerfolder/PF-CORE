@@ -467,12 +467,16 @@ public class FileUtilsTest extends TestCase {
 
         final File tempDir = new File(source, "temp");
         assertTrue(tempDir.mkdir());
+        final File existingDestDir = new File(target, "shouldRemain");
+        assertTrue(existingDestDir.mkdir());
         FileUtils.recursiveMirror(source, target, new FileFilter() {
             public boolean accept(File pathname) {
-                return !pathname.equals(tempDir);
+                return !pathname.equals(tempDir)
+                    && !existingDestDir.equals(pathname);
             }
         });
         assertFalse(new File(target, tempDir.getName()).exists());
+        assertTrue(existingDestDir.exists());
     }
 
     private long buildCheckSum(File file, long baseSum) throws IOException {
