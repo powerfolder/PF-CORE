@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.util.MathUtil;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,12 +75,12 @@ public class PropertiesUtil {
             Collections.sort(confKeys);
             for (String key : confKeys) {
                 String val = (String) props.get(key);
-                key = saveConvert(key, true, escUnicode);
+                key = saveConvert(key, true, true, escUnicode);
                 /*
                  * No need to escape embedded and trailing spaces for value,
                  * hence pass false to flag.
                  */
-                val = saveConvert(val, false, escUnicode);
+                val = saveConvert(val, false, false, escUnicode);
                 bw.write(key + '=' + val);
                 bw.newLine();
             }
@@ -91,7 +93,7 @@ public class PropertiesUtil {
      * with a preceding slash
      */
     private static String saveConvert(String theString, boolean escapeSpace,
-        boolean escapeUnicode)
+        boolean escapeSpecials, boolean escapeUnicode)
     {
         int len = theString.length();
         int bufLen = len * 2;
@@ -104,7 +106,7 @@ public class PropertiesUtil {
             char aChar = theString.charAt(x);
             // Handle common case first, selecting largest block that
             // avoids the specials below
-            if ((aChar > 61) && (aChar < 127)) {
+            if (aChar > 61 && aChar < 127) {
                 if (aChar == '\\') {
                     outBuffer.append('\\');
                     outBuffer.append('\\');
@@ -115,8 +117,9 @@ public class PropertiesUtil {
             }
             switch (aChar) {
                 case ' ' :
-                    if (x == 0 || escapeSpace)
+                    if (x == 0 || escapeSpace) {
                         outBuffer.append('\\');
+                    }
                     outBuffer.append(' ');
                     break;
                 case '\t' :
@@ -139,18 +142,22 @@ public class PropertiesUtil {
                 case ':' : // Fall through
                 case '#' : // Fall through
                 case '!' :
-                    outBuffer.append('\\');
+                    if (escapeSpecials) {
+                        outBuffer.append('\\');
+                    }
                     outBuffer.append(aChar);
                     break;
                 default :
-                    if (((aChar < 0x0020) || (aChar > 0x007e)) & escapeUnicode)
-                    {
+                    if ((aChar < 0x0020 || aChar > 0x007e) & escapeUnicode) {
                         outBuffer.append('\\');
                         outBuffer.append('u');
-                        outBuffer.append(toHex((aChar >> 12) & 0xF));
-                        outBuffer.append(toHex((aChar >> 8) & 0xF));
-                        outBuffer.append(toHex((aChar >> 4) & 0xF));
-                        outBuffer.append(toHex(aChar & 0xF));
+                        outBuffer.append(MathUtil
+                            .toHexNibble(aChar >> 12 & 0xF));
+                        outBuffer
+                            .append(MathUtil.toHexNibble(aChar >> 8 & 0xF));
+                        outBuffer
+                            .append(MathUtil.toHexNibble(aChar >> 4 & 0xF));
+                        outBuffer.append(MathUtil.toHexNibble(aChar & 0xF));
                     } else {
                         outBuffer.append(aChar);
                     }
@@ -204,18 +211,4 @@ public class PropertiesUtil {
         }
         bw.newLine();
     }
-
-    /**
-     * Convert a nibble to a hex character
-     * 
-     * @param nibble
-     *            the nibble to convert.
-     */
-    private static char toHex(int nibble) {
-        return hexDigit[(nibble & 0xF)];
-    }
-
-    /** A table of hex digits */
-    private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
-        '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 }
