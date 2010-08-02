@@ -130,7 +130,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 BETA 21"; // 1.7.1.19 /
+    public static final String PROGRAM_VERSION = "4.3.0 BETA 23"; // 1.7.1.20 /
+                                                                  // BETA 23
     // 4.3.0 dev3
 
     /**
@@ -1527,7 +1528,7 @@ public class Controller extends PFComponent {
         // config = null;
         shuttingDown = false;
         logInfo("Shutting down done");
-        
+
         LoggingManager.closeFileLogging();
     }
 
@@ -2178,8 +2179,8 @@ public class Controller extends PFComponent {
             parent = uiController.getMainFrame().getUIComponent();
         }
         if (isUIEnabled()) {
-            Object[] options = {Translation.getTranslation(
-                    "dialog.already_running.exit_button")};
+            Object[] options = {Translation
+                .getTranslation("dialog.already_running.exit_button")};
             JOptionPane.showOptionDialog(parent, message, Translation
                 .getTranslation("dialog.fatal_error.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
@@ -2261,13 +2262,11 @@ public class Controller extends PFComponent {
         }
 
         // Is this a friend already?
-        for (Member member : nodeManager.getFriends()) {
-            if (member.getInfo().equals(event.getMemberInfo())) {
-                log.fine("Ignoring ask for friendship from " +
-                        event.getMemberInfo().getNick() +
-                        ". Already friend.");
-                return;
-            }
+        Member member = event.getMemberInfo().getNode(this, false);
+        if (member != null && member.isFriend()) {
+            log.fine("Ignoring ask for friendship from "
+                + event.getMemberInfo().getNick() + ". Already friend.");
+            return;
         }
 
         for (AskForFriendshipListener listener : askForFriendshipListeners) {
