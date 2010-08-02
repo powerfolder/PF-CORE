@@ -40,7 +40,7 @@ public class LightSky extends AbstractSyntheticaSkin {
 
     @Override
     public Properties getIconsProperties() {
-        Properties p = Icons.getIconProperties();
+        Properties p = new Properties();
         Properties my = Icons
             .loadProperties("de/dal33t/powerfolder/skin/lightsky/icons.properties");
         p.putAll(my);
