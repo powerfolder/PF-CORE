@@ -36,17 +36,26 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_PREVIEW = ".preview";
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
+    public static final String FOLDER_SETTINGS_COMMIT_DIR = ".commit-dir";
     public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
     public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
-    public static final String FOLDER_SETTINGS_VERSIONS = ".versions"; // V4 only
-    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns"; // V4 only
+    public static final String FOLDER_SETTINGS_VERSIONS = ".versions"; // V4
+    // only
+    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns"; // V4
+    // only
 
     /**
      * Base location of files in the folder.
      */
     private final File localBaseDir;
+
+    /**
+     * #2056: The directory to commit/mirror the whole folder to when in reaches
+     * 100% sync.
+     */
+    private final File commitDir;
 
     /**
      * The synchronization profile for the folder (manual, backup, etc)
@@ -94,14 +103,15 @@ public class FolderSettings {
      * @param syncPatterns
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
-        boolean createInvitationFile,
-        ArchiveMode archiveMode, boolean previewOnly,
-        String downloadScript, int versions, boolean syncPatterns)
+        boolean createInvitationFile, ArchiveMode archiveMode,
+        boolean previewOnly, String downloadScript, int versions,
+        boolean syncPatterns)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
+        this.commitDir = null;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
         this.archiveMode = archiveMode;
@@ -112,8 +122,8 @@ public class FolderSettings {
     }
 
     /**
-     * Constructor. Creates a new FolderSettings object. NON preview,
-     * NO download script.
+     * Constructor. Creates a new FolderSettings object. NON preview, NO
+     * download script.
      * 
      * @param localBaseDir
      * @param syncProfile
@@ -123,8 +133,8 @@ public class FolderSettings {
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile, ArchiveMode archiveMode, int versions)
     {
-        this(localBaseDir, syncProfile, createInvitationFile,
-            archiveMode, false, null, versions, true);
+        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
+            false, null, versions, true);
     }
 
     // /////////////
@@ -133,6 +143,10 @@ public class FolderSettings {
 
     public File getLocalBaseDir() {
         return localBaseDir;
+    }
+
+    public File getCommitDir() {
+        return commitDir;
     }
 
     public SyncProfile getSyncProfile() {

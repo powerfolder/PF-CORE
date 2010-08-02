@@ -119,7 +119,7 @@ public class Folder extends PFComponent {
      * #2056: The directory to commit/mirror the whole folder to when in reaches
      * 100% sync.
      */
-  //  private final File commitDir;
+    private File commitDir;
 
     /**
      * TRAC #1422: The DAO to store the FileInfos in.
@@ -271,6 +271,7 @@ public class Folder extends PFComponent {
         dirty = false;
         problems = new CopyOnWriteArrayList<Problem>();
         localBase = folderSettings.getLocalBaseDir();
+        commitDir = folderSettings.getCommitDir();
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
@@ -567,39 +568,6 @@ public class Folder extends PFComponent {
             logFiner("commitScanResult DONE");
         }
     }
-
-    // Disabled, causing bug #293
-    // private void convertToMeta(final List<FileInfo> fileInfosToConvert) {
-    // // do converting in a differnend Thread
-    // Runnable runner = new Runnable() {
-    // public void run() {
-    // List<FileInfo> converted = getController()
-    // .getFolderRepository().getFileMetaInfoReader().convert(
-    // Folder.this, fileInfosToConvert);
-    // if (logEnabled) {
-    // logFine("Converted: " + converted);
-    // }
-    // for (FileInfo convertedFileInfo : converted) {
-    // FileInfo old = knownFiles.put(convertedFileInfo,
-    // convertedFileInfo);
-    // if (old != null) {
-    // // Remove old file from info
-    // currentInfo.removeFile(old);
-    // }
-    // // Add file to folder
-    // currentInfo.addFile(convertedFileInfo);
-    //
-    // // update UI
-    // if (getController().isUIEnabled()) {
-    // getDirectory().add0(getController().getMySelf(),
-    // convertedFileInfo);
-    // }
-    // }
-    // folderChanged();
-    // }
-    // };
-    // getController().getThreadPool().submit(runner);
-    // }
 
     public boolean hasOwnDatabase() {
         return hasOwnDatabase;
@@ -2821,6 +2789,34 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return the dir to commit/mirror the whole folder contents to after
+     *         folder has been fully updated. null if no commit should be
+     *         performed
+     */
+    public File getCommitDir() {
+        return commitDir;
+    }
+
+    /**
+     * @param commitDir
+     *            the dir to commit/mirror the whole folder contents to after
+     *            folder has been fully updated. null if no commit should be
+     *            performed
+     */
+    public void setCommitDir(File commitDir) {
+        this.commitDir = commitDir;
+        // Store on disk
+        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+            .getBytes())));
+        String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
+        String confVal = commitDir != null ? commitDir.getAbsolutePath() : "";
+        getController().getConfig().put(confKey, confVal);
+        logInfo("Commit dir set to '" + confVal + '\'');
+        getController().saveConfig();
+    }
+
+    /**
      * @return the system subdir in the local base folder. subdir gets created
      *         if not exists
      */
@@ -3143,34 +3139,46 @@ public class Folder extends PFComponent {
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (memberFiles != null) {
                 for (FileInfo fileInfo : memberFiles) {
-                    visitFileIfNewer(fileInfo, vistor);
+                    if (!visitFileIfNewer(fileInfo, vistor)) {
+                        // Stop visiting.
+                        return;
+                    }
                 }
             }
             Collection<DirectoryInfo> memberDirs = dao
                 .findAllDirectories(member.getId());
             if (memberDirs != null) {
                 for (FileInfo fileInfo : memberDirs) {
-                    visitFileIfNewer(fileInfo, vistor);
+                    if (!visitFileIfNewer(fileInfo, vistor)) {
+                        // Stop visiting.
+                        return;
+                    }
                 }
             }
         }
     }
 
-    private void visitFileIfNewer(FileInfo fileInfo, Visitor<FileInfo> vistor) {
+    private boolean visitFileIfNewer(FileInfo fileInfo, Visitor<FileInfo> vistor)
+    {
         // Check if remote file is newer
         FileInfo localFile = getFile(fileInfo);
         boolean notLocal = localFile == null;
         boolean remoteNewerThanLocal = localFile != null
             && fileInfo.isNewerThan(localFile);
         if (notLocal && fileInfo.isDeleted()) {
-            return;
+            return true;
         }
         if (notLocal || remoteNewerThanLocal) {
             // Okay this one is expected
             if (!diskItemFilter.isExcluded(fileInfo)) {
-                vistor.visit(fileInfo);
+                try {
+                    return vistor.visit(fileInfo);
+                } catch (Exception e) {
+                    logSevere("Error while visiting incoming files. " + e, e);
+                }
             }
         }
+        return true;
     }
 
     /**
