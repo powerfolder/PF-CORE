@@ -130,9 +130,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 BETA 23"; // 1.7.1.20 /
-                                                                  // BETA 23
-    // 4.3.0 dev3
+    public static final String PROGRAM_VERSION = "4.3.0 RC1"; // 1.7.1.20 /
+                                                              // BETA23
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
