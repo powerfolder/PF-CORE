@@ -631,7 +631,7 @@ public class UIController extends PFComponent {
             sysTrayFoldersMenu.add(menuItem);
         }
         sysTrayFoldersMenu.setEnabled(true);
-        final File localBase = folder.getLocalBase();
+        final File localBase = folder.getCommitOrLocalDir();
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (localBase.exists()) {
