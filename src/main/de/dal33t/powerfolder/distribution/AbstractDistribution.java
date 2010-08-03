@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
@@ -73,7 +74,8 @@ public abstract class AbstractDistribution extends Loggable implements
      */
     public static boolean isPowerFolderServer(Controller c) {
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(c);
-        return nodeId != null && nodeId.toUpperCase().contains("WEBSERVICE");
+        return StringUtils.isNotBlank(nodeId)
+            && nodeId.toUpperCase().contains("WEBSERVICE");
     }
 
     protected Controller getController() {
