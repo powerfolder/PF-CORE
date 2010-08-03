@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.AtomicCommitProcessor;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -411,7 +412,8 @@ public class SettingsTab extends PFUIComponent {
      */
     private void update() {
         rebuildPatterns();
-        localFolderField.setText(folder.getLocalBase().getAbsolutePath());
+        localFolderField
+            .setText(folder.getCommitOrLocalDir().getAbsolutePath());
         localFolderButton.setEnabled(!folder.isPreviewOnly());
     }
 
@@ -562,13 +564,13 @@ public class SettingsTab extends PFUIComponent {
             return;
         }
 
-        File originalDirectory = folder.getLocalBase();
+        File originalDirectory = folder.getCommitOrLocalDir();
 
         // Select the new folder.
-        File file = DialogFactory.chooseDirectory(getController()
+        File newDirectory = DialogFactory.chooseDirectory(getController()
             .getUIController(), originalDirectory);
-        if (file != null) {
-            if (FileUtils.isSubdirectory(originalDirectory, file)) {
+        if (newDirectory != null) {
+            if (FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
                 DialogFactory.genericDialog(getController(), Translation
                     .getTranslation("settings_tab.subdir.title"), Translation
                     .getTranslation("settings_tab.subdir.text"),
@@ -576,7 +578,7 @@ public class SettingsTab extends PFUIComponent {
             } else {
                 File foldersBaseDir = new File(getController()
                     .getFolderRepository().getFoldersBasedir());
-                if (file.equals(foldersBaseDir)) {
+                if (newDirectory.equals(foldersBaseDir)) {
                     DialogFactory
                         .genericDialog(getController(), Translation
                             .getTranslation("settings_tab.basedir.title"),
@@ -584,7 +586,8 @@ public class SettingsTab extends PFUIComponent {
                                 .getTranslation("settings_tab.basedir.text"),
                             GenericDialogType.ERROR);
                 } else {
-                    moveDirectory(originalDirectory, file, moveContent == 0);
+                    moveDirectory(originalDirectory, newDirectory,
+                        moveContent == 0);
                 }
             }
         }
@@ -650,7 +653,7 @@ public class SettingsTab extends PFUIComponent {
             .getTranslation("settings_tab.confirm_local_folder_move.title");
         String message = Translation.getTranslation(
             "settings_tab.confirm_local_folder_move.text", folder
-                .getLocalBase().getAbsolutePath(), newDirectory
+                .getCommitOrLocalDir().getAbsolutePath(), newDirectory
                 .getAbsolutePath());
 
         return DialogFactory.genericDialog(getController(), title, message,
@@ -720,13 +723,22 @@ public class SettingsTab extends PFUIComponent {
                 FileUtils.recursiveMove(originalDirectory, newDirectory);
             }
 
+            File commitDir = null;
+            boolean hasCommitDir = folder.getCommitDir() != null;
+            if (hasCommitDir) {
+                commitDir = newDirectory;
+                newDirectory = new File(newDirectory,
+                    AtomicCommitProcessor.TEMP_TARGET_DIR);
+                FileUtils.setAttributesOnWindows(newDirectory, true, true);
+            }
+
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
                 .getSyncProfile(), false, folder.getFileArchiver()
                 .getArchiveMode(), folder.isPreviewOnly(), folder
                 .getDownloadScript(), folder.getFileArchiver()
-                .getVersionsPerFile(), folder.isSyncPatterns());
+                .getVersionsPerFile(), folder.isSyncPatterns(), commitDir);
             folder = repository.createFolder(fi, fs);
             if (!moveContent) {
                 folder.addDefaultExcludes();
