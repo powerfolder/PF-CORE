@@ -30,6 +30,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -372,7 +373,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * fall back to V3 for older folders.
      * 
      * @param folderInfo
-     * @return
+     * @return the folder settings.
      */
     public FolderSettings loadFolderSettings(FolderInfo folderInfo) {
         String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
@@ -540,6 +541,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             return null;
         }
 
+        File commitDir = null;
+        String commitDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+            + folderMD5 + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR);
+        if (StringUtils.isNotBlank(commitDirStr)) {
+            commitDir = new File(commitDirStr);
+        }
+
         String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_SYNC_PROFILE);
 
@@ -604,7 +612,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
         return new FolderSettings(new File(folderDir), syncProfile, false,
-            archiveMode, preview, dlScript, versions, syncPatterns);
+            archiveMode, preview, dlScript, versions, syncPatterns, commitDir);
     }
 
     /**
@@ -816,7 +824,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * 
      * @param folderInfo
      * @param folderSettings
-     * @return
+     * @return the preview folder.
      */
     public Folder createPreviewFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
@@ -862,9 +870,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             return folders.get(folderInfo);
         }
 
-        // Make name that can be used as part of file name.
-        // WTF? Why? Folder name is a TRUE logical name
-        // folderInfo.name = StringUtils.replace(folderInfo.name, ".", "_");
+        // TODO: This is only a temporary solution
+        if (ConfigurationEntry.FOLDER_ATOMIC_COMMIT
+            .getValueBoolean(getController())
+            && folderSettings.getCommitDir() == null)
+        {
+            File newBaseDir = new File(folderSettings.getLocalBaseDir(),
+                AtomicCommitProcessor.TEMP_TARGET_DIR);
+            newBaseDir.mkdirs();
+            FileUtils.setAttributesOnWindows(newBaseDir, true, true);
+            File commitDir = folderSettings.getLocalBaseDir();
+
+            folderSettings = new FolderSettings(newBaseDir, folderSettings
+                .getSyncProfile(), folderSettings.isCreateInvitationFile(),
+                folderSettings.getArchiveMode(),
+                folderSettings.isPreviewOnly(), folderSettings
+                    .getDownloadScript(), folderSettings.getVersions(),
+                folderSettings.isSyncPatterns(), commitDir);
+            logWarning("Auto-commit setup. temp dir: " + newBaseDir
+                + ". commit dir:" + commitDir);
+        }
 
         Folder folder;
         if (folderSettings.isPreviewOnly()) {
@@ -878,8 +903,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         folder.addProblemListener(valveProblemListenerSupport);
-        folder.setArchiveMode(folderSettings.getArchiveMode());
-        folder.setArchiveVersions(folderSettings.getVersions());
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
@@ -953,6 +976,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
             .getAbsolutePath());
+        String commitDir = folderSettings.getCommitDir() != null
+            ? folderSettings.getCommitDir().getAbsolutePath()
+            : "";
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_COMMIT_DIR, commitDir);
         // Save sync profiles as internal configuration for custom profiles.
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()

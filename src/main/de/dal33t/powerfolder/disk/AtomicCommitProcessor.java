@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author sprajc
  */
 public class AtomicCommitProcessor extends Loggable {
+    public static String TEMP_TARGET_DIR = ".temp-dir";
     public static AtomicCommitProcessor INSTANCE = new AtomicCommitProcessor();
 
     /**
@@ -43,7 +44,7 @@ public class AtomicCommitProcessor extends Loggable {
      * folder if set.
      * 
      * @param folder
-     * @return true if the miorror/copy has been performed. false if not.
+     * @return true if the mirror/copy has been performed. false if not.
      */
     public boolean perform(final Folder folder) {
         Reject.ifNull(folder, "Folder");
@@ -54,8 +55,10 @@ public class AtomicCommitProcessor extends Loggable {
             return false;
         }
         if (folder.getConnectedMembersCount() < 1) {
-            logWarning("Not performing atomic commit to "
-                + folder.getCommitDir() + ". No other member connected");
+            if (isFiner()) {
+                logFiner("Not performing atomic commit to "
+                    + folder.getCommitDir() + ". No other member connected");
+            }
             return false;
         }
         IncomingCheckVisitor vistor = new IncomingCheckVisitor();

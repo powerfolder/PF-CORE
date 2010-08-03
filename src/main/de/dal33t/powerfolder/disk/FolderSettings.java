@@ -97,6 +97,7 @@ public class FolderSettings {
      * @param localBaseDir
      * @param syncProfile
      * @param createInvitationFile
+     * @param archiveMode
      * @param previewOnly
      * @param downloadScript
      * @param versions
@@ -107,11 +108,33 @@ public class FolderSettings {
         boolean previewOnly, String downloadScript, int versions,
         boolean syncPatterns)
     {
+        this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
+            previewOnly, downloadScript, versions, syncPatterns, null);
+    }
+
+    /**
+     * Constructor. Creates a new FolderSettings object.
+     * 
+     * @param localBaseDir
+     * @param syncProfile
+     * @param createInvitationFile
+     * @param archiveMode
+     * @param previewOnly
+     * @param downloadScript
+     * @param versions
+     * @param syncPatterns
+     * @param commitDir
+     */
+    public FolderSettings(File localBaseDir, SyncProfile syncProfile,
+        boolean createInvitationFile, ArchiveMode archiveMode,
+        boolean previewOnly, String downloadScript, int versions,
+        boolean syncPatterns, File commitDir)
+    {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
         Reject.ifNull(syncProfile, "Sync profile required");
         this.localBaseDir = localBaseDir;
-        this.commitDir = null;
+        this.commitDir = commitDir;
         this.syncProfile = syncProfile;
         this.createInvitationFile = createInvitationFile;
         this.archiveMode = archiveMode;

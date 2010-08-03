@@ -2798,6 +2798,16 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return the commit dir or the local base if commit dir is null.
+     */
+    public File getCommitOrLocalDir() {
+        if (commitDir != null) {
+            return commitDir;
+        }
+        return localBase;
+    }
+
+    /**
      * @param commitDir
      *            the dir to commit/mirror the whole folder contents to after
      *            folder has been fully updated. null if no commit should be
