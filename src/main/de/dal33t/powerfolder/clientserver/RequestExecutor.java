@@ -88,8 +88,7 @@ public class RequestExecutor extends PFComponent {
                     throw new ConnectionException(node.getNick()
                         + " disconnected");
                 }
-                throw new ConnectionException("Timeout to " + node.getNick()
-                    + " for " + request);
+                throw new ConnectionException("Timeout to " + node.getNick());
             }
 
             if (isFiner()) {
