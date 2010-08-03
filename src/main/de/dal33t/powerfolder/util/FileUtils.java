@@ -44,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.AtomicCommitProcessor;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -993,6 +994,10 @@ public class FileUtils {
      * @return true if file scan is allowed
      */
     public static boolean isScannable(String filePath, FolderInfo foInfo) {
+        if (filePath.endsWith(AtomicCommitProcessor.TEMP_TARGET_DIR)) {
+            return false;
+        }
+        
         int firstSystemDir = filePath
             .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {
