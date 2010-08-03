@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
-public class FolderCommitTest extends TwoControllerTestCase {
+public class AtomicCommitTest extends TwoControllerTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
