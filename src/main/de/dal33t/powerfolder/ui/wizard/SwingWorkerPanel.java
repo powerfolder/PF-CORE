@@ -180,7 +180,7 @@ public class SwingWorkerPanel extends PFWizardPanel {
                     msg = e.toString();
                 }
                 LOG.warning(msg);
-                LOG.log(Level.WARNING, e.toString(), e);
+                LOG.log(Level.FINE, e.toString(), e);
                 showProblem(msg);
             }
         }
