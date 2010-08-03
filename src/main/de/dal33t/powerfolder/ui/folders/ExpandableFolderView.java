@@ -950,7 +950,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void openExplorer() {
-        FileUtils.openFile(folder.getLocalBase());
+        FileUtils.openFile(folder.getCommitOrLocalDir());
     }
 
     /**
