@@ -465,6 +465,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         }
 
         public void uploadAborted(TransferManagerEvent event) {
+            if (isMetaFolderUpload(event.getUpload())) {
+                return;
+            }
             int index = removeUpload(event.getUpload());
             if (index >= 0) {
                 rowRemoved(index);
@@ -472,6 +475,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         }
 
         public void uploadBroken(TransferManagerEvent event) {
+            if (isMetaFolderUpload(event.getUpload())) {
+                return;
+            }
             int index = removeUpload(event.getUpload());
             if (index >= 0) {
                 rowRemoved(index);
@@ -479,11 +485,14 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         }
 
         public void uploadCompleted(TransferManagerEvent event) {
+            if (isMetaFolderUpload(event.getUpload())) {
+                return;
+            }
             int index = uploads.indexOf(event.getUpload());
             if (index >= 0) {
                 rowsUpdated(index, index);
             } else {
-                logSevere("Upload not found in model: " + event.getDownload());
+                logSevere("Upload not found in model: " + event.getUpload());
                 rowsUpdatedAll();
             }
         }

@@ -450,28 +450,7 @@ public class DownloadManagersTableModel extends PFComponent implements
         }
 
         public void downloadCompleted(TransferManagerEvent event) {
-
-            // Update table.
-            Download dl = event.getDownload();
-            addOrUpdateDownload(dl);
-
-            // Remove existing downloads from all partners, then add a
-            // single complete download. This is a temporary fix; should
-            // really coalesce downloads into one line for each completely
-            // identical fileinfo.
-            // boolean found = false;
-            // int i = findDownloadIndex(dl);
-            // if (i >= 0) {
-            // downloadManagers.remove(i);
-            // found = true;
-            // }
-            //
-            // if (found) {
-            // addOrUpdateDownload(dl);
-            // } else {
-            // logSevere("Download not found in model: " + dl);
-            // }
-            rowsUpdatedAll();
+            addOrUpdateDownload(event.getDownload());
         }
 
         public void completedDownloadRemoved(TransferManagerEvent event) {
@@ -519,13 +498,14 @@ public class DownloadManagersTableModel extends PFComponent implements
         }
 
         private void addOrUpdateDownload(Download dl) {
+            if (isMetaFolderDownload(dl.getDownloadManager())) {
+                return;
+            }
             int index = findDownloadIndex(dl);
             DownloadManager alreadyDl = index >= 0 ? downloadManagers
                 .get(index) : null;
             if (alreadyDl == null) {
-                if (!isMetaFolderDownload(dl.getDownloadManager())) {
-                    downloadManagers.add(dl.getDownloadManager());
-                }
+                downloadManagers.add(dl.getDownloadManager());
                 rowAdded();
             } else {
                 // @todo DownloadManager already knows of change???
