@@ -70,8 +70,8 @@ public class FoldersList extends PFUIComponent {
     private ExpansionListener expansionListener;
     private FolderMembershipListener membershipListener;
     private FoldersTab foldersTab;
+    private boolean empty;
     private volatile boolean populated;
-    private volatile boolean multiGroup;
 
     private boolean collapseLocal;
     private boolean collapseOnline;
@@ -91,6 +91,7 @@ public class FoldersList extends PFUIComponent {
      */
     public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
+        this.empty = true;
         this.foldersTab = foldersTab;
         transfersUpdater = new DelayedUpdater(getController());
         foldersUpdater = new DelayedUpdater(getController());
@@ -148,7 +149,7 @@ public class FoldersList extends PFUIComponent {
     }
 
     public boolean isEmpty() {
-        return views.isEmpty() && !multiGroup;
+        return empty;
     }
 
     /**
@@ -212,7 +213,7 @@ public class FoldersList extends PFUIComponent {
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
 
-        multiGroup = !localFolders.isEmpty() && !onlineFolders.isEmpty();
+        empty = onlineFolders.isEmpty() && localFolders.isEmpty();
 
         synchronized (views) {
             FolderInfo expandedFolderInfo = null;
@@ -238,18 +239,15 @@ public class FoldersList extends PFUIComponent {
             }
 
             // Add new folder views.
-            if (!localFolders.isEmpty() && !onlineFolders.isEmpty()) {
-                addSeparator(collapseLocal, localIcon, localLabel);
-            }
-            if (!multiGroup || !collapseLocal) {
+            addSeparator(collapseLocal, localIcon, localLabel);
+            if (!collapseLocal) {
                 for (FolderBean folderBean : localFolders) {
                     addView(folderBean, expandedFolderInfo);
                 }
             }
-            if (!localFolders.isEmpty() && !onlineFolders.isEmpty()) {
-                addSeparator(collapseOnline, onlineIcon, onlineLabel);
-            }
-            if (!multiGroup || !collapseOnline) {
+
+            addSeparator(collapseOnline, onlineIcon, onlineLabel);
+            if (!collapseOnline) {
                 for (FolderBean folderBean : onlineFolders) {
                     addView(folderBean, expandedFolderInfo);
                 }
