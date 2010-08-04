@@ -297,10 +297,6 @@ public class InvitationUtil {
         Reject.ifNull(invitation, "Invitation is null");
         Reject.ifNull(node, "Node is null");
 
-        if (node.isPre4Client()) {
-            // They do not understand this.
-            invitation.setPermission(null);
-        }
         controller.getTaskManager().scheduleTask(
             new SendMessageTask(invitation, node.getId()));
 
