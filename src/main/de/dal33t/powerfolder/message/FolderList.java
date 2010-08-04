@@ -116,12 +116,7 @@ public class FolderList extends Message {
      * @see #load(Member)
      */
     public synchronized boolean store(Member member) {
-        String idPath = new String(Util.encodeHex(Util.md5(member.getId()
-            .getBytes(Convert.UTF8))));
-        File file = new File(Controller.getMiscFilesLocation(), member
-            .getController().getConfigName()
-            + "/nodes/" + idPath + ".FolderList");
-        return store(file);
+        return store(getMemberFile(member));
     }
 
     /**
@@ -152,11 +147,7 @@ public class FolderList extends Message {
      * @return the loaded {@link FolderList} or null if failed or not existing.
      */
     public static FolderList load(Member member) {
-        String idPath = new String(Util.encodeHex(Util.md5(member.getId()
-            .getBytes(Convert.UTF8))));
-        File file = new File(Controller.getMiscFilesLocation(), "nodes/"
-            + idPath + ".FolderList");
-        return load(file);
+        return load(getMemberFile(member));
     }
 
     /**
@@ -186,6 +177,14 @@ public class FolderList extends Message {
                 }
             }
         }
+    }
+
+    private static File getMemberFile(Member member) {
+        String idPath = new String(Util.encodeHex(Util.md5(member.getId()
+            .getBytes(Convert.UTF8))));
+        return new File(Controller.getMiscFilesLocation(), member
+            .getController().getConfigName()
+            + "/nodes/" + idPath + ".FolderList");
     }
 
     @Override
