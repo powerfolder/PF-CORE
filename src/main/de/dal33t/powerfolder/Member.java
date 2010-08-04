@@ -1960,6 +1960,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     } else if (isFiner()) {
                                         logFiner("Joined meta folder: "
                                             + metaFolder);
+                                        joinedFolders.add(metaFolder.getInfo());
                                     }
                                 }
                             }
@@ -1972,7 +1973,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
 
             // ok now remove member from no longer joined folders
-            for (Folder folder : localFolders) {
+            for (Folder folder : repo.getFolders(true)) {
                 if (folder != null && !joinedFolders.contains(folder.getInfo()))
                 {
                     // remove this member from folder, if not on new folder
