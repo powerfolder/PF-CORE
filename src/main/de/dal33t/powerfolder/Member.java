@@ -176,7 +176,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * the last problem
      */
-    private Problem lastProblem;
+    private volatile Problem lastProblem;
 
     /** maybe we cannot connect, but member might be online */
     private boolean isConnectedToNetwork;
@@ -347,27 +347,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void markForImmediateConnect() {
         getController().getReconnectManager().markNodeForImmediateReconnection(
             this);
-    }
-
-    /**
-     * TODO Remove after major distribution of 4.0
-     * 
-     * @return true if this client is a pre 4.0 client.
-     */
-    public boolean isPre4Client() {
-        ConnectionHandler conHan = peer;
-        if (conHan == null) {
-            return false;
-        }
-        Identity id = conHan.getIdentity();
-        if (id != null) {
-            // Not "4.0.0", because version "4.0.0 - 1.0.1" is before "4.0.0"
-            return Util.compareVersions("3.9.9", id.getProgramVersion());
-        } else {
-            logSevere("Unable to determin if client is pre 4.0. Identity: "
-                + id + ". Peer: " + conHan, new RuntimeException("here"));
-        }
-        return false;
     }
 
     /**
@@ -956,8 +935,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.createFileListMessages(folder,
-                !isPre4Client());
+            Message[] filelistMsgs = FileList.createFileListMessages(folder, true);
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -975,13 +953,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logWarning("Joined: " + foldersJoined);
             }
             for (Folder folder : foldersCommon) {
-                if (isPre4Client()) {
-                    sendMessagesAsynchron(FileList
-                        .createNullListForPre4Client(folder.getInfo()));
-                } else {
-                    sendMessagesAsynchron(FileList.createNullList(folder
-                        .getInfo()));
-                }
+                sendMessagesAsynchron(FileList.createNullList(folder.getInfo()));
             }
         }
 

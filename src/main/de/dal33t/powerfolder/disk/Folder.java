@@ -1839,13 +1839,8 @@ public class Folder extends PFComponent {
                 }
             }
             if (member.isCompletelyConnected()) {
-                if (member.isPre4Client()) {
-                    member.sendMessagesAsynchron(FileList
-                        .createNullListForPre4Client(currentInfo));
-                } else {
-                    member.sendMessagesAsynchron(FileList
-                        .createNullList(currentInfo));
-                }
+                member.sendMessagesAsynchron(FileList
+                    .createNullList(currentInfo));
             }
             return false;
         }
@@ -1869,8 +1864,8 @@ public class Folder extends PFComponent {
             // FIX for #924
             waitForScan();
 
-            Message[] filelistMsgs = FileList.createFileListMessages(this,
-                !member.isPre4Client());
+            Message[] filelistMsgs = FileList
+                .createFileListMessages(this, true);
             for (Message message : filelistMsgs) {
                 try {
                     member.sendMessage(message);
@@ -2244,24 +2239,14 @@ public class Folder extends PFComponent {
      */
     public void broadcastMessages(MessageProvider msgProvider) {
         Message[] msgs = null;
-        Message[] msgsPre4 = null;
         for (Member member : getMembersAsCollection()) {
             // Connected?
             if (member.isCompletelyConnected()) {
-                if (member.isPre4Client()) {
-                    if (msgsPre4 == null) {
-                        msgsPre4 = msgProvider.getMessages(true);
-                    }
-                    if (msgsPre4 != null) {
-                        member.sendMessagesAsynchron(msgsPre4);
-                    }
-                } else {
-                    if (msgs == null) {
-                        msgs = msgProvider.getMessages(false);
-                    }
-                    if (msgs != null) {
-                        member.sendMessagesAsynchron(msgs);
-                    }
+                if (msgs == null) {
+                    msgs = msgProvider.getMessages(false);
+                }
+                if (msgs != null) {
+                    member.sendMessagesAsynchron(msgs);
                 }
             }
         }
