@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
 import de.dal33t.powerfolder.event.MassDeletionHandler;
 import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.SettingsChange;
@@ -130,8 +131,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 RC1"; // 1.7.1.20 /
-                                                              // BETA23
+    public static final String PROGRAM_VERSION = "4.3.0 - 1.7.1.21"; // 1.7.1.20 /
+                                                              // RC1
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -427,6 +428,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
             killRunningInstance();
         }
+        FolderList.removeMemberFiles(this);
 
         // Initialize plugins
         setupProPlugins();
