@@ -179,12 +179,22 @@ public class FolderList extends Message {
         }
     }
 
+    public static void removeMemberFiles(Controller controller) {
+        try {
+            FileUtils.recursiveDelete(new File(Controller
+                .getMiscFilesLocation(), controller.getConfigName()
+                + ".temp/nodes"));
+        } catch (IOException e) {
+            LOG.severe("Unable to deleted FolderList temporary files. " + e);
+        }
+    }
+
     private static File getMemberFile(Member member) {
         String idPath = new String(Util.encodeHex(Util.md5(member.getId()
             .getBytes(Convert.UTF8))));
         return new File(Controller.getMiscFilesLocation(), member
             .getController().getConfigName()
-            + "/nodes/" + idPath + ".FolderList");
+            + ".temp/nodes/" + idPath + ".FolderList");
     }
 
     @Override
