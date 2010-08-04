@@ -189,22 +189,23 @@ public class ExpandableComputerView extends PFUIComponent implements
         // Build lower detials with line border.
         // last, qual rmve recon
         FormLayout lowerLayout = new FormLayout(
-            "3dlu, pref, pref:grow, 3dlu, pref, 2dlu, pref, 2dlu, pref, 3dlu",
+            "pref, pref:grow, 3dlu, pref, 2dlu, pref, 2dlu, pref",
             "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
         // sep, last
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
+        lowerBuilder.setBorder(Borders.createEmptyBorder("0, 3dlu, 0, 3dlu"));
 
         lowerBuilder.addSeparator(null, cc.xyw(1, 1, 8));
 
-        lowerBuilder.add(usernameLabel, cc.xy(2, 3));
-        lowerBuilder.add(chatButton, cc.xywh(5, 3, 1, 3));
-        lowerBuilder.add(addRemoveButton, cc.xywh(7, 3, 1, 3));
-        lowerBuilder.add(reconnectButton, cc.xywh(9, 3, 1, 3));
-        lowerBuilder.add(lastSeenLabel, cc.xy(2, 5));
+        lowerBuilder.add(usernameLabel, cc.xy(1, 3));
+        lowerBuilder.add(chatButton, cc.xywh(4, 3, 1, 3));
+        lowerBuilder.add(addRemoveButton, cc.xywh(6, 3, 1, 3));
+        lowerBuilder.add(reconnectButton, cc.xywh(8, 3, 1, 3));
+        lowerBuilder.add(lastSeenLabel, cc.xy(1, 5));
         if (getController().isVerbose()) {
             lowerBuilder.appendRow("3dlu");
             lowerBuilder.appendRow("pref");
-            lowerBuilder.add(versionLabel, cc.xy(2, 7));
+            lowerBuilder.add(versionLabel, cc.xy(1, 7));
         }
 
         JPanel lowerPanel = lowerBuilder.getPanel();
