@@ -493,6 +493,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
+            if (isMetaFolderUpload(event.getUpload())) {
+                return;
+            }
             int index = removeUpload(event.getUpload());
             if (index >= 0) {
                 rowRemoved(index);

@@ -94,7 +94,9 @@ public class DownloadManagersTableModel extends PFComponent implements
      */
     public void initialize() {
         TransferManager tm = model.getTransferManager();
-        for (DownloadManager downloadManager : tm.getCompletedDownloadsCollection()) {
+        for (DownloadManager downloadManager : tm
+            .getCompletedDownloadsCollection())
+        {
             if (!isMetaFolderDownload(downloadManager)) {
                 downloadManagers.add(downloadManager);
             }
@@ -376,6 +378,11 @@ public class DownloadManagersTableModel extends PFComponent implements
     private void removeDownload(Download download,
         boolean forceRemoveDownloadManager)
     {
+        if (download.getFile().getFolderInfo().isMetaFolder()
+            || isMetaFolderDownload(download.getDownloadManager()))
+        {
+            return;
+        }
         int index = downloadManagers.indexOf(download.getDownloadManager());
         if (index >= 0) {
             if (!download.getDownloadManager().hasSources()
