@@ -485,11 +485,23 @@ public class FolderRepository extends PFComponent implements Runnable {
                         String folderId = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
                                 + FOLDER_SETTINGS_ID);
-                        Reject.ifNull(folderId, "Folder id");
+                        if (StringUtils.isBlank(folderId)) {
+                            logWarning("Removed illegal folder config entry: "
+                                + folderId + '/' + folderMD5);
+                            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4
+                                + folderMD5);
+                            return;
+                        }
                         String folderName = config
                             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
                                 + FOLDER_SETTINGS_NAME);
-                        Reject.ifNull(folderName, "Folder name");
+                        if (StringUtils.isBlank(folderName)) {
+                            logWarning("Removed illegal folder config entry: "
+                                + folderName + '/' + folderMD5);
+                            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4
+                                + folderMD5);
+                            return;
+                        }
                         FolderInfo foInfo = new FolderInfo(folderName, folderId)
                             .intern();
                         FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
@@ -503,11 +515,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                     } catch (Exception e) {
                         logSevere("Problem loading/creating folder #"
                             + folderMD5 + ". " + e, e);
-                    }
-                    loadPermit.release();
-                    synchronized (nCreated) {
-                        nCreated.incrementAndGet();
-                        nCreated.notify();
+                    } finally {
+                        loadPermit.release();
+                        synchronized (nCreated) {
+                            nCreated.incrementAndGet();
+                            nCreated.notify();
+                        }
                     }
                 }
             };
