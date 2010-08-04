@@ -156,14 +156,17 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             .getNode(getContollerLisa().getMySelf().getInfo());
         final Member homerAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerHomer().getMySelf().getInfo());
-        assertTrue("Lisa not completely connected at Homer", lisaAtHomer.isCompletelyConnected());
+        assertTrue("Lisa not completely connected at Homer", lisaAtHomer
+            .isCompletelyConnected());
         lisaAtHomer.shutdown();
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
         TestHelper.waitMilliSeconds(10000);
-        assertFalse("Lisa still connected at Homer",lisaAtHomer.isCompletelyConnected());
-        assertFalse("Homer still connected at Lisa", homerAtLisa.isCompletelyConnected());
+        assertFalse("Lisa still connected at Homer", lisaAtHomer
+            .isCompletelyConnected());
+        assertFalse("Homer still connected at Lisa", homerAtLisa
+            .isCompletelyConnected());
 
         // Make friend
         lisaAtHomer.setFriend(true, "");
@@ -189,7 +192,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Again shutdown
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
 
-            public boolean reached() {        lisaAtHomer.shutdown();
+            public boolean reached() {
+                lisaAtHomer.shutdown();
                 return !lisaAtHomer.isCompletelyConnected()
                     && !homerAtLisa.isCompletelyConnected();
             }
@@ -240,7 +244,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerLisa(), true);
-        assertFalse("Marge at lisa should not be connected", margeAtLisa.isCompletelyConnected());
+        assertFalse("Marge at lisa should not be connected", margeAtLisa
+            .isCompletelyConnected());
 
         // Make friend
         margeAtLisa.setFriend(true, "");
@@ -257,8 +262,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-        assertFalse("Marge should not be a pre 4.0 client", margeAtLisa.isPre4Client());
-
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public String message() {
                 return "Marge has not been ask for friendship with Lisa!";
@@ -269,7 +272,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-      
         margeAtLisa.shutdown();
         // Marge is already friend. So auto-reconnect should happen
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -283,8 +285,9 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 return margeAtLisa.isCompletelyConnected();
             }
         });
-       
-        assertTrue("marge is not connected", margeAtLisa.isCompletelyConnected());
+
+        assertTrue("marge is not connected", margeAtLisa
+            .isCompletelyConnected());
         margeAtLisa.shutdown();
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
