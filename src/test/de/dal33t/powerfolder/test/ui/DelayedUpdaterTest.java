@@ -73,8 +73,9 @@ public class DelayedUpdaterTest extends TestCase {
                 return "Got only " + updates.size() + " updates";
             }
         });
-
-        assertEquals(10, updates.size());
+        assertTrue("Got wrong number of updates: " + updates.size(), updates
+            .size() >= 10
+            && updates.size() <= 12);
     }
 
     private class Update implements Runnable {
