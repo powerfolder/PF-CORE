@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
 import javax.swing.*;
 
@@ -96,17 +97,16 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         directoryFilter.setFlatMode(flatMode);
         treePanel.addTreeSelectionListener(tablePanel);
 
-        MyTransferManagerListener myTransferManagerListener
-                = new MyTransferManagerListener();
+        MyTransferManagerListener myTransferManagerListener = new MyTransferManagerListener();
         getController().getTransferManager().addListener(
-                myTransferManagerListener);
+            myTransferManagerListener);
 
         getController().getNodeManager().addNodeManagerListener(
-                new MyNodeManagerListener());
+            new MyNodeManagerListener());
 
         syncFolderButton = new SyncIconButtonMini(getController());
-        MySyncFolderAction syncFolderAction
-                = new MySyncFolderAction(getController());
+        MySyncFolderAction syncFolderAction = new MySyncFolderAction(
+            getController());
         syncFolderButton.addActionListener(syncFolderAction);
 
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
@@ -140,8 +140,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      * @param folderInfo
      */
     public void setFolderInfo(FolderInfo folderInfo) {
-        Folder f = getController().getFolderRepository().getFolder(
-            folderInfo);
+        Folder f = getController().getFolderRepository().getFolder(folderInfo);
         folder = f;
         updateNodes();
         directoryFilter.setFolder(f);
@@ -150,8 +149,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
     }
 
     public void scheduleDirectoryFiltering() {
@@ -161,7 +160,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     /**
      * Set the tab with details for a folder with new set and sort date
      * descending.
-     *
+     * 
      * @param folderInfo
      */
     public void setFolderInfoLatest(FolderInfo folderInfo) {
@@ -174,10 +173,9 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_NEW_ONLY);
     }
-
 
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
 
@@ -189,13 +187,13 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
     }
 
     /**
      * Set the tab with details for a folder with incoming files.
-     *
+     * 
      * @param folderInfo
      */
     public void setFolderInfoIncoming(FolderInfo folderInfo) {
@@ -207,8 +205,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         flatMode.setValue(flatViewCB.isSelected());
 
         // Triggers mode change and schedule filtering (MyActionListener).
-        filterSelectionComboBox.setSelectedIndex(
-                DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_INCOMING_ONLY);
     }
 
     /**
@@ -306,7 +304,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      */
     private void updateNodes() {
         if (folder != null) {
-            filterTextField.setMembers(folder.getMembersAsCollection());
+            filterTextField.setMembers(Arrays.asList(folder
+                .getConnectedMembers()));
         } else {
             filterTextField.setMembers(null);
         }
@@ -354,7 +353,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             tablePanel.toggleDetails();
         }
     }
-
 
     private class MySyncFolderAction extends BaseAction {
 
