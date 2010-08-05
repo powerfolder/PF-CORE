@@ -60,6 +60,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
     }
 
     public void testFileCopyCert8() throws IOException {
