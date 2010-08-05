@@ -1190,7 +1190,9 @@ public class TransferManager extends PFComponent {
      * @return the enqued upload, or null if not queued.
      */
     public Upload queueUpload(Member from, RequestDownload dl) {
-        logFine("Received download request from " + from + ": " + dl);
+        if (isFine()) {
+            logFine("Received download request from " + from + ": " + dl);
+        }
         if (dl == null || dl.file == null) {
             throw new NullPointerException("Downloadrequest/File is null");
         }
