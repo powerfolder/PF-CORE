@@ -1376,7 +1376,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         RequestDownload dlReq = (RequestDownload) message;
                         Upload ul = getController().getTransferManager()
                             .queueUpload(Member.this, dlReq);
-                        if (ul == null) {
+                        if (ul == null && isCompletelyConnected()) {
                             // Send abort
                             logWarning("Sending abort of " + dlReq.file);
                             sendMessagesAsynchron(new AbortUpload(dlReq.file));
