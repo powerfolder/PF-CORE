@@ -38,6 +38,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A text field that has a X button to remove the text, has a ValueModel holding
@@ -73,7 +74,7 @@ public class FileFilterTextField extends PFComponent {
 
     /**
      * create a FilterTextField
-     *
+     * 
      * @param controller
      */
     public FileFilterTextField(Controller controller) {
@@ -81,9 +82,9 @@ public class FileFilterTextField extends PFComponent {
         localValueModel = new ValueHolder();
         externalSearchTextValueModel = new ValueHolder();
         externalSearchModeValueModel = new ValueHolder();
-        externalSearchModeValueModel.setValue(PreferencesEntry
-                .FILE_SEARCH_MODE.getValueInt(controller));
-        computerButtons = new TreeMap<Member, JRadioButtonMenuItem>();
+        externalSearchModeValueModel.setValue(PreferencesEntry.FILE_SEARCH_MODE
+            .getValueInt(controller));
+        computerButtons = new ConcurrentHashMap<Member, JRadioButtonMenuItem>();
         buttonGroup = new ButtonGroup();
     }
 
