@@ -49,9 +49,10 @@ public class FindSameFilesTest extends TwoControllerTestCase {
      * @throws IOException
      */
     public void testFilelistAdapt() throws IOException {
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+
         File testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), "TestFile.txt");
-
         scanFolder(getFolderAtBart());
         // File should be found. version: 0
         TestHelper.changeFile(testFile);
