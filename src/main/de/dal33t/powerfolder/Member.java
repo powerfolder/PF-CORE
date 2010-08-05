@@ -1954,17 +1954,19 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 Folder metaFolder = repo
                                     .getMetaFolderForParent(folder.getInfo());
                                 if (metaFolder != null) {
-                                    if (!metaFolder.join(this)) {
+                                    if (metaFolder.join(this)) {
+                                        joinedFolders.add(metaFolder.getInfo());
+                                        if (isFiner()) {
+                                            logFiner("Joined meta folder: "
+                                                + metaFolder);
+
+                                        }
+                                    } else {
                                         logSevere("Unable to join meta folder of "
                                             + folder);
-                                    } else if (isFiner()) {
-                                        logFiner("Joined meta folder: "
-                                            + metaFolder);
-                                        joinedFolders.add(metaFolder.getInfo());
                                     }
                                 }
                             }
-
                         } else {
                             logWarning(this + " did not join into: " + folder);
                         }

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
+import java.io.File;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -28,8 +30,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
-
-import java.io.File;
 
 /**
  * Test cases for MetaFolder synchronization.
@@ -54,6 +54,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
             .getInfo());
         final Folder lisaMeta = lisaRepo
             .getMetaFolderForParent(getFolderAtLisa().getInfo());
+        assertTrue(bartMeta.hasReadPermission(getContollerLisa().getMySelf()));
         assertEquals(2, bartMeta.getMembersCount());
         assertEquals(2, lisaMeta.getMembersCount());
 
