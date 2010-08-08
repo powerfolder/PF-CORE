@@ -922,7 +922,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         List<Folder> foldersJoined = getFoldersActuallyJoined();
-        List<Folder> foldersCommon = getFoldersRequestedToJoin();
+        List<Folder> foldersRequested = getFoldersRequestedToJoin();
         if (isFine() && !foldersJoined.isEmpty()) {
             logFine("Joined " + foldersJoined.size() + " folders: "
                 + foldersJoined);
@@ -935,7 +935,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.createFileListMessages(folder, true);
+            Message[] filelistMsgs = FileList.createFileListMessages(folder,
+                true);
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -945,14 +946,14 @@ public class Member extends PFComponent implements Comparable<Member> {
                         + folder + ". " + e);
                 }
             }
-            foldersCommon.remove(folder);
+            foldersRequested.remove(folder);
         }
-        if (!foldersCommon.isEmpty()) {
+        if (!foldersRequested.isEmpty()) {
             if (isFine()) {
-                logWarning("NOT joined: " + foldersCommon);
+                logWarning("NOT joined: " + foldersRequested);
                 logWarning("Joined: " + foldersJoined);
             }
-            for (Folder folder : foldersCommon) {
+            for (Folder folder : foldersRequested) {
                 sendMessagesAsynchron(FileList.createNullList(folder.getInfo()));
             }
         }
@@ -963,7 +964,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + foldersJoined.size()
                 + " folders: "
                 + foldersJoined
-                + ", not joined: " + foldersCommon;
+                + ", not joined: " + foldersRequested;
             logWarning(reason);
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
@@ -1863,9 +1864,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!isCompletelyConnected()) {
             return;
         }
-
-        Collection<FolderInfo> joinedFolders = getController()
-            .getFolderRepository().getJoinedFolderInfos();
         ConnectionHandler thisPeer = peer;
         String remoteMagicId = thisPeer != null
             ? thisPeer.getRemoteMagicId()
@@ -1873,8 +1871,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (thisPeer == null || StringUtils.isBlank(remoteMagicId)) {
             return;
         }
-        folderJoinLock.lock();
         try {
+            folderJoinLock.lock();
             FolderList folderList = getLastFolderList();
             if (folderList != null) {
                 // Rejoin to local folders
@@ -1884,8 +1882,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logSevere("Unable to synchronize memberships, "
                     + "did not received folderlist from remote");
             }
+            Collection<FolderInfo> joinedFolders = getController()
+                .getFolderRepository().getJoinedFolderInfos();
             FolderList myFolderList = new FolderList(joinedFolders,
                 remoteMagicId);
+            logWarning("Sending: " + myFolderList);
             sendMessageAsynchron(myFolderList, null);
         } finally {
             folderJoinLock.unlock();
@@ -1965,6 +1966,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                                         logSevere("Unable to join meta folder of "
                                             + folder);
                                     }
+                                } else {
+                                    logSevere("Unable to join meta folder. Not found "
+                                        + folder);
                                 }
                             }
                         } else {
@@ -1976,15 +1980,14 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // ok now remove member from no longer joined folders
             for (Folder folder : repo.getFolders(true)) {
-                if (folder != null && !joinedFolders.contains(folder.getInfo()))
-                {
+                if (!joinedFolders.contains(folder.getInfo())) {
                     // remove this member from folder, if not on new folder
                     folder.remove(this);
                 }
             }
 
             if (!joinedFolders.isEmpty()) {
-                logInfo(getNick() + " joined " + joinedFolders.size()
+                logWarning(getNick() + " joined " + joinedFolders.size()
                     + " folder(s)");
                 if (!isFriend() && !server) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
@@ -2089,7 +2092,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         List<Folder> joinedFolders = new LinkedList<Folder>();
         for (Folder folder : getController().getFolderRepository().getFolders(
-            false))
+            true))
         {
             FolderInfo foInfo = folder.getInfo();
 
