@@ -125,6 +125,9 @@ public class SecurityManagerClient extends PFComponent implements
                             .get(nullSafeGet(accountInfo));
                         hasPermission = secondCheck != null ? secondCheck
                             .hasPermission(permission) : null;
+                        if (!CACHE_ENABLED) {
+                            hasPermission = null;
+                        }
                         if (hasPermission == null) {
                             hasPermission = Boolean.valueOf(client
                                 .getSecurityService().hasPermission(
