@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
+import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
@@ -30,7 +31,6 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -756,8 +757,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * The indirect reference to the internal concurrect hashmap. Contents may
-     * changed after get.
+     * All real-folders WITHOUT Meta-folders (#1548). Returns the indirect
+     * reference to the internal {@link ConcurrentMap}. Contents may changed
+     * after get.
      * 
      * @return the folders as unmodifiable collection
      */
@@ -766,7 +768,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * The indirect reference to the internal concurrect hashmap. Contents may
+     * All real-folders WITH or WITHOUT Meta-folders (#1548). Returns the
+     * indirect reference to the internal {@link ConcurrentMap}. Contents may
      * changed after get.
      * 
      * @param includeMetaFolders
@@ -782,13 +785,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @return the number of folders. Does NOT include the metadata folders.
+     * @return the number of folders. Does NOT include the meta-folders (#1548).
      */
     public int getFoldersCount() {
         return getFoldersCount(false);
     }
 
     /**
+     * @param includeMetaFolders
      * @return the number of folders
      */
     public int getFoldersCount(boolean includeMetaFolders) {
@@ -796,8 +800,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * @return an unmodifiable, but thread safe collection of all joined
-     *         folders.
+     * @return an unmodifiable, but thread safe collection of all joined real
+     *         folders, does NOT include meta-folders (#1548)
      */
     public Collection<FolderInfo> getJoinedFolderInfos() {
         return Collections.unmodifiableCollection(folders.keySet());
