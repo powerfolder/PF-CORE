@@ -542,7 +542,7 @@ public enum ConfigurationEntry {
     /**
      * The loglevel to print to console when verbose=true
      */
-    LOG_LEVEL_CONSOLE("log.console.level", Level.WARNING.getName()),
+    LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
 
     /**
      * Whether to request debug reports
