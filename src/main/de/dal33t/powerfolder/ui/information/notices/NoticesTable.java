@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.information.notices;
 
 import de.dal33t.powerfolder.ui.notices.Notice;
@@ -47,8 +47,7 @@ public class NoticesTable extends JTable {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setDefaultRenderer(Notice.class, new MyDefaultTreeCellRenderer());
 
-        setRowHeight(Icons.getIconById(Icons.NODE_CONNECTED)
-            .getIconHeight() + 3);
+        setRowHeight(Icons.getIconById(Icons.INFORMATION).getIconHeight() + 3);
 
         // add sorting
         getTableHeader().addMouseListener(new TableHeaderMouseListener());
@@ -58,53 +57,54 @@ public class NoticesTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
-                        getColumnModel(), 0, false);
+            getColumnModel(), 0, false);
     }
 
     /**
      * Make the height same as viewport (JScrollPane) if bigger than this.
-     *
+     * 
      * @return
      */
     public boolean getScrollableTracksViewportHeight() {
-    Container viewport = getParent();
-        return viewport instanceof JViewport &&
-                getPreferredSize().height < viewport.getHeight();
+        Container viewport = getParent();
+        return viewport instanceof JViewport
+            && getPreferredSize().height < viewport.getHeight();
     }
 
+    private static class MyDefaultTreeCellRenderer extends
+        DefaultTableCellRenderer
+    {
 
-    private static class MyDefaultTreeCellRenderer extends DefaultTableCellRenderer {
-
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected,
-                                                       boolean hasFocus, int row,
-                                                       int column) {
+        public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column)
+        {
             String myValue = "";
             if (value != null) {
                 Notice notice = (Notice) value;
                 setIcon(null);
                 switch (column) {
-                    case 0:  // severity
-                        myValue = Translation.getTranslation(
-                                notice.getNoticeSeverity().getDescriptionKey());
+                    case 0 : // severity
+                        myValue = Translation.getTranslation(notice
+                            .getNoticeSeverity().getDescriptionKey());
                         setHorizontalAlignment(LEFT);
                         Icon icon;
-                        if (notice.getNoticeSeverity() ==
-                                NoticeSeverity.INFORMATION) {
+                        if (notice.getNoticeSeverity() == NoticeSeverity.INFORMATION)
+                        {
                             icon = Icons.getIconById(Icons.INFORMATION);
-                        } else if (notice.getNoticeSeverity() ==
-                                NoticeSeverity.WARINING) {
+                        } else if (notice.getNoticeSeverity() == NoticeSeverity.WARINING)
+                        {
                             icon = Icons.getIconById(Icons.WARNING);
                         } else {
                             icon = Icons.getIconById(Icons.BLANK);
                         }
                         setIcon(icon);
                         break;
-                    case 1:  // date
+                    case 1 : // date
                         myValue = Format.formatDateShort(notice.getDate());
                         setHorizontalAlignment(RIGHT);
                         break;
-                    case 2:  // summary
+                    case 2 : // summary
                         myValue = notice.getSummary();
                         setHorizontalAlignment(LEFT);
                         break;
@@ -112,11 +112,12 @@ public class NoticesTable extends JTable {
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
-                    isSelected, hasFocus, row, column);
+                isSelected, hasFocus, row, column);
 
             if (!isSelected) {
-                setBackground(row % 2 == 0 ? ColorUtil.EVEN_TABLE_ROW_COLOR
-                        : ColorUtil.ODD_TABLE_ROW_COLOR);
+                setBackground(row % 2 == 0
+                    ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    : ColorUtil.ODD_TABLE_ROW_COLOR);
             }
 
             return c;
@@ -136,8 +137,7 @@ public class NoticesTable extends JTable {
                 int modelColumnNo = column.getModelIndex();
                 TableModel model = tableHeader.getTable().getModel();
                 if (model instanceof NoticesTableModel) {
-                    NoticesTableModel noticesTableModel =
-                            (NoticesTableModel) model;
+                    NoticesTableModel noticesTableModel = (NoticesTableModel) model;
                     boolean freshSorted = noticesTableModel
                         .sortBy(modelColumnNo);
                     if (!freshSorted) {
@@ -158,11 +158,12 @@ public class NoticesTable extends JTable {
         getTableHeader().setPreferredSize(new Dimension(totalWidth, 20));
 
         TableColumn column = getColumn(getColumnName(0));
-        column.setPreferredWidth(20);
-        column.setMinWidth(20);
-        column.setMaxWidth(20);
+        int size = Icons.getIconById(Icons.INFORMATION).getIconHeight() + 3;
+        column.setPreferredWidth(size);
+        column.setMinWidth(size);
+        column.setMaxWidth(size);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(80);
+        column.setPreferredWidth(40);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(200);
     }
