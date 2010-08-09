@@ -267,21 +267,10 @@ public class RelayedConnectionManager extends PFComponent {
             }, 10000);
         }
 
-        try {
-            destinationMember.sendMessage(message);
-            if (message.getPayload() != null) {
-                counter.bytesTransferred(message.getPayload().length);
-                nRelayedMsgs++;
-            }
-        } catch (ConnectionException e) {
-            log.log(Level.WARNING,
-                "Connection broken while relaying message to "
-                    + destinationMember.getNick() + ". " + e);
-            log.log(Level.FINER, e.toString(), e);
-            RelayedMessage eofMsg = new RelayedMessage(Type.EOF, message
-                .getDestination(), message.getSource(), message
-                .getConnectionId(), null);
-            receivedFrom.sendMessagesAsynchron(eofMsg);
+        destinationMember.sendMessagesAsynchron(message);
+        if (message.getPayload() != null) {
+            counter.bytesTransferred(message.getPayload().length);
+            nRelayedMsgs++;
         }
     }
 
