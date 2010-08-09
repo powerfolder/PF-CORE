@@ -950,8 +950,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         if (!foldersRequested.isEmpty()) {
             if (isFine()) {
-                logWarning("NOT joined: " + foldersRequested);
-                logWarning("Joined: " + foldersJoined);
+                logFine("Requested join : " + foldersRequested);
+                logFine("Actually joined: " + foldersJoined);
             }
             for (Folder folder : foldersRequested) {
                 sendMessagesAsynchron(FileList.createNullList(folder.getInfo()));
@@ -1891,7 +1891,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 .getFolderRepository().getJoinedFolderInfos();
             FolderList myFolderList = new FolderList(joinedFolders,
                 remoteMagicId);
-            logWarning("Sending: " + myFolderList);
             sendMessageAsynchron(myFolderList, null);
         } finally {
             folderJoinLock.unlock();
@@ -1992,8 +1991,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
 
             if (!joinedFolders.isEmpty()) {
-                logWarning(getNick() + " joined " + joinedFolders.size()
-                    + " folder(s)");
+                if (isFine()) {
+                    logFine(getNick() + " joined " + joinedFolders.size()
+                        + " folder(s)");
+                }
                 if (!isFriend() && !server) {
                     AskForFriendshipEvent event = new AskForFriendshipEvent(
                         getInfo(), joinedFolders);
