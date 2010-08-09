@@ -131,8 +131,8 @@ public class RelayedConnectionManager extends PFComponent {
 
         RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
             .getMySelf().getInfo(), destination, connectionId, null);
-        relay.sendMessage(synMsg);
         try {
+            relay.sendMessage(synMsg);
             waitForAckOrNack(relHan);
             relHan.init();
         } catch (ConnectionException e) {
@@ -267,10 +267,21 @@ public class RelayedConnectionManager extends PFComponent {
             }, 10000);
         }
 
-        destinationMember.sendMessagesAsynchron(message);
-        if (message.getPayload() != null) {
-            counter.bytesTransferred(message.getPayload().length);
-            nRelayedMsgs++;
+        if (message.getType().equals(RelayedMessage.Type.DATA_ZIPPED)) {
+            try {
+                destinationMember.sendMessage(message);
+            } catch (ConnectionException e) {
+                log.log(Level.WARNING,
+                    "Connection broken while relaying message to "
+                        + destinationMember.getNick() + ". " + e);
+                log.log(Level.FINER, e.toString(), e);
+                RelayedMessage eofMsg = new RelayedMessage(Type.EOF, message
+                    .getDestination(), message.getSource(), message
+                    .getConnectionId(), null);
+                receivedFrom.sendMessagesAsynchron(eofMsg);
+            }
+        } else {
+            destinationMember.sendMessagesAsynchron(message);
         }
     }
 
