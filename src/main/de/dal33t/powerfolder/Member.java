@@ -1290,6 +1290,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         int expectedTime = -1;
+        long start = System.currentTimeMillis();
         try {
             if (getController().getOSClient().isServer(this)) {
                 ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(true);
@@ -1782,6 +1783,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         } finally {
             ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(false);
             Profiling.end(profilingEntry, expectedTime);
+            long took = System.currentTimeMillis() - start;
+            if (took > 10000) {
+                logSevere("Handling message took " + took + "ms: " + message);
+            }
         }
     }
 
