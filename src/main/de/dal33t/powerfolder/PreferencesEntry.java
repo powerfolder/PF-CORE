@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.skin.Snowland;
+import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.ui.MainFrame;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
@@ -126,7 +126,7 @@ public enum PreferencesEntry {
     MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
 
     /** Skin name. */
-    SKIN_NAME("skin.name", Snowland.NAME),
+    SKIN_NAME("skin.name", LightSky.NAME),
 
     /** Minimize to system tray */
     MIN_TO_SYS_TRAY("min.to.sys.tray", false),
