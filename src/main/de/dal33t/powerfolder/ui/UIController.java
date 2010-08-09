@@ -814,7 +814,6 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
-
     public void openFilesInformationDeleted(FolderInfo folderInfo) {
         informationFrame.displayFolderFilesDeleted(folderInfo);
         displayInformationWindow();
@@ -1283,9 +1282,10 @@ public class UIController extends PFComponent {
                         .formatBytes(nTotalBytes), String.valueOf(folders
                         .size()));
 
-                handleNotice(new SimpleNotificationNotice(Translation
-                    .getTranslation("check_status.title"), text1 + "\n\n"
-                    + text2));
+                applicationModel.getNoticesModel().handleNotice(
+                    new SimpleNotificationNotice(Translation
+                        .getTranslation("check_status.title"), text1 + "\n\n"
+                        + text2));
             }
         }
     }
@@ -1319,44 +1319,6 @@ public class UIController extends PFComponent {
                 NotificationHandler notificationHandler = new NotificationHandler(
                     getController(), title, message, true);
                 notificationHandler.show();
-            }
-        }
-    }
-
-    /**
-     * This handles a notice object. If it is a notification, show in a
-     * notification handler. If it is actionable, add to the app model notices.
-     * 
-     * @param notice
-     *            the Notice to handle
-     */
-    public void handleNotice(Notice notice) {
-        if (started && !getController().isShuttingDown()) {
-            if ((Boolean) applicationModel.getSystemNotificationsValueModel()
-                .getValue()
-                && notice.isNotification())
-            {
-                NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), notice.getTitle(), notice.getSummary(),
-                    true);
-                notificationHandler.show();
-            }
-
-            if (notice.isActionable()) {
-
-                // Invitations are a special case. We do not care about
-                // invitations to folders that we have already joined.
-                if (notice instanceof InvitationNotice) {
-                    InvitationNotice in = (InvitationNotice) notice;
-                    Invitation i = in.getPayload();
-                    FolderInfo fi = i.folder;
-                    if (!getController().getFolderRepository()
-                            .hasJoinedFolder(fi)) {
-                        applicationModel.getNoticesModel().addNotice(notice);
-                    }
-                } else {
-                    applicationModel.getNoticesModel().addNotice(notice);
-                }
             }
         }
     }
@@ -1446,7 +1408,7 @@ public class UIController extends PFComponent {
                 .getTranslation("notice.invitation.title"), Translation
                 .getTranslation("notice.invitation.summary", invitation
                     .getInvitor().getNick()), invitation);
-            handleNotice(notice);
+            applicationModel.getNoticesModel().handleNotice(notice);
         }
     }
 
@@ -1462,7 +1424,7 @@ public class UIController extends PFComponent {
                     Translation.getTranslation(
                         "notice.ask_for_friendship.summary", event
                             .getMemberInfo().getNick()), event);
-                handleNotice(notice);
+                applicationModel.getNoticesModel().handleNotice(notice);
             }
         }
     }

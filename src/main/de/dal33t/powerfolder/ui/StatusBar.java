@@ -304,10 +304,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         .showConnectivityWarning(controller);
                 }
             };
-            WarningNotice notice = new WarningNotice(
-                    Translation.getTranslation("warning_notice.title"),
-                    Translation.getTranslation("warning_notice.limited_connectivity"),
-                    runnable);
+            WarningNotice notice = new WarningNotice(Translation
+                .getTranslation("warning_notice.title"), Translation
+                .getTranslation("warning_notice.limited_connectivity"),
+                runnable);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
         }
@@ -377,8 +377,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         + Translation
                             .getTranslation("general.network_mode.lan_only")
                         + ')';
-                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE &&
-                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController()))
+                } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
+                    && !ConfigurationEntry.BACKUP_ONLY_CLIENT
+                        .getValueBoolean(getController()))
                 {
                     text += " ("
                         + Translation
@@ -399,8 +400,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 text += " ("
                     + Translation
                         .getTranslation("general.network_mode.lan_only") + ')';
-            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE &&
-                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController()))
+            } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
+                && !ConfigurationEntry.BACKUP_ONLY_CLIENT
+                    .getValueBoolean(getController()))
             {
                 text += " ("
                     + Translation
@@ -429,13 +431,13 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 if (newState == DISABLED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.disabled");
-                    getUIController().handleNotice(new SimpleNotificationNotice(
-                            title, notificationText));
+                    getApplicationModel().getNoticesModel().handleNotice(
+                        new SimpleNotificationNotice(title, notificationText));
                 } else if (newState == CONNECTED) {
                     notificationText = Translation
                         .getTranslation("status_bar.status_change.connected");
-                    getUIController().handleNotice(new SimpleNotificationNotice(
-                            title, notificationText));
+                    getApplicationModel().getNoticesModel().handleNotice(
+                        new SimpleNotificationNotice(title, notificationText));
                 } else {
                     // Disconnected
                 }
@@ -471,10 +473,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             };
 
-            WarningNotice notice = new WarningNotice(
-                    Translation.getTranslation("warning_notice.title"),
-                    Translation.getTranslation("warning_notice.poor_quality"),
-                    runnable);
+            WarningNotice notice = new WarningNotice(Translation
+                .getTranslation("warning_notice.title"), Translation
+                .getTranslation("warning_notice.poor_quality"), runnable);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
         }
@@ -506,8 +507,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         if (networkingMode == NetworkingMode.LANONLYMODE) {
             networkModeLabel.setText(Translation
                 .getTranslation("general.network_mode.lan_only"));
-        } else if (networkingMode == NetworkingMode.SERVERONLYMODE &&
-                !ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+        } else if (networkingMode == NetworkingMode.SERVERONLYMODE
+            && !ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController()))
+        {
             networkModeLabel.setText(Translation
                 .getTranslation("general.network_mode.server_only"));
         } else {
