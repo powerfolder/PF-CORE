@@ -23,7 +23,13 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.binding.value.ValueHolder;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notification.NotificationHandler;
+import de.dal33t.powerfolder.util.Visitor;
 
 import java.util.List;
 import java.util.Collections;
@@ -32,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Model of the notices awaiting action by the user.
  */
-public class NoticesModel extends PFComponent {
+public class NoticesModel extends PFUIComponent {
 
     private final ValueModel receivedNoticesCountVM = new ValueHolder();
 
@@ -40,7 +46,7 @@ public class NoticesModel extends PFComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public NoticesModel(Controller controller) {
@@ -50,28 +56,32 @@ public class NoticesModel extends PFComponent {
 
     /**
      * Value model with integer count of received invitations.
-     *
+     * 
      * @return
      */
     public ValueModel getReceivedNoticesCountVM() {
         return receivedNoticesCountVM;
     }
 
-    public void addNotice(Notice notice) {
+    public boolean addNotice(Notice notice) {
+        if (notices.contains(notice)) {
+            logFine("Ignoring existing notice: " + notice);
+            return false;
+        }
         notices.add(notice);
         receivedNoticesCountVM.setValue(notices.size());
+        return true;
     }
 
     /**
      * Remove a notice from the model for display, etc.
-     *
+     * 
      * @return
      */
     public Notice popNotice() {
         if (!notices.isEmpty()) {
             Notice notice = notices.remove(0);
-            receivedNoticesCountVM.setValue(
-                    notices.size());
+            receivedNoticesCountVM.setValue(notices.size());
             return notice;
         }
         return null;
@@ -84,6 +94,45 @@ public class NoticesModel extends PFComponent {
      */
     public List<Notice> getAllNotices() {
         return Collections.unmodifiableList(notices);
+    }
+
+    /**
+     * This handles a notice object. If it is a notification, show in a
+     * notification handler. If it is actionable, add to the app model notices.
+     * 
+     * @param notice
+     *            the Notice to handle
+     */
+    public void handleNotice(Notice notice) {
+        if (!getUIController().isStarted() || getController().isShuttingDown())
+        {
+            return;
+        }
+
+        if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
+            .getValue()
+            && notice.isNotification())
+        {
+            NotificationHandler notificationHandler = new NotificationHandler(
+                getController(), notice.getTitle(), notice.getSummary(), true);
+            notificationHandler.show();
+        }
+
+        if (notice.isActionable()) {
+            // Invitations are a special case. We do not care about
+            // invitations to folders that we have already joined.
+            if (notice instanceof InvitationNotice) {
+                InvitationNotice in = (InvitationNotice) notice;
+                Invitation i = in.getPayload();
+                FolderInfo fi = i.folder;
+                if (!getController().getFolderRepository().hasJoinedFolder(fi))
+                {
+                    addNotice(notice);
+                }
+            } else {
+                addNotice(notice);
+            }
+        }
     }
 
     public void clearAll() {

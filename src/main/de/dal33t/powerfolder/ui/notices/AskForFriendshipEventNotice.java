@@ -20,18 +20,21 @@
 package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
- * Notice of a request for freindship.
- * Show in notification and add to app model.
+ * Notice of a request for freindship. Show in notification and add to app
+ * model.
  */
 public class AskForFriendshipEventNotice extends NoticeBase {
 
     private final AskForFriendshipEvent event;
 
     public AskForFriendshipEventNotice(String title, String summary,
-                            AskForFriendshipEvent event) {
+        AskForFriendshipEvent event)
+    {
         super(title, summary);
+        Reject.ifNull(event, "Event is null");
         this.event = event;
     }
 
@@ -52,6 +55,34 @@ public class AskForFriendshipEventNotice extends NoticeBase {
     }
 
     public boolean isPersistable() {
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime
+            * result
+            + ((event.getMemberInfo() == null) ? 0 : event.getMemberInfo()
+                .hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AskForFriendshipEventNotice other = (AskForFriendshipEventNotice) obj;
+        if (event.getMemberInfo() == null) {
+            if (other.event.getMemberInfo() != null)
+                return false;
+        } else if (!event.getMemberInfo().equals(other.event.getMemberInfo()))
+            return false;
         return true;
     }
 }
