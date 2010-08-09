@@ -534,8 +534,9 @@ public class RelayedConnectionManager extends PFComponent {
     private class ServerIsRelayFilter implements RelayFilter {
 
         public final boolean isRelay(Member node) {
-            // Default: Server also acts as relay. #1488
-            return getController().getOSClient().isServer(node);
+            // Default: Any server of the cloud acts as relay. #1488
+            return node.isServer()
+                || getController().getOSClient().isServer(node);
         }
 
     }
