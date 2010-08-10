@@ -1189,7 +1189,7 @@ public class TransferManager extends PFComponent {
      * @param dl
      * @return the enqued upload, or null if not queued.
      */
-    public Upload queueUpload(Member from, RequestDownload dl) {
+    public Upload queueUpload(final Member from, RequestDownload dl) {
         if (isFine()) {
             logFine("Received download request from " + from + ": " + dl);
         }
@@ -1249,7 +1249,7 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        Upload upload = new Upload(this, from, dl);
+        final Upload upload = new Upload(this, from, dl);
         if (upload.isBroken()) { // connection lost
             // Check if this download is broken
             return null;
@@ -1298,21 +1298,22 @@ public class TransferManager extends PFComponent {
         // Trigger working thread on upload enqueued
         triggerTransfersCheck();
 
-        // Wait to let the transfers check grab the new download
-        try {
-            Thread.sleep(5);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // Wait 500ms to let the transfers check grab the new download
+        getController().schedule(new Runnable() {
+            public void run() {
+                // If upload is queued.
+                if (!upload.isStarted() && !upload.isCompleted()
+                    && !upload.isBroken() && !upload.isAborted())
+                {
+                    from.sendMessageAsynchron(new DownloadQueued(upload
+                        .getFile()), null);
+                } else if (isFiner()) {
+                    logFiner("Optimization. Did not send DownloadQueued message for "
+                        + upload.getFile() + " to " + upload.getPartner());
+                }
+            }
+        }, 500L);
 
-        // If upload is not started, tell peer
-        if (!upload.isStarted()) {
-            from.sendMessageAsynchron(new DownloadQueued(upload.getFile()),
-                null);
-        } else if (isFiner()) {
-            logFiner("Optimization. Did not send DownloadQueued message for "
-                + upload.getFile() + " to " + upload.getPartner());
-        }
         return upload;
     }
 
