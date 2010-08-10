@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.Map.Entry;
@@ -201,7 +203,7 @@ public class FolderWatcher extends PFComponent {
             }
             FileInfo dirtyFile = null;
             try {
-                int scanned = 0;
+                List<FileInfo> fileInfos = new LinkedList<FileInfo>();
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
                     if (ignoreAll || ignoreFiles.containsKey(dirtyFile)) {
@@ -213,21 +215,12 @@ public class FolderWatcher extends PFComponent {
                             + ": " + folder.getLocalBase());
                         continue;
                     }
-                    FileInfo fileInfo = folder.scanChangedFile(dirtyFile);
-                    if (fileInfo == null) {
-                        if (isFine()) {
-                            logFine("No change of file: "
-                                + dirtyFile.toDetailString());
-                        }
-                    } else {
-                        scanned++;
-                        if (isFine()) {
-                            logFine("Scaned file: " + fileInfo.toDetailString());
-                        }
-                    }
+                    fileInfos.add(dirtyFile);
                 }
-                if (scanned > 0) {
-                    logWarning("Scanned " + scanned + " dirty files");
+                folder.scanChangedFiles(fileInfos);
+                if (fileInfos.size() > 0) {
+                    folder.scanChangedFiles(fileInfos);
+                    logWarning("Scanned " + fileInfos.size() + " dirty files");
                 }
                 dirtyFiles.clear();
             } catch (Exception e) {

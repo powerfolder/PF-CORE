@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -990,6 +991,32 @@ public class Folder extends PFComponent {
             fileChanged(localFileInfo);
         }
         return localFileInfo;
+    }
+
+    /**
+     * Scans multiple new, deleted or restored File callback for
+     * {@link #getFolderWatcher()} only.
+     * 
+     * @param fileInfos
+     *            the files to scan.
+     */
+    void scanChangedFiles(Collection<FileInfo> fileInfos) {
+        Reject.ifNull(fileInfos, "FileInfo collection is null");
+        for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
+            FileInfo fileInfo = (FileInfo) it.next();
+            FileInfo localFileInfo = scanChangedFile0(fileInfo);
+            if (localFileInfo == null) {
+                // No change
+                it.remove();
+            }
+        }
+        if (fileInfos.size() > 0) {
+            fireFilesChanged(fileInfos);
+            Message[] msgs = FileList.createFileListMessages(currentInfo,
+                fileInfos, diskItemFilter, true);
+            broadcastMessages(msgs);
+            setDBDirty();
+        }
     }
 
     /**
@@ -3521,7 +3548,6 @@ public class Folder extends PFComponent {
         fireFileChanged(fileInfo);
         setDBDirty();
 
-        // TODO FIXME Check if this is necessary
         FileInfo localInfo = getFile(fileInfo);
         if (diskItemFilter.isRetained(localInfo)) {
             broadcastMessages(new FolderFilesChanged(localInfo));
@@ -3533,6 +3559,14 @@ public class Folder extends PFComponent {
             logFiner("fireFileChanged: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, fileInfo);
+        folderListenerSupport.fileChanged(folderEvent);
+    }
+
+    private void fireFilesChanged(Collection<FileInfo> fileInfos) {
+        if (isFiner()) {
+            logFiner("fireFileChanged: " + this);
+        }
+        FolderEvent folderEvent = new FolderEvent(this, fileInfos, true);
         folderListenerSupport.fileChanged(folderEvent);
     }
 
