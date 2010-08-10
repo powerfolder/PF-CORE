@@ -82,8 +82,9 @@ public class TestSerialize {
         for (int i = 0; i < files.length; i++) {
             files[i] = generateFileInfo();
         }
-        FileList list = (FileList) FileList.createFileListMessagesForTest(
-            generateFolderInfo(), Arrays.asList(files), new DiskItemFilter())[0];
+        FileList list = (FileList) FileList.createFileListMessages(
+            generateFolderInfo(), Arrays.asList(files), new DiskItemFilter(),
+            false)[0];
         return list;
     }
 
