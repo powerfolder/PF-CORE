@@ -24,7 +24,9 @@ package de.dal33t.powerfolder.ui.notices;
  * there is no payload and it is not to be added to the app model notices.
  */
 public class SimpleNotificationNotice extends NoticeBase {
-
+    
+    private static final long serialVersionUID = 100L;
+    
     /**
      * Constuct a simple notification notice.
      *

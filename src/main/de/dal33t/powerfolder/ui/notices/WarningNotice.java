@@ -24,10 +24,11 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
- * Notice to wrap a WarningEvent.
- * Show in notification and add to app model.
+ * Notice to wrap a WarningEvent. Show in notification and add to app model.
  */
 public class WarningNotice extends NoticeBase {
+
+    private static final long serialVersionUID = 100L;
 
     private final Runnable runnable;
 
@@ -37,13 +38,14 @@ public class WarningNotice extends NoticeBase {
     }
 
     @SuppressWarnings({"NonSerializableFieldInSerializableClass"})
-    public WarningNotice(final Controller controller , final String title,
-                        String summary, final String message) {
+    public WarningNotice(final Controller controller, final String title,
+        String summary, final String message)
+    {
         super(title, summary);
         runnable = new Runnable() {
             public void run() {
                 DialogFactory.genericDialog(controller, title, message,
-                        GenericDialogType.WARN);
+                    GenericDialogType.WARN);
             }
         };
     }
@@ -66,7 +68,7 @@ public class WarningNotice extends NoticeBase {
 
     /**
      * Cannot persist these because the Runnable is not Serializable.
-     *
+     * 
      * @return
      */
     public boolean isPersistable() {

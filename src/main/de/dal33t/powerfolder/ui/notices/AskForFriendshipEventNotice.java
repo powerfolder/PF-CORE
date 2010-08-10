@@ -27,7 +27,9 @@ import de.dal33t.powerfolder.util.Reject;
  * model.
  */
 public class AskForFriendshipEventNotice extends NoticeBase {
-
+    
+    private static final long serialVersionUID = 100L;
+    
     private final AskForFriendshipEvent event;
 
     public AskForFriendshipEventNotice(String title, String summary,

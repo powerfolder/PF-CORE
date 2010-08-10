@@ -27,6 +27,8 @@ import java.util.UUID;
  */
 public abstract class NoticeBase implements Notice {
 
+    private static final long serialVersionUID = 100L;
+
     private final Date date;
     private final String title;
     private final String summary;

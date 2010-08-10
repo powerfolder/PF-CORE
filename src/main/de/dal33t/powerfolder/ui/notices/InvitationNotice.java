@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.message.Invitation;
  * Show in notification and add to app model.
  */
 public class InvitationNotice extends NoticeBase {
+    
+    private static final long serialVersionUID = 100L;
 
     private final Invitation invitation;
 
