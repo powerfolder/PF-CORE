@@ -45,47 +45,62 @@ import de.dal33t.powerfolder.util.IdGenerator;
 public class FileListTest extends TestCase {
 
     public void testListSplitting() {
-        testListSplitting((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
-        testListSplitting(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
-        testListSplitting(1);
+        testListSplitting(
+            (int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75), false);
+        testListSplitting(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, false);
+        testListSplitting(1, false);
+    }
+
+    public void testListSplittingOnlyChanges() {
+        testListSplitting(
+            (int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75), true);
+        testListSplitting(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, true);
+        testListSplitting(1, true);
     }
 
     public void testMulipleListSplitting() {
         for (int i = 0; i < 40; i++) {
-            testListSplitting(i);
+            testListSplitting(i, false);
         }
         for (int i = 0; i < 40; i++) {
-            testListSplitting(i * 343);
+            testListSplitting(i * 343, false);
         }
     }
 
     /**
      * Tests the correct splitting of the filelist.
      */
-    private void testListSplitting(int nFiles) {
+    private void testListSplitting(int nFiles, boolean onlyChanges) {
         List<FileInfo> files = new ArrayList<FileInfo>();
         for (int i = 0; i < nFiles; i++) {
             files.add(createRandomFileInfo(i));
         }
 
         // Now split. Empty blacklist
-        Message[] msgs = FileList.createFileListMessagesForTest(
-            createRandomFolderInfo(), files, new DiskItemFilter());
+        Message[] msgs = FileList.createFileListMessages(
+            createRandomFolderInfo(), files, new DiskItemFilter(), onlyChanges);
 
         // Test
-        assertTrue(msgs[0] instanceof FileList);
+        if (onlyChanges) {
+            assertTrue(msgs[0] instanceof FolderFilesChanged);
+        } else {
+            assertTrue(msgs[0] instanceof FileList);
+        }
         for (int i = 1; i < msgs.length; i++) {
             assertTrue(msgs[i] instanceof FolderFilesChanged);
         }
         // Check content
-        FileList fileList1 = (FileList) msgs[0];
-
-        assertEquals("Number of expected number of delta filelists mismatch",
-            fileList1.nFollowingDeltas, msgs.length - 1);
+        FileList fileList1 = null;
+        if (!onlyChanges) {
+            fileList1 = (FileList) msgs[0];
+            assertEquals(
+                "Number of expected number of delta filelists mismatch",
+                fileList1.nFollowingDeltas, msgs.length - 1);
+        }
 
         int t = 0;
         for (int i = 0; i < files.size(); i++) {
-            if (i < Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
+            if (i < Constants.FILE_LIST_MAX_FILES_PER_MESSAGE && !onlyChanges) {
                 assertEquals(files.get(i), fileList1.files[i]);
             } else {
                 t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
@@ -125,8 +140,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(), true,
-            true);
+            createRandomFolderInfo(), files, new DiskItemFilter(), true, true);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -150,8 +164,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(), false,
-            true);
+            createRandomFolderInfo(), files, new DiskItemFilter(), false, true);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {

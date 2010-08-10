@@ -79,8 +79,8 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
             files[i] = createRandomFileInfo(foInfo);
         }
         // Now split
-        final Message[] msgs = FileList.createFileListMessagesForTest(foInfo, Arrays
-            .asList(files), new DiskItemFilter());
+        final Message[] msgs = FileList.createFileListMessages(foInfo, Arrays
+            .asList(files), new DiskItemFilter(), false);
 
         for (int i = 0; i < msgs.length; i++) {
             Message message = msgs[i];
@@ -107,7 +107,8 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         assertEquals(msgs.length - 1, receivedDeltas);
 
         // String .intern check after serialization
-        assertEquals(files[0].getRelativeName(), filelist.files[0].getRelativeName());
+        assertEquals(files[0].getRelativeName(), filelist.files[0]
+            .getRelativeName());
         // assertSame(
         // "Filename string instances are not SAME (==). Intern missing at serialization?",
         // files[0].getRelativeName(), filelist.files[0].getRelativeName());
