@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.event;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EventObject;
 
 import de.dal33t.powerfolder.Member;
@@ -60,9 +61,9 @@ public class FolderEvent extends EventObject {
     private Member member;
 
     /**
-     * The single file that has been freshly scanned
+     * The files that has been freshly scanned
      */
-    private FileInfo scannedFileInfo;
+    private Collection<FileInfo> scannedFileInfos;
 
     /**
      * The locally deleted files
@@ -101,15 +102,23 @@ public class FolderEvent extends EventObject {
     }
 
     public FolderEvent(Folder source, FileInfo fileInfo) {
+        this(source, Collections.singleton(fileInfo), true);
+    }
+
+    public FolderEvent(Folder source, Collection<FileInfo> fileInfos,
+        boolean scanned)
+    {
         super(source);
-        Reject.ifNull(fileInfo, "FileInfo is null");
-        this.scannedFileInfo = fileInfo;
+        Reject.ifNull(fileInfos, "FileInfo is null");
+        if (scanned) {
+            this.scannedFileInfos = fileInfos;
+        } else {
+            this.deletedFileInfos = fileInfos;
+        }
     }
 
     public FolderEvent(Folder source, Collection<FileInfo> fileInfos) {
-        super(source);
-        Reject.ifNull(fileInfos, "DeletedFileInfos is null");
-        this.deletedFileInfos = fileInfos;
+        this(source, fileInfos, false);
     }
 
     public FolderEvent(Folder source, SyncProfile profile) {
@@ -138,8 +147,8 @@ public class FolderEvent extends EventObject {
         return member;
     }
 
-    public FileInfo getScannedFileInfo() {
-        return scannedFileInfo;
+    public Collection<FileInfo> getScannedFileInfos() {
+        return scannedFileInfos;
     }
 
     public Collection<FileInfo> getDeletedFileInfos() {
