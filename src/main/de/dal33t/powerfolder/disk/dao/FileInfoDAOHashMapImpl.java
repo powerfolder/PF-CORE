@@ -278,7 +278,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (recursive) {
             return true;
         }
-        int offset = path != null ? path.length() + 2 : 0;
+        int offset = path != null ? path.length() + 1 : 0;
         int i = fInfo.getRelativeName().indexOf('/', offset);
         // No other subdirectory at end.
         return i < 0;
