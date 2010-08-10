@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +42,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -363,6 +362,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
             fileInfosToRestore.clear();
             try {
                 fileInfosToRestore.addAll(get());
+            } catch (CancellationException e) {
+                log.log(Level.INFO, "Restore was cancelled");
             } catch (Exception e) {
                 log.log(Level.WARNING, "Unable to add files to restore. " + e,
                     e);
