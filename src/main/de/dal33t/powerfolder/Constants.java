@@ -50,7 +50,7 @@ public class Constants {
      * The name of the 'meta' subdirectory, home of the metaFolder files.
      */
     public static final String METAFOLDER_SUBDIR = "meta";
-    
+
     /**
      * The prefix for meta folder IDs.
      */
@@ -268,16 +268,16 @@ public class Constants {
     public static final long DOWNLOAD_REQUEST_TIMEOUT_LIMIT = 3L * 60 * 1000;
 
     /**
-     * The upload timeout of the first part request. After the time of inactivity the
-     * upload is assumed to be timed out. This value is very large since delta
-     * sync allows for quite alot of time to pass before requesting. (time it
-     * takes to hash)
+     * The upload timeout of the first part request. After the time of
+     * inactivity the upload is assumed to be timed out. This value is very
+     * large since delta sync allows for quite alot of time to pass before
+     * requesting. (time it takes to hash)
      */
     public static final long UPLOAD_FIRST_PART_REQUEST_TIMEOUT = 5L * 60 * 60 * 1000;
-    
+
     /**
-     * The upload timeout of following part request. After the time of inactivity the
-     * upload is assumed to be timed out.
+     * The upload timeout of following part request. After the time of
+     * inactivity the upload is assumed to be timed out.
      */
     public static final long UPLOAD_FOLLOWING_PART_REQUEST_TIMEOUT = 1L * 60 * 1000;
 
@@ -318,12 +318,6 @@ public class Constants {
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
 
-    /**
-     * This is half a month, so this represents whether a date is in the top or
-     * bottom half of the month.
-     */
-    public final static int SEMI_MONTH = 1001;
-
     // Pro related ************************************************************
 
     /**
@@ -333,7 +327,7 @@ public class Constants {
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "de.dal33t.powerfolder.BC";
 
-    public static final String SESSIONS_SUB_DIR = "sessions";
+    public static final String SESSIONS_SUB_DIR = "database/sessions";
 
     // Web stuff **************************************************************
 
