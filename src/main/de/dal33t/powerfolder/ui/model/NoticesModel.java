@@ -104,7 +104,8 @@ public class NoticesModel extends PFUIComponent {
      *            the Notice to handle
      */
     public void handleNotice(Notice notice) {
-        if (!getUIController().isStarted() || getController().isShuttingDown())
+        if (!getUIController().isStarted() || getController().isShuttingDown()
+            || notices.contains(notice))
         {
             return;
         }
