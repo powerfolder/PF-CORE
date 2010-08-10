@@ -266,15 +266,21 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         }
 
         FileInfo dirInfo = createRandomFileInfo(0, "TheDirectory", 0, true);
+        FileInfo dirInfo2 = createRandomFileInfo(0, "x", 0, true);
         dao.store(null, dirInfo);
+        dao.store(null, dirInfo2);
         for (int i = 0; i < n; i++) {
             FileInfo fInfo = createRandomFileInfo(i, dirInfo.getFilenameOnly()
                 + "/MyExcelsheet.xls");
             dao.store(null, fInfo);
+            FileInfo fInfo2 = createRandomFileInfo(i, dirInfo2
+                .getFilenameOnly()
+                + "/MyExcelsheet.xls");
+            dao.store(null, fInfo2);
         }
 
-        int nItems = n * 3 + 1;
-        int nFiles = n * 2;
+        int nItems = n * 4 + 2;
+        int nFiles = n * 3;
         assertEquals(nItems, dao.count(null, true, false));
         assertEquals(nFiles, dao.count(null, false, false));
 
@@ -284,7 +290,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
             .size());
         assertEquals(nItems, dao
             .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
-        assertEquals(n * 2 + 1, dao.findInDirectory(null, "subdir1/SUBDIR2/",
+        assertEquals(n * 2 + 2, dao.findInDirectory(null, "subdir1/SUBDIR2/",
             false).size());
         assertEquals(n, dao.findInDirectory(null, (DirectoryInfo) dirInfo,
             false).size());

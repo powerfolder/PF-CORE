@@ -6,7 +6,6 @@ import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class FileInfoDAOHashTest extends FileInfoDAOTestCase {
     private FileInfoDAO dao;
@@ -15,7 +14,6 @@ public class FileInfoDAOHashTest extends FileInfoDAOTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        TestHelper.cleanTestDir();
         filter = new DiskItemFilter();
         dao = new FileInfoDAOHashMapImpl("ME", filter);
     }
