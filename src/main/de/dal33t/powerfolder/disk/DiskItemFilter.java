@@ -90,21 +90,25 @@ public class DiskItemFilter {
     }
 
     /**
-     * Loads patterns from file. Removes all previous patterns.
-     * Only if there is actually a change to the patterns.
+     * Loads patterns from file. Removes all previous patterns. Only if there is
+     * actually a change to the patterns.
      * 
      * @param file
-     *          file to read patterns from
+     *            file to read patterns from
+     * @param markDirtyIfChanged
+     *            true if this disk item filter should be marked dirty after
+     *            loading. Usually done on re-loading load from disk of the
+     *            patterns.
      */
-    public void loadPatternsFrom(File file) {
+    public void loadPatternsFrom(File file, boolean markDirtyIfChanged) {
         if (file.exists()) {
             BufferedReader reader = null;
             try {
                 List<Pattern> tempPatterns = new ArrayList<Pattern>();
                 reader = new BufferedReader(new FileReader(file));
-                String pattern;
-                while ((pattern = reader.readLine()) != null) {
-                    String trimmedPattern = pattern.trim();
+                String readPattern;
+                while ((readPattern = reader.readLine()) != null) {
+                    String trimmedPattern = readPattern.trim();
                     if (trimmedPattern.length() > 0) {
                         tempPatterns.add(createPattern(trimmedPattern));
                     }
@@ -124,16 +128,26 @@ public class DiskItemFilter {
                 }
 
                 if (allTheSame) {
-                    log.fine("Received a pattern file identical to own, so ignoring it.");
-                } else {
-                    // Something changed. Redo the patterns.
-                    log.fine("Received a pattern file different to own, so loading it.");
-                    removeAllPatterns();
-                    for (Pattern tempPattern : tempPatterns) {
-                        addPattern0(tempPattern);
-                    }
+                    // No change at all.
+                    log
+                        .fine("Received a pattern file identical to own, so ignoring it.");
+                    return;
                 }
 
+                // Something changed. Redo the patterns.
+                log
+                    .fine("Received a pattern file different to own, so loading it.");
+                for (Pattern oldPattern : patterns) {
+                    patterns.remove(oldPattern);
+                    listenerSupport.patternRemoved(new PatternChangedEvent(
+                        this, oldPattern.getPatternText(), false));
+                }
+                for (Pattern newPattern : tempPatterns) {
+                    patterns.add(newPattern);
+                    listenerSupport.patternAdded(new PatternChangedEvent(this,
+                        newPattern.getPatternText(), true));
+                }
+                dirty = markDirtyIfChanged;
             } catch (IOException ioe) {
                 log.log(Level.SEVERE, "Problem loading pattern from " + file,
                     ioe);
@@ -190,13 +204,13 @@ public class DiskItemFilter {
 
     private static Pattern createPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
-        return PatternFactory.createPattern(patternText.replaceAll(
-            "\\\\", "/").toLowerCase());
+        return PatternFactory.createPattern(patternText.replaceAll("\\\\", "/")
+            .toLowerCase());
     }
 
     /**
      * Add a patterns to the list for filtering.
-     *
+     * 
      * @param patternText
      */
     public void addPattern(String patternText) {
@@ -208,21 +222,20 @@ public class DiskItemFilter {
      * 
      * @param pattern
      */
-    private boolean addPattern0(Pattern pattern) {
+    private void addPattern0(Pattern pattern) {
         if (patterns.contains(pattern)) {
             // Already contained
-            return false;
+            return;
         }
         try {
             patterns.add(pattern);
             dirty = true;
-            listenerSupport.patternAdded(new PatternChangedEvent(this,
-                pattern.getPatternText(), true));
+            listenerSupport.patternAdded(new PatternChangedEvent(this, pattern
+                .getPatternText(), true));
         } catch (PatternSyntaxException e) {
             log.log(Level.SEVERE, "Problem adding pattern "
                 + pattern.getPatternText(), e);
         }
-        return true;
     }
 
     public void removeAllPatterns() {
