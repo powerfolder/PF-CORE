@@ -75,8 +75,6 @@ public class AskForFriendshipEventNotice extends NoticeBase {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!super.equals(obj))
-            return false;
         if (getClass() != obj.getClass())
             return false;
         AskForFriendshipEventNotice other = (AskForFriendshipEventNotice) obj;
