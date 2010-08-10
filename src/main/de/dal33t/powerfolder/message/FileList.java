@@ -121,11 +121,11 @@ public class FileList extends FolderRelatedMessage {
             dirInfos = Collections.emptyList();
         }
         return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
-            dirInfos, folder.getDiskItemFilter());
+            dirInfos, folder.getDiskItemFilter(), false);
     }
 
     /**
-     * Splits the filelist into smaller ones. Always splits into one
+     * Splits the filelist into smaller ones. Splits into one
      * <code>FileList</code> and (if required) multiple
      * <code>FolderFilesChanged</code> messages
      * 
@@ -135,13 +135,18 @@ public class FileList extends FolderRelatedMessage {
      *            the fileinfos to include.
      * @param diskItemFilter
      *            the item filter to appy
+     * @param onlyChanges
+     *            if the messages should contain only {@link FolderFilesChanged}
+     *            or contain a {@link FileList} as first message.
      * @return the splitted list
      */
-    public static Message[] createFileListMessagesForTest(FolderInfo foInfo,
-        Collection<FileInfo> files, DiskItemFilter diskItemFilter)
+    public static Message[] createFileListMessages(FolderInfo foInfo,
+        Collection<FileInfo> files, DiskItemFilter diskItemFilter,
+        boolean onlyChanges)
     {
         Collection<DirectoryInfo> dirInfos = Collections.emptyList();
-        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter);
+        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter,
+            onlyChanges);
     }
 
     /**
@@ -154,12 +159,14 @@ public class FileList extends FolderRelatedMessage {
      * @param files
      *            the fileinfos to include.
      * @param blacklist
-     *            the blacklist to apply
+     *            the blacklist to apply * @param onlyChanges if the messages
+     *            should contain only {@link FolderFilesChanged} or contain a
+     *            {@link FileList} as first message.
      * @return the splitted list
      */
     private static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, Collection<DirectoryInfo> dirs,
-        DiskItemFilter diskItemFilter)
+        DiskItemFilter diskItemFilter, boolean onlyChanges)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -174,7 +181,7 @@ public class FileList extends FolderRelatedMessage {
 
         List<Message> messages = new ArrayList<Message>();
         int nDeltas = 0;
-        boolean firstMessage = true;
+        boolean firstMessage = !onlyChanges;
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
@@ -232,7 +239,9 @@ public class FileList extends FolderRelatedMessage {
         }
 
         // Set the actual number of deltas
-        ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
+        if (messages.get(0) instanceof FileList) {
+            ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
+        }
 
         if (log.isLoggable(Level.FINER)) {
             log.finer("Splitted filelist into " + messages.size()
