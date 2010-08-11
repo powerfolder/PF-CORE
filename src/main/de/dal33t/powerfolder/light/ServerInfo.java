@@ -26,6 +26,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -35,6 +38,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision$
  */
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ServerInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_NODE = "node";

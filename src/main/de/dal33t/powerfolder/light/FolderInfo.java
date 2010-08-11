@@ -25,6 +25,8 @@ import java.io.UnsupportedEncodingException;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Immutable;
 
 import de.dal33t.powerfolder.Constants;
@@ -36,12 +38,13 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
 
 /**
  * A Folder hash info
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
 @Entity
 @Immutable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable {
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
@@ -85,7 +88,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Returns the joined folder, or null if folder is not joined
-     *
+     * 
      * @param controller
      * @return the folder
      */
@@ -97,7 +100,7 @@ public class FolderInfo implements Serializable, Cloneable {
 
     /**
      * Calculates the secure Id for this folder with magicid from remote
-     *
+     * 
      * @param magicId
      * @return the secure Id for this folder with magicid from remote
      */

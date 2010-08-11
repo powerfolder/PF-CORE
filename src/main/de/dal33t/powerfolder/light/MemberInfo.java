@@ -28,6 +28,8 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -51,6 +53,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
     name = "socketAddressType",
     typeClass = InetSocketAddressUserType.class)
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MemberInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
