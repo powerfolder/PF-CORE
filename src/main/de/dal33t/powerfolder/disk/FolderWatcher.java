@@ -220,7 +220,7 @@ public class FolderWatcher extends PFComponent {
                 folder.scanChangedFiles(fileInfos);
                 if (fileInfos.size() > 0) {
                     folder.scanChangedFiles(fileInfos);
-                    logWarning("Scanned " + fileInfos.size() + " dirty files");
+                    logInfo("Scanned " + fileInfos.size() + " changed files");
                 }
                 dirtyFiles.clear();
             } catch (Exception e) {
