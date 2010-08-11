@@ -236,6 +236,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
     }
 
     /**
