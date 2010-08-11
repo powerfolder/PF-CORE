@@ -44,7 +44,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
  * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
@@ -168,7 +168,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         deleted = false;
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-       // this.hash = hashCode0();
+        // this.hash = hashCode0();
     }
 
     /**
@@ -202,9 +202,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         if (!nameMatch) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
-                    + "', details: " + toDetailString()
-                    + ", diskfile name '" + diskFile.getName() + "', path: "
-                    + diskFile);
+                    + "', details: " + toDetailString() + ", diskfile name '"
+                    + diskFile.getName() + "', path: " + diskFile);
         }
 
         // if (!diskFile.exists()) {
@@ -480,9 +479,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         }
         Folder folder = getFolder(repo);
         if (folder == null) {
-            throw new IllegalStateException(
-                "Unable to determine newest version. Folder not joined "
-                    + folderInfo);
+            if (log.isLoggable(Level.FINER)) {
+                log
+                    .finer("Unable to determine newest version. Folder not joined "
+                        + folderInfo);
+            }
+            return null;
+            // throw new IllegalStateException(
+            // "Unable to determine newest version. Folder not joined "
+            // + folderInfo);
         }
         // TODO: Many temporary objects!!
         ArrayList<String> domains = new ArrayList<String>(folder
