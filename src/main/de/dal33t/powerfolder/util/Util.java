@@ -271,7 +271,7 @@ public class Util {
                     .getResource(altLocation + '/' + resource);
             }
             if (resURL == null) {
-                LOG.warning("Unable to find resource: (" + altLocation + ")/"
+                LOG.fine("Unable to find resource: (" + altLocation + ")/"
                     + resource);
                 return null;
             }
