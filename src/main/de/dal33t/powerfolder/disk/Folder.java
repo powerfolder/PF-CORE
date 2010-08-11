@@ -1468,6 +1468,10 @@ public class Folder extends PFComponent {
         }
         dao.stop();
         removeAllListeners();
+        ListenerSupportFactory.removeAllListeners(folderListenerSupport);
+        ListenerSupportFactory
+            .removeAllListeners(folderMembershipListenerSupport);
+        diskItemFilter.removeAllListener();
     }
 
     /**
@@ -3720,8 +3724,7 @@ public class Folder extends PFComponent {
         Folder metaFolder = folderRepository
             .getMetaFolderForParent(currentInfo);
         if (metaFolder == null) {
-            logWarning("Could not find metaFolder for " + currentInfo,
-                new RuntimeException());
+            logWarning("Could not find metaFolder for " + currentInfo);
             return;
         }
         if (metaFolder.isDeviceDisconnected()) {
@@ -3753,7 +3756,9 @@ public class Folder extends PFComponent {
             if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
                 diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
                     DiskItemFilter.PATTERNS_FILENAME));
-                savePatternsToMetaFolder();
+                if (!shutdown) {
+                    savePatternsToMetaFolder();
+                }
             }
         }
 
