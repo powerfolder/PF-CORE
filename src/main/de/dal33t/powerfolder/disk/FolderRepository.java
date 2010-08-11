@@ -1046,7 +1046,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Remove internal
         folders.remove(folder.getInfo());
-        metaFolders.remove(folder.getInfo());
         folder.removeProblemListener(valveProblemListenerSupport);
 
         // Break transfers
@@ -1054,6 +1053,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Shutdown folder
         folder.shutdown();
+        metaFolders.remove(folder.getInfo());
 
         // synchronizememberships
         triggerSynchronizeAllFolderMemberships();
