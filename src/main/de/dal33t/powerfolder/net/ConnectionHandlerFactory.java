@@ -229,8 +229,8 @@ public class ConnectionHandlerFactory extends PFComponent {
             NetworkUtil.setupSocket(socket, getController());
             return createAndInitSocketConnectionHandler(socket);
         } catch (IOException e) {
-            throw new ConnectionException("Unable to connect to: "
-                + remoteAddress, e);
+            throw new ConnectionException("Unable to connect to "
+                + remoteAddress + ": " + e.getMessage(), e);
         }
     }
 
