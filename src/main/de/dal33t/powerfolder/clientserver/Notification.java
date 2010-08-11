@@ -25,6 +25,9 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -36,6 +39,7 @@ import de.dal33t.powerfolder.util.Translation;
  * @author sprajc
  */
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Notification implements Serializable {
 
     private static final long serialVersionUID = 100L;

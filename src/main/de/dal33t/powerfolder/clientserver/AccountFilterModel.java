@@ -43,7 +43,7 @@ public class AccountFilterModel extends Model {
     private boolean payingOSOnly;
     private boolean activeTrial;
     private String username;
-    
+
     private int maxResults;
 
     // Getter and Setter ******************************************************
@@ -114,8 +114,9 @@ public class AccountFilterModel extends Model {
         payingOSOnly = false;
         proUsersOnly = false;
         username = null;
+        maxResults = 0;
     }
-    
+
     public boolean matches(Account account) {
         Reject.ifNull(account, "Account is null");
         if (disabledOnly && !account.getOSSubscription().isDisabled()) {
