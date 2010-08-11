@@ -464,6 +464,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         "Connection to remote peer closed").with(this);
                 }
 
+                long start = System.currentTimeMillis();
                 // Not limit some pakets
                 boolean omittBandwidthLimit = !(message instanceof LimitBandwidth)
                     || this.omitBandwidthLimit;
@@ -502,13 +503,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // No Flush since we are not using bufferstreams no more.
                 // out.flush();
 
-                // long took = System.currentTimeMillis() - started;
-
-                // if (took > 500) {
-                // logWarning(
-                // "Message (" + data.length + " bytes) took " + took
-                // + "ms.");
-                // }
+                long took = System.currentTimeMillis() - start;
+                if (took > 5000) {
+                    logWarning("Sending (" + data.length + " bytes) took "
+                        + took + "ms: " + message);
+                }
             }
         } catch (IOException e) {
             // shutdown this peer
@@ -642,8 +641,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (!isConnected()) {
-            logWarning("Remote member disconnected while waiting for identity reply. "
-                + identity);
+            if (isFiner()) {
+                logFiner("Remote member disconnected while waiting for identity reply. "
+                    + identity);
+            }
             member = null;
             return false;
         }
@@ -772,7 +773,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         } else if (e != null) {
             msg += ". Cause: " + e.toString();
         }
-        logFine(msg);
+        logFiner(msg);
         logFiner("Exception", e);
     }
 
