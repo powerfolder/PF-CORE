@@ -89,6 +89,10 @@ public class DiskItemFilter {
         ListenerSupportFactory.removeListener(listenerSupport, listener);
     }
 
+    public void removeAllListener() {
+        ListenerSupportFactory.removeAllListeners(listenerSupport);
+    }
+
     /**
      * Loads patterns from file. Removes all previous patterns. Only if there is
      * actually a change to the patterns.
