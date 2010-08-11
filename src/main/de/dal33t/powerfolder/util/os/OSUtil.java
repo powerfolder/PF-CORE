@@ -57,7 +57,7 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows vista") >= 0;
     }
-    
+
     /**
      * @return if current system is running windows vista
      */
@@ -65,7 +65,7 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows 7") >= 0;
     }
-    
+
     /**
      * @return true if this is a Google Android system
      */
@@ -198,7 +198,7 @@ public class OSUtil {
         File fLib = Util.copyResourceTo(fileName, dir, targetFile, false);
 
         if (fLib == null) {
-            log.warning(clazz.getName() + " --> Failed to load " + lib
+            log.fine(clazz.getName() + " --> Failed to load " + lib
                 + ": Failed to copy resource to " + targetFile);
             String altFileName = System.mapLibraryName(lib + "-1");
             File altTargetFile = new File(Controller.getTempFilesLocation(),
