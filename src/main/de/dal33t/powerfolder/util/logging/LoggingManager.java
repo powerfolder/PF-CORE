@@ -96,6 +96,11 @@ public class LoggingManager {
             if (loggerName == null) {
                 return false;
             }
+            if (loggerName.startsWith("org.hibernate")
+                && record.getLevel().intValue() > Level.FINE.intValue())
+            {
+                return true;
+            }
             return loggerName.startsWith("de.dal33t")
                 || loggerName.startsWith("net.sf.webdav");
         }
@@ -388,7 +393,7 @@ public class LoggingManager {
             createFileHandler();
         }
     }
-    
+
     public static void closeFileLogging() {
         if (fileLoggingLevel != null && fileHandler != null) {
 
