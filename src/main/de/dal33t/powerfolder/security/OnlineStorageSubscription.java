@@ -25,6 +25,9 @@ import java.util.Date;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
 import de.dal33t.powerfolder.util.Format;
 
@@ -35,6 +38,7 @@ import de.dal33t.powerfolder.util.Format;
  * @version $Revision: 1.5 $
  */
 @Embeddable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OnlineStorageSubscription implements Serializable {
     private static final long serialVersionUID = 8695479753037728184L;
     public static final int UNLIMITED_GB = 9999;
@@ -137,8 +141,8 @@ public class OnlineStorageSubscription implements Serializable {
     public void setWarnedUsageDate(Date warnedUsageDate) {
         Object oldValue = getWarnedUsageDate();
         this.warnedUsageDate = warnedUsageDate;
-//        firePropertyChange(PROPERTY_WARNED_USAGE_DATE, oldValue,
-//            this.warnedUsageDate);
+        // firePropertyChange(PROPERTY_WARNED_USAGE_DATE, oldValue,
+        // this.warnedUsageDate);
     }
 
     public boolean isWarnedUsage() {
@@ -152,8 +156,8 @@ public class OnlineStorageSubscription implements Serializable {
     public void setDisabledUsageDate(Date disabledUsageDate) {
         Object oldValue = getDisabledUsageDate();
         this.disabledUsageDate = disabledUsageDate;
-//        firePropertyChange(PROPERTY_DISABLED_USAGE_DATE, oldValue,
-//            this.disabledUsageDate);
+        // firePropertyChange(PROPERTY_DISABLED_USAGE_DATE, oldValue,
+        // this.disabledUsageDate);
     }
 
     public boolean isDisabledUsage() {
@@ -167,8 +171,8 @@ public class OnlineStorageSubscription implements Serializable {
     public void setWarnedExpirationDate(Date warnedExpirationDate) {
         Object oldValue = getWarnedExpirationDate();
         this.warnedExpirationDate = warnedExpirationDate;
-//        firePropertyChange(PROPERTY_WARNED_EXPIRATION_DATE, oldValue,
-//            this.warnedExpirationDate);
+        // firePropertyChange(PROPERTY_WARNED_EXPIRATION_DATE, oldValue,
+        // this.warnedExpirationDate);
     }
 
     public boolean isWarnedExpiration() {
@@ -182,8 +186,8 @@ public class OnlineStorageSubscription implements Serializable {
     public void setDisabledExpirationDate(Date disabledExpirationDate) {
         Object oldValue = getDisabledExpirationDate();
         this.disabledExpirationDate = disabledExpirationDate;
-//        firePropertyChange(PROPERTY_DISABLED_EXPIRATION_DATE, oldValue,
-//            this.disabledExpirationDate);
+        // firePropertyChange(PROPERTY_DISABLED_EXPIRATION_DATE, oldValue,
+        // this.disabledExpirationDate);
     }
 
     /**
@@ -216,8 +220,10 @@ public class OnlineStorageSubscription implements Serializable {
         Object oldValue = getStorageSize();
         Object oldGB = getStorageSizeGB();
         this.storageSize = storageSize;
-//        firePropertyChange(PROPERTY_STORAGE_SIZE, oldValue, this.storageSize);
-//        firePropertyChange(PROPERTY_STORAGE_SIZE_GB, oldGB, getStorageSizeGB());
+        // firePropertyChange(PROPERTY_STORAGE_SIZE, oldValue,
+        // this.storageSize);
+        // firePropertyChange(PROPERTY_STORAGE_SIZE_GB, oldGB,
+        // getStorageSizeGB());
         setTypeLegacy();
     }
 
@@ -239,7 +245,7 @@ public class OnlineStorageSubscription implements Serializable {
     public void setTrial(boolean trial) {
         Object oldValue = isTrial();
         this.trial = trial;
-//        firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
+        // firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
         setTypeLegacy();
     }
 
@@ -265,7 +271,7 @@ public class OnlineStorageSubscription implements Serializable {
     public void setTypeLegacy() {
         Object oldValue = type;
         this.type = findLegacyType();
-//        firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+        // firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
     }
 
     /**
@@ -285,7 +291,7 @@ public class OnlineStorageSubscription implements Serializable {
         }
         Object oldValue = type;
         this.type = type;
-//        firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
+        // firePropertyChange(PROPERTY_TYPE, oldValue, this.type);
     }
 
     private OnlineStorageSubscriptionType findLegacyType() {

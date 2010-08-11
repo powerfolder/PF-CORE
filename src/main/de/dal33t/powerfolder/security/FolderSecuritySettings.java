@@ -27,6 +27,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -36,10 +38,11 @@ import de.dal33t.powerfolder.util.Reject;
  * Security settings per folder. Contains general security header data.
  * <P>
  * TRAC #1046
- *
+ * 
  * @author sprajc
  */
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderSecuritySettings implements Serializable {
     public static final String PROPERTYNAME_FOLDER = "folder";
     public static final String PROPERTYNAME_DEFAULT_PERMISSION = "defaultPermission";
