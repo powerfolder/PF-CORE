@@ -233,7 +233,7 @@ public class Account implements Serializable {
      */
     public void revokeAllFolderPermission() {
         // Revokes permission on ALL folders
-        for (Permission p : getPermissions()) {
+        for (Permission p : permissions) {
             if (p instanceof FolderPermission) {
                 revoke(p);
             }
@@ -279,7 +279,7 @@ public class Account implements Serializable {
         }
         Collection<FolderInfo> folders = new ArrayList<FolderInfo>(permissions
             .size());
-        for (Permission p : getPermissions()) {
+        for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission
                 || p instanceof FolderAdminPermission)
             {
