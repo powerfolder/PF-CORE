@@ -155,12 +155,11 @@ public class Account implements Serializable {
     @ManyToOne
     @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
-
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @LazyCollection(value = LazyCollectionOption.FALSE)
+    @LazyCollection(value = LazyCollectionOption.TRUE)
     private Collection<Permission> permissions;
 
     @Embedded
@@ -241,7 +240,10 @@ public class Account implements Serializable {
     }
 
     public void revokeAllPermissions() {
-        LOG.fine("Revoking all permission from " + this + ": " + permissions);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Revoking all permission from " + this + ": "
+                + permissions);
+        }
         permissions.clear();
     }
 
@@ -679,6 +681,26 @@ public class Account implements Serializable {
         return (this.oid.equals(otherAccount.oid));
     }
 
+    public void convertCollections() {
+        if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
+            Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
+                permissions);
+            permissions = newPermissions;
+        }
+
+        if (!(computers instanceof CopyOnWriteArrayList<?>)) {
+            Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(
+                computers);
+            computers = newComputers;
+        }
+
+        if (!(licenseKeyFileList instanceof CopyOnWriteArrayList<?>)) {
+            List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(
+                licenseKeyFileList);
+            licenseKeyFileList = newLicenseKeyFileList;
+        }
+    }
+
     public void migrate() {
         if (licenseKeyFiles != null) {
             licenseKeyFileList = new CopyOnWriteArrayList<String>(
@@ -703,6 +725,11 @@ public class Account implements Serializable {
         if (oid == null) {
             // Migration.
             oid = IdGenerator.makeId();
+        }
+        if (licenseKeyFileList != null && !licenseKeyFileList.isEmpty()
+            && licenseKeyFileList.isEmpty())
+        {
+            licenseKeyFileList.addAll(licenseKeyFiles);
         }
     }
 }
