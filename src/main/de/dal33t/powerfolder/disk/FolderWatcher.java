@@ -204,25 +204,26 @@ public class FolderWatcher extends PFComponent {
             FileInfo dirtyFile = null;
             try {
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
+                if (folder.checkIfDeviceDisconnected()) {
+                    logFine("Device disconnected while scanning " + folder
+                        + ": " + folder.getLocalBase());
+                    dirtyFiles.clear();
+                    return;
+                }
                 for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
                     dirtyFile = entry.getValue();
                     if (ignoreAll || ignoreFiles.containsKey(dirtyFile)) {
                         // Ignore.
                         continue;
                     }
-                    if (folder.checkIfDeviceDisconnected()) {
-                        logFine("Device disconnected while scanning " + folder
-                            + ": " + folder.getLocalBase());
-                        continue;
-                    }
                     fileInfos.add(dirtyFile);
                 }
+                dirtyFiles.clear();
                 folder.scanChangedFiles(fileInfos);
                 if (fileInfos.size() > 0) {
                     folder.scanChangedFiles(fileInfos);
                     logInfo("Scanned " + fileInfos.size() + " changed files");
                 }
-                dirtyFiles.clear();
             } catch (Exception e) {
                 logSevere("Unable to scan changed file: " + dirtyFile + ". "
                     + e, e);
@@ -282,8 +283,7 @@ public class FolderWatcher extends PFComponent {
                 dirtyFiles.put(name, lookup);
                 if (!scannerLock.isLocked()) {
                     if (scheduled.compareAndSet(false, true)) {
-                        getController().schedule(new TimerTask() {
-                            @Override
+                        getController().schedule(new Runnable() {
                             public void run() {
                                 getController().getIOProvider().startIO(
                                     new DirtyFilesScanner());
