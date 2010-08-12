@@ -51,6 +51,8 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.IndexColumn;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -119,6 +121,7 @@ public class Account implements Serializable {
     @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(value = LazyCollectionOption.FALSE)
     private Collection<MemberInfo> computers;
 
     /**
@@ -141,6 +144,7 @@ public class Account implements Serializable {
     @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(value = LazyCollectionOption.FALSE)
     private List<String> licenseKeyFileList;
 
     /**
@@ -156,6 +160,7 @@ public class Account implements Serializable {
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(value = LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
     @Embedded
@@ -433,7 +438,7 @@ public class Account implements Serializable {
     }
 
     public List<String> getLicenseKeyFiles() {
-        if (licenseKeyFileList == null || licenseKeyFileList.isEmpty()) {
+        if (licenseKeyFileList == null && licenseKeyFiles != null) {
             migrate();
         }
 
@@ -672,20 +677,6 @@ public class Account implements Serializable {
         Account otherAccount = (Account) obj;
 
         return (this.oid.equals(otherAccount.oid));
-    }
-
-    public void loadCollections() {
-        Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
-            permissions);
-        permissions = newPermissions;
-
-        Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(
-            computers);
-        computers = newComputers;
-
-        List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(
-            licenseKeyFileList);
-        licenseKeyFileList = newLicenseKeyFileList;
     }
 
     public void migrate() {
