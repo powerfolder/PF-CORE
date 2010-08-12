@@ -436,10 +436,10 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testMultipleFilesCopyWithFolderWatcher() {
         // Register listeners
         LoggingManager.setConsoleLogging(Level.WARNING);
-        getFolderAtBart().setSyncProfile(
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        getFolderAtLisa().setSyncProfile(
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(false);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().getFolderWatcher().setIngoreAll(false);
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
