@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -117,11 +118,11 @@ public class Account implements Serializable {
     /**
      * The list of computers associated with this account.
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @LazyCollection(value = LazyCollectionOption.FALSE)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<MemberInfo> computers;
 
     /**
@@ -139,12 +140,13 @@ public class Account implements Serializable {
      * The possible license key files of this account.
      * <code>AccountService.getValidLicenseKey</code>.
      */
-    @CollectionOfElements
+    @CollectionOfElements(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @LazyCollection(value = LazyCollectionOption.FALSE)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> licenseKeyFileList;
 
     /**
@@ -152,14 +154,14 @@ public class Account implements Serializable {
      * <p>
      * TRAC #991.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @LazyCollection(value = LazyCollectionOption.TRUE)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
     @Embedded
