@@ -998,16 +998,20 @@ public class Folder extends PFComponent {
      * {@link #getFolderWatcher()} only.
      * 
      * @param fileInfos
-     *            the files to scan.
+     *            the files to scan. ATTENTION: Does modify the {@link List}
      */
-    void scanChangedFiles(Collection<FileInfo> fileInfos) {
+    void scanChangedFiles(List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
+        int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = (FileInfo) it.next();
             FileInfo localFileInfo = scanChangedFile0(fileInfo);
             if (localFileInfo == null) {
                 // No change
                 it.remove();
+            } else {
+                fileInfos.set(i, localFileInfo);
+                i++;
             }
         }
         if (fileInfos.size() > 0) {
@@ -1015,6 +1019,7 @@ public class Folder extends PFComponent {
             Message[] msgs = FileList.createFileListMessages(currentInfo,
                 fileInfos, diskItemFilter, true);
             broadcastMessages(msgs);
+            logWarning("Broadcasted: " + Arrays.asList(msgs));
             setDBDirty();
         }
     }
@@ -1858,14 +1863,14 @@ public class Folder extends PFComponent {
         boolean memberRead = hasReadPermission(member);
         if (!memberRead || !hasReadPermission(getController().getMySelf())) {
             if (memberRead) {
-                if (isWarning()) {
-                    logWarning("Not joining " + member + " / "
+                if (isFine()) {
+                    logFine("Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission");
                 }
             } else {
-                if (isWarning()) {
-                    logWarning("Not joining " + member + " / "
+                if (isFine()) {
+                    logFine("Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission");
                 }
             }
@@ -3566,7 +3571,7 @@ public class Folder extends PFComponent {
         folderListenerSupport.fileChanged(folderEvent);
     }
 
-    private void fireFilesChanged(Collection<FileInfo> fileInfos) {
+    private void fireFilesChanged(List<FileInfo> fileInfos) {
         if (isFiner()) {
             logFiner("fireFileChanged: " + this);
         }
@@ -3736,6 +3741,7 @@ public class Folder extends PFComponent {
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         diskItemFilter.savePatternsTo(file);
+        logWarning("Saving ignore patterns to Meta folder: " + file);
         metaFolder.scanChangedFile(fInfo);
     }
 
