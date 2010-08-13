@@ -182,7 +182,11 @@ public class StatusTab extends PFUIComponent {
             null);
         filesAvailableLine = new StatusTabLine(getController(), Translation
             .getTranslation("status_tab.files_available"), null, true, true,
-            null, null);
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    getUIController().getMainFrame().showFoldersTab();
+                }
+            }, null);
         newNoticesLine = new StatusTabLine(getController(), Translation
             .getTranslation("status_tab.new_notices"), null, true, true,
             getApplicationModel().getActionModel().getViewNoticesAction(),
