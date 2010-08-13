@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -435,7 +436,10 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testMultipleFilesCopyWithFolderWatcher() {
         // Register listeners
-        LoggingManager.setConsoleLogging(Level.WARNING);
+        if (!FolderWatcher.isLibLoaded()) {
+            return;
+        }
+        LoggingManager.setConsoleLogging(Level.INFO);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().getFolderWatcher().setIngoreAll(false);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -444,6 +448,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerBart().getTransferManager().addListener(bartsListener);
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
+        scanFolder(getFolderAtBart());
+        TestHelper.waitMilliSeconds(2000);
 
         final int nFiles = 35;
         for (int i = 0; i < nFiles; i++) {
