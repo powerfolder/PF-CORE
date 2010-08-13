@@ -965,6 +965,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             400000);
         getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
             400000);
+        getContollerBart().getReconnectManager().shutdown();
+        getContollerLisa().getReconnectManager().shutdown();
+        assertFalse(getContollerBart().getReconnectManager().isStarted());
 
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
@@ -1052,7 +1055,9 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getDownloadCounter().getBytesTransferred();
         // Test has to be >= because it could happen that the download gets
         // broken before the received data is written
-        assertTrue(bytesDownloaded >= incompleteFile.length());
+        assertTrue("Downloaded: " + bytesDownloaded + " filesize: "
+            + incompleteFile.length(), bytesDownloaded >= incompleteFile
+            .length());
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
