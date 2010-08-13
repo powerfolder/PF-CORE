@@ -526,6 +526,13 @@ public class MainFrame extends PFUIComponent {
     public int getSelectedMainTabIndex() {
         return mainTabbedPane.getSelectedTabIndex();
     }
+    
+    /**
+     * Shows the folders tab.
+     */
+    public void showFoldersTab() {
+        mainTabbedPane.setActiveTab(MainTabbedPane.FOLDERS_INDEX);
+    }
 
     /**
      * Show the pending messages button in the status bar.

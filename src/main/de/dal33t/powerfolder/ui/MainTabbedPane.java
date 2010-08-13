@@ -41,9 +41,15 @@ import de.dal33t.powerfolder.util.Translation;
 public class MainTabbedPane extends PFUIComponent {
 
     public static final int START_INDEX = Feature.START_TAB.isEnabled() ? 0 : 0;
-    public static final int STATUS_INDEX = Feature.START_TAB.isEnabled() ? 1 : 0;
-    public static final int FOLDERS_INDEX = Feature.START_TAB.isEnabled() ? 2 : 1;
-    public static final int COMPUTERS_INDEX = Feature.START_TAB.isEnabled() ? 3 : 2;
+    public static final int STATUS_INDEX = Feature.START_TAB.isEnabled()
+        ? 1
+        : 0;
+    public static final int FOLDERS_INDEX = Feature.START_TAB.isEnabled()
+        ? 2
+        : 1;
+    public static final int COMPUTERS_INDEX = Feature.START_TAB.isEnabled()
+        ? 3
+        : 2;
 
     private StartTab startTab;
     private StatusTab statusTab;
@@ -187,6 +193,14 @@ public class MainTabbedPane extends PFUIComponent {
      */
     public void setFoldersIcon(Icon foldersIcon) {
         uiComponent.setIconAt(FOLDERS_INDEX, foldersIcon);
+    }
+
+    /**
+     * @param tabIndex
+     *            the select tab index
+     */
+    public void setActiveTab(int tabIndex) {
+        uiComponent.setSelectedIndex(tabIndex);
     }
 
     /**
