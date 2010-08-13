@@ -37,13 +37,15 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @author <a href="max@dasmaximum.net">Maximilian Krickl</a>
  */
 public class InetSocketAddressUserType extends Loggable implements UserType {
-    private static final int[] SQL_TYPES =  { Types.VARCHAR };
+    private static final int[] SQL_TYPES = {Types.VARCHAR};
 
     public InetSocketAddressUserType() {
         super();
     }
 
-    public Object assemble(Serializable cached, Object owner) throws HibernateException {
+    public Object assemble(Serializable cached, Object owner)
+        throws HibernateException
+    {
         return cached;
     }
 
@@ -58,11 +60,9 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
     public boolean equals(Object x, Object y) throws HibernateException {
         if (x == y) {
             return true;
-        }
-        else if (x == null || y == null) {
+        } else if (x == null || y == null) {
             return false;
-        }
-        else {
+        } else {
             return x.equals(y);
         }
     }
@@ -76,7 +76,8 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
     }
 
     public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
-            throws HibernateException, SQLException {
+        throws HibernateException, SQLException
+    {
 
         String addressAsString = rs.getString(names[0]);
 
@@ -88,26 +89,33 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
 
         if (addAndPort.length != 2) {
             return null;
-        }
-        else {
-            return new InetSocketAddress(addAndPort[0], Integer.valueOf(addAndPort[1]).intValue());
+        } else {
+            return new InetSocketAddress(addAndPort[0], Integer.valueOf(
+                addAndPort[1]).intValue());
         }
     }
 
     public void nullSafeSet(PreparedStatement st, Object value, int index)
-            throws HibernateException, SQLException {
-
+        throws HibernateException, SQLException
+    {
         if (value == null) {
             st.setNull(index, Types.VARCHAR);
-        }
-        else {
+        } else {
             InetSocketAddress address = (InetSocketAddress) value;
-            String stringRepresentation = NetworkUtil.getHostAddressNoResolve(address.getAddress()) + ":" + address.getPort();
-            st.setString(index, stringRepresentation);
+            if (address.getAddress() == null) {
+                st.setNull(index, Types.VARCHAR);
+            } else {
+                String stringRepresentation = NetworkUtil
+                    .getHostAddressNoResolve(address.getAddress())
+                    + ":" + address.getPort();
+                st.setString(index, stringRepresentation);
+            }
         }
     }
 
-    public Object replace(Object original, Object target, Object owner) throws HibernateException {
+    public Object replace(Object original, Object target, Object owner)
+        throws HibernateException
+    {
         return original;
     }
 
