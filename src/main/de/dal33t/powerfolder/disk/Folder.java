@@ -1019,7 +1019,6 @@ public class Folder extends PFComponent {
             Message[] msgs = FileList.createFileListMessages(currentInfo,
                 fileInfos, diskItemFilter, true);
             broadcastMessages(msgs);
-            logWarning("Broadcasted: " + Arrays.asList(msgs));
             setDBDirty();
         }
     }
