@@ -118,7 +118,7 @@ public class Account implements Serializable {
     /**
      * The list of computers associated with this account.
      */
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "Account_Computers", joinColumns = @JoinColumn(name = "oid"), inverseJoinColumns = @JoinColumn(name = "id"))
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -140,8 +140,7 @@ public class Account implements Serializable {
      * The possible license key files of this account.
      * <code>AccountService.getValidLicenseKey</code>.
      */
-    @CollectionOfElements(fetch = FetchType.EAGER)
-    @Fetch(FetchMode.SUBSELECT)
+    @CollectionOfElements
     @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
     @BatchSize(size = 1337)
@@ -154,9 +153,10 @@ public class Account implements Serializable {
      * <p>
      * TRAC #991.
      */
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
+    
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
