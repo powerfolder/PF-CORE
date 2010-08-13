@@ -1324,6 +1324,7 @@ public class TransferManager extends PFComponent {
      *            the file to upload
      * @param to
      *            the member where is file is going to
+     * @return true if the upload was actually aborted.
      */
     public boolean abortUpload(FileInfo fInfo, Member to) {
         if (fInfo == null) {
@@ -1374,7 +1375,9 @@ public class TransferManager extends PFComponent {
             triggerTransfersCheck();
             return true;
         } else {
-            logSevere("Failed to abort upload: " + fInfo + " to " + to);
+            if (isFine()) {
+                logFine("Upload to abort not found: " + fInfo + " to " + to);
+            }
             return false;
         }
     }
