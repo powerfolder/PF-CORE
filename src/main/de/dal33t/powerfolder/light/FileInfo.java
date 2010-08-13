@@ -744,8 +744,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // hash = hashCode0();
         // }
 
-        folderInfo = folderInfo.intern();
-        modifiedBy = modifiedBy.intern();
+        folderInfo = folderInfo != null ? folderInfo.intern() : null;
+        modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
 
         // validate();
     }
