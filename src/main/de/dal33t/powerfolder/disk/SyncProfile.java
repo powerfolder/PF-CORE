@@ -121,6 +121,14 @@ public class SyncProfile implements Serializable {
         "manual_synchronization", false, new SyncProfileConfiguration(false,
             false, false, false, 0));
 
+    /**
+     * Especially for meta-folders
+     */
+    public static final SyncProfile META_FOLDER_SYNC = new SyncProfile(
+        "meta_sync", false, new SyncProfileConfiguration(true, true, true,
+            true, 1, false, 12, 60,
+            SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
+
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,

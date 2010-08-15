@@ -933,8 +933,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Constants.POWERFOLDER_SYSTEM_SUBDIR);
             FolderSettings metaFolderSettings = new FolderSettings(new File(
                 systemSubdir, Constants.METAFOLDER_SUBDIR),
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-                ArchiveMode.NO_BACKUP, 0);
+                SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
                 metaFolderSettings);
             metaFolders.put(folderInfo, metaFolder);
