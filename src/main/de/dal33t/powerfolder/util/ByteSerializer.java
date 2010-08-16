@@ -135,8 +135,8 @@ public class ByteSerializer extends Loggable {
         byteOut.flush();
         byteOut.close();
 
-        if (byteOut.size() >= 128 * 1024) {
-            logWarning("Send buffer exceeds 128KB! "
+        if (byteOut.size() >= 256 * 1024) {
+            logWarning("Send buffer exceeds 256KB! "
                 + Format.formatBytes(byteOut.size()) + ". Message: " + target);
         }
 
