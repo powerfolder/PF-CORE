@@ -507,14 +507,18 @@ public class RelayedConnectionManager extends PFComponent {
             }
             currentRelay = relayFinder.findRelay(getController()
                 .getNodeManager());
-            logWarning("Relay: " + currentRelay);
+            if (isFine()) {
+                logFine("Using relay: " + currentRelay);
+            }
             if (currentRelay == null || currentRelay.isConnected()
                 || currentRelay.isConnecting())
             {
                 return;
             }
-            logWarning("Triing to connect to relay: " + currentRelay + " id: "
-                + currentRelay.getId());
+            if (isFine()) {
+                logFine("Triing to connect to relay: " + currentRelay + " id: "
+                    + currentRelay.getId());
+            }
             currentRelay.markForImmediateConnect();
         }
     }
