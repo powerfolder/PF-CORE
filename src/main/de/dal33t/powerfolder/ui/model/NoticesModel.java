@@ -216,7 +216,9 @@ public class NoticesModel extends PFUIComponent {
 
                 StringBuilder folderString = new StringBuilder();
                 for (FolderInfo folderInfo : joinedFolders) {
-                    folderString.append(folderInfo.name + '\n');
+                    if (!folderInfo.isMetaFolder()) {
+                        folderString.append(folderInfo.name + '\n');
+                    }
                 }
                 String[] options = {
                     Translation
