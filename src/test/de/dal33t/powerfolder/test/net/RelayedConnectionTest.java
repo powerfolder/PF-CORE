@@ -26,7 +26,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.RelayFilter;
+import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -58,10 +59,10 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         // Use bart as relay
         getContollerMarge().getIOProvider().getRelayedConnectionManager()
-            .setRelayFilter(new RelayFilter() {
-                public boolean isRelay(Member node) {
-                    return node.getId().equals(
-                        getContollerBart().getMySelf().getId());
+            .setRelayFiner(new RelayFinder() {
+                public Member findRelay(NodeManager nodeManager) {
+                    return nodeManager.getNode(getContollerBart().getMySelf()
+                        .getId());
                 }
             });
 

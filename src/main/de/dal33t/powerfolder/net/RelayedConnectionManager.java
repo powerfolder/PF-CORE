@@ -20,6 +20,9 @@
 package de.dal33t.powerfolder.net;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
@@ -61,7 +64,8 @@ public class RelayedConnectionManager extends PFComponent {
      * ConnectionHanlder which is not yet connected with it's member (node).
      */
     private Collection<AbstractRelayedConnectionHandler> pendingConHans;
-    private RelayFilter relayFilter;
+    private RelayFinder relayFinder;
+    private volatile Member currentRelay;
     private Lock pendingConHansLock = new ReentrantLock();
     private TransferCounter counter;
     private boolean printStats;
@@ -70,7 +74,7 @@ public class RelayedConnectionManager extends PFComponent {
     public RelayedConnectionManager(Controller controller) {
         super(controller);
         pendingConHans = new CopyOnWriteArrayList<AbstractRelayedConnectionHandler>();
-        relayFilter = new ServerIsRelayFilter();
+        relayFinder = new ServerIsRelayFinder();
         counter = new TransferCounter();
         printStats = false;
     }
@@ -186,31 +190,24 @@ public class RelayedConnectionManager extends PFComponent {
     /**
      * For TESTS only.
      * 
-     * @param relayFilter
+     * @param relayFinder
      */
-    public void setRelayFilter(RelayFilter relayFilter) {
-        Reject.ifNull(relayFilter, "RelayFilter");
-        this.relayFilter = relayFilter;
+    public void setRelayFiner(RelayFinder relayFinder) {
+        Reject.ifNull(relayFinder, "relayFinder");
+        this.relayFinder = relayFinder;
+        this.currentRelay = relayFinder.findRelay(getController()
+            .getNodeManager());
     }
 
     /**
      * @return the relaying node or null if no relay found
      */
     public Member getRelay() {
-        if (getController().getNodeManager() == null) {
-            logWarning("Not getting relay, NodeManager not created yet");
-            return null;
+        if (currentRelay == null) {
+            currentRelay = relayFinder.findRelay(getController()
+                .getNodeManager());
         }
-        for (Member node : getController().getNodeManager().getConnectedNodes())
-        {
-            if (isRelay(node.getInfo())) {
-                return node;
-            }
-        }
-        if (isRelay(getController().getMySelf().getInfo())) {
-            return getController().getMySelf();
-        }
-        return null;
+        return currentRelay;
     }
 
     public boolean isRelay(MemberInfo nodeInfo) {
@@ -220,7 +217,7 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     public boolean isRelay(Member node) {
-        return relayFilter.isRelay(node);
+        return node.equals(getRelay());
     }
 
     public TransferCounter getTransferCounter() {
@@ -499,9 +496,6 @@ public class RelayedConnectionManager extends PFComponent {
             if (!getController().isStarted()) {
                 return;
             }
-            if (getRelay() != null) {
-                return;
-            }
             if (isRelay(getController().getMySelf().getInfo())) {
                 return;
             }
@@ -511,32 +505,35 @@ public class RelayedConnectionManager extends PFComponent {
             if (!getController().getNodeManager().isStarted()) {
                 return;
             }
-            logFiner("Trying to connect to a Relay");
-            for (Member canidate : getController().getNodeManager()
-                .getNodesAsCollection())
+            currentRelay = relayFinder.findRelay(getController()
+                .getNodeManager());
+            logWarning("Relay: " + currentRelay);
+            if (currentRelay == null || currentRelay.isConnected()
+                || currentRelay.isConnecting())
             {
-                if (!isRelay(canidate.getInfo())) {
-                    continue;
-                }
-                if (canidate.isConnected()) {
-                    continue;
-                }
-                if (canidate.isConnecting()) {
-                    continue;
-                }
-                logFine("Triing to connect to relay: " + canidate + " id: "
-                    + canidate.getId());
-                canidate.markForImmediateConnect();
+                return;
             }
+            logWarning("Triing to connect to relay: " + currentRelay + " id: "
+                + currentRelay.getId());
+            currentRelay.markForImmediateConnect();
         }
     }
 
-    private class ServerIsRelayFilter implements RelayFilter {
+    private class ServerIsRelayFinder implements RelayFinder {
 
-        public final boolean isRelay(Member node) {
-            // Default: Any server of the cloud acts as relay. #1488
-            return node.isServer()
-                || getController().getOSClient().isServer(node);
+        public Member findRelay(NodeManager nodeManager) {
+            Member defaultServer = getController().getOSClient().getServer();
+            List<Member> candidates = new LinkedList<Member>();
+            for (Member node : nodeManager.getNodesAsCollection()) {
+                if (node.isServer() || node.equals(defaultServer)) {
+                    candidates.add(node);
+                }
+            }
+            if (candidates.size() > 1) {
+                candidates.remove(defaultServer);
+                Collections.shuffle(candidates);
+            }
+            return candidates.get(0);
         }
 
     }

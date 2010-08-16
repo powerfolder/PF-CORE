@@ -26,12 +26,13 @@ import de.dal33t.powerfolder.Member;
  * 
  * @author sprajc
  */
-public interface RelayFilter {
+public interface RelayFinder {
 
     /**
-     * @param node
-     * @return true if the node is a useble relay
+     * @param nodeManager
+     *            the nodemanager to search for the relay
+     * @return the relay or null if not found
      */
-    boolean isRelay(Member node);
+    Member findRelay(NodeManager nodeManager);
 
 }
