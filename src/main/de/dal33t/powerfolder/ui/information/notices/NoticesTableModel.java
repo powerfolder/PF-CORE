@@ -43,22 +43,21 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     private final List<Notice> notices = new ArrayList<Notice>();
     private final List<TableModelListener> listeners = new LinkedList<TableModelListener>();
     private final NoticeComparator[] columComparators = {
-            NoticeComparator.BY_SEVERITY,
-            NoticeComparator.BY_DATE,
-            NoticeComparator.BY_SUMMARY};
+        NoticeComparator.BY_SEVERITY, NoticeComparator.BY_DATE,
+        NoticeComparator.BY_SUMMARY};
     private NoticeComparator comparator;
 
     private boolean sortAscending;
     private int sortColumn;
 
-    private static final String[] COLUMN_NAMES = {
-            "",
-            Translation.getTranslation("notices_table.date"),
-            Translation.getTranslation("notices_table.summary")
-    };
+    private static final String[] COLUMN_NAMES = {"",
+        Translation.getTranslation("notices_table.date"),
+        Translation.getTranslation("notices_table.summary")};
 
     public NoticesTableModel(Controller controller) {
         this.controller = controller;
+        sortAscending = false;
+        sortBy(1);
         reset();
     }
 
@@ -70,8 +69,9 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
             public void run() {
                 notices.clear();
                 List<Notice> allNotices = controller.getUIController()
-                        .getApplicationModel().getNoticesModel().getAllNotices();
+                    .getApplicationModel().getNoticesModel().getAllNotices();
                 notices.addAll(allNotices);
+                sort();
                 fireModelStructureChanged();
             }
         });
@@ -147,7 +147,8 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
     public boolean sortBy(int columnIndex) {
         // Do not sort if no comparator given for that column
         if (columnIndex < 0 && columnIndex > columComparators.length
-            || columComparators[columnIndex] == null) {
+            || columComparators[columnIndex] == null)
+        {
             sortColumn = -1;
             comparator = null;
             return false;
@@ -163,11 +164,11 @@ public class NoticesTableModel implements TableModel, SortedTableModel {
         sortAscending = !sortAscending;
         sort();
     }
-    
+
     /**
      * Re-sorts the folder list with the new comparator only if comparator
      * differs from old one
-     *
+     * 
      * @param newComparator
      * @return if the table was freshly sorted
      */

@@ -57,7 +57,8 @@ public class NoticesTable extends JTable {
 
         // Associate a header renderer with all columns.
         SortedTableHeaderRenderer.associateHeaderRenderer(tableModel,
-            getColumnModel(), 0, false);
+            getColumnModel(), tableModel.getSortColumn(), tableModel
+                .isSortAscending());
     }
 
     /**
