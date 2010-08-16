@@ -74,7 +74,6 @@ public enum Feature {
      */
     // CACHE_FILEINFO_STRINGS,
 
-
     /**
      * Writes the debug filelist CSV into debug directory
      */
@@ -114,16 +113,11 @@ public enum Feature {
      * TRAC #1548 for 4.3.0 release
      */
     META_FOLDER(true),
-    
+
     /**
      * #2051: Disable email client directories until fully supported.
      */
-    USER_DIRECTORIES_EMAIL_CLIENTS(false),
-
-    /**
-     * #1976 If {@link MemberInfo} should be internalized.
-     */
-    MEMBER_INFO_INTERNALIZE(true);
+    USER_DIRECTORIES_EMAIL_CLIENTS(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
@@ -177,6 +171,5 @@ public enum Feature {
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
         Feature.META_FOLDER.enable();
-        Feature.MEMBER_INFO_INTERNALIZE.enable();
     }
 }

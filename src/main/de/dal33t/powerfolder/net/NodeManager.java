@@ -199,13 +199,11 @@ public class NodeManager extends PFComponent {
         nodefileLoaded = true;
 
         // #1976
-        if (Feature.MEMBER_INFO_INTERNALIZE.isEnabled()) {
-            if (MemberInfo.INTERNALIZER != null) {
-                logSevere("Overwriting old MemberInfo internalizer: "
-                    + MemberInfo.INTERNALIZER);
-            }
-            MemberInfo.INTERNALIZER = new MemberInfoInternalizer(this);
+        if (MemberInfo.INTERNALIZER != null) {
+            logSevere("Overwriting old MemberInfo internalizer: "
+                + MemberInfo.INTERNALIZER);
         }
+        MemberInfo.INTERNALIZER = new MemberInfoInternalizer(this);
     }
 
     /**
