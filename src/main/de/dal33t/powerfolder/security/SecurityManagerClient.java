@@ -254,8 +254,7 @@ public class SecurityManagerClient extends PFComponent implements
         return aInfo;
     }
 
-    public void nodeAccountStateChanged(final Member node, boolean removeSession)
-    {
+    public void nodeAccountStateChanged(final Member node) {
         Runnable refresher = null;
         if (node.isMySelf()) {
             refresher = new MySelfRefrehser(node);

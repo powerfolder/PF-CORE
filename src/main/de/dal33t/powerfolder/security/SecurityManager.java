@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.message.clientserver.AccountStateChanged;
 
 /**
  * A security manager handles the access control to a powerfolder security
@@ -64,14 +63,12 @@ public interface SecurityManager {
     // Core callbacks *********************************************************
 
     /**
-     * Called when the account status on the given node is changed. e.g. logout
-     * through disconnect.
+     * Called when the account status on the given node is changed. e.g.
+     * disconnect.
      * 
      * @param node
-     * @param removeSession
-     *            true if the session should be removed
      */
-    void nodeAccountStateChanged(Member node, boolean removeSession);
+    void nodeAccountStateChanged(Member node);
 
     // Security stuff *********************************************************
 
