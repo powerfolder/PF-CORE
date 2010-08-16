@@ -153,13 +153,14 @@ public class FindComputersPanel extends PFUIPanel {
         searchResultTable = new FindComputersTable(searchNodeTableModel);
         searchResultTable.getSelectionModel().addListSelectionListener(
             new SearchResultSelectionListener());
-        searchResultTable.addMouseListener(new PopupMenuOpener(createPopupMenu()));
-        searchResultTable.addMouseListener(new DoubleClickAction(addFriendAction));
+        searchResultTable.addMouseListener(new PopupMenuOpener(
+            createPopupMenu()));
+        searchResultTable.addMouseListener(new DoubleClickAction(
+            addFriendAction));
 
         searchResultTable.registerKeyboardAction(new SelectAllAction(),
-		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
-		JComponent.WHEN_FOCUSED);
-
+            KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+            JComponent.WHEN_FOCUSED);
 
         searchResultScroller = new JScrollPane(searchResultTable);
         UIUtil.whiteStripTable(searchResultTable);
@@ -344,14 +345,18 @@ public class FindComputersPanel extends PFUIPanel {
         int[] selectedIndexes = searchResultTable.getSelectedRows();
 
         // if at least one member selected
+        boolean enabled = false;
         for (int index : selectedIndexes) {
             Object item = searchNodeTableModel.getDataAt(index);
             if (item instanceof Member) {
                 Member user = (Member) item;
-                addFriendAction.setEnabled(!user.isFriend());
-                break;
+                if (!user.isFriend()) {
+                    enabled = true;
+                    break;
+                }
             }
         }
+        addFriendAction.setEnabled(enabled);
     }
 
     private final class MyConnectAction extends ConnectAction {
