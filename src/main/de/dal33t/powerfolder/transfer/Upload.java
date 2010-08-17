@@ -434,7 +434,7 @@ public class Upload extends Transfer {
                     pendingRequests.wait(100);
                 }
             } catch (InterruptedException e) {
-                logSevere("InterruptedException", e);
+                logFine("InterruptedException. " + e);
             }
         }
         return !isBroken() && !aborted && !pendingRequests.isEmpty();
@@ -530,10 +530,9 @@ public class Upload extends Transfer {
     }
 
     public String toString() {
-        String msg = "Upload: State: " + debugState
-            + ", TransferState: " + state.getState() + " "
-            + getFile().toDetailString() + " to '" + getPartner().getNick()
-            + "'";
+        String msg = "Upload: State: " + debugState + ", TransferState: "
+            + state.getState() + " " + getFile().toDetailString() + " to '"
+            + getPartner().getNick() + "'";
         if (getPartner().isOnLAN()) {
             msg += " (local-net)";
         }
