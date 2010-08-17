@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -290,6 +291,10 @@ public class SecurityManagerClient extends PFComponent implements
                 logFine("Pre-fetching account infos for " + nodes.size()
                     + " nodes");
             }
+            if (reqNodes.size() > 50) {
+                logWarning("Pre-fetching account infos for " + nodes.size()
+                    + " nodes");
+            }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
             if (isFine()) {
@@ -340,7 +345,7 @@ public class SecurityManagerClient extends PFComponent implements
      * members on our folders.
      */
     private void prefetchAccountInfos() {
-        Collection<Member> nodesToRefresh = new ArrayList<Member>();
+        Collection<Member> nodesToRefresh = new LinkedList<Member>();
         for (Member node : getController().getNodeManager()
             .getNodesAsCollection())
         {
@@ -364,10 +369,8 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     private boolean shouldAutoRefresh(Member node) {
-        if (node.isMySelf()) {
-            return true;
-        }
-        return node.isFriend() || node.hasJoinedAnyFolder() || node.isOnLAN();
+        return node.isMySelf() || node.isFriend() || node.hasJoinedAnyFolder()
+            || node.isOnLAN();
     }
 
     // Event handling *********************************************************
