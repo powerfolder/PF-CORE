@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -100,6 +101,17 @@ public interface SecurityService {
      * @return true if the account with has that permission.
      */
     boolean hasPermission(AccountInfo accountInfo, Permission permission);
+
+    /**
+     * Bulk method to reduce RPC overhead. Supported by versions HIGHER than
+     * "4.2.9".
+     * 
+     * @param accountInfo
+     * @param permissions
+     * @return the list of results
+     */
+    List<Boolean> hasPermissions(AccountInfo accountInfo,
+        List<Permission> permissions);
 
     /**
      * @param foInfo
