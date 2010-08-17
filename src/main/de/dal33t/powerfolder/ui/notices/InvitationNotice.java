@@ -22,17 +22,16 @@ package de.dal33t.powerfolder.ui.notices;
 import de.dal33t.powerfolder.message.Invitation;
 
 /**
- * Notice of a received invitation.
- * Show in notification and add to app model.
+ * Notice of a received invitation. Show in notification and add to app model.
  */
 public class InvitationNotice extends NoticeBase {
-    
+
     private static final long serialVersionUID = 100L;
 
     private final Invitation invitation;
 
-    public InvitationNotice(String title, String summary,
-                            Invitation invitation) {
+    public InvitationNotice(String title, String summary, Invitation invitation)
+    {
         super(title, summary);
         this.invitation = invitation;
     }
@@ -56,4 +55,29 @@ public class InvitationNotice extends NoticeBase {
     public boolean isPersistable() {
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 0;
+        result = prime * result
+            + ((invitation == null) ? 0 : invitation.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (getClass() != obj.getClass())
+            return false;
+        InvitationNotice other = (InvitationNotice) obj;
+        if (invitation == null) {
+            if (other.invitation != null)
+                return false;
+        } else if (!invitation.equals(other.invitation))
+            return false;
+        return true;
+    }
+
 }

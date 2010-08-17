@@ -37,7 +37,6 @@ public class WarningNotice extends NoticeBase {
         this.runnable = runnable;
     }
 
-    @SuppressWarnings({"NonSerializableFieldInSerializableClass"})
     public WarningNotice(final Controller controller, final String title,
         String summary, final String message)
     {

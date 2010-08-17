@@ -27,9 +27,9 @@ import de.dal33t.powerfolder.util.Reject;
  * model.
  */
 public class AskForFriendshipEventNotice extends NoticeBase {
-    
+
     private static final long serialVersionUID = 100L;
-    
+
     private final AskForFriendshipEvent event;
 
     public AskForFriendshipEventNotice(String title, String summary,
@@ -63,7 +63,7 @@ public class AskForFriendshipEventNotice extends NoticeBase {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 0;
         result = prime
             * result
             + ((event.getMemberInfo() == null) ? 0 : event.getMemberInfo()
