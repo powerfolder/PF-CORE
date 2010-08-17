@@ -219,7 +219,9 @@ public class FolderWatcher extends PFComponent {
                     fileInfos.add(dirtyFile);
                 }
                 dirtyFiles.clear();
-                folder.scanChangedFiles(fileInfos);
+                if (!fileInfos.isEmpty()) {
+                    folder.scanChangedFiles(fileInfos);
+                }
                 if (fileInfos.size() > 0) {
                     logInfo("Scanned " + fileInfos.size() + " changed files");
                 }
