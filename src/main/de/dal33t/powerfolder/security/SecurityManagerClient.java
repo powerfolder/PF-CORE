@@ -176,10 +176,13 @@ public class SecurityManagerClient extends PFComponent implements
         }
 
         if (supportsBulkRequest && permission instanceof FolderPermission) {
-            logWarning("Using bulk request for " + permission);
             // Optimization. Request all folder permissions in bulk
             FolderPermission fp = (FolderPermission) permission;
             FolderInfo foInfo = fp.folder;
+            if (isFine()) {
+                logFine("Using bulk permission request for " + aInfo + " on "
+                    + foInfo);
+            }
 
             List<Permission> permissions = new ArrayList<Permission>(5);
             permissions.add(permission);
