@@ -174,7 +174,7 @@ public class LoadInvitationPanel extends PFWizardPanel {
 
         // Folder
         builder.add(folderHintLabel, cc.xy(1, 5));
-        builder.add(folderNameLabel, cc.xy(3, 5));
+        builder.add(folderNameLabel, cc.xyw(3, 5, 2));
 
         // From
         builder.add(invitorHintLabel, cc.xy(1, 7));

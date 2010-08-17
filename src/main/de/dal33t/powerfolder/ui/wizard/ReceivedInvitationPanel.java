@@ -168,7 +168,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         builder.addLabel(Translation.getTranslation(
             "wizard.folder_invitation.intro", invitation.getInvitor().nick,
-            invitation.folder.name), cc.xyw(1, 1, 3));
+            invitation.folder.name), cc.xyw(1, 1, 4));
 
         // Message
 
