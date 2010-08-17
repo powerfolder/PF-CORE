@@ -524,13 +524,14 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     private class ServerIsRelayFinder implements RelayFinder {
-
         public Member findRelay(NodeManager nodeManager) {
             Member defaultServer = getController().getOSClient().getServer();
             List<Member> candidates = new LinkedList<Member>();
             for (Member node : nodeManager.getNodesAsCollection()) {
                 if (node.isServer() || node.equals(defaultServer)) {
-                    candidates.add(node);
+                    if (node.isCompletelyConnected()) {
+                        candidates.add(node);
+                    }
                 }
             }
             if (candidates.size() > 1) {
