@@ -217,7 +217,7 @@ public class RelayedConnectionManager extends PFComponent {
     }
 
     public boolean isRelay(Member node) {
-        return node.equals(getRelay());
+        return getRelay() != null && node.equals(getRelay());
     }
 
     public TransferCounter getTransferCounter() {
@@ -537,8 +537,7 @@ public class RelayedConnectionManager extends PFComponent {
                 candidates.remove(defaultServer);
                 Collections.shuffle(candidates);
             }
-            return candidates.get(0);
+            return candidates.isEmpty() ? null : candidates.get(0);
         }
-
     }
 }
