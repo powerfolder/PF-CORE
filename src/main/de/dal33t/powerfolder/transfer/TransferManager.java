@@ -1744,10 +1744,13 @@ public class TransferManager extends PFComponent {
                             fileToDl.getModifiedDate())
                         && !localFile.isDeleted())
                     {
-                        logWarning("Requesting older file: "
-                            + fileToDl.toDetailString() + ", local: "
-                            + localFile.toDetailString() + ", localIsNewer: "
-                            + localFile.isNewerThan(fileToDl));
+                        if (isFine()) {
+                            logFine("Requesting older file: "
+                                + fileToDl.toDetailString() + ", local: "
+                                + localFile.toDetailString()
+                                + ", localIsNewer: "
+                                + localFile.isNewerThan(fileToDl));
+                        }
                     }
                     if (fileToDl.isNewerAvailable(getController()
                         .getFolderRepository()))
