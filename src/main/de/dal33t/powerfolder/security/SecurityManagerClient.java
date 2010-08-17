@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,8 +38,10 @@ import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -130,10 +133,8 @@ public class SecurityManagerClient extends PFComponent implements
                             hasPermission = null;
                         }
                         if (hasPermission == null) {
-                            hasPermission = Boolean.valueOf(client
-                                .getSecurityService().hasPermission(
-                                    accountInfo, permission));
-                            cache.set(permission, hasPermission);
+                            hasPermission = Boolean.valueOf(retrievePermission(
+                                accountInfo, permission, cache));
                             source = "recvd";
                         } else {
                             source = "cache";
@@ -162,6 +163,59 @@ public class SecurityManagerClient extends PFComponent implements
 
             return hasPermissionDisconnected(permission);
         }
+    }
+
+    private boolean retrievePermission(AccountInfo aInfo,
+        Permission permission, PermissionsCacheSegment cache)
+    {
+        boolean supportsBulkRequest = false;
+        try {
+            supportsBulkRequest = Util.compareVersions(client.getServer()
+                .getIdentity().getProgramVersion(), "4.2.9");
+        } catch (Exception e) {
+        }
+
+        if (supportsBulkRequest && permission instanceof FolderPermission) {
+            logWarning("Using bulk request for " + permission);
+            // Optimization. Request all folder permissions in bulk
+            FolderPermission fp = (FolderPermission) permission;
+            FolderInfo foInfo = fp.folder;
+
+            List<Permission> permissions = new ArrayList<Permission>(5);
+            permissions.add(permission);
+            permissions.add(FolderPermission.read(foInfo));
+            permissions.add(FolderPermission.readWrite(foInfo));
+            permissions.add(FolderPermission.admin(foInfo));
+            permissions.add(FolderPermission.owner(foInfo));
+
+            try {
+                List<Boolean> result = client.getSecurityService()
+                    .hasPermissions(aInfo, permissions);
+
+                cache.set(FolderPermission.read(foInfo), result.get(1));
+                cache.set(FolderPermission.readWrite(foInfo), result.get(2));
+                cache.set(FolderPermission.admin(foInfo), result.get(3));
+                cache.set(FolderPermission.owner(foInfo), result.get(4));
+
+                // Original request.
+                return result.get(0);
+            } catch (RemoteCallException e) {
+                if (e.getCause() instanceof NoSuchMethodException) {
+                    // Fallthrough. Use single method.
+                    logWarning("Unable to retrieve permissions in bulk. Falling back to legacy call. "
+                        + aInfo + " has? " + permission);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        // Single request / Legacy call.
+        boolean singleResult = client.getSecurityService().hasPermission(aInfo,
+            permission);
+        cache.set(permission, singleResult);
+        return singleResult;
+
     }
 
     private boolean hasPermissionDisconnected(Permission permission) {
