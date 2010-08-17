@@ -438,6 +438,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             .bytesTransferred(size);
     }
 
+    private boolean isServer() {
+        return getMember() != null
+            && getMember().equals(getController().getOSClient().getServer());
+    }
+
     public void sendMessage(Message message) throws ConnectionException {
         if (message == null) {
             throw new NullPointerException("Message is null");
@@ -459,6 +464,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (isFiner()) {
                     logFiner("-- (sending) -> " + message);
                 }
+                //if (isServer()) {
+                //    logWarning("-- (sending) -> " + message);
+                //}
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
@@ -504,7 +512,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // out.flush();
 
                 long took = System.currentTimeMillis() - start;
-                if (took > 30000) {
+                if (took > 30000 || isServer()) {
                     logWarning("Sending (" + data.length + " bytes) took "
                         + took + "ms: " + message);
                 }
@@ -551,6 +559,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             if (messagesToSendQueue.size() > 20 && isWarning()) {
                 logWarning("Many messages in send queue: "
                     + messagesToSendQueue.size() + ": " + messagesToSendQueue);
+            }
+            if (messagesToSendQueue.size() > 200) {
+                logWarning("Too many messages is queue ("
+                    + messagesToSendQueue.size() + "). Breaking connection");
+                shutdownWithMember();
+                return;
             }
             if (sender == null) {
                 sender = new Sender();
