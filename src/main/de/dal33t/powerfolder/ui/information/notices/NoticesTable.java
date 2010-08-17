@@ -164,7 +164,7 @@ public class NoticesTable extends JTable {
         column.setMinWidth(size);
         column.setMaxWidth(size);
         column = getColumn(getColumnName(1));
-        column.setPreferredWidth(40);
+        column.setPreferredWidth(20);
         column = getColumn(getColumnName(2));
         column.setPreferredWidth(200);
     }
