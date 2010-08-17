@@ -773,7 +773,7 @@ public class ServerClient extends PFComponent {
      * another server. This method does NOT block, it instead schedules a
      * background task to retrieve and connect those servers.
      */
-    public void connectHostingServers() {
+    private void connectHostingServers() {
         if (!isConnected()) {
             return;
         }
@@ -1079,13 +1079,14 @@ public class ServerClient extends PFComponent {
                 {
                     try {
                         login(username, password);
+
+                        getController().schedule(new HostingServerRetriever(),
+                            1000L);
                     } catch (RemoteCallException ex) {
                         logWarning("Unable to login. " + ex);
                         logFine(ex);
                     }
                 }
-
-                getController().schedule(new HostingServerRetriever(), 1000L);
             }
         }
 
