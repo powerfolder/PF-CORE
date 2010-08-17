@@ -512,7 +512,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // out.flush();
 
                 long took = System.currentTimeMillis() - start;
-                if (took > 30000 || isServer()) {
+                if (took > 40000) {
                     logWarning("Sending (" + data.length + " bytes) took "
                         + took + "ms: " + message);
                 }
