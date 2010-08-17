@@ -131,8 +131,8 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0 - 1.7.1.21"; // 1.7.1.20 /
-                                                              // RC1
+    public static final String PROGRAM_VERSION = "4.3.0 RC4"; // 1.7.1.35 /
+                                                              // RC3
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2155,11 +2155,16 @@ public class Controller extends PFComponent {
         }
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
-            Object[] options = {
-                Translation
-                    .getTranslation("dialog.already_running.start_button"),
-                Translation
-                    .getTranslation("dialog.already_running.exit_button")};
+            Object[] options;
+            options = new Object[]{Translation
+                .getTranslation("dialog.already_running.exit_button")};
+            if (isVerbose()) {
+                options = new Object[]{
+                    Translation
+                        .getTranslation("dialog.already_running.start_button"),
+                    Translation
+                        .getTranslation("dialog.already_running.exit_button")};
+            }
             if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.already_running.warning"), Translation
                 .getTranslation("dialog.already_running.title"),
