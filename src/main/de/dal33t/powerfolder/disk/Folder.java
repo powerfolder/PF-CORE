@@ -3641,6 +3641,9 @@ public class Folder extends PFComponent {
         {
             return;
         }
+        if (isPreviewOnly()) {
+            return;
+        }
 
         // Calculate the date that folders should be synced by.
         Integer syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN
