@@ -776,9 +776,7 @@ public class UIController extends PFComponent {
      * Displays the information window if not already displayed.
      */
     private void displayInformationWindow() {
-        boolean inline = PreferencesEntry.INLINE_INFO_MODE
-            .getValueInt(getController()) != MainFrame.INLINE_INFO_FREE;
-        if (inline) {
+        if (mainFrame.shouldShowInfoInline()) {
             mainFrame.showInlineInfoPanel((JPanel) informationFrame
                 .getUIComponent().getContentPane(), informationFrame
                 .getUIComponent().getTitle());

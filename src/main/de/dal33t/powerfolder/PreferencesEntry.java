@@ -122,9 +122,6 @@ public enum PreferencesEntry {
     /** How translucent the notification should display, as percentage. */
     NOTIFICATION_TRANSLUCENT("notification.translucent", 0),
 
-    /** Main frame always on top. */
-    MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
-
     /** Skin name. */
     SKIN_NAME("skin.name", LightSky.NAME),
 
@@ -134,11 +131,30 @@ public enum PreferencesEntry {
     /** The 'Show offline' checkbox on the ComputersTab. */
     SHOW_OFFLINE("show.offline", true),
 
+    /** Main frame always on top. */
+    MAIN_ALWAYS_ON_TOP("main.stay.on.top", false),
     /**
      * Show the information tab inline with the mainframe 0=free, 1=left,
      * 2=right
      */
     INLINE_INFO_MODE("inline.info.mode", MainFrame.INLINE_INFO_RIGHT),
+
+    MAIN_FRAME_WIDTH("mainframe4.width", 350),
+
+    MAIN_FRAME_HEIGHT("mainframe4.height", 566),
+    
+    MAIN_FRAME_X("mainframe4.x", 50),
+    
+    MAIN_FRAME_Y("mainframe4.y", 50),
+    
+    
+    INFO_FRAME_WIDTH("mainframe4.width", 350),
+
+    INFO_FRAME_HEIGHT("mainframe4.height", 566),
+    
+    INFO_FRAME_X("infoframe4.x", 50),
+    
+    INFO_FRAME_Y("infoframe4.y", 50),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
@@ -193,6 +209,10 @@ public enum PreferencesEntry {
 
     public String getDefaultValue() {
         return (String) defaultValue;
+    }
+
+    public Integer getDefaultValueInt() {
+        return (Integer) defaultValue;
     }
 
     /**
