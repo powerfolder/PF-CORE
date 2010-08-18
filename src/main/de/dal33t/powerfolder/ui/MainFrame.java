@@ -673,8 +673,6 @@ public class MainFrame extends PFUIComponent {
             inlineInfoLabel.setText("");
         }
 
-        System.out.println("normalWidth: " + normalWidth);
-
         relocateIfNecessary();
     }
 
