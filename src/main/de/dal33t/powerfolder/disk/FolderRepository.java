@@ -924,8 +924,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        if (Feature.META_FOLDER.isEnabled() && !folderSettings.isPreviewOnly())
-        {
+        if (Feature.META_FOLDER.isEnabled()) {
             FolderInfo metaFolderInfo = new FolderInfo(
                 Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
                 Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
