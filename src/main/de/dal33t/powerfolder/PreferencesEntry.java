@@ -142,19 +142,10 @@ public enum PreferencesEntry {
     MAIN_FRAME_WIDTH("mainframe4.width", 350),
 
     MAIN_FRAME_HEIGHT("mainframe4.height", 566),
-    
-    MAIN_FRAME_X("mainframe4.x", 50),
-    
-    MAIN_FRAME_Y("mainframe4.y", 50),
-    
-    
-    INFO_FRAME_WIDTH("mainframe4.width", 350),
 
-    INFO_FRAME_HEIGHT("mainframe4.height", 566),
-    
-    INFO_FRAME_X("infoframe4.x", 50),
-    
-    INFO_FRAME_Y("infoframe4.y", 50),
+    MAIN_FRAME_X("mainframe4.x", 50),
+
+    MAIN_FRAME_Y("mainframe4.y", 50),
 
     FILE_SEARCH_MODE("file.search.mode",
         DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
