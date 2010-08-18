@@ -50,6 +50,7 @@ import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * UI component for the folder files tab
@@ -111,9 +112,14 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treePanel
             .getUIComponent(), tablePanel.getUIComponent());
-        int dividerLocation = getController().getPreferences().getInt(
+        final int dividerLocation = getController().getPreferences().getInt(
             "files.tab.location", 150);
         splitPane.setDividerLocation(dividerLocation);
+        UIUtil.invokeLaterInEDT(new Runnable() {
+            public void run() {
+                splitPane.setDividerLocation(dividerLocation);
+            }
+        });
         splitPane.addPropertyChangeListener(new MyPropertyChangeListner());
         filterSelectionComboBox = new JComboBox();
         filterSelectionComboBox.setToolTipText(Translation
