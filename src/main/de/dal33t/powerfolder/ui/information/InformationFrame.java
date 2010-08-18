@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.information;
 
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.prefs.Preferences;
@@ -70,11 +71,6 @@ public class InformationFrame extends MagneticFrame {
             new MyFolderRepositoryListener());
     }
 
-    /**
-     * Returns the ui component.
-     * 
-     * @return
-     */
     public JFrame getUIComponent() {
         if (uiComponent == null) {
             initialize();
@@ -91,14 +87,15 @@ public class InformationFrame extends MagneticFrame {
         Preferences prefs = getController().getPreferences();
 
         int y = prefs.getInt("infoframe4.y", mainFrame.getY());
-        int x = prefs.getInt("infoframe4.x", 50);
+        int x = prefs.getInt("infoframe4.x", mainFrame.getX()
+            + mainFrame.getWidth() + 20);
         uiComponent.setLocation(x, y);
 
         // Pack elements
         uiComponent.pack();
 
-        int width = prefs.getInt("infoframe4.width", mainFrame.getLocation().x
-            - x - 10);
+        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
+        int width = prefs.getInt("infoframe4.width", screenWidth - x - 20);
         int height = prefs.getInt("infoframe4.height", mainFrame.getHeight());
         if (width < 50) {
             width = 50;
@@ -358,9 +355,9 @@ public class InformationFrame extends MagneticFrame {
         }
     }
 
-    ///////////////////
+    // /////////////////
     // Inner classes //
-    ///////////////////
+    // /////////////////
 
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
