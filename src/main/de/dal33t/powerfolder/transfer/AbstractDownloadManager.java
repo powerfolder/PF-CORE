@@ -484,8 +484,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isBroken()) {
             return;
         }
-        logFine("Download broken: " + fileInfo.toDetailString() + ". Problem: "
-            + problem + ": " + message);
+        if (isFine()) {
+            logFine("Download broken: " + fileInfo.toDetailString()
+                + ". Problem: " + problem + ": " + message);
+        }
         setState(InternalState.BROKEN);
         shutdown();
 
@@ -773,11 +775,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 if (checkCompleted()) {
                     setCompleted();
                 } else {
-                    synchronized (AbstractDownloadManager.this) {
-                        for (Download d : getSources()) {
-                            logFine("Source: " + d);
-                        }
-                    }
                     setBroken(TransferProblem.MD5_ERROR, "File hash mismatch!");
                 }
             }
@@ -868,8 +865,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (getTempFile() != null && getTempFile().exists()
             && !getTempFile().delete())
         {
-            logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
-                + getFileInfo().toDetailString());
+            if (isWarning()) {
+                logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
+                    + getFileInfo().toDetailString());
+            }
             RandomAccessFile f = new RandomAccessFile(getTempFile(), "rw");
             try {
                 f.setLength(0);
@@ -938,9 +937,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
 
         if (filePartsState != null) {
-            logInfo("Resuming download - already got "
-                + filePartsState.countPartStates(filePartsState.getRange(),
-                    PartState.AVAILABLE) + " of " + getFileInfo().getSize());
+            if (isInfo()) {
+                logInfo("Resuming download - already got "
+                    + filePartsState.countPartStates(filePartsState.getRange(),
+                        PartState.AVAILABLE) + " of " + getFileInfo().getSize());
+            }
         }
     }
 
@@ -985,8 +986,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         setFilePartsState(new FilePartsState(fileInfo.getSize()));
                     }
                     if (filePartsState.isCompleted()) {
-                        logFine("Not requesting anything, seems to be a zero file: "
-                            + fileInfo);
+                        if (isFine()) {
+                            logFine("Not requesting anything, seems to be a zero file: "
+                                + fileInfo);
+                        }
                         checkFileValidity();
                     } else {
                         if (isFiner()) {
@@ -1013,8 +1016,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         switch (state) {
             case ABORTED :
             case BROKEN :
-                logFine("Aborted download of " + fileInfo
-                    + " received chunk from " + download);
+                if (isFine()) {
+                    logFine("Aborted download of " + fileInfo
+                        + " received chunk from " + download);
+                }
                 download.abort();
                 break;
             case ACTIVE_DOWNLOAD :
@@ -1180,7 +1185,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (isDone()) {
             return;
         }
-        logFine("Download aborted: " + fileInfo);
+        if (isFine()) {
+            logFine("Download aborted: " + fileInfo);
+        }
 
         setState(InternalState.ABORTED);
         shutdown();
