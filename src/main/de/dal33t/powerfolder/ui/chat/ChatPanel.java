@@ -291,10 +291,14 @@ public class ChatPanel extends PFUIComponent {
             public void run() {
                 chatOutput.setStyledDocument(doc);
 
+                // This looks like a big hack(tm):
                 // Make sure first text is at bottom
+                int n = 0;
                 while (chatOutput.getPreferredSize().height < chatOutput
-                    .getSize().height)
+                    .getSize().height
+                    && n < 200)
                 {
+                    n++;
                     try {
                         doc.insertString(0, "\n", null);
                     } catch (BadLocationException ble) {
@@ -442,7 +446,7 @@ public class ChatPanel extends PFUIComponent {
                 // #1816 intermittant bug, possibly caused by accessing fields
                 // before they are initialized ? So ensure UI exists first.
                 getUiComponent();
-                
+
                 updateInputField();
                 configureAddRemoveAction();
             }
@@ -591,7 +595,8 @@ public class ChatPanel extends PFUIComponent {
             chatOutput.requestFocus();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+                    createPopupMenu().show(evt.getComponent(), evt.getX(),
+                        evt.getY());
                 }
             });
         }
