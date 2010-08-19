@@ -85,10 +85,10 @@ public class Download extends Transfer {
         this.queued = false;
         this.markedBroken = false;
     }
-    
+
     /**
-     * Re-initialized the Transfer with the TransferManager. Use this only if you
-     * are know what you are doing .
+     * Re-initialized the Transfer with the TransferManager. Use this only if
+     * you are know what you are doing .
      * 
      * @param aTransferManager
      *            the transfermanager
@@ -135,14 +135,18 @@ public class Download extends Transfer {
 
         // Maybe remove this check?
         if (isStarted()) {
-            logWarning("Aborting. Received multiple upload start messages: "
-                + this);
+            if (isWarning()) {
+                logWarning("Aborting. Received multiple upload start messages: "
+                    + this);
+            }
             abort();
             return;
         }
 
-        logFiner("Uploader supports partial transfers for "
-            + fileInfo.toDetailString());
+        if (isFiner()) {
+            logFiner("Uploader supports partial transfers for "
+                + fileInfo.toDetailString());
+        }
         setStarted();
         dlManager.readyForRequests(Download.this);
     }
@@ -173,7 +177,10 @@ public class Download extends Transfer {
         checkFileInfo(fileInfo);
 
         lastTouch.setTime(System.currentTimeMillis());
-        logInfo("Received parts record");
+        if (isFine()) {
+            logFine("Received parts record for " + fileInfo.toDetailString()
+                + ": " + record);
+        }
         dlManager.filePartsRecordReceived(Download.this, record);
     }
 
@@ -199,7 +206,9 @@ public class Download extends Transfer {
                 .getProgress()));
         } catch (IllegalArgumentException e) {
             // I need to do this because FileInfos are NOT immutable...
-            logWarning("Concurrent file change while requesting:" + e);
+            if (isWarning()) {
+                logWarning("Concurrent file change while requesting:" + e);
+            }
             throw new BrokenDownloadException(
                 "Concurrent file change while requesting: " + e);
         }
@@ -235,7 +244,9 @@ public class Download extends Transfer {
                 // Old passive downloads=Started with the first file chunk
                 setStarted();
             } else {
-                logWarning("Ignoring file chunk for non-started " + this);
+                if (isWarning()) {
+                    logWarning("Ignoring file chunk for non-started " + this);
+                }
                 return false;
             }
         }
@@ -318,7 +329,9 @@ public class Download extends Transfer {
     public void setQueued(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo is null!");
         checkFileInfo(fInfo);
-        logFiner("DL queued by remote side: " + this);
+        if (isFiner()) {
+            logFiner("DL queued by remote side: " + this);
+        }
         queued = true;
         getTransferManager().downloadQueued(Download.this, getPartner());
     }
@@ -383,14 +396,19 @@ public class Download extends Transfer {
                 .getTime()
                 && !queued;
             if (timedOut) {
-                logFine("Break cause: Timeout. " + getFile().toDetailString());
+                if (isFine()) {
+                    logFine("Break cause: Timeout. "
+                        + getFile().toDetailString());
+                }
                 return true;
             }
         }
         // Check queueing at remote side
         boolean isQueuedAtPartner = stillQueuedAtPartner();
         if (!isQueuedAtPartner) {
-            logFine("Break cause: not queued.");
+            if (isFine()) {
+                logFine("Break cause: not queued.");
+            }
             return true;
         }
         // check blacklist
@@ -398,7 +416,9 @@ public class Download extends Transfer {
             getController().getFolderRepository());
         boolean onBlacklist = folder.getDiskItemFilter().isExcluded(getFile());
         if (onBlacklist) {
-            logFine("Break cause: On blacklist.");
+            if (isFine()) {
+                logFine("Break cause: Excluded from sync.");
+            }
             return true;
         }
 
@@ -411,8 +431,10 @@ public class Download extends Transfer {
         boolean newerFileAvailable = getFile().isNewerAvailable(
             getController().getFolderRepository());
         if (newerFileAvailable) {
-            logFine("Break cause: Newer version available. "
-                + getFile().toDetailString());
+            if (isFine()) {
+                logFine("Break cause: Newer version available. "
+                    + getFile().toDetailString());
+            }
             return true;
         }
 
