@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 20089 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2010 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -129,17 +129,29 @@ public interface FileInfoDAO {
      * <p>
      * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
      * 
+     * @param criteria
+     *            the selection criteria.
+     * @return the collection of matching directories.
+     */
+    Collection<FileInfo> findFiles(FileInfoCriteria criteria);
+
+    /**
+     * Finds all files in the given (sub) directory and domain only.
+     * <p>
+     * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
+     * 
      * @param domain
      *            the domain to check.
-     * @param path the path/relative name of the sub directory.
+     * @param path
+     *            the path/relative name of the sub directory.
      * @param recursive
      *            true to recursively include all files from subdirectory too.
      * @return the collection of matching directories.
+     * @deprecated use {@link #findFiles(FileInfoCriteria)}
      */
-    Collection<FileInfo> findInDirectory(String domain,
-                                         String path,
-                                         boolean recursive);
-    
+    Collection<FileInfo> findInDirectory(String domain, String path,
+        boolean recursive);
+
     /**
      * Finds all files in the given (sub) directory and domain only.
      * <p>
@@ -151,10 +163,10 @@ public interface FileInfoDAO {
      * @param recursive
      *            true to recursively include all files from subdirectory too.
      * @return the collection of matching directories.
+     * @deprecated use {@link #findFiles(FileInfoCriteria)}
      */
     Collection<FileInfo> findInDirectory(String domain,
-                                         DirectoryInfo directoryInfo,
-                                         boolean recursive);
+        DirectoryInfo directoryInfo, boolean recursive);
 
     /**
      * @param fileInfo

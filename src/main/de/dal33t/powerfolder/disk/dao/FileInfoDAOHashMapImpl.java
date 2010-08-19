@@ -1,10 +1,9 @@
 package de.dal33t.powerfolder.disk.dao;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -212,37 +211,56 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public Collection<FileInfo> findInDirectory(String domainStr,
         DirectoryInfo directoryInfo, boolean recursive)
     {
-        return findInDirectory(domainStr, directoryInfo != null ? directoryInfo
-            .getRelativeName() : null, recursive);
+        FileInfoCriteria crit = new FileInfoCriteria();
+        crit.addDomain(domainStr);
+        crit.setPath(directoryInfo);
+        crit.setRecursive(recursive);
+        return findFiles(crit);
     }
 
     public Collection<FileInfo> findInDirectory(String domainStr, String path,
         boolean recursive)
     {
+        FileInfoCriteria crit = new FileInfoCriteria();
+        crit.addDomain(domainStr);
+        crit.setPath(path);
+        crit.setRecursive(recursive);
+        return findFiles(crit);
+    }
+
+    public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
+        String path = criteria.getPath();
         if (path == null) {
             path = "";
         }
         if (path.equals("/")) {
             path = "";
         }
-        List<FileInfo> items = new ArrayList<FileInfo>();
-        Domain domain = getDomain(domainStr);
-        for (DirectoryInfo dInfo : domain.directories.values()) {
-            // if (filter.isExcluded(dInfo)) {
-            // continue;
-            // }
-            if (isInSubDir(dInfo, path, recursive)
-                && !Util.equalsRelativeName(dInfo.getRelativeName(), path))
-            {
-                items.add(dInfo);
+        boolean recursive = criteria.isRecursive();
+        Collection<FileInfo> items = new HashSet<FileInfo>();
+        for (String domainStr : criteria.getDomains()) {
+            Domain domain = getDomain(domainStr);
+            for (DirectoryInfo dInfo : domain.directories.values()) {
+                // if (filter.isExcluded(dInfo)) {
+                // continue;
+                // }
+                if (isInSubDir(dInfo, path, recursive)
+                    && !Util.equalsRelativeName(dInfo.getRelativeName(), path))
+                {
+                    if (!items.contains(dInfo)) {
+                        items.add(dInfo);
+                    }
+                }
             }
-        }
-        for (FileInfo fInfo : domain.files.values()) {
-            // if (filter.isExcluded(fInfo)) {
-            // continue;
-            // }
-            if (isInSubDir(fInfo, path, recursive)) {
-                items.add(fInfo);
+            for (FileInfo fInfo : domain.files.values()) {
+                // if (filter.isExcluded(fInfo)) {
+                // continue;
+                // }
+                if (isInSubDir(fInfo, path, recursive)) {
+                    if (!items.contains(fInfo)) {
+                        items.add(fInfo);
+                    }
+                }
             }
         }
         return items;

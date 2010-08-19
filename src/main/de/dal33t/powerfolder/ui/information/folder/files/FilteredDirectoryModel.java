@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: FilteredDirectoryModel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: FilteredDirectoryModel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -49,7 +49,8 @@ public class FilteredDirectoryModel {
         directoryInfo = rootFolder.getBaseDirectoryInfo();
     }
 
-    public FilteredDirectoryModel(Folder rootFolder, DirectoryInfo directoryInfo) {
+    public FilteredDirectoryModel(Folder rootFolder, DirectoryInfo directoryInfo)
+    {
         this.rootFolder = rootFolder;
         fileInfos = new CopyOnWriteArrayList<FileInfo>();
         subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
@@ -62,7 +63,7 @@ public class FilteredDirectoryModel {
 
     /**
      * Gets a readonly copy of the directories files.
-     *
+     * 
      * @return
      */
     public List<FileInfo> getFileInfos() {
@@ -83,7 +84,7 @@ public class FilteredDirectoryModel {
     /**
      * Answers if this or any of its children (or any of its children's
      * children...) have any files.
-     *
+     * 
      * @return
      */
     public boolean hasFilesDeep() {
@@ -100,7 +101,7 @@ public class FilteredDirectoryModel {
 
     /**
      * Set true if this directory has ne files.
-     *
+     * 
      * @param newFiles
      */
     public void setNewFiles(boolean newFiles) {
@@ -110,7 +111,7 @@ public class FilteredDirectoryModel {
     /**
      * Answers if this or any of its children (or any of its children's
      * children...) have any new files.
-     *
+     * 
      * @return
      */
     public boolean hasDescendantNewFiles() {
@@ -150,10 +151,16 @@ public class FilteredDirectoryModel {
         if (newFiles != that.newFiles) {
             return false;
         }
-        if (directoryInfo != null ? !directoryInfo.equals(that.directoryInfo) : that.directoryInfo != null) {
+        if (directoryInfo != null
+            ? !directoryInfo.equals(that.directoryInfo)
+            : that.directoryInfo != null)
+        {
             return false;
         }
-        if (rootFolder != null ? !rootFolder.equals(that.rootFolder) : that.rootFolder != null) {
+        if (rootFolder != null
+            ? !rootFolder.equals(that.rootFolder)
+            : that.rootFolder != null)
+        {
             return false;
         }
 
@@ -163,7 +170,8 @@ public class FilteredDirectoryModel {
     @Override
     public int hashCode() {
         int result = rootFolder != null ? rootFolder.hashCode() : 0;
-        result = 31 * result + (directoryInfo != null ? directoryInfo.hashCode() : 0);
+        result = 31 * result
+            + (directoryInfo != null ? directoryInfo.hashCode() : 0);
         result = 31 * result + (newFiles ? 1 : 0);
         return result;
     }
