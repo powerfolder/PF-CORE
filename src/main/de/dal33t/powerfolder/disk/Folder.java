@@ -1746,10 +1746,13 @@ public class Folder extends PFComponent {
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
         Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
+        if (syncProfile.equals(aSyncProfile)) {
+            // Skip.
+            return;
+        }
+        logFine("Setting " + aSyncProfile.getName());
         Reject.ifTrue(previewOnly,
             "Can not change Sync Profile in Preview mode.");
-
-        logFine("Setting " + aSyncProfile.getName());
         syncProfile = aSyncProfile;
 
         // Store on disk
@@ -3743,7 +3746,9 @@ public class Folder extends PFComponent {
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         diskItemFilter.savePatternsTo(file);
-        logWarning("Saving ignore patterns to Meta folder: " + file);
+        if (isFine()) {
+            logFine("Saving ignore patterns to Meta folder: " + file);
+        }
         metaFolder.scanChangedFile(fInfo);
     }
 
