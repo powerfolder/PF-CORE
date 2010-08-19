@@ -236,27 +236,9 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
      *         approved it
      */
     public boolean isOkToSwitchToProfile(SyncProfile syncProfile) {
-
-        if (!syncProfile.isSyncDeletion()) {
-            return true;
-        }
-
-        // If the sync profile is being changed, do not ask.
-        // Only interested with manual changes to dropdown.
-        if (settingSyncProfile) {
-            return true;
-        }
-
-        // Show warning if user wants to switch to a mode
-        String profName = syncProfile.getName();
-        return JOptionPane
-            .showConfirmDialog(
-                null,
-                Translation
-                    .getTranslation("synchronization.warning.automatic_deletions_notice"),
-                Translation.getTranslation("synchronization.notice.title",
-                    profName), JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
+        // Don't hassel the user with too many warnings. It's ok! We got an
+        // archive!
+        return true;
     }
 
     /**
@@ -280,11 +262,13 @@ public class SyncProfileSelectorPanel extends PFUIPanel {
                 // Also need to persist for any other folders that have this
                 // profile. This ensures that any minor changes are persisted
                 // for all affected folders.
-                for (Folder folder :
-                        getController().getFolderRepository().getFolders()) {
-                    if (folder.getSyncProfile().equals(syncProfile) &&
-                            !updateableFolder.equals(folder)) {
-                             folder.setSyncProfile(syncProfile);
+                for (Folder folder : getController().getFolderRepository()
+                    .getFolders())
+                {
+                    if (folder.getSyncProfile().equals(syncProfile)
+                        && !updateableFolder.equals(folder))
+                    {
+                        folder.setSyncProfile(syncProfile);
                     }
                 }
             }
