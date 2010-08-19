@@ -64,7 +64,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
         uiController.getApplicationModel().getNoticesModel()
-            .getReceivedNoticesCountVM().addValueChangeListener(
+            .getAllNoticesCountVM().addValueChangeListener(
                 new MyNoticesCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
             new MyMainTabChangeListener());
@@ -151,7 +151,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                .getNoticesModel().getReceivedNoticesCountVM()
+                .getNoticesModel().getAllNoticesCountVM()
                 .getValue();
 
             if (count == null || count == 0

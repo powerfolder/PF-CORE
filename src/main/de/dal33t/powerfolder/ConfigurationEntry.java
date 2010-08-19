@@ -686,12 +686,7 @@ public enum ConfigurationEntry {
     DEFAULT_ARCHIVE_VERIONS("default.archive.versions", 5),
 
     /** The archive mode to use when creating a new folder. */
-    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
-
-    /**
-     * Notices card view selection.
-     */
-    AUTO_CLEAN_NOTICES("auto.clean.notices", false);
+    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name());
 
     // Methods/Constructors ***************************************************
 

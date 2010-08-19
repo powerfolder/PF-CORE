@@ -98,7 +98,7 @@ public class StatusTab extends PFUIComponent {
     private LinkLabel buyNowLabel;
     private ActionLabel tellFriendLabel;
 
-    private final ValueModel newNoticesCountVM;
+    private NoticesModel noticeModel;
 
     /**
      * Constructor
@@ -113,9 +113,9 @@ public class StatusTab extends PFUIComponent {
             .getAllUploadsCountVM();
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
-        newNoticesCountVM = getUIController().getApplicationModel()
-            .getNoticesModel().getReceivedNoticesCountVM();
-        newNoticesCountVM.addValueChangeListener(new MyNoticesListener());
+        noticeModel = getApplicationModel().getNoticesModel();
+        noticeModel.getUnreadNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
         getApplicationModel().getFolderRepositoryModel()
             .addOverallFolderStatListener(new MyOverallFolderStatListener());
         controller.getNodeManager().addNodeManagerListener(
@@ -354,13 +354,19 @@ public class StatusTab extends PFUIComponent {
 
     private void updateNewNoticesText() {
 
-        Integer integer = (Integer) newNoticesCountVM.getValue();
-        NoticesModel noticesModel = getUIController().getApplicationModel().getNoticesModel();
+        Integer integer = (Integer) noticeModel.getUnreadNoticesCountVM()
+            .getValue();
+        NoticesModel noticesModel = getUIController().getApplicationModel()
+            .getNoticesModel();
 
         // See if they are all one type
         Class clazz = null;
         boolean variety = false;
         for (Notice notice : noticesModel.getAllNotices()) {
+            if (notice.isRead()) {
+                // Skip alread read notices.
+                continue;
+            }
             if (clazz == null) {
                 clazz = notice.getClass();
             } else if (clazz != notice.getClass()) {
@@ -373,17 +379,18 @@ public class StatusTab extends PFUIComponent {
         String noticesText;
         if (clazz != null && !variety) {
             if (clazz == AskForFriendshipEventNotice.class) {
-                noticesText = Translation.getTranslation(
-                        "status_tab.new_friendship_notices");
+                noticesText = Translation
+                    .getTranslation("status_tab.new_friendship_notices");
             } else if (clazz == WarningNotice.class) {
-                noticesText = Translation.getTranslation(
-                        "status_tab.new_warning_notices");
+                noticesText = Translation
+                    .getTranslation("status_tab.new_warning_notices");
             } else if (clazz == InvitationNotice.class) {
-                noticesText = Translation.getTranslation(
-                        "status_tab.new_invitation_notices");
+                noticesText = Translation
+                    .getTranslation("status_tab.new_invitation_notices");
             } else {
                 // Default
-                noticesText = Translation.getTranslation("status_tab.new_notices");
+                noticesText = Translation
+                    .getTranslation("status_tab.new_notices");
             }
         } else {
             noticesText = Translation.getTranslation("status_tab.new_notices");
@@ -394,7 +401,8 @@ public class StatusTab extends PFUIComponent {
         // If there are any warnings, set icon as warning, else information.
         Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
         for (Notice notice : getUIController().getApplicationModel()
-                .getNoticesModel().getAllNotices()) {
+            .getNoticesModel().getAllNotices())
+        {
             if (notice.getNoticeSeverity() == NoticeSeverity.WARINING) {
                 noticesIcon = Icons.getIconById(Icons.WARNING);
                 break;
@@ -439,8 +447,8 @@ public class StatusTab extends PFUIComponent {
         long count = 0;
         for (Folder folder : folders) {
             count += folder.getStatistic().getIncomingFilesCount();
-            if (isFine()) {
-                logFine("Folder: " + folder.getName() + ", incoming: "
+            if (isFiner()) {
+                logFiner("Folder: " + folder.getName() + ", incoming: "
                     + folder.getStatistic().getIncomingFilesCount());
             }
         }

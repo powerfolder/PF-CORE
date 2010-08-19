@@ -65,7 +65,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
         uiController.getApplicationModel().getChatModel().addChatModelListener(
             new MyChatModelListener());
         uiController.getApplicationModel().getNoticesModel()
-            .getReceivedNoticesCountVM().addValueChangeListener(
+            .getAllNoticesCountVM().addValueChangeListener(
                 new MyNoticesCountListener());
         uiController.getMainFrame().getUIComponent().addWindowListener(
             new MyWindowListener());
@@ -166,7 +166,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
         public void propertyChange(PropertyChangeEvent evt) {
 
             Integer count = (Integer) uiController.getApplicationModel()
-                .getNoticesModel().getReceivedNoticesCountVM().getValue();
+                .getNoticesModel().getAllNoticesCountVM().getValue();
 
             if (count == null || count == 0
                 || !uiController.getMainFrame().isIconifiedOrHidden()) {

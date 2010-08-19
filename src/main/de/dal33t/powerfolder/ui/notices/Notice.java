@@ -56,4 +56,14 @@ public interface Notice extends Serializable {
 
     /** True if this should be persisted. */
     boolean isPersistable();
+
+    /**
+     * @return true if this notice was already read by the user.
+     */
+    boolean isRead();
+
+    /**
+     * Marks the notice as read.
+     */
+    void setRead();
 }

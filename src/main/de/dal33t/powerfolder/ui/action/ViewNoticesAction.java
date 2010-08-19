@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.model.NoticesModel;
+import de.dal33t.powerfolder.ui.notices.Notice;
 
 /**
  * This action displays system notices.
@@ -41,8 +42,10 @@ public class ViewNoticesAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         NoticesModel model = getUIController().getApplicationModel()
             .getNoticesModel();
-        if (model.getAllNotices().size() == 1) {
-            model.activateNotice(model.getAllNotices().get(0));
+        boolean single = (Integer) model.getUnreadNoticesCountVM().getValue() == 1;
+        Notice unread;
+        if (single && (unread = model.getFirstUnread()) != null) {
+            model.activateNotice(unread);
         } else {
             getController().getUIController().openNoticesCard();
         }

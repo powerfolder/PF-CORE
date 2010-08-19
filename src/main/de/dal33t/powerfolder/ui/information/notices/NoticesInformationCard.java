@@ -21,8 +21,6 @@ package de.dal33t.powerfolder.ui.information.notices;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -30,7 +28,6 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,7 +40,6 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -59,7 +55,6 @@ public class NoticesInformationCard extends InformationCard {
     private NoticesTableModel noticesTableModel;
     private NoticesTable noticesTable;
     private Action activateAction;
-    private JCheckBox autoCleanupCB;
 
     public NoticesInformationCard(Controller controller) {
         super(controller);
@@ -94,7 +89,7 @@ public class NoticesInformationCard extends InformationCard {
     private void initialize() {
         PropertyChangeListener noticesListener = new MyPropertyChangeListener();
         getController().getUIController().getApplicationModel()
-            .getNoticesModel().getReceivedNoticesCountVM()
+            .getNoticesModel().getAllNoticesCountVM()
             .addValueChangeListener(noticesListener);
         noticesTableModel = new NoticesTableModel(getController());
         noticesTable = new NoticesTable(noticesTableModel);
@@ -107,11 +102,6 @@ public class NoticesInformationCard extends InformationCard {
 
         noticesTable.addMouseListener(new TableMouseListener());
         activateAction = new ActivateNoticeAction(getController());
-        autoCleanupCB = new JCheckBox(Translation
-            .getTranslation("notices_information_card.view.auto"));
-        autoCleanupCB.setSelected(ConfigurationEntry.AUTO_CLEAN_NOTICES
-            .getValueBoolean(getController()));
-        autoCleanupCB.addItemListener(new MyItemListener());
 
         enableActivate();
     }
@@ -144,8 +134,6 @@ public class NoticesInformationCard extends InformationCard {
         bar.addGridded(activateButton);
         bar.addRelatedGap();
         bar.addGridded(clearAllButton);
-        bar.addRelatedGap();
-        bar.addGridded(autoCleanupCB);
         return bar;
     }
 
@@ -172,10 +160,6 @@ public class NoticesInformationCard extends InformationCard {
             if (at != null && at instanceof Notice) {
                 Notice notice = (Notice) at;
                 model.activateNotice(notice);
-                if (autoCleanupCB.isSelected()) {
-                    getController().getUIController().getApplicationModel()
-                        .getNoticesModel().popNotice();
-                }
             }
         }
     }
@@ -254,13 +238,6 @@ public class NoticesInformationCard extends InformationCard {
 
         private void showContextMenu(MouseEvent evt) {
             // @todo ???
-        }
-    }
-
-    private class MyItemListener implements ItemListener {
-        public void itemStateChanged(ItemEvent e) {
-            ConfigurationEntry.AUTO_CLEAN_NOTICES.setValue(getController(),
-                autoCleanupCB.isSelected());
         }
     }
 }

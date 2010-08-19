@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JLabel;
@@ -63,7 +62,8 @@ import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
  */
 public class NoticesModel extends PFUIComponent {
 
-    private final ValueModel receivedNoticesCountVM = new ValueHolder();
+    private final ValueModel allNoticesCountVM = new ValueHolder();
+    private final ValueModel unreadNoticesCountVM = new ValueHolder();
 
     private List<Notice> notices = new CopyOnWriteArrayList<Notice>();
 
@@ -74,14 +74,21 @@ public class NoticesModel extends PFUIComponent {
      */
     public NoticesModel(Controller controller) {
         super(controller);
-        receivedNoticesCountVM.setValue(0);
+        updateNoticeCounts();
     }
 
     /**
      * @return Value model with integer count of received invitations.
      */
-    public ValueModel getReceivedNoticesCountVM() {
-        return receivedNoticesCountVM;
+    public ValueModel getAllNoticesCountVM() {
+        return allNoticesCountVM;
+    }
+
+    /**
+     * @return Value model with integer count of unread invitations.
+     */
+    public ValueModel getUnreadNoticesCountVM() {
+        return unreadNoticesCountVM;
     }
 
     public boolean addNotice(Notice notice) {
@@ -90,20 +97,8 @@ public class NoticesModel extends PFUIComponent {
             return false;
         }
         notices.add(notice);
-        receivedNoticesCountVM.setValue(notices.size());
+        updateNoticeCounts();
         return true;
-    }
-
-    /**
-     * @return Remove a notice from the model for display, etc.
-     */
-    public Notice popNotice() {
-        if (!notices.isEmpty()) {
-            Notice notice = notices.remove(0);
-            receivedNoticesCountVM.setValue(notices.size());
-            return notice;
-        }
-        return null;
     }
 
     /**
@@ -111,6 +106,15 @@ public class NoticesModel extends PFUIComponent {
      */
     public List<Notice> getAllNotices() {
         return Collections.unmodifiableList(notices);
+    }
+
+    public Notice getFirstUnread() {
+        for (Notice notice : notices) {
+            if (!notice.isRead()) {
+                return notice;
+            }
+        }
+        return null;
     }
 
     /**
@@ -159,7 +163,6 @@ public class NoticesModel extends PFUIComponent {
      * @param notice
      */
     public void activateNotice(Notice notice) {
-
         if (notice instanceof InvitationNotice) {
             InvitationNotice invitationNotice = (InvitationNotice) notice;
             handleInvitationNotice(invitationNotice);
@@ -173,6 +176,20 @@ public class NoticesModel extends PFUIComponent {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
         }
+        markRead(notice);
+    }
+
+    /**
+     * Marks the notice as read.
+     * 
+     * @param notice
+     */
+    public void markRead(Notice notice) {
+        notice.setRead();
+        if (!notices.contains(notice)) {
+            addNotice(notice);
+        }
+        updateNoticeCounts();
     }
 
     /**
@@ -350,35 +367,33 @@ public class NoticesModel extends PFUIComponent {
      */
     private void handleInvitationNotice(InvitationNotice invitationNotice) {
         final Invitation invitation = invitationNotice.getPayload();
-        Runnable worker = new Runnable() {
-            public void run() {
-                TimerTask task = new TimerTask() {
-                    public void run() {
-                        PFWizard.openInvitationReceivedWizard(getController(),
-                            invitation);
-                    }
-                };
-                task.run();
-            }
-        };
-
-        // Invoke later
-        SwingUtilities.invokeLater(worker);
+        PFWizard.openInvitationReceivedWizard(getController(), invitation);
     }
 
     public void clearAll() {
-        while (!notices.isEmpty()) {
-            popNotice();
-        }
+        notices.clear();
+        updateNoticeCounts();
     }
 
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
                 notices.remove(notice);
-                receivedNoticesCountVM.setValue(notices.size());
+                updateNoticeCounts();
                 return;
             }
         }
+    }
+
+    private void updateNoticeCounts() {
+        allNoticesCountVM.setValue(notices.size());
+
+        int count = 0;
+        for (Notice notice : notices) {
+            if (!notice.isRead()) {
+                count++;
+            }
+        }
+        unreadNoticesCountVM.setValue(count);
     }
 }

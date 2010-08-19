@@ -30,6 +30,7 @@ public abstract class NoticeBase implements Notice {
     private static final long serialVersionUID = 100L;
 
     private final Date date;
+    private Date readDate;
     private final String title;
     private final String summary;
 
@@ -60,6 +61,14 @@ public abstract class NoticeBase implements Notice {
 
     public UUID getUuid() {
         return uuid;
+    }
+
+    public void setRead() {
+        readDate = new Date();
+    }
+
+    public boolean isRead() {
+        return readDate != null;
     }
 
     public boolean equals(Object obj) {
