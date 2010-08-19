@@ -1,29 +1,14 @@
-PowerFolder Version 4.2.6 - http://www.powerfolder.com
+PowerFolder Version 4.3.0 - http://www.powerfolder.com
 
 = New features =
- * Fully 64 bit support for 64 bit Java installations.
- * It's now possible to pre-configure all settings (also user interface related)
-   centrally by the server administrator.
-   http://www.powerfolder.com/wiki/Server_client_deployment
+ * TODO
 
 = Improvements =
- * Client now clearly shows failed login attempts.
- * Auto-update: Silently download and update is now the default option.
-   For completely non supervised auto update please add the following line to
-   http://www.powerfolder.com/wiki/Configuration_file
-   auto.update=true
- * Added option to automatically shutdown any running instance when starting
-   PowerFolder. Available as entry in config file only. Add the following line to
-   http://www.powerfolder.com/wiki/Configuration_file
-   kill.running.instance=true
- * Several other minor improvements.
+ * TODO
 
 = Bugfixes =
- * Removed problem when setting up a new folder (e.g. by invitation)
-   when one of the existing folders was inaccessible.
- * Fixed a minor issue with the HTTP-Tunnel.
-   http://www.powerfolder.com/wiki/HTTP-Tunnel
- * Several other minor bugfixes.
+ * TODO
+
 
 Please give us feedback and request improvements:
 http://www.powerfolder.com/contact.html
@@ -51,6 +36,42 @@ Email      : contact (at) powerfolder.com
 
 == Version History ==
 
+Version 4.2.9
+-------------
+
+= Bugfixes =
+ * Contains several bugfixes regarding network stability.
+
+
+Version 4.2.6
+-------------
+
+= New features =
+ * Fully 64 bit support for 64 bit Java installations.
+ * It's now possible to pre-configure all settings (also user interface related)
+   centrally by the server administrator.
+   http://www.powerfolder.com/wiki/Server_client_deployment
+
+= Improvements =
+ * Client now clearly shows failed login attempts.
+ * Auto-update: Silently download and update is now the default option.
+   For completely non supervised auto update please add the following line to
+   http://www.powerfolder.com/wiki/Configuration_file
+   auto.update=true
+ * Added option to automatically shutdown any running instance when starting
+   PowerFolder. Available as entry in config file only. Add the following line to
+   http://www.powerfolder.com/wiki/Configuration_file
+   kill.running.instance=true
+ * Several other minor improvements.
+
+= Bugfixes =
+ * Removed problem when setting up a new folder (e.g. by invitation)
+   when one of the existing folders was inaccessible.
+ * Fixed a minor issue with the HTTP-Tunnel.
+   http://www.powerfolder.com/wiki/HTTP-Tunnel
+ * Several other minor bugfixes.
+ 
+ 
 Version 4.2.5
 -------------
 
