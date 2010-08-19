@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.Date;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -28,11 +32,6 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.logging.Loggable;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Abstract version of a Transfer.<BR>
@@ -342,19 +341,25 @@ public abstract class Transfer extends Loggable implements Serializable {
             return false;
         }
         if (getPartner() == null) {
-            logFine("Break cause: partner is null.");
+            if (isFine()) {
+                logFine("Break cause: partner is null.");
+            }
             return true;
         }
         if (!getPartner().isCompletelyConnected()) {
-            logFine("Break cause: " + getPartner().getNick()
-                + " not connected.");
+            if (isFine()) {
+                logFine("Break cause: " + getPartner().getNick()
+                    + " not connected.");
+            }
             return true;
         }
         boolean partnerOnFolder = stillPartnerOnFolder();
         if (!partnerOnFolder) {
             // broken if partner left folder
-            logFine("Break cause: " + getPartner().getNick()
-                + " not on folder.");
+            if (isFine()) {
+                logFine("Break cause: " + getPartner().getNick()
+                    + " not on folder.");
+            }
             return true;
         }
 
