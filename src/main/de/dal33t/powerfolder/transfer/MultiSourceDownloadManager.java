@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.transfer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
@@ -212,8 +211,9 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
 
         if (download != null) {
             assert Util.useDeltaSync(getController(), download.getPartner());
-
-            logFine("Requesting Filepartsrecord from " + download);
+            if (isFine()) {
+                logFine("Requesting Filepartsrecord from " + download);
+            }
             setTransferState(TransferState.FILERECORD_REQUEST);
             pendingPartRecordFrom = download;
             pendingPartRecordFrom.requestFilePartsRecord();
