@@ -105,7 +105,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private JButtonMini openFilesInformationButton;
     private JButtonMini inviteButton;
     private JButtonMini problemButton;
-    private SyncIconButtonMini syncFolderButton;
     private ActionLabel membersLabel;
 
     private JPanel uiComponent;
@@ -124,6 +123,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel filesAvailableLabel;
     private JPanel upperPanel;
     private JButtonMini primaryButton;
+    private SyncIconButtonMini upperSyncFolderButton;
+    private JButtonMini lowerSyncFolderButton;
 
     private MyFolderListener myFolderListener;
     private MyFolderMembershipListener myFolderMembershipListener;
@@ -217,7 +218,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateNameLabel();
         updatePermissions();
         updateDeletedFiles();
-            
+
         registerFolderListeners();
     }
 
@@ -283,10 +284,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             "pref");
         PanelBuilder upperBuilder = new PanelBuilder(upperLayout);
         CellConstraints cc = new CellConstraints();
-        primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
         updateIconAndOS();
 
         upperBuilder.add(primaryButton, cc.xy(1, 1));
+        upperBuilder.add(upperSyncFolderButton, cc.xy(1, 1));
+
         MouseAdapter ma = new MyMouseAdapter();
         nameLabel = new ResizingJLabel();
         upperBuilder.add(nameLabel, cc.xy(3, 1));
@@ -311,8 +313,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperInviteButton.addMouseListener(ma);
         upperOpenFilesButton.addMouseListener(ma);
 
-        primaryButton.addActionListener(new PrimaryButtonActionListener());
-
         // Build lower detials with line border.
         FormLayout lowerLayout;
         if (getController().isBackupOnly()) {
@@ -334,7 +334,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         row += 2;
 
         lowerBuilder.add(syncDateLabel.getUIComponent(), cc.xy(2, row));
-        lowerBuilder.add(syncFolderButton, cc.xy(5, row));
+        lowerBuilder.add(lowerSyncFolderButton, cc.xy(5, row));
 
         row += 2;
 
@@ -452,6 +452,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         osComponent = new OnlineStorageComponent(getController(), folder);
 
+        primaryButton = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
+        primaryButton.addActionListener(new PrimaryButtonActionListener());
         openSettingsInformationButton = new JButtonMini(
             openSettingsInformationAction);
 
@@ -462,8 +464,13 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperInviteButton = new JButtonMini(inviteAction);
 
         problemButton = new JButtonMini(myProblemAction);
-        syncFolderButton = new SyncIconButtonMini(getController());
-        syncFolderButton.addActionListener(syncFolderAction);
+        upperSyncFolderButton = new SyncIconButtonMini(getController());
+        upperSyncFolderButton
+            .addActionListener(new PrimaryButtonActionListener());
+        upperSyncFolderButton.setVisible(false);
+        upperSyncFolderButton
+            .setBorder(Borders.createEmptyBorder("6, 6, 6, 6"));
+        lowerSyncFolderButton = new JButtonMini(syncFolderAction);
         upperSyncLink = new ActionLabel(getController(), syncFolderAction);
         upperSyncLink.setText("");
 
@@ -472,7 +479,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperOpenFilesButton.setVisible(false);
 
         filesLabel = new ActionLabel(getController(),
-                openFilesInformationAction);
+            openFilesInformationAction);
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         syncPercentLabel = new JLabel();
@@ -485,7 +492,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         filesAvailableLabel = new ActionLabel(getController(),
             new MyFilesAvailableAction());
         deletedFilesLabel = new ActionLabel(getController(),
-                new MyDeletedFilesAction());
+            new MyDeletedFilesAction());
         updateNumberOfFiles();
         updateStatsDetails();
         updateFolderMembershipDetails();
@@ -534,15 +541,27 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateSyncButton() {
         if (folder == null) {
-            syncFolderButton.spin(false);
+            upperSyncFolderButton.setVisible(false);
+            upperSyncFolderButton.spin(false);
+            primaryButton.setVisible(true);
             return;
         }
         syncUpdater.schedule(new Runnable() {
             public void run() {
                 if (folder == null) {
-                    syncFolderButton.spin(false);
+                    upperSyncFolderButton.setVisible(false);
+                    upperSyncFolderButton.spin(false);
+                    primaryButton.setVisible(true);
                 } else {
-                    syncFolderButton.spin(folder.isSyncing());
+                    if (folder.isSyncing()) {
+                        primaryButton.setVisible(false);
+                        upperSyncFolderButton.setVisible(true);
+                        upperSyncFolderButton.spin(folder.isSyncing());
+                    } else {
+                        upperSyncFolderButton.setVisible(false);
+                        upperSyncFolderButton.spin(false);
+                        primaryButton.setVisible(true);
+                    }
                 }
             }
         });
@@ -774,11 +793,11 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateDeletedFiles() {
         String deletedFileText;
         if (folder == null) {
-            deletedFileText = Translation
-                .getTranslation("exp_folder_view.deleted_files", "?");
+            deletedFileText = Translation.getTranslation(
+                "exp_folder_view.deleted_files", "?");
         } else {
             Collection<FileInfo> allFiles = folder.getDAO().findAllFiles(
-                    getController().getMySelf().getId());
+                getController().getMySelf().getId());
             int deletedCount = 0;
             for (FileInfo file : allFiles) {
                 if (file.isDeleted()) {
@@ -786,8 +805,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
             deletedFileText = Translation.getTranslation(
-                    "exp_folder_view.deleted_files",
-                    String.valueOf(deletedCount));
+                "exp_folder_view.deleted_files", String.valueOf(deletedCount));
         }
         deletedFilesLabel.setText(deletedFileText);
     }
