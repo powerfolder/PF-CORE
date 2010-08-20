@@ -239,7 +239,7 @@ public class FileList extends FolderRelatedMessage {
         }
 
         // Set the actual number of deltas
-        if (messages.get(0) instanceof FileList) {
+        if (!messages.isEmpty() && messages.get(0) instanceof FileList) {
             ((FileList) messages.get(0)).nFollowingDeltas = nDeltas;
         }
 
