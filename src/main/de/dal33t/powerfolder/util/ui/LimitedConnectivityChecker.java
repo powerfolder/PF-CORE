@@ -143,8 +143,12 @@ public class LimitedConnectivityChecker {
 
         public void run() {
             if (controller.isLanOnly()) {
-                // No limited connecvitiy in lan only mode.
+                // No limited connectivity in lan only mode.
                 controller.setLimitedConnectivity(false);
+                return;
+            }
+            if (!controller.getNodeManager().isStarted()) {
+                // Skip check if de-activated.
                 return;
             }
             if (!PreferencesEntry.TEST_CONNECTIVITY.getValueBoolean(controller))

@@ -58,16 +58,19 @@ public class ProUtil {
             return simpleURL;
         }
 
-        String url = simpleURL;
         String loginURL = client.getLoginURLWithCredentials();
-        url = loginURL;
-        if (loginURL.contains("?")) {
-            url += '&';
-        } else {
-            url += '?';
-        }
-        url += "originalURI=" + Util.endcodeForURL(simpleURL);
-        return url;
+        // HACK(tm) Redirect to https://access.powerfolder.com/upgrade.html does not work!
+        return loginURL;
+
+//        String url = simpleURL;
+//        url = loginURL;
+//        if (loginURL.contains("?")) {
+//            url += '&';
+//        } else {
+//            url += '?';
+//        }
+//        url += "originalURI=" + Util.endcodeForURL(simpleURL);
+//        return url;
     }
 
     /**
