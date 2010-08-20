@@ -2155,6 +2155,7 @@ public class Controller extends PFComponent {
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
             Object[] options;
+            int exitOption = 0;
             options = new Object[]{Translation
                 .getTranslation("dialog.already_running.exit_button")};
             if (isVerbose()) {
@@ -2163,12 +2164,13 @@ public class Controller extends PFComponent {
                         .getTranslation("dialog.already_running.start_button"),
                     Translation
                         .getTranslation("dialog.already_running.exit_button")};
+                exitOption = 1;
             }
             if (JOptionPane.showOptionDialog(parent, Translation
                 .getTranslation("dialog.already_running.warning"), Translation
                 .getTranslation("dialog.already_running.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
-                null, options, options[0]) == 1)
+                null, options, options[0]) == exitOption)
             { // exit pressed
                 exit(1);
             }
