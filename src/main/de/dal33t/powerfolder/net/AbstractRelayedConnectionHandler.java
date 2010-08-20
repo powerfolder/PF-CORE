@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -635,6 +636,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
     // Receiving **************************************************************
 
     private ConcurrentLinkedQueue<RelayedMessage> receiveQueue = new ConcurrentLinkedQueue<RelayedMessage>();
+    private AtomicBoolean receiving = new AtomicBoolean(false);
 
     /**
      * Receives and processes the relayed message.
@@ -644,15 +646,28 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
      */
     public void receiveRelayedMessage(RelayedMessage message) {
         // in queue for later processing in own thread
-        receiveQueue.offer(message);
-        getController().getIOProvider().startIO(new Runnable() {
-            public void run() {
-                RelayedMessage rm;
-                while ((rm = receiveQueue.poll()) != null) {
-                    receiveRelayedMessage0(rm);
+        boolean startReceiver = false;
+        synchronized (receiveQueue) {
+            receiveQueue.offer(message);
+            startReceiver = receiving.compareAndSet(false, true);
+        }
+        if (startReceiver) {
+            getController().getIOProvider().startIO(new Runnable() {
+                public void run() {
+                    while (true) {
+                        RelayedMessage rm;
+                        synchronized (receiveQueue) {
+                            rm = receiveQueue.poll();
+                            if (rm == null) {
+                                receiving.set(false);
+                                break;
+                            }
+                        }
+                        receiveRelayedMessage0(rm);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
