@@ -75,9 +75,11 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.LinkFolderOnlineDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -98,7 +100,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private Map<String, File> userDirectories;
     private WizardPanel next;
     private JLabel folderSizeLabel;
-    private JLabel osWarningLabel;
+    private LinkLabel warningLabel;
 
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
@@ -140,7 +142,21 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return countSelectedFolders() > 0;
+        boolean limitedLicense = getGBsAllowed() > 0
+            || ProUtil.isTrial(getController());
+        return countSelectedFolders() > 0
+            && (!(limitedLicense && warningLabel.getUIComponent().isVisible()));
+    }
+
+    private int getGBsAllowed() {
+        try {
+            return (Integer) getController().getUIController()
+                .getApplicationModel().getLicenseModel().getGbAllowedModel()
+                .getValue();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     private int countSelectedFolders() {
@@ -218,7 +234,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         // Create boxes.
-        JCheckBox allBox = new JCheckBox(Translation.getTranslation("wizard.choose_multi_disk_location.all_files"));
+        JCheckBox allBox = new JCheckBox(Translation
+            .getTranslation("wizard.choose_multi_disk_location.all_files"));
         allBox.setOpaque(false);
         allBox.addActionListener(new MyAllActionListner());
         boxes.add(allBox);
@@ -299,7 +316,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
         row += 2;
 
-        builder.add(osWarningLabel, cc.xyw(1, row, 6));
+        builder.add(warningLabel.getUIComponent(), cc.xyw(1, row, 6));
 
         return builder.getPanel();
     }
@@ -329,7 +346,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         userDirectories = UserDirectories.getUserDirectories();
 
         folderSizeLabel = new JLabel();
-        osWarningLabel = new JLabel();
+        warningLabel = new LinkLabel(getController(), Translation
+            .getTranslation("pro.wizard.activation.order_now"), ProUtil
+            .getBuyNowURL(getController()));
+        warningLabel.setVisible(false);
 
         boxes = new ArrayList<JCheckBox>();
 
@@ -473,6 +493,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private class MyFolderSizeSwingWorker extends SwingWorker {
 
+        private int nDirectories = 0;
         private int recursiveFileCount = 0;
         private long totalDirectorySize = 0;
         private boolean valid = true;
@@ -513,6 +534,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     totalDirectorySize += longs[0];
                     recursiveFileCount += longs[1];
                 }
+                nDirectories = originalList.size();
                 getWizardContext().setAttribute(FILE_COUNT, recursiveFileCount);
 
                 List<File> finalList = new ArrayList<File>();
@@ -553,8 +575,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         "wizard.choose_disk_location.total_directory_size",
                         Format.formatBytes(totalDirectorySize), Format
                             .formatLong(recursiveFileCount)));
-                    osWarningLabel.setText("");
-                    osWarningLabel.setIcon(null);
+                    warningLabel.setText("");
+                    warningLabel.setIcon(null);
+                    warningLabel.setVisible(false);
+
                     if (backupByOnlineStorageBox.isSelected()) {
                         ServerClient client = getController().getOSClient();
                         OnlineStorageSubscription storageSubscription = client
@@ -565,21 +589,51 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                             long spaceUsed = client.getAccountDetails()
                                 .getSpaceUsed();
                             if (spaceUsed + totalDirectorySize > totalStorage) {
-                                osWarningLabel
+                                warningLabel.setVisible(true);
+                                warningLabel
                                     .setText(Translation
                                         .getTranslation("wizard.choose_disk_location.os_over_size"));
-                                osWarningLabel.setIcon(Icons
+                                warningLabel.setIcon(Icons
                                     .getIconById(Icons.WARNING));
                             }
                         }
                     }
 
+                    // Trial licenses
+                    long bytesAllowed = getGBsAllowed() * 1024 * 1024 * 1024;
+                    boolean licenseOverUse = bytesAllowed > 0
+                        && calculateTotalLocalSharedSize() + totalDirectorySize > bytesAllowed;
+                    boolean trialOverUse = ProUtil.isTrial(getController())
+                        && (nDirectories
+                            + getController().getFolderRepository()
+                                .getFoldersCount() > 3);
+                    if (licenseOverUse || trialOverUse) {
+                        warningLabel.setVisible(true);
+                        warningLabel
+                            .setText(Translation
+                                .getTranslation("wizard.choose_disk_location.os_over_size"));
+                        warningLabel.setIcon(Icons.getIconById(Icons.WARNING));
+                    }
+
                 } catch (Exception e) {
                     Logger.getAnonymousLogger().log(Level.WARNING,
                         e.toString(), e);
+                } finally {
+                    updateButtons();
                 }
             }
+            updateButtons();
         }
+    }
+
+    private long calculateTotalLocalSharedSize() {
+        long totalSize = 0L;
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            totalSize += folder.getStatistic().getSize(
+                getController().getMySelf());
+        }
+        return totalSize;
     }
 
     /**
