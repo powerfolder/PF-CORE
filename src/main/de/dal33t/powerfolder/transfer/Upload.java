@@ -134,7 +134,9 @@ public class Upload extends Transfer {
     public void receivedFilePartsRecordRequest(RequestFilePartsRecord r) {
         Reject.ifNull(r, "Record is null");
 
-        logInfo("Received request for a parts record.");
+        if (isFine()) {
+            logFine("Received request for a parts record: " + r);
+        }
         // If the download was aborted
         if (aborted || !isStarted()) {
             return;
