@@ -28,13 +28,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -65,8 +66,8 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.TransferAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
@@ -468,8 +469,15 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncFolderButton
             .addActionListener(new PrimaryButtonActionListener());
         upperSyncFolderButton.setVisible(false);
-        upperSyncFolderButton
-            .setBorder(Borders.createEmptyBorder("6, 6, 6, 6"));
+
+        Icon pIcon = Icons.getIconById(Icons.LOCAL_FOLDER);
+        Icon sIcon = Icons.getIconById(Icons.SYNC_ANIMATION[0]);
+        if (pIcon.getIconHeight() > sIcon.getIconHeight()) {
+            // HACK(tm) when mixing 16x16 sync icon with 24x24 icons
+            upperSyncFolderButton.setBorder(Borders
+                .createEmptyBorder("6, 6, 6, 6"));
+        }
+
         lowerSyncFolderButton = new JButtonMini(syncFolderAction);
         upperSyncLink = new ActionLabel(getController(), syncFolderAction);
         upperSyncLink.setText("");
