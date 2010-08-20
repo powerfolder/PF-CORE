@@ -58,16 +58,36 @@ public class RemoteServiceStubFactory {
      * @param remoteSide
      * @return the remote stub implementing the service interface
      */
-    @SuppressWarnings("unchecked")
     public static <T> T createRemoteStub(Controller controller,
         Class<? extends T> serviceInterface, Member remoteSide)
+    {
+        return createRemoteStub(controller, serviceInterface, remoteSide, null);
+    }
+
+    /**
+     * Constructs a stub implementing the given service interface. All calls are
+     * executed against the remote service repository of the remote site.
+     * 
+     * @param <T>
+     *            The interface class of the service
+     * @param controller
+     *            the controller
+     * @param serviceInterface
+     * @param remoteSide
+     * @param throwableHandler
+     * @return the remote stub implementing the service interface
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T createRemoteStub(Controller controller,
+        Class<? extends T> serviceInterface, Member remoteSide,
+        ThrowableHandler throwableHandler)
     {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(remoteSide, "Remote site is null");
         Reject.ifFalse(serviceInterface.isInterface(),
             "Service interface class is not a interface! " + serviceInterface);
         InvocationHandler handler = new RemoteInvocationHandler(controller,
-            serviceInterface.getName(), remoteSide);
+            serviceInterface.getName(), remoteSide, throwableHandler);
         return (T) Proxy.newProxyInstance(RemoteServiceStubFactory.class
             .getClassLoader(), new Class[]{serviceInterface}, handler);
     }
@@ -76,14 +96,17 @@ public class RemoteServiceStubFactory {
         private Controller controller;
         private Member remoteSide;
         private String serviceId;
+        private ThrowableHandler throwableHandler;
 
         private RemoteInvocationHandler(Controller controller,
-            String serviceId, Member remoteSide)
+            String serviceId, Member remoteSide,
+            ThrowableHandler throwableHandler)
         {
             super();
             this.controller = controller;
             this.remoteSide = remoteSide;
             this.serviceId = serviceId;
+            this.throwableHandler = throwableHandler;
         }
 
         public Object invoke(Object proxy, Method method, Object[] args)
@@ -144,6 +167,15 @@ public class RemoteServiceStubFactory {
                     response.getException().getClass());
                 if (exceptionDeclared) {
                     throw response.getException();
+                }
+                if (throwableHandler != null) {
+                    try {
+                        throwableHandler.handle(response.getException());
+                    } catch (Exception e) {
+                        LOG
+                            .warning("ThrowableHandler threw exception! What a pity! "
+                                + e);
+                    }
                 }
                 if (response.getException() instanceof RuntimeException) {
                     throw (RuntimeException) response.getException();
