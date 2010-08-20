@@ -1,13 +1,45 @@
 PowerFolder Version 4.3.0 - http://www.powerfolder.com
 
 = New features =
- * TODO
-
+ * Added new fresh default skin "LightSky".
+ * Instant change detection (Instant sync) is now enabled by default.
+   Info: http://www.powerfolder.com/wiki/Instant_change_detection
+ * New wizard option "All typical" to easily sync, share, backup all common
+   directories such as Documents, Music, Pictures, etc.pp.
+ * Windows Installer now supports command line options to control the
+   installation process: http://www.powerfolder.com/wiki/Windows_installer
+ * Ignore patterns/exclusion list now gets synced between clients.
+ * Added file browser filter settings to view files of other computers.
+ * Extended security control for PowerFolder Server clients:
+   It's now possible to delete all folder files from a client by revoking the permission.
+   Info: http://www.powerfolder.com/wiki/Extended_Security_Control
+ 
 = Improvements =
- * TODO
+ * Drastically reduced CPU usage.
+ * Several memory improvements.
+ * Reworked notification system for invitations, friendship requests and warnings.
+ * Wording change: "Online folders" are now renamed to "Not local folders".
+   They may exist on other computers only and not on the cloud storage.
+ * Installer java detection now downloads 64 bit java on 64 bit systems.
+ * Many improvements of the simplified/backup only client mode.
+ * Incoming files info line on status tab is now clickable.
+ * License information now gets displayed in Info/About dialog.
+ * Improved communication between client and server to reduce number of remote calls.
+ * Many other user interface improvements.
 
 = Bugfixes =
- * TODO
+ * Fixed weird window resizing behavior.
+ * Fixed problem with file archive option "Unlimited" versions.
+ * Fixed bug that causes the user interface to freeze.
+ * Fixed several memory leaks.
+ * Bulk file archive restore is now available on existing files - to restore
+   previous file versions. Info: http://www.powerfolder.com/wiki/File_Archive
+ * Folder name is not longer empty when choosing to sync a whole drive.
+ * Prevent PowerFolder folders to become system directories.
+ * Disconnected devices (USB Stick, etc.) on Mac OS X are handled better now.
+   A warning/notification is shown up.
+ * Fixed bug that causes instant change detection to crash on unavailable devices.
+ * Fixed bug in daily sync logic.
 
 
 Please give us feedback and request improvements:
