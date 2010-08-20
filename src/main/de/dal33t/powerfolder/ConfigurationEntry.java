@@ -164,7 +164,7 @@ public enum ConfigurationEntry {
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
     PROVIDER_BUY_URL("provider.url.buy",
-        "https://access.powerfolder.com/upgrade.html"),
+        "http://www.powerfolder.com/buynow.html"),
 
     /**
      * URL where the contact form resides
