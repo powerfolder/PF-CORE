@@ -45,6 +45,8 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AnonymousAccount;
+import de.dal33t.powerfolder.security.NotLoggedInException;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -83,6 +85,7 @@ public class ServerClient extends PFComponent {
     private String username;
     private char[] password;
     private Member server;
+    private MyThrowableHandler throwableHandler = new MyThrowableHandler();
 
     /**
      * If this client should connect to the server where his folders are hosted
@@ -216,7 +219,7 @@ public class ServerClient extends PFComponent {
         }
         getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
             1000L * 20);
-        getController().scheduleAndRepeat(new AutoLoginTask(), 20L * 1000L,
+        getController().scheduleAndRepeat(new AutoLoginTask(), 10L * 1000L,
             1000L * 20);
         // Wait 10 seconds at start
         getController().scheduleAndRepeat(new HostingServerRetriever(),
@@ -711,7 +714,7 @@ public class ServerClient extends PFComponent {
 
     public <T> T getService(Class<T> serviceInterface) {
         return RemoteServiceStubFactory.createRemoteStub(getController(),
-            serviceInterface, server);
+            serviceInterface, server, throwableHandler);
     }
 
     public SecurityService getSecurityService() {
@@ -1177,5 +1180,37 @@ public class ServerClient extends PFComponent {
     // }
     // }
     // }
+
+    private class MyThrowableHandler implements ThrowableHandler {
+        private int loginProblems;
+
+        public void handle(Throwable t) {
+            if (t instanceof NotLoggedInException) {
+                autoLogin(t);
+            } else if (t instanceof SecurityException) {
+                if (t.getMessage() != null
+                    && t.getMessage().toLowerCase().contains("not logged"))
+                {
+                    autoLogin(t);
+                }
+            }
+        }
+
+        private void autoLogin(Throwable t) {
+            if (username != null && password != null && password.length > 0) {
+                loginProblems++;
+                if (loginProblems > 20) {
+                    logSevere("Got "
+                        + loginProblems
+                        + " login problems. "
+                        + "Not longer auto-logging in to prevent hammering server.");
+                    return;
+                }
+                logWarning("Auto-login for " + username
+                    + " required. Caused by " + t);
+                login(username, password);
+            }
+        }
+    }
 
 }
