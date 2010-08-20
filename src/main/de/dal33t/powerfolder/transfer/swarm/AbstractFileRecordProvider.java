@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
 
@@ -90,8 +91,10 @@ public abstract class AbstractFileRecordProvider implements FileRecordProvider {
             }
             FilePartsRecord fileRecord = b.getRecord();
             long took = System.currentTimeMillis() - start;
-            log.info("Built file parts for " + this + ". took " + took + "ms"
-                + " while processing " + processed + " bytes.");
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Built file parts for " + this + ". took " + took
+                    + "ms" + " while processing " + processed + " bytes.");
+            }
             return fileRecord;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
