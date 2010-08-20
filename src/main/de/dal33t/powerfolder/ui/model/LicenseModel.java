@@ -31,6 +31,7 @@ public class LicenseModel {
     private ValueModel daysValidModel;
     private Action activationAction;
     private ValueModel licenseKeyModel;
+    private ValueModel gbAllowedModel;
 
     public ValueModel getLicenseKeyModel() {
         return licenseKeyModel;
@@ -40,6 +41,11 @@ public class LicenseModel {
         super();
         this.daysValidModel = new ValueHolder(-1, true);
         this.licenseKeyModel = new ValueHolder(null, false);
+        this.gbAllowedModel = new ValueHolder(-1, true);
+    }
+
+    public ValueModel getGbAllowedModel() {
+        return gbAllowedModel;
     }
 
     public Action getActivationAction() {
