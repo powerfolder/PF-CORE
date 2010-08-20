@@ -69,6 +69,11 @@ public class LinkLabel extends PFComponent {
         uiComponent.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
     }
 
+    public void setText(String text) {
+        this.text = text;
+        setText();
+    }
+
     public void setTextAndURL(String text, String url) {
         this.text = text;
         this.url = url;
