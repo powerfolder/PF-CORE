@@ -30,6 +30,7 @@ import javax.swing.*;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -238,9 +239,15 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
      */
     private JPanel createToolBar() {
 
+        DetailsAction detailsAction = new DetailsAction(getController());
+        JToggleButton detailsButton = new JToggleButton(detailsAction);
+
         MySyncFolderAction syncFolderAction = new MySyncFolderAction(
             getController());
         JButton syncFolderButton = new JButton(syncFolderAction);
+
+        MyRestoreAction restoreAction = new MyRestoreAction(getController());
+        JButton restoreButton = new JButton(restoreAction);
 
         flatViewCB = new JCheckBox(Translation
             .getTranslation("files_tab.flat_view.text"));
@@ -253,15 +260,21 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         });
 
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
+            "pref, 3dlu:grow, pref, 3dlu, pref, 3dlu, pref", "pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(new JToggleButton(new DetailsAction(getController())), cc
-            .xy(1, 1));
-        builder.add(syncFolderButton, cc.xy(3, 1));
-        builder.add(flatViewCB, cc.xy(5, 1));
-        builder.add(filterSelectionComboBox, cc.xy(7, 1));
-        builder.add(filterTextField.getUIComponent(), cc.xy(9, 1));
+
+        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        bar.addGridded(detailsButton);
+        bar.addRelatedGap();
+        bar.addGridded(syncFolderButton);
+        bar.addRelatedGap();
+        bar.addGridded(restoreButton);
+
+        builder.add(bar.getPanel(), cc.xy(1, 1));
+        builder.add(flatViewCB, cc.xy(3, 1));
+        builder.add(filterSelectionComboBox, cc.xy(5, 1));
+        builder.add(filterTextField.getUIComponent(), cc.xy(7, 1));
 
         return builder.getPanel();
     }
@@ -354,6 +367,19 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 } else {
                     getController().getUIController().syncFolder(folder);
                 }
+            }
+        }
+    }
+
+    private class MyRestoreAction extends BaseAction {
+
+        private MyRestoreAction(Controller controller) {
+            super("action_restore_file", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (folder != null) {
+                //@todo hghg...
             }
         }
     }
