@@ -96,7 +96,8 @@ public class LoggingManager {
             if (loggerName == null) {
                 return false;
             }
-            if (loggerName.startsWith("org.hibernate")
+            if ((loggerName.startsWith("org.hibernate") || loggerName
+                .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
             {
                 return true;
