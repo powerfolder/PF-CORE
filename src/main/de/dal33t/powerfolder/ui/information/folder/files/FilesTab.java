@@ -141,7 +141,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         // Triggers mode change and schedule filtering (MyActionListener).
         // filterSelectionComboBox
         // .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_LOCAL_AND_INCOMING);
-        
+
         directoryFilter.setFileFilterMode(filterSelectionComboBox
             .getSelectedIndex());
         directoryFilter.scheduleFiltering();
@@ -241,13 +241,16 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         DetailsAction detailsAction = new DetailsAction(getController());
         JToggleButton detailsButton = new JToggleButton(detailsAction);
+        detailsButton.setIcon(null);
 
         MySyncFolderAction syncFolderAction = new MySyncFolderAction(
             getController());
         JButton syncFolderButton = new JButton(syncFolderAction);
+        syncFolderButton.setIcon(null);
 
         MyRestoreAction restoreAction = new MyRestoreAction(getController());
         JButton restoreButton = new JButton(restoreAction);
+        restoreButton.setIcon(null);
 
         flatViewCB = new JCheckBox(Translation
             .getTranslation("files_tab.flat_view.text"));
@@ -379,7 +382,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         public void actionPerformed(ActionEvent e) {
             if (folder != null) {
-                //@todo hghg...
+                // @todo hghg...
             }
         }
     }

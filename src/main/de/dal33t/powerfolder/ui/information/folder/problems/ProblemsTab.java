@@ -112,11 +112,17 @@ public class ProblemsTab extends PFUIComponent {
 
     private Component createToolBar() {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JButton(openProblemAction));
+        JButton openBtn = new JButton(openProblemAction);
+        openBtn.setIcon(null);
+        bar.addGridded(openBtn);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(clearProblemAction));
+        JButton clearBtn = new JButton(clearProblemAction);
+        clearBtn.setIcon(null);
+        bar.addGridded(clearBtn);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(resolveProblemAction));
+        JButton resolveBtn = new JButton(resolveProblemAction);
+        resolveBtn.setIcon(null);
+        bar.addGridded(resolveBtn);
         return bar.getPanel();
 
     }
@@ -141,7 +147,7 @@ public class ProblemsTab extends PFUIComponent {
         problemsTableModel.updateProblems(problemList);
         if (problemList.isEmpty()) {
             problemsTable.getSelectionModel().removeIndexInterval(0,
-                    problemsTableModel.getRowCount());
+                problemsTableModel.getRowCount());
         } else {
             problemsTable.getSelectionModel().setSelectionInterval(0, 0);
         }
