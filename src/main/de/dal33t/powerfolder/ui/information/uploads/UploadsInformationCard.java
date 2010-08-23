@@ -213,15 +213,24 @@ public class UploadsInformationCard extends InformationCard implements
                 .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
+            getController()));
+        detailsBtn.setIcon(null);
+        bar.addGridded(detailsBtn);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(clearCompletedUploadsAction));
+        bar.addGridded(createButton(clearCompletedUploadsAction));
         bar.addRelatedGap();
         bar.addGridded(autoCleanupCB);
         bar.addRelatedGap();
         bar.addGridded(cleanupSlider);
         toolBar = bar.getPanel();
         updateCleanupLabel();
+    }
+
+    private JButton createButton(Action action) {
+        JButton b = new JButton(action);
+        b.setIcon(null);
+        return b;
     }
 
     /**

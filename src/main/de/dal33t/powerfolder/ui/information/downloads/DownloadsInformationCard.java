@@ -66,7 +66,7 @@ public class DownloadsInformationCard extends InformationCard implements
     private JLabel activeDownloadCountLabel;
     private JLabel completedDownloadCountLabel;
     private DelayedUpdater updater;
-    
+
     /**
      * Constructor
      * 
@@ -192,19 +192,28 @@ public class DownloadsInformationCard extends InformationCard implements
                 .getTranslation("downloads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.addGridded(new JToggleButton(new DetailsAction(getController())));
+        JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
+            getController()));
+        detailsBtn.setIcon(null);
+        bar.addGridded(detailsBtn);
         bar.addRelatedGap();
-        bar.addGridded(new JButton(openDownloadAction));
+        bar.addGridded(createButton(openDownloadAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(abortDownloadsAction));
+        bar.addGridded(createButton(abortDownloadsAction));
         bar.addRelatedGap();
-        bar.addGridded(new JButton(clearCompletedDownloadsAction));
+        bar.addGridded(createButton(clearCompletedDownloadsAction));
         bar.addRelatedGap();
         bar.addGridded(autoCleanupCB);
         bar.addRelatedGap();
         bar.addGridded(cleanupSlider);
         toolBar = bar.getPanel();
         updateCleanupLabel();
+    }
+
+    private JButton createButton(Action action) {
+        JButton b = new JButton(action);
+        b.setIcon(null);
+        return b;
     }
 
     /**
