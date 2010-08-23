@@ -27,6 +27,10 @@ SignAlias=<sign alias>
 # InstallerGeneratorProgram=<location of makensisw.exe>
 # e.g. InstallerGeneratorProgram=C:\\Program Files\\NSIS\\makensisw.exe
 
+JRE_VERSION=1.6
+JRE_URL32=http://download.powerfolder.com/java/jre-windows-i586.exe
+JRE_URL64=http://download.powerfolder.com/java/jre-windows-x64.exe
+
 InstallerFilesLocation=<location of powerfolder checkout>
 # e.g. InstallerFilesLocation=E:\\Java\\eclipse_workspace\\PowerFolder-Installer-SVN\\trunk
 #

@@ -275,7 +275,8 @@ For creation of the installer:
 			<!-- FIXME: maybe add a build number (or date:time) here? -->
 			<arg value="/DVER_BUILD=0" />
 			<arg value="/DJRE_VERSION=${JRE_VERSION}" />
-			<arg value="/DJRE_URL=${JRE_URL}" />
+	        <arg value="/DJRE_URL32=${JRE_URL32}" />
+	        <arg value="/DJRE_URL32=${JRE_URL64}" />
 			<arg value="installer-pro.nsi" />
 		</exec>
 		<copy todir="${dist.dir}">
