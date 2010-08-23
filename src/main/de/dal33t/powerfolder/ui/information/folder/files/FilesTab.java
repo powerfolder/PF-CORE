@@ -36,6 +36,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -53,6 +54,9 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * UI component for the folder files tab
  */
 public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
+
+    private static final int DELETED_INDEX = 4;
+
     private JPanel uiComponent;
     private JSplitPane splitPane;
     private FilesTablePanel tablePanel;
@@ -64,6 +68,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private ValueModel flatMode;
     private Folder folder;
     private JCheckBox flatViewCB;
+    private MyRestoreAction myRestoreAction;
 
     /**
      * Constructor
@@ -211,6 +216,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public JPanel getUIComponent() {
         if (uiComponent == null) {
             buildUIComponent();
+            enableRestoreButton();
         }
         return uiComponent;
     }
@@ -248,8 +254,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JButton syncFolderButton = new JButton(syncFolderAction);
         syncFolderButton.setIcon(null);
 
-        MyRestoreAction restoreAction = new MyRestoreAction(getController());
-        JButton restoreButton = new JButton(restoreAction);
+        myRestoreAction = new MyRestoreAction(getController());
+        JButton restoreButton = new JButton(myRestoreAction);
         restoreButton.setIcon(null);
 
         flatViewCB = new JCheckBox(Translation
@@ -308,6 +314,11 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
+    private void enableRestoreButton() {
+        int index = filterSelectionComboBox.getSelectedIndex();
+        myRestoreAction.setEnabled(index == DELETED_INDEX);
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -336,6 +347,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 directoryFilter.setFileFilterMode(filterSelectionComboBox
                     .getSelectedIndex());
                 directoryFilter.scheduleFiltering();
+                enableRestoreButton();
             }
         }
     }
@@ -382,7 +394,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
         public void actionPerformed(ActionEvent e) {
             if (folder != null) {
-                // @todo hghg...
+                DiskItem[] diskItems = tablePanel.getSelectedRows();
+
             }
         }
     }

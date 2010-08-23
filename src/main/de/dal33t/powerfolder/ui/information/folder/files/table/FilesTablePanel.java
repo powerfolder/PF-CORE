@@ -334,7 +334,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         worker.start();
     }
 
-    private DiskItem[] getSelectedRows() {
+    public DiskItem[] getSelectedRows() {
         int[] rows = table.getSelectedRows();
         return tableModel.getDiskItemsAtRows(rows);
     }
