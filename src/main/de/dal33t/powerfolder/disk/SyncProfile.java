@@ -121,14 +121,6 @@ public class SyncProfile implements Serializable {
         "manual_synchronization", false, new SyncProfileConfiguration(false,
             false, false, false, 0));
 
-    /**
-     * Especially for meta-folders
-     */
-    public static final SyncProfile META_FOLDER_SYNC = new SyncProfile(
-        "meta_sync", false, new SyncProfileConfiguration(true, true, true,
-            true, 1, false, 12, 60,
-            SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
-
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
@@ -151,12 +143,22 @@ public class SyncProfile implements Serializable {
         false, new SyncProfileConfiguration(false, false, true, true, 0));
 
     /**
-     * Backup source preset profile for Online Storage. Don't locally detect
+     * Backup source preset profile for Online Storage. Don't scan for local
      * changes
      */
     public static final SyncProfile BACKUP_TARGET_NO_CHANGE_DETECT = new SyncProfile(
         "backup_target", false, new SyncProfileConfiguration(true, true, true,
             true, 0));
+
+    /**
+     * Especially for meta-folders
+     */
+    // public static final SyncProfile META_FOLDER_SYNC = new SyncProfile(
+    // "meta_sync", false, new SyncProfileConfiguration(true, true, true,
+    // true, 1, false, 12, 60,
+    // SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
+
+    public static final SyncProfile META_FOLDER_SYNC = BACKUP_TARGET_NO_CHANGE_DETECT;
 
     /**
      * All custom profiles
