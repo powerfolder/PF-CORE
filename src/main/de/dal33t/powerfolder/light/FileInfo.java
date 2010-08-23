@@ -176,17 +176,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * that this. Assume that file has changed on disk and update its modified
      * info.
      * 
-     * @param controller
+     * @param folder
+     *            the folder to sync with
      * @param diskFile
      *            the diskfile of this file, not gets it from controller !
      * @return the new FileInfo if the file was synced or null if the file is in
      *         sync
      */
-    public FileInfo syncFromDiskIfRequired(Controller controller, File diskFile)
-    {
-        if (controller == null) {
-            throw new NullPointerException("controller is null");
-        }
+    public FileInfo syncFromDiskIfRequired(Folder folder, File diskFile) {
+        Reject.ifNull(folder, "Folder is null");
+        Reject.ifFalse(folder.getInfo().equals(folderInfo), "Folder mismatch");
         if (diskFile == null) {
             throw new NullPointerException("diskFile is null");
         }
@@ -211,15 +210,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // }
 
         if (!inSyncWithDisk(diskFile)) {
+            MemberInfo mySelf = folder.getController().getMySelf().getInfo();
             if (diskFile.exists()) {
-                return FileInfoFactory.modifiedFile(this, controller
-                    .getFolderRepository(), diskFile, controller.getMySelf()
-                    .getInfo());
+                return FileInfoFactory.modifiedFile(this, folder, diskFile,
+                    mySelf);
             } else {
-                return FileInfoFactory.deletedFile(this, controller.getMySelf()
-                    .getInfo(), new Date());
+                return FileInfoFactory.deletedFile(this, mySelf, new Date());
             }
-            // log.warning("File updated to: " + this.toDetailString());
         }
 
         return null;

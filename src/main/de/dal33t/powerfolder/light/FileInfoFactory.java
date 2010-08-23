@@ -161,14 +161,14 @@ public final class FileInfoFactory {
         }
     }
 
-    public static FileInfo modifiedFile(FileInfo original,
-        FolderRepository rep, File localFile, MemberInfo modby)
+    public static FileInfo modifiedFile(FileInfo original, Folder folder,
+        File localFile, MemberInfo modby)
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
             "Cannot modify template FileInfo!");
-        String fn = buildFileName(original.getFolder(rep).getLocalBase(),
-            localFile);
+        Reject.ifNull(folder, "Folder is null");
+        String fn = buildFileName(folder.getLocalBase(), localFile);
         if (original.getRelativeName().equals(fn)) {
             fn = original.getRelativeName();
         }

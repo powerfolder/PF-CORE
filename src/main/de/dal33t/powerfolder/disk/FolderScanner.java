@@ -73,12 +73,10 @@ public class FolderScanner extends PFComponent {
     private Map<String, FileInfo> remaining = Util.createConcurrentHashMap();
 
     /** DirectoryCrawler threads that are idle */
-    private final List<DirectoryCrawler> directoryCrawlersPool =
-            new CopyOnWriteArrayList<DirectoryCrawler>();
+    private final List<DirectoryCrawler> directoryCrawlersPool = new CopyOnWriteArrayList<DirectoryCrawler>();
 
     /** Where crawling DirectoryCrawlers are */
-    private final List<DirectoryCrawler> activeDirectoryCrawlers =
-            new CopyOnWriteArrayList<DirectoryCrawler>();
+    private final List<DirectoryCrawler> activeDirectoryCrawlers = new CopyOnWriteArrayList<DirectoryCrawler>();
     /**
      * Maximum number of DirectoryCrawlers after test of a big folder this seams
      * the optimum number.
@@ -299,12 +297,12 @@ public class FolderScanner extends PFComponent {
             if (isWarning()) {
                 if (currentScanResult.getResultState() == ResultState.SCANNED) {
                     logFiner("Scan of folder " + folder.getName() + " done in "
-                            + (System.currentTimeMillis() - started)
-                            + "ms. Result: " + currentScanResult.getResultState());
+                        + (System.currentTimeMillis() - started)
+                        + "ms. Result: " + currentScanResult.getResultState());
                 } else {
                     logWarning("Scan of folder " + folder.getName()
-                            + " done in " + (System.currentTimeMillis() - started)
-                            + "ms. Result: " + currentScanResult.getResultState());
+                        + " done in " + (System.currentTimeMillis() - started)
+                        + "ms. Result: " + currentScanResult.getResultState());
                 }
             }
             return myResult;
@@ -602,7 +600,7 @@ public class FolderScanner extends PFComponent {
                 if (exists.isDeleted()) {
                     // file restored
                     FileInfo restoredFile = exists.syncFromDiskIfRequired(
-                        getController(), fileToScan);
+                        currentScanningFolder, fileToScan);
                     if (restoredFile != null) {
                         if (isInfo()) {
                             logInfo("Restored detected: "
@@ -614,7 +612,7 @@ public class FolderScanner extends PFComponent {
                     }
                 } else {
                     FileInfo changedFile = exists.syncFromDiskIfRequired(
-                        getController(), fileToScan);
+                        currentScanningFolder, fileToScan);
                     if (changedFile != null) {
                         if (isInfo()) {
                             logInfo("Change detected: "

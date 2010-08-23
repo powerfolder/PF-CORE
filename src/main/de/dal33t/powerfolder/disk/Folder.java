@@ -1117,8 +1117,8 @@ public class Folder extends PFComponent {
                     logFiner("Scan known file: " + fInfo.toDetailString());
                 }
 
-                FileInfo syncFile = localFile.syncFromDiskIfRequired(
-                    getController(), file);
+                FileInfo syncFile = localFile
+                    .syncFromDiskIfRequired(this, file);
                 if (syncFile != null) {
                     store(getController().getMySelf(), syncFile);
                 }
@@ -1243,8 +1243,8 @@ public class Folder extends PFComponent {
                     return false;
                 }
                 FileInfo localFile = getFile(fInfo);
-                FileInfo synced = localFile.syncFromDiskIfRequired(
-                    getController(), diskFile);
+                FileInfo synced = localFile.syncFromDiskIfRequired(this,
+                    diskFile);
                 folderChanged = synced != null;
                 if (folderChanged) {
                     store(getController().getMySelf(), synced);

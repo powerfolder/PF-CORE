@@ -139,7 +139,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             .iterator().next();
         assertEquals("testdir", testDirInfoLisa.getRelativeName());
         // null = IN SYNC
-        assertNull(testDirInfoLisa.syncFromDiskIfRequired(getContollerLisa(),
+        assertNull(testDirInfoLisa.syncFromDiskIfRequired(getFolderAtLisa(),
             testDirLisa));
     }
 
@@ -155,7 +155,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         for (int i = 0; i < 500; i++) {
             new File(getFolderAtBart().getLocalBase(), "testdir-" + i).mkdirs();
         }
-        
+
         // 20 MB testfile
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 2000000);
