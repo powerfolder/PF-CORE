@@ -28,6 +28,7 @@ PowerFolder Version 4.3.0 - http://www.powerfolder.com
  * Many other user interface improvements.
 
 = Bugfixes =
+ * Fixed many connection problems.
  * Fixed weird window resizing behavior.
  * Fixed problem with file archive option "Unlimited" versions.
  * Fixed bug that causes the user interface to freeze sometimes.
