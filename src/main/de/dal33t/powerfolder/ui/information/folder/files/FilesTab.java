@@ -271,8 +271,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         bar.addGridded(detailsButton);
         bar.addRelatedGap();
         bar.addGridded(syncFolderButton);
-        bar.addRelatedGap();
-        bar.addGridded(restoreButton);
+        // bar.addRelatedGap();
+        // bar.addGridded(restoreButton);
 
         builder.add(bar.getPanel(), cc.xy(1, 1));
         builder.add(flatViewCB, cc.xy(3, 1));
