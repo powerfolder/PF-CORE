@@ -19,7 +19,7 @@ PowerFolder Version 4.3.0 - http://www.powerfolder.com
  * Several memory improvements.
  * Reworked notification system for invitations, friendship requests and warnings.
  * Wording change: "Online folders" are now renamed to "Not local folders".
-   They may exist on other computers only and not on the cloud storage.
+   They may exist on other computers only - not necessarily in the cloud.
  * Installer java detection now downloads 64 bit java on 64 bit systems.
  * Many improvements of the simplified/backup only client mode.
  * Incoming files info line on status tab is now clickable.
@@ -30,14 +30,14 @@ PowerFolder Version 4.3.0 - http://www.powerfolder.com
 = Bugfixes =
  * Fixed weird window resizing behavior.
  * Fixed problem with file archive option "Unlimited" versions.
- * Fixed bug that causes the user interface to freeze.
+ * Fixed bug that causes the user interface to freeze sometimes.
  * Fixed several memory leaks.
  * Bulk file archive restore is now available on existing files - to restore
    previous file versions. Info: http://www.powerfolder.com/wiki/File_Archive
  * Folder name is not longer empty when choosing to sync a whole drive.
  * Prevent PowerFolder folders to become system directories.
  * Disconnected devices (USB Stick, etc.) on Mac OS X are handled better now.
-   A warning/notification is shown up.
+   A warning/notification is shown.
  * Fixed bug that causes instant change detection to crash on unavailable devices.
  * Fixed bug in daily sync logic.
 
