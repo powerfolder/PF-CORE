@@ -1344,12 +1344,6 @@ public class Folder extends PFComponent {
                 // files);
                 synchronized (dbAccessLock) {
                     for (int i = 0; i < files.length; i++) {
-                        if (files[i].getRelativeName().contains(
-                            Constants.POWERFOLDER_SYSTEM_SUBDIR))
-                        {
-                            // Skip #1411
-                            continue;
-                        }
                         FileInfo fInfo = files[i];
                         files[i] = correctFolderInfo(fInfo);
                         if (fInfo != files[i]) {
@@ -1411,7 +1405,7 @@ public class Folder extends PFComponent {
                     + " files) from " + dbFile.getAbsolutePath());
             } catch (Exception e) {
                 logWarning(this + ": Unable to read database file: "
-                    + dbFile.getAbsolutePath());
+                    + dbFile.getAbsolutePath() + ". " + e);
                 logFiner(e);
                 return false;
             }
@@ -1467,7 +1461,7 @@ public class Folder extends PFComponent {
         }
         if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
             diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
-                DiskItemFilter.PATTERNS_FILENAME));
+                DiskItemFilter.PATTERNS_FILENAME), true);
             savePatternsToMetaFolder();
         }
         dao.stop();
@@ -2549,12 +2543,12 @@ public class Folder extends PFComponent {
         store(member, false, fileInfos);
     }
 
-    private void store(Member member, boolean deletedDomain,
+    private void store(Member member, boolean deleteDomain,
         Collection<FileInfo> fileInfos)
     {
         synchronized (dbAccessLock) {
             String domainID = member.isMySelf() ? null : member.getId();
-            if (deletedDomain) {
+            if (deleteDomain) {
                 dao.deleteDomain(domainID);
             }
             dao.store(domainID, fileInfos);
@@ -3745,7 +3739,7 @@ public class Folder extends PFComponent {
         File file = new File(metaFolder.getLocalBase(),
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
-        diskItemFilter.savePatternsTo(file);
+        diskItemFilter.savePatternsTo(file, false);
         if (isFine()) {
             logFine("Saving ignore patterns to Meta folder: " + file);
         }
@@ -3768,7 +3762,7 @@ public class Folder extends PFComponent {
             }
             if (diskItemFilter.isDirty() && !checkIfDeviceDisconnected()) {
                 diskItemFilter.savePatternsTo(new File(getSystemSubDir(),
-                    DiskItemFilter.PATTERNS_FILENAME));
+                    DiskItemFilter.PATTERNS_FILENAME), true);
                 if (!shutdown) {
                     savePatternsToMetaFolder();
                 }

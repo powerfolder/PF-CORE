@@ -173,13 +173,16 @@ public class DiskItemFilter {
      * 
      * @param file
      */
-    public void savePatternsTo(File file) {
-        File backup = new File(file.getParentFile(), file.getName() + ".backup");
-        if (file.exists()) {
-            if (backup.exists()) {
-                backup.delete();
+    public void savePatternsTo(File file, boolean createBackup) {
+        if (createBackup) {
+            File backup = new File(file.getParentFile(), file.getName()
+                + ".backup");
+            if (file.exists()) {
+                if (backup.exists()) {
+                    backup.delete();
+                }
+                file.renameTo(backup);
             }
-            file.renameTo(backup);
         }
         BufferedWriter writer = null;
         try {
