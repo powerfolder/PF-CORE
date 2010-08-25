@@ -472,11 +472,11 @@ public class SecurityManagerClient extends PFComponent implements
 
             // This is required because of probably changed access
             // permissions to any folder.
-            if (syncFolderMemberships && node.isCompletelyConnected()) {
+            if (syncFolderMemberships) {
                 if (node.isMySelf()) {
                     getController().getFolderRepository()
                         .triggerSynchronizeAllFolderMemberships();
-                } else {
+                } else if (node.isCompletelyConnected()) {
                     node.synchronizeFolderMemberships();
                 }
             }

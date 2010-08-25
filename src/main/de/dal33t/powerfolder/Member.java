@@ -1723,7 +1723,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedTime = 50;
             } else if (message instanceof AccountStateChanged) {
                 AccountStateChanged asc = (AccountStateChanged) message;
-                logWarning("Received: " + asc + " from " + this);
+                if (isFine()) {
+                    logFine("Received: " + asc);
+                }
                 Member node = asc.getNode().getNode(getController(), false);
                 if (node != null) {
                     getController().getSecurityManager()
@@ -1976,7 +1978,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 }
                             }
                         } else {
-                            logWarning(this + " did not join into: " + folder);
+                            if (isFine()) {
+                                logFine(this + " did not join into: " + folder);
+                            }
                         }
                     }
                 }

@@ -1859,14 +1859,14 @@ public class Folder extends PFComponent {
         boolean memberRead = hasReadPermission(member);
         if (!memberRead || !hasReadPermission(getController().getMySelf())) {
             if (memberRead) {
-                if (isFine()) {
-                    logFine("Not joining " + member + " / "
+                if (isInfo()) {
+                    logInfo("Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission");
                 }
             } else {
-                if (isFine()) {
-                    logFine("Not joining " + member + " / "
+                if (isInfo()) {
+                    logInfo("Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission");
                 }
             }
@@ -2635,8 +2635,8 @@ public class Folder extends PFComponent {
                 + remoteFileInfos.size() + " files from " + member);
         }
         if (!hasWritePermission(member)) {
-            if (isWarning()) {
-                logWarning("Not searching same files. " + member + " / "
+            if (isInfo()) {
+                logInfo("Not searching same files. " + member + " / "
                     + member.getAccountInfo() + " no write permission");
             }
             return;
@@ -3046,8 +3046,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                if (isWarning()) {
-                    logWarning("Not downloading files. " + member + " / "
+                if (isInfo()) {
+                    logInfo("Not downloading files. " + member + " / "
                         + member.getAccountInfo() + " no write permission");
                 }
                 continue;
