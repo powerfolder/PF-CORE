@@ -326,7 +326,7 @@ public class Folder extends PFComponent {
         if (!currentInfo.isMetaFolder()) {
             FileUtils.maintainDesktopIni(getController(), localBase);
         }
-        
+
         // #2047 Remove later after 4.3.0
         FileUtils.setAttributesOnWindows(localBase, null, false);
 
@@ -2078,8 +2078,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!hasWritePermission(member)) {
-                if (isWarning()) {
-                    logWarning("Not syncing deletions. " + member + " / "
+                if (isInfo()) {
+                    logInfo("Not syncing deletions. " + member + " / "
                         + member.getAccountInfo() + " no write permission");
                 }
                 continue;
