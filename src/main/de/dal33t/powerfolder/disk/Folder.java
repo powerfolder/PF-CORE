@@ -323,7 +323,9 @@ public class Folder extends PFComponent {
         statistic = new FolderStatistic(this);
 
         // Check desktop ini in Windows environments
-        FileUtils.maintainDesktopIni(getController(), localBase);
+        if (!currentInfo.isMetaFolder()) {
+            FileUtils.maintainDesktopIni(getController(), localBase);
+        }
         // #2047 Remove later after 4.3.0
         FileUtils.setAttributesOnWindows(localBase, null, false);
 
