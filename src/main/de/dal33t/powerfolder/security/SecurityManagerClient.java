@@ -312,16 +312,11 @@ public class SecurityManagerClient extends PFComponent implements
         return aInfo;
     }
 
-    public void nodeAccountStateChanged(final Member node) {
-        Runnable refresher = null;
-        if (node.isMySelf()) {
-            refresher = new MySelfRefrehser(node);
-        } else if (!node.isCompletelyConnected()) {
-            refresher = new DisconnectRefresher(node);
-        } else {
-            refresher = new DefaultRefresher(node);
-        }
-        if (refresher != null && getController().isStarted()) {
+    public void nodeAccountStateChanged(final Member node,
+        boolean refreshFolderMemberships)
+    {
+        Runnable refresher = new Refresher(node, refreshFolderMemberships);
+        if (getController().isStarted()) {
             getController().getThreadPool().schedule(refresher, 0,
                 TimeUnit.SECONDS);
         }
@@ -446,58 +441,45 @@ public class SecurityManagerClient extends PFComponent implements
 
     // Inner classes **********************************************************
 
-    private final class DefaultRefresher implements Runnable {
+    private final class Refresher implements Runnable {
         private final Member node;
+        private final boolean syncFolderMemberships;
 
-        private DefaultRefresher(Member node) {
+        private Refresher(Member node, boolean syncFolderMemberships) {
             this.node = node;
+            this.syncFolderMemberships = syncFolderMemberships;
         }
 
         public void run() {
+            // The server connected!
             if (client.isServer(node) && node.isCompletelyConnected()) {
                 prefetchAccountInfos();
             }
 
+            // Myself changed!
+            if (node.isMySelf() && client.isConnected()) {
+                try {
+                    client.refreshAccountDetails();
+                } catch (Exception e) {
+                    logWarning("Unable to refresh account details. " + e);
+                    logFiner(e);
+                }
+            }
+
+            // Refresh MemberInfo->AccountInfo cache
             clearNodeCache(node);
             refresh(node);
 
             // This is required because of probably changed access
-            // permissions to folder.
-            node.synchronizeFolderMemberships();
-        }
-    }
-
-    private final class MySelfRefrehser implements Runnable {
-        private final Member node;
-
-        private MySelfRefrehser(Member node) {
-            this.node = node;
-        }
-
-        public void run() {
-            try {
-                client.refreshAccountDetails();
-            } catch (Exception e) {
-                logWarning("Unable to refresh account details. " + e);
-                logFiner(e);
+            // permissions to any folder.
+            if (syncFolderMemberships && node.isCompletelyConnected()) {
+                if (node.isMySelf()) {
+                    getController().getFolderRepository()
+                        .triggerSynchronizeAllFolderMemberships();
+                } else {
+                    node.synchronizeFolderMemberships();
+                }
             }
-            clearNodeCache(node);
-            refresh(node);
-            getController().getFolderRepository()
-                .triggerSynchronizeAllFolderMemberships();
-        }
-    }
-
-    private final class DisconnectRefresher implements Runnable {
-        private final Member node;
-
-        private DisconnectRefresher(Member node) {
-            this.node = node;
-        }
-
-        public void run() {
-            clearNodeCache(node);
-            refresh(node);
         }
     }
 
