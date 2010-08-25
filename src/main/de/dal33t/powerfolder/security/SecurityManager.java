@@ -67,8 +67,10 @@ public interface SecurityManager {
      * disconnect.
      * 
      * @param node
+     * @param refreshFolderMemberships
+     *            of memberships of the folders should be re-synced
      */
-    void nodeAccountStateChanged(Member node);
+    void nodeAccountStateChanged(Member node, boolean refreshFolderMemberships);
 
     // Security stuff *********************************************************
 
