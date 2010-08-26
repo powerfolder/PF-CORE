@@ -21,6 +21,8 @@ package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
 
+import javax.persistence.Embeddable;
+
 import de.dal33t.powerfolder.security.Account;
 
 /**
@@ -28,12 +30,18 @@ import de.dal33t.powerfolder.security.Account;
  * 
  * @author sprajc
  */
+@Embeddable
 public class AccountInfo implements Serializable {
 
     private static final long serialVersionUID = 100L;
 
     private String oid;
     private String username;
+
+    @SuppressWarnings("unused")
+    private AccountInfo() {
+        // For hibernate.
+    }
 
     public AccountInfo(String oid, String username) {
         super();
