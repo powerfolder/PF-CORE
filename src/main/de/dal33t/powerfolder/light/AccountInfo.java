@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.security.Account;
  */
 @Embeddable
 public class AccountInfo implements Serializable {
+    public static final String PROPERTYNAME_USERNAME = "username";
 
     private static final long serialVersionUID = 100L;
 
