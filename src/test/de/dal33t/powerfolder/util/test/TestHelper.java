@@ -312,7 +312,7 @@ public class TestHelper {
             if (System.currentTimeMillis() > start + ((long) secondsTimeout)
                 * 1000)
             {
-                String msg = "Timeout(" + secondsTimeout + "). Did not reach: "
+                String msg = "Timeout(" + secondsTimeout + ") on "
                     + condition;
                 if (condition instanceof ConditionWithMessage) {
                     msg = ((ConditionWithMessage) condition).message() + " | "
