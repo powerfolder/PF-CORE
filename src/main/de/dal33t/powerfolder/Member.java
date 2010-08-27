@@ -1786,7 +1786,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             ServerClient.SERVER_HANDLE_MESSAGE_THREAD.set(false);
             Profiling.end(profilingEntry, expectedTime);
             long took = System.currentTimeMillis() - start;
-            if (took > 20000) {
+            if (took > 60000) {
                 logSevere("Handling took " + took + "ms: " + message);
             }
         }
