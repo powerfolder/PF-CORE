@@ -289,6 +289,21 @@ public class FilesTableModel extends PFComponent implements TableModel,
         return items;
     }
 
+    public DiskItem[] getAllDiskItems() {
+        DiskItem[] items = new DiskItem[diskItems.size()];
+        for (int i = 0; i < items.length; i++) {
+            Object at = getValueAt(i, COL_NAME);
+            if (at instanceof DirectoryInfo) {
+                items[i] = (DirectoryInfo) at;
+            } else if (at instanceof FileInfo) {
+                items[i] = (FileInfo) at;
+            } else {
+                logSevere("Object was a " + at.getClass().getName() + "???");
+            }
+        }
+        return items;
+    }
+
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
     }

@@ -24,6 +24,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
@@ -42,11 +44,14 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.FilesTreePanel;
 import de.dal33t.powerfolder.ui.widget.FileFilterTextField;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -277,8 +282,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         bar.addGridded(detailsButton);
         bar.addRelatedGap();
         bar.addGridded(syncFolderButton);
-        // bar.addRelatedGap();
-        // bar.addGridded(restoreButton);
+        bar.addRelatedGap();
+        bar.addGridded(restoreButton);
 
         builder.add(bar.getPanel(), cc.xy(1, 1));
         builder.add(flatViewCB, cc.xy(3, 1));
@@ -395,8 +400,25 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         public void actionPerformed(ActionEvent e) {
             if (folder != null) {
                 DiskItem[] diskItems = tablePanel.getSelectedRows();
+                if (diskItems.length == 0) {
+                    // Nothing selected, use everything.
+                    diskItems = tablePanel.getAllRows();
+                }
 
+                List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
+                for (DiskItem diskItem : diskItems) {
+                    if (diskItem instanceof FileInfo) {
+                        fileInfosToRestore.add((FileInfo) diskItem);
+                    }
+                }
+                PFWizard wizard = new PFWizard(getController(), Translation
+                    .getTranslation("wizard.pfwizard.restore_title"));
+
+                MultiFileRestorePanel panel = new MultiFileRestorePanel(
+                    getController(), folder, fileInfosToRestore);
+                wizard.open(panel);
             }
+
         }
     }
 

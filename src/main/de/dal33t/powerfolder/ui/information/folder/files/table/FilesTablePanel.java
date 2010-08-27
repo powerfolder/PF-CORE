@@ -339,6 +339,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         return tableModel.getDiskItemsAtRows(rows);
     }
 
+    public DiskItem[] getAllRows() {
+        return tableModel.getAllDiskItems();
+    }
+
     private void updateEmptyLabel() {
         if (tableScroller != null) {
             tableScroller.setVisible(tableModel.getRowCount() != 0);
