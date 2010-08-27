@@ -23,10 +23,12 @@ import java.io.Serializable;
 
 import javax.persistence.Embeddable;
 
+import org.hibernate.annotations.Index;
+
 import de.dal33t.powerfolder.security.Account;
 
 /**
- * Leightweight refernce/info object to an {@link Account}
+ * Leightweight reference/info object to an {@link Account}
  * 
  * @author sprajc
  */
@@ -37,6 +39,7 @@ public class AccountInfo implements Serializable {
     private static final long serialVersionUID = 100L;
 
     private String oid;
+    @Index(name = "IDX_ACCOUNT_OID")
     private String username;
 
     @SuppressWarnings("unused")
