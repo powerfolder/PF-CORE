@@ -60,8 +60,6 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  */
 public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
-    private static final int DELETED_INDEX = 4;
-
     private JPanel uiComponent;
     private JSplitPane splitPane;
     private FilesTablePanel tablePanel;
@@ -73,7 +71,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private ValueModel flatMode;
     private Folder folder;
     private JCheckBox flatViewCB;
-    private MyRestoreAction myRestoreAction;
 
     /**
      * Constructor
@@ -221,7 +218,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public JPanel getUIComponent() {
         if (uiComponent == null) {
             buildUIComponent();
-            enableRestoreButton();
         }
         return uiComponent;
     }
@@ -259,8 +255,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JButton syncFolderButton = new JButton(syncFolderAction);
         syncFolderButton.setIcon(null);
 
-        myRestoreAction = new MyRestoreAction(getController());
-        JButton restoreButton = new JButton(myRestoreAction);
+        JButton restoreButton = new JButton(new MyRestoreAction(getController()));
         restoreButton.setIcon(null);
 
         flatViewCB = new JCheckBox(Translation
@@ -319,11 +314,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
     }
 
-    private void enableRestoreButton() {
-        int index = filterSelectionComboBox.getSelectedIndex();
-        myRestoreAction.setEnabled(index == DELETED_INDEX);
-    }
-
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -352,7 +342,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
                 directoryFilter.setFileFilterMode(filterSelectionComboBox
                     .getSelectedIndex());
                 directoryFilter.scheduleFiltering();
-                enableRestoreButton();
             }
         }
     }
