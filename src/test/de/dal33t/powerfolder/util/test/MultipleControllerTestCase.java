@@ -482,7 +482,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             while (controller.isShuttingDown()) {
                 i++;
                 if (i > 1000) {
-                    System.out.println("Shutdown of Bart failed");
+                    System.out.println("Shutdown failed: " + controller);
                     break;
                 }
                 TestHelper.waitMilliSeconds(100);
