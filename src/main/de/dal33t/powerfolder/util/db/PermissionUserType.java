@@ -103,8 +103,8 @@ public class PermissionUserType extends Loggable implements UserType {
             String clazzName = idAndName[1];
 
             if (FOLDER_INFO_DAO == null) {
-                throw new IllegalStateException("Cannot load service " + FolderInfoDAO.class
-                    + ". Not running on server.");
+                throw new IllegalStateException("FolderInfoDAO not set! "
+                    + "Maybe server is already shut down or not started?");
             }
 
             // get the associated FolderInfo
@@ -118,14 +118,17 @@ public class PermissionUserType extends Loggable implements UserType {
             // choose the right permission implementation
             if (clazzName.equals(FolderAdminPermission.class.getSimpleName())) {
                 p = FolderPermission.admin(fdInfo);
-            }
-            else if (clazzName.equals(FolderOwnerPermission.class.getSimpleName())) {
+            } else if (clazzName.equals(FolderOwnerPermission.class
+                .getSimpleName()))
+            {
                 p = FolderPermission.owner(fdInfo);
-            }
-            else if (clazzName.equals(FolderReadPermission.class.getSimpleName())) {
+            } else if (clazzName.equals(FolderReadPermission.class
+                .getSimpleName()))
+            {
                 p = FolderPermission.read(fdInfo);
-            }
-            else if (clazzName.equals(FolderReadWritePermission.class.getSimpleName())) {
+            } else if (clazzName.equals(FolderReadWritePermission.class
+                .getSimpleName()))
+            {
                 p = FolderPermission.readWrite(fdInfo);
             }
         }
@@ -135,19 +138,24 @@ public class PermissionUserType extends Loggable implements UserType {
             String clazzName = permissionID;
 
             // choose the right permission implementation
-            if (clazzName.equals(ChangePreferencesPermission.class.getSimpleName())) {
+            if (clazzName.equals(ChangePreferencesPermission.class
+                .getSimpleName()))
+            {
                 p = ChangePreferencesPermission.INSTANCE;
-            }
-            else if (clazzName.equals(ChangeTransferModePermission.class.getSimpleName())) {
+            } else if (clazzName.equals(ChangeTransferModePermission.class
+                .getSimpleName()))
+            {
                 p = ChangeTransferModePermission.INSTANCE;
-            }
-            else if (clazzName.equals(FolderCreatePermission.class.getSimpleName())) {
+            } else if (clazzName.equals(FolderCreatePermission.class
+                .getSimpleName()))
+            {
                 p = FolderCreatePermission.INSTANCE;
-            }
-            else if (clazzName.equals(FolderRemovePermission.class.getSimpleName())) {
+            } else if (clazzName.equals(FolderRemovePermission.class
+                .getSimpleName()))
+            {
                 p = FolderRemovePermission.INSTANCE;
-            }
-            else if (clazzName.equals(AdminPermission.class.getSimpleName())) {
+            } else if (clazzName.equals(AdminPermission.class.getSimpleName()))
+            {
                 p = AdminPermission.INSTANCE;
             }
         }
@@ -155,7 +163,8 @@ public class PermissionUserType extends Loggable implements UserType {
         if (p == null) {
             // this should never happen
             logSevere("No permission could be created for ID " + permissionID);
-            throw new IllegalStateException("No permission could be created for ID " + permissionID);
+            throw new IllegalStateException(
+                "No permission could be created for ID " + permissionID);
         }
 
         return p;
@@ -166,8 +175,7 @@ public class PermissionUserType extends Loggable implements UserType {
     {
         if (value == null) {
             st.setNull(index, Types.VARCHAR);
-        }
-        else {
+        } else {
             Permission p = (Permission) value;
 
             st.setString(index, p.getId());
