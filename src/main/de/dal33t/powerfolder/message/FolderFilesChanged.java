@@ -45,15 +45,19 @@ public class FolderFilesChanged extends FolderRelatedMessage {
     private static final long serialVersionUID = 100L;
 
     /** A list of files added to the folder */
-    public FileInfo[] added;
-    /** A list of files removed from the folder */
-    public FileInfo[] removed;
+    protected FileInfo[] added;
+
+    /**
+     * @Deprecated use {@link #added}
+     */
+    @Deprecated
+    protected FileInfo[] removed;
 
     protected FolderFilesChanged() {
         // Serialization
     }
 
-    public FolderFilesChanged(FolderInfo folder) {
+    FolderFilesChanged(FolderInfo folder) {
         this.folder = folder;
     }
 
@@ -76,7 +80,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      * @param fileInfo
      *            the file to broadcast
      */
-    public FolderFilesChanged(FileInfo fileInfo) {
+    protected FolderFilesChanged(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "Fileinfo is null");
 
         folder = fileInfo.getFolderInfo();
@@ -85,6 +89,14 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         } else {
             added = new FileInfo[]{fileInfo};
         }
+    }
+
+    /**
+     * @param fileInfo
+     * @return a changed message containing the {@link FileInfo} only.
+     */
+    public static FolderFilesChanged create(FileInfo fileInfo) {
+        return new FolderFilesChanged(fileInfo);
     }
 
     /**
@@ -97,16 +109,10 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      *            the new fileinfos/dirinfos to include.
      * @param fileInfoFilter
      *            the filter to apply
-     * @param added
-     *            if set added instead of removed
-     * @param includeDirs
-     *            if directoryinfos should be included or filtered out in the
-     *            list.
      * @return the messages
      */
-    public static FolderFilesChanged[] createFolderFilesChangedMessages(
-        FolderInfo foInfo, Collection<FileInfo> files,
-        DiskItemFilter fileInfoFilter, boolean added, boolean includeDirs)
+    public static FolderFilesChanged[] create(FolderInfo foInfo,
+        Collection<FileInfo> files, DiskItemFilter fileInfoFilter)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -125,10 +131,6 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         int nDirs = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {
-            if (fileInfo.isDiretory() && !includeDirs) {
-                // No
-                continue;
-            }
             if (fileInfoFilter.isExcluded(fileInfo)) {
                 continue;
             }
@@ -140,11 +142,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 nDeltas++;
                 FolderFilesChanged msg = new FolderFilesChanged(foInfo);
-                if (added) {
-                    msg.added = messageFiles;
-                } else {
-                    msg.removed = messageFiles;
-                }
+                msg.added = messageFiles;
                 messages.add(msg);
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
                 curMsgIndex = 0;
@@ -160,11 +158,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
             nDeltas++;
             FolderFilesChanged msg = new FolderFilesChanged(foInfo);
-            if (added) {
-                msg.added = lastFiles;
-            } else {
-                msg.removed = lastFiles;
-            }
+            msg.added = lastFiles;
             messages.add(msg);
         }
 
@@ -178,9 +172,19 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         return messages.toArray(new FolderFilesChanged[messages.size()]);
     }
 
+    @Deprecated
+    public FileInfo[] getRemoved() {
+        return removed;
+    }
+
+    public FileInfo[] getFiles() {
+        return added;
+    }
+
     public String toString() {
         return "FolderFilesChanged '" + folder.name + "': "
             + (added != null ? added.length : 0) + " files, "
             + (removed != null ? removed.length : 0) + " removed";
     }
+
 }

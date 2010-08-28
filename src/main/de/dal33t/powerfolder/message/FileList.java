@@ -85,20 +85,8 @@ public class FileList extends FolderRelatedMessage {
      * @return a list that contains null information about the files in a
      *         folder.
      */
-    public static FileList createNullList(FolderInfo foInfo) {
+    public static FileList createEmpty(FolderInfo foInfo) {
         return new FileList(foInfo);
-    }
-
-    /**
-     * Just to inform that we won't or can't send any information about the
-     * files.
-     * 
-     * @param foInfo
-     * @return a list that contains null information about the files in a
-     *         folder.
-     */
-    public static FileList createNullListForPre4Client(FolderInfo foInfo) {
-        return new FileList(foInfo, new FileInfo[0], 0);
     }
 
     /**
@@ -106,22 +94,11 @@ public class FileList extends FolderRelatedMessage {
      * ones if required.
      * 
      * @param folder
-     * @param includeDirs
-     *            if directoryInfos should be included in the message(s)
      * @return the splitted filelist messages.
      */
-    public static Message[] createFileListMessages(Folder folder,
-        boolean includeDirs)
-    {
-        // Create filelist with blacklist
-        Collection<DirectoryInfo> dirInfos;
-        if (includeDirs) {
-            dirInfos = folder.getKnownDirectories();
-        } else {
-            dirInfos = Collections.emptyList();
-        }
+    public static Message[] create(Folder folder) {
         return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
-            dirInfos, folder.getDiskItemFilter(), false);
+            folder.getKnownDirectories(), folder.getDiskItemFilter());
     }
 
     /**
@@ -135,18 +112,13 @@ public class FileList extends FolderRelatedMessage {
      *            the fileinfos to include.
      * @param diskItemFilter
      *            the item filter to appy
-     * @param onlyChanges
-     *            if the messages should contain only {@link FolderFilesChanged}
-     *            or contain a {@link FileList} as first message.
      * @return the splitted list
      */
-    public static Message[] createFileListMessages(FolderInfo foInfo,
-        Collection<FileInfo> files, DiskItemFilter diskItemFilter,
-        boolean onlyChanges)
+    public static Message[] create4Test(FolderInfo foInfo,
+        Collection<FileInfo> files, DiskItemFilter diskItemFilter)
     {
         Collection<DirectoryInfo> dirInfos = Collections.emptyList();
-        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter,
-            onlyChanges);
+        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter);
     }
 
     /**
@@ -166,7 +138,7 @@ public class FileList extends FolderRelatedMessage {
      */
     private static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, Collection<DirectoryInfo> dirs,
-        DiskItemFilter diskItemFilter, boolean onlyChanges)
+        DiskItemFilter diskItemFilter)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -181,7 +153,7 @@ public class FileList extends FolderRelatedMessage {
 
         List<Message> messages = new ArrayList<Message>();
         int nDeltas = 0;
-        boolean firstMessage = !onlyChanges;
+        boolean firstMessage = true;
         int curMsgIndex = 0;
         FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
         for (FileInfo fileInfo : files) {

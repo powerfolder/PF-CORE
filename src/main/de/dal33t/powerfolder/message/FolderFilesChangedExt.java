@@ -40,6 +40,7 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
 {
     public FolderFilesChangedExt() {
         // Serialization
+        super();
     }
 
     public FolderFilesChangedExt(FileInfo fileInfo) {
