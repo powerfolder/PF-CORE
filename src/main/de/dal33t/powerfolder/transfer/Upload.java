@@ -31,12 +31,14 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.FileChunkExt;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
 import de.dal33t.powerfolder.message.StartUpload;
+import de.dal33t.powerfolder.message.StartUploadExt;
 import de.dal33t.powerfolder.message.StopUpload;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.Convert;
@@ -211,7 +213,14 @@ public class Upload extends Transfer {
                     }
                     debugState = "Sending StartUpload";
                     try {
-                        getPartner().sendMessage(new StartUpload(getFile()));
+                        if (getPartner().getExternalizableVersion() >= 102) {
+                            getPartner().sendMessage(
+                                new StartUploadExt(getFile()));
+                        } else {
+                            getPartner()
+                                .sendMessage(new StartUpload(getFile()));
+                        }
+
                     } catch (ConnectionException e) {
                         throw new TransferException(e);
                     }
@@ -396,8 +405,15 @@ public class Upload extends Transfer {
                 }
                 pos += read;
             }
-            FileChunk chunk = new FileChunk(pr.getFile(), pr.getRange()
-                .getStart(), data);
+            FileChunk chunk;
+            if (getPartner().getExternalizableVersion() >= 104) {
+                chunk = new FileChunkExt(pr.getFile(),
+                    pr.getRange().getStart(), data);
+            } else {
+                chunk = new FileChunk(pr.getFile(), pr.getRange().getStart(),
+                    data);
+            }
+
             getPartner().sendMessage(chunk);
             getCounter().chunkTransferred(chunk);
             getTransferManager().getUploadCounter().chunkTransferred(chunk);
