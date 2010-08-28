@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.net;
 
 import java.io.BufferedReader;
@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.net.UDTSocket;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class UDTTest extends TestCase {
     private class ThreadHelper<T> {
@@ -128,8 +127,8 @@ public class UDTTest extends TestCase {
         assertTrue(other.isConnected());
         assertFalse(serv.isClosed());
         assertFalse(other.isClosed());
-        BufferedReader in = new BufferedReader(new InputStreamReader(other
-            .getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            other.getInputStream()));
         assertEquals("Hello World!", in.readLine());
         in.close();
 
@@ -143,8 +142,7 @@ public class UDTTest extends TestCase {
         assertTrue(serv.isClosed());
     }
 
-    
-    public void testRendezvousOverhead() throws IOException {
+    public void xtestRendezvousOverhead() throws IOException {
         if (!NetworkUtil.isUDTSupported()) {
             return;
         }
@@ -162,7 +160,7 @@ public class UDTTest extends TestCase {
         }
         s.close();
     }
-    
+
     /**
      * Potential NAT traversal test.
      */
@@ -205,14 +203,12 @@ public class UDTTest extends TestCase {
     /**
      * Adjust for the 2 manual tests below
      */
-    private InetSocketAddress addrA =
-        new InetSocketAddress("192.168.0.1", 1111),
-        addrB =
-            new InetSocketAddress("192.168.0.1", 1234);
-    
-    public void testOverheadA() throws InterruptedException {
-        ExecutorService service = 
-            Executors.newCachedThreadPool();
+    private final InetSocketAddress addrA = new InetSocketAddress(
+        "192.168.0.1", 1111),
+        addrB = new InetSocketAddress("192.168.0.1", 1234);
+
+    public void xtestOverheadA() throws InterruptedException {
+        ExecutorService service = Executors.newCachedThreadPool();
         System.out.println("Starting 50 parallel connection requests to B");
         for (int i = 0; i < 2; i++) {
             service.execute(new Runnable() {
@@ -240,7 +236,7 @@ public class UDTTest extends TestCase {
         }
         service.awaitTermination(1, TimeUnit.MINUTES);
     }
-    
+
     public void testLargeTransfer() {
         if (!NetworkUtil.isUDTSupported()) {
             return;
@@ -259,10 +255,9 @@ public class UDTTest extends TestCase {
                         out.write(b);
                     }
                     c1.close();
-                    System.err
-                        .println("Done sending with "
-                            + (b.length * 10000000L / (System
-                                .currentTimeMillis() - time)) + " bytes/sec");
+                    System.err.println("Done sending with "
+                        + (b.length * 10000000L / (System.currentTimeMillis() - time))
+                        + " bytes/sec");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -283,10 +278,9 @@ public class UDTTest extends TestCase {
                     }
                     c2.close();
                     assertEquals(b.length * 10000, count);
-                    System.err
-                        .println("Done receiving with "
-                            + (b.length * 10000000L / (System
-                                .currentTimeMillis() - time)) + " bytes/sec");
+                    System.err.println("Done receiving with "
+                        + (b.length * 10000000L / (System.currentTimeMillis() - time))
+                        + " bytes/sec");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
