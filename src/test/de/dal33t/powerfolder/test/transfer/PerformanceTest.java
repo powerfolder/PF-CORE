@@ -36,8 +36,8 @@ public class PerformanceTest extends TwoControllerTestCase {
                 FileInfo fInfo = createTestFileInfo(foInfo, j);
                 files.add(fInfo);
             }
-            Message[] msgs = FileList.createFileListMessages(foInfo, files,
-                new DiskItemFilter(), false);
+            Message[] msgs = FileList.create4Test(foInfo, files,
+                new DiskItemFilter());
             Member lisaAtBart = getContollerBart().getNodeManager().getNode(
                 getContollerLisa().getMySelf().getId());
             for (int j = 0; j < msgs.length; j++) {
