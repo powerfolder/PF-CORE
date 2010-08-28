@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +51,7 @@ public class FileList extends FolderRelatedMessage {
 
     private static final long serialVersionUID = 100L;
 
-    public final FileInfo[] files;
+    public FileInfo[] files;
     /**
      * The number of following delta filelist to expect.
      * 
@@ -58,7 +59,12 @@ public class FileList extends FolderRelatedMessage {
      */
     public int nFollowingDeltas;
 
-    private FileList(FolderInfo folderInfo, FileInfo[] files, int nDetlas2Follow)
+    protected FileList() {
+        // Serialization
+    }
+
+    protected FileList(FolderInfo folderInfo, FileInfo[] files,
+        int nDetlas2Follow)
     {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(files, "Files is null");
@@ -70,7 +76,7 @@ public class FileList extends FolderRelatedMessage {
         this.nFollowingDeltas = nDetlas2Follow;
     }
 
-    private FileList(FolderInfo folderInfo) {
+    protected FileList(FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         this.files = null;
         this.folder = folderInfo;
@@ -82,10 +88,15 @@ public class FileList extends FolderRelatedMessage {
      * files.
      * 
      * @param foInfo
+     * @param useExt
+     *            if use {@link Externalizable}s
      * @return a list that contains null information about the files in a
      *         folder.
      */
-    public static FileList createEmpty(FolderInfo foInfo) {
+    public static FileList createEmpty(FolderInfo foInfo, boolean useExt) {
+        if (useExt) {
+            return new FileListExt(foInfo);
+        }
         return new FileList(foInfo);
     }
 
@@ -94,11 +105,13 @@ public class FileList extends FolderRelatedMessage {
      * ones if required.
      * 
      * @param folder
+     * @param useExt
+     *            if use {@link Externalizable}s
      * @return the splitted filelist messages.
      */
-    public static Message[] create(Folder folder) {
+    public static Message[] create(Folder folder, boolean useExt) {
         return createFileListMessages(folder.getInfo(), folder.getKnownFiles(),
-            folder.getKnownDirectories(), folder.getDiskItemFilter());
+            folder.getKnownDirectories(), folder.getDiskItemFilter(), useExt);
     }
 
     /**
@@ -118,7 +131,8 @@ public class FileList extends FolderRelatedMessage {
         Collection<FileInfo> files, DiskItemFilter diskItemFilter)
     {
         Collection<DirectoryInfo> dirInfos = Collections.emptyList();
-        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter);
+        return createFileListMessages(foInfo, files, dirInfos, diskItemFilter,
+            true);
     }
 
     /**
@@ -138,7 +152,7 @@ public class FileList extends FolderRelatedMessage {
      */
     private static Message[] createFileListMessages(FolderInfo foInfo,
         Collection<FileInfo> files, Collection<DirectoryInfo> dirs,
-        DiskItemFilter diskItemFilter)
+        DiskItemFilter diskItemFilter, boolean useExt)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -148,7 +162,11 @@ public class FileList extends FolderRelatedMessage {
                 + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
 
         if (files.isEmpty() && dirs.isEmpty()) {
-            return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+            if (useExt) {
+                return new Message[]{new FileListExt(foInfo, new FileInfo[0], 0)};
+            } else {
+                return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+            }
         }
 
         List<Message> messages = new ArrayList<Message>();
@@ -164,11 +182,21 @@ public class FileList extends FolderRelatedMessage {
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 if (firstMessage) {
-                    messages.add(new FileList(foInfo, messageFiles, 0));
+                    if (useExt) {
+                        messages.add(new FileListExt(foInfo, messageFiles, 0));
+                    } else {
+                        messages.add(new FileList(foInfo, messageFiles, 0));
+                    }
                     firstMessage = false;
                 } else {
                     nDeltas++;
-                    messages.add(new FolderFilesChanged(foInfo, messageFiles));
+                    if (useExt) {
+                        messages.add(new FolderFilesChangedExt(foInfo,
+                            messageFiles));
+                    } else {
+                        messages.add(new FolderFilesChanged(foInfo,
+                            messageFiles));
+                    }
                 }
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
                 curMsgIndex = 0;
@@ -182,11 +210,21 @@ public class FileList extends FolderRelatedMessage {
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 if (firstMessage) {
-                    messages.add(new FileList(foInfo, messageFiles, 0));
+                    if (useExt) {
+                        messages.add(new FileListExt(foInfo, messageFiles, 0));
+                    } else {
+                        messages.add(new FileList(foInfo, messageFiles, 0));
+                    }
                     firstMessage = false;
                 } else {
                     nDeltas++;
-                    messages.add(new FolderFilesChanged(foInfo, messageFiles));
+                    if (useExt) {
+                        messages.add(new FolderFilesChangedExt(foInfo,
+                            messageFiles));
+                    } else {
+                        messages.add(new FolderFilesChanged(foInfo,
+                            messageFiles));
+                    }
                 }
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
                 curMsgIndex = 0;
@@ -195,18 +233,30 @@ public class FileList extends FolderRelatedMessage {
 
         if (firstMessage && curMsgIndex == 0) {
             // Only ignored files
-            return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+            if (useExt) {
+                return new Message[]{new FileListExt(foInfo, new FileInfo[0], 0)};
+            } else {
+                return new Message[]{new FileList(foInfo, new FileInfo[0], 0)};
+            }
         }
         if (curMsgIndex != 0 && curMsgIndex < messageFiles.length) {
             // Last message
             FileInfo[] lastFiles = new FileInfo[curMsgIndex];
             System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
             if (firstMessage) {
-                messages.add(new FileList(foInfo, lastFiles, 0));
+                if (useExt) {
+                    messages.add(new FileListExt(foInfo, lastFiles, 0));
+                } else {
+                    messages.add(new FileList(foInfo, lastFiles, 0));
+                }
                 firstMessage = false;
             } else {
                 nDeltas++;
-                messages.add(new FolderFilesChanged(foInfo, lastFiles));
+                if (useExt) {
+                    messages.add(new FolderFilesChangedExt(foInfo, lastFiles));
+                } else {
+                    messages.add(new FolderFilesChanged(foInfo, lastFiles));
+                }
             }
         }
 

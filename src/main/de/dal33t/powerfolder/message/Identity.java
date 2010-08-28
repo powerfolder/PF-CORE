@@ -81,7 +81,7 @@ public class Identity extends Message {
     private Boolean useCompressedStream;
 
     /**
-     * Protocol history:
+     * #2072: Protocol history:
      * <p>
      * 100: Initial version. Added: {@link RequestPartExt}
      * <p>
@@ -92,8 +92,10 @@ public class Identity extends Message {
      * 103: Added: {@link RequestDownloadExt}
      * <p>
      * 104: Added: {@link FileChunkExt}
+     * <p>
+     * 105: Added: {@link FileListExt}
      */
-    private int externalizableVersion = 104;
+    private int externalizableVersion = 105;
 
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();

@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -93,9 +94,14 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     /**
      * @param fileInfo
+     * @param useExt
+     *            if {@link Externalizable}s should be used.
      * @return a changed message containing the {@link FileInfo} only.
      */
-    public static FolderFilesChanged create(FileInfo fileInfo) {
+    public static FolderFilesChanged create(FileInfo fileInfo, boolean useExt) {
+        if (useExt) {
+            return new FolderFilesChangedExt(fileInfo);
+        }
         return new FolderFilesChanged(fileInfo);
     }
 
@@ -109,10 +115,13 @@ public class FolderFilesChanged extends FolderRelatedMessage {
      *            the new fileinfos/dirinfos to include.
      * @param fileInfoFilter
      *            the filter to apply
+     * @param useExt
+     *            if {@link Externalizable}s should be used.
      * @return the messages
      */
     public static FolderFilesChanged[] create(FolderInfo foInfo,
-        Collection<FileInfo> files, DiskItemFilter fileInfoFilter)
+        Collection<FileInfo> files, DiskItemFilter fileInfoFilter,
+        boolean useExt)
     {
         Reject.ifNull(foInfo, "Folder info is null");
         Reject.ifNull(files, "Files is null");
@@ -141,7 +150,8 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             curMsgIndex++;
             if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
                 nDeltas++;
-                FolderFilesChanged msg = new FolderFilesChanged(foInfo);
+                FolderFilesChanged msg = useExt ? new FolderFilesChangedExt(
+                    foInfo) : new FolderFilesChanged(foInfo);
                 msg.added = messageFiles;
                 messages.add(msg);
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
@@ -157,7 +167,9 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             FileInfo[] lastFiles = new FileInfo[curMsgIndex];
             System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
             nDeltas++;
-            FolderFilesChanged msg = new FolderFilesChanged(foInfo);
+            FolderFilesChanged msg = useExt
+                ? new FolderFilesChangedExt(foInfo)
+                : new FolderFilesChanged(foInfo);
             msg.added = lastFiles;
             messages.add(msg);
         }
@@ -183,8 +195,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
 
     public String toString() {
         return "FolderFilesChanged '" + folder.name + "': "
-            + (added != null ? added.length : 0) + " files, "
-            + (removed != null ? removed.length : 0) + " removed";
+            + (added != null ? added.length : 0) + " files";
     }
 
 }

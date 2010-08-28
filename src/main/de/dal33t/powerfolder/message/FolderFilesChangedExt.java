@@ -27,6 +27,7 @@ import java.io.ObjectOutput;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.ExternalizableUtil;
 
 /**
  * A message which contains only the deltas of the folders list
@@ -43,26 +44,22 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
         super();
     }
 
-    public FolderFilesChangedExt(FileInfo fileInfo) {
+    FolderFilesChangedExt(FileInfo fileInfo) {
         super(fileInfo);
     }
 
-    public FolderFilesChangedExt(FolderInfo aFolder, FileInfo[] addedFiles) {
+    FolderFilesChangedExt(FolderInfo aFolder, FileInfo[] addedFiles) {
         super(aFolder, addedFiles);
     }
 
-    public FolderFilesChangedExt(FolderInfo folder) {
+    FolderFilesChangedExt(FolderInfo folder) {
         super(folder);
     }
 
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
-        if (in.readBoolean()) {
-            folder = FolderInfo.readExt(in);
-        } else {
-            folder = null;
-        }
+        folder = ExternalizableUtil.readFolderInfo(in);
         if (in.readBoolean()) {
             int len = in.readInt();
             added = new FileInfo[len];
@@ -80,8 +77,7 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeBoolean(folder != null);
-        folder.writeExternal(out);
+        ExternalizableUtil.writeFolderInfo(out, folder);
         out.writeBoolean(added != null);
         if (added != null) {
             out.writeInt(added.length);
