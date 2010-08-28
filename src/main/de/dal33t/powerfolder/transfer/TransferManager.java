@@ -269,6 +269,17 @@ public class TransferManager extends PFComponent {
 
     // General ****************************************************************
 
+    public void printStats() {
+        long total = totalDownloadTrafficCounter.getBytesTransferred()
+            + totalUploadTrafficCounter.getBytesTransferred();
+        long payload = downloadCounter.getBytesTransferred()
+            + uploadCounter.getBytesTransferred();
+        long overhead = total - payload;
+        logInfo("Total: " + Format.formatBytes(total) + ", Payload: "
+            + Format.formatBytes(payload) + ". Overhead: "
+            + (overhead * 100 / payload) + "%");
+    }
+
     /**
      * Starts the transfermanager thread
      */
