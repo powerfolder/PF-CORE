@@ -24,6 +24,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
+import java.io.Externalizable;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -1003,7 +1004,7 @@ public class Folder extends PFComponent {
      * @param fileInfos
      *            the files to scan. ATTENTION: Does modify the {@link List}
      */
-    void scanChangedFiles(List<FileInfo> fileInfos) {
+    void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
@@ -1019,10 +1020,14 @@ public class Folder extends PFComponent {
         }
         if (fileInfos.size() > 0) {
             fireFilesChanged(fileInfos);
-            Message[] msgs = FolderFilesChanged.create(currentInfo, fileInfos,
-                diskItemFilter);
-            broadcastMessages(msgs);
             setDBDirty();
+
+            broadcastMessages(new MessageProvider() {
+                public Message[] getMessages(boolean useExternalizable) {
+                    return FolderFilesChanged.create(currentInfo, fileInfos,
+                        diskItemFilter, useExternalizable);
+                }
+            });
         }
     }
 
@@ -1277,7 +1282,7 @@ public class Folder extends PFComponent {
             throw new IllegalArgumentException("Files to delete are empty");
         }
 
-        List<FileInfo> removedFiles = new ArrayList<FileInfo>();
+        final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         synchronized (scanLock) {
             for (FileInfo fileInfo : fInfos) {
                 Reject.ifTrue(fileInfo.isDiretory(),
@@ -1292,11 +1297,12 @@ public class Folder extends PFComponent {
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
-            Message[] changeMsgs = FolderFilesChanged.create(currentInfo,
-                removedFiles, diskItemFilter);
-            if (changeMsgs.length > 0) {
-                broadcastMessages(changeMsgs);
-            }
+            broadcastMessages(new MessageProvider() {
+                public Message[] getMessages(boolean useExternalizable) {
+                    return FolderFilesChanged.create(currentInfo, removedFiles,
+                        diskItemFilter, useExternalizable);
+                }
+            });
         }
     }
 
@@ -1871,7 +1877,8 @@ public class Folder extends PFComponent {
                 }
             }
             if (member.isCompletelyConnected()) {
-                member.sendMessagesAsynchron(FileList.createEmpty(currentInfo));
+                member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
+                    supportExternalizable(member)));
             }
             return false;
         }
@@ -1895,7 +1902,8 @@ public class Folder extends PFComponent {
             // FIX for #924
             waitForScan();
 
-            Message[] filelistMsgs = FileList.create(this);
+            Message[] filelistMsgs = FileList.create(this,
+                supportExternalizable(member));
             for (Message message : filelistMsgs) {
                 try {
                     member.sendMessage(message);
@@ -2065,7 +2073,7 @@ public class Folder extends PFComponent {
                 + Arrays.asList(getConnectedMembers()));
         }
 
-        List<FileInfo> removedFiles = new ArrayList<FileInfo>();
+        final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         // synchronized (scanLock) {
         for (Member member : members) {
             if (!member.isCompletelyConnected()) {
@@ -2120,11 +2128,12 @@ public class Folder extends PFComponent {
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
-            Message[] changeMsgs = FolderFilesChanged.create(currentInfo,
-                removedFiles, diskItemFilter);
-            if (changeMsgs.length > 0) {
-                broadcastMessages(changeMsgs);
-            }
+            broadcastMessages(new MessageProvider() {
+                public Message[] getMessages(boolean useExternalizable) {
+                    return FolderFilesChanged.create(currentInfo, removedFiles,
+                        diskItemFilter, useExternalizable);
+                }
+            });
         }
     }
 
@@ -2260,22 +2269,32 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Broadcasts a message through the folder with support for pre 4.0 clients.
+     * Broadcasts a message through the folder.
      * <p>
-     * Caches the retrieved msgs.
+     * Caches the built messages.
      * 
      * @param msgProvider
      */
     public void broadcastMessages(MessageProvider msgProvider) {
         Message[] msgs = null;
+        Message[] msgsExt = null;
         for (Member member : getMembersAsCollection()) {
             // Connected?
             if (member.isCompletelyConnected()) {
-                if (msgs == null) {
-                    msgs = msgProvider.getMessages(false);
-                }
-                if (msgs != null) {
-                    member.sendMessagesAsynchron(msgs);
+                if (supportExternalizable(member)) {
+                    if (msgsExt == null) {
+                        msgsExt = msgProvider.getMessages(true);
+                    }
+                    if (msgsExt != null && msgsExt.length > 0) {
+                        member.sendMessagesAsynchron(msgsExt);
+                    }
+                } else {
+                    if (msgs == null) {
+                        msgs = msgProvider.getMessages(false);
+                    }
+                    if (msgs != null && msgs.length > 0) {
+                        member.sendMessagesAsynchron(msgs);
+                    }
                 }
             }
         }
@@ -2313,7 +2332,7 @@ public class Folder extends PFComponent {
     }
 
     private interface MessageProvider {
-        Message[] getMessages(boolean pre4Client);
+        Message[] getMessages(boolean useExternalizable);
     }
 
     /**
@@ -2334,33 +2353,33 @@ public class Folder extends PFComponent {
 
         if (!scanResult.getNewFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages(boolean pre4Client) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, scanResult
-                        .getNewFiles(), diskItemFilter);
+                        .getNewFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getChangedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages(boolean pre4Client) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, scanResult
-                        .getChangedFiles(), diskItemFilter);
+                        .getChangedFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getDeletedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages(boolean pre4Client) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, scanResult
-                        .getDeletedFiles(), diskItemFilter);
+                        .getDeletedFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getRestoredFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
-                public Message[] getMessages(boolean pre4Client) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, scanResult
-                        .getRestoredFiles(), diskItemFilter);
+                        .getRestoredFiles(), diskItemFilter, useExt);
                 }
             });
         }
@@ -2735,6 +2754,17 @@ public class Folder extends PFComponent {
                 findSameFiles(member, lastFileList);
             }
         }
+    }
+
+    /**
+     * TRAC #2072
+     * 
+     * @param member
+     * @return if this member supports the {@link Externalizable} versions of
+     *         {@link FileList} and {@link FolderFilesChanged}
+     */
+    public boolean supportExternalizable(Member member) {
+        return member.getExternalizableVersion() >= 105;
     }
 
     /**
@@ -3577,11 +3607,10 @@ public class Folder extends PFComponent {
 
         final FileInfo localInfo = getFile(fileInfo);
         if (diskItemFilter.isRetained(localInfo)) {
-            visitMembersConnected(new Visitor<Member>() {
-                public boolean visit(Member member) {
-                    member.sendMessagesAsynchron(FolderFilesChanged
-                        .create(localInfo));
-                    return true;
+            broadcastMessages(new MessageProvider() {
+                public Message[] getMessages(boolean useExternalizable) {
+                    return new Message[]{FolderFilesChanged.create(localInfo,
+                        useExternalizable)};
                 }
             });
         }
