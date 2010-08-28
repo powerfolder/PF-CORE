@@ -1019,8 +1019,8 @@ public class Folder extends PFComponent {
         }
         if (fileInfos.size() > 0) {
             fireFilesChanged(fileInfos);
-            Message[] msgs = FileList.createFileListMessages(currentInfo,
-                fileInfos, diskItemFilter, true);
+            Message[] msgs = FolderFilesChanged.create(currentInfo, fileInfos,
+                diskItemFilter);
             broadcastMessages(msgs);
             setDBDirty();
         }
@@ -1292,13 +1292,10 @@ public class Folder extends PFComponent {
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
-            // Broadcast to members
-            diskItemFilter.filterFileInfos(removedFiles);
-            FolderFilesChanged changes = new FolderFilesChanged(currentInfo);
-            changes.removed = removedFiles.toArray(new FileInfo[removedFiles
-                .size()]);
-            if (changes.removed.length > 0) {
-                broadcastMessages(changes);
+            Message[] changeMsgs = FolderFilesChanged.create(currentInfo,
+                removedFiles, diskItemFilter);
+            if (changeMsgs.length > 0) {
+                broadcastMessages(changeMsgs);
             }
         }
     }
@@ -1874,8 +1871,7 @@ public class Folder extends PFComponent {
                 }
             }
             if (member.isCompletelyConnected()) {
-                member.sendMessagesAsynchron(FileList
-                    .createNullList(currentInfo));
+                member.sendMessagesAsynchron(FileList.createEmpty(currentInfo));
             }
             return false;
         }
@@ -1899,8 +1895,7 @@ public class Folder extends PFComponent {
             // FIX for #924
             waitForScan();
 
-            Message[] filelistMsgs = FileList
-                .createFileListMessages(this, true);
+            Message[] filelistMsgs = FileList.create(this);
             for (Message message : filelistMsgs) {
                 try {
                     member.sendMessage(message);
@@ -2125,12 +2120,11 @@ public class Folder extends PFComponent {
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
-            // Broadcast to members
-            diskItemFilter.filterFileInfos(removedFiles);
-            FolderFilesChanged changes = new FolderFilesChanged(currentInfo);
-            changes.removed = removedFiles.toArray(new FileInfo[removedFiles
-                .size()]);
-            broadcastMessages(changes);
+            Message[] changeMsgs = FolderFilesChanged.create(currentInfo,
+                removedFiles, diskItemFilter);
+            if (changeMsgs.length > 0) {
+                broadcastMessages(changeMsgs);
+            }
         }
     }
 
@@ -2341,36 +2335,32 @@ public class Folder extends PFComponent {
         if (!scanResult.getNewFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
                 public Message[] getMessages(boolean pre4Client) {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getNewFiles(), diskItemFilter,
-                        true, !pre4Client);
+                    return FolderFilesChanged.create(currentInfo, scanResult
+                        .getNewFiles(), diskItemFilter);
                 }
             });
         }
         if (!scanResult.getChangedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
                 public Message[] getMessages(boolean pre4Client) {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getChangedFiles(),
-                        diskItemFilter, true, !pre4Client);
+                    return FolderFilesChanged.create(currentInfo, scanResult
+                        .getChangedFiles(), diskItemFilter);
                 }
             });
         }
         if (!scanResult.getDeletedFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
                 public Message[] getMessages(boolean pre4Client) {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getDeletedFiles(),
-                        diskItemFilter, false, !pre4Client);
+                    return FolderFilesChanged.create(currentInfo, scanResult
+                        .getDeletedFiles(), diskItemFilter);
                 }
             });
         }
         if (!scanResult.getRestoredFiles().isEmpty()) {
             broadcastMessages(new MessageProvider() {
                 public Message[] getMessages(boolean pre4Client) {
-                    return FolderFilesChanged.createFolderFilesChangedMessages(
-                        currentInfo, scanResult.getRestoredFiles(),
-                        diskItemFilter, true, !pre4Client);
+                    return FolderFilesChanged.create(currentInfo, scanResult
+                        .getRestoredFiles(), diskItemFilter);
                 }
             });
         }
@@ -2451,44 +2441,44 @@ public class Folder extends PFComponent {
         }
 
         // Correct FolderInfo in case it differs.
-        if (changes.added != null) {
-            for (int i = 0; i < changes.added.length; i++) {
-                FileInfo fInfo = changes.added[i];
-                changes.added[i] = FileInfoFactory.changedFolderInfo(fInfo,
-                    currentInfo);
+        if (changes.getFiles() != null) {
+            for (int i = 0; i < changes.getFiles().length; i++) {
+                FileInfo fInfo = changes.getFiles()[i];
+                changes.getFiles()[i] = FileInfoFactory.changedFolderInfo(
+                    fInfo, currentInfo);
             }
         }
-        if (changes.removed != null) {
-            for (int i = 0; i < changes.removed.length; i++) {
-                FileInfo fInfo = changes.removed[i];
-                changes.removed[i] = FileInfoFactory.changedFolderInfo(fInfo,
-                    currentInfo);
+        if (changes.getRemoved() != null) {
+            for (int i = 0; i < changes.getRemoved().length; i++) {
+                FileInfo fInfo = changes.getRemoved()[i];
+                changes.getRemoved()[i] = FileInfoFactory.changedFolderInfo(
+                    fInfo, currentInfo);
             }
         }
 
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
-        if (changes.removed != null
+        if (changes.getRemoved() != null
             && syncProfile.isSyncDeletion()
             && ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()))
         {
-            checkForMassDeletion(from, changes.removed);
+            checkForMassDeletion(from, changes.getRemoved());
         }
 
         // Try to find same files
-        if (changes.added != null) {
-            store(from, changes.added);
-            findSameFiles(from, Arrays.asList(changes.added));
+        if (changes.getFiles() != null) {
+            store(from, changes.getFiles());
+            findSameFiles(from, Arrays.asList(changes.getFiles()));
         }
-        if (changes.removed != null) {
-            store(from, changes.removed);
-            findSameFiles(from, Arrays.asList(changes.removed));
+        if (changes.getRemoved() != null) {
+            store(from, changes.getRemoved());
+            findSameFiles(from, Arrays.asList(changes.getRemoved()));
         }
 
         // Avoid hammering of sync remote deletion
-        boolean singleFileAddMsg = changes.added != null
-            && changes.added.length == 1 && changes.removed == null;
+        boolean singleFileAddMsg = changes.getFiles() != null
+            && changes.getFiles().length == 1 && changes.getRemoved() == null;
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
@@ -2496,8 +2486,8 @@ public class Folder extends PFComponent {
             if (triggerFileRequestor && singleFileAddMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
-                FileInfo localfileInfo = getFile(changes.added[0]);
-                FileInfo remoteFileInfo = changes.added[0];
+                FileInfo localfileInfo = getFile(changes.getFiles()[0]);
+                FileInfo remoteFileInfo = changes.getFiles()[0];
                 if (localfileInfo != null
                     && !remoteFileInfo.isNewerThan(localfileInfo)
                     && !remoteFileInfo.isDeleted())
@@ -3234,6 +3224,35 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Visits all {@link Member}s of this folder
+     * 
+     * @param visitor
+     */
+    public void visitMembers(Visitor<Member> visitor) {
+        for (Member member : members.keySet()) {
+            if (!visitor.visit(member)) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Visits all fully connected {@link Member}s of this folder.
+     * 
+     * @param visitor
+     */
+    public void visitMembersConnected(Visitor<Member> visitor) {
+        for (Member member : members.keySet()) {
+            if (!member.isCompletelyConnected()) {
+                continue;
+            }
+            if (!visitor.visit(member)) {
+                return;
+            }
+        }
+    }
+
+    /**
      * This list also includes myself!
      * 
      * @return all members in a collection. The collection is a unmodifiable
@@ -3556,9 +3575,15 @@ public class Folder extends PFComponent {
         fireFileChanged(fileInfo);
         setDBDirty();
 
-        FileInfo localInfo = getFile(fileInfo);
+        final FileInfo localInfo = getFile(fileInfo);
         if (diskItemFilter.isRetained(localInfo)) {
-            broadcastMessages(new FolderFilesChanged(localInfo));
+            visitMembersConnected(new Visitor<Member>() {
+                public boolean visit(Member member) {
+                    member.sendMessagesAsynchron(FolderFilesChanged
+                        .create(localInfo));
+                    return true;
+                }
+            });
         }
     }
 
