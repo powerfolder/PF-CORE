@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  */
 public class StopUpload extends Message {
 	private static final long serialVersionUID = 100L;
-	private FileInfo fileInfo;
+	protected FileInfo fileInfo;
 
 	public StopUpload() {
 	}

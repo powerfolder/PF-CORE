@@ -15,11 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: StartUpload.java 13067 2010-07-21 16:01:47Z tot $
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * Message to indicate that the upload can be started. This message is sent by
@@ -28,22 +34,22 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class StartUpload extends Message {
-    private static final long serialVersionUID = 100L;
-    protected FileInfo fileInfo;
-
-    public StartUpload() {
+public class StartUploadExt extends StartUpload implements Externalizable {
+    public StartUploadExt() {
+        super();
     }
 
-    public StartUpload(FileInfo fInfo) {
-        fileInfo = fInfo;
+    public StartUploadExt(FileInfo fInfo) {
+        super(fInfo);
     }
 
-    public FileInfo getFile() {
-        return fileInfo;
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        fileInfo = FileInfoFactory.readExt(in);
     }
 
-    public String toString() {
-        return "StartUpload of " + fileInfo.toDetailString();
+    public void writeExternal(ObjectOutput out) throws IOException {
+        fileInfo.writeExternal(out);
     }
 }

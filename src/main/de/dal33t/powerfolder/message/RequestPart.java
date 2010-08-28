@@ -28,9 +28,9 @@ import de.dal33t.powerfolder.util.Reject;
 public class RequestPart extends Message {
 	private static final long serialVersionUID = 100L;
 
-	private FileInfo file;
-	private Range range;
-	private double progress;
+	protected FileInfo file;
+	protected Range range;
+	protected double progress;
 	
 	public RequestPart() {
         // Serialization constructor

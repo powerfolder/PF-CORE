@@ -15,11 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: RequestDownload.java 6972 2009-02-09 07:26:06Z tot $
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
  * Request to start download a file
@@ -27,39 +33,32 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class RequestDownload extends Message {
-    private static final long serialVersionUID = 100L;
+public class RequestDownloadExt extends RequestDownload implements
+    Externalizable
+{
 
-    public FileInfo file;
-    public long startOffset;
-
-    public RequestDownload() {
-        // Serialisation constructor
-    }
-
-    /**
-     * Start a complete new download
-     * 
-     * @param file
-     */
-    public RequestDownload(FileInfo file) {
-        this(file, 0);
-    }
-
-    /**
-     * Requests file download, starting at offset
-     * 
-     * @param file
-     * @param startOffset
-     */
-    public RequestDownload(FileInfo file, long startOffset) {
+    public RequestDownloadExt() {
         super();
-        this.file = file;
-        this.startOffset = startOffset;
     }
 
-    public String toString() {
-        return "Request to download: " + file.toDetailString()
-            + ", starting at " + startOffset;
+    public RequestDownloadExt(FileInfo file, long startOffset) {
+        super(file, startOffset);
     }
+
+    public RequestDownloadExt(FileInfo file) {
+        super(file);
+    }
+
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        file = FileInfoFactory.readExt(in);
+        startOffset = in.readLong();
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        file.writeExternal(out);
+        out.writeLong(startOffset);
+    }
+
 }

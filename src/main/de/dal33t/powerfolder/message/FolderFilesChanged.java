@@ -49,6 +49,10 @@ public class FolderFilesChanged extends FolderRelatedMessage {
     /** A list of files removed from the folder */
     public FileInfo[] removed;
 
+    protected FolderFilesChanged() {
+        // Serialization
+    }
+
     public FolderFilesChanged(FolderInfo folder) {
         this.folder = folder;
     }

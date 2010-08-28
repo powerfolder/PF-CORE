@@ -15,35 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
+ * $Id: StopUpload.java 4282 2008-06-16 03:25:09Z tot $
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 
 /**
- * Message to indicate that the upload can be started. This message is sent by
- * the uploader. The remote side should send PartRequests or PartinfoRequests.
+ * Tells the uploader to stop uploading.
  * 
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class StartUpload extends Message {
-    private static final long serialVersionUID = 100L;
-    protected FileInfo fileInfo;
+public class StopUploadExt extends StopUpload implements Externalizable {
 
-    public StartUpload() {
+    public StopUploadExt() {
+        super();
     }
 
-    public StartUpload(FileInfo fInfo) {
-        fileInfo = fInfo;
+    public StopUploadExt(FileInfo fInfo) {
+        super(fInfo);
     }
 
-    public FileInfo getFile() {
-        return fileInfo;
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        fileInfo = FileInfoFactory.readExt(in);
     }
 
-    public String toString() {
-        return "StartUpload of " + fileInfo.toDetailString();
+    public void writeExternal(ObjectOutput out) throws IOException {
+        fileInfo.writeExternal(out);
     }
 }

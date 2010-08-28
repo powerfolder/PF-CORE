@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.Externalizable;
 import java.util.Calendar;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -78,6 +79,21 @@ public class Identity extends Message {
     private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
+
+    /**
+     * Protocol history:
+     * <p>
+     * 100: Initial version. Added: {@link RequestPartExt}
+     * <p>
+     * 101: Added: {@link StopUploadExt}
+     * <p>
+     * 102: Added: {@link StartUploadExt}
+     * <p>
+     * 103: Added: {@link RequestDownloadExt}
+     * <p>
+     * 104: Added: {@link FileChunkExt}
+     */
+    private int externalizableVersion = 104;
 
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();
@@ -201,6 +217,13 @@ public class Identity extends Message {
      */
     public Calendar getTimeGMT() {
         return timeGMT;
+    }
+
+    /**
+     * @return the protocol version for {@link Externalizable}
+     */
+    public int getExternalizableVersion() {
+        return externalizableVersion;
     }
 
     @Override
