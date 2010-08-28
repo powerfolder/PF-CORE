@@ -81,7 +81,7 @@ public class FileListTest extends TestCase {
         Message[] msgs;
         if (onlyChanges) {
             msgs = FolderFilesChanged.create(createRandomFolderInfo(), files,
-                new DiskItemFilter());
+                new DiskItemFilter(), true);
         } else {
             msgs = FileList.create4Test(createRandomFolderInfo(), files,
                 new DiskItemFilter());
@@ -147,7 +147,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
-            files, new DiskItemFilter());
+            files, new DiskItemFilter(), true);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -171,7 +171,7 @@ public class FileListTest extends TestCase {
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
-            files, new DiskItemFilter());
+            files, new DiskItemFilter(), true);
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
