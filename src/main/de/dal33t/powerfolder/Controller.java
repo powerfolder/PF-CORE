@@ -93,6 +93,7 @@ import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -131,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.3.0"; // 1.7.1.36
+    public static final String PROGRAM_VERSION = "4.3.0 - 1.7.1.40"; // 1.7.1.39
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -396,7 +397,21 @@ public class Controller extends PFComponent {
         }
 
         // initialize logger
+        // Enabled verbose mode if in config.
+        // This logs to file for analysis.
+        verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         initLogger();
+        if (verbose) {
+            ByteSerializer.BENCHMARK = true;
+            scheduleAndRepeat(new Runnable() {
+                public void run() {
+                    ByteSerializer.printStats();
+                }
+            }, 60000L);
+            Profiling.setEnabled(false);
+            Profiling.reset();
+        }
+
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
         logInfo("PowerFolder v" + PROGRAM_VERSION);
         logFine("OS: " + System.getProperty("os.name") + " (" + arch + ')');
@@ -668,9 +683,6 @@ public class Controller extends PFComponent {
             LoggingManager.setPrefix(configName);
         }
 
-        // Enabled verbose mode if in config.
-        // This logs to file for analysis.
-        verbose = ConfigurationEntry.VERBOSE.getValueBoolean(getController());
         if (verbose) {
             String str = ConfigurationEntry.LOG_LEVEL_CONSOLE.getValue(this);
             Level consoleLevel = LoggingManager.levelForName(str);
@@ -700,8 +712,6 @@ public class Controller extends PFComponent {
             } else {
                 logInfo("Running in VERBOSE mode, no logging to file");
             }
-            Profiling.setEnabled(false);
-            Profiling.reset();
         }
 
         if (commandLine != null && commandLine.hasOption('l')) {
