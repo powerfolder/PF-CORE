@@ -29,6 +29,10 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -58,16 +62,10 @@ public class ByteSerializer extends Loggable {
     private Reference<ByteArrayOutputStream> outBufferRef;
     private Reference<byte[]> inBufferRef;
 
-    private static final boolean BENCHMARK = false;
-    private static Map<Class, Integer> CLASS_STATS;
+    public static boolean BENCHMARK = false;
+    private static final Map<Class<?>, Integer> CLASS_STATS = new ConcurrentHashMap<Class<?>, Integer>();
     private static long totalTime = 0;
     private static int totalObjects = 0;
-
-    static {
-        if (BENCHMARK) {
-            CLASS_STATS = new ConcurrentHashMap<Class, Integer>();
-        }
-    }
 
     public ByteSerializer() {
     }
@@ -150,7 +148,6 @@ public class ByteSerializer extends Loggable {
             }
             count++;
             CLASS_STATS.put(target.getClass(), count);
-            printStats();
         }
         return buf;
     }
@@ -320,16 +317,29 @@ public class ByteSerializer extends Loggable {
                 }
                 count++;
                 CLASS_STATS.put(result.getClass(), count);
-                printStats();
             }
         }
     }
 
     // Helper code ************************************************************
 
-    private static final void printStats() {
-        System.err.println("Serialization perfomance: " + totalObjects
-            + " took " + totalTime + "ms. That is "
-            + (totalTime / totalObjects) + " ms/object. " + CLASS_STATS);
+    public static final void printStats() {
+        if (totalObjects != 0) {
+            LOG.fine("Serialization perfomance: " + totalObjects + " took "
+                + totalTime + "ms. That is " + (totalTime / totalObjects)
+                + " ms/object. Message stats: ");
+            List<Class<?>> sorted = new ArrayList<Class<?>>(CLASS_STATS
+                .keySet());
+            Collections.sort(sorted, new Comparator<Class<?>>() {
+                public int compare(Class<?> o1, Class<?> o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            for (Class<?> clazz : sorted) {
+                LOG.fine(" " + clazz.getName() + ": " + CLASS_STATS.get(clazz));
+            }
+        } else {
+            LOG.fine("Serialization perfomance: " + totalObjects);
+        }
     }
 }
