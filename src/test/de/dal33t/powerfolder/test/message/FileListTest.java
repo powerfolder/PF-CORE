@@ -77,8 +77,15 @@ public class FileListTest extends TestCase {
         }
 
         // Now split. Empty blacklist
-        Message[] msgs = FileList.createFileListMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(), onlyChanges);
+
+        Message[] msgs;
+        if (onlyChanges) {
+            msgs = FolderFilesChanged.create(createRandomFolderInfo(), files,
+                new DiskItemFilter());
+        } else {
+            msgs = FileList.create4Test(createRandomFolderInfo(), files,
+                new DiskItemFilter());
+        }
 
         // Test
         if (onlyChanges) {
@@ -106,7 +113,7 @@ public class FileListTest extends TestCase {
                 t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
                 FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
                 // System.err.println("INDEX: " + t);
-                assertEquals(files.get(i), msg.added[i - t
+                assertEquals(files.get(i), msg.getFiles()[i - t
                     * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
             }
             // else if (i < 3 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
@@ -139,8 +146,8 @@ public class FileListTest extends TestCase {
         }
 
         // Now split. Empty blacklist
-        Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(), true, true);
+        Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
+            files, new DiskItemFilter());
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -151,7 +158,7 @@ public class FileListTest extends TestCase {
         for (int i = 0; i < files.size(); i++) {
             t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
             FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
-            assertEquals(files.get(i), msg.added[i - t
+            assertEquals(files.get(i), msg.getFiles()[i - t
                 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
         }
     }
@@ -163,8 +170,8 @@ public class FileListTest extends TestCase {
         }
 
         // Now split. Empty blacklist
-        Message[] msgs = FolderFilesChanged.createFolderFilesChangedMessages(
-            createRandomFolderInfo(), files, new DiskItemFilter(), false, true);
+        Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
+            files, new DiskItemFilter());
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -175,7 +182,7 @@ public class FileListTest extends TestCase {
         for (int i = 0; i < files.size(); i++) {
             t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
             FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
-            assertEquals(files.get(i), msg.removed[i - t
+            assertEquals(files.get(i), msg.getRemoved()[i - t
                 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
         }
     }

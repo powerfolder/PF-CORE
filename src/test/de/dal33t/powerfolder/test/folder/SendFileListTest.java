@@ -96,8 +96,8 @@ public class SendFileListTest extends TwoControllerTestCase {
         assertTrue(lisasListener.messages.get(0) instanceof FolderFilesChanged);
         FolderFilesChanged list = (FolderFilesChanged) lisasListener.messages
             .get(0);
-        assertEquals(nFiles, list.added.length);
-        assertNull(list.removed);
+        assertEquals(nFiles, list.getFiles().length);
+        assertNull(list.getRemoved());
     }
 
     private static final class MyMessageListener implements MessageListener {
