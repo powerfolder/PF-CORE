@@ -26,6 +26,7 @@ import java.io.ObjectOutput;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
@@ -114,5 +115,36 @@ public class ExternalizableUtil {
             return new InetSocketAddress(addAndPort[0], Integer.valueOf(
                 addAndPort[1]).intValue());
         }
+    }
+
+    /**
+     * Writes a {@link FolderInfo} handling possible null values.
+     * 
+     * @param out
+     * @param foInfo
+     * @throws IOException
+     */
+    public static void writeFolderInfo(ObjectOutput out, FolderInfo foInfo)
+        throws IOException
+    {
+        out.writeBoolean(foInfo != null);
+        if (foInfo != null) {
+            foInfo.writeExternal(out);
+        }
+    }
+
+    /**
+     * @param in
+     * @return the {@link FolderInfo} or null
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static FolderInfo readFolderInfo(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        if (in.readBoolean()) {
+            return FolderInfo.readExt(in);
+        }
+        return null;
     }
 }
