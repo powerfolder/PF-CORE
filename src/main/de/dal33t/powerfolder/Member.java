@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -2208,6 +2209,17 @@ public class Member extends PFComponent implements Comparable<Member> {
             return peer.getIdentity();
         }
         return null;
+    }
+
+    /**
+     * @return the protocol version of the {@link Externalizable}s
+     */
+    public int getExternalizableVersion() {
+        Identity id = getIdentity();
+        if (id == null) {
+            return 0;
+        }
+        return id.getExternalizableVersion();
     }
 
     /**
