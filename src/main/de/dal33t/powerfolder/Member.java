@@ -936,7 +936,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.create(folder);
+            Message[] filelistMsgs = FileList.create(folder, folder
+                .supportExternalizable(this));
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -954,7 +955,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logFine("Actually joined: " + foldersJoined);
             }
             for (Folder folder : foldersRequested) {
-                sendMessagesAsynchron(FileList.createEmpty(folder.getInfo()));
+                sendMessagesAsynchron(FileList.createEmpty(folder.getInfo(),
+                    folder.supportExternalizable(this)));
             }
         }
 
