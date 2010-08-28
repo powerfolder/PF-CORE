@@ -33,9 +33,12 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.AbortDownload;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.RequestFilePartsRecord;
 import de.dal33t.powerfolder.message.RequestPart;
+import de.dal33t.powerfolder.message.RequestPartExt;
 import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.message.StopUploadExt;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -202,8 +205,13 @@ public class Download extends Transfer {
             return false;
         }
         try {
-            rp = new RequestPart(getFile(), range, Math.max(0, state
-                .getProgress()));
+            if (getPartner().getExternalizableVersion() >= 100) {
+                rp = new RequestPartExt(getFile(), range, Math.max(0, state
+                    .getProgress()));
+            } else {
+                rp = new RequestPart(getFile(), range, Math.max(0, state
+                    .getProgress()));
+            }
         } catch (IllegalArgumentException e) {
             // I need to do this because FileInfos are NOT immutable...
             if (isWarning()) {
@@ -287,8 +295,13 @@ public class Download extends Transfer {
             logFiner("request(" + startOffset + "): "
                 + getFile().toDetailString());
         }
-        getPartner().sendMessagesAsynchron(
-            new RequestDownload(getFile(), startOffset));
+        if (getPartner().getExternalizableVersion() >= 103) {
+            getPartner().sendMessagesAsynchron(
+                new RequestDownloadExt(getFile(), startOffset));
+        } else {
+            getPartner().sendMessagesAsynchron(
+                new RequestDownload(getFile(), startOffset));
+        }
     }
 
     /**
@@ -339,7 +352,12 @@ public class Download extends Transfer {
     @Override
     void setCompleted() {
         super.setCompleted();
-        getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
+        if (getPartner().getExternalizableVersion() >= 101) {
+            getPartner().sendMessagesAsynchron(new StopUploadExt(getFile()));
+        } else {
+            getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
+        }
+
         getTransferManager().setCompleted(Download.this);
     }
 
