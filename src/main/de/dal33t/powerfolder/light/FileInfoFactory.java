@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInput;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,6 +41,14 @@ public final class FileInfoFactory {
 
     private FileInfoFactory() {
         // No instance allowed
+    }
+
+    public static FileInfo readExt(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.readExternal(in);
+        return fileInfo;
     }
 
     /**

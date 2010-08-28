@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Date;
@@ -37,6 +39,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.InetSocketAddressUserType;
@@ -45,13 +48,11 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Member information class. contains all important informations about a member
- *
+ * 
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.13 $
  */
-@TypeDef(
-    name = "socketAddressType",
-    typeClass = InetSocketAddressUserType.class)
+@TypeDef(name = "socketAddressType", typeClass = InetSocketAddressUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MemberInfo implements Serializable {
@@ -69,7 +70,7 @@ public class MemberInfo implements Serializable {
     public String id;
     /**
      * The network Id of this node. #1373
-     *
+     * 
      * @see ConfigurationEntry#NETWORK_ID
      */
     public String networkId;
@@ -244,7 +245,7 @@ public class MemberInfo implements Serializable {
      * is not longer known to the NodeManager. If flagged with addIfNessesary a
      * new node will be created if not available @ NodeManager. Calling with
      * addIfNessesary = true always returns a valid node (Member).
-     *
+     * 
      * @param controller
      * @param addIfNessesary
      *            if a new node should be added if not available @ nodemanager
@@ -302,7 +303,7 @@ public class MemberInfo implements Serializable {
     // Serialization optimization *********************************************
 
     private void readObject(ObjectInputStream in) throws IOException,
-    ClassNotFoundException
+        ClassNotFoundException
     {
         in.defaultReadObject();
         // this.id = id.intern();
@@ -312,5 +313,38 @@ public class MemberInfo implements Serializable {
         } else {
             // this.networkId = networkId.intern();
         }
+    }
+
+    public static MemberInfo readExt(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        MemberInfo memberInfo = new MemberInfo();
+        memberInfo.readExternal(in);
+        return memberInfo;
+    }
+
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        id = in.readUTF();
+        nick = in.readUTF();
+        networkId = ExternalizableUtil.readString(in);
+        if (networkId == null) {
+            networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
+        }
+        connectAddress = ExternalizableUtil.readAddress(in);
+        lastConnectTime = ExternalizableUtil.readDate(in);
+        isConnected = in.readBoolean();
+        isSupernode = in.readBoolean();
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(id);
+        out.writeUTF(nick);
+        ExternalizableUtil.writeString(out, networkId);
+        ExternalizableUtil.writeAddress(out, connectAddress);
+        ExternalizableUtil.writeDate(out, lastConnectTime);
+        out.writeBoolean(isSupernode);
+        out.writeBoolean(isSupernode);
     }
 }

@@ -19,8 +19,13 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,6 +34,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Immutable;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -164,5 +170,27 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public String toString() {
         return "Folder '" + name + '\'';
+    }
+
+    // Serialization optimization *********************************************
+
+    public static FolderInfo readExt(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        FolderInfo folderInfo = new FolderInfo();
+        folderInfo.readExternal(in);
+        return folderInfo;
+    }
+
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        id = in.readUTF();
+        name = in.readUTF();
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(id);
+        out.writeUTF(name);
     }
 }

@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.light;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -36,6 +38,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -72,10 +75,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Unix-style separated path of the file relative to the folder base dir.
      */
-    private final String fileName;
+    private String fileName;
 
     /** The size of the file */
-    private final Long size;
+    private Long size;
 
     /**
      * modified info *
@@ -85,13 +88,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      */
     private MemberInfo modifiedBy;
     /** modified in folder on date */
-    private final Date lastModifiedDate;
+    private Date lastModifiedDate;
 
     /** Version number of this file */
-    private final int version;
+    private int version;
 
     /** the deleted flag */
-    private final boolean deleted;
+    private boolean deleted;
 
     /**
      * the folder.
@@ -745,5 +748,43 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
 
         // validate();
+    }
+
+    public void readExternal(ObjectInput in) throws IOException,
+        ClassNotFoundException
+    {
+        fileName = in.readUTF();
+        size = in.readLong();
+        if (in.readBoolean()) {
+            modifiedBy = MemberInfo.readExt(in);
+            modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
+        } else {
+            modifiedBy = null;
+        }
+        lastModifiedDate = ExternalizableUtil.readDate(in);
+        version = in.readInt();
+        deleted = in.readBoolean();
+        if (in.readBoolean()) {
+            folderInfo = FolderInfo.readExt(in);
+            folderInfo = folderInfo != null ? folderInfo.intern() : null;
+        } else {
+            folderInfo = null;
+        }
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(fileName);
+        out.writeLong(size);
+        out.writeBoolean(modifiedBy != null);
+        if (modifiedBy != null) {
+            modifiedBy.writeExternal(out);
+        }
+        ExternalizableUtil.writeDate(out, lastModifiedDate);
+        out.writeInt(version);
+        out.writeBoolean(deleted);
+        out.writeBoolean(folderInfo != null);
+        if (folderInfo != null) {
+            folderInfo.writeExternal(out);
+        }
     }
 }
