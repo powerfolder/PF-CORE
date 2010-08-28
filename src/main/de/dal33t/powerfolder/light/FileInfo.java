@@ -764,12 +764,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         lastModifiedDate = ExternalizableUtil.readDate(in);
         version = in.readInt();
         deleted = in.readBoolean();
-        if (in.readBoolean()) {
-            folderInfo = FolderInfo.readExt(in);
-            folderInfo = folderInfo != null ? folderInfo.intern() : null;
-        } else {
-            folderInfo = null;
-        }
+        folderInfo = ExternalizableUtil.readFolderInfo(in);
+        folderInfo = folderInfo != null ? folderInfo.intern() : null;
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -782,9 +778,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         ExternalizableUtil.writeDate(out, lastModifiedDate);
         out.writeInt(version);
         out.writeBoolean(deleted);
-        out.writeBoolean(folderInfo != null);
-        if (folderInfo != null) {
-            folderInfo.writeExternal(out);
-        }
+        ExternalizableUtil.writeFolderInfo(out, folderInfo);
     }
 }
