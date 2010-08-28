@@ -936,8 +936,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.createFileListMessages(folder,
-                true);
+            Message[] filelistMsgs = FileList.create(folder);
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -955,7 +954,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logFine("Actually joined: " + foldersJoined);
             }
             for (Folder folder : foldersRequested) {
-                sendMessagesAsynchron(FileList.createNullList(folder.getInfo()));
+                sendMessagesAsynchron(FileList.createEmpty(folder.getInfo()));
             }
         }
 
@@ -1519,16 +1518,16 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedListMessages.put(changes.folder, nExpected);
 
                 TransferManager tm = getController().getTransferManager();
-                if (changes.added != null) {
-                    for (int i = 0; i < changes.added.length; i++) {
-                        FileInfo file = changes.added[i];
+                if (changes.getFiles() != null) {
+                    for (int i = 0; i < changes.getFiles().length; i++) {
+                        FileInfo file = changes.getFiles()[i];
                         // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
                 }
-                if (changes.removed != null) {
-                    for (int i = 0; i < changes.removed.length; i++) {
-                        FileInfo file = changes.removed[i];
+                if (changes.getRemoved() != null) {
+                    for (int i = 0; i < changes.getRemoved().length; i++) {
+                        FileInfo file = changes.getRemoved()[i];
                         // TODO Optimize: Don't break if files are same.
                         tm.abortDownload(file, this);
                     }
