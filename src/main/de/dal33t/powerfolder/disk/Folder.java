@@ -2477,6 +2477,13 @@ public class Folder extends PFComponent {
 
         // #1022 - Mass delete detection. Switch to a safe profile if
         // a large percent of files would get deleted by another node.
+        if (changes.getFiles() != null
+            && syncProfile.isSyncDeletion()
+            && ConfigurationEntry.MASS_DELETE_PROTECTION
+                .getValueBoolean(getController()))
+        {
+            checkForMassDeletion(from, changes.getFiles());
+        }
         if (changes.getRemoved() != null
             && syncProfile.isSyncDeletion()
             && ConfigurationEntry.MASS_DELETE_PROTECTION
