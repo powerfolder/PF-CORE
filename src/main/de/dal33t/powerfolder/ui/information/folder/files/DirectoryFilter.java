@@ -231,8 +231,8 @@ public class DirectoryFilter extends FilterModel {
         boolean changed = folderChanged.getAndSet(false);
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
             .getDeletedCount().get(), result.getIncomingCount().get(), result
-            .getLocalCount().get(), filteredDirectoryModel,
-            flatFilteredDirectoryModel, changed);
+            .getLocalCount().get(), isFlatMode() ? flatFilteredDirectoryModel :
+                filteredDirectoryModel, changed, isFlatMode());
         for (DirectoryFilterListener listener : listeners) {
             listener.adviseOfChange(event);
         }
@@ -246,17 +246,15 @@ public class DirectoryFilter extends FilterModel {
 
     /**
      * Recursive filter call.
-     * 
+     *
      * @param dao
+     * @param directoryInfo
      * @param filteredDirectoryModel
      * @param flatFilteredDirectoryModel
      * @param keywords
-     * @param originalCount
-     * @param filteredCount
-     * @param deletedCount
-     * @param incomingCount
-     * @param localCount
+     * @param result
      */
+
     private void filterDirectory(FileInfoDAO dao, DirectoryInfo directoryInfo,
         FilteredDirectoryModel filteredDirectoryModel,
         FilteredDirectoryModel flatFilteredDirectoryModel, String[] keywords,
@@ -290,29 +288,17 @@ public class DirectoryFilter extends FilterModel {
         DirectoryInfo subDirectoryinfo = (DirectoryInfo) fileInfo;
         FilteredDirectoryModel sub = new FilteredDirectoryModel(folder,
             subDirectoryinfo);
-        // @todo replace with a faster
-        // dao.areThereAnyFilesInAnySubdirectories() that ends and
-        // returns true on the first file it finds ?
+        // @todo perhaps replace with a faster
+        // dao.areThereAnyFilesInAnySubdirectories() call, that ends and
+        // returns true on the first file it finds?
         FileInfoCriteria criteria = new FileInfoCriteria();
         criteria.addConnectedAndMyself(folder);
         criteria.setPath(subDirectoryinfo);
         criteria.setRecursive(false);
 
-        if (dao.findFiles(criteria).size() > 0) {
+        if (!dao.findFiles(criteria).isEmpty()) {
             boolean include = fileFilterMode == FILE_FILTER_MODE_DELETED_PREVIOUS
                 ^ !subDirectoryinfo.isDeleted();
-
-            boolean isDeleted = fileInfo.isDeleted();
-            FileInfo newestVersion = null;
-            if (fileInfo.getFolder(getController().getFolderRepository()) != null)
-            {
-                newestVersion = fileInfo
-                    .getNewestNotDeletedVersion(getController()
-                        .getFolderRepository());
-            }
-            boolean isIncoming = fileInfo.isDownloading(getController())
-                || fileInfo.isExpected(getController().getFolderRepository())
-                || newestVersion != null && newestVersion.isNewerThan(fileInfo);
 
             if (include) {
                 if (!filteredDirectoryModel.getSubdirectories().contains(sub)) {

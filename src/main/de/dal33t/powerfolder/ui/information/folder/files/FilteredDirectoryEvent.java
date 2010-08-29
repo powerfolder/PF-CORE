@@ -25,22 +25,21 @@ package de.dal33t.powerfolder.ui.information.folder.files;
 public class FilteredDirectoryEvent {
 
     private FilteredDirectoryModel model;
-    private FilteredDirectoryModel flatModel;
     private long deletedFiles;
     private long incomingFiles;
     private long localFiles;
     private boolean folderChanged;
+    private boolean flat;
 
     public FilteredDirectoryEvent(long deletedFiles, long incomingFiles,
-        long localFiles, FilteredDirectoryModel model,
-        FilteredDirectoryModel flatModel, boolean folderChanged)
-    {
+        long localFiles, FilteredDirectoryModel model, boolean folderChanged,
+        boolean flat) {
         this.deletedFiles = deletedFiles;
         this.incomingFiles = incomingFiles;
         this.localFiles = localFiles;
         this.model = model;
-        this.flatModel = flatModel;
         this.folderChanged = folderChanged;
+        this.flat = flat;
     }
 
     public long getDeletedFiles() {
@@ -60,15 +59,11 @@ public class FilteredDirectoryEvent {
     }
 
     public FilteredDirectoryModel getFlatModel() {
-        if (isFlat()) {
-            return flatModel;
-        } else {
-            return model;
-        }
+        return model;
     }
 
     public boolean isFlat() {
-        return flatModel != null;
+        return flat;
     }
 
     public boolean isFolderChanged() {
