@@ -134,11 +134,13 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             return null;
         }
 
-        List<FolderFilesChanged> messages = new ArrayList<FolderFilesChanged>();
+        List<FolderFilesChanged> messages = new ArrayList<FolderFilesChanged>(
+            files.size() / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
         int nDeltas = 0;
         int curMsgIndex = 0;
         int nDirs = 0;
-        FileInfo[] messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
+        FileInfo[] messageFiles = new FileInfo[Math.min(
+            Constants.FILE_LIST_MAX_FILES_PER_MESSAGE, files.size())];
         for (FileInfo fileInfo : files) {
             if (fileInfoFilter.isExcluded(fileInfo)) {
                 continue;
@@ -148,11 +150,27 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             }
             messageFiles[curMsgIndex] = fileInfo;
             curMsgIndex++;
-            if (curMsgIndex >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
+            if (curMsgIndex >= messageFiles.length) {
                 nDeltas++;
-                FolderFilesChanged msg = useExt ? new FolderFilesChangedExt(
-                    foInfo) : new FolderFilesChanged(foInfo);
-                msg.added = messageFiles;
+                FolderFilesChanged msg;
+
+                if (useExt) {
+                    msg = new FolderFilesChangedExt(foInfo);
+                    msg.added = messageFiles;
+                } else {
+                    // Backward compatibility
+                    msg = new FolderFilesChanged(foInfo);
+                    if (messageFiles.length > 0 && messageFiles[0].isDeleted())
+                    {
+                        msg.removed = messageFiles;
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "Legacy/Removed: " + msg);
+                        }
+                    } else {
+                        msg.added = messageFiles;
+                    }
+                }
+
                 messages.add(msg);
                 messageFiles = new FileInfo[Constants.FILE_LIST_MAX_FILES_PER_MESSAGE];
                 curMsgIndex = 0;
@@ -167,10 +185,23 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             FileInfo[] lastFiles = new FileInfo[curMsgIndex];
             System.arraycopy(messageFiles, 0, lastFiles, 0, lastFiles.length);
             nDeltas++;
-            FolderFilesChanged msg = useExt
-                ? new FolderFilesChangedExt(foInfo)
-                : new FolderFilesChanged(foInfo);
-            msg.added = lastFiles;
+
+            FolderFilesChanged msg;
+            if (useExt) {
+                msg = new FolderFilesChangedExt(foInfo);
+                msg.added = lastFiles;
+            } else {
+                // Backward compatibility
+                msg = new FolderFilesChanged(foInfo);
+                if (messageFiles.length > 0 && messageFiles[0].isDeleted()) {
+                    msg.removed = lastFiles;
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "Legacy/Removed: " + msg);
+                    }
+                } else {
+                    msg.added = lastFiles;
+                }
+            }
             messages.add(msg);
         }
 
@@ -194,6 +225,11 @@ public class FolderFilesChanged extends FolderRelatedMessage {
     }
 
     public String toString() {
+        if (removed != null) {
+            return "FolderFilesChanged '" + folder.name + "': "
+                + (removed != null ? removed.length : 0)
+                + " (removed/legacy) files";
+        }
         return "FolderFilesChanged '" + folder.name + "': "
             + (added != null ? added.length : 0) + " files";
     }

@@ -169,7 +169,8 @@ public class FileList extends FolderRelatedMessage {
             }
         }
 
-        List<Message> messages = new ArrayList<Message>();
+        List<Message> messages = new ArrayList<Message>(files.size()
+            / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
         int nDeltas = 0;
         boolean firstMessage = true;
         int curMsgIndex = 0;
