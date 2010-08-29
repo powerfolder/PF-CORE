@@ -750,9 +750,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // validate();
     }
 
+    private static final long extVersionUID = 100L;
+
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            log.severe("Unable to read. extVersionUID(steam): " + extUID
+                + ", expected: " + extVersionUID);
+        }
         fileName = in.readUTF();
         size = in.readLong();
         if (in.readBoolean()) {
@@ -769,6 +776,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
         out.writeUTF(fileName);
         out.writeLong(size);
         out.writeBoolean(modifiedBy != null);
