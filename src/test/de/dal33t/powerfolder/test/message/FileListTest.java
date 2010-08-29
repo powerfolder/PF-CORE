@@ -182,7 +182,7 @@ public class FileListTest extends TestCase {
         for (int i = 0; i < files.size(); i++) {
             t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
             FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
-            assertEquals(files.get(i), msg.getRemoved()[i - t
+            assertEquals(files.get(i), msg.getFiles()[i - t
                 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
         }
     }
