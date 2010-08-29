@@ -387,6 +387,19 @@ public class Folder extends PFComponent {
             }
         }
 
+        // Remove desktop.ini. Was accidentally created in 4.3.0 release.
+        if (currentInfo.isMetaFolder()) {
+            File desktopIni = new File(getLocalBase(),
+                FileUtils.DESKTOP_INI_FILENAME);
+            if (currentInfo.getName().contains("Musik")) {
+                System.out.println("Folder.Folder()");
+            }
+            if (desktopIni.exists() && desktopIni.delete()) {
+                scanChangedFile(FileInfoFactory
+                    .lookupInstance(this, desktopIni));
+            }
+        }
+
         watcher = new FolderWatcher(this);
     }
 
