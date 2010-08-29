@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.test.message;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -130,10 +131,16 @@ public class FileListTest extends TestCase {
         testDeltaSplittingAdded((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
         testDeltaSplittingAdded(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
         testDeltaSplittingAdded(1);
+        for (int i = 0; i < 10; i++) {
+            testDeltaSplittingAdded((int) (Math.random() * 1000 * i));
+        }
 
         testDeltaSplittingRemoved((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
         testDeltaSplittingRemoved(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
         testDeltaSplittingRemoved(1);
+        for (int i = 0; i < 10; i++) {
+            testDeltaSplittingRemoved((int) (Math.random() * 1000 * i));
+        }
     }
 
     /**
@@ -148,6 +155,11 @@ public class FileListTest extends TestCase {
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
             files, new DiskItemFilter(), true);
+
+        if (nFiles == 0) {
+            assertNull(msgs);
+            return;
+        }
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -166,12 +178,16 @@ public class FileListTest extends TestCase {
     private void testDeltaSplittingRemoved(int nFiles) {
         List<FileInfo> files = new ArrayList<FileInfo>();
         for (int i = 0; i < nFiles; i++) {
-            files.add(createRandomFileInfo(i));
+            files.add(createDeletedFileInfo(i));
         }
 
         // Now split. Empty blacklist
         Message[] msgs = FolderFilesChanged.create(createRandomFolderInfo(),
-            files, new DiskItemFilter(), true);
+            files, new DiskItemFilter(), false);
+        if (nFiles == 0) {
+            assertNull(msgs);
+            return;
+        }
 
         // Test
         for (int i = 0; i < msgs.length; i++) {
@@ -182,7 +198,7 @@ public class FileListTest extends TestCase {
         for (int i = 0; i < files.size(); i++) {
             t = i / Constants.FILE_LIST_MAX_FILES_PER_MESSAGE;
             FolderFilesChanged msg = (FolderFilesChanged) msgs[t];
-            assertEquals(files.get(i), msg.getFiles()[i - t
+            assertEquals(files.get(i), msg.getRemoved()[i - t
                 * Constants.FILE_LIST_MAX_FILES_PER_MESSAGE]);
         }
     }
@@ -192,6 +208,15 @@ public class FileListTest extends TestCase {
         boolean dir = Math.random() > 0.70f;
         FileInfo fInfo = FileInfoFactory.lookupInstance(foInfo, "F # " + n
             + " / " + UUID.randomUUID().toString(), dir);
+        return fInfo;
+    }
+
+    private static FileInfo createDeletedFileInfo(int n) {
+        FolderInfo foInfo = createRandomFolderInfo();
+        boolean dir = Math.random() > 0.70f;
+        FileInfo fInfo = FileInfoFactory.unmarshallDeletedFile(foInfo, "F # "
+            + n + " / " + UUID.randomUUID().toString(), null, new Date(), n,
+            dir);
         return fInfo;
     }
 
