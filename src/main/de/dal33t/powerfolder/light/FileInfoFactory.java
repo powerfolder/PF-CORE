@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -46,7 +45,8 @@ public final class FileInfoFactory {
     public static FileInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
-        FileInfo fileInfo = new FileInfo();
+        int type = in.readInt();
+        FileInfo fileInfo = type == 0 ? new FileInfo() : new DirectoryInfo();
         fileInfo.readExternal(in);
         return fileInfo;
     }

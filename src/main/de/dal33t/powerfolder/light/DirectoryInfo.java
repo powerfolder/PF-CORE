@@ -35,6 +35,10 @@ import de.dal33t.powerfolder.util.Util;
 public class DirectoryInfo extends FileInfo {
     private static final long serialVersionUID = 100L;
 
+    DirectoryInfo() {
+        super();
+    }
+
     DirectoryInfo(String fileName, MemberInfo modifiedBy,
         Date lastModifiedDate, int version, boolean deleted,
         FolderInfo folderInfo)

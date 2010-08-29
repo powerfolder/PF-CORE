@@ -776,6 +776,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(isFile() ? 0 : 1);
         out.writeLong(extVersionUID);
         out.writeUTF(fileName);
         out.writeLong(size);
