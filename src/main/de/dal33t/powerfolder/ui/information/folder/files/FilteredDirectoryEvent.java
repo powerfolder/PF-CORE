@@ -58,10 +58,6 @@ public class FilteredDirectoryEvent {
         return model;
     }
 
-    public FilteredDirectoryModel getFlatModel() {
-        return model;
-    }
-
     public boolean isFlat() {
         return flat;
     }
