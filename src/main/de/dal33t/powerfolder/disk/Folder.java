@@ -2503,13 +2503,14 @@ public class Folder extends PFComponent {
         }
 
         // Avoid hammering of sync remote deletion
-        boolean singleFileAddMsg = changes.getFiles() != null
-            && changes.getFiles().length == 1 && changes.getRemoved() == null;
+        boolean singleExistingFileMsg = changes.getFiles() != null
+            && changes.getFiles().length == 1
+            && !changes.getFiles()[0].isDeleted();
 
         if (syncProfile.isAutodownload()) {
             // Check if we need to trigger the filerequestor
             boolean triggerFileRequestor = from.isCompletelyConnected();
-            if (triggerFileRequestor && singleFileAddMsg) {
+            if (triggerFileRequestor && singleExistingFileMsg) {
                 // This was caused by a completed download
                 // TODO Maybe check this also on bigger lists!
                 FileInfo localfileInfo = getFile(changes.getFiles()[0]);
@@ -2538,7 +2539,7 @@ public class Folder extends PFComponent {
         }
 
         // Handle remote deleted files
-        if (!singleFileAddMsg && syncProfile.isSyncDeletion()
+        if (!singleExistingFileMsg && syncProfile.isSyncDeletion()
             && from.isCompletelyConnected())
         {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
