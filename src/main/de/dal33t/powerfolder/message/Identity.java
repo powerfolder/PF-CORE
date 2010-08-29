@@ -95,7 +95,7 @@ public class Identity extends Message {
      * <p>
      * 105: Added: {@link FileListExt}
      */
-    private int externalizableVersion = 105;
+    private int externalizableVersion = 0;
 
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();
