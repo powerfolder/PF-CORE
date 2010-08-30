@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util.db;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,16 +32,11 @@ import org.hibernate.usertype.UserType;
 
 import de.dal33t.powerfolder.disk.dao.FolderInfoDAO;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.AdminPermission;
-import de.dal33t.powerfolder.security.ChangePreferencesPermission;
-import de.dal33t.powerfolder.security.ChangeTransferModePermission;
 import de.dal33t.powerfolder.security.FolderAdminPermission;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -50,6 +46,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  */
 public class PermissionUserType extends Loggable implements UserType {
 
+    private static final String PERMISSION_PACKAGE_PREFIX = "de.dal33t.powerfolder.security.";
     private static final int[] sqlTypes = {Types.VARCHAR};
     private static FolderInfoDAO FOLDER_INFO_DAO = null;
 
@@ -114,6 +111,7 @@ public class PermissionUserType extends Loggable implements UserType {
                 logSevere("FolderInfo with ID " + fiId + " not found!");
                 fdInfo = new FolderInfo(null, fiId);
             }
+            fdInfo = fdInfo.intern();
 
             // choose the right permission implementation
             if (clazzName.equals(FolderAdminPermission.class.getSimpleName())) {
@@ -135,28 +133,22 @@ public class PermissionUserType extends Loggable implements UserType {
         // SingletonPermissions (e. g. ChangePreferencesPermission)
         else {
             // get class name
-            String clazzName = permissionID;
+            String clazzName = PERMISSION_PACKAGE_PREFIX + permissionID;
 
-            // choose the right permission implementation
-            if (clazzName.equals(ChangePreferencesPermission.class
-                .getSimpleName()))
-            {
-                p = ChangePreferencesPermission.INSTANCE;
-            } else if (clazzName.equals(ChangeTransferModePermission.class
-                .getSimpleName()))
-            {
-                p = ChangeTransferModePermission.INSTANCE;
-            } else if (clazzName.equals(FolderCreatePermission.class
-                .getSimpleName()))
-            {
-                p = FolderCreatePermission.INSTANCE;
-            } else if (clazzName.equals(FolderRemovePermission.class
-                .getSimpleName()))
-            {
-                p = FolderRemovePermission.INSTANCE;
-            } else if (clazzName.equals(AdminPermission.class.getSimpleName()))
-            {
-                p = AdminPermission.INSTANCE;
+            // choose/create the right permission implementation
+            try {
+                Class<?> permClass = Class.forName(clazzName);
+                Object pObj;
+                try {
+                    Field iField = permClass.getField("INSTANCE");
+                    pObj = iField.get(null);
+                } catch (Exception e) {
+                    // Try to construct
+                    pObj = permClass.newInstance();
+                }
+                p = (Permission) pObj;
+            } catch (Exception e) {
+                logSevere("Unable to resolve permission: " + permissionID, e);
             }
         }
 
