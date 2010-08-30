@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.light;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
@@ -752,13 +753,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     private static final long extVersionUID = 100L;
 
-    public void readExternal(ObjectInput in) throws IOException,
+    void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
         if (extUID != extVersionUID) {
-            log.severe("Unable to read. extVersionUID(steam): " + extUID
-                + ", expected: " + extVersionUID);
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
         }
         fileName = in.readUTF();
         size = in.readLong();

@@ -20,12 +20,11 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -34,7 +33,6 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Immutable;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -66,7 +64,6 @@ public class FolderInfo implements Serializable, Cloneable {
      */
     private transient int hash;
 
-    @SuppressWarnings("unused")
     private FolderInfo() {
         // NOP - for Hibernate
     }
@@ -174,6 +171,8 @@ public class FolderInfo implements Serializable, Cloneable {
 
     // Serialization optimization *********************************************
 
+    private static final long extVersionUID = 100L;
+
     public static FolderInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
@@ -185,11 +184,18 @@ public class FolderInfo implements Serializable, Cloneable {
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
+        }
         id = in.readUTF();
         name = in.readUTF();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
         out.writeUTF(id);
         out.writeUTF(name);
     }
