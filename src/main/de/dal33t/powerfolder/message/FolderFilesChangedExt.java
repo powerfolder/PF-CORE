@@ -21,8 +21,11 @@ package de.dal33t.powerfolder.message;
 
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -39,6 +42,10 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
 public class FolderFilesChangedExt extends FolderFilesChanged implements
     Externalizable
 {
+    private static final long extVersionUID = 100L;
+    private static final Logger LOG = Logger
+        .getLogger(FolderFilesChangedExt.class.getName());
+
     public FolderFilesChangedExt() {
         // Serialization
         super();
@@ -59,6 +66,12 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
+        }
         folder = ExternalizableUtil.readFolderInfo(in);
         if (in.readBoolean()) {
             int len = in.readInt();
@@ -67,16 +80,11 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
                 added[i] = FileInfoFactory.readExt(in);
             }
         }
-        if (in.readBoolean()) {
-            int len = in.readInt();
-            removed = new FileInfo[len];
-            for (int i = 0; i < removed.length; i++) {
-                removed[i] = FileInfoFactory.readExt(in);
-            }
-        }
     }
 
+    @SuppressWarnings("deprecation")
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
         ExternalizableUtil.writeFolderInfo(out, folder);
         out.writeBoolean(added != null);
         if (added != null) {
@@ -85,12 +93,12 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
                 added[i].writeExternal(out);
             }
         }
-        out.writeBoolean(removed != null);
-        if (removed != null) {
-            out.writeInt(removed.length);
-            for (int i = 0; i < removed.length; i++) {
-                removed[i].writeExternal(out);
-            }
+        if (removed != null && removed.length > 0
+            && LOG.isLoggable(Level.SEVERE))
+        {
+            LOG.severe("Field removed-files is not empty! "
+                + "This should not happen");
         }
+
     }
 }

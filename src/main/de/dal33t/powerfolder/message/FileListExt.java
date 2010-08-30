@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
@@ -33,6 +34,7 @@ import de.dal33t.powerfolder.util.ExternalizableUtil;
  * #2072: {@link Externalizable} version of {@link FileList}
  */
 public class FileListExt extends FileList implements Externalizable {
+    private static final long extVersionUID = 100L;
 
     public FileListExt() {
         super();
@@ -49,6 +51,12 @@ public class FileListExt extends FileList implements Externalizable {
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
+        }
         folder = ExternalizableUtil.readFolderInfo(in);
         nFollowingDeltas = in.readInt();
         if (in.readBoolean()) {
@@ -62,6 +70,7 @@ public class FileListExt extends FileList implements Externalizable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
         ExternalizableUtil.writeFolderInfo(out, folder);
         out.writeInt(nFollowingDeltas);
         out.writeBoolean(files != null);
