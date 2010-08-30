@@ -328,7 +328,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Give them time to copy
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtLisa().getKnownItemCount() >= 3
+                return getFolderAtLisa().getKnownItemCount() >= 5
                     && getContollerBart().getTransferManager()
                         .getCompletedUploadsCollection().size() >= 3;
             }
