@@ -1603,24 +1603,22 @@ public class Folder extends PFComponent {
      * Creates a list of fileinfos of deleted files that are old than the
      * configured max age. These files do not get written to the DB. So files
      * deleted long ago do not stay in DB for ever.
+     * 
+     * @param removeBefore
      */
-    private void maintainFolderDB() {
-        long removeBeforeDate = System.currentTimeMillis()
-            - 1000L
-            * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
-                .getValueInt(getController());
+    public void maintainFolderDB(long removeBefore) {
+        Date removeBeforeDate = new Date(removeBefore);
         int nFilesBefore = getKnownItemCount();
         if (isFiner()) {
             logFiner("Maintaining folder db, known files: " + nFilesBefore
-                + ". Expiring deleted files older than "
-                + new Date(removeBeforeDate));
+                + ". Expiring deleted files older than " + removeBeforeDate);
         }
         int expired = 0;
         for (FileInfo file : dao.findAllFiles(null)) {
             if (!file.isDeleted()) {
                 continue;
             }
-            if (file.getModifiedDate().getTime() < removeBeforeDate) {
+            if (file.getModifiedDate().before(removeBeforeDate)) {
                 // FIXME: Check if file is in ARCHIVE?
                 expired++;
                 // Remove
@@ -1633,16 +1631,15 @@ public class Folder extends PFComponent {
         }
         if (expired > 0) {
             setDBDirty();
-
             logInfo("Maintained folder db, " + nFilesBefore + " known files, "
                 + expired
                 + " expired FileInfos. Expiring deleted files older than "
-                + new Date(removeBeforeDate));
+                + removeBeforeDate);
         } else if (isFiner()) {
             logFiner("Maintained folder db, " + nFilesBefore + " known files, "
                 + expired
                 + " expired FileInfos. Expiring deleted files older than "
-                + new Date(removeBeforeDate));
+                + removeBeforeDate);
         }
         lastDBMaintenance = new Date();
     }
@@ -1854,7 +1851,11 @@ public class Folder extends PFComponent {
             scanLocalFiles();
         }
         if (maintainFolderDBrequired()) {
-            maintainFolderDB();
+            long removeBefore = System.currentTimeMillis()
+                - 1000L
+                * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                    .getValueInt(getController());
+            maintainFolderDB(removeBefore);
         }
     }
 
