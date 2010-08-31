@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -69,7 +70,6 @@ import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.Icons;
@@ -134,6 +134,7 @@ public class SettingsTab extends PFUIComponent {
     private final JButton localFolderButton;
     private ActionLabel confOSActionLabel;
     private BaseAction confOSAction;
+    private Action maintainDBAction;
     private ActionLabel previewFolderActionLabel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
@@ -163,6 +164,7 @@ public class SettingsTab extends PFUIComponent {
         patternsListModel = new DefaultListModel();
         removeFolderAction = new RemoveFolderAction(getController());
         removeFolderAction.allowWith(FolderRemovePermission.INSTANCE);
+        maintainDBAction = new MaintainFolderAction(getController());
         serverClient.addListener(new MyServerClientListener());
         membershipListner = new MyFolderMembershipListener();
         scriptModel = new ValueHolder(null, false);
@@ -247,7 +249,7 @@ public class SettingsTab extends PFUIComponent {
         // label folder butn padding
         FormLayout layout = new FormLayout(
             "3dlu, right:pref, 3dlu, 140dlu, 3dlu, pref, pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -295,6 +297,11 @@ public class SettingsTab extends PFUIComponent {
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
+        if (getController().isVerbose()) {
+            row += 2;
+            builder.add(createMaintainPanel(), cc.xy(4, row));
+        }
+
         addSelectionListener();
 
         uiComponent = builder.getPanel();
@@ -318,6 +325,17 @@ public class SettingsTab extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         ActionLabel label = new ActionLabel(getController(), removeFolderAction);
+        builder.add(label.getUIComponent(), cc.xy(1, 1));
+        label.convertToBigLabel();
+        return builder.getPanel();
+    }
+
+    private JPanel createMaintainPanel() {
+        FormLayout layout = new FormLayout("pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        ActionLabel label = new ActionLabel(getController(), maintainDBAction);
         builder.add(label.getUIComponent(), cc.xy(1, 1));
         label.convertToBigLabel();
         return builder.getPanel();
@@ -1050,6 +1068,19 @@ public class SettingsTab extends PFUIComponent {
         public void actionPerformed(ActionEvent e) {
             // FolderOnlineStoragePanel knows if folder already joined :-)
             PFWizard.openMirrorFolderWizard(getController(), folder);
+        }
+    }
+
+    private class MaintainFolderAction extends BaseAction {
+
+        private MaintainFolderAction(Controller controller) {
+            super("action_maintain_folder_db", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            folder.maintainFolderDB(System.currentTimeMillis());
+            getController().getUIController().openFilesInformation(
+                folder.getInfo());
         }
     }
 
