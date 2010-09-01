@@ -133,9 +133,9 @@ public class Constants {
 
     /**
      * The time in seconds between broadcast of thoses nodes, that went online.
-     * Currently: 30 seconds
+     * Currently: every minute.
      */
-    public static final long NODES_THAN_WENT_ONLINE_BROADCAST_TIME = 30;
+    public static final long NODES_THAN_WENT_ONLINE_BROADCAST_TIME = 60;
 
     /**
      * The maximum number of nodes i a message allowed.
