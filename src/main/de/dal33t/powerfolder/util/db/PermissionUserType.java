@@ -89,7 +89,9 @@ public class PermissionUserType extends Loggable implements UserType {
         String permissionID = rs.getString(names[0]);
 
         if (StringUtils.isBlank(permissionID)) {
-            logFine("Permission ID is empty");
+            if (isFiner()) {
+                logFiner("Permission ID is empty");
+            }
             return null;
             // throw new IllegalStateException("Permission ID is empty");
         }
