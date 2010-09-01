@@ -94,8 +94,10 @@ public class Identity extends Message {
      * 104: Added: {@link FileChunkExt}
      * <p>
      * 105: Added: {@link FileListExt}
+     * <p>
+     * 106: Added: {@link FolderListExt}
      */
-    private int externalizableVersion = 105;
+    private int externalizableVersion = 106;
 
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();
