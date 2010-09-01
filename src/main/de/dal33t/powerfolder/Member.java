@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.message.FileHistoryRequest;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.message.FolderList;
+import de.dal33t.powerfolder.message.FolderListExt;
 import de.dal33t.powerfolder.message.FolderRelatedMessage;
 import de.dal33t.powerfolder.message.HandshakeCompleted;
 import de.dal33t.powerfolder.message.Identity;
@@ -842,9 +843,16 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             // Send node informations now
             // Send joined folders to synchronize
-            FolderList folderList = new FolderList(getController()
-                .getFolderRepository().getJoinedFolderInfos(), peer
-                .getRemoteMagicId());
+            FolderList folderList;
+            if (getExternalizableVersion() >= 106) {
+                folderList = new FolderListExt(getController()
+                    .getFolderRepository().getJoinedFolderInfos(), peer
+                    .getRemoteMagicId());
+            } else {
+                folderList = new FolderList(getController()
+                    .getFolderRepository().getJoinedFolderInfos(), peer
+                    .getRemoteMagicId());
+            }
             peer.sendMessagesAsynchron(folderList);
         }
 
@@ -1935,24 +1943,21 @@ public class Member extends PFComponent implements Comparable<Member> {
                 && folderList.secretFolders.length > 0)
             {
                 // Step 1: Calculate secure folder ids for local secret folders
-                Map<FolderInfo, Folder> localSecretFolders = new HashMap<FolderInfo, Folder>();
+                Map<String, Folder> localSecretFolders = new HashMap<String, Folder>();
                 for (Folder folder : localFolders) {
                     // Calculate id with my magic id
                     String secureId = folder.getInfo().calculateSecureId(
                         myMagicId);
-                    FolderInfo secretFolderCanidate = new FolderInfo(folder
-                        .getInfo().getName(), secureId);
                     // Add to local secret folder list
-                    localSecretFolders.put(secretFolderCanidate, folder);
+                    localSecretFolders.put(secureId, folder);
                 }
 
                 // Step 2: Check if remote side has joined one of our secret
                 // folders
                 for (int i = 0; i < folderList.secretFolders.length; i++) {
                     FolderInfo secretFolder = folderList.secretFolders[i];
-                    if (localSecretFolders.containsKey(secretFolder)) {
-
-                        Folder folder = localSecretFolders.get(secretFolder);
+                    if (localSecretFolders.containsKey(secretFolder.id)) {
+                        Folder folder = localSecretFolders.get(secretFolder.id);
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             if (isFiner()) {
