@@ -113,8 +113,6 @@ public class Icons {
     public static final String ARROW_RIGHT = "arrow_right.icon";
     public static final String EXPAND = "expand.icon";
     public static final String COLLAPSE = "collapse.icon";
-
-    public static final String PREFERENCES_PICTO = "preferences_picto.icon";
     public static final String QUESTION = "question.icon";
 
     public static final String SORT_UP = "sort_up.icon";
