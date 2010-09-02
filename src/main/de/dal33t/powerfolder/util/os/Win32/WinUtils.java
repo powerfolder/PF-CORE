@@ -203,6 +203,22 @@ public class WinUtils extends Loggable {
     }
 
     /**
+     * It returns the default location when windows installs programs.
+     * 
+     * @return the path
+     */
+    public static File getProgramsPath() {
+        String envEntry = OSUtil.is64BitPlatform()
+            ? "ProgramFiles(x86)"
+            : "PROGRAMFILES";
+        String programFiles = System.getenv(envEntry);
+        if (StringUtils.isBlank(programFiles)) {
+            return null;
+        }
+        return new File(programFiles);
+    }
+
+    /**
      * It returns the default location where the PowerFolder installer installs
      * the program.
      * 
