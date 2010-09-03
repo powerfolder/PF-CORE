@@ -1766,13 +1766,15 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         // Store on disk
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-        getController().getConfig()
-            .put(syncProfKey, syncProfile.getFieldList());
-        getController().saveConfig();
+        if (!currentInfo.isMetaFolder()) {
+            String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
+                .getBytes())));
+            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+                + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
+            getController().getConfig().put(syncProfKey,
+                syncProfile.getFieldList());
+            getController().saveConfig();
+        }
 
         if (!syncProfile.isAutodownload()) {
             // Possibly changed from autodownload to manual, we need to abort
