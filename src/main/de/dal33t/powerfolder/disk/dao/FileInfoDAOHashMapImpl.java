@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -240,25 +241,35 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
             Domain domain = getDomain(domainStr);
-            for (DirectoryInfo dInfo : domain.directories.values()) {
-                // if (filter.isExcluded(dInfo)) {
-                // continue;
-                // }
-                if (isInSubDir(dInfo, path, recursive)
-                    && !Util.equalsRelativeName(dInfo.getRelativeName(), path))
-                {
-                    if (!items.contains(dInfo)) {
-                        items.add(dInfo);
+            if (criteria.getType() == Type.DIRECTORIES_ONLY
+                || criteria.getType() == Type.FILES_AND_DIRECTORIES)
+            {
+                for (DirectoryInfo dInfo : domain.directories.values()) {
+                    // if (filter.isExcluded(dInfo)) {
+                    // continue;
+                    // }
+                    if (isInSubDir(dInfo, path, recursive)
+                        && !Util.equalsRelativeName(dInfo.getRelativeName(),
+                            path))
+                    {
+                        if (!items.contains(dInfo)) {
+                            items.add(dInfo);
+                        }
                     }
                 }
             }
-            for (FileInfo fInfo : domain.files.values()) {
-                // if (filter.isExcluded(fInfo)) {
-                // continue;
-                // }
-                if (isInSubDir(fInfo, path, recursive)) {
-                    if (!items.contains(fInfo)) {
-                        items.add(fInfo);
+
+            if (criteria.getType() == Type.FILES_ONLY
+                || criteria.getType() == Type.FILES_AND_DIRECTORIES)
+            {
+                for (FileInfo fInfo : domain.files.values()) {
+                    // if (filter.isExcluded(fInfo)) {
+                    // continue;
+                    // }
+                    if (isInSubDir(fInfo, path, recursive)) {
+                        if (!items.contains(fInfo)) {
+                            items.add(fInfo);
+                        }
                     }
                 }
             }

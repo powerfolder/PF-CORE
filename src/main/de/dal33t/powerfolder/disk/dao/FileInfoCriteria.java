@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
@@ -37,6 +38,7 @@ public class FileInfoCriteria {
     private List<String> domains = new LinkedList<String>();
     private String path;
     private boolean recursive;
+    private Type type = Type.FILES_AND_DIRECTORIES;
 
     /**
      * @return the domain(s) to search in.
@@ -101,6 +103,19 @@ public class FileInfoCriteria {
         setPath(dirInfo != null ? dirInfo.getRelativeName() : null);
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * @param type
+     *            the type of objects in the result
+     */
+    public void setType(Type type) {
+        Reject.ifNull(type, "Type is null");
+        this.type = type;
+    }
+
     /**
      * @return true to recursively include all files from subdirectory too.
      */
@@ -114,5 +129,9 @@ public class FileInfoCriteria {
      */
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
+    }
+
+    enum Type {
+        FILES_AND_DIRECTORIES, FILES_ONLY, DIRECTORIES_ONLY
     }
 }
