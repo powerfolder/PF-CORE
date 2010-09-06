@@ -63,6 +63,16 @@ public final class FileInfoFactory {
     /**
      * @param folder
      * @param name
+     * @return a DirectoryInfo object use to lookup.
+     */
+    public static DirectoryInfo lookupDirectory(FolderInfo folder, String name)
+    {
+        return (DirectoryInfo) lookupInstance(folder, name, true);
+    }
+
+    /**
+     * @param folder
+     * @param name
      * @param dir
      * @return a FileInfo or DirectoryInfo object use to lookup other File or
      *         DirectoryInfo instances.
