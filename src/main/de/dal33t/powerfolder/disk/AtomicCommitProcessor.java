@@ -93,6 +93,10 @@ public class AtomicCommitProcessor extends Loggable {
         private boolean hasIncoming;
 
         public boolean visit(FileInfo fileInfo) {
+            // This should never happen! But cover it.
+            if (fileInfo.getRelativeName().contains(TEMP_TARGET_DIR)) {
+                return true;
+            }
             hasIncoming = true;
             return false;
         }

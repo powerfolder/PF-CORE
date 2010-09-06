@@ -423,7 +423,10 @@ public class FolderScanner extends PFComponent {
                     }
                 }
             } else if (file.isDirectory()) {
-                if (currentScanningFolder.isSystemSubDir(file)) {
+                if (!FileUtils.isScannable(file, currentScanningFolder
+                    .getInfo())
+                    || currentScanningFolder.isSystemSubDir(file))
+                {
                     continue;
                 }
                 while (directoryCrawlersPool.isEmpty()) {
@@ -775,10 +778,14 @@ public class FolderScanner extends PFComponent {
                         }
                     }
                 } else if (subFile.isDirectory()) {
-                    if (!scanDir(subFile)) {
-                        // hardware failure
-                        failure = true;
-                        return false;
+                    if (FileUtils.isScannable(subFile, currentScanningFolder
+                        .getInfo()))
+                    {
+                        if (!scanDir(subFile)) {
+                            // hardware failure
+                            failure = true;
+                            return false;
+                        }
                     }
                 } else {
                     boolean deviceDisconnected = currentScanningFolder
