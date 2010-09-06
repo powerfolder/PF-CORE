@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -50,27 +49,30 @@ public class ProUtil {
             .getValue(controller);
         if (simpleURL == null) {
             return null;
-        }
-        ServerClient client = controller.getOSClient();
-        if (StringUtils.isBlank(client.getUsername())
-            && client.getPassword() != null)
-        {
+        } else {
             return simpleURL;
         }
+        // ServerClient client = controller.getOSClient();
+        // if (StringUtils.isBlank(client.getUsername())
+        // && client.getPassword() != null)
+        // {
+        // return simpleURL;
+        // }
 
-        String loginURL = client.getLoginURLWithCredentials();
-        // HACK(tm) Redirect to https://access.powerfolder.com/upgrade.html does not work!
-        return loginURL;
+        // String loginURL = client.getLoginURLWithCredentials();
+        // HACK(tm) Redirect to https://access.powerfolder.com/upgrade.html does
+        // not work!
+        // return loginURL;
 
-//        String url = simpleURL;
-//        url = loginURL;
-//        if (loginURL.contains("?")) {
-//            url += '&';
-//        } else {
-//            url += '?';
-//        }
-//        url += "originalURI=" + Util.endcodeForURL(simpleURL);
-//        return url;
+        // String url = simpleURL;
+        // url = loginURL;
+        // if (loginURL.contains("?")) {
+        // url += '&';
+        // } else {
+        // url += '?';
+        // }
+        // url += "originalURI=" + Util.endcodeForURL(simpleURL);
+        // return url;
     }
 
     /**
