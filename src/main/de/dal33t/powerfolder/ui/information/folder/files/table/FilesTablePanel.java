@@ -64,11 +64,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
-import de.dal33t.powerfolder.ui.information.folder.files.FileDetailsPanel;
-import de.dal33t.powerfolder.ui.information.folder.files.FilesTab;
-import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
-import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
+import de.dal33t.powerfolder.ui.information.folder.files.*;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -228,8 +224,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         // Try to find the correct FilteredDirectoryModel for the selected
         // directory.
         FilteredDirectoryModel filteredDirectoryModel = event.getModel();
-        tableModel.setFilteredDirectoryModel(filteredDirectoryModel, event
-            .isFlat());
+        tableModel.setFilteredDirectoryModel(filteredDirectoryModel);
     }
 
     /**
@@ -247,15 +242,10 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 Object userObject = node.getUserObject();
                 if (userObject instanceof DirectoryTreeNodeUserObject) {
                     DirectoryTreeNodeUserObject dtnuo = (DirectoryTreeNodeUserObject) userObject;
-                    tableModel.setSelectedDirectoryInfo(dtnuo
-                        .getDirectoryInfo());
-                    return;
+                    parent.selectionChanged(dtnuo.getRelativeName());
                 }
             }
         }
-
-        // Failed to set file - clear selection.
-        tableModel.setSelectedDirectoryInfo(null);
     }
 
     public void setFolder(Folder folder) {
@@ -365,10 +355,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         DiskItem diskItem = tableModel.getDiskItemsAtRows(new int[]{index})[0];
         if (diskItem != null) {
             if (diskItem instanceof DirectoryInfo) {
-                DirectoryInfo directory = (DirectoryInfo) diskItem;
-                // Double click on a directory makes that directory the
-                // selected one in the tree.
-                parent.setSelection(directory);
+                DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
+                // Double click on a directory filters on it.
+                parent.selectionChanged(directoryInfo.getRelativeName());
             } else if (diskItem instanceof FileInfo) {
                 // Default to download if possible, else try open.
                 if (downloadFileAction.isEnabled()) {

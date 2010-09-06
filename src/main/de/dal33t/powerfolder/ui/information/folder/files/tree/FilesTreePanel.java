@@ -24,7 +24,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryEvent;
@@ -108,15 +107,17 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
             }
             tree.getSelectionModel().setSelectionPath(new TreePath(
                     directoryTreeModel.getRoot()));
+        } else {
+            setSelection(event.getModel().getDirectoryRelativeName());
         }
     }
 
     /**
      * Set the selected tree node to this directory.
      *
-     * @param targetDirectoryInfo
+     * @param relativeName
      */
-    public void setSelection(DirectoryInfo targetDirectoryInfo) {
+    private void setSelection(String relativeName) {
         DefaultMutableTreeNode root =
                 (DefaultMutableTreeNode) directoryTreeModel.getRoot();
         int count = root.getChildCount();
@@ -125,19 +126,19 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                     (DefaultMutableTreeNode) root.getChildAt(i);
             DirectoryTreeNodeUserObject userObject =
                     (DirectoryTreeNodeUserObject) node.getUserObject();
-            drill(targetDirectoryInfo, node, userObject, 0);
+            drill(relativeName, node, userObject, 0);
         }
     }
 
     /**
      * Drill down the directory stucture and try to find the file.
      *
-     * @param targetDirectoryInfo
+     * @param relativeName
      *              name of directory relative to root, like bob/test/sub
      * @param node
      * @param userObject
      */
-    private void drill(DirectoryInfo targetDirectoryInfo, DefaultMutableTreeNode node,
+    private void drill(String relativeName, DefaultMutableTreeNode node,
                        DirectoryTreeNodeUserObject userObject, int level) {
 
         if (level > 100) {
@@ -145,7 +146,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
             return;
         }
 
-        if (userObject.getDirectoryInfo().equals(targetDirectoryInfo)) {
+        if (userObject.getRelativeName().equals(relativeName)) {
             tree.setSelectionPath(new TreePath(node.getPath()));
         } else {
             // Recurse.
@@ -155,7 +156,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                         (DefaultMutableTreeNode) node.getChildAt(i);
                 DirectoryTreeNodeUserObject subUserObject =
                         (DirectoryTreeNodeUserObject) subNode.getUserObject();
-                drill(targetDirectoryInfo, subNode, subUserObject, level + 1);
+                drill(relativeName, subNode, subUserObject, level + 1);
             }
         }
     }
@@ -177,7 +178,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                     setFont(new Font(getFont().getName(), Font.BOLD,
                             getFont().getSize()));
                 } else {
-                    setFont(new Font(getFont().getName(), Font.PLAIN, 
+                    setFont(new Font(getFont().getName(), Font.PLAIN,
                             getFont().getSize()));
                 }
                 if (expanded) {

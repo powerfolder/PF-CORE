@@ -19,160 +19,60 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.DiskItem;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Lightwight model of a filtered directory. Use in reference to the original
- * Directory to get the real detail.
+ * Lightwight model of a filtered directory. The contains
+ * a) a tree directory structure from the root folder, and
+ * b) a list of either the files and directories in the currently accessed directory,
+ * or all files from here down if in flat mode.
  */
 public class FilteredDirectoryModel {
 
     private final Folder rootFolder;
-    private final DirectoryInfo directoryInfo;
-    private final List<FileInfo> fileInfos;
-    private final List<FilteredDirectoryModel> subdirectories;
-    private boolean newFiles;
+    private final List<DiskItem> diskItems = new ArrayList<DiskItem>();
+    private final FilteredDirectory filteredDirectory;
+    private final String directoryRelativeName;
 
-    /**
-     * Constructor
-     */
-    public FilteredDirectoryModel(Folder rootFolder) {
+    public FilteredDirectoryModel(Folder rootFolder, String directoryRelativeName) {
         this.rootFolder = rootFolder;
-        fileInfos = new CopyOnWriteArrayList<FileInfo>();
-        subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
-        directoryInfo = rootFolder.getBaseDirectoryInfo();
-    }
-
-    public FilteredDirectoryModel(Folder rootFolder, DirectoryInfo directoryInfo)
-    {
-        this.rootFolder = rootFolder;
-        fileInfos = new CopyOnWriteArrayList<FileInfo>();
-        subdirectories = new CopyOnWriteArrayList<FilteredDirectoryModel>();
-        this.directoryInfo = directoryInfo;
+        this.directoryRelativeName = directoryRelativeName;
+        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "");
     }
 
     public Folder getRootFolder() {
         return rootFolder;
     }
 
-    /**
-     * Gets a readonly copy of the directories files.
-     * 
-     * @return
-     */
-    public List<FileInfo> getFileInfos() {
-        return fileInfos;
+    public String getDirectoryRelativeName() {
+        return directoryRelativeName;
     }
 
-    public DirectoryInfo getDirectoryInfo() {
-        return directoryInfo;
+    public List<DiskItem> getDiskItems() {
+        return diskItems;
     }
 
-    /**
-     * Returns a list of subdirectory names and sub-FilteredDirectoryModels
-     */
-    public List<FilteredDirectoryModel> getSubdirectories() {
-        return subdirectories;
+    public FilteredDirectory getFilteredDirectory() {
+        return filteredDirectory;
     }
 
-    /**
-     * Answers if this or any of its children (or any of its children's
-     * children...) have any files.
-     * 
-     * @return
-     */
+    public boolean hasFiles() {
+        return filteredDirectory.hasFiles();
+    }
+
     public boolean hasFilesDeep() {
-        if (!fileInfos.isEmpty()) {
-            return true;
-        }
-        for (FilteredDirectoryModel subdirectory : subdirectories) {
-            if (subdirectory.hasFilesDeep()) {
-                return true;
-            }
-        }
-        return false;
+        return filteredDirectory.hasFilesDeep();
     }
 
-    /**
-     * Set true if this directory has ne files.
-     * 
-     * @param newFiles
-     */
-    public void setNewFiles(boolean newFiles) {
-        this.newFiles = newFiles;
+    public boolean hasNewFiles() {
+        return filteredDirectory.hasNewFiles();
     }
 
-    /**
-     * Answers if this or any of its children (or any of its children's
-     * children...) have any new files.
-     * 
-     * @return
-     */
-    public boolean hasDescendantNewFiles() {
-        if (newFiles) {
-            return true;
-        }
-
-        for (FilteredDirectoryModel subdirectory : subdirectories) {
-            if (subdirectory.hasDescendantNewFiles()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public List<FileInfo> getFilesRecursive() {
-        List<FileInfo> list = new ArrayList<FileInfo>();
-        list.addAll(fileInfos);
-        for (FilteredDirectoryModel subdirectory : subdirectories) {
-            list.addAll(subdirectory.getFilesRecursive());
-        }
-        return list;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        FilteredDirectoryModel that = (FilteredDirectoryModel) obj;
-
-        if (newFiles != that.newFiles) {
-            return false;
-        }
-        if (directoryInfo != null
-            ? !directoryInfo.equals(that.directoryInfo)
-            : that.directoryInfo != null)
-        {
-            return false;
-        }
-        if (rootFolder != null
-            ? !rootFolder.equals(that.rootFolder)
-            : that.rootFolder != null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = rootFolder != null ? rootFolder.hashCode() : 0;
-        result = 31 * result
-            + (directoryInfo != null ? directoryInfo.hashCode() : 0);
-        result = 31 * result + (newFiles ? 1 : 0);
-        return result;
+    public boolean hasNewFilesDeep() {
+        return filteredDirectory.hasNewFilesDeep();
     }
 }

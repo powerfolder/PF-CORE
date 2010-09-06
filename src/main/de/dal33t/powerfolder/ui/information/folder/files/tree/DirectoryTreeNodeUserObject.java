@@ -19,26 +19,20 @@
 */
 package de.dal33t.powerfolder.ui.information.folder.files.tree;
 
-import de.dal33t.powerfolder.light.DirectoryInfo;
-
 /**
  * User object for the directory tree.
  */
 public class DirectoryTreeNodeUserObject {
 
-    private final DirectoryInfo directoryInfo;
     private final String displayName;
+    private final String relativeName;
     private final boolean newFiles;
 
-    public DirectoryTreeNodeUserObject(DirectoryInfo directoryInfo,
-                                       String displayName, boolean newFiles) {
-        this.directoryInfo = directoryInfo;
+    public DirectoryTreeNodeUserObject(String displayName, String relativeName,
+                                       boolean newFiles) {
         this.displayName = displayName;
+        this.relativeName = relativeName;
         this.newFiles = newFiles;
-    }
-
-    public DirectoryInfo getDirectoryInfo() {
-        return directoryInfo;
     }
 
     public boolean hasNewFiles() {
@@ -49,7 +43,10 @@ public class DirectoryTreeNodeUserObject {
         return displayName;
     }
 
-    @Override
+    public String getRelativeName() {
+        return relativeName;
+    }
+
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -63,20 +60,19 @@ public class DirectoryTreeNodeUserObject {
         if (newFiles != that.newFiles) {
             return false;
         }
-        if (directoryInfo != null ? !directoryInfo.equals(that.directoryInfo) : that.directoryInfo != null) {
+        if (!displayName.equals(that.displayName)) {
             return false;
         }
-        if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) {
+        if (!relativeName.equals(that.relativeName)) {
             return false;
         }
 
         return true;
     }
 
-    @Override
     public int hashCode() {
-        int result = directoryInfo != null ? directoryInfo.hashCode() : 0;
-        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        int result = displayName.hashCode();
+        result = 31 * result + relativeName.hashCode();
         result = 31 * result + (newFiles ? 1 : 0);
         return result;
     }

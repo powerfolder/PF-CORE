@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.information.folder.files.table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.event.TableModelEvent;
@@ -40,17 +39,14 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
-import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class to model files selected from the tree.
  */
 public class FilesTableModel extends PFComponent implements TableModel,
-    SortedTableModel
-{
+    SortedTableModel {
 
     private String[] columns = {"",
         Translation.getTranslation("files_table_model.name"),
@@ -65,10 +61,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private static final int COL_MODIFIED_DATE = 4;
 
     private Folder folder;
-    private DirectoryInfo selectedDirectoryInfo;
-    /** A map of relativeName, DiskItem */
-    private final ConcurrentMap<DirectoryInfo, List<FileInfo>> directories;
-    private final List<FileInfo> diskItems;
+    private final List<DiskItem> diskItems;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
@@ -82,8 +75,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     public FilesTableModel(Controller controller) {
         super(controller);
-        directories = Util.createConcurrentHashMap();
-        diskItems = new ArrayList<FileInfo>();
+        diskItems = new ArrayList<DiskItem>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
     }
@@ -104,53 +96,15 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     /**
-     * Set the directory selected in the tree.
-     * 
-     * @param selectedDirectoryInfo
-     */
-    public void setSelectedDirectoryInfo(DirectoryInfo selectedDirectoryInfo) {
-        this.selectedDirectoryInfo = selectedDirectoryInfo;
-        update();
-    }
-
-    /**
      * Pass the filtered directory model to get the file infos from.
      * 
      * @param model
      * @param flat
      */
-    public void setFilteredDirectoryModel(FilteredDirectoryModel model,
-        boolean flat)
-    {
-        directories.clear();
-        walkFilteredDirectoryModel(model, flat);
+    public void setFilteredDirectoryModel(FilteredDirectoryModel model) {
+        diskItems.clear();
+        diskItems.addAll(model.getDiskItems());
         update();
-    }
-
-    /**
-     * Walk the FilteredDirectoryModel to get map of directory / FileInfos.
-     * 
-     * @param model
-     */
-    private void walkFilteredDirectoryModel(FilteredDirectoryModel model,
-        boolean flat)
-    {
-        if (model == null) {
-            return;
-        }
-        List<FileInfo> diskItemList = new ArrayList<FileInfo>();
-        diskItemList.addAll(model.getFileInfos());
-        if (!flat) {
-            for (FilteredDirectoryModel directoryModel : model
-                .getSubdirectories())
-            {
-                diskItemList.add(directoryModel.getDirectoryInfo());
-            }
-        }
-        directories.putIfAbsent(model.getDirectoryInfo(), diskItemList);
-        for (FilteredDirectoryModel subModel : model.getSubdirectories()) {
-            walkFilteredDirectoryModel(subModel, flat);
-        }
     }
 
     /**
@@ -164,82 +118,13 @@ public class FilesTableModel extends PFComponent implements TableModel,
      * Update the model in response to a change.
      */
     private void update() {
-
         if (folder == null) {
-            return;
-        }
-
-        if (selectedDirectoryInfo == null) {
-            return;
-        }
-
-        if (directories.isEmpty()) {
-            return;
-        }
-
-        if (directories.keySet().contains(selectedDirectoryInfo)) {
-            if (isFine()) {
-                logFine("Found '" + selectedDirectoryInfo + "' in directories");
-            }
-        } else {
             return;
         }
 
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized (diskItems) {
-                    if (selectedDirectoryInfo == null) {
-                        logWarning("??? selectedDirectoryInfo == null ???");
-                        return;
-                    }
-                    List<FileInfo> selectedDiskItems = directories
-                        .get(selectedDirectoryInfo);
-                    if (selectedDiskItems == null) {
-                        selectedDiskItems = new ArrayList<FileInfo>();
-                    }
-
-                    if (diskItems.size() != selectedDiskItems.size()) {
-                        // There are structural differences - reload.
-                        diskItems.clear();
-                        diskItems.addAll(selectedDiskItems);
-                        sort();
-                        fireModelChanged();
-                        return;
-                    }
-
-                    // Same size sets.
-                    boolean allSame = true;
-                    for (DiskItem selectedDiskItem : selectedDiskItems) {
-                        boolean found = false;
-                        for (DiskItem diskItem : diskItems) {
-                            if (selectedDiskItem instanceof FileInfo
-                                && diskItem instanceof FileInfo)
-                            {
-                                if (((FileInfo) selectedDiskItem)
-                                    .isVersionDateAndSizeIdentical((FileInfo) diskItem))
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            } else {
-                                if (selectedDiskItem.equals(diskItem)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!found) {
-                            allSame = false;
-                            break;
-                        }
-                    }
-                    if (allSame) {
-                        return;
-                    }
-
-                    // There are differences - reload.
-                    diskItems.clear();
-                    diskItems.addAll(selectedDiskItems);
                     sort();
                     fireModelChanged();
                 }
@@ -383,10 +268,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
                 fileInfoComparatorType);
             synchronized (diskItems) {
                 if (sortAscending) {
-                    Collections.sort(diskItems, comparator);
+// @todo harry sort disk items
+//                    Collections.sort(diskItems, comparator);
                 } else {
-                    Collections.sort(diskItems, new ReverseComparator(
-                        comparator));
+//                    Collections.sort(diskItems, new ReverseComparator(
+//                        comparator));
                 }
             }
             return true;

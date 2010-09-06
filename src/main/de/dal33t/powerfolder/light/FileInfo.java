@@ -615,7 +615,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // not equals, return
             return false;
         }
-        if (!lastModifiedDate.equals(otherFile.lastModifiedDate)) {
+        if (lastModifiedDate != null && otherFile.lastModifiedDate != null &&
+                !lastModifiedDate.equals(otherFile.lastModifiedDate)) {
             return false;
         }
         // All match!
