@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -98,7 +99,9 @@ public class FileInfoComparator extends Loggable implements
             case BY_RELATIVE_NAME :
                 return sortByFileName(o1, o2, true);
             case BY_SIZE :
-
+                if (o1.isLookupInstance() || o2.isLookupInstance()) {
+                    return sortByFileName(o1, o2, false);
+                }
                 if (o1.getSize() < o2.getSize()) {
                     return BEFORE;
                 }
@@ -156,16 +159,14 @@ public class FileInfoComparator extends Loggable implements
                     return BEFORE;
                 } else if (o2.getFolderInfo() == null) {
                     return AFTER;
-                } else if (o1 instanceof FileInfo && o2 instanceof FileInfo) {
-                    FileInfo fi1 = (FileInfo) o1;
-                    FileInfo fi2 = (FileInfo) o2;
-                    x = fi1.getVersion() - fi2.getVersion();
+                } else if (o1 instanceof DirectoryInfo || o2 instanceof DirectoryInfo) {
+                    return sortByFileName(o1, o2, false);
+                } else {
+                    x = o1.getVersion() - o2.getVersion();
                     if (x == 0) {
                         return sortByFileName(o1, o2, false);
                     }
                     return x;
-                } else {
-                    return 0;
                 }
         }
         return 0;

@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.DiskItem;
+import de.dal33t.powerfolder.light.FileInfo;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 public class FilteredDirectoryModel {
 
     private final Folder rootFolder;
-    private final List<DiskItem> diskItems = new ArrayList<DiskItem>();
+    private final List<FileInfo> fileInfos = new ArrayList<FileInfo>();
     private final FilteredDirectory filteredDirectory;
     private final String directoryRelativeName;
 
@@ -52,8 +52,8 @@ public class FilteredDirectoryModel {
         return directoryRelativeName;
     }
 
-    public List<DiskItem> getDiskItems() {
-        return diskItems;
+    public List<FileInfo> getFileInfos() {
+        return fileInfos;
     }
 
     public FilteredDirectory getFilteredDirectory() {

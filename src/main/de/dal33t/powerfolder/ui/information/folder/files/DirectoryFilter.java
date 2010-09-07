@@ -277,7 +277,7 @@ public class DirectoryFilter extends FilterModel {
                     if (fd.hasFilesDeep()) {
                         DirectoryInfo temp = new DirectoryInfo(folder.getInfo(),
                             di.getRelativeName());
-                        filteredDirectoryModel.getDiskItems().add(temp);
+                        filteredDirectoryModel.getFileInfos().add(temp);
                     }
                 }
             } else {
@@ -350,7 +350,7 @@ public class DirectoryFilter extends FilterModel {
 
         if (showFile) {
             result.getFilteredCount().incrementAndGet();
-            filteredDirectoryModel.getDiskItems().add(fileInfo);
+            filteredDirectoryModel.getFileInfos().add(fileInfo);
             if (isNew) {
                 filteredDirectory.setNewFiles(true);
             }

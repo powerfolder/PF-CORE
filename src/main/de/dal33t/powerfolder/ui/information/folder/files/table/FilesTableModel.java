@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.information.folder.files.FilteredDirectoryModel;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -61,7 +62,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     private static final int COL_MODIFIED_DATE = 4;
 
     private Folder folder;
-    private final List<DiskItem> diskItems;
+    private final List<FileInfo> fileInfos;
     private final List<TableModelListener> tableModelListeners;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
@@ -75,7 +76,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
      */
     public FilesTableModel(Controller controller) {
         super(controller);
-        diskItems = new ArrayList<DiskItem>();
+        fileInfos = new ArrayList<FileInfo>();
         tableModelListeners = new CopyOnWriteArrayList<TableModelListener>();
         patternChangeListener = new MyPatternChangeListener();
     }
@@ -99,11 +100,10 @@ public class FilesTableModel extends PFComponent implements TableModel,
      * Pass the filtered directory model to get the file infos from.
      * 
      * @param model
-     * @param flat
      */
     public void setFilteredDirectoryModel(FilteredDirectoryModel model) {
-        diskItems.clear();
-        diskItems.addAll(model.getDiskItems());
+        fileInfos.clear();
+        fileInfos.addAll(model.getFileInfos());
         update();
     }
 
@@ -124,7 +124,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
         Runnable runnable = new Runnable() {
             public void run() {
-                synchronized (diskItems) {
+                synchronized (fileInfos) {
                     sort();
                     fireModelChanged();
                 }
@@ -150,11 +150,11 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public int getRowCount() {
-        return diskItems.size();
+        return fileInfos.size();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return diskItems.get(rowIndex);
+        return fileInfos.get(rowIndex);
     }
 
     public DiskItem[] getDiskItemsAtRows(int[] rows) {
@@ -175,7 +175,7 @@ public class FilesTableModel extends PFComponent implements TableModel,
     }
 
     public DiskItem[] getAllDiskItems() {
-        DiskItem[] items = new DiskItem[diskItems.size()];
+        DiskItem[] items = new DiskItem[fileInfos.size()];
         for (int i = 0; i < items.length; i++) {
             Object at = getValueAt(i, COL_NAME);
             if (at instanceof DirectoryInfo) {
@@ -266,13 +266,12 @@ public class FilesTableModel extends PFComponent implements TableModel,
         if (fileInfoComparatorType != -1) {
             FileInfoComparator comparator = new FileInfoComparator(
                 fileInfoComparatorType);
-            synchronized (diskItems) {
+            synchronized (fileInfos) {
                 if (sortAscending) {
-// @todo harry sort disk items
-//                    Collections.sort(diskItems, comparator);
+                    Collections.sort(fileInfos, comparator);
                 } else {
-//                    Collections.sort(diskItems, new ReverseComparator(
-//                        comparator));
+                    Collections.sort(fileInfos, new ReverseComparator(
+                        comparator));
                 }
             }
             return true;
@@ -282,8 +281,8 @@ public class FilesTableModel extends PFComponent implements TableModel,
 
     public void reverseList() {
         sortAscending = !sortAscending;
-        synchronized (diskItems) {
-            Collections.reverse(diskItems);
+        synchronized (fileInfos) {
+            Collections.reverse(fileInfos);
         }
         fireModelChanged();
     }

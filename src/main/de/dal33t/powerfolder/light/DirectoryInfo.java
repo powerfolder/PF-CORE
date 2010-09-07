@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 /**
- * A lightweight object representing a actual directory in the PowerFolder.
+ * A lightweight object representing an actual directory in the PowerFolder.
  * <p>
  * Related ticket: #378
  * 
