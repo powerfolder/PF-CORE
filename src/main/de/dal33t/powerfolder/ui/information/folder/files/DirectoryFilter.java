@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -275,8 +276,8 @@ public class DirectoryFilter extends FilterModel {
                 if (currentDirectoryInfo.getRelativeName().equals(
                         directoryInfo.getRelativeName())) {
                     if (fd.hasFilesDeep()) {
-                        DirectoryInfo temp = new DirectoryInfo(folder.getInfo(),
-                            di.getRelativeName());
+                        DirectoryInfo temp = FileInfoFactory.lookupDirectory(
+                folder.getInfo(), di.getRelativeName());
                         filteredDirectoryModel.getFileInfos().add(temp);
                     }
                 }

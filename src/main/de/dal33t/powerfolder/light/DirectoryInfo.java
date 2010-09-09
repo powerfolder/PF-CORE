@@ -55,7 +55,7 @@ public class DirectoryInfo extends FileInfo {
             folderInfo);
     }
 
-    public DirectoryInfo(FolderInfo folder, String name) {
+    DirectoryInfo(FolderInfo folder, String name) {
         super(folder, name);
     }
 
