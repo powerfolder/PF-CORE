@@ -77,7 +77,9 @@ public class MemoryMonitor implements Runnable {
             .getTranslation("warning_notice.title"), Translation
             .getTranslation("warning_notice.low_memory"), new Runnable() {
             public void run() {
-                if (OSUtil.isWindowsSystem() && !OSUtil.isWebStart()) {
+                if ((OSUtil.isWindowsSystem() || OSUtil.isMacOS())
+                    && !OSUtil.isWebStart())
+                {
                     int response = DialogFactory
                         .genericDialog(controller, Translation
                             .getTranslation("low_memory.title"), Translation
@@ -193,15 +195,16 @@ public class MemoryMonitor implements Runnable {
         BufferedReader br = null;
         try {
             log.fine("Looking for Contents/Info.plist...");
-            File orig = new File("Contents/Info.plist");
-            File temp = new File("Contents/Info.plist.temp");
-            File back = new File("Contents/Info.plist.backup");
+            File orig = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist");
+            log.info("Modifing " + orig.getCanonicalPath());
+            File temp = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.temp");
+            File back = new File(controller.getDistribution().getBinaryName() + ".app/Contents/Info.plist.backup");
             br = new BufferedReader(new FileReader(orig));
             pw = new PrintWriter(new FileWriter(temp));
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().startsWith("<string>-Xm")
-                    && !line.trim().contains("-Xmx1024m"))
+                    && !line.contains("-Xmx1024m"))
                 {
                     pw
                         .write("      <string>-Xms16m -Xmx1024m -XX:MaxPermSize=256m "
@@ -212,6 +215,8 @@ public class MemoryMonitor implements Runnable {
                 }
                 pw.write('\n');
             }
+            br.close();
+            pw.close();
             FileUtils.copyFile(orig, back);
             FileUtils.copyFile(temp, orig);
         } catch (IOException e) {
