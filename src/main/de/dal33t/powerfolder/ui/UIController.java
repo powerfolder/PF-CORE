@@ -352,7 +352,7 @@ public class UIController extends PFComponent {
         if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
         {
             gotoHPIfRequired();
-            // Show promo after 30 seconds
+            // Show promo after 10 seconds
             if (getController().getDistribution().showClientPromo()) {
                 getController().scheduleAndRepeat(new TimerTask() {
                     @Override
@@ -363,7 +363,7 @@ public class UIController extends PFComponent {
                             }
                         });
                     }
-                }, 30 * 1000L, 1000L * 60 * 60);
+                }, 10 * 1000L, 1000L * 60 * 60);
             }
         }
 
@@ -430,7 +430,7 @@ public class UIController extends PFComponent {
                     }
                 }
             });
-            notifyComponent(promoLabel);
+            notifyComponent(promoLabel, 20);
         } catch (MalformedURLException e) {
             logWarning("Unable to show promo gfx. " + e, e);
         }
@@ -1324,6 +1324,13 @@ public class UIController extends PFComponent {
     public void notifyComponent(JComponent content) {
         Slider slider = new Slider(content,
             PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()), getController().isNotifyLeft());
+        slider.show();
+    }
+
+    public void notifyComponent(JComponent content, int seconds2Display) {
+        Slider slider = new Slider(content, seconds2Display,
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController()), getController().isNotifyLeft());
         slider.show();
