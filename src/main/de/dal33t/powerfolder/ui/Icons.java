@@ -240,7 +240,6 @@ public class Icons {
     public static void setIconProperties(Properties icoProps) {
         Reject.ifNull(icoProps, "iconProperties");
         Reject.ifTrue(icoProps.isEmpty(), "iconProperties are empty");
-        log.info("Set icons properties: " + icoProps);
         iconProperties = icoProps;
         ID_ICON_MAP.clear();
         ID_IMAGE_MAP.clear();
