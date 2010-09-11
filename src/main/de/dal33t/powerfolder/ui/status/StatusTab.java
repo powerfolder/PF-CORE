@@ -114,6 +114,8 @@ public class StatusTab extends PFUIComponent {
         folderListener = new MyFolderListener();
         client = getApplicationModel().getServerClientModel().getClient();
         noticeModel = getApplicationModel().getNoticesModel();
+        noticeModel.getAllNoticesCountVM().addValueChangeListener(
+            new MyNoticesListener());
         noticeModel.getUnreadNoticesCountVM().addValueChangeListener(
             new MyNoticesListener());
         getApplicationModel().getFolderRepositoryModel()
@@ -188,7 +190,7 @@ public class StatusTab extends PFUIComponent {
                 }
             }, null);
         newNoticesLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.new_notices"), null, true, true,
+            .getTranslation("status_tab.unread_notices"), null, false, true,
             getApplicationModel().getActionModel().getViewNoticesAction(),
             Icons.getIconById(Icons.WARNING));
         downloadsLine = new StatusTabLine(getController(), Translation
@@ -354,8 +356,11 @@ public class StatusTab extends PFUIComponent {
 
     private void updateNewNoticesText() {
 
-        Integer integer = (Integer) noticeModel.getUnreadNoticesCountVM()
+        int unread = (Integer) noticeModel.getUnreadNoticesCountVM()
             .getValue();
+        int all = (Integer) noticeModel.getAllNoticesCountVM()
+            .getValue();
+
         NoticesModel noticesModel = getUIController().getApplicationModel()
             .getNoticesModel();
 
@@ -390,13 +395,16 @@ public class StatusTab extends PFUIComponent {
             } else {
                 // Default
                 noticesText = Translation
-                    .getTranslation("status_tab.new_notices");
+                    .getTranslation("status_tab.unread_notices");
             }
         } else {
-            noticesText = Translation.getTranslation("status_tab.new_notices");
+            noticesText = Translation.getTranslation("status_tab.unread_notices");
         }
         newNoticesLine.setNormalLabelText(noticesText);
-        newNoticesLine.setValue(integer);
+        newNoticesLine.setValue(unread);
+        newNoticesLine.getUIComponent().setVisible(all != 0);
+
+        System.out.println("hghg " + all + " " + unread);
 
         // If there are any warnings, set icon as warning, else information.
         Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
