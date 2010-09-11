@@ -1,32 +1,32 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.io.Externalizable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 /**
  * Contains information about nodes. This message is a answer message for
@@ -39,12 +39,13 @@ import java.util.logging.Logger;
  */
 public class KnownNodes extends Message {
 
-    private static final Logger log = Logger.getLogger(KnownNodes.class.getName());
+    private static final Logger log = Logger.getLogger(KnownNodes.class
+        .getName());
     private static final long serialVersionUID = 101L;
 
     public MemberInfo[] nodes;
 
-    public KnownNodes() {
+    protected KnownNodes() {
         // Serialisation constructor
     }
 
@@ -78,13 +79,19 @@ public class KnownNodes extends Message {
      * Creats mutliple known nodes messages from the nodelist
      * 
      * @param nodesList
+     * @param useExt
+     *            #2072: if use {@link Externalizable} versions of the messages.
      * @return the array of the messages
      */
-    public static Message[] createKnownNodesList(List<MemberInfo> nodesList) {
+    public static Message[] createKnownNodesList(List<MemberInfo> nodesList,
+        boolean useExt)
+    {
         if (nodesList.size() < Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             // One list only
             MemberInfo[] nodes = getArray(nodesList, 0, nodesList.size());
-            KnownNodes message = new KnownNodes(nodes);
+            KnownNodes message = useExt
+                ? new KnownNodesExt(nodes)
+                : new KnownNodes(nodes);
             return new KnownNodes[]{message};
         }
 
@@ -103,14 +110,17 @@ public class KnownNodes extends Message {
             MemberInfo[] slice = getArray(nodesList, i
                 * Constants.NODES_LIST_MAX_NODES_PER_MESSAGE,
                 Constants.NODES_LIST_MAX_NODES_PER_MESSAGE);
-            messages[i] = new KnownNodes(slice);
+            messages[i] = useExt ? new KnownNodesExt(slice) : new KnownNodes(
+                slice);
         }
 
         // Add last list
         if (lastListSize > 0) {
             MemberInfo[] slice = getArray(nodesList, nLists
                 * Constants.NODES_LIST_MAX_NODES_PER_MESSAGE, lastListSize);
-            messages[arrSize - 1] = new KnownNodes(slice);
+            messages[arrSize - 1] = useExt
+                ? new KnownNodesExt(slice)
+                : new KnownNodes(slice);
         }
 
         if (log.isLoggable(Level.FINER)) {
