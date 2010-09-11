@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.net;
 
+import java.io.Externalizable;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -57,11 +58,14 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.KnownNodesExt;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.MessageProducer;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RequestNodeList;
 import de.dal33t.powerfolder.message.SearchNodeRequest;
+import de.dal33t.powerfolder.message.SingleMessageProducer;
 import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.task.RemoveComputerFromAccountTask;
 import de.dal33t.powerfolder.task.SendMessageTask;
@@ -752,7 +756,8 @@ public class NodeManager extends PFComponent {
     public void receivedRequestNodeList(RequestNodeList request, Member from) {
         List<MemberInfo> list;
         list = request.filter(knownNodes.values());
-        from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list));
+        from.sendMessagesAsynchron(KnownNodes.createKnownNodesList(list, from
+            .getProtocolVersion() >= 107));
     }
 
     public void receivedSearchNodeRequest(final SearchNodeRequest request,
@@ -773,8 +778,14 @@ public class NodeManager extends PFComponent {
                 }
 
                 if (!reply.isEmpty()) {
-                    from.sendMessageAsynchron(new KnownNodes(reply
-                        .toArray(new MemberInfo[reply.size()])), null);
+                    if (from.getProtocolVersion() >= 107) {
+                        from.sendMessageAsynchron(new KnownNodesExt(reply
+                            .toArray(new MemberInfo[reply.size()])), null);
+                    } else {
+                        from.sendMessageAsynchron(new KnownNodes(reply
+                            .toArray(new MemberInfo[reply.size()])), null);
+                    }
+
                 }
             }
         };
@@ -1166,24 +1177,70 @@ public class NodeManager extends PFComponent {
         if (isFiner()) {
             logFiner("Broadcasting message: " + message);
         }
+        broadcastMessage(0, new MessageProducer() {
+            public Message[] getMessages(boolean useExternalizable) {
+                return new Message[]{message};
+            }
+        }, filter);
+    }
+
+    /**
+     * Broadcasts a message to all nodes, does not block. Message enqueued to be
+     * sent asynchron
+     * 
+     * @param msgProd
+     *            The producer of the message(s)
+     * @param minProtocolVersion
+     *            #2072: the minimum protocol version a remote client has to
+     *            support to produce {@link Externalizable} messages.
+     *            Identity#getProtocolVersion()
+     * @param filter
+     *            to filter the members to send the messages to
+     */
+    public void broadcastMessage(final int minProtocolVersion,
+        final MessageProducer msgProd, final Filter<Member> filter)
+    {
+        if (!started) {
+            logWarning("Not started. Not broadcasting message: " + msgProd);
+            return;
+        }
+        if (isFiner()) {
+            logFiner("Broadcasting message of producer " + msgProd);
+        }
         Runnable broadcaster = new Runnable() {
             public void run() {
+                Message[] msgs = null;
+                Message[] msgsExt = null;
                 for (Member node : knownNodes.values()) {
                     if (node.isCompletelyConnected()) {
-                        if (filter != null && !filter.accept(node)) {
-                            // Skip
-                            continue;
+                        continue;
+                    }
+                    if (filter != null && !filter.accept(node)) {
+                        // Skip
+                        continue;
+                    }
+                    if (node.getProtocolVersion() >= minProtocolVersion) {
+                        if (msgsExt == null) {
+                            msgsExt = msgProd.getMessages(true);
                         }
-                        // Only broadcast after completely connected
-                        node.sendMessageAsynchron(message, null);
-                        try {
-                            // Slight delay to prevent abnormal threadpool
-                            // growth of Sender threads.
-                            Thread.sleep(5);
-                        } catch (InterruptedException e) {
-                            logFiner("InterruptedException", e);
-                            break;
+                        if (msgsExt != null && msgsExt.length > 0) {
+                            node.sendMessagesAsynchron(msgsExt);
                         }
+                    } else {
+                        if (msgs == null) {
+                            msgs = msgProd.getMessages(false);
+                        }
+                        if (msgs != null && msgs.length > 0) {
+                            node.sendMessagesAsynchron(msgs);
+                        }
+                    }
+                    try {
+                        // Slight delay to prevent abnormal threadpool
+                        // growth of Sender threads.
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        logFiner("InterruptedException", e);
+                        break;
                     }
                 }
             }
@@ -1528,14 +1585,19 @@ public class NodeManager extends PFComponent {
             }
             logFine("Broadcasting " + nodesWentOnline.size()
                 + " nodes that went online");
-            KnownNodes nodesWentOnlineMessage;
+            final MemberInfo[] nodes;
             synchronized (nodesWentOnline) {
-                MemberInfo[] nodes = new MemberInfo[nodesWentOnline.size()];
+                nodes = new MemberInfo[nodesWentOnline.size()];
                 nodesWentOnline.toArray(nodes);
-                nodesWentOnlineMessage = new KnownNodes(nodes);
                 nodesWentOnline.clear();
             }
-            broadcastMessage(nodesWentOnlineMessage);
+            broadcastMessage(107, new SingleMessageProducer() {
+                @Override
+                public Message getMessage(boolean useExt) {
+                    return useExt ? new KnownNodesExt(nodes) : new KnownNodes(
+                        nodes);
+                }
+            }, null);
         }
     }
 

@@ -35,7 +35,11 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.KnownNodesExt;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.SingleMessageProducer;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -124,12 +128,9 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 "dialog.unable_to_open_port", port + ""), e);
         }
 
-        logInfo(
-                "Listening for incoming connections on port "
-                    + serverSocket.getLocalPort()
-                    + (myDyndns != null
-                        ? ", own dyndns address: " + myDyndns
-                        : ""));
+        logInfo("Listening for incoming connections on port "
+            + serverSocket.getLocalPort()
+            + (myDyndns != null ? ", own dyndns address: " + myDyndns : ""));
         // Force correct port setting
         port = serverSocket.getLocalPort();
     }
@@ -203,9 +204,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
      *         and VALIDATION_FAILED if dyndns does not match the local host
      */
     public int setMyDynDns(String newDns, boolean validate) {
-        logFine(
-            "Setting own dns to " + newDns + ". was: "
-                + (myDyndns != null ? myDyndns.getHostName() : ""));
+        logFine("Setting own dns to " + newDns + ". was: "
+            + (myDyndns != null ? myDyndns.getHostName() : ""));
 
         // FIXME Don't reset!!! If nothing has changed! CLEAN UP THIS MESS!
         if (validate) {
@@ -240,8 +240,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                         CANNOT_RESOLVE, myDyndns.getHostName());
                 }
 
-                logWarning(
-                    "Unable to resolve own dyndns address '" + newDns + "'");
+                logWarning("Unable to resolve own dyndns address '" + newDns
+                    + "'");
                 myDyndns = null;
                 return CANNOT_RESOLVE;
             }
@@ -277,8 +277,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 if (!checkOK) {
                     if (externalIP.equals(strDyndnsIP)) {
-                        logFiner(
-                            "DynDns matches with external IP " + newDns);
+                        logFiner("DynDns matches with external IP " + newDns);
                         checkOK = true;
                     }
                 }
@@ -308,17 +307,15 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 if (!dyndnsMatchesExternalIP && !dyndnsMatchesLastUpdatedIP) {
                     // getController().getDynDnsManager().showWarningMsg(
                     // VALIDATION_FAILED, myDyndns.getHostName());
-                    logWarning(
-                        "Own dyndns address " + newDns
-                            + " does not match the external IP of this host");
+                    logWarning("Own dyndns address " + newDns
+                        + " does not match the external IP of this host");
                     return VALIDATION_FAILED;
                 }
             }
         }
 
         if (myDyndns != null) {
-            logFiner(
-                "Successfully set dyndns to " + myDyndns.getHostName());
+            logFiner("Successfully set dyndns to " + myDyndns.getHostName());
         } else {
             logFine("Dyndns not set");
         }
@@ -407,8 +404,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             try {
                 // accept a clients socket and add it to the connection pool
                 if (isFiner()) {
-                    logFiner(
-                        "Listening for new connections on " + serverSocket);
+                    logFiner("Listening for new connections on " + serverSocket);
                 }
                 Socket nodeSocket = serverSocket.accept();
                 boolean inAllowedNetworkScope = true;
@@ -424,32 +420,36 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 hasIncomingConnection = true;
                 if (isFiner()) {
-                    logFiner(
-                        "Incoming connection from: "
-                            + nodeSocket.getInetAddress() + ":"
-                            + nodeSocket.getPort());
+                    logFiner("Incoming connection from: "
+                        + nodeSocket.getInetAddress() + ":"
+                        + nodeSocket.getPort());
                 }
 
-                if (myDyndns != null
-                    && !getController().getMySelf().getInfo().isSupernode)
-                {
+                final MemberInfo me = getController().getMySelf().getInfo();
+                if (myDyndns != null && !me.isSupernode) {
                     // ok, act as supernode
                     logFine("Acting as supernode on address " + myDyndns);
-                    getController().getMySelf().getInfo().isSupernode = true;
-                    getController().getMySelf().getInfo().setConnectAddress(
-                        getAddress());
+                    me.isSupernode = true;
+                    me.setConnectAddress(getAddress());
                     // Broadcast our new status, we want stats ;)
-                    getController().getNodeManager().broadcastMessage(
-                        new KnownNodes(getController().getMySelf().getInfo()));
+                    getController().getNodeManager().broadcastMessage(107,
+                        new SingleMessageProducer() {
+                            @Override
+                            public Message getMessage(boolean useExt) {
+                                return useExt
+                                    ? new KnownNodesExt(me)
+                                    : new KnownNodes(me);
+
+                            }
+                        }, null);
                 }
 
                 // new member, accept it
                 getController().getNodeManager().acceptConnectionAsynchron(
                     new SocketAcceptor(nodeSocket));
             } catch (SocketException e) {
-                logFine(
-                    "Listening socket on port " + serverSocket.getLocalPort()
-                        + " closed");
+                logFine("Listening socket on port "
+                    + serverSocket.getLocalPort() + " closed");
                 break;
             } catch (IOException e) {
                 logSevere("Exception while accepting socket: " + e, e);
@@ -476,9 +476,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
         @Override
         protected void accept() throws ConnectionException {
             if (isFiner()) {
-                logFiner(
-                    "Accepting connection from: " + socket.getInetAddress()
-                        + ":" + socket.getPort());
+                logFiner("Accepting connection from: "
+                    + socket.getInetAddress() + ":" + socket.getPort());
             }
             ConnectionHandler handler = getController().getIOProvider()
                 .getConnectionHandlerFactory()
