@@ -332,7 +332,12 @@ public class ByteSerializer extends Loggable {
                 .keySet());
             Collections.sort(sorted, new Comparator<Class<?>>() {
                 public int compare(Class<?> o1, Class<?> o2) {
-                    return o1.getName().compareTo(o2.getName());
+                    Integer n1 = CLASS_STATS.get(o1);
+                    Integer n2 = CLASS_STATS.get(o2);
+                    if (n2 == null) {
+                        return -1;
+                    }
+                    return n2.compareTo(n1);
                 }
             });
             for (Class<?> clazz : sorted) {
