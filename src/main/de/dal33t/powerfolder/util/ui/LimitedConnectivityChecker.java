@@ -40,7 +40,11 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.KnownNodesExt;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.SingleMessageProducer;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
@@ -176,16 +180,26 @@ public class LimitedConnectivityChecker {
         private void setSupernodeState(boolean limitedCon) {
             boolean dyndnsSetup = controller.getConnectionListener()
                 .getMyDynDns() != null;
-            if (dyndnsSetup) {
-                controller.getMySelf().getInfo().isSupernode = !limitedCon;
-                if (controller.getMySelf().getInfo().isSupernode) {
-                    log.fine("Acting as supernode on address "
-                        + controller.getMySelf().getInfo().getConnectAddress());
-                    // Broadcast our new status, we want stats ;)
-                    controller.getNodeManager().broadcastMessage(
-                        new KnownNodes(controller.getMySelf().getInfo()));
-                }
+            if (!dyndnsSetup) {
+                return;
             }
+            final MemberInfo me = controller.getMySelf().getInfo();
+            me.isSupernode = !limitedCon;
+            if (!controller.getMySelf().getInfo().isSupernode) {
+                return;
+            }
+            log
+                .fine("Acting as supernode on address "
+                    + me.getConnectAddress());
+            // Broadcast our new status, we want stats ;)
+            controller.getNodeManager().broadcastMessage(107,
+                new SingleMessageProducer() {
+                    @Override
+                    public Message getMessage(boolean useExt) {
+                        return useExt ? new KnownNodesExt(me) : new KnownNodes(
+                            me);
+                    }
+                }, null);
         }
     }
 
