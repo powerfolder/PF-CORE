@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
@@ -98,7 +99,6 @@ public class MemberInfo implements Serializable {
      */
     private transient int hash;
 
-    @SuppressWarnings("unused")
     private MemberInfo() {
         // NOP - only for hibernate
     }
@@ -315,6 +315,8 @@ public class MemberInfo implements Serializable {
         }
     }
 
+    private static final long extVersionUID = 100L;
+
     public static MemberInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
@@ -326,6 +328,12 @@ public class MemberInfo implements Serializable {
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
+        long extUID = in.readLong();
+        if (extUID != extVersionUID) {
+            throw new InvalidClassException(this.getClass().getName(),
+                "Unable to read. extVersionUID(steam): " + extUID
+                    + ", expected: " + extVersionUID);
+        }
         id = in.readUTF();
         nick = in.readUTF();
         networkId = ExternalizableUtil.readString(in);
@@ -339,6 +347,7 @@ public class MemberInfo implements Serializable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeLong(extVersionUID);
         out.writeUTF(id);
         out.writeUTF(nick);
         ExternalizableUtil.writeString(out, networkId);
