@@ -291,7 +291,7 @@ public class DirectoryFilter extends FilterModel {
             } else {
                 filteredDirectory.setFiles(true);
                     filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                            keywords, result, fileInfo, targetOrDeeper || target);
+                            keywords, result, fileInfo, targetOrDeeper || target); 
             }
         }
     }
