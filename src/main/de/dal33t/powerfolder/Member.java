@@ -844,7 +844,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Send node informations now
             // Send joined folders to synchronize
             FolderList folderList;
-            if (getExternalizableVersion() >= 106) {
+            if (getProtocolVersion() >= 106) {
                 folderList = new FolderListExt(getController()
                     .getFolderRepository().getJoinedFolderInfos(), peer
                     .getRemoteMagicId());
@@ -2218,14 +2218,14 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
-     * @return the protocol version of the {@link Externalizable}s
+     * @return #2072: the protocol version of the {@link Externalizable}s
      */
-    public int getExternalizableVersion() {
+    public int getProtocolVersion() {
         Identity id = getIdentity();
         if (id == null) {
             return 0;
         }
-        return id.getExternalizableVersion();
+        return id.getProtocolVersion();
     }
 
     /**
