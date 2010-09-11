@@ -67,7 +67,6 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     private JComboBox filterSelectionComboBox;
     private FilesStatsPanel statsPanel;
     private DirectoryFilter directoryFilter;
-    private FilesTreePanel treePanel;
     private ValueModel flatMode;
     private Folder folder;
     private JCheckBox flatViewCB;
@@ -90,7 +89,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             .getSearchModeValueModel());
         directoryFilter.addListener(this);
 
-        treePanel = new FilesTreePanel(controller);
+        FilesTreePanel treePanel = new FilesTreePanel(controller);
         directoryFilter.addListener(treePanel);
 
         tablePanel = new FilesTablePanel(controller, this);

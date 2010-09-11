@@ -225,10 +225,18 @@ public class DirectoryFilter extends FilterModel {
                 new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
 
         // Recursive filter.
-        filterDirectory(folder.getDAO(), folder.getBaseDirectoryInfo(),
-                filteredDirectoryModel,
-                filteredDirectoryModel.getFilteredDirectory(),
-                keywords, result);
+        if (isFlatMode()) {
+            filterDirectoryFlat(folder.getDAO(), folder.getBaseDirectoryInfo(),
+                    filteredDirectoryModel,
+                    filteredDirectoryModel.getFilteredDirectory(),
+                    keywords, result,
+                    currentDirectoryInfo.getRelativeName().length() == 0);
+        } else {
+            filterDirectory(folder.getDAO(), folder.getBaseDirectoryInfo(),
+                    filteredDirectoryModel,
+                    filteredDirectoryModel.getFilteredDirectory(),
+                    keywords, result);
+        }
 
         boolean changed = folderChanged.getAndSet(false);
         FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
@@ -255,26 +263,77 @@ public class DirectoryFilter extends FilterModel {
      * @param keywords
      * @param result
      */
+    private void filterDirectoryFlat(FileInfoDAO dao, DirectoryInfo directoryInfo,
+                                 FilteredDirectoryModel filteredDirectoryModel,
+                                 FilteredDirectory filteredDirectory,
+                                 String[] keywords,
+                                 DirectoryFilterResult result,
+                                 boolean targetOrDeeper) {
+        boolean target = currentDirectoryInfo.getRelativeName()
+                .equals(directoryInfo.getRelativeName());
+
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addConnectedAndMyself(folder);
+        criteria.setPath(directoryInfo);
+        Collection<FileInfo> infoCollection = dao.findFiles(criteria);
+        for (FileInfo fileInfo : infoCollection) {
+
+            if (fileInfo instanceof DirectoryInfo) {
+                DirectoryInfo di = (DirectoryInfo) fileInfo;
+                FilteredDirectory fd = new FilteredDirectory(di.getFilenameOnly(),
+                        di.getRelativeName());
+
+                // Add dir to tree.
+                filteredDirectory.getList().add(fd);
+
+                filterDirectoryFlat(dao, di, filteredDirectoryModel, fd,
+                        keywords, result, targetOrDeeper || target);
+            } else {
+                filteredDirectory.setFiles(true);
+                if (targetOrDeeper || target) {
+                    filterFileInfo(filteredDirectoryModel, filteredDirectory,
+                            keywords, result, fileInfo);
+                }
+            }
+        }
+    }
+
+    /**
+     * Recursive filter call.
+     *
+     * @param dao
+     * @param directoryInfo
+     * @param filteredDirectoryModel
+     * @param filteredDirectory
+     * @param keywords
+     * @param result
+     */
     private void filterDirectory(FileInfoDAO dao, DirectoryInfo directoryInfo,
                                  FilteredDirectoryModel filteredDirectoryModel,
                                  FilteredDirectory filteredDirectory,
                                  String[] keywords,
                                  DirectoryFilterResult result) {
+        boolean target = currentDirectoryInfo.getRelativeName()
+                .equals(directoryInfo.getRelativeName());
         FileInfoCriteria criteria = new FileInfoCriteria();
         criteria.addConnectedAndMyself(folder);
         criteria.setPath(directoryInfo);
-
         Collection<FileInfo> infoCollection = dao.findFiles(criteria);
         for (FileInfo fileInfo : infoCollection) {
+
             if (fileInfo instanceof DirectoryInfo) {
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
                 FilteredDirectory fd = new FilteredDirectory(di.getFilenameOnly(),
                         di.getRelativeName());
+
+                // Add dir to tree.
                 filteredDirectory.getList().add(fd);
-                filterDirectory(dao, di, filteredDirectoryModel, fd, keywords,
-                        result);
-                if (currentDirectoryInfo.getRelativeName().equals(
-                        directoryInfo.getRelativeName())) {
+
+                filterDirectory(dao, di, filteredDirectoryModel, fd,
+                        keywords, result);
+
+                // Add local files to table list.
+                if (target) {
                     if (fd.hasFilesDeep()) {
                         DirectoryInfo temp = FileInfoFactory.lookupDirectory(
                 folder.getInfo(), di.getRelativeName());
@@ -283,8 +342,7 @@ public class DirectoryFilter extends FilterModel {
                 }
             } else {
                 filteredDirectory.setFiles(true);
-                if (currentDirectoryInfo.getRelativeName().equals(
-                        directoryInfo.getRelativeName())) {
+                if (target) {
                     filterFileInfo(filteredDirectoryModel, filteredDirectory,
                             keywords, result, fileInfo);
                 }
