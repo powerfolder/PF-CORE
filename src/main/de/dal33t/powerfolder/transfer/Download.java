@@ -205,7 +205,7 @@ public class Download extends Transfer {
             return false;
         }
         try {
-            if (getPartner().getExternalizableVersion() >= 100) {
+            if (getPartner().getProtocolVersion() >= 100) {
                 rp = new RequestPartExt(getFile(), range, Math.max(0, state
                     .getProgress()));
             } else {
@@ -295,7 +295,7 @@ public class Download extends Transfer {
             logFiner("request(" + startOffset + "): "
                 + getFile().toDetailString());
         }
-        if (getPartner().getExternalizableVersion() >= 103) {
+        if (getPartner().getProtocolVersion() >= 103) {
             getPartner().sendMessagesAsynchron(
                 new RequestDownloadExt(getFile(), startOffset));
         } else {
@@ -352,7 +352,7 @@ public class Download extends Transfer {
     @Override
     void setCompleted() {
         super.setCompleted();
-        if (getPartner().getExternalizableVersion() >= 101) {
+        if (getPartner().getProtocolVersion() >= 101) {
             getPartner().sendMessagesAsynchron(new StopUploadExt(getFile()));
         } else {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
