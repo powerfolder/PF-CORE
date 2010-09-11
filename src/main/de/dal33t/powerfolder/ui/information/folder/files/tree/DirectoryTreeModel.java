@@ -77,11 +77,11 @@ public class DirectoryTreeModel extends DefaultTreeModel {
         }
         for (FilteredDirectory sub : map.values()) {
             if (sub.hasFilesDeep()) {
-                boolean subHasNewFiles = sub.hasNewFilesDeep();
+                boolean subHasNewFilesDeep = sub.hasNewFilesDeep();
                 DirectoryTreeNodeUserObject newSubUO =
                         new DirectoryTreeNodeUserObject(sub.getDisplayName(),
                                 sub.getRelativeName(),
-                                subHasNewFiles);
+                                subHasNewFilesDeep);
                 DefaultMutableTreeNode newSubNode =
                         new DefaultMutableTreeNode(newSubUO);
                 insertNodeInto(newSubNode, node, node.getChildCount());
@@ -106,7 +106,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
         DirectoryTreeNodeUserObject candidateNode = new DirectoryTreeNodeUserObject(
                 directory.getDisplayName(),
                 directory.getRelativeName(),
-                directory.hasNewFiles());
+                directory.hasNewFilesDeep());
 
         if (!candidateNode.equals(existingNode)) {
             node.setUserObject(candidateNode);
@@ -135,11 +135,11 @@ public class DirectoryTreeModel extends DefaultTreeModel {
 
                 // Insert missing node.
                 if (!found) {
-                    boolean subNewFiles = subDirectory.hasNewFilesDeep();
+                    boolean subNewFilesDeep = subDirectory.hasNewFilesDeep();
                     DirectoryTreeNodeUserObject newSubUO =
                             new DirectoryTreeNodeUserObject(subDirectory.getDisplayName(),
                                     subDirectory.getRelativeName(),
-                                    subNewFiles);
+                                    subNewFilesDeep);
                     DefaultMutableTreeNode newSubNode =
                             new DefaultMutableTreeNode(newSubUO);
                     insertNodeInto(newSubNode, node, node.getChildCount());

@@ -290,10 +290,8 @@ public class DirectoryFilter extends FilterModel {
                         keywords, result, targetOrDeeper || target);
             } else {
                 filteredDirectory.setFiles(true);
-                if (targetOrDeeper || target) {
                     filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                            keywords, result, fileInfo);
-                }
+                            keywords, result, fileInfo, targetOrDeeper || target);
             }
         }
     }
@@ -342,10 +340,8 @@ public class DirectoryFilter extends FilterModel {
                 }
             } else {
                 filteredDirectory.setFiles(true);
-                if (target) {
-                    filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                            keywords, result, fileInfo);
-                }
+                filterFileInfo(filteredDirectoryModel, filteredDirectory,
+                        keywords, result, fileInfo, target);
             }
         }
     }
@@ -354,7 +350,7 @@ public class DirectoryFilter extends FilterModel {
                                 FilteredDirectory filteredDirectory,
                                 String[] keywords,
                                 DirectoryFilterResult result,
-                                FileInfo fileInfo) {
+                                FileInfo fileInfo, boolean addFiles) {
         result.getOriginalCount().incrementAndGet();
 
         int searchMode = (Integer) searchModeVM.getValue();
@@ -408,19 +404,23 @@ public class DirectoryFilter extends FilterModel {
         }
 
         if (showFile) {
-            result.getFilteredCount().incrementAndGet();
-            filteredDirectoryModel.getFileInfos().add(fileInfo);
+            if (addFiles) {
+                result.getFilteredCount().incrementAndGet();
+                filteredDirectoryModel.getFileInfos().add(fileInfo);
+            }
             if (isNew) {
                 filteredDirectory.setNewFiles(true);
             }
         }
 
-        if (isDeleted) {
-            result.getDeletedCount().incrementAndGet();
-        } else if (isIncoming) {
-            result.getIncomingCount().incrementAndGet();
-        } else {
-            result.getLocalCount().incrementAndGet();
+        if (addFiles) {
+            if (isDeleted) {
+                result.getDeletedCount().incrementAndGet();
+            } else if (isIncoming) {
+                result.getIncomingCount().incrementAndGet();
+            } else {
+                result.getLocalCount().incrementAndGet();
+            }
         }
     }
 

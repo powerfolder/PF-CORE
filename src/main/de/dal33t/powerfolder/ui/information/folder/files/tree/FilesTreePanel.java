@@ -174,7 +174,7 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
                 DirectoryTreeNodeUserObject dtnuo =
                         (DirectoryTreeNodeUserObject) userObject;
                 setText(dtnuo.getDisplayName());
-                if (dtnuo.hasNewFiles()) {
+                if (dtnuo.hasNewFilesDeep()) {
                     setFont(new Font(getFont().getName(), Font.BOLD,
                             getFont().getSize()));
                 } else {

@@ -26,17 +26,17 @@ public class DirectoryTreeNodeUserObject {
 
     private final String displayName;
     private final String relativeName;
-    private final boolean newFiles;
+    private final boolean newFilesDeep;
 
     public DirectoryTreeNodeUserObject(String displayName, String relativeName,
-                                       boolean newFiles) {
+                                       boolean newFilesDeep) {
         this.displayName = displayName;
         this.relativeName = relativeName;
-        this.newFiles = newFiles;
+        this.newFilesDeep = newFilesDeep;
     }
 
-    public boolean hasNewFiles() {
-        return newFiles;
+    public boolean hasNewFilesDeep() {
+        return newFilesDeep;
     }
 
     public String getDisplayName() {
@@ -57,7 +57,7 @@ public class DirectoryTreeNodeUserObject {
 
         DirectoryTreeNodeUserObject that = (DirectoryTreeNodeUserObject) obj;
 
-        if (newFiles != that.newFiles) {
+        if (newFilesDeep != that.newFilesDeep) {
             return false;
         }
         if (!displayName.equals(that.displayName)) {
@@ -73,7 +73,7 @@ public class DirectoryTreeNodeUserObject {
     public int hashCode() {
         int result = displayName.hashCode();
         result = 31 * result + relativeName.hashCode();
-        result = 31 * result + (newFiles ? 1 : 0);
+        result = 31 * result + (newFilesDeep ? 1 : 0);
         return result;
     }
 }
