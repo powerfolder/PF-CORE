@@ -45,11 +45,13 @@ public interface AccountService {
      *            true if the users wants to subscribe to the newsletter.
      * @param serverInfo
      *            The server to host the account on or null for default
+     * @param referredBy
+     *            the account OID this user was referred by.
      * @return the Account if registration was successfully. null if not
      *         possible or already taken even if password match.
      */
     Account register(String username, String password, boolean newsLetter,
-        ServerInfo serverInfo);
+        ServerInfo serverInfo, String referredBy);
 
     /**
      * Logs in from a remote location.
