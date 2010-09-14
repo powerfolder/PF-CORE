@@ -2230,10 +2230,19 @@ public class Folder extends PFComponent {
                     watcher.addIgnoreFile(localFile);
                     try {
                         if (!localCopy.delete()) {
+                            // #1977
+                            String[] remaining = localCopy.list();
+                            for (String path : remaining) {
+                                if (path.toLowerCase().endsWith("thumbs.db")) {
+                                    new File(path).delete();
+                                }
+                            }
+                        }
+                        if (!localCopy.delete()) {
                             if (isWarning()) {
-                                String[] content = localCopy.list();
-                                String contentStr = content != null
-                                    ? Arrays.asList(content).toString()
+                                String[] remaining = localCopy.list();
+                                String contentStr = remaining != null
+                                    ? Arrays.asList(remaining).toString()
                                     : "(unable to access)";
                                 logWarning("Unable to delete directory locally: "
                                     + localCopy
