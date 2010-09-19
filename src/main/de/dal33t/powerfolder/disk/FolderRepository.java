@@ -128,6 +128,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST = "true,true,true,true,10,false,12,0,m,"
         + Translation
             .getTranslation("transfer_mode.automatic_synchronization_10min.name");
+    private static final String PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST = "false,false,false,false,5,false,12,0,m,"
+        + Translation
+            .getTranslation("transfer_mode.backup_source_5min.name") + ",false";
+    private static final String PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST = "false,false,false,false,60,false,12,0,m,"
+        + Translation
+            .getTranslation("transfer_mode.backup_source_hour.name") + ",false";
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -420,6 +426,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             // Migration for #2040 (new auto sync uses JNotify).
             syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+        } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
+            .equals(syncProfConfig)
+            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST
+                .equals(syncProfConfig))
+        {
+            // Migration for #2074 (new backup source uses JNotify).
+            syncProfile = SyncProfile.BACKUP_SOURCE;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
@@ -557,7 +570,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         File commitDir = null;
         String commitDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR);
+            + folderMD5 + FOLDER_SETTINGS_COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
             commitDir = new File(commitDirStr);
         }
@@ -582,6 +595,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         {
             // Migration for #2040 (new auto sync uses JNotify).
             syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+        } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
+            .equals(syncProfConfig)
+            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST
+                .equals(syncProfConfig))
+        {
+            // Migration for #2074 (new backup source uses JNotify).
+            syncProfile = SyncProfile.BACKUP_SOURCE;
         } else {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);

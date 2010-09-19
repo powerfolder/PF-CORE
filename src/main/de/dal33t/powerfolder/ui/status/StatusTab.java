@@ -404,8 +404,6 @@ public class StatusTab extends PFUIComponent {
         newNoticesLine.setValue(unread);
         newNoticesLine.getUIComponent().setVisible(all != 0);
 
-        System.out.println("hghg " + all + " " + unread);
-
         // If there are any warnings, set icon as warning, else information.
         Icon noticesIcon = Icons.getIconById(Icons.INFORMATION);
         for (Notice notice : getUIController().getApplicationModel()

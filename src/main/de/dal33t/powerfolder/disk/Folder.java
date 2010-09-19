@@ -3464,9 +3464,7 @@ public class Folder extends PFComponent {
         inv.setFilesCount(statistic.getLocalFilesCount());
         inv.setSize(statistic.getLocalSize());
         inv.setSuggestedSyncProfile(syncProfile);
-        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)
-            || syncProfile.equals(SyncProfile.BACKUP_SOURCE_HOUR))
-        {
+        if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
         } else if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_SOURCE);

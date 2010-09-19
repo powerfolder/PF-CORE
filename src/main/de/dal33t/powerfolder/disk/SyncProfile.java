@@ -85,7 +85,7 @@ public class SyncProfile implements Serializable {
             false, false, 30));
 
     /**
-     * Automatic synchronization preset profile. Uses JNotify to do instant
+     * Automatic synchronization preset profile. Uses JNotify to do instant.
      * sync.
      */
     public static final SyncProfile AUTOMATIC_SYNCHRONIZATION = new SyncProfile(
@@ -94,18 +94,11 @@ public class SyncProfile implements Serializable {
             SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
-     * Backup source preset profile - 5 minute.
+     * Backup source preset profile. Uses JNotify to do instant.
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
         "backup_source", false, new SyncProfileConfiguration(false, false,
-            false, false, 5));
-
-    /**
-     * Backup source preset profile - 1 hour.
-     */
-    public static final SyncProfile BACKUP_SOURCE_HOUR = new SyncProfile(
-        "backup_source_hour", false, new SyncProfileConfiguration(false, false,
-            false, false, 60));
+            false, false, 1, false, 12, 1, SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
      * Backup target preset profile.
@@ -124,7 +117,7 @@ public class SyncProfile implements Serializable {
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
-        BACKUP_SOURCE_HOUR, BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
     /** Migration for #603 */
     public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
