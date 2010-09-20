@@ -1212,7 +1212,7 @@ public class NodeManager extends PFComponent {
                 Message[] msgs = null;
                 Message[] msgsExt = null;
                 for (Member node : knownNodes.values()) {
-                    if (node.isCompletelyConnected()) {
+                    if (!node.isCompletelyConnected()) {
                         continue;
                     }
                     if (filter != null && !filter.accept(node)) {
