@@ -2232,27 +2232,34 @@ public class Folder extends PFComponent {
                         if (!localCopy.delete()) {
                             // #1977
                             String[] remaining = localCopy.list();
-                            for (String path : remaining) {
-                                if (path.toLowerCase().endsWith("thumbs.db")) {
-                                    new File(path).delete();
+                            if (remaining != null) {
+                                for (String path : remaining) {
+                                    if (path.toLowerCase()
+                                        .endsWith("thumbs.db"))
+                                    {
+                                        new File(path).delete();
+                                    }
+                                }
+                                if (!localCopy.delete()) {
+                                    if (isWarning()) {
+                                        remaining = localCopy.list();
+                                        String contentStr = remaining != null
+                                            ? Arrays.asList(remaining)
+                                                .toString()
+                                            : "(unable to access)";
+                                        logWarning("Unable to delete directory locally: "
+                                            + localCopy
+                                            + ". Info: "
+                                            + localFile.toDetailString()
+                                            + ". contents: " + contentStr);
+                                    }
+                                    // Skip. Dir was not actually deleted /
+                                    // could
+                                    // not
+                                    // sync
+                                    return;
                                 }
                             }
-                        }
-                        if (!localCopy.delete()) {
-                            if (isWarning()) {
-                                String[] remaining = localCopy.list();
-                                String contentStr = remaining != null
-                                    ? Arrays.asList(remaining).toString()
-                                    : "(unable to access)";
-                                logWarning("Unable to delete directory locally: "
-                                    + localCopy
-                                    + ". Info: "
-                                    + localFile.toDetailString()
-                                    + ". contents: " + contentStr);
-                            }
-                            // Skip. Dir was not actually deleted / could not
-                            // sync
-                            return;
                         }
                     } finally {
                         watcher.removeIgnoreFile(localFile);
