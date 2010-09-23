@@ -165,7 +165,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getInfo());
-        TestHelper.waitForCondition(10, new EqualsCondition() {
+        TestHelper.waitForCondition(30, new EqualsCondition() {
             public Object expected() {
                 return 500;
             }
@@ -175,7 +175,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             }
         });
         assertEquals(1, getFolderAtLisa().getIncomingFiles().size());
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() >= 1;
