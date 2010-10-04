@@ -38,19 +38,19 @@ public enum SocialNetwork {
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share and sync your files online with $ORIGINAL_URL$"),
+        "http://twitter.com/?status=Share and send your files online with $ORIGINAL_URL$"),
 
     /**
      * Same for Linkedin.com
      */
     LINKEDIN(
-        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Share and collaborate online with PowerFolder&summary=Share and collaborate online with PowerFolder"),
+        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send and share files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder"),
 
     /**
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share and sync your file online&BODY=Share and sync your files with %20$ORIGINAL_URL$");
+        "mailto:to@email.com?SUBJECT=Share and send your file online&BODY=Share and send your files with %20$ORIGINAL_URL$");
 
     private String template;
 
