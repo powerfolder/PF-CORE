@@ -38,7 +38,7 @@ public enum SocialNetwork {
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share and send your files online with $ORIGINAL_URL$"),
+        "http://twitter.com/?status=Share and send your files online with PowerFolder: $ORIGINAL_URL$"),
 
     /**
      * Same for Linkedin.com
@@ -50,7 +50,7 @@ public enum SocialNetwork {
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share and send your file online&BODY=Share and send your files with %20$ORIGINAL_URL$");
+        "mailto:to@email.com?SUBJECT=Share and send your files online with PowerFolder&BODY=Share and send your files online with PowerFolder: %20$ORIGINAL_URL$");
 
     private String template;
 
