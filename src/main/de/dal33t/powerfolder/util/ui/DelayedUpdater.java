@@ -36,7 +36,8 @@ import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
  * an update is performed once. This is useful if you want to reduce the number
  * of events in EDT thread. ATTENTION: Do only schedule events in ONE
  * DelayedUpdater that can override each other. This utility class DISCARDS
- * previously scheduled events. In other words: The last update wins.
+ * previously scheduled events. In other words: The last update wins and gets
+ * executed only.
  * <p>
  * Graphcial representation. E = scheduled event, U = update in UI.
  * <p>
