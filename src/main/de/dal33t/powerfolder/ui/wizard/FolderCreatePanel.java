@@ -19,17 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -127,8 +117,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
     private class MyFolderCreateWorker implements Runnable {
 
         public void run() {
-            final Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
-            final Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
+            Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
+            Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
             boolean backupByOS;
 
             boolean createDesktopShortcut;
@@ -231,24 +221,30 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 String joinFolderName = joinFolders.get(folderInfo);
 
                 if (joinFolderName == null) {
-                    // Look for folders where there is already an online folder
-                    // with
-                    // the same name. Offer to join instead of create
-                    // duplicates.
-                    for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-                        if (onlineFolderInfo.getName().equals(
-                            folderInfo.getName()))
-                        {
-                            if (!onlineFolderInfo.equals(folderInfo)) {
-                                log.info("Found online folder with same name: "
-                                    + folderInfo.getName() + ". Using it");
 
-                                // User actually wants to join, so use online.
-                                folderInfo = onlineFolderInfo;
-                                log
-                                    .info("Changed folder info to online version: "
-                                        + folderInfo.getName());
-                                break;
+                    // Don't try to join online folders by name if this is an
+                    // invite. Invites always join the invite folder.
+                    Boolean folderIsInvite = (Boolean) getWizardContext()
+                            .getAttribute(FOLDER_IS_INVITE);
+                    if (folderIsInvite == null || !folderIsInvite) {
+
+                        // Look for folders where there is already an online
+                        // folder with the same name. Join instead of creating
+                        // duplicates.
+                        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                            if (onlineFolderInfo.getName().equals(
+                                folderInfo.getName()))
+                            {
+                                if (!onlineFolderInfo.equals(folderInfo)) {
+                                    log.info("Found online folder with same name: "
+                                        + folderInfo.getName() + ". Using it");
+
+                                    // User actually wants to join, so use online.
+                                    folderInfo = onlineFolderInfo;
+                                    log.info("Changed folder info to online version: "
+                                            + folderInfo.getName());
+                                    break;
+                                }
                             }
                         }
                     }
