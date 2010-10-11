@@ -3514,25 +3514,25 @@ public class Folder extends PFComponent {
                 // Ignore My Pictures, My Music, My Videos, PowerFolders
                 addPattern(Constants.FOLDERS_BASE_DIR_SUBDIR_NAME + '*');
 
-                int i = UserDirectories.getMyDocuments().lastIndexOf('/');
-                String basePath = i > 0 ? UserDirectories.getMyDocuments()
-                    .substring(0, i) : null;
-
-                if (basePath != null) {
+                if (UserDirectories.getMyDocuments() != null) {
+                    int i = UserDirectories.getMyDocuments().length();
                     if (UserDirectories.getMyMusic() != null
-                        && UserDirectories.getMyMusic().startsWith(basePath))
+                        && UserDirectories.getMyMusic().startsWith(
+                            UserDirectories.getMyDocuments()))
                     {
                         addPattern(UserDirectories.getMyMusic()
                             .substring(i + 1) + '*');
                     }
                     if (UserDirectories.getMyPictures() != null
-                        && UserDirectories.getMyPictures().startsWith(basePath))
+                        && UserDirectories.getMyPictures().startsWith(
+                            UserDirectories.getMyDocuments()))
                     {
                         addPattern(UserDirectories.getMyPictures().substring(
                             i + 1) + '*');
                     }
                     if (UserDirectories.getMyVideos() != null
-                        && UserDirectories.getMyVideos().startsWith(basePath))
+                        && UserDirectories.getMyVideos().startsWith(
+                            UserDirectories.getMyDocuments()))
                     {
                         addPattern(UserDirectories.getMyVideos().substring(
                             i + 1) + '*');
