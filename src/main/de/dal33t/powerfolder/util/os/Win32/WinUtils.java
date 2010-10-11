@@ -60,7 +60,7 @@ public class WinUtils extends Loggable {
 
     public static final int CSIDL_DESKTOP = 0x0000;
 
-    // Eigenen Dokumente / My Documents
+    // Eigene Dokumente / My Documents
     public static final int CSIDL_PERSONAL = 0x0005;
 
     // Favoriten / Favorites
