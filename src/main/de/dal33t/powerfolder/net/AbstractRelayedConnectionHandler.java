@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
 import de.dal33t.powerfolder.message.RelayedMessage;
+import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.message.RelayedMessage.Type;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
@@ -426,9 +427,11 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                         "Connection to remote peer closed").with(this);
                 }
                 byte[] data = serialize(message);
-                RelayedMessage dataMsg = new RelayedMessage(Type.DATA_ZIPPED,
-                    getController().getMySelf().getInfo(), remote,
-                    connectionId, data);
+                RelayedMessage dataMsg = relay.getProtocolVersion() >= 108
+                    ? new RelayedMessageExt(Type.DATA_ZIPPED, getController()
+                        .getMySelf().getInfo(), remote, connectionId, data)
+                    : new RelayedMessage(Type.DATA_ZIPPED, getController()
+                        .getMySelf().getInfo(), remote, connectionId, data);
                 relay.sendMessage(dataMsg);
 
                 getController().getTransferManager()
