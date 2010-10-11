@@ -100,6 +100,7 @@ import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.pattern.Pattern;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
 
 /**
  * The main class representing a folder. Scans for new files automatically.
@@ -3502,6 +3503,43 @@ public class Folder extends PFComponent {
         // Add dsstore to ignore pattern on mac systems
         // Don't duplicate dsstore (like when moving a preview folder)
         addPattern(Pattern.DS_STORE);
+
+        // #2083
+        if (UserDirectories.getMyDocuments() != null) {
+            if (getLocalBase().equals(
+                new File(UserDirectories.getMyDocuments())))
+            {
+                logWarning("Adding transition ignore patterns for My documents folder");
+
+                // Ignore My Pictures, My Music, My Videos, PowerFolders
+                addPattern(Constants.FOLDERS_BASE_DIR_SUBDIR_NAME + '*');
+
+                int i = UserDirectories.getMyDocuments().lastIndexOf('/');
+                String basePath = i > 0 ? UserDirectories.getMyDocuments()
+                    .substring(0, i) : null;
+
+                if (basePath != null) {
+                    if (UserDirectories.getMyMusic() != null
+                        && UserDirectories.getMyMusic().startsWith(basePath))
+                    {
+                        addPattern(UserDirectories.getMyMusic()
+                            .substring(i + 1) + '*');
+                    }
+                    if (UserDirectories.getMyPictures() != null
+                        && UserDirectories.getMyPictures().startsWith(basePath))
+                    {
+                        addPattern(UserDirectories.getMyPictures().substring(
+                            i + 1) + '*');
+                    }
+                    if (UserDirectories.getMyVideos() != null
+                        && UserDirectories.getMyVideos().startsWith(basePath))
+                    {
+                        addPattern(UserDirectories.getMyVideos().substring(
+                            i + 1) + '*');
+                    }
+                }
+            }
+        }
     }
 
     /**
