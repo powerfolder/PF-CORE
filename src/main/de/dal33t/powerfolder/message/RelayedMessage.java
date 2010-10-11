@@ -42,11 +42,11 @@ import de.dal33t.powerfolder.util.Reject;
 public class RelayedMessage extends Message {
     private static final long serialVersionUID = 100L;
 
-    private long connectionId;
-    private Type type;
-    private MemberInfo source;
-    private MemberInfo destination;
-    private byte[] payload;
+    protected long connectionId;
+    protected Type type;
+    protected MemberInfo source;
+    protected MemberInfo destination;
+    protected byte[] payload;
 
     public RelayedMessage(Type type, MemberInfo source, MemberInfo destination,
         long connectionId, byte[] payload)

@@ -98,8 +98,10 @@ public class Identity extends Message {
      * 106: Added: {@link FolderListExt}
      * <p>
      * 107: Added: {@link KnownNodesExt}
+     * <p>
+     * 108: Added: {@link RelayedMessageExt}
      */
-    private int protocolVersion = 107;
+    private int protocolVersion = 108;
 
     private boolean supportingFileHistoryRequests = Feature.CONFLICT_DETECTION
         .isEnabled();
