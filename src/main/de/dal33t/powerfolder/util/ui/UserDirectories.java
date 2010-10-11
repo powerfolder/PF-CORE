@@ -115,6 +115,34 @@ public class UserDirectories {
     }
 
     /**
+     * @return the "My documents". Only available on Windows XP.
+     */
+    public static String getMyDocuments() {
+        return USER_DIR_MY_DOCUMENTS;
+    }
+
+    /**
+     * @return the "My music". Only available on Windows XP.
+     */
+    public static String getMyMusic() {
+        return USER_DIR_MY_MUSIC;
+    }
+
+    /**
+     * @return the "My videos". Only available on Windows XP.
+     */
+    public static String getMyVideos() {
+        return USER_DIR_MY_VIDEOS;
+    }
+
+    /**
+     * @return the "My pictures". Only available on Windows XP.
+     */
+    public static String getMyPictures() {
+        return USER_DIR_MY_PICTURES;
+    }
+
+    /**
      * @return all user directories name -> target location on disk.
      */
     public static Map<String, File> getUserDirectories() {
