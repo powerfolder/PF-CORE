@@ -21,7 +21,10 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.net.NodeManager;
+import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
@@ -61,6 +64,9 @@ public class PowerFolderPro extends AbstractDistribution {
         if (skinName.equals(SnowlandBasic.NAME)) {
             PreferencesEntry.SKIN_NAME.setValue(controller, Snowland.NAME);
         }
+
+        controller.getIOProvider().getRelayedConnectionManager().setRelayFiner(
+            new PublicRelayFinder());
     }
 
     @Override
@@ -71,6 +77,10 @@ public class PowerFolderPro extends AbstractDistribution {
         settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolderPro_DownloadLocation.txt";
         settings.releaseExeURL = "http://download.powerfolder.com/pro/win/PowerFolder_Latest_Win32_Installer.exe";
         return settings;
+    }
+
+    public RelayFinder createRelayFinder() {
+        return new PublicRelayFinder();
     }
 
     public boolean allowSkinChange() {
@@ -85,5 +95,25 @@ public class PowerFolderPro extends AbstractDistribution {
     @Override
     public boolean showClientPromo() {
         return true;
+    }
+
+    private class PublicRelayFinder implements RelayFinder {
+        private static final String RELAY_1ST_CHOICE_ID = "WEBSERVICE005";
+        private static final String RELAY_2ST_CHOICE_ID = "WEBSERVICE006";
+
+        public Member findRelay(NodeManager nodeManager) {
+            Member relay = nodeManager.getNode(RELAY_1ST_CHOICE_ID);
+            Member server = getController().getOSClient().getServer();
+            if (relay == null || server.equals(relay)) {
+                relay = nodeManager.getNode(RELAY_2ST_CHOICE_ID);
+            }
+            if (relay == null) {
+                relay = server;
+                logWarning("Using default server as relay: " + relay);
+            } else {
+                logInfo("Using relay: " + relay);
+            }
+            return relay;
+        }
     }
 }

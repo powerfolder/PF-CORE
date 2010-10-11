@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 /**
@@ -77,5 +78,10 @@ public interface Distribution {
      *         default location
      */
     UpdateSetting createUpdateSettings();
+
+    /**
+     * @return the relayfinder for this distributon. return null for default.
+     */
+    RelayFinder createRelayFinder();
 
 }

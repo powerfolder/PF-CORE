@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.RelayedMessage;
+import de.dal33t.powerfolder.message.RelayedMessageExt;
 import de.dal33t.powerfolder.message.RelayedMessage.Type;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -74,7 +75,7 @@ public class RelayedConnectionManager extends PFComponent {
     public RelayedConnectionManager(Controller controller) {
         super(controller);
         pendingConHans = new CopyOnWriteArrayList<AbstractRelayedConnectionHandler>();
-        relayFinder = new ServerIsRelayFinder();
+        relayFinder = controller.getDistribution().createRelayFinder();
         counter = new TransferCounter();
         printStats = false;
     }
@@ -133,8 +134,11 @@ public class RelayedConnectionManager extends PFComponent {
                 + pendingConHans);
         }
 
-        RelayedMessage synMsg = new RelayedMessage(Type.SYN, getController()
-            .getMySelf().getInfo(), destination, connectionId, null);
+        RelayedMessage synMsg = relay.getProtocolVersion() >= 108
+            ? new RelayedMessageExt(Type.SYN, getController().getMySelf()
+                .getInfo(), destination, connectionId, null)
+            : new RelayedMessage(Type.SYN, getController().getMySelf()
+                .getInfo(), destination, connectionId, null);
         try {
             relay.sendMessage(synMsg);
             waitForAckOrNack(relHan);
@@ -235,9 +239,11 @@ public class RelayedConnectionManager extends PFComponent {
             Type type = message.getType().equals(Type.SYN)
                 ? Type.NACK
                 : Type.EOF;
-            RelayedMessage msg = new RelayedMessage(type, message
-                .getDestination(), message.getSource(), message
-                .getConnectionId(), null);
+            RelayedMessage msg = receivedFrom.getProtocolVersion() > 108
+                ? new RelayedMessageExt(type, message.getDestination(), message
+                    .getSource(), message.getConnectionId(), null)
+                : new RelayedMessage(type, message.getDestination(), message
+                    .getSource(), message.getConnectionId(), null);
             receivedFrom.sendMessagesAsynchron(msg);
             if (isFiner()) {
                 logFiner("Unable to relay message. "
@@ -264,21 +270,33 @@ public class RelayedConnectionManager extends PFComponent {
             }, 10000);
         }
 
+        RelayedMessage msg4Destination = message;
+        // Poor destination. Does not support Ext version of RelayedMessage
+        if (destinationMember.getProtocolVersion() < 108
+            && message instanceof RelayedMessageExt)
+        {
+            msg4Destination = new RelayedMessage(message.getType(), message
+                .getSource(), message.getDestination(), message
+                .getConnectionId(), message.getPayload());
+        }
+
         if (message.getType().equals(RelayedMessage.Type.DATA_ZIPPED)) {
             try {
-                destinationMember.sendMessage(message);
+                destinationMember.sendMessage(msg4Destination);
             } catch (ConnectionException e) {
                 log.log(Level.WARNING,
                     "Connection broken while relaying message to "
                         + destinationMember.getNick() + ". " + e);
                 log.log(Level.FINER, e.toString(), e);
-                RelayedMessage eofMsg = new RelayedMessage(Type.EOF, message
-                    .getDestination(), message.getSource(), message
-                    .getConnectionId(), null);
+                RelayedMessage eofMsg = receivedFrom.getProtocolVersion() > 108
+                    ? new RelayedMessageExt(Type.EOF, message.getDestination(),
+                        message.getSource(), message.getConnectionId(), null)
+                    : new RelayedMessage(Type.EOF, message.getDestination(),
+                        message.getSource(), message.getConnectionId(), null);
                 receivedFrom.sendMessagesAsynchron(eofMsg);
             }
         } else {
-            destinationMember.sendMessagesAsynchron(message);
+            destinationMember.sendMessagesAsynchron(msg4Destination);
         }
     }
 
@@ -296,9 +314,13 @@ public class RelayedConnectionManager extends PFComponent {
                 if (!getController().getIOProvider()
                     .getConnectionHandlerFactory().useRelayedConnections())
                 {
-                    RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
-                        getController().getMySelf().getInfo(), message
-                            .getSource(), message.getConnectionId(), null);
+                    RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= 108
+                        ? new RelayedMessageExt(Type.NACK, getController()
+                            .getMySelf().getInfo(), message.getSource(),
+                            message.getConnectionId(), null)
+                        : new RelayedMessage(Type.NACK, getController()
+                            .getMySelf().getInfo(), message.getSource(),
+                            message.getConnectionId(), null);
                     receivedFrom.sendMessagesAsynchron(nackMsg);
                     return;
                 }
@@ -365,9 +387,12 @@ public class RelayedConnectionManager extends PFComponent {
                 logFiner("Got unknown peer, while processing relayed message from "
                     + message.getSource().nick);
             }
-            RelayedMessage eofMsg = new RelayedMessage(Type.EOF,
-                getController().getMySelf().getInfo(), message.getSource(),
-                message.getConnectionId(), null);
+            RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= 108
+                ? new RelayedMessageExt(Type.EOF, message.getDestination(),
+                    message.getSource(), message.getConnectionId(), null)
+                : new RelayedMessage(Type.EOF, getController().getMySelf()
+                    .getInfo(), message.getSource(), message.getConnectionId(),
+                    null);
             receivedFrom.sendMessagesAsynchron(eofMsg);
             return;
         }
@@ -469,9 +494,13 @@ public class RelayedConnectionManager extends PFComponent {
                 if (isFiner()) {
                     logFiner("Sending ACK to " + message.getSource().nick);
                 }
-                RelayedMessage ackMsg = new RelayedMessage(Type.ACK,
-                    getController().getMySelf().getInfo(), message.getSource(),
-                    relHan.getConnectionId(), null);
+                RelayedMessage ackMsg = receivedFrom.getProtocolVersion() >= 108
+                    ? new RelayedMessageExt(Type.ACK, getController()
+                        .getMySelf().getInfo(), message.getSource(), relHan
+                        .getConnectionId(), null)
+                    : new RelayedMessage(Type.ACK, getController().getMySelf()
+                        .getInfo(), message.getSource(), relHan
+                        .getConnectionId(), null);
                 receivedFrom.sendMessagesAsynchron(ackMsg);
                 relHan.init();
                 getController().getNodeManager().acceptConnection(relHan);
@@ -480,9 +509,13 @@ public class RelayedConnectionManager extends PFComponent {
                 logFine("Unable to accept connection: " + relHan + ". "
                     + e.toString());
                 logFiner("ConnectionException", e);
-                RelayedMessage nackMsg = new RelayedMessage(Type.NACK,
-                    getController().getMySelf().getInfo(), message.getSource(),
-                    message.getConnectionId(), null);
+                RelayedMessage nackMsg = receivedFrom.getProtocolVersion() >= 108
+                    ? new RelayedMessageExt(Type.NACK, getController()
+                        .getMySelf().getInfo(), message.getSource(), message
+                        .getConnectionId(), null)
+                    : new RelayedMessage(Type.NACK, getController().getMySelf()
+                        .getInfo(), message.getSource(), message
+                        .getConnectionId(), null);
                 receivedFrom.sendMessagesAsynchron(nackMsg);
             } finally {
                 removePedingRelayedConnectionHandler(relHan);
@@ -523,9 +556,10 @@ public class RelayedConnectionManager extends PFComponent {
         }
     }
 
-    private class ServerIsRelayFinder implements RelayFinder {
+    public static class ServerIsRelayFinder implements RelayFinder {
         public Member findRelay(NodeManager nodeManager) {
-            Member defaultServer = getController().getOSClient().getServer();
+            Member defaultServer = nodeManager.getController().getOSClient()
+                .getServer();
             List<Member> candidates = new LinkedList<Member>();
             for (Member node : nodeManager.getNodesAsCollection()) {
                 if (node.isServer() || node.equals(defaultServer)) {

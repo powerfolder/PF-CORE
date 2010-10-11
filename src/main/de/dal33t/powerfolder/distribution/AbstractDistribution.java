@@ -26,6 +26,8 @@ import java.util.Properties;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.net.RelayFinder;
+import de.dal33t.powerfolder.net.RelayedConnectionManager.ServerIsRelayFinder;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -65,6 +67,10 @@ public abstract class AbstractDistribution extends Loggable implements
     public UpdateSetting createUpdateSettings() {
         // Default: Load from own server.
         return getController().getOSClient().createUpdateSettings();
+    }
+
+    public RelayFinder createRelayFinder() {
+        return new ServerIsRelayFinder();
     }
 
     /**
