@@ -78,5 +78,4 @@ public class RelayedMessageExt extends RelayedMessage implements Externalizable
             out.write(payload);
         }
     }
-
 }
