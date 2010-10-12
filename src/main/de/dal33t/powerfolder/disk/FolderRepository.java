@@ -129,11 +129,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         + Translation
             .getTranslation("transfer_mode.automatic_synchronization_10min.name");
     private static final String PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST = "false,false,false,false,5,false,12,0,m,"
-        + Translation
-            .getTranslation("transfer_mode.backup_source_5min.name") + ",false";
+        + Translation.getTranslation("transfer_mode.backup_source_5min.name")
+        + ",false";
     private static final String PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST = "false,false,false,false,60,false,12,0,m,"
-        + Translation
-            .getTranslation("transfer_mode.backup_source_hour.name") + ",false";
+        + Translation.getTranslation("transfer_mode.backup_source_hour.name")
+        + ",false";
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -428,8 +428,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
             .equals(syncProfConfig)
-            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST
-                .equals(syncProfConfig))
+            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST.equals(syncProfConfig))
         {
             // Migration for #2074 (new backup source uses JNotify).
             syncProfile = SyncProfile.BACKUP_SOURCE;
@@ -597,8 +596,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
         } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
             .equals(syncProfConfig)
-            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST
-                .equals(syncProfConfig))
+            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST.equals(syncProfConfig))
         {
             // Migration for #2074 (new backup source uses JNotify).
             syncProfile = SyncProfile.BACKUP_SOURCE;
@@ -907,23 +905,21 @@ public class FolderRepository extends PFComponent implements Runnable {
             return folders.get(folderInfo);
         }
 
-        // TODO: This is only a temporary solution
-        if (ConfigurationEntry.FOLDER_ATOMIC_COMMIT
-            .getValueBoolean(getController())
+        if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
             && folderSettings.getCommitDir() == null)
         {
             File newBaseDir = new File(folderSettings.getLocalBaseDir(),
-                AtomicCommitProcessor.TEMP_TARGET_DIR);
+                Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
             newBaseDir.mkdirs();
             FileUtils.setAttributesOnWindows(newBaseDir, true, true);
             File commitDir = folderSettings.getLocalBaseDir();
+            SyncProfile syncProfile = SyncProfile.NO_SYNC;
 
-            folderSettings = new FolderSettings(newBaseDir, folderSettings
-                .getSyncProfile(), folderSettings.isCreateInvitationFile(),
-                folderSettings.getArchiveMode(),
-                folderSettings.isPreviewOnly(), folderSettings
-                    .getDownloadScript(), folderSettings.getVersions(),
-                folderSettings.isSyncPatterns(), commitDir);
+            folderSettings = new FolderSettings(newBaseDir, syncProfile,
+                folderSettings.isCreateInvitationFile(), folderSettings
+                    .getArchiveMode(), folderSettings.isPreviewOnly(),
+                folderSettings.getDownloadScript(), folderSettings
+                    .getVersions(), folderSettings.isSyncPatterns(), commitDir);
             logWarning("Auto-commit setup. temp dir: " + newBaseDir
                 + ". commit dir:" + commitDir);
         }
