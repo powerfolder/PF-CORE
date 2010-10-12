@@ -420,7 +420,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
      * <p>
-     * Sets the syncprofile to <code>MANUAL_DOWNLOAD</code>
+     * Sets the transfer mode to {@link SyncProfile#HOST_FILES}
      * 
      * @param foInfo
      *            the folder to join
