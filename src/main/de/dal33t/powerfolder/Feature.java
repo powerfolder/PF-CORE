@@ -117,7 +117,14 @@ public enum Feature {
     /**
      * #2051: Disable email client directories until fully supported.
      */
-    USER_DIRECTORIES_EMAIL_CLIENTS(false);
+    USER_DIRECTORIES_EMAIL_CLIENTS(false),
+
+    /**
+     * #2056 If all new created folders should first download into a temp
+     * directory and mirror all contents to the actual target directory after it
+     * is 100% sync.
+     */
+    FOLDER_ATOMIC_COMMIT(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
