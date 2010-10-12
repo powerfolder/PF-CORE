@@ -52,7 +52,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.net.ConnectionListener;
@@ -561,7 +561,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     }
 
-    private class MyTransferManagerListener extends TransferAdapter {
+    private class MyTransferManagerListener extends TransferManagerAdapter {
 
         private void updateIfRequired(TransferManagerEvent event) {
             updateSyncButton();

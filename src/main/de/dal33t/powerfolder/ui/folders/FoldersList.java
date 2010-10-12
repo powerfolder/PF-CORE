@@ -528,7 +528,7 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    private class MyTransferManagerListener extends TransferAdapter {
+    private class MyTransferManagerListener extends TransferManagerAdapter {
 
         private void notifyView(TransferManagerEvent event) {
             final FileInfo fileInfo = event.getFile();

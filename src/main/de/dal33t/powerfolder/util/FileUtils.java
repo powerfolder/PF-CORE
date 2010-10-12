@@ -44,7 +44,6 @@ import java.util.zip.ZipOutputStream;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.AtomicCommitProcessor;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -348,18 +347,41 @@ public class FileUtils {
      */
 
     public static void recursiveDelete(File file) throws IOException {
-        if (file != null) {
-            if (file.isDirectory()) {
-                File[] files = file.listFiles();
-                for (File nextFile : files) {
-                    recursiveDelete(nextFile);
-                }
+        recursiveDelete(file, new FileFilter() {
+            public boolean accept(File pathname) {
+                return true;
             }
+        });
+    }
 
-            if (file.exists() && !file.delete()) {
-                throw new IOException("Could not delete file "
-                    + file.getAbsolutePath());
+    /**
+     * A recursive delete of a directory.
+     * 
+     * @param file
+     *            directory to delete
+     * @param filter
+     *            accept to delete
+     * @throws IOException
+     */
+
+    public static void recursiveDelete(File file, FileFilter filter)
+        throws IOException
+    {
+        if (file == null) {
+            return;
+        }
+        if (!filter.accept(file)) {
+            return;
+        }
+        if (file.isDirectory()) {
+            File[] files = file.listFiles(filter);
+            for (File nextFile : files) {
+                recursiveDelete(nextFile);
             }
+        }
+        if (file.exists() && !file.delete()) {
+            throw new IOException("Could not delete file "
+                + file.getAbsolutePath());
         }
     }
 
@@ -529,7 +551,7 @@ public class FileUtils {
             target.mkdirs();
         }
         if (source.isDirectory() && target.isDirectory()) {
-            if (isSubdirectory(source, target)) {
+            if (filter.accept(target) && isSubdirectory(source, target)) {
                 // Need to be careful if copying to a subdirectory,
                 // avoid infinite recursion.
                 throw new IOException("Copy to a subdirectory not permitted");
@@ -540,7 +562,7 @@ public class FileUtils {
                     // Synthesize target file name.
                     String lastPart = sourceDirFile.getName();
                     File targetDirFile = new File(target, lastPart);
-                    recursiveCopy(sourceDirFile, targetDirFile, filter);
+                    recursiveMirror(sourceDirFile, targetDirFile, filter);
                     done.add(lastPart);
                 }
                 for (File targetDirFile : target.listFiles(filter)) {
@@ -563,6 +585,7 @@ public class FileUtils {
         {
             copyFile(source, target);
             // Preserve modification date.
+            target.setLastModified(source.lastModified());
         } else {
             throw new UnsupportedOperationException(
                 "Can only copy directory to directory or file to file: "
@@ -994,10 +1017,10 @@ public class FileUtils {
      * @return true if file scan is allowed
      */
     public static boolean isScannable(String filePath, FolderInfo foInfo) {
-        if (filePath.endsWith(AtomicCommitProcessor.TEMP_TARGET_DIR)) {
+        if (filePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR)) {
             return false;
         }
-        
+
         int firstSystemDir = filePath
             .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {

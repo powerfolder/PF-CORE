@@ -64,7 +64,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -1159,7 +1159,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     }
 
-    private class MyTransferManagerListener extends TransferAdapter {
+    private class MyTransferManagerListener extends TransferManagerAdapter {
 
         private void updateIfRequired(TransferManagerEvent event) {
             if (folder == null

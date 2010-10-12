@@ -53,6 +53,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -60,7 +61,6 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.AtomicCommitProcessor;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -746,7 +746,7 @@ public class SettingsTab extends PFUIComponent {
             if (hasCommitDir) {
                 commitDir = newDirectory;
                 newDirectory = new File(newDirectory,
-                    AtomicCommitProcessor.TEMP_TARGET_DIR);
+                    Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
                 FileUtils.setAttributesOnWindows(newDirectory, true, true);
             }
 

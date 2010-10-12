@@ -20,7 +20,7 @@
 package de.dal33t.powerfolder.event;
 
 /** Adapter class, when only a few methods are needed  */
-public abstract class TransferAdapter implements TransferManagerListener {
+public abstract class TransferManagerAdapter implements TransferManagerListener {
 
     public void downloadRequested(TransferManagerEvent event) {
     }

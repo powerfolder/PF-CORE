@@ -33,7 +33,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -454,7 +454,7 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class UploadTransferManagerListener extends TransferAdapter {
+    private class UploadTransferManagerListener extends TransferManagerAdapter {
 
         public void uploadRequested(TransferManagerEvent event) {
             addOrUpdateUpload(event.getUpload());

@@ -33,7 +33,7 @@ import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.event.TransferAdapter;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -412,7 +412,7 @@ public class DownloadManagersTableModel extends PFComponent implements
      * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
-    private class MyTransferManagerListener extends TransferAdapter {
+    private class MyTransferManagerListener extends TransferManagerAdapter {
         public void downloadRequested(TransferManagerEvent event) {
             addOrUpdateDownload(event.getDownload());
         }
