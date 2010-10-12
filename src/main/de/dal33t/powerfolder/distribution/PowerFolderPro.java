@@ -64,9 +64,6 @@ public class PowerFolderPro extends AbstractDistribution {
         if (skinName.equals(SnowlandBasic.NAME)) {
             PreferencesEntry.SKIN_NAME.setValue(controller, Snowland.NAME);
         }
-
-        controller.getIOProvider().getRelayedConnectionManager().setRelayFiner(
-            new PublicRelayFinder());
     }
 
     @Override
