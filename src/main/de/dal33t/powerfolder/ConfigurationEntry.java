@@ -629,13 +629,6 @@ public enum ConfigurationEntry {
         60 * 60 * 24 * 365),
 
     /**
-     * #2056 If all new created folders should first download into a temp
-     * directory and mirror all contents to the actual target directory after it
-     * is 100% sync.
-     */
-    FOLDER_ATOMIC_COMMIT("atomic.commit", false),
-
-    /**
      * The http proxy to use for HTTP tunneled connections
      */
     HTTP_PROXY_HOST("http.proxy.host"),
