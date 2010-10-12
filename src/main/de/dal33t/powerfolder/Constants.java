@@ -65,6 +65,12 @@ public class Constants {
     public static final String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
 
     /**
+     * #2056: Temporary directory to download the updates before performing an
+     * atomic commit.
+     */
+    public static String ATOMIC_COMMIT_TEMP_TARGET_DIR = ".temp-dir";
+
+    /**
      * The URL where to check the connectivty with.
      */
     public static final String LIMITED_CONNECTIVTY_CHECK_URL = "http://checkconnectivity.powerfolder.com/check.php";
