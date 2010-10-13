@@ -228,7 +228,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             if (WinUtils.getInstance() != null) {
                 ValueModel startWithWindowsVM = new ValueHolder(WinUtils
-                    .getInstance().isPFStartup());
+                    .getInstance().isPFStartup(getController()));
                 startWithWindowsVM
                     .addValueChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {

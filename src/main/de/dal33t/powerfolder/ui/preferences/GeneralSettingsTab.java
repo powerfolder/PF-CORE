@@ -187,7 +187,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 ValueModel startWithWindowsVM = new ValueHolder(WinUtils
-                    .getInstance().isPFStartup());
+                    .getInstance().isPFStartup(getController()));
                 startWithWindowsVM
                     .addValueChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
@@ -327,7 +327,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
 
-            if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
+            if (!ConfigurationEntry.BACKUP_ONLY_CLIENT
+                .getValueBoolean(getController()))
+            {
                 row += 2;
                 builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
             }

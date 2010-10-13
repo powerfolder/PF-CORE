@@ -40,8 +40,6 @@ public class WinUtils extends Loggable {
     private static final Logger LOG = Logger
         .getLogger(WinUtils.class.getName());
 
-    public static final String SHORTCUTNAME = "PowerFolder.lnk";
-
     /**
      * The file system directory that contains the programs that appear in the
      * Startup folder for all users. A typical path is C:\Documents and
@@ -177,10 +175,12 @@ public class WinUtils extends Loggable {
             return;
         }
         logFiner("Found " + pfile.getAbsolutePath());
+        String shortCutname = controller.getDistribution().getBinaryName()
+            + ".lnk";
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
-            SHORTCUTNAME);
+            shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
-            false), SHORTCUTNAME);
+            false), shortCutname);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized", Translation
                 .getTranslation("winutils.shortcut.description"), pfile
@@ -194,11 +194,13 @@ public class WinUtils extends Loggable {
         }
     }
 
-    public boolean isPFStartup() {
+    public boolean isPFStartup(Controller controller) {
+        String shortCutname = controller.getDistribution().getBinaryName()
+            + ".lnk";
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
-            SHORTCUTNAME);
+            shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
-            false), SHORTCUTNAME);
+            false), shortCutname);
         return pflnk.exists() || pflnkAll.exists();
     }
 
