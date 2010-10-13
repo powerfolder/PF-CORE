@@ -137,7 +137,7 @@ public enum ConfigurationEntry {
      * URL of the Online Storage features
      */
     PROVIDER_ABOUT_URL("provider.url.about",
-        "http://www.powerfolder.com/wiki/Online_Storage"),
+        "http://www.powerfolder.com/wiki/Cloud_Space"),
 
     /**
      * Quickstart guides to PowerFolder
