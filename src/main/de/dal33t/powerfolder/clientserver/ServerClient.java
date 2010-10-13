@@ -685,18 +685,20 @@ public class ServerClient extends PFComponent {
     }
 
     private void updateFolders(Account a) {
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
             .getValueBoolean(getController()))
         {
-            for (Folder folder : getController().getFolderRepository()
-                .getFolders())
+            return;
+        }
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            if (!a.hasReadPermissions(folder.getInfo())
+                && getController().getOSClient().isConnected())
             {
-                if (!a.hasReadPermissions(folder.getInfo())) {
-                    logWarning("Removing local " + folder + " " + a
-                        + " does not have read permission");
-                    getController().getFolderRepository().removeFolder(folder,
-                        false);
-                }
+                logWarning("Removing local " + folder + " " + a
+                    + " does not have read permission");
+                getController().getFolderRepository().removeFolder(folder,
+                    false);
             }
         }
     }
