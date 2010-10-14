@@ -48,7 +48,7 @@ import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.ui.notification.NotificationHandler;
+import de.dal33t.powerfolder.ui.notification.NoticeHandler;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -135,9 +135,9 @@ public class NoticesModel extends PFUIComponent {
             .getValue()
             && notice.isNotification())
         {
-            NotificationHandler notificationHandler = new NotificationHandler(
-                getController(), notice.getTitle(), notice.getSummary(), true);
-            notificationHandler.show();
+            NoticeHandler noticeHandler = new NoticeHandler(getController(),
+                notice);
+            noticeHandler.show();
         }
 
         if (notice.isActionable()) {
