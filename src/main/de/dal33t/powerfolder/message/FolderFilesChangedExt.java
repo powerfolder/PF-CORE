@@ -52,7 +52,7 @@ public class FolderFilesChangedExt extends FolderFilesChanged implements
     }
 
     FolderFilesChangedExt(FileInfo fileInfo) {
-        super(fileInfo);
+        super(fileInfo, true);
     }
 
     FolderFilesChangedExt(FolderInfo aFolder, FileInfo[] addedFiles) {

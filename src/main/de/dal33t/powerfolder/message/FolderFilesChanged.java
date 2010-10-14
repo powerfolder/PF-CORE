@@ -93,6 +93,19 @@ public class FolderFilesChanged extends FolderRelatedMessage {
     }
 
     /**
+     * Build a filelist marking the one file as added/updated to the DB.
+     * 
+     * @param fileInfo
+     *            the file to broadcast
+     */
+    protected FolderFilesChanged(FileInfo fileInfo, boolean forExt) {
+        Reject.ifNull(fileInfo, "Fileinfo is null");
+
+        folder = fileInfo.getFolderInfo();
+        added = new FileInfo[]{fileInfo};
+    }
+
+    /**
      * @param fileInfo
      * @param useExt
      *            if {@link Externalizable}s should be used.
