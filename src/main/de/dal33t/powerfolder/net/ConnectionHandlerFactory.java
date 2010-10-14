@@ -353,7 +353,7 @@ public class ConnectionHandlerFactory extends PFComponent {
                 + ", poor: " + poor);
         }
 
-        if (good == 0 && medium == 0 && poor == 0) {
+        if (good == 0 && medium == 0 && poor <= 1) {
             return null;
         }
 
