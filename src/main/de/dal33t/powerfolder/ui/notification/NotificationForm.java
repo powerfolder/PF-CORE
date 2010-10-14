@@ -1,42 +1,54 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.notification;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+
+import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
-
-import javax.swing.*;
-import javax.swing.border.LineBorder;
-import java.awt.*;
 
 /**
  * Class representing the message notification form.
  */
+@SuppressWarnings("serial")
 public class NotificationForm extends JPanel {
 
     /**
      * Constructor. Displays a panel with title and message. Also accept and
      * optional cancel button.
-     *
+     * 
      * @param titleText
      * @param messageText
      * @param acceptOptionLabel
@@ -44,12 +56,13 @@ public class NotificationForm extends JPanel {
      * @param cancelOptionLabel
      * @param cancelAction
      */
-    NotificationForm(String titleText, String messageText, String acceptOptionLabel,
-                     Action acceptAction, String cancelOptionLabel,
-                     Action cancelAction, boolean showAccept) {
+    NotificationForm(String titleText, String messageText,
+        String acceptOptionLabel, Action acceptAction,
+        String cancelOptionLabel, Action cancelAction, boolean showButtons)
+    {
         setLayout(new BorderLayout());
         JPanel jPanel = createPanel(titleText, messageText, acceptOptionLabel,
-                acceptAction, cancelOptionLabel, cancelAction, showAccept);
+            acceptAction, cancelOptionLabel, cancelAction, showButtons);
         add(jPanel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
@@ -58,11 +71,9 @@ public class NotificationForm extends JPanel {
      * Create the UI for notification form
      */
     private static JPanel createPanel(String titleText, String msgText,
-                                      String acceptOptionLabel,
-                                      Action acceptAction,
-                                      String cancelOptionLabel,
-                                      Action cancelAction,
-                                      boolean showAccept) {
+        String acceptOptionLabel, Action acceptAction,
+        String cancelOptionLabel, Action cancelAction, boolean showAccept)
+    {
         JPanel jPanel = new JPanel();
         jPanel.setBackground(Color.WHITE);
         CellConstraints cc = new CellConstraints();
@@ -75,8 +86,8 @@ public class NotificationForm extends JPanel {
         int[] cols;
         if (cancelOptionLabel == null) {
             formLayout = new FormLayout(
-                    "fill:7px:none, fill:85px:none, fill:80px:none, fill:85px:none, fill:7px:none",
-                    "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+                "fill:7px:none, fill:85px:none, fill:80px:none, fill:85px:none, fill:7px:none",
+                "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
             internalWidth = 3;
             jPanel.setLayout(formLayout);
             if (showAccept) {
@@ -85,8 +96,8 @@ public class NotificationForm extends JPanel {
             cols = new int[]{2, 3, 4};
         } else {
             formLayout = new FormLayout(
-                    "fill:7px:none, fill:30px:none, fill:80px:none, fill:30px:none, fill:80px:none, fill:30px:none, fill:7px:none",
-                    "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+                "fill:7px:none, fill:30px:none, fill:pref:none, fill:pref:none, fill:pref:none, fill:30px:none, fill:7px:none",
+                "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
             internalWidth = 5;
             jPanel.setLayout(formLayout);
             jPanel.add(button, cc.xy(3, 4));
@@ -99,22 +110,25 @@ public class NotificationForm extends JPanel {
             }
             cols = new int[]{2, 3, 4, 5, 6};
         }
-        
+
         // 
 
-        jPanel.add(createHeaderPanel(titleText), cc.xywh(2, 1, internalWidth, 1));
+        jPanel.add(createHeaderPanel(titleText), cc
+            .xywh(2, 1, internalWidth, 1));
 
         JTextArea textArea = new JTextArea(msgText);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         jPanel.add(textArea, new CellConstraints(2, 2, internalWidth, 1,
-                CellConstraints.DEFAULT, CellConstraints.TOP));
+            CellConstraints.DEFAULT, CellConstraints.TOP));
 
         addFillComponents(jPanel, cols, new int[]{1, 2, 3, 4, 5});
         return jPanel;
     }
 
-    private static void addFillComponents(Container panel, int[] cols, int[] rows) {
+    private static void addFillComponents(Container panel, int[] cols,
+        int[] rows)
+    {
         Dimension filler = new Dimension(10, 10);
 
         boolean doneColumnOne = false;
@@ -149,8 +163,9 @@ public class NotificationForm extends JPanel {
     private static JPanel createHeaderPanel(String title) {
         JPanel jPanel = new JPanel();
         jPanel.setBackground(null);
-        FormLayout formlayout1 = new FormLayout("fill:default:none, fill:7px:none, fill:default:none",
-                "center:default:none");
+        FormLayout formlayout1 = new FormLayout(
+            "fill:default:none, fill:7px:none, fill:default:none",
+            "center:default:none");
         CellConstraints cc = new CellConstraints();
         jPanel.setLayout(formlayout1);
 
@@ -161,9 +176,9 @@ public class NotificationForm extends JPanel {
         jPanel.add(jLabel, cc.xy(3, 1));
 
         JLabel logo = new JLabel(Icons.getIconById(Icons.SMALL_LOGO));
-        logo.setSize(new Dimension(
-            Icons.getIconById(Icons.SMALL_LOGO).getIconWidth(),
-            Icons.getIconById(Icons.SMALL_LOGO).getIconHeight()));
+        logo.setSize(new Dimension(Icons.getIconById(Icons.SMALL_LOGO)
+            .getIconWidth(), Icons.getIconById(Icons.SMALL_LOGO)
+            .getIconHeight()));
         jPanel.add(logo, cc.xy(1, 1));
 
         addFillComponents(jPanel, new int[]{1, 2}, new int[]{1});

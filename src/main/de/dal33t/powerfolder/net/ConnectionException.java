@@ -19,13 +19,12 @@
 */
 package de.dal33t.powerfolder.net;
 
+import java.awt.EventQueue;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
-
-import java.awt.*;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -106,7 +105,6 @@ public class ConnectionException extends Exception {
                         msg += "\nmessage:\n" + m.getLastProblem().message;
                     }
                 }
-
             }
             final String message = msg;
             EventQueue.invokeLater(new Runnable() {

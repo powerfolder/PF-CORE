@@ -356,10 +356,8 @@ public class StatusTab extends PFUIComponent {
 
     private void updateNewNoticesText() {
 
-        int unread = (Integer) noticeModel.getUnreadNoticesCountVM()
-            .getValue();
-        int all = (Integer) noticeModel.getAllNoticesCountVM()
-            .getValue();
+        int unread = (Integer) noticeModel.getUnreadNoticesCountVM().getValue();
+        int all = (Integer) noticeModel.getAllNoticesCountVM().getValue();
 
         NoticesModel noticesModel = getUIController().getApplicationModel()
             .getNoticesModel();
@@ -398,7 +396,8 @@ public class StatusTab extends PFUIComponent {
                     .getTranslation("status_tab.unread_notices");
             }
         } else {
-            noticesText = Translation.getTranslation("status_tab.unread_notices");
+            noticesText = Translation
+                .getTranslation("status_tab.unread_notices");
         }
         newNoticesLine.setNormalLabelText(noticesText);
         newNoticesLine.setValue(unread);
@@ -414,7 +413,11 @@ public class StatusTab extends PFUIComponent {
                 break;
             }
         }
-        newNoticesLine.setNzIcon(noticesIcon);
+        if (unread > 0) {
+            newNoticesLine.setNzIcon(noticesIcon);
+        } else {
+            newNoticesLine.setNzIcon(null);
+        }
     }
 
     private void updateBuyNowLink(String text, boolean visible) {
