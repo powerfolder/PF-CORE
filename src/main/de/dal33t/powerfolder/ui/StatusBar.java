@@ -106,6 +106,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private final AtomicInteger state = new AtomicInteger(UNKNOWN);
 
     private DelayedUpdater syncUpdater;
+    private DelayedUpdater connectLabelUpdater;
     /** TODO: Find a better place for systray icon setter */
     private SyncIconHelper syncHelper;
 
@@ -173,6 +174,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private void initComponents() {
         syncUpdater = new DelayedUpdater(getController(), 1000L);
+        connectLabelUpdater = new DelayedUpdater(getController());
 
         onlineStateInfo = new JButtonMini(Icons.getIconById(Icons.BLANK), "");
 
@@ -314,6 +316,14 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     }
 
     private void updateConnectionLabels() {
+        connectLabelUpdater.schedule(new Runnable() {
+            public void run() {
+                updateConnectionLabels0();
+            }
+        });
+    }
+
+    private void updateConnectionLabels0() {
         Controller controller = getController();
         IOProvider ioProvider = controller.getIOProvider();
         Icon connectionQualityIcon = null;
