@@ -19,22 +19,30 @@
  */
 package de.dal33t.powerfolder.ui.information.notices;
 
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.ColorUtil;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.ColorUtil;
 
 /**
  * Table showing notices in dialog
@@ -81,6 +89,7 @@ public class NoticesTable extends JTable {
             int column)
         {
             String myValue = "";
+            boolean bold = false;
             if (value != null) {
                 Notice notice = (Notice) value;
                 setIcon(null);
@@ -110,10 +119,20 @@ public class NoticesTable extends JTable {
                         setHorizontalAlignment(LEFT);
                         break;
                 }
+
+                bold = !notice.isRead();
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
                 isSelected, hasFocus, row, column);
+
+            if (bold) {
+                c.setFont(new Font(c.getFont().getFontName(), Font.BOLD, c
+                    .getFont().getSize()));
+            } else {
+                c.setFont(new Font(c.getFont().getFontName(), Font.PLAIN, c
+                    .getFont().getSize()));
+            }
 
             if (!isSelected) {
                 setBackground(row % 2 == 0
