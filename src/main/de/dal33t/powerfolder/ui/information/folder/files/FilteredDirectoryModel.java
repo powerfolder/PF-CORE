@@ -41,7 +41,8 @@ public class FilteredDirectoryModel {
     public FilteredDirectoryModel(Folder rootFolder, String directoryRelativeName) {
         this.rootFolder = rootFolder;
         this.directoryRelativeName = directoryRelativeName;
-        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "");
+        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "",
+                false);
     }
 
     public Folder getRootFolder() {
@@ -60,19 +61,7 @@ public class FilteredDirectoryModel {
         return filteredDirectory;
     }
 
-    public boolean hasFiles() {
-        return filteredDirectory.hasFiles();
-    }
-
     public boolean hasFilesDeep() {
         return filteredDirectory.hasFilesDeep();
-    }
-
-    public boolean hasNewFiles() {
-        return filteredDirectory.hasNewFiles();
-    }
-
-    public boolean hasNewFilesDeep() {
-        return filteredDirectory.hasNewFilesDeep();
     }
 }

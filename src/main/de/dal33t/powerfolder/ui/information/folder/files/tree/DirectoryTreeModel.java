@@ -79,8 +79,7 @@ public class DirectoryTreeModel extends DefaultTreeModel {
             if (sub.hasFilesDeep()) {
                 boolean subHasNewFilesDeep = sub.hasNewFilesDeep();
                 DirectoryTreeNodeUserObject newSubUO =
-                        new DirectoryTreeNodeUserObject(sub.getDisplayName(),
-                                sub.getRelativeName(),
+                        new DirectoryTreeNodeUserObject(sub.getDisplayName(), sub.getRelativeName(),
                                 subHasNewFilesDeep);
                 DefaultMutableTreeNode newSubNode =
                         new DefaultMutableTreeNode(newSubUO);
@@ -103,10 +102,8 @@ public class DirectoryTreeModel extends DefaultTreeModel {
                 (DirectoryTreeNodeUserObject) node.getUserObject();
 
         // Updating root - show folder name
-        DirectoryTreeNodeUserObject candidateNode = new DirectoryTreeNodeUserObject(
-                directory.getDisplayName(),
-                directory.getRelativeName(),
-                directory.hasNewFilesDeep());
+        DirectoryTreeNodeUserObject candidateNode = new DirectoryTreeNodeUserObject(directory.getDisplayName(),
+                directory.getRelativeName(), directory.hasNewFilesDeep());
 
         if (!candidateNode.equals(existingNode)) {
             node.setUserObject(candidateNode);

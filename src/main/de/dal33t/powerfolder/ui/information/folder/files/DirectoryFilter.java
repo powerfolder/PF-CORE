@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -281,7 +280,7 @@ public class DirectoryFilter extends FilterModel {
             if (fileInfo instanceof DirectoryInfo) {
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
                 FilteredDirectory fd = new FilteredDirectory(di.getFilenameOnly(),
-                        di.getRelativeName());
+                        di.getRelativeName(), di.isDeleted());
 
                 // Add dir to tree.
                 filteredDirectory.getList().add(fd);
@@ -322,22 +321,32 @@ public class DirectoryFilter extends FilterModel {
             if (fileInfo instanceof DirectoryInfo) {
                 DirectoryInfo di = (DirectoryInfo) fileInfo;
                 FilteredDirectory fd = new FilteredDirectory(di.getFilenameOnly(),
-                        di.getRelativeName());
+                        di.getRelativeName(), di.isDeleted());
 
-                // Add dir to tree.
-                filteredDirectory.getList().add(fd);
-
-                filterDirectory(dao, di, filteredDirectoryModel, fd,
-                        keywords, result);
+                filterDirectory(dao, di, filteredDirectoryModel, fd, keywords, result);
 
                 // Add local files to table list.
                 if (target) {
                     if (fd.hasFilesDeep()) {
-                        DirectoryInfo temp = FileInfoFactory.lookupDirectory(
-                folder.getInfo(), di.getRelativeName());
-                        filteredDirectoryModel.getFileInfos().add(temp);
+                        if (fileFilterMode != FILE_FILTER_MODE_DELETED_PREVIOUS
+                                ^ di.isDeleted()) {
+                            filteredDirectoryModel.getFileInfos().add(di);
+                        }
                     }
                 }
+
+                // Add dir to tree.
+                if (fileFilterMode == FILE_FILTER_MODE_DELETED_PREVIOUS) {
+                    if (fd.isDeleted() || fd.hasDeletedFilesDeep()) {
+                        filteredDirectory.getList().add(fd);
+                        filteredDirectory.setDeletedFiles(true);
+                    }
+                } else {
+                    if (!fd.isDeleted()) {
+                        filteredDirectory.getList().add(fd);
+                    }
+                }
+
             } else {
                 filteredDirectory.setFiles(true);
                 filterFileInfo(filteredDirectoryModel, filteredDirectory,

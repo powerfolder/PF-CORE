@@ -10,10 +10,13 @@ public class FilteredDirectory {
     private final List<FilteredDirectory> list = new ArrayList<FilteredDirectory>();
     private boolean files;
     private boolean newFiles;
+    private boolean deleted;
+    private boolean deletedFiles;
 
-    public FilteredDirectory(String displayName, String relativeName) {
+    public FilteredDirectory(String displayName, String relativeName, boolean deleted) {
         this.displayName = displayName;
         this.relativeName = relativeName;
+        this.deleted = deleted;
     }
 
     public List<FilteredDirectory> getList() {
@@ -24,12 +27,12 @@ public class FilteredDirectory {
         this.files = files;
     }
 
-    public void setNewFiles(boolean newFiles) {
-        this.newFiles = newFiles;
+    public boolean isDeleted() {
+        return deleted;
     }
 
-    public boolean hasFiles() {
-        return files;
+    public void setNewFiles(boolean newFiles) {
+        this.newFiles = newFiles;
     }
 
     public boolean hasFilesDeep() {
@@ -44,8 +47,20 @@ public class FilteredDirectory {
         return false;
     }
 
-    public boolean hasNewFiles() {
-        return newFiles;
+    public void setDeletedFiles(boolean deletedFiles) {
+        this.deletedFiles = deletedFiles;
+    }
+
+    public boolean hasDeletedFilesDeep() {
+        if (deletedFiles) {
+            return true;
+        }
+        for (FilteredDirectory directory : list) {
+            if (directory.hasDeletedFilesDeep()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean hasNewFilesDeep() {

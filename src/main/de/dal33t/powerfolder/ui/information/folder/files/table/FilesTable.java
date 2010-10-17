@@ -148,7 +148,10 @@ public class FilesTable extends JTable {
         }
 
         public Component getTableCellRendererComponent(JTable table,
-                                                       Object value, boolean isSelected, boolean hasFocus, int row,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
                                                        int column) {
             DiskItem diskItem = (DiskItem) value;
             String myValue = "";
