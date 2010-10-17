@@ -25,22 +25,26 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.font.TextAttribute;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.util.Map;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.Icons;
@@ -333,19 +337,19 @@ public class FilesTable extends JTable {
             }
 
             Component c = super.getTableCellRendererComponent(table, myValue,
-                    isSelected, hasFocus, row, column);
+                isSelected, hasFocus, row, column);
 
             // Show new files in bold.
-            if (diskItem instanceof FileInfo) {
+            if (diskItem.isFile()) {
                 if (recentlyDownloaded((FileInfo) diskItem)) {
                     c.setFont(new Font(getFont().getName(), Font.BOLD,
-                            getFont().getSize()));
+                        getFont().getSize()));
                 }
             }
 
             if (!isSelected) {
                 setBackground(row % 2 == 0
-                        ? ColorUtil.EVEN_TABLE_ROW_COLOR
+                    ? ColorUtil.EVEN_TABLE_ROW_COLOR
                         : ColorUtil.ODD_TABLE_ROW_COLOR);
             }
 
