@@ -21,17 +21,19 @@ package de.dal33t.powerfolder.ui.model;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.information.downloads.DownloadManagersTableModel;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
+import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class TransferManagerModel extends PFUIComponent {
@@ -59,9 +61,14 @@ public class TransferManagerModel extends PFUIComponent {
     /** Value model with integer number of completed displayed uploads. */
     private final ValueModel completedDownloadsCountVM = new ValueHolder();
 
-    public TransferManagerModel(TransferManager transferManager) {
-        super(transferManager.getController());
-        this.transferManager = transferManager;
+    private DelayedUpdater downloadsValueModelUpdater;
+    private DelayedUpdater uploadsValueModelUpdater;
+
+    public TransferManagerModel(TransferManager aTransferManager) {
+        super(aTransferManager.getController());
+        transferManager = aTransferManager;
+        downloadsValueModelUpdater = new DelayedUpdater(getController());
+        uploadsValueModelUpdater = new DelayedUpdater(getController());
         downloadsAutoCleanupModel = new ValueHolder();
         downloadsAutoCleanupModel
             .setValue(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
@@ -72,6 +79,7 @@ public class TransferManagerModel extends PFUIComponent {
             .setValue(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
                 .getValueBoolean(getController()));
         uploadsTableModel = new UploadsTableModel(this);
+
     }
 
     /**
@@ -91,8 +99,8 @@ public class TransferManagerModel extends PFUIComponent {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        updateDownloadsValueModels();
-        updateUploadsValueModels();
+        updateDownloadsValueModels0();
+        updateUploadsValueModels0();
     }
 
     // Exposing ***************************************************************
@@ -118,10 +126,8 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
-     * Count the visible completed downloads for a folder.
-     * 
      * @param folder
-     * @return
+     * @return the visible completed downloads for a folder.
      */
     public int countCompletedDownloads(Folder folder) {
         int downloadCount = downloadManagersTableModel.getRowCount();
@@ -233,16 +239,22 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     /**
-     * Returns a value model with integer number of completed displayed
-     * downloads.
-     * 
-     * @return
+     * @return a value model with integer number of completed displayed
+     *         downloads.
      */
     public ValueModel getCompletedDownloadsCountVM() {
         return completedDownloadsCountVM;
     }
 
     private void updateDownloadsValueModels() {
+        downloadsValueModelUpdater.schedule(new Runnable() {
+            public void run() {
+                updateDownloadsValueModels0();
+            }
+        });
+    }
+
+    private void updateDownloadsValueModels0() {
 
         // Recalculate totals for downloads.
         int downloadCount = downloadManagersTableModel.getRowCount();
@@ -269,7 +281,14 @@ public class TransferManagerModel extends PFUIComponent {
     }
 
     private void updateUploadsValueModels() {
+        uploadsValueModelUpdater.schedule(new Runnable() {
+            public void run() {
+                updateUploadsValueModels0();
+            }
+        });
+    }
 
+    private void updateUploadsValueModels0() {
         // Recalculate total and active uploads.
         int uploadCount = uploadsTableModel.getRowCount();
         int activeUploadCount = 0;
@@ -354,7 +373,9 @@ public class TransferManagerModel extends PFUIComponent {
         }
 
         public boolean fireInEventDispatchThread() {
-            return true;
+            // Not required to be executed in EDT, because DelayedUpdater is
+            // used.
+            return false;
         }
 
         public void completedUploadRemoved(TransferManagerEvent event) {
