@@ -40,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -60,7 +58,9 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoKey;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FileInfoKey.Type;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -74,6 +74,7 @@ import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Validate;
 import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -119,7 +120,7 @@ public class TransferManager extends PFComponent {
     /** A set of pending files, which should be downloaded */
     private final List<Download> pendingDownloads;
     /** The list of completed download */
-    private final Collection<DownloadManager> completedDownloads;
+    private final ConcurrentMap<FileInfoKey, DownloadManager> completedDownloads;
 
     /** The trigger, where transfermanager waits on */
     private final Object waitTrigger = new Object();
@@ -176,10 +177,10 @@ public class TransferManager extends PFComponent {
         this.queuedUploads = new CopyOnWriteArrayList<Upload>();
         this.activeUploads = new CopyOnWriteArrayList<Upload>();
         this.completedUploads = new CopyOnWriteArrayList<Upload>();
-        this.dlManagers = new ConcurrentHashMap<FileInfo, DownloadManager>();
+        this.dlManagers = Util.createConcurrentHashMap();
         this.pendingDownloads = new CopyOnWriteArrayList<Download>();
-        this.completedDownloads = new ConcurrentLinkedQueue<DownloadManager>();
-        this.downloadsCount = new ConcurrentHashMap<Member, Integer>();
+        this.completedDownloads = Util.createConcurrentHashMap();
+        this.downloadsCount = Util.createConcurrentHashMap();
         this.uploadCounter = new TransferCounter();
         this.downloadCounter = new TransferCounter();
         totalUploadTrafficCounter = new TransferCounter();
@@ -341,7 +342,9 @@ public class TransferManager extends PFComponent {
         {
             Integer downloadCleanupFrequency = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
-            for (DownloadManager completedDownload : completedDownloads) {
+            for (DownloadManager completedDownload : completedDownloads
+                .values())
+            {
                 long numberOfDays = calcDays(completedDownload
                     .getCompletedDate());
                 if (numberOfDays >= downloadCleanupFrequency) {
@@ -767,7 +770,8 @@ public class TransferManager extends PFComponent {
                 return;
             }
         }
-        completedDownloads.add(dlManager);
+        completedDownloads.put(new FileInfoKey(fInfo, Type.VERSION_DATE_SIZE),
+            dlManager);
         for (Download d : dlManager.getSources()) {
             d.setCompleted();
         }
@@ -883,7 +887,7 @@ public class TransferManager extends PFComponent {
      * Coounts the number of active uploads for a folder.
      * 
      * @param folder
-     * @return
+     * @return the # of activate uploads
      */
     public int countActiveUploads(Folder folder) {
         int count = 0;
@@ -2079,11 +2083,14 @@ public class TransferManager extends PFComponent {
      * Clears a completed downloads
      */
     public void clearCompletedDownload(DownloadManager dlMan) {
-        if (completedDownloads.remove(dlMan)) {
-            for (Download download : dlMan.getSources()) {
-                fireCompletedDownloadRemoved(new TransferManagerEvent(this,
-                    download));
-            }
+        if (completedDownloads.remove(new FileInfoKey(dlMan.getFileInfo(),
+            Type.VERSION_DATE_SIZE)) == null)
+        {
+            logSevere("Completed download manager not found: " + dlMan);
+        }
+        for (Download download : dlMan.getSources()) {
+            fireCompletedDownloadRemoved(new TransferManagerEvent(this,
+                download));
         }
     }
 
@@ -2199,12 +2206,8 @@ public class TransferManager extends PFComponent {
      *         null
      */
     public DownloadManager getCompletedDownload(FileInfo fInfo) {
-        for (DownloadManager dlManager : completedDownloads) {
-            if (dlManager.getFileInfo().isVersionDateAndSizeIdentical(fInfo)) {
-                return dlManager;
-            }
-        }
-        return null;
+        return completedDownloads.get(new FileInfoKey(fInfo,
+            Type.VERSION_DATE_SIZE));
     }
 
     public Download getActiveDownload(Member from, FileInfo fInfo) {
@@ -2301,7 +2304,7 @@ public class TransferManager extends PFComponent {
 
     public int countCompletedDownloads(Folder folder) {
         int count = 0;
-        for (DownloadManager completedDownload : completedDownloads) {
+        for (DownloadManager completedDownload : completedDownloads.values()) {
             Folder f = completedDownload.getFileInfo().getFolder(
                 getController().getFolderRepository());
             if (f != null && f.getInfo().equals(folder.getInfo())) {
@@ -2334,7 +2337,7 @@ public class TransferManager extends PFComponent {
      *         downloads list. May change after returned.
      */
     public Collection<DownloadManager> getCompletedDownloadsCollection() {
-        return Collections.unmodifiableCollection(completedDownloads);
+        return Collections.unmodifiableCollection(completedDownloads.values());
     }
 
     /**
@@ -2343,12 +2346,8 @@ public class TransferManager extends PFComponent {
      *         completed downloads);
      */
     public boolean isCompletedDownload(FileInfo fInfo) {
-        for (DownloadManager dm : completedDownloads) {
-            if (dm.getFileInfo().isVersionDateAndSizeIdentical(fInfo)) {
-                return true;
-            }
-        }
-        return false;
+        return completedDownloads.get(new FileInfoKey(fInfo,
+            Type.VERSION_DATE_SIZE)) != null;
     }
 
     /**
@@ -2478,7 +2477,8 @@ public class TransferManager extends PFComponent {
                             getController(), download.getFile(), download
                                 .isRequestedAutomatic());
                         man.init(true);
-                        completedDownloads.add(man);
+                        completedDownloads.put(new FileInfoKey(man
+                            .getFileInfo(), Type.VERSION_DATE_SIZE), man);
                         // For faster loading
                         dlms.add(man);
                     }
@@ -2530,7 +2530,7 @@ public class TransferManager extends PFComponent {
                     .isRequestedAutomatic()));
             }
 
-            for (DownloadManager man : completedDownloads) {
+            for (DownloadManager man : completedDownloads.values()) {
                 storedDownloads.addAll(man.getSources());
             }
 
@@ -2560,15 +2560,14 @@ public class TransferManager extends PFComponent {
      * @param fileInfo
      */
     public void clearCompletedDownload(FileInfo fileInfo) {
-        for (DownloadManager completedDownload : completedDownloads) {
-            if (completedDownload.getFileInfo().equals(fileInfo)) {
-                if (completedDownloads.remove(completedDownload)) {
-                    for (Download download : completedDownload.getSources()) {
-                        fireCompletedDownloadRemoved(new TransferManagerEvent(
-                            this, download));
-                    }
-                }
-            }
+        FileInfoKey key = new FileInfoKey(fileInfo, Type.VERSION_DATE_SIZE);
+        DownloadManager dlManager = completedDownloads.remove(key);
+        if (dlManager == null) {
+            return;
+        }
+        for (Download download : dlManager.getSources()) {
+            fireCompletedDownloadRemoved(new TransferManagerEvent(this,
+                download));
         }
     }
 
