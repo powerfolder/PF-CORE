@@ -227,9 +227,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             .triggerFileRequesting();
         TestHelper.waitMilliSeconds(5);
 
-        assertEquals("" + getFolderAtBart().getIncomingFiles(true), 0,
-            getFolderAtBart().getIncomingFiles(true).size());
-        assertEquals(0, getFolderAtLisa().getIncomingFiles(true).size());
+        assertEquals("" + getFolderAtBart().getIncomingFiles(), 0,
+            getFolderAtBart().getIncomingFiles().size());
+        assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);
         assertEquals(0, bartListener.uploadCompleted);
