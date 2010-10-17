@@ -176,11 +176,11 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public String message() {
                 return "Icoming files at lisa: "
-                    + getFolderAtLisa().getIncomingFiles(true).size();
+                    + getFolderAtLisa().getIncomingFiles().size();
             }
 
             public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles(true).size() == 1;
+                return getFolderAtLisa().getIncomingFiles().size() == 1;
             }
 
         });
