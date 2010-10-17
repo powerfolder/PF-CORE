@@ -64,11 +64,12 @@ public class DownloadManagersTableModel extends PFComponent implements
     public static final int COLFOLDER = 4;
     public static final int COLFROM = 5;
 
-    private static final int UPDATE_TIME = 1000;
+    private static final int UPDATE_TIME = 2000;
     private final Collection<TableModelListener> listeners;
     private final List<DownloadManager> downloadManagers;
     private int fileInfoComparatorType = -1;
     private boolean sortAscending = true;
+    private volatile boolean dirty;
     private int sortColumn;
     private final TransferManagerModel model;
     private volatile boolean periodicUpdate;
@@ -106,6 +107,7 @@ public class DownloadManagersTableModel extends PFComponent implements
                 downloadManagers.add(downloadManager);
             }
         }
+        dirty = true;
         // #1732 FIXME: Does not work addAll(tm.getPendingDownloads());
     }
 
@@ -223,6 +225,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             Collections.reverse(downloadManagers);
         }
         fireModelChanged();
+        dirty = true;
     }
 
     public int getColumnCount() {
@@ -393,6 +396,7 @@ public class DownloadManagersTableModel extends PFComponent implements
             } else {
                 rowsUpdated(index, index);
             }
+            dirty = true;
         } else {
             logSevere("Unable to remove download from tablemodel, not found: "
                 + download);
@@ -511,6 +515,7 @@ public class DownloadManagersTableModel extends PFComponent implements
                 // @todo DownloadManager already knows of change???
                 rowsUpdated(index, index);
             }
+            dirty = true;
         }
 
         public boolean fireInEventDispatchThread() {
@@ -538,12 +543,17 @@ public class DownloadManagersTableModel extends PFComponent implements
     private void resortAndUpdate() {
         Runnable wrapper = new Runnable() {
             public void run() {
-                if (fileInfoComparatorType == TransferComparator.BY_PROGRESS) {
-                    // Always sort on a PROGRESS change, so that the table
-                    // reorders correctly.
-                    sort();
+                if (dirty) {
+                    if (fileInfoComparatorType == TransferComparator.BY_PROGRESS)
+                    {
+                        // Always sort on a PROGRESS change, so that the table
+                        // reorders correctly.
+                        sort();
+                    }
+                    rowsUpdatedAll();
                 }
-                rowsUpdatedAll();
+               
+                dirty = false;
             }
         };
         SwingUtilities.invokeLater(wrapper);
