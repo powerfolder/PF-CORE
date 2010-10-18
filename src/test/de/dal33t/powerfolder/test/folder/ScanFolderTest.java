@@ -648,7 +648,7 @@ public class ScanFolderTest extends ControllerTestCase {
         TestHelper.createRandomFile(subdir1);
         TestHelper.createRandomFile(subdir1);
 
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolder().getKnownDirectories().size() == 1
                     && getFolder().getKnownFiles().size() == 2;
@@ -663,7 +663,7 @@ public class ScanFolderTest extends ControllerTestCase {
         File subdir2 = new File(getFolder().getLocalBase(), "SUBDIR2");
         FileUtils.recursiveMove(subdir1, subdir2);
 
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolder().getKnownDirectories().size() == 2
                     && getFolder().getKnownFiles().size() == 4;
@@ -682,7 +682,7 @@ public class ScanFolderTest extends ControllerTestCase {
         TestHelper.createRandomFile(subdir1);
         TestHelper.createRandomFile(subdir1);
 
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolder().getKnownDirectories().size() == 2
                     && getFolder().getKnownFiles().size() == 4;
