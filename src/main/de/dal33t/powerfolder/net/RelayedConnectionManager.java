@@ -461,6 +461,12 @@ public class RelayedConnectionManager extends PFComponent {
                     "NACK received: Unable to open relayed connection to "
                         + relHan.getRemote().nick);
             }
+            if (!relHan.getRelay().isCompletelyConnected()) {
+                throw new ConnectionException(
+                    "Unable to open relayed connection to "
+                        + relHan.getRemote().nick + " relay "
+                        + relHan.getRelay() + " disconnected.");
+            }
             try {
                 waiter.waitABit();
             } catch (RuntimeException e) {
