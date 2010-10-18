@@ -286,9 +286,12 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
+       // LoggingManager.setConsoleLogging(Level.FINER);
         assertTrue("marge is not connected", margeAtLisa
             .isCompletelyConnected());
         margeAtLisa.shutdown();
+
+        // TestHelper.waitMilliSeconds(3000);
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
             .getNode(getContollerMarge(), true);

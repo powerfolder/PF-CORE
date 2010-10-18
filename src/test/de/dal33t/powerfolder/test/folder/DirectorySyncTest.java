@@ -273,7 +273,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
             public String message() {
                 return folder + " known: " + folder.getKnownItemCount()
                     + " expected dirs: " + expectedDirs + " expected file: "
-                    + expectedFiles;
+                    + expectedFiles + " total: "
+                    + (expectedDirs + expectedFiles);
             }
 
             public boolean reached() {
