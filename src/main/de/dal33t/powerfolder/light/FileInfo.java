@@ -615,8 +615,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // not equals, return
             return false;
         }
-        if (lastModifiedDate != null && otherFile.lastModifiedDate != null &&
-                !lastModifiedDate.equals(otherFile.lastModifiedDate)) {
+        if (lastModifiedDate != null && otherFile.lastModifiedDate != null
+            && !lastModifiedDate.equals(otherFile.lastModifiedDate))
+        {
             return false;
         }
         // All match!
@@ -726,6 +727,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
                 + lastModifiedDate);
         }
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
+        if (fileName.indexOf(fileName.length() - 1) == ' ') {
+            throw new IllegalStateException("Filename ends with space: "
+                + fileName);
+        }
+        if (fileName.indexOf(fileName.length() - 1) == '/') {
+            throw new IllegalStateException("Filename ends with slash: "
+                + fileName);
+        }
         Reject.ifNull(size, "Size is null");
         Reject.ifFalse(size >= 0, "Negative file size");
         Reject.ifNull(folderInfo, "FolderInfo is null");
