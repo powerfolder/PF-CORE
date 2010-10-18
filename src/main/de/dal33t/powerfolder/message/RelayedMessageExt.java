@@ -62,10 +62,14 @@ public class RelayedMessageExt extends RelayedMessage implements Externalizable
         type = Type.valueOf(in.readUTF());
         source = MemberInfo.readExt(in);
         destination = MemberInfo.readExt(in);
+
         if (in.readBoolean()) {
             int len = in.readInt();
             payload = new byte[len];
-            in.read(payload);
+            int read = 0;
+            while (read < len) {
+                read += in.read(payload, read, payload.length - read);
+            }
         }
     }
 
