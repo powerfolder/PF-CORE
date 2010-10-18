@@ -82,7 +82,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         scanFolder(getFolderAtLisa());
 
         connectAll();
-        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        assertEquals("Barts know item count: "
+            + getFolderAtBart().getKnownItemCount(), 1, getFolderAtBart()
+            .getKnownItemCount());
         DirectoryInfo infoBart = getFolderAtBart().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirBart, infoBart, getContollerBart());
@@ -90,7 +92,9 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertEquals(getFolderAtBart().getIncomingFiles().toString(), 0,
             getFolderAtBart().getIncomingFiles().size());
 
-        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        assertEquals("Lisas knonwn item count: "
+            + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
+            .getKnownItemCount());
         DirectoryInfo infoLisa = getFolderAtLisa().getKnownDirectories()
             .iterator().next();
         assertDirMatch(dirLisa, infoLisa, getContollerLisa());
