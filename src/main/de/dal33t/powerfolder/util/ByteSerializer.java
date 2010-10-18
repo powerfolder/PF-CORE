@@ -35,6 +35,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
@@ -116,7 +117,14 @@ public class ByteSerializer extends Loggable {
         ObjectOutputStream objOut = new ObjectOutputStream(targetOut);
 
         // Write
-        objOut.writeUnshared(target);
+        try {
+            objOut.writeUnshared(target);
+        } catch (InvalidClassException e) {
+            LOG.log(Level.WARNING, "Problem while serializing " + target + ": "
+                + e, e);
+            throw e;
+        }
+
         objOut.close();
 
         if (padToSize > 0) {
@@ -245,23 +253,13 @@ public class ByteSerializer extends Loggable {
     public static Object deserializeStatic(byte[] base,
         boolean expectCompression) throws IOException, ClassNotFoundException
     {
-        /*
-         * System.out.println( "De-Serialize size is: " + base.length + " Bytes,
-         * compressed: " + COMPRESS_STREAM);
-         */
         Object result;
         try {
             result = deserialize0(base, expectCompression);
         } catch (InvalidClassException e) {
+            LOG.log(Level.WARNING, "While deserializing: " + e, e);
             throw e;
         } catch (IOException e) {
-            // System.err
-            // .println("WARNING: Stream is not as expected, compression: "
-            // + expectCompression + ". " + e.toString());
-            // e.printStackTrace();
-            // Maybe the stream is uncompressed/compressed
-            // try the other way, if that also fails
-            // we should forget it
             result = deserialize0(base, !expectCompression);
             LOG
                 .warning("Stream was not as expected ("
