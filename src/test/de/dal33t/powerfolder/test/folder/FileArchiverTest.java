@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -85,9 +86,13 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return fb.getKnownFiles().size() > 0;
+            }
+
+            public String message() {
+                return "Known files: " + fb.getKnownFiles();
             }
         });
         FileInfo fib = fb.getKnownFiles().iterator().next();
