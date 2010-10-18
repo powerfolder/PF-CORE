@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -119,9 +120,12 @@ public class ByteSerializer extends Loggable {
         // Write
         try {
             objOut.writeUnshared(target);
+        } catch (StreamCorruptedException e) {
+            LOG.log(Level.WARNING, "Problem while serializing: " + e, e);
+            throw e;
         } catch (InvalidClassException e) {
-            LOG.log(Level.WARNING, "Problem while serializing " + target + ": "
-                + e, e);
+            LOG.log(Level.WARNING, "Problem while serializing: " + target
+                + ": " + e, e);
             throw e;
         }
 
@@ -256,11 +260,22 @@ public class ByteSerializer extends Loggable {
         Object result;
         try {
             result = deserialize0(base, expectCompression);
+        } catch (StreamCorruptedException e) {
+            LOG.log(Level.WARNING, "While deserializing: " + e, e);
+            throw e;
         } catch (InvalidClassException e) {
             LOG.log(Level.WARNING, "While deserializing: " + e, e);
             throw e;
         } catch (IOException e) {
-            result = deserialize0(base, !expectCompression);
+            try {
+                result = deserialize0(base, !expectCompression);
+            } catch (StreamCorruptedException e2) {
+                LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
+                throw e2;
+            } catch (InvalidClassException e2) {
+                LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
+                throw e2;
+            }
             LOG
                 .warning("Stream was not as expected ("
                     + (expectCompression
