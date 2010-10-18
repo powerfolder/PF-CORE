@@ -32,7 +32,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.Download;
@@ -155,13 +154,6 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             } else { // File info
                 FileInfo fInfo = (FileInfo) value;
                 setText(fInfo.getFilenameOnly());
-                Folder folder = fInfo.getFolder(controller
-                        .getFolderRepository());
-                if (folder != null && folder.getDiskItemFilter().isExcluded(fInfo)) {
-                    setIcon(Icons.getIconById(Icons.BLACK_LIST));
-                } else {
-                    setIcon(null);
-                }
                 setHorizontalAlignment(LEFT);
             }
         } else if (value instanceof Long) {
