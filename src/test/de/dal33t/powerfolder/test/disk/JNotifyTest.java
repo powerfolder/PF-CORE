@@ -10,6 +10,7 @@ import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyListener;
 
 public class JNotifyTest extends TestCase {
+    private static final boolean RUN_TEST = false;
     private static final boolean REMOVE_WATCHERS = true;
     private static final boolean REMOVE_TEST_DIR = true;
 
@@ -38,7 +39,7 @@ public class JNotifyTest extends TestCase {
     }
 
     private void testWatcher(int nWatches, int nFiles) {
-        if (!FolderWatcher.isLibLoaded()) {
+        if (!FolderWatcher.isLibLoaded() || !RUN_TEST) {
             System.err.println("Not checking JNotify. Unable to load lib.");
             return;
         }
