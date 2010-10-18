@@ -29,13 +29,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -49,6 +49,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Provides basic testcase-setup with N controllers.
@@ -105,6 +106,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        LoggingManager.setConsoleLogging(Level.OFF);
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
