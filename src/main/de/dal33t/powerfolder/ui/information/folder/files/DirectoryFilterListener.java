@@ -24,5 +24,15 @@ package de.dal33t.powerfolder.ui.information.folder.files;
  */
 public interface DirectoryFilterListener {
 
+    /**
+     * Advice that a filter processes is in progress has begun.
+     */
+    void adviseOfFilteringBegin();
+
+    /**
+     * Advice that a filter processes has completed.
+     */
+    void adviseOfFilteringEnd();
+
     void adviseOfChange(FilteredDirectoryEvent event);
 }

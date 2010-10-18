@@ -206,50 +206,61 @@ public class DirectoryFilter extends FilterModel {
             return;
         }
 
-        Date start = new Date();
-        if (isFiner()) {
-            logFiner("Starting filter of " + folder.getName());
-        }
-        // Prepare keywords from text filter
-        String textFilter = (String) getSearchFieldVM().getValue();
-        String[] keywords = null;
-        if (!StringUtils.isBlank(textFilter)) {
-
-            // Match lower case
-            keywords = textFilter.split("\\s+");
-        }
-
-        DirectoryFilterResult result = new DirectoryFilterResult();
-        FilteredDirectoryModel filteredDirectoryModel =
-                new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
-
-        // Recursive filter.
-        if (isFlatMode()) {
-            filterDirectoryFlat(folder.getDAO(), folder.getBaseDirectoryInfo(),
-                    filteredDirectoryModel,
-                    filteredDirectoryModel.getFilteredDirectory(),
-                    keywords, result,
-                    currentDirectoryInfo.getRelativeName().length() == 0);
-        } else {
-            filterDirectory(folder.getDAO(), folder.getBaseDirectoryInfo(),
-                    filteredDirectoryModel,
-                    filteredDirectoryModel.getFilteredDirectory(),
-                    keywords, result);
-        }
-
-        boolean changed = folderChanged.getAndSet(false);
-        FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
-                .getDeletedCount().get(), result.getIncomingCount().get(), result
-                .getLocalCount().get(), filteredDirectoryModel, changed);
         for (DirectoryFilterListener listener : listeners) {
-            listener.adviseOfChange(event);
+            listener.adviseOfFilteringBegin();
         }
 
-        Date end = new Date();
-        logFine("Filtered " + folder.getName() + ", original count "
-                + result.getOriginalCount().get() + ", filtered count "
-                + result.getFilteredCount().get() + " in "
-                + (end.getTime() - start.getTime()) + "ms");
+        try {
+
+            Date start = new Date();
+            if (isFiner()) {
+                logFiner("Starting filter of " + folder.getName());
+            }
+            // Prepare keywords from text filter
+            String textFilter = (String) getSearchFieldVM().getValue();
+            String[] keywords = null;
+            if (!StringUtils.isBlank(textFilter)) {
+
+                // Match lower case
+                keywords = textFilter.split("\\s+");
+            }
+
+            DirectoryFilterResult result = new DirectoryFilterResult();
+            FilteredDirectoryModel filteredDirectoryModel =
+                    new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
+
+            // Recursive filter.
+            if (isFlatMode()) {
+                filterDirectoryFlat(folder.getDAO(), folder.getBaseDirectoryInfo(),
+                        filteredDirectoryModel,
+                        filteredDirectoryModel.getFilteredDirectory(),
+                        keywords, result,
+                        currentDirectoryInfo.getRelativeName().length() == 0);
+            } else {
+                filterDirectory(folder.getDAO(), folder.getBaseDirectoryInfo(),
+                        filteredDirectoryModel,
+                        filteredDirectoryModel.getFilteredDirectory(),
+                        keywords, result);
+            }
+
+            boolean changed = folderChanged.getAndSet(false);
+            FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
+                    .getDeletedCount().get(), result.getIncomingCount().get(), result
+                    .getLocalCount().get(), filteredDirectoryModel, changed);
+            for (DirectoryFilterListener listener : listeners) {
+                listener.adviseOfChange(event);
+            }
+
+            Date end = new Date();
+            logFine("Filtered " + folder.getName() + ", original count "
+                    + result.getOriginalCount().get() + ", filtered count "
+                    + result.getFilteredCount().get() + " in "
+                    + (end.getTime() - start.getTime()) + "ms");
+        } finally {
+            for (DirectoryFilterListener listener : listeners) {
+                listener.adviseOfFilteringEnd();
+            }
+        }
     }
 
     /**
@@ -310,6 +321,7 @@ public class DirectoryFilter extends FilterModel {
                                  FilteredDirectory filteredDirectory,
                                  String[] keywords,
                                  DirectoryFilterResult result) {
+
         boolean target = currentDirectoryInfo.getRelativeName()
                 .equals(directoryInfo.getRelativeName());
         FileInfoCriteria criteria = new FileInfoCriteria();

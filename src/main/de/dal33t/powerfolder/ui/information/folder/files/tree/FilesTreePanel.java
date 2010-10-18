@@ -112,6 +112,12 @@ public class FilesTreePanel extends PFUIComponent implements DirectoryFilterList
         }
     }
 
+    public void adviseOfFilteringBegin() {
+    }
+
+    public void adviseOfFilteringEnd() {
+    }
+
     /**
      * Set the selected tree node to this directory.
      *

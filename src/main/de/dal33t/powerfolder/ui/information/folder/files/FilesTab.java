@@ -296,6 +296,12 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             event.getDeletedFiles());
     }
 
+    public void adviseOfFilteringBegin() {
+    }
+
+    public void adviseOfFilteringEnd() {
+    }
+
     /**
      * Update the file filter with available nodes.
      */
