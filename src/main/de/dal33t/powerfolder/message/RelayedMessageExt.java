@@ -37,6 +37,11 @@ public class RelayedMessageExt extends RelayedMessage implements Externalizable
 {
     private static final long extVersionUID = 100L;
 
+    // For serialization
+    public RelayedMessageExt() {
+        super();
+    }
+
     public RelayedMessageExt(Type type, MemberInfo source,
         MemberInfo destination, long connectionId, byte[] payload)
     {
