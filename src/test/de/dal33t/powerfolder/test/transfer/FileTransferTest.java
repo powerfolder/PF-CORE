@@ -734,9 +734,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
 
         // Wait for copy
-        TestHelper.waitForCondition(100, new Condition() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 return lisasListener.downloadCompleted >= nFiles;
+            }
+
+            public String message() {
+                return "Completed downloads at lisa actual: "
+                    + lisasListener.downloadCompleted + ". Expected: " + nFiles;
             }
         });
 
