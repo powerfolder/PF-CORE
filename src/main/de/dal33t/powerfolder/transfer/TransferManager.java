@@ -933,8 +933,10 @@ public class TransferManager extends PFComponent {
                 getController().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting(fileInfo.getFolderInfo());
             } else {
-                logFiner("Not triggering file requestor. " + nDlFromNode
-                    + " more dls from " + transfer.getPartner());
+                if (isFiner()) {
+                    logFiner("Not triggering file requestor. " + nDlFromNode
+                        + " more dls from " + transfer.getPartner());
+                }
             }
 
         } else if (transfer instanceof Upload) {
