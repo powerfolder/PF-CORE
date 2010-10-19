@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -2236,7 +2237,11 @@ public class Folder extends PFComponent {
                             if (remaining != null) {
                                 for (String path : remaining) {
                                     if (path.toLowerCase()
-                                        .endsWith("thumbs.db"))
+                                        .endsWith("thumbs.db")
+                                        || path.toLowerCase().endsWith(
+                                            ".ds_store")
+                                        || path.toLowerCase().endsWith(
+                                            "desktop.ini"))
                                     {
                                         new File(path).delete();
                                     }
@@ -2627,8 +2632,10 @@ public class Folder extends PFComponent {
             int knownFilesCount = getKnownItemCount();
             if (knownFilesCount > 1) {
                 int delPercentage = 100 * delsCount / knownFilesCount;
-                logFine("FolderFilesChanged delete percentage " + delPercentage
-                    + '%');
+                if (isFiner()) {
+                    logFiner("FolderFilesChanged delete percentage "
+                        + delPercentage + '%');
+                }
                 if (delPercentage >= ConfigurationEntry.MASS_DELETE_THRESHOLD
                     .getValueInt(getController()))
                 {
@@ -3075,7 +3082,7 @@ public class Folder extends PFComponent {
      *         side as unmodifiable collection.
      */
     public Collection<FileInfo> getIncomingFiles() {
-        return getIncomingFiles(true);
+        return getIncomingFiles(true, -1);
     }
 
     /**
@@ -3088,12 +3095,34 @@ public class Folder extends PFComponent {
      *         side as unmodifiable collection.
      */
     public Collection<FileInfo> getIncomingFiles(boolean includeDeleted) {
+        return getIncomingFiles(includeDeleted, -1);
+    }
+
+    /**
+     * Gets all the incoming files. That means files that exist on the remote
+     * side with a higher version.
+     * 
+     * @param includeDeleted
+     *            true if also deleted files should be considered.
+     * @param maxPerMember
+     *            the aproximately maximum number of incoming files (not
+     *            directories) to be included per member. This prevents the
+     *            resulting Collection from abnormal growth.
+     * @return the list of files that are incoming/newer available on remote
+     *         side as unmodifiable collection.
+     */
+    public Collection<FileInfo> getIncomingFiles(boolean includeDeleted,
+        int maxPerMember)
+    {
         // build a temp list
         // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
         // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new FileInfoComparator(FileInfoComparator.BY_RELATIVE_NAME));
         // add0 expeced files
+        Map<Member, Integer> incomingCount = maxPerMember > 0
+            ? new HashMap<Member, Integer>(getMembersCount())
+            : null;
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
                 // disconnected or myself (=skip)
@@ -3115,8 +3144,16 @@ public class Folder extends PFComponent {
             }
 
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
+            if (incomingCount != null) {
+                incomingCount.put(member, 0);
+            }
             if (memberFiles != null) {
                 for (FileInfo remoteFile : memberFiles) {
+                    if (incomingCount != null
+                        && incomingCount.get(member) > maxPerMember)
+                    {
+                        continue;
+                    }
                     if (remoteFile.isDeleted() && !includeDeleted) {
                         continue;
                     }
@@ -3142,6 +3179,10 @@ public class Folder extends PFComponent {
                         // Okay this one is expected
                         if (!diskItemFilter.isExcluded(remoteFile)) {
                             incomingFiles.put(remoteFile, remoteFile);
+                            if (incomingCount != null) {
+                                Integer i = incomingCount.get(member);
+                                incomingCount.put(member, ++i);
+                            }
                         }
                     }
                 }
@@ -3185,7 +3226,8 @@ public class Folder extends PFComponent {
             logFiner("No Incoming files");
         } else {
             if (isFine()) {
-                logFine(incomingFiles.size() + " incoming files");
+                logFine(incomingCount != null ? "" : "Aprox. "
+                    + incomingFiles.size() + " incoming files");
             }
         }
 
