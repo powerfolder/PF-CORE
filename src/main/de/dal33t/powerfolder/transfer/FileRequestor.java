@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -92,11 +93,11 @@ public class FileRequestor extends PFComponent {
             logWarning("Folder not joined, not requesting files: " + foInfo);
             return;
         }
-        if (folderQueue.contains(folder)) {
-            return;
-        }
-        folderQueue.offer(folder);
         synchronized (folderQueue) {
+            if (folderQueue.contains(folder)) {
+                return;
+            }
+            folderQueue.offer(folder);
             folderQueue.notify();
         }
     }
@@ -109,19 +110,18 @@ public class FileRequestor extends PFComponent {
      */
     public void triggerFileRequesting() {
         ProfilingEntry pe = Profiling.start();
-        for (Folder folder : getController().getFolderRepository().getFolders(
-            true))
-        {
-            if (folderQueue.contains(folder)) {
-                continue;
-            }
-            folderQueue.offer(folder);
-        }
-        Profiling.end(pe, 100);
+        Collection<Folder> folders = getController().getFolderRepository()
+            .getFolders(true);
         synchronized (folderQueue) {
+            for (Folder folder : folders) {
+                if (folderQueue.contains(folder)) {
+                    continue;
+                }
+                folderQueue.offer(folder);
+            }
             folderQueue.notifyAll();
         }
-
+        Profiling.end(pe, 100);
     }
 
     /**
@@ -153,7 +153,8 @@ public class FileRequestor extends PFComponent {
         }
 
         // TODO: Detect conflicts. Raise problem.
-        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false);
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false,
+            Constants.MAX_DLS_FROM_LAN_MEMBER * 2);
         retrieveNewestVersions(folder, incomingFiles, autoDownload);
     }
 
@@ -206,7 +207,8 @@ public class FileRequestor extends PFComponent {
             }
             return;
         }
-        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false);
+        Collection<FileInfo> incomingFiles = folder.getIncomingFiles(false,
+            Constants.MAX_DLS_FROM_LAN_MEMBER * 2);
         if (incomingFiles.isEmpty()) {
             if (isFiner()) {
                 logFiner("Not requesting files. No incoming files " + folder);
@@ -414,8 +416,8 @@ public class FileRequestor extends PFComponent {
         public void run() {
             while (!myThread.isInterrupted()) {
                 try {
-                    if (folderQueue.isEmpty()) {
-                        synchronized (folderQueue) {
+                    synchronized (folderQueue) {
+                        if (folderQueue.isEmpty()) {
                             folderQueue.wait();
                         }
                     }
@@ -428,24 +430,25 @@ public class FileRequestor extends PFComponent {
                         .hasNext();)
                     {
                         try {
-                            requestMissingFilesForAutodownload(it.next());
+                            Folder f = it.next();
+                            it.remove();
+                            requestMissingFilesForAutodownload(f);
                         } catch (RuntimeException e) {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
-                        it.remove();
                         // Give CPU a bit time.
                         Thread.sleep(2);
                     }
-                    if (isFiner()) {
+                    if (isWarning()) {
                         long took = System.currentTimeMillis() - start;
-                        logFiner("Requesting files for " + nFolders
+                        logWarning("Requesting files for " + nFolders
                             + " folder(s) took " + took + "ms.");
                     }
 
                     // Sleep a bit to avoid spamming
-                    Thread.sleep(250);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
-                    logFine("Stopped");
+                    logWarning("Stopped");
                     logFiner(e);
                     break;
                 }
