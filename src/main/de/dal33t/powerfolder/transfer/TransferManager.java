@@ -537,7 +537,9 @@ public class TransferManager extends PFComponent {
                 (Download) transfer));
         }
 
-        logFine("Started: " + transfer);
+        if (isFine()) {
+            logFine("Started: " + transfer);
+        }
     }
 
     /**
