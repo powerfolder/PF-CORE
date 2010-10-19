@@ -439,9 +439,9 @@ public class FileRequestor extends PFComponent {
                         // Give CPU a bit time.
                         Thread.sleep(2);
                     }
-                    if (isWarning()) {
+                    if (isFiner()) {
                         long took = System.currentTimeMillis() - start;
-                        logWarning("Requesting files for " + nFolders
+                        logFiner("Requesting files for " + nFolders
                             + " folder(s) took " + took + "ms.");
                     }
 
