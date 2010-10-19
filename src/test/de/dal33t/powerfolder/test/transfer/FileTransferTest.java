@@ -723,20 +723,26 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisasListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
+        getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
         final int nFiles = 450;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
         System.err.println("Created!");
 
+        assertEquals(0, lisasListener.downloadCompleted);
+
+        LoggingManager.setConsoleLogging(Level.INFO);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         // Wait for copy
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
-                return lisasListener.downloadCompleted >= nFiles;
+                return lisasListener.downloadCompleted >= nFiles
+                    && getFolderAtLisa().getKnownItemCount() == nFiles;
             }
 
             public String message() {
