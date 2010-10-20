@@ -154,6 +154,7 @@ public class DownloadManagerTableCellRenderer extends DefaultTableCellRenderer {
             } else { // File info
                 FileInfo fInfo = (FileInfo) value;
                 setText(fInfo.getFilenameOnly());
+                setIcon(null);
                 setHorizontalAlignment(LEFT);
             }
         } else if (value instanceof Long) {
