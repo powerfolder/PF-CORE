@@ -95,7 +95,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // Let Lisa download the file via auto-dl and broadcast the change to
         // bart
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() >= 1
                     && getFolderAtBart().getFilesAsCollection(lisaAtBart)

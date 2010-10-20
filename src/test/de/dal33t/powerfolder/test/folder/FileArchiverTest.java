@@ -217,7 +217,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         final FileInfo scanned = getFolderAtLisa().getFile(fInfo);
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
                 for (FileInfo fi : getFolderAtBart().getKnownFiles()) {
                     if (fi.isVersionDateAndSizeIdentical(scanned)) {
