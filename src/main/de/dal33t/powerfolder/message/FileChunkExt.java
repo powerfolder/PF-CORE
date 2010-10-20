@@ -50,8 +50,9 @@ public class FileChunkExt extends FileChunk implements Externalizable {
         offset = in.readLong();
         int length = in.readInt();
         data = new byte[length];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = in.readByte();
+        int read = in.read(data);
+        while (read < length) {
+            read += in.read(data, read, data.length - read);
         }
     }
 
