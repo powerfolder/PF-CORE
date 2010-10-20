@@ -23,6 +23,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Date;
 
@@ -89,9 +90,16 @@ public class ExternalizableUtil {
     {
         String str = null;
         if (value != null) {
-            if (value.getAddress() != null) {
-                str = NetworkUtil.getHostAddressNoResolve(value.getAddress())
-                    + ":" + value.getPort();
+            InetAddress addr = value.getAddress();
+            if (addr != null) {
+
+                str = NetworkUtil.getHostAddressNoResolve(addr);
+                str += ":";
+                if (!value.isUnresolved()) {
+                    str += Base64.encodeBytes(addr.getAddress());
+                }
+                str += ":";
+                str += value.getPort();
             }
         }
         out.writeBoolean(str != null);
@@ -109,12 +117,18 @@ public class ExternalizableUtil {
         }
         String str = in.readUTF();
         String[] addAndPort = str.split(":");
-        if (addAndPort.length != 2) {
+        if (addAndPort.length < 2) {
             return null;
-        } else {
+        }
+        if (addAndPort.length == 2) {
             return new InetSocketAddress(addAndPort[0], Integer.valueOf(
                 addAndPort[1]).intValue());
         }
+        String hostname = addAndPort[0];
+        byte[] ip = Base64.decode(addAndPort[1]);
+        int port = Integer.valueOf(addAndPort[2]);
+        InetAddress addr = InetAddress.getByAddress(hostname, ip);
+        return new InetSocketAddress(addr, port);
     }
 
     /**
