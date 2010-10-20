@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.FileUtils;
@@ -609,17 +610,34 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             public boolean reached() {
                 File fileAtHomer = new File(getFolderAtHomer().getLocalBase(),
                     filename);
+                FileInfo fInfoHomer = getFolderAtHomer().getFile(
+                    FileInfoFactory.lookupInstance(getFolderAtHomer(),
+                        fileAtHomer));
                 File fileAtMarge = new File(getFolderAtMarge().getLocalBase(),
                     filename);
+                FileInfo fInfoMarge = getFolderAtMarge().getFile(
+                    FileInfoFactory.lookupInstance(getFolderAtMarge(),
+                        fileAtMarge));
                 File fileAtBart = new File(getFolderAtBart().getLocalBase(),
                     filename);
+                FileInfo fInfoBart = getFolderAtBart().getFile(
+                    FileInfoFactory.lookupInstance(getFolderAtBart(),
+                        fileAtBart));
                 File fileAtLisa = new File(getFolderAtLisa().getLocalBase(),
                     filename);
+                FileInfo fInfoLisa = getFolderAtLisa().getFile(
+                    FileInfoFactory.lookupInstance(getFolderAtLisa(),
+                        fileAtLisa));
                 File fileAtMaggier = new File(getFolderAtMaggie()
                     .getLocalBase(), filename);
-                return !fileAtHomer.exists() && !fileAtMarge.exists()
-                    && !fileAtBart.exists() && !fileAtLisa.exists()
-                    && !fileAtMaggier.exists();
+                FileInfo fInfoMaggie = getFolderAtMaggie().getFile(
+                    FileInfoFactory.lookupInstance(getFolderAtMaggie(),
+                        fileAtMaggier));
+                return !fileAtHomer.exists() && fInfoHomer.isDeleted()
+                    && !fileAtMarge.exists() && fInfoMarge.isDeleted()
+                    && !fileAtBart.exists() && fInfoBart.isDeleted()
+                    && !fileAtLisa.exists() && fInfoLisa.isDeleted()
+                    && !fileAtMaggier.exists() && fInfoMaggie.isDeleted();
             }
         });
     }
