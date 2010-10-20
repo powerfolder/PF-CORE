@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.notification;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -53,6 +54,7 @@ public class Slider {
     public static final int ANIMATION_DELAY = 5;
 
     private int displaySeconds;
+    private Window owner;
     private JWindow window;
     private JComponent contents;
     private Timer animateUpTimer;
@@ -72,10 +74,26 @@ public class Slider {
     public Slider(JComponent contents, int displaySeconds,
         int translucencyPercentage, boolean displayLeft)
     {
+        this(contents, null, displaySeconds, translucencyPercentage,
+            displayLeft);
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param contents
+     * @param displaySeconds
+     * @param translucencyPercentage
+     * @param displayLeft
+     */
+    public Slider(JComponent contents, Window owner, int displaySeconds,
+        int translucencyPercentage, boolean displayLeft)
+    {
         this.contents = contents;
         this.displaySeconds = displaySeconds;
         this.translucencyPercentage = translucencyPercentage;
         this.displayLeft = displayLeft;
+        this.owner = owner;
     }
 
     public JComponent getContents() {
@@ -99,16 +117,17 @@ public class Slider {
         if (window != null) {
             return;
         }
-        window = new JWindow();
+        window = new JWindow(owner);
         window.setAlwaysOnTop(true);
         if (Constants.OPACITY_SUPPORTED) {
             UIUtil.applyTranslucency(window, 0.0f);
         }
 
         // Initial boundaries.
-        Dimension contentsSize = contents.getSize();
+        Dimension contentsSize = contents.getPreferredSize();
         Rectangle desktopBounds = initDesktopBounds();
-        int showX = displayLeft ? 10 : desktopBounds.width - contentsSize.width - 10;
+        int showX = displayLeft ? 10 : desktopBounds.width - contentsSize.width
+            - 10;
         int startY = desktopBounds.y + desktopBounds.height - 10;
 
         window.getContentPane().add(contents);

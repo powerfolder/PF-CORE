@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -595,6 +596,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                                         .getTranslation("wizard.choose_disk_location.os_over_size"));
                                 warningLabel.setIcon(Icons
                                     .getIconById(Icons.WARNING));
+                                JDialog dialog = (JDialog) getWizardContext()
+                                    .getAttribute(
+                                        WizardContextAttributes.DIALOG_ATTRIBUTE);
+                                getController().getUIController().showPromoGFX(
+                                    dialog);
                             }
                         }
                     }
@@ -613,6 +619,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                             .setText(Translation
                                 .getTranslation("wizard.choose_disk_location.os_over_size"));
                         warningLabel.setIcon(Icons.getIconById(Icons.WARNING));
+                        JDialog dialog = (JDialog) getWizardContext()
+                            .getAttribute(
+                                WizardContextAttributes.DIALOG_ATTRIBUTE);
+                        getController().getUIController().showPromoGFX(dialog);
                     }
 
                 } catch (Exception e) {

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.AWTException;
 import java.awt.CheckboxMenuItem;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -65,6 +66,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -73,6 +75,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.Border;
+
+import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -359,7 +364,7 @@ public class UIController extends PFComponent {
                     public void run() {
                         UIUtil.invokeLaterInEDT(new Runnable() {
                             public void run() {
-                                showPromoGFX();
+                                showPromoGFX(getMainFrame().getUIComponent());
                             }
                         });
                     }
@@ -413,11 +418,15 @@ public class UIController extends PFComponent {
         return totalSize;
     }
 
-    private void showPromoGFX() {
+    public void showPromoGFX(Window parent) {
         try {
             JLabel promoLabel = new JLabel(new ImageIcon(new URL(
                 Constants.PROVIDER_CLIENT_PROMO_URL)));
-            promoLabel.setSize(new Dimension(200, 200));
+            promoLabel.setSize(new Dimension(230, 230));
+            Border border = BorderFactory.createCompoundBorder(BorderFactory
+                .createLineBorder(Color.DARK_GRAY), Borders
+                .createEmptyBorder("15, 15, 15, 15"));
+            promoLabel.setBorder(border);
             promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             promoLabel.addMouseListener(new MouseAdapter() {
                 @Override
@@ -430,7 +439,7 @@ public class UIController extends PFComponent {
                     }
                 }
             });
-            notifyComponent(promoLabel, 20);
+            notifyComponent(promoLabel, parent, 20);
         } catch (MalformedURLException e) {
             logWarning("Unable to show promo gfx. " + e, e);
         }
@@ -1329,8 +1338,10 @@ public class UIController extends PFComponent {
         slider.show();
     }
 
-    public void notifyComponent(JComponent content, int seconds2Display) {
-        Slider slider = new Slider(content, seconds2Display,
+    public void notifyComponent(JComponent content, Window owner,
+        int seconds2Display)
+    {
+        Slider slider = new Slider(content, owner, seconds2Display,
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController()), getController().isNotifyLeft());
         slider.show();
