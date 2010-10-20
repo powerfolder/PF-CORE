@@ -257,23 +257,25 @@ public class TransferManagerModel extends PFUIComponent {
     private void updateDownloadsValueModels0() {
 
         // Recalculate totals for downloads.
-        int downloadCount = downloadManagersTableModel.getRowCount();
-        int allDownloadsCount = 0;
-        int activeDownloadCount = 0;
-        int completedDownloadsCount = 0;
-        for (int i = 0; i < downloadCount; i++) {
-            DownloadManager dlm = downloadManagersTableModel
-                .getDownloadManagerAtRow(i);
-            if (dlm == null) {
-                continue;
-            }
-            if (dlm.isStarted() && !dlm.isCompleted()) {
-                activeDownloadCount++;
-            } else if (dlm.isCompleted()) {
-                completedDownloadsCount++;
-            }
-            allDownloadsCount++;
-        }
+      //  int downloadCount = downloadManagersTableModel.getRowCount();
+        int completedDownloadsCount = getTransferManager().countCompletedDownloads();
+        int activeDownloadCount = getTransferManager().countActiveDownloads();
+        int allDownloadsCount = completedDownloadsCount + activeDownloadCount;
+        
+       
+//        for (int i = 0; i < downloadCount; i++) {
+//            DownloadManager dlm = downloadManagersTableModel
+//                .getDownloadManagerAtRow(i);
+//            if (dlm == null) {
+//                continue;
+//            }
+//            if (dlm.isStarted() && !dlm.isCompleted()) {
+//                activeDownloadCount++;
+//            } else if (dlm.isCompleted()) {
+//                completedDownloadsCount++;
+//            }
+//            allDownloadsCount++;
+//        }
 
         allDownloadsCountVM.setValue(allDownloadsCount);
         activeDownloadsCountVM.setValue(activeDownloadCount);
