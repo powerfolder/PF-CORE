@@ -146,6 +146,8 @@ public class MainTabbedPane extends PFUIComponent {
             int minHeight = PreferencesEntry.MAIN_FRAME_HEIGHT
                 .getDefaultValueInt();
             uiComponent.setMinimumSize(new Dimension(minWidth, minHeight));
+            
+            setActiveTab(FOLDERS_INDEX);
         }
 
         return uiComponent;
