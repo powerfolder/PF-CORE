@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -64,6 +65,8 @@ public class FoldersTab extends PFUIComponent {
         if (uiComponent == null) {
             buildUI();
         }
+        uiComponent.setTransferHandler(new FileDropTransferHandler(
+            getController()));
         return uiComponent;
     }
 
