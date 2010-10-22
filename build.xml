@@ -43,6 +43,8 @@ For creation of the installer:
 		<property name="Debug" location="on" />
 	</target>
 	
+	<property environment="env"/>
+
 	<target name="loadproperties0">
 		<!-- Load build-local.properties -->
 		<available property="build.local.properties.ok" file="build-local.properties" type="file" />
@@ -213,6 +215,11 @@ For creation of the installer:
 			</manifest>
 			<zipgroupfileset refid="libs" />
 		</jar>
+	</target>
+	
+	<target name="deploy-integration-jar" depends="jar-unsigned">
+		<echo message="Deployment password = ${env.DEPLOYMENT_PASSWORD}"/>
+	    <scp file="${dist.dir}/PowerFolder.jar" todir="powerfolder-dev:${env.DEPLOYMENT_PASSWORD}@kobol.powerfolder.com:~/bamboo" port="60000" trust="true" verbose="true" sftp="true"/>
 	</target>
 
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
