@@ -219,7 +219,7 @@ For creation of the installer:
 	
 	<target name="deploy-integration-jar" depends="jar-unsigned">
 		<echo message="Sending Integration JAR file to web server"/>
-	    <scp file="${dist.dir}/PowerFolder.jar" todir="powerfolder-dev:${env.DEPLOYMENT_PASSWORD}@kobol.powerfolder.com:~/bamboo" port="60000" trust="true" verbose="true" sftp="true"/>
+	    <scp file="${dist.dir}/PowerFolder.jar" todir="powerfolder-dev:${env.DEPLOYMENT_PASSWORD}@kobol.powerfolder.com:/bamboo" port="60000" trust="true" verbose="true" sftp="true"/>
 	</target>
 
 	<target name="jar" depends="compile, dist-misc" description="Create a signed jar file of the free-version">
