@@ -36,17 +36,20 @@ public class FilteredDirectoryModel {
     private final Folder rootFolder;
     private final List<FileInfo> fileInfos = new ArrayList<FileInfo>();
     private final FilteredDirectory filteredDirectory;
-    private final String directoryRelativeName;
+    private String directoryRelativeName;
 
     public FilteredDirectoryModel(Folder rootFolder, String directoryRelativeName) {
         this.rootFolder = rootFolder;
         this.directoryRelativeName = directoryRelativeName;
-        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "",
-                false);
+        filteredDirectory = new FilteredDirectory(rootFolder.getName(), "", false);
     }
 
     public Folder getRootFolder() {
         return rootFolder;
+    }
+
+    public void setDirectoryRelativeName(String directoryRelativeName) {
+        this.directoryRelativeName = directoryRelativeName;
     }
 
     public String getDirectoryRelativeName() {

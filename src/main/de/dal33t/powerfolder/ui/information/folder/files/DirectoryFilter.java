@@ -72,6 +72,8 @@ public class DirectoryFilter extends FilterModel {
 
     private final AtomicBoolean folderChanged = new AtomicBoolean();
 
+    private FilteredDirectoryModel previousFilteredDirectoryModel;
+
     /**
      * The value model <Integer> of the search we listen to
      */
@@ -226,22 +228,50 @@ public class DirectoryFilter extends FilterModel {
             }
 
             DirectoryFilterResult result = new DirectoryFilterResult();
-            FilteredDirectoryModel filteredDirectoryModel =
-                    new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
+            FilteredDirectoryModel filteredDirectoryModel;
+            DirectoryInfo directoryInfo;
+            FilteredDirectory filteredDirectory;
+
+            // If this is a subdirectory of the last search, just filter files and append the tree results.
+            if (!folderChanged.get() && previousFilteredDirectoryModel != null &&
+                    previousFilteredDirectoryModel.getRootFolder().equals(folder) &&
+                    !currentDirectoryInfo.getRelativeName().equals(previousFilteredDirectoryModel.getDirectoryRelativeName()) &&
+                    currentDirectoryInfo.getRelativeName().startsWith(previousFilteredDirectoryModel.getDirectoryRelativeName())) {
+                // Quick filter of the selected directory only.
+                logFine("Doing a quick filter of " + currentDirectoryInfo.getRelativeName());
+                filteredDirectoryModel = previousFilteredDirectoryModel;
+                filteredDirectoryModel.setDirectoryRelativeName(currentDirectoryInfo.getRelativeName());
+                filteredDirectoryModel.getFileInfos().clear();
+                directoryInfo = currentDirectoryInfo;
+
+                // Find the correct filtered directory in the tree structure.
+                filteredDirectory = findFilteredDirectory(currentDirectoryInfo.getRelativeName(),
+                        filteredDirectoryModel.getFilteredDirectory());
+            } else {
+                // Normal filter.
+                logFine("Doing a full filter of " + currentDirectoryInfo.getRelativeName());
+                filteredDirectoryModel = new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
+                directoryInfo = folder.getBaseDirectoryInfo();
+                filteredDirectory = filteredDirectoryModel.getFilteredDirectory();
+            }
 
             // Recursive filter.
-            if (isFlatMode()) {
-                filterDirectoryFlat(folder.getDAO(), folder.getBaseDirectoryInfo(),
-                        filteredDirectoryModel,
-                        filteredDirectoryModel.getFilteredDirectory(),
-                        keywords, result,
-                        currentDirectoryInfo.getRelativeName().length() == 0);
-            } else {
-                filterDirectory(folder.getDAO(), folder.getBaseDirectoryInfo(),
-                        filteredDirectoryModel,
-                        filteredDirectoryModel.getFilteredDirectory(),
-                        keywords, result);
+            if (filteredDirectory != null) {
+                if (isFlatMode()) {
+                    filterDirectoryFlat(folder.getDAO(), directoryInfo,
+                            filteredDirectoryModel,
+                            filteredDirectory,
+                            keywords, result,
+                            currentDirectoryInfo.getRelativeName().length() == 0);
+                } else {
+                    filterDirectory(folder.getDAO(), directoryInfo,
+                            filteredDirectoryModel,
+                            filteredDirectory,
+                            keywords, result);
+                }
             }
+
+            previousFilteredDirectoryModel = filteredDirectoryModel;
 
             boolean changed = folderChanged.getAndSet(false);
             FilteredDirectoryEvent event = new FilteredDirectoryEvent(result
@@ -261,6 +291,23 @@ public class DirectoryFilter extends FilterModel {
                 listener.adviseOfFilteringEnd();
             }
         }
+    }
+
+    private FilteredDirectory findFilteredDirectory(String relativeName, FilteredDirectory filteredDirectory) {
+        if (relativeName.length() == 0) {
+            return filteredDirectory;
+        }
+        
+        for (FilteredDirectory directory : filteredDirectory.getList()) {
+            String dirRelName = directory.getRelativeName();
+            if (relativeName.equals(dirRelName)) {
+                return directory;
+            } else if (relativeName.startsWith(dirRelName)) {
+                return findFilteredDirectory(relativeName, directory);
+            }
+        }
+        logSevere("Could not find relative name " + relativeName);
+        return null;
     }
 
     /**
@@ -301,7 +348,7 @@ public class DirectoryFilter extends FilterModel {
             } else {
                 filteredDirectory.setFiles(true);
                     filterFileInfo(filteredDirectoryModel, filteredDirectory,
-                            keywords, result, fileInfo, targetOrDeeper || target); 
+                            keywords, result, fileInfo, targetOrDeeper || target);
             }
         }
     }
@@ -366,7 +413,6 @@ public class DirectoryFilter extends FilterModel {
             }
         }
     }
-
     private void filterFileInfo(FilteredDirectoryModel filteredDirectoryModel,
                                 FilteredDirectory filteredDirectory,
                                 String[] keywords,
