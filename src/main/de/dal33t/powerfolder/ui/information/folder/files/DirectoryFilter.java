@@ -73,6 +73,7 @@ public class DirectoryFilter extends FilterModel {
     private final AtomicBoolean folderChanged = new AtomicBoolean();
 
     private FilteredDirectoryModel previousFilteredDirectoryModel;
+    private final AtomicBoolean refilter = new AtomicBoolean();
 
     /**
      * The value model <Integer> of the search we listen to
@@ -107,6 +108,10 @@ public class DirectoryFilter extends FilterModel {
      */
     public void addListener(DirectoryFilterListener listener) {
         listeners.add(listener);
+    }
+
+    public void preScheduleFiltering() {
+        refilter.set(true);
     }
 
     /**
@@ -148,6 +153,7 @@ public class DirectoryFilter extends FilterModel {
      * @param fileFilterMode
      */
     public void setFileFilterMode(int fileFilterMode) {
+        refilter.set(true);
         this.fileFilterMode = fileFilterMode;
         logInfo("Set filter mode to " + fileFilterMode);
         queueFilterEvent();
@@ -232,27 +238,30 @@ public class DirectoryFilter extends FilterModel {
             DirectoryInfo directoryInfo;
             FilteredDirectory filteredDirectory;
 
-            // If this is a subdirectory of the last search, just filter files and append the tree results.
-            if (!folderChanged.get() && previousFilteredDirectoryModel != null &&
-                    previousFilteredDirectoryModel.getRootFolder().equals(folder) &&
-                    !currentDirectoryInfo.getRelativeName().equals(previousFilteredDirectoryModel.getDirectoryRelativeName()) &&
-                    currentDirectoryInfo.getRelativeName().startsWith(previousFilteredDirectoryModel.getDirectoryRelativeName())) {
-                // Quick filter of the selected directory only.
-                logFine("Doing a quick filter of " + currentDirectoryInfo.getRelativeName());
-                filteredDirectoryModel = previousFilteredDirectoryModel;
-                filteredDirectoryModel.setDirectoryRelativeName(currentDirectoryInfo.getRelativeName());
-                filteredDirectoryModel.getFileInfos().clear();
-                directoryInfo = currentDirectoryInfo;
+            synchronized (refilter) {
 
-                // Find the correct filtered directory in the tree structure.
-                filteredDirectory = findFilteredDirectory(currentDirectoryInfo.getRelativeName(),
-                        filteredDirectoryModel.getFilteredDirectory());
-            } else {
-                // Normal filter.
-                logFine("Doing a full filter of " + currentDirectoryInfo.getRelativeName());
-                filteredDirectoryModel = new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
-                directoryInfo = folder.getBaseDirectoryInfo();
-                filteredDirectory = filteredDirectoryModel.getFilteredDirectory();
+                // If the folder changed or there is no previous mode or refilter is indicated, do a full filter.
+                if (folderChanged.get() || previousFilteredDirectoryModel == null || refilter.getAndSet(false)) {
+
+                    // Full filter.
+                    logFine("Doing a FULL filter of " + currentDirectoryInfo.getRelativeName());
+                    filteredDirectoryModel = new FilteredDirectoryModel(folder, currentDirectoryInfo.getRelativeName());
+                    directoryInfo = folder.getBaseDirectoryInfo();
+                    filteredDirectory = filteredDirectoryModel.getFilteredDirectory();
+                } else {
+
+                    // Quick filter of the selected directory only.
+                    logFine("Doing a QUICK filter of " + currentDirectoryInfo.getRelativeName());
+                    filteredDirectoryModel = previousFilteredDirectoryModel;
+                    filteredDirectoryModel.setDirectoryRelativeName(currentDirectoryInfo.getRelativeName());
+                    filteredDirectoryModel.getFileInfos().clear();
+                    directoryInfo = currentDirectoryInfo;
+
+                    // Find the correct filtered directory in the tree structure.
+                    filteredDirectory = findFilteredDirectory(currentDirectoryInfo.getRelativeName(),
+                            filteredDirectoryModel.getFilteredDirectory());
+
+                }
             }
 
             // Recursive filter.

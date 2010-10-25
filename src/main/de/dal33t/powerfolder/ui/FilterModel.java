@@ -53,11 +53,12 @@ public abstract class FilterModel extends PFComponent {
         searchFieldVM.addValueChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (task != null) {
-                    task.cancel(); // cancel if seachfield changed before delay
-                    // was reached
+                    // cancel if seach field changed before delay was reached
+                    task.cancel();
                 }
                 task = new TimerTask() {
                     public void run() {
+                        preScheduleFiltering();
                         scheduleFiltering();
                         task = null;
                     }
@@ -67,6 +68,10 @@ public abstract class FilterModel extends PFComponent {
                 getController().schedule(task, DELAY);
             }
         });
+    }
+
+    public void preScheduleFiltering() {
+        // Override to do stuff just before scheduling filtering on searchFiledChange.
     }
 
     public abstract void scheduleFiltering();
