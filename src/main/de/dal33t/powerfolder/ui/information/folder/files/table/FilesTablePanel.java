@@ -228,13 +228,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
     }
 
     public void adviseOfFilteringBegin() {
-        emptyLabel.setText(Translation.getTranslation(
-                "files_table_panel.finding_files"));
+        emptyLabel.setText(Translation
+            .getTranslation("files_table_panel.finding_files"));
     }
 
     public void adviseOfFilteringEnd() {
-        emptyLabel.setText(Translation.getTranslation(
-                "files_table_panel.no_files_available"));
+        emptyLabel.setText(Translation
+            .getTranslation("files_table_panel.no_files_available"));
     }
 
     /**
@@ -311,6 +311,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                             Collection<FileInfo> infoCollection = folder
                                 .getDAO().findFiles(crit);
                             folder.removeFilesLocal(infoCollection);
+                            folder.removeFilesLocal(directoryInfo);
                         } else if (diskItem instanceof FileInfo) {
                             FileInfo fileInfo = (FileInfo) diskItem;
                             Folder folder = fileInfo.getFolder(repo);
@@ -646,7 +647,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         public void actionPerformed(ActionEvent e) {
             List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
             for (DiskItem diskItem : getSelectedRows()) {
-                if (diskItem != null && diskItem instanceof FileInfo) {
+                if (diskItem != null && diskItem.isFile()) {
                     FileInfo fileInfo = (FileInfo) diskItem;
                     fileInfosToRestore.add(fileInfo);
                 }
