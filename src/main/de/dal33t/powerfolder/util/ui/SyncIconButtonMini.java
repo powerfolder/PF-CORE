@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.Translation;
  */
 public class SyncIconButtonMini extends JButtonMini {
 
-    private static final long ROTATION_STEP_DELAY = 100L;
+    private static final long ROTATION_STEP_DELAY = 200L;
     private int state;
     private volatile boolean spin;
     private static final Icon ICON_ZERO = Icons

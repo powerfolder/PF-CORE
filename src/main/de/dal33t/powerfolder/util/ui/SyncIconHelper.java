@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.ui.Icons;
  */
 public class SyncIconHelper extends PFUIComponent {
 
-    private static final long ROTATION_STEP_DELAY = 100L;
+    private static final long ROTATION_STEP_DELAY = 200L;
     private int state;
     private Image current;
     private boolean visible;
