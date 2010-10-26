@@ -1,25 +1,27 @@
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.TreeSet;
 
-public class FilteredDirectory {
+public class FilteredDirectory implements Comparable<FilteredDirectory> {
 
     private final String displayName;
     private final String relativeName;
-    private final List<FilteredDirectory> list = new ArrayList<FilteredDirectory>();
+    private final Collection<FilteredDirectory> list = new TreeSet<FilteredDirectory>();
     private boolean files;
     private boolean newFiles;
     private boolean deleted;
     private boolean deletedFiles;
 
-    public FilteredDirectory(String displayName, String relativeName, boolean deleted) {
+    public FilteredDirectory(String displayName, String relativeName,
+        boolean deleted)
+    {
         this.displayName = displayName;
         this.relativeName = relativeName;
         this.deleted = deleted;
     }
 
-    public List<FilteredDirectory> getList() {
+    public Collection<FilteredDirectory> getList() {
         return list;
     }
 
@@ -81,5 +83,9 @@ public class FilteredDirectory {
 
     public String getRelativeName() {
         return relativeName;
+    }
+
+    public int compareTo(FilteredDirectory o) {
+        return getDisplayName().compareToIgnoreCase(o.getDisplayName());
     }
 }
