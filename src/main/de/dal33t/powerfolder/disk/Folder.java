@@ -1252,7 +1252,9 @@ public class Folder extends PFComponent {
         }
 
         // Abort transfers files
-        getController().getTransferManager().breakTransfers(fInfo);
+        if (fInfo.isFile()) {
+            getController().getTransferManager().breakTransfers(fInfo);
+        }
 
         File diskFile = getDiskFile(fInfo);
         boolean folderChanged = false;
@@ -1301,8 +1303,6 @@ public class Folder extends PFComponent {
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         synchronized (scanLock) {
             for (FileInfo fileInfo : fInfos) {
-                Reject.ifTrue(fileInfo.isDiretory(),
-                    "Directories not supported for deletion yet");
                 if (removeFileLocal(fileInfo)) {
                     removedFiles.add(fileInfo);
                 }
@@ -3056,7 +3056,7 @@ public class Folder extends PFComponent {
         }
         try {
             watcher.addIgnoreFile(newFileInfo);
-            if (fileInfo != null) {
+            if (fileInfo != null && fileInfo.isFile()) {
                 try {
                     archiver.archive(fileInfo, file, false);
                 } catch (IOException e) {
