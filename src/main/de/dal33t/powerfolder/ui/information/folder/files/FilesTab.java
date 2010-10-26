@@ -139,8 +139,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         Folder f = getController().getFolderRepository().getFolder(folderInfo);
         folder = f;
         updateNodes();
-        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(
-                folder.getInfo(), ""));
+        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(folder
+            .getInfo(), ""));
         tablePanel.setFolder(f);
         flatViewCB.setSelected(false);
         flatMode.setValue(flatViewCB.isSelected());
@@ -167,8 +167,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoLatest(FolderInfo folderInfo) {
 
         Folder f = getController().getFolderRepository().getFolder(folderInfo);
-        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(
-                folder.getInfo(), ""));
+        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(folder
+            .getInfo(), ""));
         tablePanel.setFolder(f);
         tablePanel.sortLatestDate();
         flatViewCB.setSelected(true);
@@ -182,8 +182,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoDeleted(FolderInfo folderInfo) {
 
         Folder f = getController().getFolderRepository().getFolder(folderInfo);
-        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(
-                folder.getInfo(), ""));
+        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(folder
+            .getInfo(), ""));
         tablePanel.setFolder(f);
         tablePanel.sortLatestDate();
         flatViewCB.setSelected(true);
@@ -202,8 +202,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     public void setFolderInfoIncoming(FolderInfo folderInfo) {
 
         Folder f = getController().getFolderRepository().getFolder(folderInfo);
-        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(
-                folder.getInfo(), ""));
+        directoryFilter.setFolder(f, FileInfoFactory.lookupDirectory(folder
+            .getInfo(), ""));
         tablePanel.setFolder(f);
         flatViewCB.setSelected(true);
         flatMode.setValue(flatViewCB.isSelected());
@@ -258,7 +258,8 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         JButton syncFolderButton = new JButton(syncFolderAction);
         syncFolderButton.setIcon(null);
 
-        JButton restoreButton = new JButton(new MyRestoreAction(getController()));
+        JButton restoreButton = new JButton(
+            new MyRestoreAction(getController()));
         restoreButton.setIcon(null);
 
         flatViewCB = new JCheckBox(Translation
@@ -316,7 +317,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
     public void selectionChanged(String relativeName) {
         directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
-                folder.getInfo(), relativeName));
+            folder.getInfo(), relativeName));
     }
 
     // ////////////////
@@ -401,7 +402,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
 
                 List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
                 for (DiskItem diskItem : diskItems) {
-                    if (diskItem instanceof FileInfo) {
+                    if (diskItem instanceof FileInfo && diskItem.isFile()) {
                         fileInfosToRestore.add((FileInfo) diskItem);
                     }
                 }
