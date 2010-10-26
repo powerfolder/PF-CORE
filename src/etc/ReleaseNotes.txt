@@ -1,4 +1,69 @@
-PowerFolder Version 4.3.0 - http://www.powerfolder.com
+PowerFolder Version 4.4.0 - http://www.powerfolder.com
+
+= New features =
+ * On 64 bit Windows platforms java 64 bit is automatically downloaded and
+   installed if not found.
+ * New file browser option: Files of other computers and unsynchronized files
+   can now be viewed.
+ * UDT / Hole punching protocol now fully supported on 64 bit platforms:
+   http://www.powerfolder.com/wiki/UDT_Connections
+ * Mac version now supports automatic increase of memory limits:
+   http://www.powerfolder.com/wiki/Memory_configuration
+
+= Improvements =
+ * Folder tab is now start tab.
+ * Improved drag and drop support: Simply drop a directory into PowerFolder to
+   share, sync or backup that directory.
+ * Backup (Source) mode now uses instant change detection:
+   http://www.powerfolder.com/wiki/Instant_change_detection
+ * The file archive is now easier reachable in the user interface:
+   http://www.powerfolder.com/wiki/File_Archive
+ * All system tray notification popups now directly open the correct wizard
+   when clicking them.
+ * Introduced a new type of protocol which reduced the overhead traffic by 50-70%.
+   The new client is still downward compatible.
+ * Speed improvements when transferring many small files.
+ * Synchronization of the "Documents" folders on Windows XP is handled better:
+   PowerFolder now by default excludes the sub directories "My Pictures", "My Music"
+   and "My Videos". These can be optionally selected separately.
+
+= Bugfixes =
+ * Corrected synchronization when directories with temporary/meta files like
+   "Thumbs.db" or ".DS_Store" in it get deleted.
+ * Corrected recovery from MD5-Hashsum problems after download.
+   http://www.powerfolder.com/wiki/Delta_sync
+ * Many speed improvements and bug fixes of the file browser.
+ * Now correctly handles invitation when folder with the same name already exists.
+
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/contact.html
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features. We hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/contact.html
+Support    : http://www.powerfolder.com/support.html
+Development: http://www.powerfolder.com/about_us.html
+Email      : contact (at) powerfolder.com
+
+
+== Version History ==
+
+Version 4.3.0
+-------------
 
 = New features =
  * Added new fresh default skin "LightSky".
@@ -42,32 +107,6 @@ PowerFolder Version 4.3.0 - http://www.powerfolder.com
  * Fixed bug that causes instant change detection to crash on unavailable devices.
  * Fixed bug in daily sync logic.
 
-
-Please give us feedback and request improvements:
-http://www.powerfolder.com/contact.html
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features. We hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-Homepage   : http://www.powerfolder.com
-Contact    : http://www.powerfolder.com/contact.html
-Support    : http://www.powerfolder.com/support.html
-Development: http://www.powerfolder.com/about_us.html
-Email      : contact (at) powerfolder.com
-
-
-== Version History ==
 
 Version 4.2.9
 -------------
