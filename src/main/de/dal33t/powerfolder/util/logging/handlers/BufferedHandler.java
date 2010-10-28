@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.logging.LoggingFormatter;
 
 /**
  * A handler that buffers a given amount of {@link LogRecord}s in memory. Older
@@ -36,13 +36,6 @@ import de.dal33t.powerfolder.util.logging.LoggingFormatter;
  * @author sprajc
  */
 public class BufferedHandler extends Handler {
-
-    private static ThreadLocal<LoggingFormatter> formatterThreadLocal = new ThreadLocal<LoggingFormatter>()
-    {
-        protected LoggingFormatter initialValue() {
-            return new LoggingFormatter();
-        }
-    };
 
     private List<LogRecord> logRecords;
     // private Level level;
@@ -82,13 +75,13 @@ public class BufferedHandler extends Handler {
 
     // API ********************************************************************
 
-    public List<String> getFormattedLogLines() {
+    public List<String> getFormattedLogLines(int nSize, Formatter formatter) {
         synchronized (logRecords) {
             List<String> lines = new ArrayList<String>(logRecords.size());
-            for (int i = 0; i < logRecords.size(); i++) {
-                LogRecord record = logRecords.get(logRecords.size() - i - 1);
-                String formattedMessage = formatterThreadLocal.get().format(
-                    record);
+            int nLines = Math.min(nSize, logRecords.size());
+            for (int i = 0; i < nLines; i++) {
+                LogRecord record = logRecords.get(i);
+                String formattedMessage = formatter.format(record);
                 lines.add(formattedMessage);
             }
             return lines;

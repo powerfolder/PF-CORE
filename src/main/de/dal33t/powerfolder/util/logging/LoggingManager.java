@@ -123,7 +123,7 @@ public class LoggingManager {
         // Create loggers, thread-safe in the static initializer.
         consoleHandler = new ConsoleHandler();
         documentHandler = new DocumentHandler();
-        bufferedHandler = new BufferedHandler(20);
+        bufferedHandler = new BufferedHandler(200);
 
         rootLogger.setFilter(DEFAULT_FILTER);
         consoleHandler.setFilter(DEFAULT_FILTER);
