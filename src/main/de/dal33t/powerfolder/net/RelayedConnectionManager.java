@@ -239,7 +239,7 @@ public class RelayedConnectionManager extends PFComponent {
             Type type = message.getType().equals(Type.SYN)
                 ? Type.NACK
                 : Type.EOF;
-            RelayedMessage msg = receivedFrom.getProtocolVersion() > 108
+            RelayedMessage msg = receivedFrom.getProtocolVersion() >= 108
                 ? new RelayedMessageExt(type, message.getDestination(), message
                     .getSource(), message.getConnectionId(), null)
                 : new RelayedMessage(type, message.getDestination(), message
@@ -271,6 +271,7 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         RelayedMessage msg4Destination = message;
+        
         // Poor destination. Does not support Ext version of RelayedMessage
         if (destinationMember.getProtocolVersion() < 108
             && message instanceof RelayedMessageExt)
@@ -288,7 +289,7 @@ public class RelayedConnectionManager extends PFComponent {
                     "Connection broken while relaying message to "
                         + destinationMember.getNick() + ". " + e);
                 log.log(Level.FINER, e.toString(), e);
-                RelayedMessage eofMsg = receivedFrom.getProtocolVersion() > 108
+                RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= 108
                     ? new RelayedMessageExt(Type.EOF, message.getDestination(),
                         message.getSource(), message.getConnectionId(), null)
                     : new RelayedMessage(Type.EOF, message.getDestination(),
