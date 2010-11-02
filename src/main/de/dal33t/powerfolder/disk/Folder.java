@@ -1622,7 +1622,9 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
-                // FIXME: Check if file is in ARCHIVE?
+                if (!getFileArchiver().getArchivedFilesInfos(file).isEmpty()) {
+                    continue;
+                }
                 expired++;
                 // Remove
                 dao.delete(null, file);
