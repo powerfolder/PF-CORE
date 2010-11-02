@@ -284,9 +284,7 @@ public class Account implements Serializable {
         Collection<FolderInfo> folders = new ArrayList<FolderInfo>(permissions
             .size());
         for (Permission p : permissions) {
-            if (p instanceof FolderOwnerPermission
-                || p instanceof FolderAdminPermission)
-            {
+            if (p instanceof FolderOwnerPermission) {
                 FolderPermission fp = (FolderPermission) p;
                 folders.add(fp.getFolder());
             }
