@@ -84,6 +84,10 @@ public class FolderInfo implements Serializable, Cloneable {
         // #1548: Convert this into boolean flag?
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
+    
+    public String getId() {
+        return id;
+    }
 
     public String getName() {
         return name;
