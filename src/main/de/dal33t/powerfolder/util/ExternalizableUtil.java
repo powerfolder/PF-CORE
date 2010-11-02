@@ -125,10 +125,14 @@ public class ExternalizableUtil {
                 addAndPort[1]).intValue());
         }
         String hostname = addAndPort[0];
-        byte[] ip = Base64.decode(addAndPort[1]);
         int port = Integer.valueOf(addAndPort[2]);
-        InetAddress addr = InetAddress.getByAddress(hostname, ip);
-        return new InetSocketAddress(addr, port);
+        if (StringUtils.isNotBlank(addAndPort[1])) {
+            byte[] ip = Base64.decode(addAndPort[1]);
+            InetAddress addr = InetAddress.getByAddress(hostname, ip);
+            return new InetSocketAddress(addr, port);
+        } else {
+            return new InetSocketAddress(hostname, port);
+        }
     }
 
     /**
