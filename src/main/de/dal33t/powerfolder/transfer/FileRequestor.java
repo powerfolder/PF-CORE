@@ -448,7 +448,7 @@ public class FileRequestor extends PFComponent {
                     // Sleep a bit to avoid spamming
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
-                    logWarning("Stopped");
+                    logFine("Stopped");
                     logFiner(e);
                     break;
                 }
