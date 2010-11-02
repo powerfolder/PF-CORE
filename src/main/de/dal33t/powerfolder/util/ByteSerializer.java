@@ -260,12 +260,6 @@ public class ByteSerializer extends Loggable {
         Object result;
         try {
             result = deserialize0(base, expectCompression);
-        } catch (StreamCorruptedException e) {
-            LOG.log(Level.WARNING, "While deserializing: " + e, e);
-            throw e;
-        } catch (InvalidClassException e) {
-            LOG.log(Level.WARNING, "While deserializing: " + e, e);
-            throw e;
         } catch (IOException e) {
             try {
                 result = deserialize0(base, !expectCompression);
