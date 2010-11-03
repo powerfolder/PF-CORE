@@ -2,6 +2,8 @@ PowerFolder Version 4.4.1 - http://www.powerfolder.com
 
 = New features / Improvements =
  * Minimum height of main window can now be smaller.
+ * Tell a friend link: Now supports tell to Facebook, Twitter and LinkedIn:
+   http://www.powerfolder.com/wiki/Referral_reward_system
 
 = Bugfixes =
  * Fixed connection bug (Invalid stream header).
