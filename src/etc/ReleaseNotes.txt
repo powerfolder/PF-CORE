@@ -1,4 +1,40 @@
-PowerFolder Version 4.4.0 - http://www.powerfolder.com
+PowerFolder Version 4.4.1 - http://www.powerfolder.com
+
+= New features / Improvements =
+ * Minimum height of main window can now be smaller.
+
+= Bugfixes =
+ * Fixed connection bug (Invalid stream header).
+
+
+Please give us feedback and request improvements:
+http://www.powerfolder.com/contact.html
+
+Minimum Java version is 6.0.
+
+Thanks to those who requested features. We hope to implement
+even more if you keep requesting them for the next version.
+
+- The PowerFolder Team
+
+Official Roadmap:
+http://www.powerfolder.com/roadmap.html
+
+Please remember: You agree to keep us free of any (legal) issues involved with
+downloading and using this PowerFolder!
+
+Contact information:
+Homepage   : http://www.powerfolder.com
+Contact    : http://www.powerfolder.com/contact.html
+Support    : http://www.powerfolder.com/support.html
+Development: http://www.powerfolder.com/about_us.html
+Email      : contact (at) powerfolder.com
+
+
+== Version History ==
+
+Version 4.4.0
+-------------
 
 = New features =
  * On 64 bit Windows platforms java 64 bit is automatically downloaded and
@@ -36,31 +72,6 @@ PowerFolder Version 4.4.0 - http://www.powerfolder.com
  * Now correctly handles invitation when folder with the same name already exists.
 
 
-Please give us feedback and request improvements:
-http://www.powerfolder.com/contact.html
-
-Minimum Java version is 6.0.
-
-Thanks to those who requested features. We hope to implement
-even more if you keep requesting them for the next version.
-
-- The PowerFolder Team
-
-Official Roadmap:
-http://www.powerfolder.com/roadmap.html
-
-Please remember: You agree to keep us free of any (legal) issues involved with
-downloading and using this PowerFolder!
-
-Contact information:
-Homepage   : http://www.powerfolder.com
-Contact    : http://www.powerfolder.com/contact.html
-Support    : http://www.powerfolder.com/support.html
-Development: http://www.powerfolder.com/about_us.html
-Email      : contact (at) powerfolder.com
-
-
-== Version History ==
 
 Version 4.3.0
 -------------
