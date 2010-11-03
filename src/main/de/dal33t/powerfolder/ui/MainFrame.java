@@ -89,6 +89,10 @@ public class MainFrame extends PFUIComponent {
     public static final int INLINE_INFO_LEFT = 1;
     public static final int INLINE_INFO_RIGHT = 2;
 
+    public static final int MIN_HEIGHT = 300;
+    public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
+        .getDefaultValueInt();
+
     private final AtomicBoolean controlKeyDown = new AtomicBoolean();
     private final AtomicInteger oldX = new AtomicInteger();
     private final AtomicInteger oldY = new AtomicInteger();
@@ -166,16 +170,15 @@ public class MainFrame extends PFUIComponent {
         final Controller c = getController();
         int width = PreferencesEntry.MAIN_FRAME_WIDTH.getValueInt(c);
         int height = PreferencesEntry.MAIN_FRAME_HEIGHT.getValueInt(c);
-        int minWidth = PreferencesEntry.MAIN_FRAME_WIDTH.getDefaultValueInt();
-        int minHeight = PreferencesEntry.MAIN_FRAME_HEIGHT.getDefaultValueInt();
-        if (width < minWidth) {
-            width = minWidth;
+        if (width < MIN_WIDTH) {
+            width = MIN_WIDTH;
         }
-        if (height < minHeight) {
-            height = minHeight;
+        if (height < MIN_HEIGHT) {
+            height = MIN_HEIGHT;
         }
+        uiComponent.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
         uiComponent.setSize(width, height);
-        uiComponent.setMinimumSize(new Dimension(minWidth, minHeight));
+        uiComponent.setPreferredSize(new Dimension(width, height));
 
         // Pack elements
         uiComponent.pack();
