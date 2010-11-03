@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.4.0"; // 1.7.1.52 // RC3 / beta6
+    public static final String PROGRAM_VERSION = "4.4.1"; // 1.7.1.57
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -990,7 +990,7 @@ public class Controller extends PFComponent {
                 logWarning("Not opening connection listener. (port=0)");
             } else {
                 if (ports == null) {
-                    ports = "-1";
+                    ports = String.valueOf(ConnectionListener.DEFAULT_PORT);
                 }
                 StringTokenizer nizer = new StringTokenizer(ports, ",");
                 while (nizer.hasMoreElements()) {
