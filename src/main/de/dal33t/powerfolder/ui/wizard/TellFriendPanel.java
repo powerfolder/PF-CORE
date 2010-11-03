@@ -19,15 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Dimension;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.util.Arrays;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import jwf.WizardPanel;
 
@@ -37,9 +32,12 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.SocialNetwork;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
@@ -47,48 +45,30 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
  */
 public class TellFriendPanel extends PFWizardPanel {
 
-    private JTextArea emailTextArea;
-    private JTextArea personalMessageTextArea;
+    private LinkLabel fbLabel;
+    private LinkLabel twitterLabel;
+    private LinkLabel linkedInLabel;
+    private ActionLabel emailLabel;
+    private LinkLabel infoLabel;
 
     public TellFriendPanel(Controller controller) {
         super(controller);
     }
 
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout("140dlu, pref:grow",
-            "pref, 2dlu, pref, 10dlu, pref, 3dlu, 40dlu, 6dlu, pref, 3dlu, 40dlu");
+        FormLayout layout = new FormLayout(
+            "pref, 7dlu, pref, 7dlu, pref, 7dlu, pref", "pref, 30dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
-        int row = 1;
 
-        builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.information1")), cc.xyw(1, row,
-            2));
-        row += 2;
+        builder.add(fbLabel.getUIComponent(), cc.xy(1, 1));
+        builder.add(twitterLabel.getUIComponent(), cc.xy(3, 1));
+        builder.add(linkedInLabel.getUIComponent(), cc.xy(5, 1));
+        builder.add(emailLabel.getUIComponent(), cc.xy(7, 1));
+        builder.add(emailLabel.getUIComponent(), cc.xy(7, 1));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.information2")), cc.xyw(1, row,
-            2));
-        row += 2;
-
-        builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.add_email_address")), cc.xyw(1,
-            row, 2));
-        row += 2;
-
-        JScrollPane scrollPane = new JScrollPane(emailTextArea);
-        scrollPane.setPreferredSize(new Dimension(50, 60));
-        builder.add(scrollPane, cc.xy(1, row));
-        row += 2;
-
-        builder.add(new JLabel(Translation
-            .getTranslation("wizard.tell_friend.personal_message")), cc.xyw(1,
-            row, 2));
-        row += 2;
-
-        scrollPane = new JScrollPane(personalMessageTextArea);
-        scrollPane.setPreferredSize(new Dimension(50, 60));
-        builder.add(scrollPane, cc.xy(1, row));
+        builder.add(infoLabel.getUIComponent(), cc.xyw(1, 3, 7));
 
         return builder.getPanel();
     }
@@ -97,48 +77,46 @@ public class TellFriendPanel extends PFWizardPanel {
         return Translation.getTranslation("wizard.tell_friend.title");
     }
 
+    @SuppressWarnings("serial")
     protected void initComponents() {
-        emailTextArea = new JTextArea();
-        emailTextArea.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                updateButtons();
+        String fbLink = SocialNetwork.FACEBOOK.shareLink(getController()
+            .getOSClient().getRegisterURLReferral());
+        fbLabel = new LinkLabel(getController(), "", fbLink);
+        fbLabel.setIcon(Icons.getIconById(Icons.FACEBOOK_BUTTON));
+
+        String twitterLink = SocialNetwork.TWITTER.shareLink(getController()
+            .getOSClient().getRegisterURLReferral());
+        twitterLabel = new LinkLabel(getController(), "", twitterLink);
+        twitterLabel.setIcon(Icons.getIconById(Icons.TWITTER_BUTTON));
+
+        String linkedInLink = SocialNetwork.LINKEDIN.shareLink(getController()
+            .getOSClient().getRegisterURLReferral());
+        linkedInLabel = new LinkLabel(getController(), "", linkedInLink);
+        linkedInLabel.setIcon(Icons.getIconById(Icons.LINKEDIN_BUTTON));
+
+        emailLabel = new ActionLabel(getController(), new AbstractAction("") {
+            public void actionPerformed(ActionEvent e) {
+                getWizard().next();
             }
         });
-        personalMessageTextArea = new JTextArea();
+        emailLabel.setIcon(Icons.getIconById(Icons.EMAIL_BUTTON));
+
+        infoLabel = new LinkLabel(getController(), Translation
+            .getTranslation("pro.wizard.activation.learn_more"), Help
+            .getWikiArticleURL(getController(),
+                WikiLinks.REFERRAL_REWARD_SYSTEM));
+        infoLabel.convertToBigLabel();
     }
 
     public boolean hasNext() {
-        return emailTextArea.getText().contains("@");
+        return false;
     }
 
     public WizardPanel next() {
-        String[] emails = emailTextArea.getText().split("\n");
-        getController().getOSClient().getAccountService().tellFriend(
-            Arrays.asList(emails), personalMessageTextArea.getText());
-
-        return new TextPanelPanel(getController(), Translation
-            .getTranslation("wizard.tell_friend.title"), Translation
-            .getTranslation("wizard.tell_friend.success"), true);
+        return new TellFriendEmailPanel(getController());
     }
 
     public boolean validateNext() {
-        String[] emails = emailTextArea.getText().split("\\n");
-        for (String email : emails) {
-            email = email.trim();
-            if (email.length() > 0) {
-                if (!email.contains("@")) {
-                    DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("wizard.tell_friend.title.warning_title"),
-                            Translation.getTranslation(
-                                "wizard.tell_friend.title.warning_bad_email",
-                                email), GenericDialogType.ERROR);
-                    return false;
-                }
-            }
-        }
         return true;
     }
 }

@@ -60,8 +60,10 @@ public enum SocialNetwork {
 
     public String shareLink(String shareURL) {
         try {
-            return template.replace("$ORIGINAL_URL$", URLEncoder.encode(
+            String link = template.replace("$ORIGINAL_URL$", URLEncoder.encode(
                 shareURL, "UTF-8"));
+            link = link.replace(" ", "+");
+            return link;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

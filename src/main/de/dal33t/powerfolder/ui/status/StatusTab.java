@@ -27,7 +27,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.TimerTask;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -59,18 +64,22 @@ import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.ui.Icons;
-import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.model.NoticesModel;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
@@ -224,18 +233,8 @@ public class StatusTab extends PFUIComponent {
             updateBuyNowLink(Translation
                 .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
         }
-        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
-        {
-            public void actionPerformed(ActionEvent e) {
-                PFWizard wizard = new PFWizard(getController(), Translation
-                    .getTranslation("wizard.pfwizard.tell_friend_title"));
-                wizard.open(new TellFriendPanel(getController()));
-            }
-        });
-        tellFriendLabel.setText(Translation
-            .getTranslation("status_tab.tell_friend.text"));
-        tellFriendLabel.setToolTipText(Translation
-            .getTranslation("status_tab.tell_friend.tip"));
+        tellFriendLabel = SimpleComponentFactory
+            .createTellAFriendLabel(getController());
 
         updateTransferText();
         updateFoldersText();

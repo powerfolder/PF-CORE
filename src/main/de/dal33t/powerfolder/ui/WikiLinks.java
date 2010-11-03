@@ -55,4 +55,5 @@ public interface WikiLinks {
     String WEBDAV = "WebDAV";
     String CONNECT_ON_DEMAND = "Connect_on_demand";
     String LIMITATIONS = "Limitations";
+    String REFERRAL_REWARD_SYSTEM = "Referral_reward_system";
 }

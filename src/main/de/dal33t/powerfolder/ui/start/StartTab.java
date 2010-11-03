@@ -19,38 +19,43 @@
  */
 package de.dal33t.powerfolder.ui.start;
 
-import javax.swing.*;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.util.Date;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import jwf.WizardContext;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.security.OnlineStorageSubscription;
-import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.security.OnlineStorageSubscription;
+import de.dal33t.powerfolder.ui.FileDropTransferHandler;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.ui.widget.ActionLabel;
-import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.PFWizardPanel;
-import de.dal33t.powerfolder.ui.wizard.TellFriendPanel;
-import de.dal33t.powerfolder.ui.FileDropTransferHandler;
-import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.util.Format;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.Date;
-
-import jwf.WizardContext;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.UIUtil;
 
 /**
  * Class for the Status tab in the main tab area of the UI.
@@ -153,19 +158,7 @@ public class StartTab extends PFUIComponent {
                         .getOSClient());
                 }
             });
-        tellFriendLabel = new ActionLabel(getController(), new AbstractAction()
-        {
-            public void actionPerformed(ActionEvent e) {
-                PFWizard wizard = new PFWizard(getController(), Translation.getTranslation(
-                "wizard.pfwizard.tell_friend_title"));
-                wizard.open(new TellFriendPanel(getController()));
-            }
-        });
-        tellFriendLabel.setText(Translation
-            .getTranslation("status_tab.tell_friend.text"));
-        tellFriendLabel.setToolTipText(Translation
-            .getTranslation("status_tab.tell_friend.tip"));
-        tellFriendLabel.convertToBigLabel();
+        tellFriendLabel = SimpleComponentFactory.createTellAFriendLabel(getController());
 
         updateOnlineStorageDetails();
 

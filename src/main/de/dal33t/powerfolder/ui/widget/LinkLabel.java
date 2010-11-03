@@ -98,7 +98,9 @@ public class LinkLabel extends PFComponent {
     }
 
     private void setText() {
-
+        if (StringUtils.isBlank(text)) {
+            return;
+        }
         if (mouseOver
             || PreferencesEntry.UNDERLINE_LINKS
                 .getValueBoolean(getController()))

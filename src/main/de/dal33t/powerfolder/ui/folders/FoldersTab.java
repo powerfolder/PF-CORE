@@ -26,8 +26,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
@@ -41,6 +45,7 @@ public class FoldersTab extends PFUIComponent {
     private FoldersList foldersList;
     private JScrollPane scrollPane;
     private JLabel emptyLabel;
+    private ActionLabel tellFriendLabel;
 
     /**
      * Constructor
@@ -75,9 +80,15 @@ public class FoldersTab extends PFUIComponent {
      */
     private void buildUI() {
 
+        tellFriendLabel = SimpleComponentFactory
+            .createTellAFriendLabel(getController());
+        tellFriendLabel.getUIComponent().setOpaque(false);
+        tellFriendLabel.getUIComponent().setBorder(
+            Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
+
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
+            "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow, pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -90,10 +101,16 @@ public class FoldersTab extends PFUIComponent {
         UIUtil.removeBorder(scrollPane);
 
         // emptyLabel and scrollPane occupy the same slot.
-        builder.add(emptyLabel, cc.xy(1, 6));
-        builder.add(scrollPane, cc.xy(1, 6));
+        builder.add(emptyLabel, cc.xywh(1, 6, 1, 1));
+        builder.add(scrollPane, cc.xywh(1, 6, 1, 1));
 
-        uiComponent = builder.getPanel();
+        if (PreferencesEntry.SHOW_TELL_A_FRIEND
+            .getValueBoolean(getController()))
+        {
+            builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, 7));
+        }
+
+        uiComponent = uiComponent = GradientPanel.create(builder.getPanel());
 
         updateEmptyLabel();
 

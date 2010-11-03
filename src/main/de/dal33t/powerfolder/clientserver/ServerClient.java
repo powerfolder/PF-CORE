@@ -19,7 +19,9 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URLEncoder;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -391,6 +393,29 @@ public class ServerClient extends PFComponent {
             return null;
         }
         return getWebURL() + "/register";
+    }
+
+    /**
+     * Convenience method for getting register URL
+     * 
+     * @return the registration URL for this server.
+     */
+    public String getRegisterURLReferral() {
+        String url = getRegisterURL();
+        if (!isLoggedIn()) {
+            return url;
+        }
+        try {
+            if (url.contains("?")) {
+                url += "&";
+            } else {
+                url += "?";
+            }
+            return url + "ref="
+                + URLEncoder.encode(getAccount().getOID(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
     /**
