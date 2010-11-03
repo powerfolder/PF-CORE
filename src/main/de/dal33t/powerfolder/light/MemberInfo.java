@@ -353,7 +353,7 @@ public class MemberInfo implements Serializable {
         ExternalizableUtil.writeString(out, networkId);
         ExternalizableUtil.writeAddress(out, connectAddress);
         ExternalizableUtil.writeDate(out, lastConnectTime);
-        out.writeBoolean(isSupernode);
+        out.writeBoolean(isConnected);
         out.writeBoolean(isSupernode);
     }
 }
