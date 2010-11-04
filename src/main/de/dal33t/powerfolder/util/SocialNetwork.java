@@ -32,37 +32,41 @@ public enum SocialNetwork {
     /**
      * Share on FB.
      */
-    FACEBOOK("http://www.facebook.com/sharer.php?u=$ORIGINAL_URL$"),
+    FACEBOOK("http://www.facebook.com/sharer.php?u=$ORIGINAL_URL$", false),
 
     /**
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share and send your files online with PowerFolder: $ORIGINAL_URL$"),
+        "http://twitter.com/?status=Share and send your files online with PowerFolder: $ORIGINAL_URL$", true),
 
     /**
      * Same for Linkedin.com
      */
     LINKEDIN(
-        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send and share files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder"),
+        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send and share files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder", true),
 
     /**
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share and send your files online with PowerFolder&BODY=Share and send your files online with PowerFolder: %20$ORIGINAL_URL$");
+        "mailto:to@email.com?SUBJECT=Share and send your files online with PowerFolder&BODY=Share and send your files online with PowerFolder: %20$ORIGINAL_URL$", false);
 
     private String template;
+    private boolean replaceSpace;
 
-    private SocialNetwork(String template) {
+    private SocialNetwork(String template, boolean replaceSpace) {
         this.template = template;
+        this.replaceSpace = replaceSpace;
     }
 
     public String shareLink(String shareURL) {
         try {
             String link = template.replace("$ORIGINAL_URL$", URLEncoder.encode(
                 shareURL, "UTF-8"));
-            link = link.replace(" ", "+");
+            if (replaceSpace) {
+                link = link.replace(" ", "%20");
+            }
             return link;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
