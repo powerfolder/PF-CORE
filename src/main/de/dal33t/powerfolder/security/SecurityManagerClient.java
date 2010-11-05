@@ -422,7 +422,7 @@ public class SecurityManagerClient extends PFComponent implements
 
     private boolean shouldAutoRefresh(Member node) {
         return node.isMySelf() || node.isFriend() || node.hasJoinedAnyFolder()
-            || node.isOnLAN();
+            || (node.isOnLAN() && node.isCompletelyConnected());
     }
 
     // Event handling *********************************************************
