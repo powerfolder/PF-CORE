@@ -604,6 +604,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
+        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+            .getValueInt(getController());
+
         String archiveSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + folderMD5 + FOLDER_SETTINGS_ARCHIVE);
         ArchiveMode archiveMode;
@@ -612,21 +615,26 @@ public class FolderRepository extends PFComponent implements Runnable {
                 archiveMode = ArchiveMode.valueOf(archiveSetting);
             } else {
                 log.log(Level.WARNING, "ArchiveMode not set: " + archiveSetting
-                    + ", falling back to NO_BACKUP!");
-                archiveMode = ArchiveMode.NO_BACKUP;
+                    + ", falling back to DEFAULT: " + defaultVersions);
+                archiveMode = ArchiveMode.FULL_BACKUP;
             }
         } catch (Exception e) {
             log.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
-                + ", falling back to NO_BACKUP!");
+                + ", falling back to DEFAULT: " + defaultVersions);
             log.log(Level.FINE, e.toString(), e);
-            archiveMode = ArchiveMode.NO_BACKUP;
+            archiveMode = ArchiveMode.FULL_BACKUP;
         }
 
         String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
             + FOLDER_SETTINGS_VERSIONS);
-        int versions = 0;
+        int versions;
         if (ver != null && ver.length() > 0) {
             versions = Integer.valueOf(ver);
+        } else {
+            // Take default as fallback.
+            versions = defaultVersions;
+            logFine("Unable to find archive settings for " + folderMD5
+                + ". Using default: " + versions);
         }
 
         String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
@@ -952,7 +960,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
                 metaFolderSettings);
             metaFolders.put(folderInfo, metaFolder);
-
+            if (!metaFolder.hasOwnDatabase()) {
+                // Scan once. To get it working.
+                metaFolder.recommendScanOnNextMaintenance(true);
+            }
             logInfo("Created metaFolder " + metaFolderInfo.name
                 + ", local copy at '" + metaFolderSettings.getLocalBaseDir()
                 + '\'');
@@ -1015,6 +1026,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_VERSIONS, String.valueOf(folderSettings
+            .getVersions()));
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
             .isPreviewOnly()));
