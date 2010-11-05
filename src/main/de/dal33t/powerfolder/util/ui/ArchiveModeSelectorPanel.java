@@ -41,7 +41,7 @@ import java.util.TreeSet;
  * Panel for displaying and selecting archive mode. Attached are a pair of
  * ValueModels that get notified of selection changes (One for mode, one for
  * version history).
- *
+ * 
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 2.01 $
  */
@@ -50,33 +50,32 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
     /**
      * Map of available modes.
      */
-    private static final Set<NameValuePair> PAIRS
-            = new TreeSet<NameValuePair>();
+    private static final Set<NameValuePair> PAIRS = new TreeSet<NameValuePair>();
     static {
-        PAIRS.add(new NameValuePair(0, Translation.getTranslation(
-                "archive_mode_selector_panel.none"), 0));
+        PAIRS.add(new NameValuePair(0, Translation
+            .getTranslation("archive_mode_selector_panel.none"), 0));
         PAIRS.add(new NameValuePair(1, Translation.getTranslation(
-                "archive_mode_selector_panel.version", "1"), 1));
+            "archive_mode_selector_panel.version", "1"), 1));
         PAIRS.add(new NameValuePair(2, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "2"), 2));
+            "archive_mode_selector_panel.versions", "2"), 2));
         PAIRS.add(new NameValuePair(3, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "3"), 3));
+            "archive_mode_selector_panel.versions", "3"), 3));
         PAIRS.add(new NameValuePair(4, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "4"), 4));
+            "archive_mode_selector_panel.versions", "4"), 4));
         PAIRS.add(new NameValuePair(5, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "5"), 5));
+            "archive_mode_selector_panel.versions", "5"), 5));
         PAIRS.add(new NameValuePair(6, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "7"), 7));
+            "archive_mode_selector_panel.versions", "7"), 7));
         PAIRS.add(new NameValuePair(7, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "10"), 10));
+            "archive_mode_selector_panel.versions", "10"), 10));
         PAIRS.add(new NameValuePair(8, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "20"), 20));
+            "archive_mode_selector_panel.versions", "20"), 20));
         PAIRS.add(new NameValuePair(9, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "50"), 50));
+            "archive_mode_selector_panel.versions", "50"), 50));
         PAIRS.add(new NameValuePair(10, Translation.getTranslation(
-                "archive_mode_selector_panel.versions", "100"), 100));
-        PAIRS.add(new NameValuePair(11, Translation.getTranslation(
-                "archive_mode_selector_panel.unlimited"), -1));
+            "archive_mode_selector_panel.versions", "100"), 100));
+        PAIRS.add(new NameValuePair(11, Translation
+            .getTranslation("archive_mode_selector_panel.unlimited"), -1));
     }
 
     private JComboBox archiveCombo;
@@ -84,19 +83,22 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
     private ValueModel modeModel; // <ArchiveMode>
     private ValueModel versionModel; // <Integer>
     private ActionListener purgeListener;
+
     /**
      * Constructor
-     *
+     * 
      * @param controller
-     *             the necessary evil...
+     *            the necessary evil...
      * @param modeModel
-     *             ValueModel<ArchiveMode> that gets notified of mode changes.
+     *            ValueModel<ArchiveMode> that gets notified of mode changes.
      * @param versionModel
-     *             ValueModel<Integer> that gets notified of version history
-     *             changes.
+     *            ValueModel<Integer> that gets notified of version history
+     *            changes.
      */
-    public ArchiveModeSelectorPanel(Controller controller, ValueModel modeModel,
-        ValueModel versionModel, ActionListener purgeListener) {
+    public ArchiveModeSelectorPanel(Controller controller,
+        ValueModel modeModel, ValueModel versionModel,
+        ActionListener purgeListener)
+    {
         super(controller);
         this.modeModel = modeModel;
         this.versionModel = versionModel;
@@ -104,8 +106,9 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
         initComponents();
     }
 
-    public ArchiveModeSelectorPanel(Controller controller, ValueModel modeModel,
-        ValueModel versionModel) {
+    public ArchiveModeSelectorPanel(Controller controller,
+        ValueModel modeModel, ValueModel versionModel)
+    {
         super(controller);
         this.modeModel = modeModel;
         this.versionModel = versionModel;
@@ -113,14 +116,14 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
     }
 
     /**
-     * Set the archive mode and verions history for the panel. Value models
-     * are not notified of changes during the set operation.
-     *
+     * Set the archive mode and verions history for the panel. Value models are
+     * not notified of changes during the set operation.
+     * 
      * @param archiveMode
      * @param versionHistory
      */
     public void setArchiveMode(ArchiveMode archiveMode, int versionHistory) {
-        if (archiveMode == ArchiveMode.NO_BACKUP) {
+        if (archiveMode == ArchiveMode.NO_BACKUP || versionHistory == 0) {
             archiveCombo.setSelectedIndex(0); // No Backup
         } else if (versionHistory == -1) {
             archiveCombo.setSelectedIndex(PAIRS.size() - 1); // Unlimited
@@ -145,7 +148,7 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
 
     /**
      * Builds panel and returns the component.
-     *
+     * 
      * @return
      */
     public Component getUIComponent() {
@@ -177,8 +180,8 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
             versionModel.setValue(0);
             modeModel.setValue(ArchiveMode.NO_BACKUP);
         } else {
-            versionModel.setValue(PAIRS.toArray(new NameValuePair[
-                    PAIRS.size()])[index].getValue());
+            versionModel.setValue(PAIRS
+                .toArray(new NameValuePair[PAIRS.size()])[index].getValue());
             modeModel.setValue(ArchiveMode.FULL_BACKUP);
         }
     }
@@ -187,16 +190,17 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
      * Builds the visible panel.
      */
     private void buildPanel() {
-        FormLayout layout = new FormLayout("70dlu, 3dlu, pref, pref:grow", "pref");
+        FormLayout layout = new FormLayout("70dlu, 3dlu, pref, pref:grow",
+            "pref");
         panel = new JPanel(layout);
 
         CellConstraints cc = new CellConstraints();
 
         panel.add(archiveCombo, cc.xy(1, 1));
         if (purgeListener != null) {
-            JButtonMini purgeButton = new JButtonMini(
-                    Icons.getIconById(Icons.DELETE), Translation.getTranslation(
-                            "archive_mode_selector_panel.purge.tip"));
+            JButtonMini purgeButton = new JButtonMini(Icons
+                .getIconById(Icons.DELETE), Translation
+                .getTranslation("archive_mode_selector_panel.purge.tip"));
             purgeButton.addActionListener(purgeListener);
             panel.add(purgeButton, cc.xy(3, 1));
         }
