@@ -421,23 +421,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             return true;
         }
 
-        public void friendAdded(NodeManagerEvent e) {
-            updateNodes();
-        }
-
-        public void friendRemoved(NodeManagerEvent e) {
-            updateNodes();
-        }
-
-        public void nodeAdded(NodeManagerEvent e) {
-            updateNodes();
-        }
-
         public void nodeConnected(NodeManagerEvent e) {
-            updateNodes();
-        }
-
-        public void nodeConnecting(NodeManagerEvent e) {
             updateNodes();
         }
 
@@ -445,25 +429,33 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             updateNodes();
         }
 
+        public void friendAdded(NodeManagerEvent e) {
+        }
+
+        public void friendRemoved(NodeManagerEvent e) {
+        }
+
+        public void nodeAdded(NodeManagerEvent e) {
+        }
+
+        public void nodeConnecting(NodeManagerEvent e) {
+        }
+
         public void nodeOffline(NodeManagerEvent e) {
-            updateNodes();
         }
 
         public void nodeOnline(NodeManagerEvent e) {
-            updateNodes();
         }
 
         public void nodeRemoved(NodeManagerEvent e) {
-            updateNodes();
         }
 
         public void settingsChanged(NodeManagerEvent e) {
-            updateNodes();
         }
 
         public void startStop(NodeManagerEvent e) {
-            updateNodes();
         }
+
     }
 
 }
