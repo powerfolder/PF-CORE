@@ -962,6 +962,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolders.put(folderInfo, metaFolder);
             if (!metaFolder.hasOwnDatabase()) {
                 // Scan once. To get it working.
+                metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
                 metaFolder.recommendScanOnNextMaintenance(true);
             }
             logInfo("Created metaFolder " + metaFolderInfo.name
