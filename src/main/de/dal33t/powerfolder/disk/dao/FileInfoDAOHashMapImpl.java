@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -241,6 +242,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
             Domain domain = getDomain(domainStr);
+            if (domain == null) {
+                continue;
+            }
             if (criteria.getType() == Type.DIRECTORIES_ONLY
                 || criteria.getType() == Type.FILES_AND_DIRECTORIES)
             {
@@ -248,11 +252,20 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     // if (filter.isExcluded(dInfo)) {
                     // continue;
                     // }
+
+                    if (criteria.getMaxResults() > 0
+                        && items.size() >= criteria.getMaxResults())
+                    {
+                        return items;
+                    }
+
                     if (isInSubDir(dInfo, path, recursive)
                         && !Util.equalsRelativeName(dInfo.getRelativeName(),
                             path))
                     {
-                        if (!items.contains(dInfo)) {
+                        if (!items.contains(dInfo)
+                            && matches(dInfo, criteria.getKeyWords()))
+                        {
                             items.add(dInfo);
                         }
                     }
@@ -266,8 +279,17 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     // if (filter.isExcluded(fInfo)) {
                     // continue;
                     // }
+
+                    if (criteria.getMaxResults() > 0
+                        && items.size() >= criteria.getMaxResults())
+                    {
+                        return items;
+                    }
+
                     if (isInSubDir(fInfo, path, recursive)) {
-                        if (!items.contains(fInfo)) {
+                        if (!items.contains(fInfo)
+                            && matches(fInfo, criteria.getKeyWords()))
+                        {
                             items.add(fInfo);
                         }
                     }
@@ -298,6 +320,22 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             domains.put(theDomain, d);
             return d;
         }
+    }
+
+    /*
+     * TODO: Performance optimization
+     */
+    private boolean matches(FileInfo fInfo, Set<String> keyWords) {
+        if (keyWords.isEmpty()) {
+            return true;
+        }
+        String lower = fInfo.getRelativeName().toLowerCase();
+        for (String keyWord : keyWords) {
+            if (!lower.contains(keyWord)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {

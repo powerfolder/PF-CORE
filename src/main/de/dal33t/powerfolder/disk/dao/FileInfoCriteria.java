@@ -19,14 +19,18 @@
  */
 package de.dal33t.powerfolder.disk.dao;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
@@ -39,6 +43,8 @@ public class FileInfoCriteria {
     private String path;
     private boolean recursive;
     private Type type = Type.FILES_AND_DIRECTORIES;
+    private Set<String> keyWords = new HashSet<String>();
+    private int maxResults = -1;
 
     /**
      * @return the domain(s) to search in.
@@ -78,6 +84,39 @@ public class FileInfoCriteria {
                 addMember(member);
             }
         }
+    }
+
+    /**
+     * @param keyWord
+     *            the keywords to add as filter.
+     */
+    public void addKeyWord(String keyWord) {
+        if (StringUtils.isBlank(keyWord)) {
+            return;
+        }
+        keyWords.add(keyWord.trim().toLowerCase());
+    }
+
+    /**
+     * @return the keywords to filter the result for.
+     */
+    public Set<String> getKeyWords() {
+        return Collections.unmodifiableSet(keyWords);
+    }
+
+    /**
+     * @return the number of maximum returned items. -1 for unlimited
+     */
+    public int getMaxResults() {
+        return maxResults;
+    }
+
+    /**
+     * @param maxResults
+     *            the number of maximum returned items. -1 for unlimited
+     */
+    public void setMaxResults(int maxResults) {
+        this.maxResults = maxResults;
     }
 
     /**
