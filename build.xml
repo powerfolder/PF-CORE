@@ -353,7 +353,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="256m">
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="1024m">
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<pathelement location="${junit.lib}" />
