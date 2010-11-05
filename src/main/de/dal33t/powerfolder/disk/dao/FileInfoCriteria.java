@@ -170,7 +170,7 @@ public class FileInfoCriteria {
         this.recursive = recursive;
     }
 
-    enum Type {
+    public enum Type {
         FILES_AND_DIRECTORIES, FILES_ONLY, DIRECTORIES_ONLY
     }
 }

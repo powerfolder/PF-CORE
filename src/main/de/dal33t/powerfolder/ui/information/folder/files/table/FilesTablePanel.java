@@ -411,9 +411,32 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         return builder.getPanel();
     }
 
-    // /////////////////
+    /**
+     * Try to download everything within this directory.
+     *
+     * @param directoryInfo
+     */
+    private void downloadDirectory(DirectoryInfo directoryInfo) {
+        FolderRepository repo = getController().getFolderRepository();
+        Folder folder = directoryInfo.getFolder(repo);
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.setPath(directoryInfo);
+        criteria.setRecursive(true);
+        criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+        criteria.addConnectedAndMyself(folder);
+        Collection<FileInfo> infoCollection =
+                folder.getDAO().findFiles(criteria);
+        for (FileInfo fileInfo : infoCollection) {
+            if (!fileInfo.isDownloading(getController())) {
+                getController().getTransferManager()
+                        .downloadNewestVersion(fileInfo);
+            }
+        }
+    }
+
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     private class DownloadFileAction extends BaseAction {
         DownloadFileAction() {
@@ -428,10 +451,13 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 @Override
                 public Object construct() {
                     for (DiskItem diskItem : getSelectedRows()) {
-                        if (diskItem instanceof FileInfo) {
+                        if (diskItem instanceof DirectoryInfo) {
+                            DirectoryInfo directoryInfo = (DirectoryInfo) diskItem;
+                            downloadDirectory(directoryInfo);
+                        } else if (diskItem instanceof FileInfo) {
                             FileInfo fileInfo = (FileInfo) diskItem;
                             FolderRepository repo = getController()
-                                .getFolderRepository();
+                                    .getFolderRepository();
                             Folder folder = fileInfo.getFolder(repo);
                             if (folder == null) {
                                 return null;
@@ -440,7 +466,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                                 return null;
                             }
                             getController().getTransferManager()
-                                .downloadNewestVersion(fileInfo);
+                                    .downloadNewestVersion(fileInfo);
                         }
                     }
                     return null;
@@ -487,6 +513,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
         public void valueChanged(ListSelectionEvent e) {
             boolean done = false;
+            boolean downloadState = false;
             if (getSelectedRows().length > 0) {
                 DiskItem diskItem = getSelectedRows()[0];
                 if (OSUtil.isWindowsSystem() || OSUtil.isMacOS()) {
@@ -502,7 +529,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
 
                     fileDetailsPanel.setFileInfo(null);
                     fileVersionsPanel.setFileInfo(null);
-
+                    downloadState = true;
                     done = true;
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
                     TransferManager tm = getController().getTransferManager();
@@ -511,28 +538,21 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     fileVersionsPanel.setFileInfo(fileInfo);
 
                     // Enable download action if file is download-able.
+                    downloadState = true;
                     FolderRepository repo = getController()
                         .getFolderRepository();
-                    boolean state = true;
                     if (fileInfo.diskFileExists(getController())
-                        && !fileInfo.isNewerAvailable(repo))
-                    {
-                        state = false;
-                    } else if (!(fileInfo.isDeleted()
-                        || fileInfo.isExpected(repo) || fileInfo
-                        .isNewerAvailable(repo)))
-                    {
-                        state = false;
-                    } else {
-                        if (tm.getActiveDownload(fileInfo) != null) {
-                            return;
-                        }
+                            && !fileInfo.isNewerAvailable(repo)) {
+                        downloadState = false;
+                    } else if (!fileInfo.isDeleted() &&
+                            !fileInfo.isExpected(repo) &&
+                            !fileInfo.isNewerAvailable(repo)) {
+                        downloadState = false;
                     }
-                    downloadFileAction.setEnabled(state);
 
                     // Enable restore / (!delete) action if file is
                     // restore-able.
-                    deleteFileAction.setEnabled(!state);
+                    deleteFileAction.setEnabled(!downloadState);
 
                     DownloadManager dl = getController().getTransferManager()
                         .getActiveDownload(fileInfo);
@@ -552,6 +572,8 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     done = true;
                 }
             }
+
+            downloadFileAction.setEnabled(downloadState);
 
             if (!done) {
                 fileDetailsPanel.setFileInfo(null);
