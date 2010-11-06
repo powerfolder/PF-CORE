@@ -404,15 +404,15 @@ public class DirectoryFilter extends FilterModel {
                     }
                 }
 
-                // Add dir to tree.
+                // Add/remove dir to tree.
                 if (fileFilterMode == FILE_FILTER_MODE_DELETED_PREVIOUS) {
-                    // if (fd.isDeleted() || fd.hasDeletedFilesDeep()) {
                     filteredDirectory.getList().add(fd);
                     filteredDirectory.setDeletedFiles(fd.isDeleted()
                         || fd.hasDeletedFilesDeep());
-                    // }
                 } else {
-                    if (!fd.isDeleted()) {
+                    if (fd.isDeleted()) {
+                        filteredDirectory.getList().remove(fd);
+                    } else {
                         filteredDirectory.getList().add(fd);
                     }
                 }
