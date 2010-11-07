@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.*;
 
@@ -40,11 +41,13 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.table.FilesTablePanel;
@@ -319,6 +322,40 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             folder.getInfo(), relativeName));
     }
 
+    public void restoreFiles() {
+        if (folder != null) {
+            DiskItem[] diskItems = tablePanel.getSelectedRows();
+            if (diskItems.length == 0) {
+                // Nothing selected, use everything.
+                diskItems = tablePanel.getAllRows();
+            }
+
+            List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
+            for (DiskItem diskItem : diskItems) {
+                if (diskItem instanceof DirectoryInfo) {
+                    DirectoryInfo di = (DirectoryInfo) diskItem;
+                    FileInfoCriteria criteria = new FileInfoCriteria();
+                    criteria.addConnectedAndMyself(folder);
+                    criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+                    criteria.setPath(di);
+                    criteria.setRecursive(true);
+                    Collection<FileInfo> infoCollection = folder.getDAO().findFiles(criteria);
+                    for (FileInfo fileInfo : infoCollection) {
+                        fileInfosToRestore.add(fileInfo);
+                    }
+                } else if (diskItem instanceof FileInfo) {
+                    fileInfosToRestore.add((FileInfo) diskItem);
+                }
+            }
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.restore_title"));
+
+            MultiFileRestorePanel panel = new MultiFileRestorePanel(
+                getController(), folder, fileInfosToRestore);
+            wizard.open(panel);
+        }
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -392,27 +429,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (folder != null) {
-                DiskItem[] diskItems = tablePanel.getSelectedRows();
-                if (diskItems.length == 0) {
-                    // Nothing selected, use everything.
-                    diskItems = tablePanel.getAllRows();
-                }
-
-                List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
-                for (DiskItem diskItem : diskItems) {
-                    if (diskItem instanceof FileInfo && diskItem.isFile()) {
-                        fileInfosToRestore.add((FileInfo) diskItem);
-                    }
-                }
-                PFWizard wizard = new PFWizard(getController(), Translation
-                    .getTranslation("wizard.pfwizard.restore_title"));
-
-                MultiFileRestorePanel panel = new MultiFileRestorePanel(
-                    getController(), folder, fileInfosToRestore);
-                wizard.open(panel);
-            }
-
+            restoreFiles();
         }
     }
 

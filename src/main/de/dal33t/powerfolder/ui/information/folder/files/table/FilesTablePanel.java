@@ -25,9 +25,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -68,8 +66,6 @@ import de.dal33t.powerfolder.ui.information.folder.files.*;
 import de.dal33t.powerfolder.ui.information.folder.files.tree.DirectoryTreeNodeUserObject;
 import de.dal33t.powerfolder.ui.information.folder.files.versions.FileVersionsPanel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
-import de.dal33t.powerfolder.ui.wizard.MultiFileRestorePanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -530,6 +526,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     fileDetailsPanel.setFileInfo(null);
                     fileVersionsPanel.setFileInfo(null);
                     downloadState = true;
+                    restoreArchiveAction.setEnabled(true);
                     done = true;
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
                     TransferManager tm = getController().getTransferManager();
@@ -667,20 +664,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
         }
 
         public void actionPerformed(ActionEvent e) {
-            List<FileInfo> fileInfosToRestore = new ArrayList<FileInfo>();
-            for (DiskItem diskItem : getSelectedRows()) {
-                if (diskItem != null && diskItem.isFile()) {
-                    FileInfo fileInfo = (FileInfo) diskItem;
-                    fileInfosToRestore.add(fileInfo);
-                }
-            }
-
-            PFWizard wizard = new PFWizard(getController(), Translation
-                .getTranslation("wizard.pfwizard.restore_title"));
-
-            MultiFileRestorePanel panel = new MultiFileRestorePanel(
-                getController(), tableModel.getFolder(), fileInfosToRestore);
-            wizard.open(panel);
+            parent.restoreFiles();
         }
     }
 
