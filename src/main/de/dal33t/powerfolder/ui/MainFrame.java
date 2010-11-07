@@ -65,6 +65,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
@@ -128,6 +130,9 @@ public class MainFrame extends PFUIComponent {
      */
     public MainFrame(Controller controller) throws HeadlessException {
         super(controller);
+
+        controller.getFolderRepository().addFolderRepositoryListener(
+            new MyFolderRepositoryListener());
 
         // Need to do this NOW because everything must be built before anything
         // affects it, like tab icons.
@@ -580,7 +585,7 @@ public class MainFrame extends PFUIComponent {
         statusBar.setNetworkingModeStatus(networkingMode);
     }
 
-    public void showInlineInfoPanel(JPanel panel, final String title) {
+    public void showInlineInfoPanel(JPanel panel, String title) {
         // Fix Synthetica maximization, otherwise it covers the task
         // bar. See
         // http://www.javasoft.de/jsf/public/products/synthetica/faq#q13
@@ -715,6 +720,34 @@ public class MainFrame extends PFUIComponent {
     // ////////////////
     // Inner Classes //
     // ////////////////
+
+    private class MyFolderRepositoryListener implements
+            FolderRepositoryListener {
+
+        // If showing the inline panel and the folder has been removed, 
+        // close the inline panel.
+        public void folderRemoved(FolderRepositoryEvent e) {
+            if (isShowingInfoInline()) {
+                closeInlineInfoPanel();
+            }
+        }
+
+        public void folderCreated(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public void maintenanceStarted(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public void maintenanceFinished(FolderRepositoryEvent e) {
+            // Don't care.
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
 
     /**
      * Listen for control key, to use in MyComponentAdapter. // todo - This is
