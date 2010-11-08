@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.4.1"; // 1.7.1.59
+    public static final String PROGRAM_VERSION = "4.4.2 - 1.7.1.60"; // 1.7.1.60
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -407,7 +407,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     ByteSerializer.printStats();
                 }
-            }, 300000L);
+            }, 600000L);
             Profiling.setEnabled(false);
             Profiling.reset();
         }
@@ -915,13 +915,13 @@ public class Controller extends PFComponent {
         long midnight = cal.getTime().getTime();
         // How long to wait initially?
         long secondsToMidnight = (midnight - now) / 1000;
-        logInfo("Initial log reconfigure in " + secondsToMidnight + " seconds");
+        logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                logInfo("Reconfiguring logs for new day: " + cal.getTime());
+                logFine("Reconfiguring logs for new day: " + cal.getTime());
                 initLogger();
                 LoggingManager.resetFileLogging();
-                logInfo("Reconfigured logs for new day: " + cal.getTime());
+                logFine("Reconfigured logs for new day: " + cal.getTime());
             }
         }, secondsToMidnight, 24 * 3600, TimeUnit.SECONDS);
 
