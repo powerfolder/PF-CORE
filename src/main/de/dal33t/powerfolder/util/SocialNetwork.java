@@ -38,19 +38,19 @@ public enum SocialNetwork {
      * To share a link on Twitter
      */
     TWITTER(
-        "http://twitter.com/?status=Share and send your files online with PowerFolder: $ORIGINAL_URL$", true),
+        "http://twitter.com/?status=Share, send and sync your files online with PowerFolder: $ORIGINAL_URL$", true),
 
     /**
      * Same for Linkedin.com
      */
     LINKEDIN(
-        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send and share files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder", true),
+        "http://www.linkedin.com/shareArticle?mini=true&url=$ORIGINAL_URL$&title=Securely send, share and sync files. Work together online with PowerFolder&summary=Securely send and share files. Work together online with PowerFolder", true),
 
     /**
      * Good old email
      */
     EMAIL(
-        "mailto:to@email.com?SUBJECT=Share and send your files online with PowerFolder&BODY=Share and send your files online with PowerFolder: %20$ORIGINAL_URL$", false);
+        "mailto:to@email.com?SUBJECT=Share, send and sync your files online with PowerFolder&BODY=Share, send and sync your files online with PowerFolder: %20$ORIGINAL_URL$", false);
 
     private String template;
     private boolean replaceSpace;
