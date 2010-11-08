@@ -169,6 +169,9 @@ public class Constants {
     /** Time until total node invalidation (if not friend). Currently: 60 days */
     public static final long NODE_TIME_TO_INVALIDATE = 1000 * 60 * 60 * 24 * 60;
 
+    /** Time a member is offline to get removed from a folder display */
+    public static final long NODE_TIME_TO_REMOVE_MEMBER = 1000 * 60 * 60 * 24
+        * 15;
     /**
      * Maximum time shift before node gets invalid in the future of the last
      * connection time. Currently: 1 day
