@@ -1385,6 +1385,21 @@ public class Folder extends PFComponent {
                         continue;
                     }
                     Member member = memberInfo.getNode(getController(), true);
+                    if (member.isMySelf()) {
+                        continue;
+                    }
+                    Date deadLine = new Date(System.currentTimeMillis()
+                        - Constants.NODE_TIME_TO_REMOVE_MEMBER);
+                    boolean offline2Long = memberInfo.lastConnectTime == null
+                        || memberInfo.lastConnectTime.before(deadLine);
+                    if (offline2Long) {
+                        logFine(member + " was offline too long. "
+                            + "Hiding in memberslist: " + member
+                            + " last seen online: "
+                            + memberInfo.lastConnectTime);
+                        continue;
+                    }
+                    // Ok let him join
                     join0(member);
                 }
 
