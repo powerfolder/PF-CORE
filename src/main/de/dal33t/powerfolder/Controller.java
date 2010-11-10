@@ -407,7 +407,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     ByteSerializer.printStats();
                 }
-            }, 600000L);
+            }, 600000L, 600000L);
             Profiling.setEnabled(false);
             Profiling.reset();
         }
