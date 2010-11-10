@@ -104,7 +104,7 @@ public class SendMessageTask extends PersistentTask {
     @Override
     public String toString() {
         return "SendMessageTask trying to send " + message + " to " + targetID
-            + " until " + getExpires();
+            + " until " + getExpires().getTime();
     }
 
     private class MessageTrigger extends NodeManagerAdapter {

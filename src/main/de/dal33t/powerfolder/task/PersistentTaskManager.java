@@ -202,7 +202,9 @@ public class PersistentTaskManager extends PFComponent {
             return;
         }
         if (!tasks.contains(task) && !shuttingDown) {
-            logInfo("Adding " + task);
+            if (isFine()) {
+                logFine("Adding " + task);
+            }
             tasks.add(task);
             Runnable adder = new Runnable() {
                 public void run() {
