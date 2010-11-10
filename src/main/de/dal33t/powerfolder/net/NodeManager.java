@@ -26,6 +26,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1201,7 +1202,8 @@ public class NodeManager extends PFComponent {
         final MessageProducer msgProd, final Filter<Member> filter)
     {
         if (!started) {
-            logWarning("Not started. Not broadcasting message: " + msgProd);
+            logWarning("Not started. Not broadcasting message: "
+                + Arrays.asList(msgProd.getMessages(true)));
             return;
         }
         if (isFiner()) {
