@@ -160,11 +160,17 @@ public class ConfigurationLoader {
             String value = preConfig.getProperty(key);
             if (!targetConfig.containsKey(key) || replaceExisting) {
                 targetConfig.setProperty(key, value);
-                n++;
+                if (!key.startsWith(PREFERENCES_PREFIX)) {
+                    n++;
+                }
                 LOG.finer("Preconfigured " + key + "=" + value);
             }
         }
-        LOG.fine("Preconfigs found " + preConfig.size());
+        if (n > 0) {
+            LOG.fine(n + " default configurations set");
+        } else {
+            LOG.finer("No additional default configurations set");
+        }
         return n;
     }
 
@@ -206,7 +212,11 @@ public class ConfigurationLoader {
                 LOG.warning("Preconfigured " + key + "=" + value);
             }
         }
-        LOG.fine("Preconfigs found " + preConfig.size());
+        if (n > 0) {
+            LOG.fine(n + " default preferences set");
+        } else {
+            LOG.finer("No additional default preferences set");
+        }
         return n;
     }
 
