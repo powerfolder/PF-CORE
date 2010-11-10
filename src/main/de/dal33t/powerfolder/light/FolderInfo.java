@@ -32,6 +32,7 @@ import javax.persistence.Id;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -54,7 +55,9 @@ public class FolderInfo implements Serializable, Cloneable {
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
     public static final String PROPERTYNAME_ID = "id";
+    public static final String PROPERTYNAME_NAME = "name";
 
+    @Index(name="IDX_FOLDER_NAME")
     public String name;
     @Id
     public String id;
@@ -84,7 +87,7 @@ public class FolderInfo implements Serializable, Cloneable {
         // #1548: Convert this into boolean flag?
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
-    
+
     public String getId() {
         return id;
     }
