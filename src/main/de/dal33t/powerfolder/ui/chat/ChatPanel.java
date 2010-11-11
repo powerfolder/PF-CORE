@@ -28,23 +28,13 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -78,6 +68,12 @@ public class ChatPanel extends PFUIComponent {
     // styles used in StyledDocument
     private static final String NORMAL = "normal";
     private static final String BOLD = "bold";
+    private static final String ITALIC = "italic";
+    private static final String UNDERLINE = "underline";
+    private static final String BOLD_ITALIC = "bold-italic";
+    private static final String BOLD_UNDERLINE = "bold-underline";
+    private static final String ITALIC_UNDERLINE = "italic-underline";
+    private static final String BOLD_ITALIC_UNDERLINE = "bold-italic-underline";
     private static final String BOLD_BLUE = "bold-blue";
     private static final String BOLD_GREEN = "bold-green";
 
@@ -91,9 +87,13 @@ public class ChatPanel extends PFUIComponent {
     private ChatFrame chatFrame;
     private MyAddRemoveFriendAction addRemoveFriendAction;
     private ChatModel chatModel;
-    private JPopupMenu contextMenu;
+    private JPopupMenu outputContextMenu;
+    private JPopupMenu inputContextMenu;
     private MyCopyAction copyAction;
     private MySelectAllAction selectAllAction;
+    private MyBoldAction boldAction;
+    private MyItalicAction italicAction;
+    private MyUnderlineAction underlineAction;
 
     /**
      * Constructor NOTE: This panel is NOT responsible for receiving messages.
@@ -155,6 +155,9 @@ public class ChatPanel extends PFUIComponent {
     private void initialize() {
         copyAction = new MyCopyAction(getController());
         selectAllAction = new MySelectAllAction(getController());
+        boldAction = new MyBoldAction(getController());
+        italicAction = new MyItalicAction(getController());
+        underlineAction = new MyUnderlineAction(getController());
         createToolBar();
         createOutputComponents();
         createInputComponents();
@@ -210,8 +213,8 @@ public class ChatPanel extends PFUIComponent {
         chatOutput.setEditable(false);
         outputScrollPane = new JScrollPane(chatOutput);
         chatOutput.getParent().setBackground(Color.WHITE);
-        chatOutput.addMouseListener(new MyMouseListener());
-        chatOutput.addCaretListener(new MyCaretListener());
+        chatOutput.addMouseListener(new MyOutputMouseListener());
+        chatOutput.addCaretListener(new MyOutputCaretListener());
         UIUtil.removeBorder(outputScrollPane);
     }
 
@@ -221,7 +224,9 @@ public class ChatPanel extends PFUIComponent {
     private void createInputComponents() {
         chatInput = new JTextArea(5, 30);
         chatInput.setEditable(true);
-        chatInput.addKeyListener(new MyKeyListener());
+        chatInput.addKeyListener(new MyInputKeyListener());
+        chatInput.addMouseListener(new MyInputMouseListener());
+        chatInput.addCaretListener(new MyInputCaretListener());
         inputScrollPane = new JScrollPane(chatInput);
         UIUtil.removeBorder(inputScrollPane);
         updateInputField();
@@ -273,13 +278,14 @@ public class ChatPanel extends PFUIComponent {
                     if (otherMember.isMySelf()) {
                         doc.insertString(doc.getLength(),
                             otherMember.getNick(), doc.getStyle(BOLD_BLUE));
-                        doc.insertString(doc.getLength(), ": " + text, doc
-                            .getStyle(NORMAL));
                     } else {
                         doc.insertString(doc.getLength(),
                             otherMember.getNick(), doc.getStyle(BOLD));
-                        doc.insertString(doc.getLength(), ": " + text, doc
-                            .getStyle(NORMAL));
+                    }
+                    doc.insertString(doc.getLength(), ": ", doc.getStyle(NORMAL));
+                    List<DocumentSection> sections =  parseText(text);
+                    for (DocumentSection section : sections) {
+                        doc.insertString(doc.getLength(), section.getText(), doc.getStyle(section.getType()));
                     }
                 }
             }
@@ -322,6 +328,94 @@ public class ChatPanel extends PFUIComponent {
     }
 
     /**
+     * Split text into bold, italic and underline sections.
+     *
+     * @param text
+     * @return
+     */
+    private static List<DocumentSection> parseText(String text) {
+        boolean bold = false;
+        boolean italic = false;
+        boolean underline = false;
+        StringBuilder sb = new StringBuilder();
+        List<DocumentSection> sections = new ArrayList<DocumentSection>();
+        for (int i = 0; i < text.length(); i++) {
+            if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<B>")
+                    || text.substring(i, i + 3).equals("<b>"))) {
+                doChunk(sb, sections, bold, italic, underline);
+                bold = true;
+                i += 2;
+            } else if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<I>")
+                    || text.substring(i, i + 3).equals("<i>"))) {
+                doChunk(sb, sections, bold, italic, underline);
+                italic = true; 
+                i += 2;
+            } else if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<U>")
+                    || text.substring(i, i + 3).equals("<u>"))) {
+                doChunk(sb, sections, bold, italic, underline);
+                underline = true;
+                i += 2;
+            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</B>")
+                    || text.substring(i, i + 4).equals("</b>")) && bold) {
+                doChunk(sb, sections, bold, italic, underline);
+                bold = false;
+                i += 3;
+            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</I>")
+                    || text.substring(i, i + 4).equals("</i>")) && italic) {
+                doChunk(sb, sections, bold, italic, underline);
+                italic = false;
+                i += 3;
+            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</U>")
+                    || text.substring(i, i + 4).equals("</u>")) && underline) {
+                doChunk(sb, sections, bold, italic, underline);
+                underline = false;
+                i += 3;
+            } else {
+                sb.append(text.charAt(i));
+            }
+        }
+        doChunk(sb, sections, bold, italic, underline);
+        return sections;
+    }
+
+    private static void doChunk(StringBuilder sb, List<DocumentSection> sections,
+                                boolean bold, boolean italic, boolean underline) {
+        String type;
+        if (bold) {
+            if (italic) {
+                if (underline) {
+                    type = BOLD_ITALIC_UNDERLINE;
+                } else {
+                    type = BOLD_ITALIC;
+                }
+            } else {
+                if (underline) {
+                    type = BOLD_UNDERLINE;
+                } else {
+                    type = BOLD;
+                }
+            }
+        } else {
+            if (italic) {
+                if (underline) {
+                    type = ITALIC_UNDERLINE;
+                } else {
+                    type = ITALIC;
+                }
+            } else {
+                if (underline) {
+                    type = UNDERLINE;
+                } else {
+                    type = NORMAL;
+                }
+            }
+        }
+        DocumentSection ds = new DocumentSection(type, sb.toString());
+        sections.add(ds);
+        sb.delete(0, sb.length());
+    }
+
+    /**
      * Creates the document styles.
      * 
      * @param doc
@@ -334,6 +428,29 @@ public class ChatPanel extends PFUIComponent {
 
         Style s = doc.addStyle(BOLD, def);
         StyleConstants.setBold(s, true);
+
+        s = doc.addStyle(ITALIC, def);
+        StyleConstants.setItalic(s, true);
+
+        s = doc.addStyle(UNDERLINE, def);
+        StyleConstants.setUnderline(s, true);
+
+        s = doc.addStyle(BOLD_ITALIC, def);
+        StyleConstants.setBold(s, true);
+        StyleConstants.setItalic(s, true);
+
+        s = doc.addStyle(ITALIC_UNDERLINE, def);
+        StyleConstants.setItalic(s, true);
+        StyleConstants.setUnderline(s, true);
+
+        s = doc.addStyle(BOLD_UNDERLINE, def);
+        StyleConstants.setBold(s, true);
+        StyleConstants.setUnderline(s, true);
+
+        s = doc.addStyle(BOLD_ITALIC_UNDERLINE, def);
+        StyleConstants.setBold(s, true);
+        StyleConstants.setItalic(s, true);
+        StyleConstants.setUnderline(s, true);
 
         s = doc.addStyle(BOLD_BLUE, def);
         StyleConstants.setForeground(s, Color.BLUE);
@@ -359,14 +476,50 @@ public class ChatPanel extends PFUIComponent {
         chatInput.requestFocusInWindow();
     }
 
-    // /////////////////
+    /**
+     * Convert something like "qwer<B>asdf</B>zxcv" to "qwerasdfzxcv" and back.
+     *                            mark|   |dot          mark|   |dot
+     * @param textArea
+     * @param token
+     */
+    private static void toggle(JTextArea textArea, String token) {
+        int mark = textArea.getCaret().getMark();
+        int dot = textArea.getCaret().getDot();
+        if (mark > dot) {
+            int temp = mark;
+            mark = dot;
+            dot = temp;
+        }
+        String text = textArea.getText();
+        String pre = text.substring(0, mark);
+        String in = text.substring(mark, dot);
+        String post = text.substring(dot);
+        String frontToken = '<' + token + '>';
+        String backToken = "</" + token + '>';
+        if (in.startsWith(frontToken) && in.endsWith(backToken)) {
+             // Remove formatting inclusive
+            in = in.substring(3).substring(0, in.length() - 7);
+            textArea.setText(pre + in + post);
+        } else if (pre.endsWith(frontToken) && post.startsWith(backToken)) {
+            // Remove formatting exclusive
+            pre = pre.substring(0, pre.length() - 3);
+            post = post.substring(4);
+            textArea.setText(pre + in + post);
+        } else {
+            // Add formatting
+            in = frontToken + in + backToken;
+            textArea.setText(pre + in + post);
+        }
+    }
+
+    // ////////////////
     // INNER CLASSES //
-    // /////////////////
+    // ////////////////
 
     /**
-     * Key listener to send messages on entere key.
+     * Key listener to send messages on enter key.
      */
-    private class MyKeyListener extends KeyAdapter {
+    private class MyInputKeyListener extends KeyAdapter {
         public void keyTyped(KeyEvent e) {
             char keyTyped = e.getKeyChar();
             if (keyTyped == '\n') { // enter key = send message
@@ -578,36 +731,70 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
-    private class MyMouseListener extends MouseAdapter {
+    private class MyOutputMouseListener extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                showContextMenu(e);
+                showOutputContextMenu(e);
             }
         }
 
         public void mouseReleased(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                showContextMenu(e);
+                showOutputContextMenu(e);
             }
         }
 
-        private void showContextMenu(final MouseEvent evt) {
+        private void showOutputContextMenu(final MouseEvent evt) {
             chatOutput.requestFocus();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    createPopupMenu().show(evt.getComponent(), evt.getX(),
+                    createOutputPopupMenu().show(evt.getComponent(), evt.getX(),
                         evt.getY());
                 }
             });
         }
 
-        public JPopupMenu createPopupMenu() {
-            if (contextMenu == null) {
-                contextMenu = new JPopupMenu();
-                contextMenu.add(copyAction);
-                contextMenu.add(selectAllAction);
+        public JPopupMenu createOutputPopupMenu() {
+            if (outputContextMenu == null) {
+                outputContextMenu = new JPopupMenu();
+                outputContextMenu.add(copyAction);
+                outputContextMenu.add(selectAllAction);
             }
-            return contextMenu;
+            return outputContextMenu;
+        }
+    }
+
+    private class MyInputMouseListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showInputContextMenu(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showInputContextMenu(e);
+            }
+        }
+
+        private void showInputContextMenu(final MouseEvent evt) {
+            chatInput.requestFocus();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    createInputPopupMenu().show(evt.getComponent(), evt.getX(),
+                        evt.getY());
+                }
+            });
+        }
+
+        public JPopupMenu createInputPopupMenu() {
+            if (inputContextMenu == null) {
+                inputContextMenu = new JPopupMenu();
+                inputContextMenu.add(boldAction);
+                inputContextMenu.add(italicAction);
+                inputContextMenu.add(underlineAction);
+            }
+            return inputContextMenu;
         }
     }
 
@@ -633,9 +820,71 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
-    private class MyCaretListener implements CaretListener {
+    private class MyOutputCaretListener implements CaretListener {
         public void caretUpdate(CaretEvent e) {
             copyAction.setEnabled(e.getDot() != e.getMark());
         }
     }
+
+    private class MyInputCaretListener implements CaretListener {
+        public void caretUpdate(CaretEvent e) {
+            boldAction.setEnabled(e.getDot() != e.getMark());
+            italicAction.setEnabled(e.getDot() != e.getMark());
+            underlineAction.setEnabled(e.getDot() != e.getMark());
+        }
+    }
+
+    private class MyBoldAction extends BaseAction {
+
+        private MyBoldAction(Controller controller) {
+            super("action_bold", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            toggle(chatInput, "B");
+        }
+    }
+
+    private class MyItalicAction extends BaseAction {
+
+        private MyItalicAction(Controller controller) {
+            super("action_italic", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            toggle(chatInput, "I");
+        }
+    }
+
+    private class MyUnderlineAction extends BaseAction {
+
+        private MyUnderlineAction(Controller controller) {
+            super("action_underline", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            toggle(chatInput, "U");
+        }
+    }
+
+    private static class DocumentSection {
+
+        private String type;
+        private String text;
+
+        private DocumentSection(String type, String text) {
+            this.type = type;
+            this.text = text;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
+
+
 }
