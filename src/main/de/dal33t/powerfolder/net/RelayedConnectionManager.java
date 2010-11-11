@@ -271,7 +271,7 @@ public class RelayedConnectionManager extends PFComponent {
         }
 
         RelayedMessage msg4Destination = message;
-        
+
         // Poor destination. Does not support Ext version of RelayedMessage
         if (destinationMember.getProtocolVersion() < 108
             && message instanceof RelayedMessageExt)
@@ -435,10 +435,12 @@ public class RelayedConnectionManager extends PFComponent {
         if (message.getType().equals(Type.DATA_ZIPPED)
             && sourceMember.isInteresting())
         {
-            logWarning("Unable to resolved pending con handler for "
-                + message.getSource().nick + ", conId: "
-                + message.getConnectionId() + ". Got these: " + pendingConHans
-                + ". msg: " + message);
+            if (isFine()) {
+                logFine("Unable to resolved pending con handler for "
+                    + message.getSource().nick + ", conId: "
+                    + message.getConnectionId() + ". Got these: "
+                    + pendingConHans + ". msg: " + message);
+            }
         }
         return null;
     }
