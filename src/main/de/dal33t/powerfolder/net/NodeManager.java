@@ -1000,7 +1000,7 @@ public class NodeManager extends PFComponent {
         }
 
         if (getMySelf().getInfo().equals(remoteIdentity.getMemberInfo())) {
-            logWarning("Loopback connection detected to " + handler
+            logFine("Loopback connection detected to " + handler
                 + ", disconnecting");
             handler.shutdown();
             throw new ConnectionException("Loopback connection detected to "
@@ -1172,7 +1172,7 @@ public class NodeManager extends PFComponent {
         final Filter<Member> filter)
     {
         if (!started) {
-            logWarning("Not started. Not broadcasting message: " + message);
+            logFine("Not started. Not broadcasting message: " + message);
             return;
         }
         if (isFiner()) {
@@ -1202,7 +1202,7 @@ public class NodeManager extends PFComponent {
         final MessageProducer msgProd, final Filter<Member> filter)
     {
         if (!started) {
-            logWarning("Not started. Not broadcasting message: "
+            logFine("Not started. Not broadcasting message: "
                 + Arrays.asList(msgProd.getMessages(true)));
             return;
         }
@@ -1262,7 +1262,7 @@ public class NodeManager extends PFComponent {
      */
     public int broadcastMessageToSupernodes(Message message, int nSupernodes) {
         if (!started) {
-            logWarning("Not started. Not broadcasting message: " + message);
+            logFine("Not started. Not broadcasting message: " + message);
             return 0;
         }
         if (isFiner()) {
@@ -1309,7 +1309,7 @@ public class NodeManager extends PFComponent {
      */
     public int broadcastMessageLANNodes(Message message, int nBroadcasted) {
         if (!started) {
-            logWarning("Not started. Not broadcasting message: " + message);
+            logFine("Not started. Not broadcasting message: " + message);
             return 0;
         }
         if (isFiner()) {
