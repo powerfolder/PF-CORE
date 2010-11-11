@@ -183,7 +183,7 @@ public enum ConfigurationEntry {
     /**
      * The optional name of the sever to connect to.
      */
-    SERVER_NAME("server.name", "Online Storage"),
+    SERVER_NAME("server.name", "PowerFolder Cloud"),
 
     /**
      * The optional url of the server.
