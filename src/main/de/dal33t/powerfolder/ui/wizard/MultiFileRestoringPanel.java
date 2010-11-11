@@ -1,22 +1,22 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.ui.wizard;
 
 import de.dal33t.powerfolder.light.FileInfo;
@@ -47,8 +47,8 @@ import javax.swing.*;
  */
 public class MultiFileRestoringPanel extends PFWizardPanel {
 
-    private static final Logger log = Logger.getLogger(MultiFileRestoringPanel
-            .class.getName());
+    private static final Logger log = Logger
+        .getLogger(MultiFileRestoringPanel.class.getName());
 
     private final List<FileInfo> fileInfosToRestore;
     private final Folder folder;
@@ -61,8 +61,8 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     private long totalCount;
 
     public MultiFileRestoringPanel(Controller controller, Folder folder,
-                                 List<FileInfo> fileInfosToRestore,
-                                 boolean redownloadIfMissing) {
+        List<FileInfo> fileInfosToRestore, boolean redownloadIfMissing)
+    {
         super(controller);
         this.fileInfosToRestore = fileInfosToRestore;
         this.folder = folder;
@@ -94,8 +94,8 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
     }
 
     protected String getTitle() {
-        return Translation.getTranslation(
-                "wizard.multi_file_restore_panel.title");
+        return Translation
+            .getTranslation("wizard.multi_file_restore_panel.title");
     }
 
     protected void initComponents() {
@@ -108,34 +108,41 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
 
     public WizardPanel next() {
         if (successCount == totalCount) {
-            return new TextPanelPanel(getController(), Translation.getTranslation(
-                    "wizard.multi_file_restoring_panel.success_title"), Translation
-                    .getTranslation("wizard.multi_file_restoring_panel.success_text"
-            ));
+            return new TextPanelPanel(
+                getController(),
+                Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.success_title"),
+                Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.success_text"),
+                true);
         } else if (successCount > 0) {
-            return new TextPanelPanel(getController(), Translation.getTranslation(
-                    "wizard.multi_file_restoring_panel.success_title"), Translation
-                    .getTranslation("wizard.multi_file_restoring_panel.partial_text",
-                    Format.formatLong(successCount),
-                    Format.formatLong(totalCount)
-            ));
+            return new TextPanelPanel(
+                getController(),
+                Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.success_title"),
+                Translation.getTranslation(
+                    "wizard.multi_file_restoring_panel.partial_text", Format
+                        .formatLong(successCount), Format
+                        .formatLong(totalCount)));
         } else {
-            return new TextPanelPanel(getController(), Translation.getTranslation(
-                    "wizard.multi_file_restoring_panel.fail_title"), Translation
-                    .getTranslation("wizard.multi_file_restoring_panel.fail_text"
-            ));
+            return new TextPanelPanel(
+                getController(),
+                Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.fail_title"),
+                Translation
+                    .getTranslation("wizard.multi_file_restoring_panel.fail_text"));
         }
     }
-    
+
     private class RestoreWorker extends SwingWorker {
 
         public Object construct() {
             int i = 1;
             for (FileInfo fileInfoToRestore : fileInfosToRestore) {
-                statusLabel.setText(Translation
-                    .getTranslation("wizard.multi_file_restoring_panel.working",
-                        Format.formatLong(i++),
-                        Format.formatLong(fileInfosToRestore.size())));
+                statusLabel.setText(Translation.getTranslation(
+                    "wizard.multi_file_restoring_panel.working", Format
+                        .formatLong(i++), Format.formatLong(fileInfosToRestore
+                        .size())));
                 restore0(folder, fileInfoToRestore);
             }
             return null;
@@ -143,38 +150,34 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
 
         /**
          * Restore from the archiver, or failing that from online storage.
-         *
+         * 
          * @param folder
          * @param fileInfoToRestore
          */
         private void restore0(Folder folder, FileInfo fileInfoToRestore) {
             try {
                 File restoreTo = fileInfoToRestore.getDiskFile(getController()
-                        .getFolderRepository());
+                    .getFolderRepository());
                 FileArchiver fileArchiver = folder.getFileArchiver();
                 boolean restored = false;
+                FileInfo onlineRestoredFileInfo = null;
                 if (fileArchiver.restore(fileInfoToRestore, restoreTo)) {
-                    log.info("Restored " + fileInfoToRestore.getFilenameOnly() +
-                            " from local archive");
+                    log.info("Restored " + fileInfoToRestore.getFilenameOnly()
+                        + " from local archive");
                     folder.scanChangedFile(fileInfoToRestore);
                     restored = true;
-                } else {
-                    // Not local. OnlineStorage perhaps?
-                    boolean online = folder.hasMember(getController()
-                            .getOSClient().getServer());
-                    if (online) {
-                        ServerClient client = getController().getOSClient();
-                        if (client != null && client.isConnected()
-                                && client.isLoggedIn()) {
-                            FolderService service = client.getFolderService();
-                            if (service != null) {
-                                service.restore(fileInfoToRestore, true);
-                                log.info("Restored " + fileInfoToRestore
-                                        .getFilenameOnly()
-                                        + " from OS archive");
-                                restored = true;
-                            }
-                        }
+                } else if (folder.hasMember(getController().getOSClient()
+                    .getServer()))
+                {
+                    ServerClient client = getController().getOSClient();
+                    if (client.isConnected() && client.isLoggedIn()) {
+                        FolderService service = client.getFolderService();
+                        onlineRestoredFileInfo = service.restore(
+                            fileInfoToRestore, true);
+                        log.info("Restored "
+                            + onlineRestoredFileInfo.toDetailString()
+                            + " from OS archive");
+                        restored = true;
                     }
                 }
 
@@ -182,16 +185,27 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                 if (redownloadIfMissing && !restored) {
                     // Delete from db, then request from peers.
                     folder.removeDeletedFileInfo(fileInfoToRestore);
+
+                    getController().getTransferManager().downloadNewestVersion(
+                        fileInfoToRestore, false);
+                    // Backup request
                     getController().getFolderRepository().getFileRequestor()
-                            .triggerFileRequesting(folder.getInfo());
-                    log.info("Redownloading " + fileInfoToRestore
-                            .getFilenameOnly());
+                        .triggerFileRequesting(folder.getInfo());
+
+                    log.info("Redownloading "
+                        + fileInfoToRestore.getFilenameOnly());
                     restored = true;
                 }
 
+                // If restored online download file now.
+                if (onlineRestoredFileInfo != null) {
+                    getController().getTransferManager().downloadNewestVersion(
+                        onlineRestoredFileInfo, false);
+                }
+
                 if (!restored) {
-                    throw new IOException("Restore of " + fileInfoToRestore
-                            .getFilenameOnly() + " failed");
+                    throw new IOException("Restore of "
+                        + fileInfoToRestore.getFilenameOnly() + " failed");
                 }
                 successCount++;
             } catch (Exception e) {

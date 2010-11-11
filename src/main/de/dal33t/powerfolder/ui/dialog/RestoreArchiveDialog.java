@@ -136,9 +136,8 @@ public class RestoreArchiveDialog extends BaseDialog {
     }
 
     private void showFileDialog() {
-        File dir = DialogFactory.chooseDirectory(
-                getController().getUIController(),
-            fileLocationField.getText());
+        File dir = DialogFactory.chooseDirectory(getController()
+            .getUIController(), fileLocationField.getText());
         if (dir != null) {
             fileLocationField.setText(dir.getAbsolutePath());
             enableComponents();
@@ -183,19 +182,24 @@ public class RestoreArchiveDialog extends BaseDialog {
             restoreTo = versionInfo.getDiskFile(getController()
                 .getFolderRepository());
         } else {
-            restoreTo = new File(fileLocationField.getText(),
-                    fileInfo.getFilenameOnly());
+            restoreTo = new File(fileLocationField.getText(), fileInfo
+                .getFilenameOnly());
         }
         boolean restore = true;
         if (restoreTo.exists()) {
             // Check user is okay with overwriting the file.
-            int result = DialogFactory.genericDialog(getController(),
-                    Translation.getTranslation("dialog.restore_archive.overwrite_title"),
-                    Translation.getTranslation("dialog.restore_archive.overwrite_message"),
-                    new String[] {
-                            Translation.getTranslation("dialog.restore_archive.overwrite"),
-                            Translation.getTranslation("general.cancel")
-                    }, 0, GenericDialogType.QUESTION);
+            int result = DialogFactory
+                .genericDialog(
+                    getController(),
+                    Translation
+                        .getTranslation("dialog.restore_archive.overwrite_title"),
+                    Translation
+                        .getTranslation("dialog.restore_archive.overwrite_message"),
+                    new String[]{
+                        Translation
+                            .getTranslation("dialog.restore_archive.overwrite"),
+                        Translation.getTranslation("general.cancel")}, 0,
+                    GenericDialogType.QUESTION);
             if (result != 0) {
                 restore = false;
             }
@@ -213,13 +217,14 @@ public class RestoreArchiveDialog extends BaseDialog {
 
     /**
      * Restore from the archiver, or failing that from online storage.
-     *
+     * 
      * @param folder
      * @param fileArchiver
      * @param restoreTo
      */
     private void restore0(Folder folder, FileArchiver fileArchiver,
-                          File restoreTo) {
+        File restoreTo)
+    {
         try {
             boolean restored = false;
             if (fileArchiver.restore(versionInfo, restoreTo)) {
@@ -228,18 +233,19 @@ public class RestoreArchiveDialog extends BaseDialog {
                 restored = true;
             } else {
                 // Not local. OnlineStorage perhaps?
-                boolean online = folder.hasMember(getController()
-                        .getOSClient().getServer());
+                boolean online = folder.hasMember(getController().getOSClient()
+                    .getServer());
                 if (online) {
                     ServerClient client = getController().getOSClient();
                     if (client != null && client.isConnected()
-                            && client.isLoggedIn()) {
+                        && client.isLoggedIn())
+                    {
                         FolderService service = client.getFolderService();
-                        if (service != null) {
-                            service.restore(versionInfo, true);
-                            logInfo("Restored from OS archive");
-                            restored = true;
-                        }
+                        FileInfo rInfo = service.restore(versionInfo, true);
+                        logInfo("Restored from OS archive");
+                        getController().getTransferManager()
+                            .downloadNewestVersion(rInfo, false);
+                        restored = true;
                     }
                 }
             }
