@@ -158,8 +158,8 @@ public class ReconnectManager extends PFComponent {
         // None has take the node to reconnect.
         // Spawn new reconnector
         if (reconnectionQueue.contains(node)) {
-            if (isInfo()) {
-                logInfo("Spawing new Reconnector (" + (reconnectors.size() + 1)
+            if (isFine()) {
+                logFine("Spawing new Reconnector (" + (reconnectors.size() + 1)
                     + " total) to get faster reconnect to " + node);
             }
             if (!started) {
