@@ -227,11 +227,7 @@ public class UIController extends PFComponent {
         informationFrame = new InformationFrame(getController());
         chatFrame = new ChatFrame(getController());
         systemMonitorFrame = new SystemMonitorFrame(getController());
-        getController().addMassDeletionHandler(new MyMassDeletionHandler());
         started = false;
-        getController().addInvitationHandler(new MyInvitationHandler());
-        getController().addAskForFriendshipListener(
-            new MyAskForFriendshipListener());
     }
 
     /**
@@ -387,6 +383,11 @@ public class UIController extends PFComponent {
                     }
                 });
         }
+
+        getController().addMassDeletionHandler(new MyMassDeletionHandler());
+        getController().addInvitationHandler(new MyInvitationHandler());
+        getController().addAskForFriendshipListener(
+            new MyAskForFriendshipListener());
     }
 
     private void checkLimits(boolean forceOpen) {
