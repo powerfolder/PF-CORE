@@ -2443,7 +2443,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     @Override
     public String getLoggerName() {
-        return super.getLoggerName() + " '" + getNick() + "'"
+        return "Computer '" + getNick() + "'"
             + (isSupernode() ? " (s)" : "");
     }
 
