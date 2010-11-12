@@ -20,10 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -388,7 +385,7 @@ public class Util {
 
     /**
      * Place a String on the clipboard
-     * 
+     *
      * @param aString
      *            the string to place in the clipboard
      */
@@ -402,6 +399,27 @@ public class Util {
                 // Ignore
             }
         });
+    }
+
+    /**
+     * Retrieve a String on the clipboard.
+     */
+    public static String getClipboardContents() {
+        String result = "";
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable contents = clipboard.getContents(null);
+        boolean hasTransferableText = contents != null &&
+                contents.isDataFlavorSupported(DataFlavor.stringFlavor);
+        if (hasTransferableText) {
+            try {
+                result = (String) contents.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException ex) {
+                LOG.severe(ex.getMessage());
+            } catch (IOException ex) {
+                LOG.severe(ex.getMessage());
+            }
+        }
+        return result;
     }
 
     /**

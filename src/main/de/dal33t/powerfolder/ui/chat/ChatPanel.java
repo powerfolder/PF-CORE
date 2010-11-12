@@ -90,7 +90,9 @@ public class ChatPanel extends PFUIComponent {
     private JPopupMenu outputContextMenu;
     private JPopupMenu inputContextMenu;
     private MyCopyAction copyAction;
-    private MySelectAllAction selectAllAction;
+    private MyPasteAction pasteAction;
+    private MySelectAllOutputAction selectAllOutputAction;
+    private MySelectAllInputAction selectAllInputAction;
     private MyBoldAction boldAction;
     private MyItalicAction italicAction;
     private MyUnderlineAction underlineAction;
@@ -154,7 +156,9 @@ public class ChatPanel extends PFUIComponent {
      */
     private void initialize() {
         copyAction = new MyCopyAction(getController());
-        selectAllAction = new MySelectAllAction(getController());
+        pasteAction = new MyPasteAction(getController());
+        selectAllOutputAction = new MySelectAllOutputAction(getController());
+        selectAllInputAction = new MySelectAllInputAction(getController());
         boldAction = new MyBoldAction(getController());
         italicAction = new MyItalicAction(getController());
         underlineAction = new MyUnderlineAction(getController());
@@ -285,7 +289,8 @@ public class ChatPanel extends PFUIComponent {
                     doc.insertString(doc.getLength(), ": ", doc.getStyle(NORMAL));
                     List<DocumentSection> sections =  parseText(text);
                     for (DocumentSection section : sections) {
-                        doc.insertString(doc.getLength(), section.getText(), doc.getStyle(section.getType()));
+                        doc.insertString(doc.getLength(), section.getText(),
+                                doc.getStyle(section.getType()));
                     }
                 }
             }
@@ -758,7 +763,7 @@ public class ChatPanel extends PFUIComponent {
             if (outputContextMenu == null) {
                 outputContextMenu = new JPopupMenu();
                 outputContextMenu.add(copyAction);
-                outputContextMenu.add(selectAllAction);
+                outputContextMenu.add(selectAllOutputAction);
             }
             return outputContextMenu;
         }
@@ -793,6 +798,9 @@ public class ChatPanel extends PFUIComponent {
                 inputContextMenu.add(boldAction);
                 inputContextMenu.add(italicAction);
                 inputContextMenu.add(underlineAction);
+                inputContextMenu.addSeparator();
+                inputContextMenu.add(pasteAction);
+                inputContextMenu.add(selectAllInputAction);
             }
             return inputContextMenu;
         }
@@ -809,9 +817,33 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
-    private class MySelectAllAction extends BaseAction {
+    private class MyPasteAction extends BaseAction {
 
-        private MySelectAllAction(Controller controller) {
+        private MyPasteAction(Controller controller) {
+            super("action_paste", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int start = chatInput.getCaretPosition();
+            chatInput.insert(Util.getClipboardContents().trim(), start);
+        }
+    }
+
+    private class MySelectAllInputAction extends BaseAction {
+
+        private MySelectAllInputAction(Controller controller) {
+            super("action_select_all", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            chatInput.selectAll();
+        }
+    }
+
+
+    private class MySelectAllOutputAction extends BaseAction {
+
+        private MySelectAllOutputAction(Controller controller) {
             super("action_select_all", controller);
         }
 
