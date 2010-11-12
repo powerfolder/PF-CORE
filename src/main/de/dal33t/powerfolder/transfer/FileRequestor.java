@@ -423,8 +423,10 @@ public class FileRequestor extends PFComponent {
                     }
 
                     int nFolders = folderQueue.size();
-                    logInfo("Start requesting files for " + nFolders
-                        + " folder(s)");
+                    if (isFine()) {
+                        logFine("Start requesting files for " + nFolders
+                            + " folder(s)");
+                    }
                     long start = System.currentTimeMillis();
                     for (Iterator<Folder> it = folderQueue.iterator(); it
                         .hasNext();)
