@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;

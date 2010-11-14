@@ -298,7 +298,7 @@ public class ChatFrame extends MagneticFrame {
         for (Map.Entry<MemberInfo, ChatPanel> entry : memberPanels.entrySet()) {
             Member source = (Member) event.getSource();
             if (source.getInfo().equals(entry.getKey())) {
-                entry.getValue().adviseChat();
+                entry.getValue().adviseChat(source.getNick());
             }
         }
     }

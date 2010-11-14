@@ -31,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -84,6 +85,7 @@ public class ChatPanel extends PFUIComponent {
     private JTextPane chatOutput;
     private JScrollPane outputScrollPane;
     private JScrollPane inputScrollPane;
+    private JLabel chatAdviceLabel;
     private JPanel toolBar;
     private Member chatPartner;
     private ChatFrame chatFrame;
@@ -166,6 +168,7 @@ public class ChatPanel extends PFUIComponent {
         boldAction = new MyBoldAction(getController());
         italicAction = new MyItalicAction(getController());
         underlineAction = new MyUnderlineAction(getController());
+        chatAdviceLabel = new JLabel();
         createToolBar();
         createOutputComponents();
         createInputComponents();
@@ -197,12 +200,13 @@ public class ChatPanel extends PFUIComponent {
             }
         });
 
-        FormLayout layout = new FormLayout("fill:0:grow, pref", "pref");
+        FormLayout layout = new FormLayout("pref, 3dlu, fill:0:grow, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(bar.getPanel(), cc.xy(1, 1));
-        builder.add(closeButton, cc.xy(2, 1));
+        builder.add(chatAdviceLabel, cc.xy(3, 1));
+        builder.add(closeButton, cc.xy(5, 1));
         toolBar = builder.getPanel();
     }
 
@@ -272,6 +276,10 @@ public class ChatPanel extends PFUIComponent {
      * output field.
      */
     private void updateChat(ChatLine[] lines) {
+
+        // Clear any existing chat advice.
+        chatAdviceLabel.setText("");
+
         final StyledDocument doc = new DefaultStyledDocument();
         createStyles(doc);
         try {
@@ -524,8 +532,13 @@ public class ChatPanel extends PFUIComponent {
     /**
      * This is advice that the chat partner is typing a chat message.
      */
-    public void adviseChat() {
-        // todo harry to impelement
+    public void adviseChat(String nick) {
+        chatAdviceLabel.setText(Translation.getTranslation("chat_panel.chat_advice.text", nick));
+        getController().getThreadPool().schedule(new Runnable() {
+            public void run() {
+                chatAdviceLabel.setText("");
+            }
+        }, 3, TimeUnit.SECONDS);
     }
 
     // ////////////////
