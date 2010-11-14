@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
+import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
 
 /**
  * Manages the blinking icon in the Systray. Flash the sys tray every second if
@@ -117,6 +118,10 @@ public class SysTrayBlinkManager extends PFUIComponent {
                 return;
             }
             flashTrayIcon(true);
+        }
+
+        public void chatAdvice(ChatAdviceEvent event) {
+            // Don't care.
         }
 
         public boolean fireInEventDispatchThread() {

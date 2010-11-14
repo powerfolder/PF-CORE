@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2010 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,25 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: ChatModelListener.java 5804 2008-11-10 22:53:09Z harry $
+ * $Id: ChatAdviceEvent.java 5457 2010-11-14 14:25:41Z harry $
  */
 package de.dal33t.powerfolder.ui.chat;
 
-import de.dal33t.powerfolder.event.CoreListener;
+import java.util.EventObject;
 
-/**
- * Interface to implement to listen to chat events from the ChatModel
- *
- * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
- */
-public interface ChatModelListener extends CoreListener {
-    void chatChanged(ChatModelEvent event);
+public class ChatAdviceEvent extends EventObject {
 
-    /**
-     * Advice that someone is typing a chat message, before the message is sent.
-     * 
-     * @param event
-     */
-    void chatAdvice(ChatAdviceEvent event);
+    public ChatAdviceEvent(Object source) {
+        super(source);
+    }
 }
-

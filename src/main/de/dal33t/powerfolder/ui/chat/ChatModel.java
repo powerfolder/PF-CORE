@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.MemberChatMessage;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.message.MemberChatAdvice;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
@@ -299,6 +300,13 @@ public class ChatModel {
                     MemberChatMessage mcMessage = (MemberChatMessage) message;
                     addChatLine(controller.getMySelf(), source, mcMessage.text,
                             false);
+                }
+            } else if (message instanceof MemberChatAdvice) {
+
+                // Do not care about own.
+                if (!controller.getMySelf().equals(source)) {
+                    // Tell listeners that someone is typing.
+                    chatModelListeners.chatAdvice(new ChatAdviceEvent(source));
                 }
             }
         }

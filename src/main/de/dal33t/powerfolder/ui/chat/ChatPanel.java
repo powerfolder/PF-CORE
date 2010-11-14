@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -48,6 +49,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.message.MemberChatMessage;
+import de.dal33t.powerfolder.message.MemberChatAdvice;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -96,6 +98,7 @@ public class ChatPanel extends PFUIComponent {
     private MyBoldAction boldAction;
     private MyItalicAction italicAction;
     private MyUnderlineAction underlineAction;
+    private final AtomicInteger chatCharacterCounter;
 
     /**
      * Constructor NOTE: This panel is NOT responsible for receiving messages.
@@ -111,6 +114,7 @@ public class ChatPanel extends PFUIComponent {
             .getChatModel();
         this.chatPartner = chatPartner;
         this.chatFrame = chatFrame;
+        chatCharacterCounter = new AtomicInteger();
         controller.getNodeManager().addNodeManagerListener(
             new MyNodeManagerListener());
     }
@@ -517,6 +521,13 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
+    /**
+     * This is advice that the chat partner is typing a chat message.
+     */
+    public void adviseChat() {
+        // todo harry to impelement
+    }
+
     // ////////////////
     // INNER CLASSES //
     // ////////////////
@@ -528,8 +539,13 @@ public class ChatPanel extends PFUIComponent {
         public void keyTyped(KeyEvent e) {
             char keyTyped = e.getKeyChar();
             if (keyTyped == '\n') { // enter key = send message
+
+                // Reset counter on "enter".
+                chatCharacterCounter.set(0);
+
                 String message = chatInput.getText();
                 if (message.trim().length() > 0) { // no SPAM on "enter"
+
                     if (chatPartner.isCompletelyConnected()) {
                         chatModel.addChatLine(chatPartner, getController()
                             .getMySelf(), message, true);
@@ -547,6 +563,17 @@ public class ChatPanel extends PFUIComponent {
                 } else { // Enter key without text - clear.
                     chatInput.setText("");
                     chatInput.requestFocusInWindow();
+                }
+            } else {
+                // Send a MemberChatAdvice every 10 characters
+                int count = chatCharacterCounter.getAndIncrement();
+                if (count >= 10) {
+                    chatCharacterCounter.set(1);
+                    count = 0;
+                }
+                if (count == 0) {
+                    chatPartner.sendMessageAsynchron(new MemberChatAdvice(),
+                            "chat advice not sent");
                 }
             }
             // Update input field

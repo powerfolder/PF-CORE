@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
 
 /**
  * Contains all core models for the application.
@@ -159,6 +160,10 @@ public class ApplicationModel extends PFUIComponent {
             getController().getUIController().showChatNotification(
                 Translation.getTranslation("chat.notification.title"),
                 Translation.getTranslation("chat.notification.message"));
+        }
+
+        public void chatAdvice(ChatAdviceEvent event) {
+            // Don't care
         }
 
         public boolean fireInEventDispatchThread() {

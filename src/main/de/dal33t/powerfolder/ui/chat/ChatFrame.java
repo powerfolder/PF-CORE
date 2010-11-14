@@ -293,12 +293,22 @@ public class ChatFrame extends MagneticFrame {
         return false;
     }
 
+    private void handleChatAdviceEvent(ChatAdviceEvent event) {
+        // Do I care? Is this advice for one of my members?
+        for (Map.Entry<MemberInfo, ChatPanel> entry : memberPanels.entrySet()) {
+            Member source = (Member) event.getSource();
+            if (source.getInfo().equals(entry.getKey())) {
+                entry.getValue().adviseChat();
+            }
+        }
+    }
+
     /**
      * Handle all chat events. Diseminate to the required panel.
      * 
      * @param event
      */
-    private void handleChatEvent(ChatModelEvent event) {
+    private void handleChatModelEvent(ChatModelEvent event) {
         if (event.getSource() instanceof Member) {
             Member fromMember = (Member) event.getSource();
 
@@ -408,7 +418,11 @@ public class ChatFrame extends MagneticFrame {
 
     private class MyChatModelListener implements ChatModelListener {
         public void chatChanged(ChatModelEvent event) {
-            handleChatEvent(event);
+            handleChatModelEvent(event);
+        }
+
+        public void chatAdvice(ChatAdviceEvent event) {
+            handleChatAdviceEvent(event);
         }
 
         public boolean fireInEventDispatchThread() {
