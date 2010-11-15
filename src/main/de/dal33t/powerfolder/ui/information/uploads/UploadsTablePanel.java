@@ -100,8 +100,6 @@ public class UploadsTablePanel extends PFUIComponent {
         tablePane = new JScrollPane(table);
         tableModel = (UploadsTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
-        table.getSelectionModel().setSelectionMode(
-            ListSelectionModel.SINGLE_SELECTION);
 
         table.registerKeyboardAction(new SelectAllAction(), KeyStroke
             .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),

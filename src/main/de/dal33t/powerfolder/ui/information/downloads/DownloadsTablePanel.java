@@ -111,8 +111,6 @@ public class DownloadsTablePanel extends PFUIComponent {
         tablePane = new JScrollPane(table);
         tableModel = (DownloadManagersTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
-        table.getSelectionModel().setSelectionMode(
-            ListSelectionModel.SINGLE_SELECTION);
 
         table.registerKeyboardAction(new SelectAllAction(), KeyStroke
             .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),

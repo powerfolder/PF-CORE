@@ -57,8 +57,6 @@ import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -271,8 +269,16 @@ public class StatusTab extends PFUIComponent {
      * Register any listeners.
      */
     private void registerListeners() {
-        getController().getTransferManager().addListener(
-            new MyTransferManagerListener());
+        downloadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTransferText();
+            }
+        });
+        uploadsCountVM.addValueChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTransferText();
+            }
+        });
         getController().getFolderRepository().addFolderRepositoryListener(
             new MyFolderRepositoryListener());
         client.addListener(new MyServerClientListener());
@@ -729,73 +735,6 @@ public class StatusTab extends PFUIComponent {
         public void maintenanceStarted(FolderRepositoryEvent e) {
             updateFoldersText();
         }
-    }
-
-    /**
-     * Listener for transfer events.
-     */
-    private class MyTransferManagerListener implements TransferManagerListener {
-
-        public void downloadRequested(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void downloadQueued(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void downloadStarted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void downloadAborted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void downloadBroken(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void downloadCompleted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void completedDownloadRemoved(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void pendingDownloadEnqueud(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void uploadAborted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void uploadBroken(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void uploadCompleted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void uploadRequested(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public void uploadStarted(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-
-        public void completedUploadRemoved(TransferManagerEvent event) {
-            updateTransferText();
-        }
-
     }
 
     private class MyServerClientListener implements ServerClientListener {
