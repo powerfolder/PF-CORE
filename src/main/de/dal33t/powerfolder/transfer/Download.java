@@ -321,8 +321,7 @@ public class Download extends Transfer {
         if (getPartner() != null && getPartner().isCompletelyConnected()
             && informRemote)
         {
-            getPartner().sendMessageAsynchron(new AbortDownload(getFile()),
-                null);
+            getPartner().sendMessageAsynchron(new AbortDownload(getFile()));
         }
         if (getDownloadManager() == null) {
             logSevere(this + " has no DownloadManager! (abort before start?)");
@@ -388,7 +387,7 @@ public class Download extends Transfer {
         }
         Member p = getPartner();
         if (p != null && p.isCompletelyConnected()) {
-            p.sendMessageAsynchron(new AbortDownload(getFile()), null);
+            p.sendMessageAsynchron(new AbortDownload(getFile()));
         }
         shutdown();
         getTransferManager().downloadBroken(Download.this, problem, message);

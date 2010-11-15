@@ -342,7 +342,7 @@ public class FileRequestor extends PFComponent {
                 if (fhReq != null) {
                     pendingRequests.add(newestVersion);
                     fhReq.sendMessageAsynchron(new FileHistoryRequest(
-                        newestVersion), null);
+                        newestVersion));
                     return;
                 }
             }

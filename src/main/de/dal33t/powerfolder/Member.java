@@ -991,7 +991,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         // Wait for acknowledgement from remote side
         if (identity.isAcknowledgesHandshakeCompletion()) {
-            sendMessageAsynchron(new HandshakeCompleted(), null);
+            sendMessageAsynchron(new HandshakeCompleted());
             long start = System.currentTimeMillis();
             if (!waitForHandshakeCompletion()) {
                 long took = System.currentTimeMillis() - start;
@@ -1056,7 +1056,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Running with debugReports enabled (which incorporates verbose
             // mode)
             // then directly request node information.
-            sendMessageAsynchron(new RequestNodeInformation(), null);
+            sendMessageAsynchron(new RequestNodeInformation());
         }
 
         if (handshaked) {
@@ -1252,10 +1252,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @see PlainSocketConnectionHandler#sendMessagesAsynchron(Message[])
      * @param message
      *            the message to send
-     * @param errorMessage
-     *            the error message to be logged on connection problem
      */
-    public void sendMessageAsynchron(Message message, String errorMessage) {
+    public void sendMessageAsynchron(Message message) {
         if (peer != null && peer.isConnected()) {
             peer.sendMessagesAsynchron(message);
         }
@@ -1408,7 +1406,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (downloadRecentlyCompleted(dlQueued.file)) {
                     logWarning("Remote side queued non-existant download: "
                         + dlQueued.file);
-                    sendMessageAsynchron(new AbortDownload(dlQueued.file), null);
+                    sendMessageAsynchron(new AbortDownload(dlQueued.file));
                 }
                 expectedTime = 100;
 
@@ -1434,7 +1432,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (d != null) {
                     d.addChunk(chunk);
                 } else if (downloadRecentlyCompleted(chunk.file)) {
-                    sendMessageAsynchron(new AbortDownload(chunk.file), null);
+                    sendMessageAsynchron(new AbortDownload(chunk.file));
                 }
                 expectedTime = -1;
 
@@ -1469,7 +1467,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof RequestNodeInformation) {
                 // send him our node information
-                sendMessageAsynchron(new NodeInformation(getController()), null);
+                sendMessageAsynchron(new NodeInformation(getController()));
                 expectedTime = 50;
 
             } else if (message instanceof TransferStatus) {
@@ -1640,8 +1638,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         if (up != null) { // If the upload isn't broken
                             up.enqueuePartRequest(pr);
                         } else {
-                            sendMessageAsynchron(new AbortUpload(pr.getFile()),
-                                null);
+                            sendMessageAsynchron(new AbortUpload(pr.getFile()));
                         }
                     }
                 };
@@ -1656,7 +1653,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     dl.uploadStarted(su.getFile());
                 } else if (downloadRecentlyCompleted(su.getFile())) {
                     logInfo("Download invalid or obsolete:" + su.getFile());
-                    sendMessageAsynchron(new AbortDownload(su.getFile()), null);
+                    sendMessageAsynchron(new AbortDownload(su.getFile()));
                 }
                 expectedTime = 100;
 
@@ -1676,7 +1673,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (up != null) { // If the upload isn't broken
                     up.receivedFilePartsRecordRequest(req);
                 } else {
-                    sendMessageAsynchron(new AbortUpload(req.getFile()), null);
+                    sendMessageAsynchron(new AbortUpload(req.getFile()));
                 }
                 expectedTime = 100;
 
@@ -1688,7 +1685,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     dl.receivedFilePartsRecord(rep.getFile(), rep.getRecord());
                 } else if (downloadRecentlyCompleted(rep.getFile())) {
                     logInfo("Download not found: " + dl);
-                    sendMessageAsynchron(new AbortDownload(rep.getFile()), null);
+                    sendMessageAsynchron(new AbortDownload(rep.getFile()));
                 }
                 expectedTime = 100;
 
@@ -1718,8 +1715,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             return;
                         }
                         sendMessageAsynchron(new FileHistoryReply(f.getDAO()
-                            .getFileHistory(requested), requested),
-                            "Failed to send FileHistoryReply.");
+                            .getFileHistory(requested), requested));
                     }
                 });
 
@@ -1903,7 +1899,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 .getFolderRepository().getJoinedFolderInfos();
             FolderList myFolderList = new FolderList(joinedFolders,
                 remoteMagicId);
-            sendMessageAsynchron(myFolderList, null);
+            sendMessageAsynchron(myFolderList);
         } finally {
             folderJoinLock.unlock();
         }
@@ -2443,8 +2439,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     @Override
     public String getLoggerName() {
-        return "Computer '" + getNick() + "'"
-            + (isSupernode() ? " (s)" : "");
+        return "Computer '" + getNick() + "'" + (isSupernode() ? " (s)" : "");
     }
 
     /*

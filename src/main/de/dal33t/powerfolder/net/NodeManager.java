@@ -781,10 +781,10 @@ public class NodeManager extends PFComponent {
                 if (!reply.isEmpty()) {
                     if (from.getProtocolVersion() >= 107) {
                         from.sendMessageAsynchron(new KnownNodesExt(reply
-                            .toArray(new MemberInfo[reply.size()])), null);
+                            .toArray(new MemberInfo[reply.size()])));
                     } else {
                         from.sendMessageAsynchron(new KnownNodes(reply
-                            .toArray(new MemberInfo[reply.size()])), null);
+                            .toArray(new MemberInfo[reply.size()])));
                     }
 
                 }
@@ -1290,7 +1290,7 @@ public class NodeManager extends PFComponent {
             supernodes.remove(index);
             logFine("Sending message to supernode: " + supernode.getNick()
                 + ". " + message);
-            supernode.sendMessageAsynchron(message, null);
+            supernode.sendMessageAsynchron(message);
             nNodes++;
         }
 
@@ -1336,7 +1336,7 @@ public class NodeManager extends PFComponent {
             lanNodes.remove(index);
             logFine("Sending message to lan node: " + node.getNick() + ". "
                 + message);
-            node.sendMessageAsynchron(message, null);
+            node.sendMessageAsynchron(message);
             nNodes++;
         }
 

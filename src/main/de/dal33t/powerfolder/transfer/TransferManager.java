@@ -1327,7 +1327,7 @@ public class TransferManager extends PFComponent {
                     && !upload.isBroken() && !upload.isAborted())
                 {
                     from.sendMessageAsynchron(new DownloadQueued(upload
-                        .getFile()), null);
+                        .getFile()));
                 } else if (isFiner()) {
                     logFiner("Optimization. Did not send DownloadQueued message for "
                         + upload.getFile() + " to " + upload.getPartner());

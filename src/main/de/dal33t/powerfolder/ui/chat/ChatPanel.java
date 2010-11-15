@@ -200,7 +200,8 @@ public class ChatPanel extends PFUIComponent {
             }
         });
 
-        FormLayout layout = new FormLayout("pref, 3dlu, fill:0:grow, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout(
+            "pref, 3dlu, fill:0:grow, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -298,11 +299,12 @@ public class ChatPanel extends PFUIComponent {
                         doc.insertString(doc.getLength(),
                             otherMember.getNick(), doc.getStyle(BOLD));
                     }
-                    doc.insertString(doc.getLength(), ": ", doc.getStyle(NORMAL));
-                    List<DocumentSection> sections =  parseText(text);
+                    doc.insertString(doc.getLength(), ": ", doc
+                        .getStyle(NORMAL));
+                    List<DocumentSection> sections = parseText(text);
                     for (DocumentSection section : sections) {
                         doc.insertString(doc.getLength(), section.getText(),
-                                doc.getStyle(section.getType()));
+                            doc.getStyle(section.getType()));
                     }
                 }
             }
@@ -346,7 +348,7 @@ public class ChatPanel extends PFUIComponent {
 
     /**
      * Split text into bold, italic and underline sections.
-     *
+     * 
      * @param text
      * @return
      */
@@ -357,33 +359,45 @@ public class ChatPanel extends PFUIComponent {
         StringBuilder sb = new StringBuilder();
         List<DocumentSection> sections = new ArrayList<DocumentSection>();
         for (int i = 0; i < text.length(); i++) {
-            if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<B>")
-                    || text.substring(i, i + 3).equals("<b>"))) {
+            if (i < text.length() - 3
+                && (text.substring(i, i + 3).equals("<B>") || text.substring(i,
+                    i + 3).equals("<b>")))
+            {
                 doChunk(sb, sections, bold, italic, underline);
                 bold = true;
                 i += 2;
-            } else if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<I>")
-                    || text.substring(i, i + 3).equals("<i>"))) {
+            } else if (i < text.length() - 3
+                && (text.substring(i, i + 3).equals("<I>") || text.substring(i,
+                    i + 3).equals("<i>")))
+            {
                 doChunk(sb, sections, bold, italic, underline);
-                italic = true; 
+                italic = true;
                 i += 2;
-            } else if (i < text.length() - 3 && (text.substring(i, i + 3).equals("<U>")
-                    || text.substring(i, i + 3).equals("<u>"))) {
+            } else if (i < text.length() - 3
+                && (text.substring(i, i + 3).equals("<U>") || text.substring(i,
+                    i + 3).equals("<u>")))
+            {
                 doChunk(sb, sections, bold, italic, underline);
                 underline = true;
                 i += 2;
-            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</B>")
-                    || text.substring(i, i + 4).equals("</b>")) && bold) {
+            } else if (i < text.length() - 4
+                && (text.substring(i, i + 4).equals("</B>") || text.substring(
+                    i, i + 4).equals("</b>")) && bold)
+            {
                 doChunk(sb, sections, bold, italic, underline);
                 bold = false;
                 i += 3;
-            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</I>")
-                    || text.substring(i, i + 4).equals("</i>")) && italic) {
+            } else if (i < text.length() - 4
+                && (text.substring(i, i + 4).equals("</I>") || text.substring(
+                    i, i + 4).equals("</i>")) && italic)
+            {
                 doChunk(sb, sections, bold, italic, underline);
                 italic = false;
                 i += 3;
-            } else if (i < text.length() - 4 && (text.substring(i, i + 4).equals("</U>")
-                    || text.substring(i, i + 4).equals("</u>")) && underline) {
+            } else if (i < text.length() - 4
+                && (text.substring(i, i + 4).equals("</U>") || text.substring(
+                    i, i + 4).equals("</u>")) && underline)
+            {
                 doChunk(sb, sections, bold, italic, underline);
                 underline = false;
                 i += 3;
@@ -395,8 +409,10 @@ public class ChatPanel extends PFUIComponent {
         return sections;
     }
 
-    private static void doChunk(StringBuilder sb, List<DocumentSection> sections,
-                                boolean bold, boolean italic, boolean underline) {
+    private static void doChunk(StringBuilder sb,
+        List<DocumentSection> sections, boolean bold, boolean italic,
+        boolean underline)
+    {
         String type;
         if (bold) {
             if (italic) {
@@ -495,7 +511,8 @@ public class ChatPanel extends PFUIComponent {
 
     /**
      * Convert something like "qwer<B>asdf</B>zxcv" to "qwerasdfzxcv" and back.
-     *                            mark|   |dot          mark|   |dot
+     * mark| |dot mark| |dot
+     * 
      * @param textArea
      * @param token
      */
@@ -514,7 +531,7 @@ public class ChatPanel extends PFUIComponent {
         String frontToken = '<' + token + '>';
         String backToken = "</" + token + '>';
         if (in.startsWith(frontToken) && in.endsWith(backToken)) {
-             // Remove formatting inclusive
+            // Remove formatting inclusive
             in = in.substring(3).substring(0, in.length() - 7);
             textArea.setText(pre + in + post);
         } else if (pre.endsWith(frontToken) && post.startsWith(backToken)) {
@@ -533,7 +550,8 @@ public class ChatPanel extends PFUIComponent {
      * This is advice that the chat partner is typing a chat message.
      */
     public void adviseChat(String nick) {
-        chatAdviceLabel.setText(Translation.getTranslation("chat_panel.chat_advice.text", nick));
+        chatAdviceLabel.setText(Translation.getTranslation(
+            "chat_panel.chat_advice.text", nick));
         getController().getThreadPool().schedule(new Runnable() {
             public void run() {
                 chatAdviceLabel.setText("");
@@ -565,8 +583,7 @@ public class ChatPanel extends PFUIComponent {
                         chatInput.setText("");
                         MemberChatMessage chatMessage = new MemberChatMessage(
                             message);
-                        chatPartner.sendMessageAsynchron(chatMessage,
-                            "chat line not sent");
+                        chatPartner.sendMessageAsynchron(chatMessage);
                     } else {
                         chatModel.addStatusChatLine(chatPartner, Translation
                             .getTranslation("chat_panel.cannot_deliver",
@@ -585,8 +602,7 @@ public class ChatPanel extends PFUIComponent {
                     count = 0;
                 }
                 if (count == 0) {
-                    chatPartner.sendMessageAsynchron(new MemberChatAdvice(),
-                            "chat advice not sent");
+                    chatPartner.sendMessageAsynchron(new MemberChatAdvice());
                 }
             }
             // Update input field
@@ -793,8 +809,8 @@ public class ChatPanel extends PFUIComponent {
             chatOutput.requestFocus();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    createOutputPopupMenu().show(evt.getComponent(), evt.getX(),
-                        evt.getY());
+                    createOutputPopupMenu().show(evt.getComponent(),
+                        evt.getX(), evt.getY());
                 }
             });
         }
@@ -880,7 +896,6 @@ public class ChatPanel extends PFUIComponent {
         }
     }
 
-
     private class MySelectAllOutputAction extends BaseAction {
 
         private MySelectAllOutputAction(Controller controller) {
@@ -957,6 +972,5 @@ public class ChatPanel extends PFUIComponent {
             return text;
         }
     }
-
 
 }
