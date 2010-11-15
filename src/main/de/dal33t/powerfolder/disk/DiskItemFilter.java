@@ -25,7 +25,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +37,8 @@ import de.dal33t.powerfolder.DiskItem;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
@@ -211,8 +213,11 @@ public class DiskItemFilter {
 
     private static Pattern createPattern(String patternText) {
         Reject.ifBlank(patternText, "Pattern is blank");
-        return PatternFactory.createPattern(patternText.replaceAll("\\\\", "/")
-            .toLowerCase());
+        String raw = patternText.replaceAll("\\\\", "/").toLowerCase();
+        if (raw.startsWith("/")) {
+            raw = raw.substring(1);
+        }
+        return PatternFactory.createPattern(raw);
     }
 
     /**
