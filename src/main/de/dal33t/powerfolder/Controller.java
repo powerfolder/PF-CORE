@@ -132,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.4.2 - 1.7.1.60"; // 1.7.1.60
+    public static final String PROGRAM_VERSION = "4.4.2 RC1"; // 1.7.1.61
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -1822,10 +1822,14 @@ public class Controller extends PFComponent {
      */
     public boolean isConsoleMode() {
         if (commandLine != null) {
-            return commandLine.hasOption('s');
+            if (commandLine.hasOption('s')) {
+                return true;
+            }
         }
         if (config != null) {
-            return ConfigurationEntry.DISABLE_GUI.getValueBoolean(this);
+            if (ConfigurationEntry.DISABLE_GUI.getValueBoolean(this)) {
+                return true;
+            }
         }
         return GraphicsEnvironment.isHeadless();
     }
