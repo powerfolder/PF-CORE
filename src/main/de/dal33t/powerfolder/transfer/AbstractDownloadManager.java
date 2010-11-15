@@ -858,13 +858,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      * @throws IOException
      */
     private void deleteTempFile() throws IOException {
-        if (isFiner()) {
-            logFiner("killTempFile: " + getTempFile() + ", size: "
+        boolean exists = getTempFile() != null && getTempFile().exists();
+        if (exists && isFine()) {
+            logFine("killTempFile: " + getTempFile() + ", size: "
                 + getTempFile().length());
         }
-        if (getTempFile() != null && getTempFile().exists()
-            && !getTempFile().delete())
-        {
+        if (exists && !getTempFile().delete()) {
             if (isWarning()) {
                 logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
                     + getFileInfo().toDetailString());
