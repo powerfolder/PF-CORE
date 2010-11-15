@@ -127,6 +127,9 @@ public class PluginManager extends PFComponent {
         StringTokenizer nizer = new StringTokenizer(pluginsStr, ",");
         while (nizer.hasMoreElements()) {
             String pluginClassName = nizer.nextToken().trim();
+            if (StringUtils.isBlank(pluginClassName)) {
+                continue;
+            }
             if (alreadyLoaded(pluginClassName)) {
                 continue;
             }

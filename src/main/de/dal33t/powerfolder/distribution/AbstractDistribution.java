@@ -184,19 +184,4 @@ public abstract class AbstractDistribution extends Loggable implements
             ConfigurationEntry.FOLDER_BASEDIR.setValue(c, folderBaseDir);
         }
     }
-
-    protected void ensurePluginEnabled(String pluginClazz) {
-        String plugins = ConfigurationEntry.PLUGINS.getValue(controller);
-        if (plugins == null) {
-            plugins = "";
-        }
-        if (!plugins.contains(pluginClazz)) {
-            logFine("Installing Plugin " + pluginClazz);
-            if (plugins.length() > 0) {
-                plugins += ',';
-            }
-            plugins += pluginClazz;
-        }
-        ConfigurationEntry.PLUGINS.setValue(controller, plugins);
-    }
 }
