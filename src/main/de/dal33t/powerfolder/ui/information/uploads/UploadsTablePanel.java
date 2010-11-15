@@ -1,27 +1,51 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: UploadsTablePanel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: UploadsTablePanel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.uploads;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -29,16 +53,6 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UploadsTablePanel extends PFUIComponent {
 
@@ -51,18 +65,19 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Constructor.
-     *
+     * 
      * @param controller
      */
     public UploadsTablePanel(Controller controller,
-                             Action clearCompletedUploadsAction) {
+        Action clearCompletedUploadsAction)
+    {
         super(controller);
         this.clearCompletedUploadsAction = clearCompletedUploadsAction;
     }
 
     /**
      * Returns the ui component.
-     *
+     * 
      * @return
      */
     public JComponent getUIComponent() {
@@ -77,18 +92,20 @@ public class UploadsTablePanel extends PFUIComponent {
      * Initialize components
      */
     private void initialize() {
-        TransferManagerModel transferManagerModel =
-                getUIController().getTransferManagerModel();
+        TransferManagerModel transferManagerModel = getUIController()
+            .getTransferManagerModel();
 
         table = new UploadsTable(transferManagerModel);
         table.getTableHeader().addMouseListener(new TableHeaderMouseListener());
         tablePane = new JScrollPane(table);
         tableModel = (UploadsTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
+        table.getSelectionModel().setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION);
 
-        table.registerKeyboardAction(new SelectAllAction(),
-		KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
-		JComponent.WHEN_FOCUSED);
+        table.registerKeyboardAction(new SelectAllAction(), KeyStroke
+            .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
+            JComponent.WHEN_FOCUSED);
 
         // Whitestrip & set sizes
         UIUtil.whiteStripTable(table);
@@ -98,20 +115,21 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Add a selection listener to the table.
-     *
+     * 
      * @param l
      */
     public void addListSelectionListener(ListSelectionListener l) {
+        getUIComponent();
         table.getSelectionModel().addListSelectionListener(l);
     }
 
     /**
      * Add a table model listener to the model.
-     *
+     * 
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
-        initialize();
+        getUIComponent();
         tableModel.addTableModelListener(l);
     }
 
@@ -152,8 +170,8 @@ public class UploadsTablePanel extends PFUIComponent {
                     }
                 }
                 for (Upload ul : uploadsToClear) {
-                    getController().getTransferManager()
-                        .clearCompletedUpload(ul);
+                    getController().getTransferManager().clearCompletedUpload(
+                        ul);
                 }
                 return null;
             }
@@ -165,8 +183,7 @@ public class UploadsTablePanel extends PFUIComponent {
      * Build the ui component tab pane.
      */
     private void buildUIComponent() {
-        FormLayout layout = new FormLayout("fill:pref:grow",
-            "fill:0:grow");
+        FormLayout layout = new FormLayout("fill:pref:grow", "fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(tablePane, cc.xy(1, 1));
@@ -221,7 +238,7 @@ public class UploadsTablePanel extends PFUIComponent {
 
     /**
      * Listener on table header, takes care about the sorting of table
-     *
+     * 
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      */
     private static class TableHeaderMouseListener extends MouseAdapter {

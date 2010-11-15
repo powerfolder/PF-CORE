@@ -35,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
@@ -110,6 +111,8 @@ public class DownloadsTablePanel extends PFUIComponent {
         tablePane = new JScrollPane(table);
         tableModel = (DownloadManagersTableModel) table.getModel();
         table.addMouseListener(new TableMouseListener());
+        table.getSelectionModel().setSelectionMode(
+            ListSelectionModel.SINGLE_SELECTION);
 
         table.registerKeyboardAction(new SelectAllAction(), KeyStroke
             .getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK),
@@ -127,6 +130,7 @@ public class DownloadsTablePanel extends PFUIComponent {
      * @param l
      */
     public void addListSelectionListener(ListSelectionListener l) {
+        getUIComponent();
         table.getSelectionModel().addListSelectionListener(l);
     }
 
@@ -136,7 +140,7 @@ public class DownloadsTablePanel extends PFUIComponent {
      * @param l
      */
     public void addTableModelListener(TableModelListener l) {
-        initialize();
+        getUIComponent();
         tableModel.addTableModelListener(l);
     }
 
