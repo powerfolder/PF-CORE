@@ -1,12 +1,20 @@
-PowerFolder Version 4.4.1 - http://www.powerfolder.com
+PowerFolder Version 4.4.2 - http://www.powerfolder.com
 
-= New features / Improvements =
- * Minimum height of main window can now be smaller.
- * Tell a friend link: Now supports tell to Facebook, Twitter and LinkedIn:
-   http://www.powerfolder.com/wiki/Referral_reward_system
+= New features =
+ * File browser: New options on directories: Restore and download.
+
+= Improvements =
+ * Computers, that are offline 15 days or more, automatically get removed
+   from the folders member view.
+ * Added chat typing notice.
+ * Added chat formatting options.
 
 = Bugfixes =
- * Fixed connection bug (Invalid stream header).
+ * Fixed bug that prevented to store the local archive setting correctly for
+   new shared folders.
+ * Uploads and downloads detail information are now correctly displayed again.
+ * File browser/information window closes when the folder is removed.
+ * Several other bugfixes
 
 
 Please give us feedback and request improvements:
@@ -34,6 +42,18 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.4.1
+-------------
+
+= New features / Improvements =
+ * Minimum height of main window can now be smaller.
+ * Tell a friend link: Now supports tell to Facebook, Twitter and LinkedIn:
+   http://www.powerfolder.com/wiki/Referral_reward_system
+
+= Bugfixes =
+ * Fixed connection bug (Invalid stream header).
+
 
 Version 4.4.0
 -------------
@@ -72,7 +92,6 @@ Version 4.4.0
    http://www.powerfolder.com/wiki/Delta_sync
  * Many speed improvements and bug fixes of the file browser.
  * Now correctly handles invitation when folder with the same name already exists.
-
 
 
 Version 4.3.0
