@@ -112,7 +112,7 @@ public class LoginUtil {
      * Decorates the login URL with credentials if given.
      * 
      * @param loginURL
-     *            the login URL, e.g. http://localhost:8080/login
+     *            the login URL, e.g. http://localhost/login
      * @param username
      * @param password
      * @return the login URL with encoded credentials as parameters.
