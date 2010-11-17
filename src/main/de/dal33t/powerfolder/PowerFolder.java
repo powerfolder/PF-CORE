@@ -245,118 +245,40 @@ public class PowerFolder {
         System.out.println("------------ PowerFolder "
             + Controller.PROGRAM_VERSION + " started ------------");
 
-        if (controller.isUIEnabled()) {
-            boolean restartRequested = false;
-            do {
-                // Go into restart loop
-                while (controller.isStarted() || controller.isShuttingDown()) {
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        log.log(Level.WARNING, "InterruptedException", e);
-                        return;
-                    }
+        boolean restartRequested = false;
+        do {
+            // Go into restart loop
+            while (controller.isStarted() || controller.isShuttingDown()) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    log.log(Level.WARNING, "InterruptedException", e);
+                    return;
                 }
-
-                restartRequested = controller.isRestartRequested();
-                if (restartRequested) {
-
-                    Map<Thread, StackTraceElement[]> threads = Thread
-                        .getAllStackTraces();
-                    for (Thread thread : threads.keySet()) {
-                        if (thread.getName().startsWith("PoolThread")
-                            || thread.getName().startsWith("Reconnector")
-                            || thread.getName().startsWith("ConHandler"))
-                        {
-                            thread.interrupt();
-                        }
-                    }
-                    log.info("Restarting controller");
-                    System.out.println("------------ PowerFolder "
-                        + Controller.PROGRAM_VERSION
-                        + " restarting ------------");
-                    controller = null;
-                    System.gc();
-                    controller = Controller.createController();
-                    // Start controller
-                    controller.startConfig(commandLine);
-                }
-            } while (restartRequested);
-
-            // Exit
-            return;
-        }
-
-        // Console mode comes here ...
-
-        // Add shutdown hook
-        log.finer("Adding shutdown hook");
-        final Controller con = controller;
-        Runtime.getRuntime().addShutdownHook(
-            new Thread("Shutdown hook for PowerFolder") {
-                public void run() {
-                    // Shut down controller on VM exit
-                    if (con.isStarted() && !con.isShuttingDown()) {
-                        con.shutdown();
-                    }
-                }
-            });
-
-        // Console loop
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        while (controller.isStarted()) {
-            try {
-                String line = in.readLine();
-                if (line == null) {
-                    line = "";
-                }
-                line = line.toLowerCase();
-
-                if (line.startsWith("x")) {
-                    // x pressed, exit
-                    controller.exit(0);
-                } else if (line.startsWith("connect ")) {
-                    String conStr = line.substring(8);
-                    try {
-                        controller.connect(conStr);
-                    } catch (ConnectionException e) {
-                        log.severe("Unable to connect to " + conStr);
-                    }
-                } else if (line.startsWith("c ")) {
-                    String conStr = line.substring(2);
-                    try {
-                        controller.connect(conStr);
-                    } catch (ConnectionException e) {
-                        log.severe("Unable to connect to " + conStr);
-                    }
-                } else if (line.startsWith("ul ")) {
-                    String ulimit = line.substring(3);
-                    try {
-                        controller.getTransferManager()
-                            .setAllowedUploadCPSForWAN(
-                                (long) Double.parseDouble(ulimit) * 1024);
-                    } catch (NumberFormatException e) {
-                        log
-                            .severe("Unable to parse new upload limit bandwidth "
-                                + ulimit);
-                    }
-                } else if (line.startsWith("r")) {
-                    // write report
-                    controller.writeDebugReport();
-                    System.out.println(controller.getDebugReport());
-                }
-
-                // Sleep a bit, if commands are comming in too fast
-                // on linux background processing
-                Thread.sleep(200);
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "IOException", e);
-                break;
-            } catch (InterruptedException e) {
-                log.log(Level.SEVERE, "IOException", e);
-                break;
             }
-        }
+
+            restartRequested = controller.isRestartRequested();
+            if (restartRequested) {
+                Map<Thread, StackTraceElement[]> threads = Thread
+                    .getAllStackTraces();
+                for (Thread thread : threads.keySet()) {
+                    if (thread.getName().startsWith("PoolThread")
+                        || thread.getName().startsWith("Reconnector")
+                        || thread.getName().startsWith("ConHandler"))
+                    {
+                        thread.interrupt();
+                    }
+                }
+                log.info("Restarting controller");
+                System.out.println("------------ PowerFolder "
+                    + Controller.PROGRAM_VERSION + " restarting ------------");
+                controller = null;
+                System.gc();
+                controller = Controller.createController();
+                // Start controller
+                controller.startConfig(commandLine);
+            }
+        } while (restartRequested);
     }
 
     public static CommandLine parseCommandLine(String[] args) {
