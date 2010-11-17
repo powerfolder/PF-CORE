@@ -3546,23 +3546,12 @@ public class Folder extends PFComponent {
      * Ensures that default ignore patterns are set.
      */
     public void addDefaultExcludes() {
-        // Add thumbs to ignore pattern on windows systems
-        // Don't duplicate thumbs (like when moving a preview folder)
         addPattern(Pattern.THUMBS_DB);
-
-        // ... and temporary word files
         addPattern(Pattern.OFFICE_TEMP);
-
-        // Add desktop.ini to ignore pattern on windows systems
-        // if (ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()))
-        // {
         addPattern(FileUtils.DESKTOP_INI_FILENAME);
-        // }
-
-        // Add dsstore to ignore pattern on mac systems
-        // Don't duplicate dsstore (like when moving a preview folder)
         addPattern(Pattern.DS_STORE);
-
+        addPattern(Pattern.ITHUMB);
+        
         // #2083
         if (UserDirectories.getMyDocuments() != null) {
             if (getLocalBase().equals(

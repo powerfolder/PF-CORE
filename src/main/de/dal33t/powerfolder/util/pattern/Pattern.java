@@ -28,6 +28,10 @@ public interface Pattern {
     String THUMBS_DB = "*thumbs.db";
     String OFFICE_TEMP = "*~*.tmp";
     String DS_STORE = "*.DS_Store";
+    /**
+     * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
+     */
+    String ITHUMB = "*.ithmb";
 
     /**
      * @return the pattern text, e.g. "*thumbs.db"
