@@ -22,13 +22,9 @@ package de.dal33t.powerfolder.security;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -41,16 +37,12 @@ import de.dal33t.powerfolder.util.Reject;
  * 
  * @author sprajc
  */
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Deprecated
 public class FolderSecuritySettings implements Serializable {
     public static final String PROPERTYNAME_FOLDER = "folder";
     public static final String PROPERTYNAME_DEFAULT_PERMISSION = "defaultPermission";
 
     private static final long serialVersionUID = 100L;
-
-    @Id
-    private String id;
 
     /**
      * The date of the last modification.
@@ -89,14 +81,9 @@ public class FolderSecuritySettings implements Serializable {
     {
         super();
         Reject.ifNull(folder, "Folder is null");
-        this.id = folder.id;
         this.folder = folder.intern();
         this.defaultPermission = defaultPermission;
         touch();
-    }
-
-    public String getId() {
-        return id;
     }
 
     public FolderInfo getFolder() {
@@ -137,10 +124,6 @@ public class FolderSecuritySettings implements Serializable {
         if (defaultPermission != null) {
             defaultPermission.folder = folder;
         }
-    }
-
-    public void migrateId() {
-        this.id = folder.id;
     }
 
     // General ****************************************************************
