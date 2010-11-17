@@ -447,7 +447,7 @@ public enum ConfigurationEntry {
 
     },
 
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 75) {
+    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95) {
 
         @Override
         public String getValue(Controller controller) {
