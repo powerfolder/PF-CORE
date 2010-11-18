@@ -745,7 +745,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // }
         if (isFine()) {
             logFine("Reconnecting (tried " + connectionRetries + " time(s) to "
-                + this + ")");
+                + this + ')');
         }
 
         connectionRetries++;
@@ -2425,13 +2425,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (dl != null) {
             return true;
         }
-        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()))
-        {
-            // THIS is a HACK(tm), we never know if this download has been
-            // completed, since it probably is already removed.
-            return true;
-        }
         return false;
     }
 
@@ -2439,7 +2432,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     @Override
     public String getLoggerName() {
-        return "Computer '" + getNick() + "'" + (isSupernode() ? " (s)" : "");
+        return "Computer '" + getNick() + '\'' + (isSupernode() ? " (s)" : "");
     }
 
     /*
@@ -2457,7 +2450,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + getReconnectAddress();
         }
 
-        return "Member '" + info.nick + "' (" + connect + ")";
+        return "Member '" + info.nick + "' (" + connect + ')';
     }
 
     /**

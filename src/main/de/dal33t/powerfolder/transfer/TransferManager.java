@@ -277,7 +277,7 @@ public class TransferManager extends PFComponent {
         long overhead = total - payload;
         logInfo("Total: " + Format.formatBytes(total) + ", Payload: "
             + Format.formatBytes(payload) + ". Overhead: "
-            + (overhead * 100 / payload) + "%");
+            + (overhead * 100 / payload) + '%');
     }
 
     /**
@@ -337,22 +337,26 @@ public class TransferManager extends PFComponent {
                 }
             }
         }
-        if (ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()))
+
+        int rawDownloadCleanupFrequency = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+            .getValueInt(getController());
+        int trueDownloadCleanupFrequency;
+        if (rawDownloadCleanupFrequency <= 4) {
+            trueDownloadCleanupFrequency = Constants.CLEANUP_VALUES[rawDownloadCleanupFrequency];
+        } else {
+            trueDownloadCleanupFrequency = Integer.MAX_VALUE;
+
+        }
+        for (DownloadManager completedDownload : completedDownloads
+            .values())
         {
-            Integer downloadCleanupFrequency = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController());
-            for (DownloadManager completedDownload : completedDownloads
-                .values())
-            {
-                long numberOfDays = calcDays(completedDownload
-                    .getCompletedDate());
-                if (numberOfDays >= downloadCleanupFrequency) {
-                    logInfo("Auto-cleaning up download '"
-                        + completedDownload.getFileInfo().getRelativeName()
-                        + "' (days=" + numberOfDays + ')');
-                    clearCompletedDownload(completedDownload);
-                }
+            long numberOfDays = calcDays(completedDownload
+                .getCompletedDate());
+            if (numberOfDays >= trueDownloadCleanupFrequency) {
+                logInfo("Auto-cleaning up download '"
+                    + completedDownload.getFileInfo().getRelativeName()
+                    + "' (days=" + numberOfDays + ')');
+                clearCompletedDownload(completedDownload);
             }
         }
     }
@@ -783,9 +787,7 @@ public class TransferManager extends PFComponent {
         boolean autoClean = dlManager.getFileInfo().getFolderInfo()
             .isMetaFolder();
         autoClean = autoClean
-            || ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController())
-            && ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
+            || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0;
         if (autoClean) {
             if (isFiner()) {
@@ -827,7 +829,7 @@ public class TransferManager extends PFComponent {
             if (p != null) {
                 sourcesStr.append(p.getNick());
             }
-            sourcesStr.append(",");
+            sourcesStr.append(',');
         }
         if (sourcesStr.length() > 0) {
             // Cut last ,
@@ -2064,7 +2066,7 @@ public class TransferManager extends PFComponent {
             assert download.getPartner().equals(from);
             if (isFiner()) {
                 logFiner("downloading changed file, aborting it! "
-                    + fileInfo.toDetailString() + " " + from);
+                    + fileInfo.toDetailString() + ' ' + from);
             }
             download.abort(false);
         } else {
@@ -2075,7 +2077,7 @@ public class TransferManager extends PFComponent {
                 {
                     if (isFiner()) {
                         logFiner("Aborting pending download! "
-                            + fileInfo.toDetailString() + " " + from);
+                            + fileInfo.toDetailString() + ' ' + from);
                     }
                     pendingDL.abort(false);
                 }

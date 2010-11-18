@@ -350,6 +350,9 @@ public class Constants {
     public static final String LOGIN_PARAM_SALT = "Salt";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
 
+    /** Cleanup immediately, 1, 10, 30, never days. */
+    public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
+
     private Constants() {
         // No instance allowed
     }

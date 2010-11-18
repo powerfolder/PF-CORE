@@ -40,7 +40,6 @@ public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
     private DownloadManagersTableModel downloadManagersTableModel;
     private UploadsTableModel uploadsTableModel;
-    private ValueModel downloadsAutoCleanupModel;
     private ValueModel uploadsAutoCleanupModel;
 
     /** Value model with integer number of all displayed downloads. */
@@ -69,10 +68,6 @@ public class TransferManagerModel extends PFUIComponent {
         transferManager = aTransferManager;
         downloadsValueModelUpdater = new DelayedUpdater(getController());
         uploadsValueModelUpdater = new DelayedUpdater(getController());
-        downloadsAutoCleanupModel = new ValueHolder();
-        downloadsAutoCleanupModel
-            .setValue(ConfigurationEntry.DOWNLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController()));
         downloadManagersTableModel = new DownloadManagersTableModel(this);
         uploadsAutoCleanupModel = new ValueHolder();
         uploadsAutoCleanupModel
@@ -111,10 +106,6 @@ public class TransferManagerModel extends PFUIComponent {
 
     public DownloadManagersTableModel getDownloadsTableModel() {
         return downloadManagersTableModel;
-    }
-
-    public ValueModel getDownloadsAutoCleanupModel() {
-        return downloadsAutoCleanupModel;
     }
 
     public ValueModel getUploadsAutoCleanupModel() {

@@ -552,11 +552,6 @@ public enum ConfigurationEntry {
     DEBUG_REPORTS("debug.reports", false),
 
     /**
-     * Whether to do auto-cleanup for downloads.
-     */
-    DOWNLOADS_AUTO_CLEANUP("downloads.auto.cleanup", true),
-
-    /**
      * Whether to do auto-cleanup for uploads.
      */
     UPLOADS_AUTO_CLEANUP("uploads.auto.cleanup", true),
@@ -655,8 +650,9 @@ public enum ConfigurationEntry {
 
     /**
      * Days until auto cleanup of downloads. Zero = cleanup on completion.
+     * NOTE - true cleanup days dereferenced through Constants.CLEANUP_VALUES
      */
-    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 5),
+    DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 2),
 
     /** Warning about unsyned folders. */
     FOLDER_SYNC_USE("sync.folder.use", true),
