@@ -140,7 +140,7 @@ public class SyncProfile implements Serializable {
      * changes
      */
     public static final SyncProfile BACKUP_TARGET_NO_CHANGE_DETECT = new SyncProfile(
-        "backup_target", false, new SyncProfileConfiguration(true, true, true,
+        "backup_target_no_change", false, new SyncProfileConfiguration(true, true, true,
             true, 0));
 
     /**
