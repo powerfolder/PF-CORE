@@ -19,9 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +33,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.MemoryMonitor;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
