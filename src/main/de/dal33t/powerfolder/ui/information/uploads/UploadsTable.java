@@ -34,7 +34,7 @@ import de.dal33t.powerfolder.transfer.Transfer;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.render.SortedTableHeaderRenderer;
-import de.dal33t.powerfolder.ui.render.TransferTableCellRenderer;
+import de.dal33t.powerfolder.ui.render.UploadTableCellRenderer;
 
 /**
  * A Table for displaying the uploads.
@@ -58,7 +58,7 @@ public class UploadsTable extends JTable {
         setShowGrid(false);
 
         // Setup renderer
-        TableCellRenderer transferTableCellRenderer = new TransferTableCellRenderer(
+        TableCellRenderer transferTableCellRenderer = new UploadTableCellRenderer(
             transferManagerModel.getController());
         setDefaultRenderer(FileInfo.class, transferTableCellRenderer);
         setDefaultRenderer(FolderInfo.class, transferTableCellRenderer);

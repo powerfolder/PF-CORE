@@ -32,7 +32,6 @@ import com.jgoodies.forms.factories.Borders;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -54,7 +53,7 @@ import de.dal33t.powerfolder.util.ui.UIUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.20 $
  */
-public class TransferTableCellRenderer extends DefaultTableCellRenderer {
+public class UploadTableCellRenderer extends DefaultTableCellRenderer {
     // private static final Logger LOG =
     // Logger.getLogger(TransferTableCellRenderer.class);
     private Controller controller;
@@ -66,7 +65,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
      * 
      * @param controller
      */
-    public TransferTableCellRenderer(Controller controller) {
+    public UploadTableCellRenderer(Controller controller) {
         this.controller = controller;
 
         // FIXME: Find a better way to set text color of progress bar string
@@ -207,15 +206,7 @@ public class TransferTableCellRenderer extends DefaultTableCellRenderer {
             } else { // File info
                 FileInfo fInfo = (FileInfo) value;
                 setText(fInfo.getFilenameOnly());
-                Folder folder = fInfo.getFolder(controller
-                    .getFolderRepository());
-                if (folder != null
-                    && folder.getDiskItemFilter().isExcluded(fInfo))
-                {
-                    setIcon(Icons.getIconById(Icons.BLACK_LIST));
-                } else {
-                    setIcon(null);
-                }
+                setIcon(null);
                 setHorizontalAlignment(LEFT);
             }
         } else if (value instanceof Long) {
