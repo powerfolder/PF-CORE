@@ -167,7 +167,7 @@ public class IOProvider extends PFComponent {
     public void startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
         if (ioThreadPool.isTerminated() || ioThreadPool.isShutdown()) {
-            logWarning("Rejected executing of ioWorker, already stopped: "
+            logFine("Rejected executing of ioWorker, already stopped: "
                 + ioWorker);
             return;
         }
