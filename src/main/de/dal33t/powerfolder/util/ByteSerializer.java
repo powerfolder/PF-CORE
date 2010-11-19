@@ -333,8 +333,9 @@ public class ByteSerializer extends Loggable {
     public static final void printStats() {
         if (totalObjects != 0) {
             LOG.fine("Serialization perfomance: " + totalObjects + " took "
-                + totalTime + "ms. That is " + (totalTime / totalObjects)
-                + " ms/object. Message stats: ");
+                + totalTime + "ms. That is "
+                + ((totalTime * 1000) / totalObjects)
+                + " ms/1k objects. Message stats: ");
             List<Class<?>> sorted = new ArrayList<Class<?>>(CLASS_STATS
                 .keySet());
             Collections.sort(sorted, new Comparator<Class<?>>() {
