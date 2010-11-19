@@ -178,7 +178,13 @@ public class FileRequestor extends PFComponent {
                 + folder.hasOwnDatabase());
         }
 
-        // Dont request files until has own database
+        if (!folder.isStarted()) {
+            if (isFiner()) {
+                logFiner("Not requesting files. Folder not started yet "
+                    + folder);
+            }
+            return;
+        }
         if (folder.isDeviceDisconnected()) {
             if (isFine()) {
                 logFine("Not requesting files. Device disconnected of "
