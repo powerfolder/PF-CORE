@@ -69,13 +69,13 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
     public void executeRemoteCall(ServerClient client) throws Exception {
         if (!getController().getFolderRepository().hasJoinedFolder(foInfo)) {
             LOG.warning("Not longer locally synced. "
-                + "Not setting up online backup for: " + foInfo);
+                + "Not setting up cloud backup for: " + foInfo);
             // Remove task
             remove();
         }
         if (client.isLoggedIn()) {
             // Only do this with security context.
-            LOG.info("Setting folder up for online backup: " + foInfo);
+            LOG.info("Setting folder up for cloud backup: " + foInfo);
             client.getFolderService().createFolder(foInfo, syncProfile);
             // Remove task
             remove();
