@@ -322,19 +322,22 @@ public class TransferManager extends PFComponent {
      * older than AUTO_CLEANUP_FREQUENCY in days.
      */
     private void cleanupOldTransfers() {
-        if (ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()))
-        {
-            Integer uploadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController());
-            for (Upload completedUpload : completedUploads) {
-                long numberOfDays = calcDays(completedUpload.getCompletedDate());
-                if (numberOfDays >= uploadCleanupFrequency) {
-                    logInfo("Auto-cleaning up upload '"
-                        + completedUpload.getFile().getRelativeName()
-                        + "' (days=" + numberOfDays + ')');
-                    clearCompletedUpload(completedUpload);
-                }
+        int rawUploadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+            .getValueInt(getController());
+        int trueUploadCleanupFrequency;
+        if (rawUploadCleanupFrequency <= 4) {
+            trueUploadCleanupFrequency = Constants.CLEANUP_VALUES[rawUploadCleanupFrequency];
+        } else {
+            trueUploadCleanupFrequency = Integer.MAX_VALUE;
+
+        }
+        for (Upload completedUpload : completedUploads) {
+            long numberOfDays = calcDays(completedUpload.getCompletedDate());
+            if (numberOfDays >= trueUploadCleanupFrequency) {
+                logInfo("Auto-cleaning up upload '"
+                    + completedUpload.getFile().getRelativeName()
+                    + "' (days=" + numberOfDays + ')');
+                clearCompletedUpload(completedUpload);
             }
         }
 
@@ -636,7 +639,7 @@ public class TransferManager extends PFComponent {
      * 
      * @param foInfo
      */
-    public void breakTransfers(final FolderInfo foInfo) {
+    public void breakTransfers(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
         // Search for uls to break
         if (!queuedUploads.isEmpty()) {
@@ -672,7 +675,7 @@ public class TransferManager extends PFComponent {
      * 
      * @param node
      */
-    public void breakTransfers(final Member node) {
+    public void breakTransfers(Member node) {
         // Search for uls to break
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
@@ -708,7 +711,7 @@ public class TransferManager extends PFComponent {
      * 
      * @param fInfo
      */
-    public void breakTransfers(final FileInfo fInfo) {
+    public void breakTransfers(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
         // Search for uls to break
         if (!queuedUploads.isEmpty()) {
@@ -910,7 +913,6 @@ public class TransferManager extends PFComponent {
      * @param transfer
      */
     void setCompleted(Transfer transfer) {
-        boolean transferFound = false;
 
         FileInfo fileInfo = transfer.getFile();
         if (transfer instanceof Download) {
@@ -947,6 +949,7 @@ public class TransferManager extends PFComponent {
             transfer.setCompleted();
 
             uploadsLock.lock();
+            boolean transferFound = false;
             try {
                 transferFound = queuedUploads.remove(transfer);
                 transferFound = activeUploads.remove(transfer) || transferFound;
@@ -965,9 +968,7 @@ public class TransferManager extends PFComponent {
             boolean autoClean = transfer.getFile().getFolderInfo()
                 .isMetaFolder();
             autoClean = autoClean
-                || ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-                    .getValueBoolean(getController())
-                && ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                || ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                     .getValueInt(getController()) == 0;
             if (autoClean) {
                 if (isFiner()) {
@@ -1544,7 +1545,7 @@ public class TransferManager extends PFComponent {
     /**
      * Be sure to hold downloadsLock when calling this method!
      */
-    private void removeDownload(final Download download) {
+    private void removeDownload(Download download) {
         final DownloadManager man = download.getDownloadManager();
         if (man == null) {
             return;
@@ -1795,7 +1796,7 @@ public class TransferManager extends PFComponent {
      * @param download
      * @param from
      */
-    private void requestDownload(final Download download, final Member from) {
+    private void requestDownload(Download download, Member from) {
         final FileInfo fInfo = download.getFile();
         boolean dlWasRequested = false;
         // Lock/Disable transfer checker
@@ -2005,7 +2006,7 @@ public class TransferManager extends PFComponent {
      * @param folder
      *            the folder to break downloads on
      */
-    public void abortAllAutodownloads(final Folder folder) {
+    public void abortAllAutodownloads(Folder folder) {
         int aborted = 0;
         for (DownloadManager dl : getActiveDownloads()) {
             boolean fromFolder = folder.getInfo().equals(

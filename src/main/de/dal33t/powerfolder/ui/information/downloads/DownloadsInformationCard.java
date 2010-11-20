@@ -174,6 +174,8 @@ public class DownloadsInformationCard extends InformationCard implements
                     .getSize().getHeight());
             }
         };
+        cleanupSlider.setMinorTickSpacing(1);
+        cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
         cleanupSlider.setToolTipText(Translation.getTranslation(

@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui.model;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -40,7 +39,6 @@ public class TransferManagerModel extends PFUIComponent {
     private TransferManager transferManager;
     private DownloadManagersTableModel downloadManagersTableModel;
     private UploadsTableModel uploadsTableModel;
-    private ValueModel uploadsAutoCleanupModel;
 
     /** Value model with integer number of all displayed downloads. */
     private final ValueModel allDownloadsCountVM = new ValueHolder();
@@ -69,10 +67,6 @@ public class TransferManagerModel extends PFUIComponent {
         downloadsValueModelUpdater = new DelayedUpdater(getController());
         uploadsValueModelUpdater = new DelayedUpdater(getController());
         downloadManagersTableModel = new DownloadManagersTableModel(this);
-        uploadsAutoCleanupModel = new ValueHolder();
-        uploadsAutoCleanupModel
-            .setValue(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-                .getValueBoolean(getController()));
         uploadsTableModel = new UploadsTableModel(this);
 
     }
@@ -106,10 +100,6 @@ public class TransferManagerModel extends PFUIComponent {
 
     public DownloadManagersTableModel getDownloadsTableModel() {
         return downloadManagersTableModel;
-    }
-
-    public ValueModel getUploadsAutoCleanupModel() {
-        return uploadsAutoCleanupModel;
     }
 
     public UploadsTableModel getUploadsTableModel() {

@@ -25,6 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -39,7 +40,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.TimerTask;
 
 /**
@@ -55,7 +55,6 @@ public class UploadsInformationCard extends InformationCard implements
     private JPanel detailsPanel;
     private FileDetailsPanel fileDetailsPanel;
     private FileVersionsPanel fileVersionsPanel;
-    private JCheckBox autoCleanupCB;
     private Action clearCompletedUploadsAction;
     private JSlider cleanupSlider;
     private JLabel cleanupLabel;
@@ -111,9 +110,8 @@ public class UploadsInformationCard extends InformationCard implements
      */
     private void initialize() {
         cleanupLabel = new JLabel();
-        cleanupLabel
-            .setToolTipText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
+        cleanupLabel.setToolTipText(Translation.getTranslation(
+                "uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(),
             clearCompletedUploadsAction);
@@ -185,32 +183,24 @@ public class UploadsInformationCard extends InformationCard implements
         clearCompletedUploadsAction = new ClearCompletedUploadsAction(
             getController());
 
-        autoCleanupCB = new JCheckBox(Translation
-            .getTranslation("uploads_information_card.auto_cleanup.name"));
-        autoCleanupCB
-            .setToolTipText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.description"));
-        autoCleanupCB.setSelected(ConfigurationEntry.UPLOADS_AUTO_CLEANUP
-            .getValueBoolean(getController()));
-        autoCleanupCB.addActionListener(new MyActionListener());
+        Integer x = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
+                .getValueInt(getController());
+        if (x > 4) {
+            x = 4;
+        }
 
-        cleanupSlider = new JSlider(0, 10,
-            ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-                .getValueInt(getController()))
-        {
+        cleanupSlider = new JSlider(0, 4, x) {
             public Dimension getPreferredSize() {
                 return new Dimension(20, (int) super.getPreferredSize()
                     .getSize().getHeight());
             }
         };
         cleanupSlider.setMinorTickSpacing(1);
-        cleanupSlider.setMajorTickSpacing(5);
         cleanupSlider.setPaintTicks(true);
         cleanupSlider.setSnapToTicks(true);
         cleanupSlider.addChangeListener(new MyChangeListener());
-        cleanupSlider
-            .setToolTipText(Translation
-                .getTranslation("uploads_information_card.auto_cleanup.frequency_tip"));
+        cleanupSlider.setToolTipText(Translation.getTranslation(
+                "uploads_information_card.auto_cleanup.frequency_tip"));
 
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
         JToggleButton detailsBtn = new JToggleButton(new DetailsAction(
@@ -219,8 +209,6 @@ public class UploadsInformationCard extends InformationCard implements
         bar.addGridded(detailsBtn);
         bar.addRelatedGap();
         bar.addGridded(createButton(clearCompletedUploadsAction));
-        bar.addRelatedGap();
-        bar.addGridded(autoCleanupCB);
         bar.addRelatedGap();
         bar.addGridded(cleanupSlider);
         toolBar = bar.getPanel();
@@ -251,7 +239,6 @@ public class UploadsInformationCard extends InformationCard implements
         builder.addSeparator(null, cc.xyw(1, 9, 5));
         builder.add(statsPanel, cc.xyw(2, 10, 3));
         uiComponent = builder.getPanel();
-        enableCleanupComponents();
         initStatsTimer();
     }
 
@@ -291,19 +278,17 @@ public class UploadsInformationCard extends InformationCard implements
             getController(), String.valueOf(cleanupSlider.getValue()));
         getController().saveConfig();
         if (cleanupSlider.getValue() == 0) {
-            cleanupLabel
-                .setText(Translation
-                    .getTranslation("uploads_information_card.auto_cleanup.immediate"));
-        } else {
             cleanupLabel.setText(Translation.getTranslation(
-                "uploads_information_card.auto_cleanup.days", String
-                    .valueOf(cleanupSlider.getValue())));
+                    "uploads_information_card.auto_cleanup.immediate"));
+        } else if (cleanupSlider.getValue() >= 4) {
+            cleanupLabel.setText(Translation.getTranslation(
+                    "uploads_information_card.auto_cleanup.never"));
+        } else {
+            int trueCleanupDays = Constants.CLEANUP_VALUES[cleanupSlider.getValue()];
+            cleanupLabel.setText(Translation.getTranslation(
+                "uploads_information_card.auto_cleanup.days",
+                    String.valueOf(trueCleanupDays)));
         }
-    }
-
-    private void enableCleanupComponents() {
-        cleanupSlider.setEnabled(autoCleanupCB.isSelected());
-        cleanupLabel.setEnabled(autoCleanupCB.isSelected());
     }
 
     private void displayStats() {
@@ -378,18 +363,6 @@ public class UploadsInformationCard extends InformationCard implements
     private class MyChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
             updateCleanupLabel();
-        }
-    }
-
-    private class MyActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            getUIController().getTransferManagerModel()
-                .getUploadsAutoCleanupModel().setValue(
-                    autoCleanupCB.isSelected());
-            ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getController(),
-                String.valueOf(autoCleanupCB.isSelected()));
-            getController().saveConfig();
-            enableCleanupComponents();
         }
     }
 

@@ -552,11 +552,6 @@ public enum ConfigurationEntry {
     DEBUG_REPORTS("debug.reports", false),
 
     /**
-     * Whether to do auto-cleanup for uploads.
-     */
-    UPLOADS_AUTO_CLEANUP("uploads.auto.cleanup", true),
-
-    /**
      * If it should be automatically connected to other nodes. FIX: Currently
      * only affects ReconnectManager.
      */
@@ -645,8 +640,9 @@ public enum ConfigurationEntry {
 
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion.
+     * NOTE - true cleanup days dereferenced through Constants.CLEANUP_VALUES
      */
-    UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", 5),
+    UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", 2),
 
     /**
      * Days until auto cleanup of downloads. Zero = cleanup on completion.
