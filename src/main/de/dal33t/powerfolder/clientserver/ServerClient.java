@@ -715,6 +715,9 @@ public class ServerClient extends PFComponent {
         {
             return;
         }
+        if (getController().getMySelf().isServer()) {
+            return;
+        }
         for (Folder folder : getController().getFolderRepository().getFolders())
         {
             if (!a.hasReadPermissions(folder.getInfo())
@@ -790,7 +793,7 @@ public class ServerClient extends PFComponent {
             return true;
         }
         for (Member member : folder.getMembersAsCollection()) {
-            if (member.isServer()) {
+            if (member.isServer() && !member.isMySelf()) {
                 return true;
             }
         }
