@@ -111,7 +111,7 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
      *             if something went wrong. Task will be KEPT for later
      *             execution re-try.
      */
-    public abstract void executeRemoteCall(ServerClient client)
+    protected abstract void executeRemoteCall(ServerClient client)
         throws Exception;
 
     // Internal ***************************************************************
