@@ -148,4 +148,50 @@ public class LoginUtil {
         }
         return url;
     }
+
+    /**
+     * Decorates the login URL with credentials if given.
+     * 
+     * @param loginURL
+     *            the login URL, e.g. http://localhost/login
+     * @param username
+     * @param passwordObf
+     *            the obfuscated password
+     * @return the login URL with encoded credentials as parameters.
+     */
+    public static String decorateURL(String loginURL, String username,
+        String passwordObf)
+    {
+        String url = loginURL;
+        if (StringUtils.isNotBlank(username)) {
+            url += "?";
+            url += Constants.LOGIN_PARAM_USERNAME;
+            url += "=";
+            url += Util.endcodeForURL(username);
+            if (StringUtils.isNotBlank(passwordObf)) {
+                url += "&";
+                url += Constants.LOGIN_PARAM_PASSWORD_OBF;
+                url += "=";
+                url += Util.endcodeForURL(passwordObf);
+            }
+        }
+        return url;
+    }
+
+    /**
+     * Clears a password array to avoid keeping the password in plain text in
+     * memory.
+     * 
+     * @param password
+     *            the password array to clear. Array is destroyed and unusable
+     *            after.
+     */
+    public static void clear(char[] password) {
+        if (password == null || password.length == 0) {
+            return;
+        }
+        for (int i = 0; i < password.length; i++) {
+            password[i] = (char) (Math.random() * 256);
+        }
+    }
 }
