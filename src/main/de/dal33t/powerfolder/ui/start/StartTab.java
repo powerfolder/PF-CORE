@@ -73,7 +73,7 @@ public class StartTab extends PFUIComponent {
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      */
     public StartTab(Controller controller) {
@@ -158,7 +158,8 @@ public class StartTab extends PFUIComponent {
                         .getOSClient());
                 }
             });
-        tellFriendLabel = SimpleComponentFactory.createTellAFriendLabel(getController());
+        tellFriendLabel = SimpleComponentFactory
+            .createTellAFriendLabel(getController());
 
         updateOnlineStorageDetails();
 
@@ -166,37 +167,40 @@ public class StartTab extends PFUIComponent {
 
     /**
      * Build the main panel with all the detail lines.
-     *
+     * 
      * @return
      */
     private JPanel buildMainPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu, pref");
+        FormLayout layout = new FormLayout(
+            "pref:grow",
+            "pref, 10dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref:grow, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         // Bottom border
         builder.setBorder(Borders.createEmptyBorder("1dlu, 3dlu, 2dlu, 3dlu"));
         CellConstraints cc = new CellConstraints();
 
-        JLabel label = new JLabel(Translation.getTranslation("start_tab.welcome_text"));
+        JLabel label = new JLabel(Translation
+            .getTranslation("start_tab.welcome_text"));
         UIUtil.setFontSize(label, UIUtil.MED_FONT_SIZE);
         UIUtil.setFontStyle(label, Font.BOLD);
 
         int row = 1;
         builder.add(label, cc.xy(1, row));
 
-        row +=2;
+        row += 2;
 
         builder.add(synchronizedLink.getUIComponent(), cc.xy(1, row));
 
-        row +=2;
+        row += 2;
 
         builder.add(backupLink.getUIComponent(), cc.xy(1, row));
 
-        row +=2;
+        row += 2;
 
         builder.add(hostLink.getUIComponent(), cc.xy(1, row));
 
-        row +=2;
+        row += 2;
 
         builder.add(documentationLink.getUIComponent(), cc.xy(1, row));
 
@@ -225,7 +229,7 @@ public class StartTab extends PFUIComponent {
 
     /**
      * Cretes the toolbar.
-     *
+     * 
      * @return the toolbar
      */
     private JPanel createToolBar() {
@@ -249,38 +253,39 @@ public class StartTab extends PFUIComponent {
         boolean show = false;
         String username = client.getUsername();
         if (username != null && username.trim().length() != 0) {
-            char[] password = client.getPassword();
-            if (password != null && password.length != 0 && client.isConnected()) {
+            if (client.isConnected() && !client.isPasswordEmpty()) {
                 if (client.isLoggedIn()) {
                     OnlineStorageSubscription storageSubscription = client
-                            .getAccount().getOSSubscription();
+                        .getAccount().getOSSubscription();
                     if (storageSubscription.isDisabled()) {
                         Date expirationDate = storageSubscription
-                                .getDisabledExpirationDate();
+                            .getDisabledExpirationDate();
                         if (storageSubscription.isDisabledExpiration()
-                                && expirationDate != null) {
+                            && expirationDate != null)
+                        {
                             onlineStorageAccountLabel
-                                    .setText(Translation
-                                            .getTranslation(
-                                            "status_tab.online_storage.account_disabled_expiration",
-                                            username,
-                                            Format.formatDateCanonical(expirationDate)));
+                                .setText(Translation
+                                    .getTranslation(
+                                        "status_tab.online_storage.account_disabled_expiration",
+                                        username,
+                                        Format
+                                            .formatDateCanonical(expirationDate)));
                         } else if (storageSubscription.isDisabledUsage()) {
                             onlineStorageAccountLabel
-                                    .setText(Translation
-                                            .getTranslation(
-                                            "status_tab.online_storage.account_disabled_usage",
-                                            username));
+                                .setText(Translation
+                                    .getTranslation(
+                                        "status_tab.online_storage.account_disabled_usage",
+                                        username));
                         } else {
                             onlineStorageAccountLabel
-                                    .setText(Translation
-                                            .getTranslation(
-                                            "status_tab.online_storage.account_disabled",
-                                            username));
+                                .setText(Translation
+                                    .getTranslation(
+                                        "status_tab.online_storage.account_disabled",
+                                        username));
                         }
                         onlineStorageAccountLabel
-                                .setToolTipText(Translation
-                                        .getTranslation("status_tab.online_storage.account_disabled.tips"));
+                            .setToolTipText(Translation
+                                .getTranslation("status_tab.online_storage.account_disabled.tips"));
                         show = true;
                     }
                 }
@@ -296,11 +301,11 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController(),
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doSyncOption(getController(),
-                    context);
+                context);
             wizard.open(panel);
         }
     }
@@ -312,11 +317,11 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController(),
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doBackupOption(getController(),
-                    context);
+                context);
             wizard.open(panel);
         }
     }
@@ -328,11 +333,11 @@ public class StartTab extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            PFWizard wizard = new PFWizard(getController(),
-                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+            PFWizard wizard = new PFWizard(getController(), Translation
+                .getTranslation("wizard.pfwizard.folder_title"));
             WizardContext context = wizard.getWizardContext();
             PFWizardPanel panel = WhatToDoPanel.doHostOption(getController(),
-                    context);
+                context);
             wizard.open(panel);
         }
     }
@@ -359,6 +364,5 @@ public class StartTab extends PFUIComponent {
             updateOnlineStorageDetails();
         }
     }
-
 
 }
