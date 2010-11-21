@@ -750,6 +750,12 @@ public class SettingsTab extends PFUIComponent {
                 FileUtils.setAttributesOnWindows(newDirectory, true, true);
             }
 
+            // Remember patterns if content not moving.
+            List<String> patterns = null;
+            if (!moveContent) {
+                patterns = folder.getDiskItemFilter().getPatterns();
+            }
+
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
             FolderSettings fs = new FolderSettings(newDirectory, folder
@@ -758,8 +764,12 @@ public class SettingsTab extends PFUIComponent {
                 .getDownloadScript(), folder.getFileArchiver()
                 .getVersionsPerFile(), folder.isSyncPatterns(), commitDir);
             folder = repository.createFolder(fi, fs);
-            if (!moveContent) {
-                folder.addDefaultExcludes();
+
+            // Restore patterns if content not moved.
+            if (!moveContent && patterns != null) {
+                for (String pattern : patterns) {
+                    folder.getDiskItemFilter().addPattern(pattern);
+                }
             }
 
             // Update with new folder info.
