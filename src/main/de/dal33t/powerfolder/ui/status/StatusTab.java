@@ -519,8 +519,7 @@ public class StatusTab extends PFUIComponent {
             onlineStorageAccountLabel.setToolTipText(Translation
                 .getTranslation("status_tab.online_storage.not_setup.tips"));
         } else {
-            char[] password = client.getPassword();
-            if (password == null || password.length == 0) {
+            if (client.isPasswordEmpty()) {
                 onlineStorageAccountLabel.setText(Translation
                     .getTranslation("status_tab.online_storage.no_password"));
                 onlineStorageAccountLabel
