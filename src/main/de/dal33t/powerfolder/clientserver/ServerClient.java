@@ -42,7 +42,6 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.Account;
@@ -85,7 +84,7 @@ public class ServerClient extends PFComponent {
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
     private String username;
-    private char[] password;
+    private String passwordObf;
     private Member server;
     private MyThrowableHandler throwableHandler = new MyThrowableHandler();
 
@@ -361,7 +360,7 @@ public class ServerClient extends PFComponent {
             return null;
         }
         return LoginUtil.decorateURL(getWebURL() + Constants.LOGIN_URI,
-            username, password);
+            username, passwordObf);
     }
 
     /**
@@ -375,7 +374,7 @@ public class ServerClient extends PFComponent {
         }
         String url = getWebURL() + Constants.LOGIN_URI;
         if (StringUtils.isNotBlank(getUsername())) {
-            url = LoginUtil.decorateURL(url, getUsername(), null);
+            url = LoginUtil.decorateURL(url, getUsername(), (char[]) null);
         }
         return url;
     }
@@ -524,7 +523,7 @@ public class ServerClient extends PFComponent {
      */
     public void logoff() {
         username = null;
-        password = null;
+        passwordObf = null;
         saveLastKnowLogin();
         setAnonAccount();
         fireLogin(accountDetails);
@@ -542,47 +541,46 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
-        logFine("Login with: " + theUsername + ":"
-            + (thePassword != null ? '(' + thePassword.length + ')' : "n/a"));
+        return login(theUsername, LoginUtil.obfuscate(thePassword));
+    }
+
+    /**
+     * Logs into the server and saves the identity as my login.
+     * <p>
+     * If the server is not connected and invalid account is returned and the
+     * login data saved for auto-login on reconnect.
+     * 
+     * @param theUsername
+     * @param thePasswordObj
+     *            the obfuscated password
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
+     */
+    private Account login(String theUsername, String thePasswordObj) {
+        logFine("Login with: " + theUsername);
         synchronized (loginLock) {
             username = theUsername;
-            password = thePassword;
+            passwordObf = thePasswordObj;
             saveLastKnowLogin();
-            if (!isConnected() || password == null) {
+            if (!isConnected() || StringUtils.isBlank(passwordObf)) {
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
             }
             boolean loginOk = false;
-
-            Identity id = server.getIdentity();
-            boolean tryOldLogin = id != null && id.getProgramVersion() != null
-                && Util.compareVersions("4.1.1", id.getProgramVersion());
-
+            char[] pw = LoginUtil.deobfuscate(passwordObf);
             try {
-                if (!tryOldLogin) {
-                    loginOk = securityService.login(username, password);
-                }
+                loginOk = securityService.login(username, pw);
             } catch (RemoteCallException e) {
                 if (e.getCause() instanceof NoSuchMethodException) {
                     // Old server version (Pre 1.5.0 or older)
                     // Try it the old fashioned way
-                    tryOldLogin = true;
-                } else {
-                    // Rethrow
-                    throw e;
+                    logSevere("Client incompatible with server: Server version too old");
                 }
-            }
-
-            if (tryOldLogin) {
-                logWarning("Trying old login method");
-                // Old server version (Pre 1.5.0 or older)
-                // Try it the old fashioned way
-                String salt = IdGenerator.makeId() + IdGenerator.makeId();
-                String mix = salt + Util.toString(password) + salt;
-                String passwordMD5 = new String(Util.md5(mix
-                    .getBytes(Convert.UTF8)), Convert.UTF8);
-                loginOk = securityService.login(username, passwordMD5, salt);
+                // Rethrow
+                throw e;
+            } finally {
+                LoginUtil.clear(pw);
             }
 
             if (!loginOk) {
@@ -656,10 +654,33 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * @return true if the currently set password is empty.
+     */
+    public boolean isPasswordEmpty() {
+        return StringUtils.isBlank(passwordObf);
+    }
+
+    /**
+     * ATTENTION: Make sure the returned char array is purged/cleared as soon as
+     * possible with {@link LoginUtil#clear(char[])}
+     * 
      * @return the password that is set for login.
      */
     public char[] getPassword() {
-        return password;
+        return LoginUtil.deobfuscate(passwordObf);
+    }
+
+    /**
+     * ATTENTION: This password must not be used for long. It cannot be
+     * purged/cleared from memory.
+     * 
+     * @return the password used in CLEAR TEXT.
+     */
+    public String getPasswordClearText() {
+        char[] pw = LoginUtil.deobfuscate(passwordObf);
+        String txt = Util.toString(pw);
+        LoginUtil.clear(pw);
+        return txt;
     }
 
     /**
@@ -973,9 +994,9 @@ public class ServerClient extends PFComponent {
         getController().getPreferences().remove(
             PREFS_PREFIX + '.' + server.getIP() + ".info3");
 
-        if (isRememberPassword() && password != null && password.length > 0) {
+        if (isRememberPassword() && StringUtils.isNotBlank(passwordObf)) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
-                getController(), LoginUtil.obfuscate(password));
+                getController(), passwordObf);
         }
 
         // Store new username/pw
@@ -1017,7 +1038,7 @@ public class ServerClient extends PFComponent {
 
         // Now actually switch to new server.
         setNewServerNode(newServerNode);
-        login(username, password);
+        login(username, passwordObf);
         // Attempt to login. At least remind login for real connect.
         if (!isConnected()) {
             // Mark new server for connect
@@ -1108,11 +1129,9 @@ public class ServerClient extends PFComponent {
                 listenerSupport.serverConnected(new ServerClientEvent(
                     ServerClient.this, e.getNode()));
 
-                if (username != null && password != null && password.length > 0)
-                {
+                if (username != null && StringUtils.isNotBlank(passwordObf)) {
                     try {
-                        login(username, password);
-
+                        login(username, passwordObf);
                         getController().schedule(new HostingServerRetriever(),
                             1000L);
                     } catch (RemoteCallException ex) {
@@ -1174,8 +1193,8 @@ public class ServerClient extends PFComponent {
             if (isLoggedIn()) {
                 return;
             }
-            if (username != null && password != null && password.length > 0) {
-                login(username, password);
+            if (username != null && StringUtils.isNotBlank(passwordObf)) {
+                login(username, passwordObf);
             }
         }
     }
@@ -1227,7 +1246,7 @@ public class ServerClient extends PFComponent {
         }
 
         private void autoLogin(Throwable t) {
-            if (username != null && password != null && password.length > 0) {
+            if (username != null && StringUtils.isNotBlank(passwordObf)) {
                 loginProblems++;
                 if (loginProblems > 20) {
                     logSevere("Got "
@@ -1238,7 +1257,7 @@ public class ServerClient extends PFComponent {
                 }
                 logWarning("Auto-login for " + username
                     + " required. Caused by " + t);
-                login(username, password);
+                login(username, passwordObf);
             }
         }
     }
