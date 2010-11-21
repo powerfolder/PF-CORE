@@ -117,6 +117,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private ActionLabel filesLabel;
     private ActionLabel deletedFilesLabel;
     private ActionLabel transferModeLabel;
+    private ActionLabel localDirectoryLabel;
     private JLabel syncPercentLabel;
     private ActionLabel syncDateLabel;
     private JLabel localSizeLabel;
@@ -320,11 +321,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Skip computers stuff
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         } else {
             lowerLayout = new FormLayout(
                 "3dlu, pref, pref:grow, 3dlu, pref, 3dlu",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, pref");
         }
         PanelBuilder lowerBuilder = new PanelBuilder(lowerLayout);
 
@@ -369,6 +370,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
 
+            row += 2;
+
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc.xy(5, row));
+
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
             lowerBuilder.add(inviteButton, cc.xy(5, row));
@@ -381,6 +386,11 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             lowerBuilder.add(transferModeLabel.getUIComponent(), cc.xy(2, row));
             lowerBuilder.add(openSettingsInformationButton, cc.xy(5, row));
+
+            row += 2;
+
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc.xy(2, row));
+
         }
 
         row++; // Just add one.
@@ -490,6 +500,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             openFilesInformationAction);
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
+        localDirectoryLabel = new ActionLabel(getController(),
+            openSettingsInformationAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -525,6 +537,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         openSettingsInformationButton.setEnabled(enabled);
         transferModeLabel.setEnabled(enabled);
+        localDirectoryLabel.setEnabled(enabled);
         openSettingsInformationAction.setEnabled(enabled);
 
         openFilesInformationButton.setEnabled(enabled);
@@ -823,15 +836,25 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateTransferMode() {
         String transferMode;
+        String localDirectory;
         if (folder == null) {
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", "?");
+            localDirectory = Translation.getTranslation(
+                "exp_folder_view.local_directory", "?");
         } else {
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
+            String path = folder.getCommitOrLocalDir().getAbsolutePath();
+            if (path.length() >= 25) {
+                path = path.substring(0, 10) + "..." + path.substring(path.length() - 10, path.length());
+            }
+            localDirectory = Translation.getTranslation(
+                "exp_folder_view.local_directory", path);
         }
         transferModeLabel.setText(transferMode);
+        localDirectoryLabel.setText(localDirectory);
     }
 
     /**
@@ -843,7 +866,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 updateFolderMembershipDetails0();
             }
         });
-
     }
 
     /**
