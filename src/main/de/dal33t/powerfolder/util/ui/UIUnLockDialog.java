@@ -361,7 +361,7 @@ public class UIUnLockDialog extends PFUIComponent {
                     String username = usernameField.getText();
                     char[] password = passwordField.getPassword();
                     getController().getOSClient().login(username, password);
-
+                    LoginUtil.clear(password);
                     mainProgrammContinue();
                     return;
                 } else {
