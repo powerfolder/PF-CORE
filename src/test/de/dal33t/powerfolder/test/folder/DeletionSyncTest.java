@@ -50,6 +50,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         super.setUp();
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
             Integer.MAX_VALUE);
+        ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
+            Integer.MAX_VALUE);
         connectBartAndLisa();
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
@@ -446,7 +448,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .triggerFileRequesting();
 
         // Give them time to undelete sync (means downloading;)
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countCompletedDownloads() >= 3;
