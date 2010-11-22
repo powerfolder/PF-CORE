@@ -138,7 +138,8 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return;
         }
-        //logWarning("Scheduled new calculation", new RuntimeException("here"));
+        // logWarning("Scheduled new calculation", new
+        // RuntimeException("here"));
         calculatorTask = new MyCalculatorTask();
         try {
             getController().schedule(calculatorTask, timeToWait);
@@ -440,18 +441,19 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
-     * @return the estimated date the folder will be in sync. May be null.
+     * @return the sync percentrage of the server(s). Returns -1 if unknown/not
+     *         backed up by server
      */
-    public Date getEstimatedSyncDate() {
-        return current.estimatedSyncDate;
-    }
-
-    /**
-     * @return my ACTUAL size of this folder.
-     */
-    public long getLocalSize() {
-        Long size = current.sizes.get(getController().getMySelf());
-        return size != null ? size : 0;
+    public double getServerSyncPercentage() {
+        double sync = -1;
+        for (Member member : folder.getMembersAsCollection()) {
+            if (!getController().getOSClient().isCloudServer(member)) {
+                continue;
+            }
+            sync = Math.max(folder.getStatistic().getSyncPercentage(member),
+                sync);
+        }
+        return sync;
     }
 
     /**
@@ -485,6 +487,35 @@ public class FolderStatistic extends PFComponent {
         }
         // Otherwise, just return the local sync percentage.
         return getLocalSyncPercentage();
+    }
+
+    /**
+     * @return the estimated date the folder will be in sync. May be null.
+     */
+    public Date getEstimatedSyncDate() {
+        return current.estimatedSyncDate;
+    }
+
+    /**
+     * @return my ACTUAL size of this folder.
+     */
+    public long getLocalSize() {
+        Long size = current.sizes.get(getController().getMySelf());
+        return size != null ? size : 0;
+    }
+
+    /**
+     * @return the size of the server(s) backup.
+     */
+    public long getServerSize() {
+        long size = 0;
+        for (Member member : folder.getMembersAsCollection()) {
+            if (!getController().getOSClient().isCloudServer(member)) {
+                continue;
+            }
+            size = Math.max(folder.getStatistic().getSizeInSync(member), size);
+        }
+        return size;
     }
 
     /**
