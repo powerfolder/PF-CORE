@@ -56,4 +56,6 @@ public interface WikiLinks {
     String CONNECT_ON_DEMAND = "Connect_on_demand";
     String LIMITATIONS = "Limitations";
     String REFERRAL_REWARD_SYSTEM = "Referral_reward_system";
+    String FILE_ARCHIVE = "File_Archive";
+    String CLOUD_SPACE = "Cloud_Space";
 }
