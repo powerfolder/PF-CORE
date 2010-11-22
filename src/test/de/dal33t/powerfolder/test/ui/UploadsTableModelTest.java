@@ -60,8 +60,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         bartModel.addTableModelListener(bartModelListener);
 
         // Instant cleanup
-        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
-            Boolean.TRUE.toString());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
+            Integer.MAX_VALUE);
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(
             getContollerBart(), "0");
 
@@ -96,8 +96,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
      * true. Setting to FALSE stops completed uploads being removed.
      */
     public void testSingleFileUploadNoAutoCleanup() {
-        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
-            Boolean.FALSE.toString());
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
+            Integer.MAX_VALUE);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 

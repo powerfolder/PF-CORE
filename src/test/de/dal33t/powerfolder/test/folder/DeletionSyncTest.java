@@ -48,8 +48,8 @@ public class DeletionSyncTest extends TwoControllerTestCase {
     protected void setUp() throws Exception {
         System.out.println("DeletionSyncTest.setUp()");
         super.setUp();
-        ConfigurationEntry.UPLOADS_AUTO_CLEANUP.setValue(getContollerBart(),
-            "false");
+        ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.setValue(getContollerBart(),
+            Integer.MAX_VALUE);
         connectBartAndLisa();
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
