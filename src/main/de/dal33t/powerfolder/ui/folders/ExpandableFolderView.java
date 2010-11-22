@@ -372,7 +372,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             row += 2;
 
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc.xy(5, row));
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc
+                .xy(5, row));
 
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
@@ -389,7 +390,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             row += 2;
 
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc.xy(2, row));
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc
+                .xy(2, row));
 
         }
 
@@ -848,7 +850,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     .getName());
             String path = folder.getCommitOrLocalDir().getAbsolutePath();
             if (path.length() >= 25) {
-                path = path.substring(0, 10) + "..." + path.substring(path.length() - 10, path.length());
+                path = path.substring(0, 10) + "..."
+                    + path.substring(path.length() - 10, path.length());
             }
             localDirectory = Translation.getTranslation(
                 "exp_folder_view.local_directory", path);
@@ -926,15 +929,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (osComponentVisible) {
                 double sync = 0;
                 if (folder != null) {
-                    for (Member member : folder.getMembersAsCollection()) {
-                        if (!getController().getOSClient()
-                            .isCloudServer(member))
-                        {
-                            continue;
-                        }
-                        sync = Math.max(folder.getStatistic()
-                            .getSyncPercentage(member), sync);
-                    }
+                    sync = folder.getStatistic().getServerSyncPercentage();
                 }
                 boolean warned = serverClient.getAccountDetails().getAccount()
                     .getOSSubscription().isDisabledUsage();
