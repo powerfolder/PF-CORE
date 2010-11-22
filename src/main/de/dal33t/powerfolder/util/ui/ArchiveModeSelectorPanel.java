@@ -56,22 +56,10 @@ public class ArchiveModeSelectorPanel extends PFUIPanel {
             .getTranslation("archive_mode_selector_panel.none"), 0));
         PAIRS.add(new NameValuePair(1, Translation.getTranslation(
             "archive_mode_selector_panel.version", "1"), 1));
-        PAIRS.add(new NameValuePair(2, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "2"), 2));
-        PAIRS.add(new NameValuePair(3, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "3"), 3));
-        PAIRS.add(new NameValuePair(4, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "4"), 4));
         PAIRS.add(new NameValuePair(5, Translation.getTranslation(
             "archive_mode_selector_panel.versions", "5"), 5));
-        PAIRS.add(new NameValuePair(6, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "7"), 7));
-        PAIRS.add(new NameValuePair(7, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "10"), 10));
-        PAIRS.add(new NameValuePair(8, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "20"), 20));
         PAIRS.add(new NameValuePair(9, Translation.getTranslation(
-            "archive_mode_selector_panel.versions", "50"), 50));
+            "archive_mode_selector_panel.versions", "25"), 25));
         PAIRS.add(new NameValuePair(10, Translation.getTranslation(
             "archive_mode_selector_panel.versions", "100"), 100));
         PAIRS.add(new NameValuePair(11, Translation
