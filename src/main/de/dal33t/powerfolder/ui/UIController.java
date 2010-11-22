@@ -349,24 +349,8 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        // #1838 Ads in trial
-        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
-        {
-            gotoHPIfRequired();
-            // Show promo after 10 seconds
-            if (getController().getDistribution().showClientPromo()) {
-                getController().scheduleAndRepeat(new TimerTask() {
-                    @Override
-                    public void run() {
-                        UIUtil.invokeLaterInEDT(new Runnable() {
-                            public void run() {
-                                showPromoGFX(getMainFrame().getUIComponent());
-                            }
-                        });
-                    }
-                }, 10 * 1000L, 1000L * 60 * 60);
-            }
-        }
+        // Handle promo stuff
+        handlePromo();
 
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
@@ -446,18 +430,46 @@ public class UIController extends PFComponent {
         }
     }
 
-    private void gotoHPIfRequired() {
+    private void handlePromo() {
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
-        // Go to HP every 5 starts
-        if (thisVersionStartCount % 5 == 2) {
-            try {
-                BrowserLauncher.openURL(ProUtil.getBuyNowURL(getController()));
-            } catch (IOException e1) {
-                logWarning("Unable to goto homepage", e1);
+        logWarning("Start count: " + thisVersionStartCount);
+
+        // #1838 Ads in trial
+        if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
+        {
+            // Go to HP every 5 starts
+            if (thisVersionStartCount % 5 == 4) {
+                try {
+                    BrowserLauncher.openURL(ProUtil
+                        .getBuyNowURL(getController()));
+                } catch (IOException e1) {
+                    logWarning("Unable to goto homepage", e1);
+                }
             }
         }
+
+        // Show promo after 10 seconds
+        if (getController().getDistribution().showClientPromo()
+            && thisVersionStartCount >= 6)
+        {
+            getController().scheduleAndRepeat(new TimerTask() {
+                @Override
+                public void run() {
+                    UIUtil.invokeLaterInEDT(new Runnable() {
+                        public void run() {
+                            if (!ProUtil.isRunningProVersion()
+                                || ProUtil.isTrial(getController()))
+                            {
+                                showPromoGFX(getMainFrame().getUIComponent());
+                            }
+                        }
+                    });
+                }
+            }, 10 * 1000L, 1000L * 60 * 60);
+        }
+
         thisVersionStartCount++;
         getController().getPreferences().putInt(prefKey, thisVersionStartCount);
     }
