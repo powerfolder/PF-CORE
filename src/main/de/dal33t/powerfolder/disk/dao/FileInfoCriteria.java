@@ -72,13 +72,22 @@ public class FileInfoCriteria {
     }
 
     /**
+     * Adds myself
+     * 
+     * @param folder
+     */
+    public void addMySelf(Folder folder) {
+        addMember(folder.getController().getMySelf());
+    }
+
+    /**
      * Adds all fully connected {@link Member}s and myself to the selection
      * criteria.
      * 
      * @param folder
      */
     public void addConnectedAndMyself(Folder folder) {
-        addMember(folder.getController().getMySelf());
+        addMySelf(folder);
         for (Member member : folder.getMembersAsCollection()) {
             if (member.isCompletelyConnected()) {
                 addMember(member);
