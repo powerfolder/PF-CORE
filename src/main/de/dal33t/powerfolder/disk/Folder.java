@@ -1323,7 +1323,7 @@ public class Folder extends PFComponent {
                 FileInfoCriteria c = new FileInfoCriteria();
                 c.addMySelf(this);
                 c.setPath((DirectoryInfo) dirInfo);
-                logWarning("Deleting directory: " + dirInfo);
+                logInfo("Deleting directory: " + dirInfo);
                 removeFilesLocal(getDAO().findFiles(c));
                 removeFileLocal(dirInfo);
             }
