@@ -354,7 +354,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
 
         File archiveFile = getArchiveTarget(versionInfo);
         if (archiveFile.exists()) {
-            log.info("Restoring " + versionInfo.getRelativeName() + " to "
+            log.fine("Restoring " + versionInfo.getRelativeName() + " to "
                 + target.getAbsolutePath());
             FileUtils.copyFile(archiveFile, target);
             target.setLastModified(versionInfo.getModifiedDate().getTime());
