@@ -39,15 +39,18 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimerTask;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -57,6 +60,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
@@ -1301,11 +1305,27 @@ public class Folder extends PFComponent {
         }
 
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
+        Comparator<FileInfo> comparator = new ReverseComparator<FileInfo>(
+            FileInfoComparator
+                .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
+        Set<FileInfo> dirs = new TreeSet<FileInfo>(comparator);
         synchronized (scanLock) {
             for (FileInfo fileInfo : fInfos) {
+                if (fileInfo.isDiretory()) {
+                    dirs.add(fileInfo);
+                    continue;
+                }
                 if (removeFileLocal(fileInfo)) {
                     removedFiles.add(fileInfo);
                 }
+            }
+            for (FileInfo dirInfo : dirs) {
+                FileInfoCriteria c = new FileInfoCriteria();
+                c.addMySelf(this);
+                c.setPath((DirectoryInfo) dirInfo);
+                logWarning("Deleting directory: " + dirInfo);
+                removeFilesLocal(getDAO().findFiles(c));
+                removeFileLocal(dirInfo);
             }
         }
 
@@ -3551,7 +3571,7 @@ public class Folder extends PFComponent {
         addPattern(FileUtils.DESKTOP_INI_FILENAME);
         addPattern(Pattern.DS_STORE);
         addPattern(Pattern.ITHUMB);
-        
+
         // #2083
         if (UserDirectories.getMyDocuments() != null) {
             if (getLocalBase().equals(
