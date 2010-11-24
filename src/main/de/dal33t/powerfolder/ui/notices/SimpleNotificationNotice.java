@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.notices;
 
+import de.dal33t.powerfolder.Controller;
+
 /**
  * Very simple implementation of Notice that is used for notification only;
  * there is no payload and it is not to be added to the app model notices.
@@ -53,7 +55,7 @@ public class SimpleNotificationNotice extends NoticeBase {
      *
      * @return
      */
-    public Object getPayload() {
+    public Object getPayload(Controller controller) {
         return null;
     }
 

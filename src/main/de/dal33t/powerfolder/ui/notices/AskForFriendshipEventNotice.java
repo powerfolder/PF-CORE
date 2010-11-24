@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Notice of a request for freindship. Show in notification and add to app
@@ -40,7 +41,7 @@ public class AskForFriendshipEventNotice extends NoticeBase {
         this.event = event;
     }
 
-    public AskForFriendshipEvent getPayload() {
+    public AskForFriendshipEvent getPayload(Controller controller) {
         return event;
     }
 

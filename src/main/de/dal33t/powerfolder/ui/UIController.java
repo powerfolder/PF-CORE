@@ -110,11 +110,7 @@ import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
@@ -1366,7 +1362,7 @@ public class UIController extends PFComponent {
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(final LocalMassDeletionEvent event) {
-            WarningNotice notice = new WarningNotice(Translation
+            RunnableNotice notice = new RunnableNotice(Translation
                 .getTranslation("warning_notice.title"), Translation
                 .getTranslation("warning_notice.mass_deletion"), new Runnable()
             {
@@ -1402,7 +1398,7 @@ public class UIController extends PFComponent {
                         folderRepository.removeFolder(folder, false);
                     }
                 }
-            });
+            }, NoticeSeverity.WARINING);
             applicationModel.getNoticesModel().addNotice(notice);
         }
 
@@ -1424,9 +1420,9 @@ public class UIController extends PFComponent {
                         .getName());
             }
 
-            WarningNotice notice = new WarningNotice(getController(),
-                Translation.getTranslation("warning_notice.title"), Translation
-                    .getTranslation("warning_notice.mass_deletion"), message);
+            WarningNotice notice = new WarningNotice(Translation.getTranslation(
+                    "warning_notice.title"), Translation.getTranslation(
+                    "warning_notice.mass_deletion"), message);
             applicationModel.getNoticesModel().addNotice(notice);
         }
     }

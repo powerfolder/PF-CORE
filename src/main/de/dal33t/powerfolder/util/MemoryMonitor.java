@@ -31,6 +31,8 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
@@ -73,7 +75,7 @@ public class MemoryMonitor implements Runnable {
      * Add a warning event for the user.
      */
     private void addWarning() {
-        WarningNotice notice = new WarningNotice(Translation
+        RunnableNotice notice = new RunnableNotice(Translation
             .getTranslation("warning_notice.title"), Translation
             .getTranslation("warning_notice.low_memory"), new Runnable() {
             public void run() {
@@ -104,7 +106,7 @@ public class MemoryMonitor implements Runnable {
                         0, GenericDialogType.WARN);
                 }
             }
-        });
+        }, NoticeSeverity.WARINING);
         controller.getUIController().getApplicationModel().getNoticesModel()
             .addNotice(notice);
     }

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.notices;
 
+import de.dal33t.powerfolder.Controller;
+
 import java.util.Date;
 import java.util.UUID;
 import java.io.Serializable;
@@ -43,7 +45,7 @@ public interface Notice extends Serializable {
     String getSummary();
 
     /** For Actionables, this is the object to work on. */
-    Object getPayload();
+    Object getPayload(Controller controller);
 
     /** True if this should be shown in notification popup window. */
     boolean isNotification();

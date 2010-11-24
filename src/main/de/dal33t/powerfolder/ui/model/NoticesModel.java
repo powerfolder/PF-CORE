@@ -44,10 +44,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.event.AskForFriendshipEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.NoticeHandler;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -145,7 +142,7 @@ public class NoticesModel extends PFUIComponent {
             // invitations to folders that we have already joined.
             if (notice instanceof InvitationNotice) {
                 InvitationNotice in = (InvitationNotice) notice;
-                Invitation i = in.getPayload();
+                Invitation i = in.getPayload(getController());
                 FolderInfo fi = i.folder;
                 if (!getController().getFolderRepository().hasJoinedFolder(fi))
                 {
@@ -171,7 +168,10 @@ public class NoticesModel extends PFUIComponent {
             handleAskForFriendshipEventNotice(eventNotice);
         } else if (notice instanceof WarningNotice) {
             WarningNotice eventNotice = (WarningNotice) notice;
-            handleWarningEventNotice(eventNotice);
+            SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
+        } else if (notice instanceof RunnableNotice) {
+            RunnableNotice eventNotice = (RunnableNotice) notice;
+            SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
@@ -200,7 +200,7 @@ public class NoticesModel extends PFUIComponent {
     private void handleAskForFriendshipEventNotice(
         AskForFriendshipEventNotice eventNotice)
     {
-        AskForFriendshipEvent event = eventNotice.getPayload();
+        AskForFriendshipEvent event = eventNotice.getPayload(getController());
         Member node = getController().getNodeManager().getNode(
             event.getMemberInfo());
         if (node == null) {
@@ -286,15 +286,6 @@ public class NoticesModel extends PFUIComponent {
     }
 
     /**
-     * Handle a warning event notice by running its runnable.
-     * 
-     * @param eventNotice
-     */
-    private static void handleWarningEventNotice(WarningNotice eventNotice) {
-        SwingUtilities.invokeLater(eventNotice.getPayload());
-    }
-
-    /**
      * Handle a simple freindship request.
      * 
      * @param node
@@ -366,7 +357,7 @@ public class NoticesModel extends PFUIComponent {
      * @param invitationNotice
      */
     private void handleInvitationNotice(InvitationNotice invitationNotice) {
-        final Invitation invitation = invitationNotice.getPayload();
+        Invitation invitation = invitationNotice.getPayload(getController());
         PFWizard.openInvitationReceivedWizard(getController(), invitation);
     }
 

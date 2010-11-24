@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Notice of a received invitation. Show in notification and add to app model.
@@ -36,7 +37,7 @@ public class InvitationNotice extends NoticeBase {
         this.invitation = invitation;
     }
 
-    public Invitation getPayload() {
+    public Invitation getPayload(Controller controller) {
         return invitation;
     }
 
@@ -58,7 +59,7 @@ public class InvitationNotice extends NoticeBase {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
+        int prime = 31;
         int result = 0;
         result = prime * result
             + ((invitation == null) ? 0 : invitation.hashCode());

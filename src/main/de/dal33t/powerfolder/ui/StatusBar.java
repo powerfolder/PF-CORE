@@ -60,7 +60,8 @@ import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.TransferCounter;
@@ -306,10 +307,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         .showConnectivityWarning(controller);
                 }
             };
-            WarningNotice notice = new WarningNotice(Translation
+            RunnableNotice notice = new RunnableNotice(Translation
                 .getTranslation("warning_notice.title"), Translation
                 .getTranslation("warning_notice.limited_connectivity"),
-                runnable);
+                runnable, NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
         }
@@ -483,9 +484,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             };
 
-            WarningNotice notice = new WarningNotice(Translation
+            RunnableNotice notice = new RunnableNotice(Translation
                 .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.poor_quality"), runnable);
+                .getTranslation("warning_notice.poor_quality"), runnable,
+                    NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
         }

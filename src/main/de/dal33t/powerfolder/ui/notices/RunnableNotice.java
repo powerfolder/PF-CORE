@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: WarningEventNotice.java 12401 2010-05-20 00:52:17Z harry $
+ * $Id: RunnableNotice.java 12401 2010-05-20 00:52:17Z harry $
  */
 package de.dal33t.powerfolder.ui.notices;
 
@@ -26,23 +26,20 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 /**
  * Notice to wrap a WarningEvent. Show in notification and add to app model.
  */
-public class WarningNotice extends NoticeBase {
+public class RunnableNotice extends NoticeBase {
 
     private static final long serialVersionUID = 100L;
-    private String message;
+    private Runnable runnable;
+    private NoticeSeverity severity;
 
-    public WarningNotice(String title, String summary, String message) {
+    public RunnableNotice(String title, String summary, Runnable runnable, NoticeSeverity severity) {
         super(title, summary);
-        this.message = message;
+        this.runnable = runnable;
+        this.severity = severity;
     }
 
-    public Runnable getPayload(final Controller controller) {
-        return new Runnable() {
-            public void run() {
-                DialogFactory.genericDialog(controller, getTitle(), message,
-                    GenericDialogType.WARN);
-            }
-        };
+    public Runnable getPayload(Controller controller) {
+        return runnable;
     }
 
     public boolean isNotification() {
@@ -54,10 +51,15 @@ public class WarningNotice extends NoticeBase {
     }
 
     public NoticeSeverity getNoticeSeverity() {
-        return NoticeSeverity.WARINING;
+        return severity;
     }
 
+    /**
+     * Can't persist because of runnable.
+     *
+     * @return
+     */
     public boolean isPersistable() {
-        return true;
+        return false;
     }
 }
