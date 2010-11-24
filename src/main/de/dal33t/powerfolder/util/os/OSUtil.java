@@ -89,6 +89,42 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os.toLowerCase().startsWith("mac");
     }
+    
+    /**
+     * Tested on Mac OS X 10.6.5 Build 10H574.
+     * 
+     * @return if the operating system is mac os x 10.6 or newer.
+     */
+    public static boolean isMacOSSnowLeopardOrNewer() {
+        String osName = System.getProperty("os.name");
+        if (!osName.startsWith("Mac OS X")) { 
+            return false;
+        }
+
+        // split the "10.x.y" version number
+        String osVersion = System.getProperty("os.version");
+        String[] fragments = osVersion.split("\\.");
+
+        // sanity check the "10." part of the version
+        if (!fragments[0].equals("10")) {
+            return false;
+        }
+        if (fragments.length < 2) { 
+            return false;
+        }
+
+        // check if Mac OS X 10.6(.y)
+        try {
+            int minorVers = Integer.parseInt(fragments[1]);
+            if (minorVers >= 6) {
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            // was not an integer
+        }
+
+        return false;
+     }
 
     /**
      * @return if the operating system is a linux os
