@@ -186,7 +186,7 @@ public class MembersTable extends JTable {
                     setText(Translation.getTranslation("folder_member.server"));
                     setForeground(Color.GRAY);
                 } else if (folderMember.getAccountInfo() != null) {
-                    setText(folderMember.getAccountInfo().getScrabledUsername());
+                    setText(folderMember.getAccountInfo().getUsername());
                 } else {
                     setText(Translation
                         .getTranslation("folder_member.not_logged_in"));

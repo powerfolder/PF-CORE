@@ -380,13 +380,13 @@ public class MembersTableModel extends PFUIComponent implements TableModel,
             if (newPermission instanceof FolderOwnerPermission) {
                 // Show warning
                 AccountInfo oldOwner = findFolderOwner();
-                String oldOwnerStr = oldOwner != null ? oldOwner
-                    .getScrabledUsername() : Translation
-                    .getTranslation("folder_member.nobody");
+                String oldOwnerStr = oldOwner != null
+                    ? oldOwner.getUsername()
+                    : Translation.getTranslation("folder_member.nobody");
                 AccountInfo newOwner = folderMember.getAccountInfo();
-                String newOwnerStr = newOwner != null ? newOwner
-                    .getScrabledUsername() : Translation
-                    .getTranslation("folder_member.nobody");
+                String newOwnerStr = newOwner != null
+                    ? newOwner.getUsername()
+                    : Translation.getTranslation("folder_member.nobody");
                 int result = DialogFactory.genericDialog(getController(),
                     Translation
                         .getTranslation("folder_member.change_owner.title"),
