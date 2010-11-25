@@ -980,7 +980,7 @@ public class NodeManager extends PFComponent {
         throws ConnectionException
     {
         if (!started) {
-            logWarning("Not accepting node from " + handler
+            logFine("Not accepting node from " + handler
                 + ". NodeManager is not started");
             handler.shutdown();
             throw new ConnectionException("Not accepting node from " + handler
