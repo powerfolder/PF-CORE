@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -98,7 +101,8 @@ public class SyncProfile implements Serializable {
      */
     public static final SyncProfile BACKUP_SOURCE = new SyncProfile(
         "backup_source", false, new SyncProfileConfiguration(false, false,
-            false, false, 1, false, 12, 1, SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
+            false, false, 1, false, 12, 1,
+            SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
      * Backup target preset profile.
@@ -140,8 +144,8 @@ public class SyncProfile implements Serializable {
      * changes
      */
     public static final SyncProfile BACKUP_TARGET_NO_CHANGE_DETECT = new SyncProfile(
-        "backup_target_no_change", false, new SyncProfileConfiguration(true, true, true,
-            true, 0));
+        "backup_target_no_change", false, new SyncProfileConfiguration(true,
+            true, true, true, 0));
 
     /**
      * Especially for meta-folders
@@ -474,6 +478,27 @@ public class SyncProfile implements Serializable {
             autoDownloadFromFriends, autoDownloadFromOthers,
             syncDeletionWithFriends, syncDeletionWithOthers, timeBetweenScans,
             dailySync, dailyHour, dailyDay, timeType, instantSync));
+    }
+
+    /**
+     * #2132
+     * 
+     * @param controller
+     * @return the default sync profile according to the configuration.
+     */
+    public static SyncProfile getDefault(Controller controller) {
+        String defFieldList = ConfigurationEntry.DEFAULT_TRANSFER_MODE
+            .getValue(controller);
+        try {
+            return SyncProfile.getSyncProfileByFieldList(defFieldList);
+        } catch (Exception e) {
+            Logger.getLogger(SyncProfile.class.getName()).severe(
+                "Unable to get default transfer mode for " + defFieldList
+                    + ". Please check your config: " + e);
+            return SyncProfile
+                .getSyncProfileByFieldList(ConfigurationEntry.DEFAULT_TRANSFER_MODE
+                    .getDefaultValue());
+        }
     }
 
     /**
