@@ -299,7 +299,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 }
             }
         }
-        logWarning("Found: " + items);
         return items;
     }
 
