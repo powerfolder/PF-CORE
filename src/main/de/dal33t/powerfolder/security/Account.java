@@ -156,7 +156,7 @@ public class Account implements Serializable {
     @ManyToOne
     @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
-    
+
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
@@ -575,7 +575,8 @@ public class Account implements Serializable {
             }
             if (f.getSyncProfile().equals(SyncProfile.DISABLED)) {
                 n++;
-                f.setSyncProfile(SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                SyncProfile p = SyncProfile.getDefault(controller);
+                f.setSyncProfile(p);
             }
         }
         return n;
