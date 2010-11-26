@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -231,6 +232,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
+        Reject.ifTrue(criteria.getDomains().isEmpty(),
+            "No domains/members selected in criteria");
         String path = criteria.getPath();
         if (path == null) {
             path = "";
@@ -296,6 +299,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 }
             }
         }
+        logWarning("Found: " + items);
         return items;
     }
 

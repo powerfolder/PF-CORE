@@ -95,6 +95,12 @@ public class FileInfoComparator extends Loggable implements
                 }
                 return x;
             case BY_NAME :
+                if (o1.isDiretory() && !o2.isDiretory()) {
+                    return Integer.MIN_VALUE;
+                }
+                if (o2.isDiretory() && !o1.isDiretory()) {
+                    return Integer.MAX_VALUE;
+                }
                 return sortByFileName(o1, o2, false);
             case BY_RELATIVE_NAME :
                 return sortByFileName(o1, o2, true);
@@ -159,7 +165,9 @@ public class FileInfoComparator extends Loggable implements
                     return BEFORE;
                 } else if (o2.getFolderInfo() == null) {
                     return AFTER;
-                } else if (o1 instanceof DirectoryInfo || o2 instanceof DirectoryInfo) {
+                } else if (o1 instanceof DirectoryInfo
+                    || o2 instanceof DirectoryInfo)
+                {
                     return sortByFileName(o1, o2, false);
                 } else {
                     x = o1.getVersion() - o2.getVersion();
