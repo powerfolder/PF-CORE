@@ -43,6 +43,9 @@ public interface FolderService {
      * 
      * @param foInfo
      * @param profile
+     *            the transfer mode to use on the server or null if default mode
+     *            of server should be used.
+     * @see SyncProfile#getDefault(de.dal33t.powerfolder.Controller)
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
 
