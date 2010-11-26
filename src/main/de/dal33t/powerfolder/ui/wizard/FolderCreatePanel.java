@@ -19,7 +19,18 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SAVE_INVITE_LOCALLY;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -225,7 +236,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     // Don't try to join online folders by name if this is an
                     // invite. Invites always join the invite folder.
                     Boolean folderIsInvite = (Boolean) getWizardContext()
-                            .getAttribute(FOLDER_IS_INVITE);
+                        .getAttribute(FOLDER_IS_INVITE);
                     if (folderIsInvite == null || !folderIsInvite) {
 
                         // Look for folders where there is already an online
@@ -236,12 +247,16 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                                 folderInfo.getName()))
                             {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
-                                    log.info("Found online folder with same name: "
-                                        + folderInfo.getName() + ". Using it");
+                                    log
+                                        .info("Found online folder with same name: "
+                                            + folderInfo.getName()
+                                            + ". Using it");
 
-                                    // User actually wants to join, so use online.
+                                    // User actually wants to join, so use
+                                    // online.
                                     folderInfo = onlineFolderInfo;
-                                    log.info("Changed folder info to online version: "
+                                    log
+                                        .info("Changed folder info to online version: "
                                             + folderInfo.getName());
                                     break;
                                 }
@@ -307,8 +322,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         continue;
                     }
 
-                    client.getFolderService().createFolder(folderInfo,
-                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                    client.getFolderService().createFolder(folderInfo, null);
 
                     // Set as default synced folder?
                     attribute = getWizardContext().getAttribute(
