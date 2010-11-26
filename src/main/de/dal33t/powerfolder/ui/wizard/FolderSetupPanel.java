@@ -147,8 +147,9 @@ public class FolderSetupPanel extends PFWizardPanel {
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
                 getController(), (SyncProfile) object);
         } else {
+            // Use default
             syncProfileSelectorPanel = new SyncProfileSelectorPanel(
-                getController(), SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                getController());
         }
     }
 
