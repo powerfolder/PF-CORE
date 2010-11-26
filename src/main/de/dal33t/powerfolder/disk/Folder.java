@@ -398,9 +398,6 @@ public class Folder extends PFComponent {
         if (currentInfo.isMetaFolder()) {
             File desktopIni = new File(getLocalBase(),
                 FileUtils.DESKTOP_INI_FILENAME);
-            if (currentInfo.getName().contains("Musik")) {
-                System.out.println("Folder.Folder()");
-            }
             if (desktopIni.exists() && desktopIni.delete()) {
                 scanChangedFile(FileInfoFactory
                     .lookupInstance(this, desktopIni));
@@ -2689,7 +2686,6 @@ public class Folder extends PFComponent {
             + ". The sync profile will now be switched from "
             + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
             + " to protect the files.");
-        System.out.println("hghg switching to safe mode ==========================================");
         SyncProfile original = syncProfile;
 
         // Emergency profile switch to something safe.
