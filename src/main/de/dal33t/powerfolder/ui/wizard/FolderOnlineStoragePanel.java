@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.Reject;
@@ -120,8 +119,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             task = new Runnable() {
                 public void run() {
                     getController().getOSClient().getFolderService()
-                        .createFolder(foInfo,
-                            SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
+                        .createFolder(foInfo, null);
                 }
             };
 
