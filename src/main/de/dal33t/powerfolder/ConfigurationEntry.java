@@ -31,6 +31,7 @@ import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.ProUtil;
@@ -615,8 +616,7 @@ public enum ConfigurationEntry {
      * The age of a deleted file until it gets removed by the folder db
      * maintenance. In Seconds! Default: 1 month
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage",
-        60 * 60 * 24 * 30),
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30),
 
     /**
      * The http proxy to use for HTTP tunneled connections
@@ -639,14 +639,14 @@ public enum ConfigurationEntry {
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
     /**
-     * Days until auto cleanup of uploads. Zero = cleanup on completion.
-     * NOTE - true cleanup days dereferenced through Constants.CLEANUP_VALUES
+     * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
+     * true cleanup days dereferenced through Constants.CLEANUP_VALUES
      */
     UPLOAD_AUTO_CLEANUP_FREQUENCY("uploads.auto.cleanup.frequency", 2),
 
     /**
-     * Days until auto cleanup of downloads. Zero = cleanup on completion.
-     * NOTE - true cleanup days dereferenced through Constants.CLEANUP_VALUES
+     * Days until auto cleanup of downloads. Zero = cleanup on completion. NOTE
+     * - true cleanup days dereferenced through Constants.CLEANUP_VALUES
      */
     DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 2),
 
@@ -671,7 +671,13 @@ public enum ConfigurationEntry {
     DEFAULT_ARCHIVE_VERIONS("default.archive.versions", 5),
 
     /** The archive mode to use when creating a new folder. */
-    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name());
+    DEFAULT_ARCHIVE_MODE("default.archive.mode", ArchiveMode.FULL_BACKUP.name()),
+
+    /**
+     * #2132: This transfer mode will be recommend by default.
+     */
+    DEFAULT_TRANSFER_MODE("default.transfer.mode",
+        SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList());
 
     // Methods/Constructors ***************************************************
 
