@@ -45,7 +45,6 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
     {
         super(issuer, DEFAULT_DAYS_TO_EXIPRE);
         Reject.ifNull(foInfo, "FolderInfo");
-        Reject.ifNull(syncProfile, "SyncProfile");
         this.foInfo = foInfo;
         this.syncProfile = syncProfile;
     }
@@ -55,12 +54,12 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
      * 
      * @param foInfo
      * @param syncProfile
+     *            the syncprofile to use or null to take servers default.
      */
     public CreateFolderOnServerTask(FolderInfo foInfo, SyncProfile syncProfile)
     {
         super(DEFAULT_DAYS_TO_EXIPRE);
         Reject.ifNull(foInfo, "FolderInfo");
-        Reject.ifNull(syncProfile, "SyncProfile");
         this.foInfo = foInfo;
         this.syncProfile = syncProfile;
     }
