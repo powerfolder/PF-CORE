@@ -1361,44 +1361,10 @@ public class UIController extends PFComponent {
      * warnings into the app model.
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
-        public void localMassDeletion(final LocalMassDeletionEvent event) {
-            RunnableNotice notice = new RunnableNotice(Translation
+        public void localMassDeletion(LocalMassDeletionEvent event) {
+            LocalDeleteNotice notice = new LocalDeleteNotice(Translation
                 .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.mass_deletion"), new Runnable()
-            {
-                public void run() {
-                    int response = DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .getTranslation("uicontroller.local_mass_delete.title"),
-                            Translation.getTranslation(
-                                "uicontroller.local_mass_delete.message", event
-                                    .getFolderInfo().name),
-                            new String[]{
-                                Translation
-                                    .getTranslation("uicontroller.local_mass_delete.broadcast_deletions"),
-                                Translation
-                                    .getTranslation("uicontroller.local_mass_delete.remove_folder_locally"),
-                                Translation.getTranslation("general.close")},
-                            0, GenericDialogType.WARN);
-                    if (response == 0) {
-                        // Broadcast deletions
-                        FolderRepository folderRepository = getController()
-                            .getFolderRepository();
-                        Folder folder = folderRepository.getFolder(event
-                            .getFolderInfo());
-                        folder.scanLocalFiles(true);
-                    } else if (response == 1) {
-                        // Remove folder locally
-                        FolderRepository folderRepository = getController()
-                            .getFolderRepository();
-                        Folder folder = folderRepository.getFolder(event
-                            .getFolderInfo());
-                        folderRepository.removeFolder(folder, false);
-                    }
-                }
-            }, NoticeSeverity.WARINING);
+                .getTranslation("warning_notice.mass_deletion"), event.getFolderInfo());
             applicationModel.getNoticesModel().addNotice(notice);
         }
 

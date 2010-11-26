@@ -2689,7 +2689,7 @@ public class Folder extends PFComponent {
             + ". The sync profile will now be switched from "
             + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
             + " to protect the files.");
-
+        System.out.println("hghg switching to safe mode ==========================================");
         SyncProfile original = syncProfile;
 
         // Emergency profile switch to something safe.
@@ -2712,7 +2712,7 @@ public class Folder extends PFComponent {
      * <p>
      * 2. Our file has version 0 (=Scanned by initial scan)
      * <p>
-     * 3. The remote file version is >0 and is not deleted
+     * 3. The remote file version is > 0 and is not deleted
      * <p>
      * This if files moved from node to node without PowerFolder. e.g. just copy
      * over windows share. Helps to identifiy same files and prevents unessesary

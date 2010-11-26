@@ -172,6 +172,9 @@ public class NoticesModel extends PFUIComponent {
         } else if (notice instanceof RunnableNotice) {
             RunnableNotice eventNotice = (RunnableNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
+        } else if (notice instanceof LocalDeleteNotice) {
+            LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
+            SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
