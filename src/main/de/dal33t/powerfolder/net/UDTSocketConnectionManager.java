@@ -358,7 +358,7 @@ public class UDTSocketConnectionManager extends PFComponent {
             case NACK :
                 ReplyMonitor repMon = replies.get(msg.getSource());
                 if (repMon == null) {
-                    logSevere("Received a reply for " + msg.getSource()
+                    logWarning("Received a reply for " + msg.getSource()
                         + ", although no connection was requested!");
                     break;
                 }
