@@ -1015,6 +1015,26 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Scans all parent directories of a file. Useful after restoring single
+     * files in deleted subdirs.
+     * 
+     * @param fileInfo
+     */
+    public void scanAllParentDirectories(FileInfo fileInfo) {
+        DirectoryInfo dirInfo = fileInfo.getDirectory();
+        DirectoryInfo baseDir = getBaseDirectoryInfo();
+        int i = 0;
+        while (!dirInfo.equals(baseDir)) {
+            logWarning("Scanning parent dir: " + dirInfo);
+            scanChangedFile(dirInfo);
+            dirInfo = dirInfo.getDirectory();
+            if (i++ > 10000) {
+                break;
+            }
+        }
+    }
+
+    /**
      * Scans multiple new, deleted or restored File callback for
      * {@link #getFolderWatcher()} only.
      * 

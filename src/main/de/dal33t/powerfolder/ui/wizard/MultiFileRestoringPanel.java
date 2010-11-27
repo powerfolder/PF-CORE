@@ -165,6 +165,7 @@ public class MultiFileRestoringPanel extends PFWizardPanel {
                     log.info("Restored " + fileInfoToRestore.getFilenameOnly()
                         + " from local archive");
                     folder.scanChangedFile(fileInfoToRestore);
+                    folder.scanAllParentDirectories(fileInfoToRestore);
                     restored = true;
                 } else if (folder.hasMember(getController().getOSClient()
                     .getServer()))

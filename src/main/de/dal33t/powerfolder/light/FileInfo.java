@@ -428,6 +428,19 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     }
 
     /**
+     * @return a lookup instance of the subdirectory this {@link FileInfo} is
+     *         located in.
+     */
+    public DirectoryInfo getDirectory() {
+        int i = fileName.indexOf('/');
+        if (i < 0) {
+            return FileInfoFactory.createBaseDirectoryInfo(folderInfo);
+        }
+        String dirName = fileName.substring(0, i);
+        return FileInfoFactory.lookupDirectory(folderInfo, dirName);
+    }
+
+    /**
      * @param ofInfo
      *            the other fileinfo.
      * @return if this file is newer than the other one. By file version, or

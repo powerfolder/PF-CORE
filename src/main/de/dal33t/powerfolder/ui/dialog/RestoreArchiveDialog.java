@@ -230,6 +230,7 @@ public class RestoreArchiveDialog extends BaseDialog {
             if (fileArchiver.restore(versionInfo, restoreTo)) {
                 logInfo("Restored from local archive");
                 folder.scanChangedFile(versionInfo);
+                folder.scanAllParentDirectories(versionInfo);
                 restored = true;
             } else {
                 // Not local. OnlineStorage perhaps?
