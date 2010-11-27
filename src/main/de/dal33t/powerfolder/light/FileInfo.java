@@ -432,7 +432,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      *         located in.
      */
     public DirectoryInfo getDirectory() {
-        int i = fileName.indexOf('/');
+        int i = fileName.lastIndexOf('/');
         if (i < 0) {
             return FileInfoFactory.createBaseDirectoryInfo(folderInfo);
         }
