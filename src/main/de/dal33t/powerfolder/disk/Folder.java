@@ -1021,11 +1021,18 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     public void scanAllParentDirectories(FileInfo fileInfo) {
-        DirectoryInfo dirInfo = fileInfo.getDirectory();
+        FileInfo dirInfo = fileInfo.getDirectory();
+        dirInfo = getFile(dirInfo);
+        if (dirInfo == null || !dirInfo.isDeleted()) {
+            // No need.
+            return;
+        }
         DirectoryInfo baseDir = getBaseDirectoryInfo();
         int i = 0;
         while (!dirInfo.equals(baseDir)) {
-            logWarning("Scanning parent dir: " + dirInfo);
+            if (isFiner()) {
+                logFiner("Scanning parent dir: " + dirInfo);
+            }
             scanChangedFile(dirInfo);
             dirInfo = dirInfo.getDirectory();
             if (i++ > 10000) {
