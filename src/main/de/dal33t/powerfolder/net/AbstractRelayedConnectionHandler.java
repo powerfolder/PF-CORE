@@ -877,7 +877,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // logWarning("Send complete: " +
                     // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
-                    logWarning("Unable to send message asynchronly. " + e);
+                    logFine("Unable to send message asynchronly. " + e);
                     logFiner("ConnectionException", e);
                     senderSpawnLock.lock();
                     sender = null;

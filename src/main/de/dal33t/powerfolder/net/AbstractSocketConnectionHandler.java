@@ -464,9 +464,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 if (isFiner()) {
                     logFiner("-- (sending) -> " + message);
                 }
-                //if (isServer()) {
-                //    logWarning("-- (sending) -> " + message);
-                //}
+                // if (isServer()) {
+                // logWarning("-- (sending) -> " + message);
+                // }
                 if (!isConnected() || !started) {
                     throw new ConnectionException(
                         "Connection to remote peer closed").with(this);
@@ -852,7 +852,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 try {
                     sendMessage(msg);
                 } catch (ConnectionException e) {
-                    logWarning("Unable to send message asynchronly. " + e);
+                    logFine("Unable to send message asynchronly. " + e);
                     logFiner("ConnectionException", e);
                     senderSpawnLock.lock();
                     sender = null;
