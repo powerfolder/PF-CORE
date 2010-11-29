@@ -44,6 +44,11 @@ public class FolderOwnerPermission extends FolderPermission {
         return Translation.getTranslation("permissions.folder.owner");
     }
 
+    @Override
+    public AccessMode getMode() {
+        return AccessMode.OWNER;
+    }
+
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission rp = (FolderReadPermission) impliedPermision;

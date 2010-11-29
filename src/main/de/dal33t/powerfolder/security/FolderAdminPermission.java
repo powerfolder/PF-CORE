@@ -54,6 +54,11 @@ public class FolderAdminPermission extends FolderPermission {
         return Translation.getTranslation("permissions.folder.admin");
     }
 
+    @Override
+    public AccessMode getMode() {
+        return AccessMode.ADMIN;
+    }
+
     public boolean migrate() {
         if (super.folder == null) {
             super.folder = folder;

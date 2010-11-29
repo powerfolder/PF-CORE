@@ -42,6 +42,8 @@ public abstract class FolderPermission implements Permission {
 
     public abstract String getName();
 
+    public abstract AccessMode getMode();
+
     public final FolderInfo getFolder() {
         return folder;
     }
@@ -89,7 +91,7 @@ public abstract class FolderPermission implements Permission {
             return null;
         }
     }
-    
+
     public static FolderReadPermission read(FolderInfo foInfo) {
         return new FolderReadPermission(foInfo);
     }

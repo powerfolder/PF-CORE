@@ -44,6 +44,11 @@ public class FolderReadWritePermission extends FolderPermission {
         return Translation.getTranslation("permissions.folder.read_write");
     }
 
+    @Override
+    public AccessMode getMode() {
+        return AccessMode.READ_WRITE;
+    }
+
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission rp = (FolderReadPermission) impliedPermision;
