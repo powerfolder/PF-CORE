@@ -96,6 +96,13 @@ public class FileInfoCriteria {
     }
 
     /**
+     * Clears all selected domains.
+     */
+    public void clearDomains() {
+        domains.clear();
+    }
+
+    /**
      * @param keyWord
      *            the keywords to add as filter.
      */
