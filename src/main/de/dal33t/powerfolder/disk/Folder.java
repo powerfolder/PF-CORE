@@ -372,7 +372,14 @@ public class Folder extends PFComponent {
                 .getValueInt(getController()));
 
         if (folderSettings.getArchiveMode() != null) {
-            archiver = folderSettings.getArchiveMode().getInstance(this);
+            try {
+                archiver = folderSettings.getArchiveMode().getInstance(this);
+            } catch (Exception e) {
+                logWarning("Unable to setup file archive - disabled now. Please check the folder base dir: "
+                    + localBase + ". " + e.getMessage());
+                archiver = ArchiveMode.NO_BACKUP.getInstance(this);
+            }
+
         } else {
             archiver = ArchiveMode.NO_BACKUP.getInstance(this);
         }
