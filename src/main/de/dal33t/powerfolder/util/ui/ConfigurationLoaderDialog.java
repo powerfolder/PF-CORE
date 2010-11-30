@@ -31,7 +31,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
@@ -52,6 +54,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.ui.Icons;
@@ -60,7 +63,9 @@ import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 public class ConfigurationLoaderDialog extends PFUIComponent {
 
@@ -202,7 +207,6 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             public void actionPerformed(ActionEvent e) {
                 showProgressBar();
                 new LoadingWorking().start();
-
             }
         });
 
@@ -279,9 +283,43 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     private class LoadingWorking extends SwingWorker {
         @Override
         public Object construct() throws IOException {
-            Properties preConfig = ConfigurationLoader
-                .loadPreConfiguration((String) addressBox.getSelectedItem());
-            if (!preConfig.isEmpty() && containsServerHost(preConfig)) {
+            Properties preConfig = null;
+            String input = (String) addressBox.getSelectedItem();
+            try {
+                preConfig = ConfigurationLoader.loadPreConfiguration(input);
+            } catch (IOException e) {
+                if (StringUtils.isNotBlank(input)) {
+                    // Try to connect via TCP directly
+                    Socket socket = new Socket();
+                    try {
+                        InetSocketAddress addr = Util
+                            .parseConnectionString(input);
+                        socket = new Socket();
+                        socket.connect(addr, Constants.SOCKET_CONNECT_TIMEOUT);
+                        if (socket.isConnected()) {
+                            logInfo("Got direct TCP connect to server " + input);
+                            ConfigurationEntry.SERVER_HOST.setValue(
+                                getController(), input);
+                            ConfigurationEntry.SERVER_NODEID
+                                .removeValue(getController());
+                            preConfig = new Properties();
+                            preConfig.put(ConfigurationEntry.SERVER_HOST
+                                .getConfigKey(), input);
+                        }
+                    } catch (Exception e2) {
+                        logInfo("Not direct TCP connect possible to " + input);
+                    } finally {
+                        try {
+                            socket.close();
+                        } catch (Exception e3) {
+                        }
+                    }
+                }
+            }
+
+            if (preConfig != null && !preConfig.isEmpty()
+                && containsServerHost(preConfig))
+            {
                 ConfigurationLoader.merge(preConfig, getController()
                     .getConfig(), getController().getPreferences(), true);
                 // Seems to be valid, store.
