@@ -96,6 +96,13 @@ public class LoggingManager {
             if (loggerName == null) {
                 return false;
             }
+            // Special HACK for EhCache
+            if (loggerName.contains("EhCacheProvider")
+                && record.getMessage() != null
+                && record.getMessage().contains("Could not find configuration"))
+            {
+                return false;
+            }
             if ((loggerName.startsWith("org.hibernate") || loggerName
                 .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
