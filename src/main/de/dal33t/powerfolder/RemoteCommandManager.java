@@ -21,6 +21,7 @@ package de.dal33t.powerfolder;
 
 import java.awt.Frame;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,8 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -53,6 +56,7 @@ import de.dal33t.powerfolder.ui.wizard.FolderSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -268,15 +272,35 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     if (line.startsWith(REMOTECOMMAND_PREFIX)) {
                         processCommand(line.substring(REMOTECOMMAND_PREFIX
                             .length() + 1));
+                    } else if (line.startsWith("GET")
+                        || line.startsWith("POST"))
+                    {
+                        processWebRequest(line, socket.getOutputStream());
+                    } else {
+                        logWarning("Unknown remote command: " + line);
                     }
                 }
-                socket.close();
+                // socket.close();
             } catch (Exception e) {
                 logWarning("Problems parsing remote command from " + socket
                     + ". " + e);
                 logFiner(e);
             }
         }
+    }
+
+    private void processWebRequest(String line, OutputStream out)
+        throws IOException
+    {
+        out = new BufferedOutputStream(out);
+        Writer w = new OutputStreamWriter(out, Convert.UTF8);
+        w.write("HTTP/1.1 200 OK\n");
+        // w.write("Transfer-Encoding: chunked\n");
+        w.write("Content-Type: text/html; charset=utf-8\n");
+        w.write("\n");
+        // w.write("500\n");
+        w.write("NODEID:" + getController().getMySelf().getId() + "\n");
+        w.close();
     }
 
     /**
@@ -520,8 +544,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             getController().getFolderRepository()
                 .createFolder(foInfo, settings);
             if (backupByServer) {
-                new CreateFolderOnServerTask(foInfo,
-                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT)
+                new CreateFolderOnServerTask(foInfo, null)
                     .scheduleTask(getController());
             }
         }
