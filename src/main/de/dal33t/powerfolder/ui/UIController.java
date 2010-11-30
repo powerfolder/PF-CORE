@@ -430,7 +430,6 @@ public class UIController extends PFComponent {
         String prefKey = "startCount" + Controller.PROGRAM_VERSION;
         int thisVersionStartCount = getController().getPreferences().getInt(
             prefKey, 0);
-        logWarning("Start count: " + thisVersionStartCount);
 
         // #1838 Ads in trial
         if (!ProUtil.isRunningProVersion() || ProUtil.isTrial(getController()))
@@ -1364,7 +1363,8 @@ public class UIController extends PFComponent {
         public void localMassDeletion(LocalMassDeletionEvent event) {
             LocalDeleteNotice notice = new LocalDeleteNotice(Translation
                 .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.mass_deletion"), event.getFolderInfo());
+                .getTranslation("warning_notice.mass_deletion"), event
+                .getFolderInfo());
             applicationModel.getNoticesModel().addNotice(notice);
         }
 
@@ -1386,9 +1386,9 @@ public class UIController extends PFComponent {
                         .getName());
             }
 
-            WarningNotice notice = new WarningNotice(Translation.getTranslation(
-                    "warning_notice.title"), Translation.getTranslation(
-                    "warning_notice.mass_deletion"), message);
+            WarningNotice notice = new WarningNotice(Translation
+                .getTranslation("warning_notice.title"), Translation
+                .getTranslation("warning_notice.mass_deletion"), message);
             applicationModel.getNoticesModel().addNotice(notice);
         }
     }
