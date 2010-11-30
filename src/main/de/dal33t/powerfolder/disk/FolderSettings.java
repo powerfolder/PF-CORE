@@ -20,9 +20,12 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.util.Properties;
 
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor
@@ -37,14 +40,11 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_SYNC_PROFILE = ".syncprofile";
     public static final String FOLDER_SETTINGS_DIR = ".dir";
     public static final String FOLDER_SETTINGS_COMMIT_DIR = ".commit-dir";
-    public static final String FOLDER_SETTINGS_LAST_LOCAL = ".last-localbase";
     public static final String FOLDER_SETTINGS_DOWNLOAD_SCRIPT = ".dlscript";
-    public static final String FOLDER_SETTINGS_NAME = ".name"; // V4 only
-    public static final String FOLDER_SETTINGS_ARCHIVE = ".archive"; // V4 only
-    public static final String FOLDER_SETTINGS_VERSIONS = ".versions"; // V4
-    // only
-    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns"; // V4
-    // only
+    public static final String FOLDER_SETTINGS_NAME = ".name";
+    public static final String FOLDER_SETTINGS_ARCHIVE = ".archive";
+    public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
+    public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
 
     /**
      * Base location of files in the folder.
@@ -199,4 +199,35 @@ public class FolderSettings {
     public boolean isSyncPatterns() {
         return syncPatterns;
     }
+
+    public void set(FolderInfo folderInfo, Properties config) {
+        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
+            .getBytes())));
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_NAME, folderInfo.name);
+        config
+            .setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5 + FOLDER_SETTINGS_ID,
+                folderInfo.id);
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_DIR, getLocalBaseDir().getAbsolutePath());
+        String commitDir = getCommitDir() != null ? getCommitDir()
+            .getAbsolutePath() : "";
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_COMMIT_DIR, commitDir);
+        // Save sync profiles as internal configuration for custom profiles.
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_SYNC_PROFILE, getSyncProfile().getFieldList());
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_ARCHIVE, getArchiveMode().name());
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_VERSIONS, String.valueOf(getVersions()));
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_PREVIEW, String.valueOf(isPreviewOnly()));
+        String dlScript = getDownloadScript() != null
+            ? getDownloadScript()
+            : "";
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
+            + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
+    }
+
 }

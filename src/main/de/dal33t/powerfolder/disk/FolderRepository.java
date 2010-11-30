@@ -676,7 +676,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start filerequestor
         fileRequestor.start();
 
-        // Defer 30 seconds, so it is not 'in-your-face' at start up.
+        // Defer 2 minutes, so it is not 'in-your-face' at start up.
         // Also run this each day, for long-running installations.
         getController().scheduleAndRepeat(new OldSyncWarningCheckTask(),
             1000 * 60 * 2, 24L * 60 * 60 * 1000);
@@ -1004,40 +1004,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         // #1448 - remove any old V3 config entries before saving V4 ones.
         removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderInfo.name);
 
-        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
-            .getBytes())));
         // store folder in config
         Properties config = getController().getConfig();
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_NAME, folderInfo.name);
-        config
-            .setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5 + FOLDER_SETTINGS_ID,
-                folderInfo.id);
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
-            .getAbsolutePath());
-        String commitDir = folderSettings.getCommitDir() != null
-            ? folderSettings.getCommitDir().getAbsolutePath()
-            : "";
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_COMMIT_DIR, commitDir);
-        // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-            .getFieldList());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_VERSIONS, String.valueOf(folderSettings
-            .getVersions()));
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
-            .isPreviewOnly()));
-        String dlScript = folderSettings.getDownloadScript() != null
-            ? folderSettings.getDownloadScript()
-            : "";
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
+
+        folderSettings.set(folderInfo, config);
 
         if (saveConfig) {
             getController().saveConfig();
@@ -1415,8 +1385,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private final class OldSyncWarningCheckTask extends TimerTask {
-        @Override
+    private final class OldSyncWarningCheckTask implements Runnable {
         public void run() {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
