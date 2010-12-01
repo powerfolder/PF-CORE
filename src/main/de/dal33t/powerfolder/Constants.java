@@ -98,12 +98,6 @@ public class Constants {
     // Network architecture contants ******************************************
 
     /**
-     * The lenght in seconds of a request of filelist on a unjoined folder
-     * (FolderDetails)
-     */
-    public static final int FOLDER_FILELIST_REQUEST_LENGTH = 60;
-
-    /**
      * The maximum number of files on a FileList. If list ist greater, it is
      * splitted into smaller ones
      */
@@ -149,12 +143,6 @@ public class Constants {
     public static final int NODES_LIST_MAX_NODES_PER_MESSAGE = 500;
 
     /**
-     * The Number of seconds of inactivity on a folder that causes removal of
-     * folder from internal db. Currently: 14 days
-     */
-    public static final long MAX_TIME_OF_FOLDER_INACTIVITY_UNTIL_REMOVED = 30 * 24 * 60 * 60;
-
-    /**
      * The maximum numbers of nodes to connection per kilobytes/s upload in
      * supernode mode
      */
@@ -189,6 +177,11 @@ public class Constants {
      * a warning may be displayed.
      */
     public static final long LIMITED_CONNECTIVITY_CHECK_DELAY = 180;
+
+    /**
+     * The delay before checking for unsynchronized folders
+     */
+    public static final long FOLDER_UNSYNCED_CHECK_DELAY = 180;
 
     /**
      * the number of seconds (aprox) between request for hosting servers for our

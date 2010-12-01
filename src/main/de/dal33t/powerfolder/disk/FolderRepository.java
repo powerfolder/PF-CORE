@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -676,10 +675,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start filerequestor
         fileRequestor.start();
 
-        // Defer 2 minutes, so it is not 'in-your-face' at start up.
+        // Defer 3 minutes, so it is not 'in-your-face' at start up.
         // Also run this each day, for long-running installations.
         getController().scheduleAndRepeat(new OldSyncWarningCheckTask(),
-            1000 * 60 * 2, 24L * 60 * 60 * 1000);
+            1000L * Constants.FOLDER_UNSYNCED_CHECK_DELAY,
+            Constants.MILLIS_PER_DAY);
 
         started = true;
     }
