@@ -192,7 +192,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 // received new packet
                 socket.receive(inPacket);
 
-                if (isPowerFolderBroadcast(inPacket)) {
+                if (isPowerFolderBroadcast(inPacket)
+                    && getController().getNodeManager().isStarted())
+                {
                     if (getController().getNetworkingMode().equals(
                         NetworkingMode.SERVERONLYMODE))
                     {
