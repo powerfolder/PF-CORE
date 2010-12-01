@@ -28,6 +28,9 @@ public class OSUtilTest extends TestCase {
      * Successful on OS X 10.6 only, therefore disabled by default. 
      */
     public void testFailingtestIsMacOSSnowLeopardOrNewer() {
+        if (!OSUtil.isMacOS()) {
+            return;
+        }
         boolean isMacOS = OSUtil.isMacOSSnowLeopardOrNewer();
         Assert.assertEquals(true, isMacOS);
     }
