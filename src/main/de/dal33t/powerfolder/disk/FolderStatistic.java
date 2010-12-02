@@ -450,6 +450,9 @@ public class FolderStatistic extends PFComponent {
             if (!getController().getOSClient().isCloudServer(member)) {
                 continue;
             }
+            if (member.isMySelf()) {
+                continue;
+            }
             sync = Math.max(folder.getStatistic().getSyncPercentage(member),
                 sync);
         }

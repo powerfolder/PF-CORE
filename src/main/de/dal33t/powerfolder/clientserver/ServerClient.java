@@ -286,7 +286,7 @@ public class ServerClient extends PFComponent {
      * @return true if the node is a part of the server cloud.
      */
     public boolean isCloudServer(Member node) {
-        return (node.isServer() || isServer(node)) && !node.isMySelf();
+        return node.isServer() || isServer(node);
     }
 
     /**
