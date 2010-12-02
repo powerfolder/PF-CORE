@@ -27,6 +27,7 @@ import javax.persistence.Id;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -80,6 +81,7 @@ public class Notification implements Serializable {
     /**
      * The OID of the target Account/User.
      */
+    @Index(name = "IDX_ACCOUNT_OID")
     private String accountOID;
 
     /**
@@ -88,6 +90,7 @@ public class Notification implements Serializable {
      * about the expired license purchased on 1.1.2007. Use to re-identify
      * already created notification.
      */
+    @Index(name = "IDX_TYPE_ID")
     private String typeId;
 
     /**
