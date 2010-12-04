@@ -322,8 +322,6 @@ public class Debug {
                 }
 
                 b.append("\nUploads ("
-                    + tm.getAllowedUploads()
-                    + " allowed, "
                     + tm.countActiveUploads()
                     + " active, "
                     + tm.countQueuedUploads()

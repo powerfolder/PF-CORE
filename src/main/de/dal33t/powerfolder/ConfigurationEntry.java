@@ -307,11 +307,6 @@ public enum ConfigurationEntry {
     NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
 
     /**
-     * The maximum number of concurrent uploads.
-     */
-    UPLOADS_MAX_CONCURRENT("uploads", 10),
-
-    /**
      * The upload limit for WAN (Internet) connections in KB/s
      */
     UPLOADLIMIT_WAN("uploadlimit", 0),

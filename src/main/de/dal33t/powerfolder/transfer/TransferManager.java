@@ -142,9 +142,6 @@ public class TransferManager extends PFComponent {
     /** Threadpool for Upload Threads */
     private ExecutorService threadPool;
 
-    /** The maximum concurrent uploads */
-    private final int allowedUploads;
-
     /** the counter for uploads (effecitve) */
     private final TransferCounter uploadCounter;
     /** the counter for downloads (effecitve) */
@@ -189,14 +186,6 @@ public class TransferManager extends PFComponent {
         // Create listener support
         this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
-
-        // maximum concurrent uploads
-        allowedUploads = ConfigurationEntry.UPLOADS_MAX_CONCURRENT.getValueInt(
-            getController()).intValue();
-        if (allowedUploads <= 0) {
-            throw new NumberFormatException("Illegal value for max uploads: "
-                + allowedUploads);
-        }
 
         bandwidthProvider = new BandwidthProvider(getController()
             .getThreadPool());
@@ -335,8 +324,8 @@ public class TransferManager extends PFComponent {
             long numberOfDays = calcDays(completedUpload.getCompletedDate());
             if (numberOfDays >= trueUploadCleanupFrequency) {
                 logInfo("Auto-cleaning up upload '"
-                    + completedUpload.getFile().getRelativeName()
-                    + "' (days=" + numberOfDays + ')');
+                    + completedUpload.getFile().getRelativeName() + "' (days="
+                    + numberOfDays + ')');
                 clearCompletedUpload(completedUpload);
             }
         }
@@ -350,11 +339,8 @@ public class TransferManager extends PFComponent {
             trueDownloadCleanupFrequency = Integer.MAX_VALUE;
 
         }
-        for (DownloadManager completedDownload : completedDownloads
-            .values())
-        {
-            long numberOfDays = calcDays(completedDownload
-                .getCompletedDate());
+        for (DownloadManager completedDownload : completedDownloads.values()) {
+            long numberOfDays = calcDays(completedDownload.getCompletedDate());
             if (numberOfDays >= trueDownloadCleanupFrequency) {
                 logInfo("Auto-cleaning up download '"
                     + completedDownload.getFileInfo().getRelativeName()
@@ -473,8 +459,6 @@ public class TransferManager extends PFComponent {
         // Upload status
         transferStatus.activeUploads = activeUploads.size();
         transferStatus.queuedUploads = queuedUploads.size();
-
-        transferStatus.maxUploads = getAllowedUploads();
         transferStatus.maxUploadCPS = getAllowedUploadCPSForWAN();
         transferStatus.currentUploadCPS = (long) uploadCounter
             .calculateCurrentCPS();
@@ -1041,9 +1025,8 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("Upload limit: " + allowedUploads
-            + " allowed, at maximum rate of "
-            + (getAllowedUploadCPSForWAN() / 1024) + " KByte/s");
+        logInfo("Upload limit: "
+            + Format.formatBytesShort(getAllowedUploadCPSForWAN()) + "/s");
     }
 
     /**
@@ -1073,9 +1056,8 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("Download limit: " + allowedUploads
-            + " allowed, at maximum rate of "
-            + (getAllowedDownloadCPSForWAN() / 1024) + " KByte/s");
+        logInfo("Download limit: "
+            + Format.formatBytesShort(getAllowedDownloadCPSForWAN()) + "/s");
     }
 
     /**
@@ -1104,9 +1086,8 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("LAN Upload limit: " + allowedUploads
-            + " allowed, at maximum rate of "
-            + (getAllowedUploadCPSForLAN() / 1024) + " KByte/s");
+        logInfo("LAN Upload limit: "
+            + Format.formatBytesShort(getAllowedUploadCPSForLAN()) + "/s");
     }
 
     /**
@@ -1135,9 +1116,8 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("LAN Download limit: " + allowedUploads
-            + " allowed, at maximum rate of "
-            + (getAllowedDownloadCPSForLAN() / 1024) + " KByte/s");
+        logInfo("LAN Download limit: "
+            + Format.formatBytesShort(getAllowedDownloadCPSForLAN()) + "/s");
     }
 
     /**
@@ -1164,24 +1144,6 @@ public class TransferManager extends PFComponent {
     int getMaxRequestsQueued() {
         return ConfigurationEntry.TRANSFERS_MAX_REQUESTS_QUEUED
             .getValueInt(getController());
-    }
-
-    /**
-     * @return true if the manager has free upload slots
-     */
-    private boolean hasFreeUploadSlots() {
-        Set<Member> uploadsTo = new HashSet<Member>();
-        for (Upload upload : activeUploads) {
-            uploadsTo.add(upload.getPartner());
-        }
-        return uploadsTo.size() < allowedUploads;
-    }
-
-    /**
-     * @return the maximum number of allowed uploads
-     */
-    public int getAllowedUploads() {
-        return allowedUploads;
     }
 
     /**
@@ -2687,9 +2649,7 @@ public class TransferManager extends PFComponent {
                     // Broken
                     uploadBroken(upload, TransferProblem.BROKEN_UPLOAD);
                     uploadsBroken++;
-                } else if (hasFreeUploadSlots()
-                    || upload.getPartner().isOnLAN())
-                {
+                } else {
                     boolean alreadyUploadingTo;
                     // The total size planned+current uploading to that node.
                     long totalPlannedSizeUploadingTo = uploadingToSize(upload

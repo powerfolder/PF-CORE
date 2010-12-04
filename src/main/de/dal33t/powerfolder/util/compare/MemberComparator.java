@@ -228,13 +228,6 @@ public class MemberComparator implements Comparator<Member> {
         }
         int result = 0;
 
-        if (t1.getFreeUploadSlots() > 0) {
-            result += 2000;
-        }
-        if (t2.getFreeUploadSlots() > 0) {
-            result -= 2000;
-        }
-
         // Calculate available upload cps
         long uploadCPSDiffer = (t1.getAvailbleUploadCPS() - t2
             .getAvailbleUploadCPS());
