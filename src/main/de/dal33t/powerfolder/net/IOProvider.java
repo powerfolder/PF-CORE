@@ -261,7 +261,7 @@ public class IOProvider extends PFComponent {
                         + newPing + ". Node: " + conHan.getMember());
                 }
                 if (timeWithoutKeepalive > CONNECTION_KEEP_ALIVE_TIMOUT_MS) {
-                    logWarning("Shutting down. Dead connection detected ("
+                    logFine("Shutting down. Dead connection detected ("
                         + (timeWithoutKeepalive / 1000) + "s timeout) to "
                         + conHan.getMember());
                     conHan.shutdownWithMember();
