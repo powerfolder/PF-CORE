@@ -226,6 +226,11 @@ public abstract class PFWizardPanel extends WizardPanel {
             .xywh(1, row, 2, 1, "left, default"));
         row += 2;
 
+        if(controller.isShowWizardClass()) {
+            String className = getClass().getName();
+            title += " (" + className.substring(className.lastIndexOf('.') + 1) + ')';
+        }
+        
         titleLabel = createTitleLabel(title);
         pageBuilder.add(titleLabel, cc.xy(2, row));
         row += 2;

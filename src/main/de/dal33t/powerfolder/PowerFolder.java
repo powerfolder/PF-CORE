@@ -94,6 +94,8 @@ public class PowerFolder {
             "<createfolder> Creates a new Folder");
         options.addOption("r", "removefolder", true,
             "<removefolder> Removes a existing Folder");
+        options.addOption("w", "wizard", false,
+            "Show wizard panel class in title");
         options.addOption("y", "notifyleft", false,
             "Show notification at left of screen");
         options.addOption("z", "nowarn", false,
