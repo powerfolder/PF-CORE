@@ -473,10 +473,11 @@ public class DirectoryFilter extends FilterModel {
             case FILE_FILTER_MODE_UNSYNCHRONIZED:
                 // See if all peers have this file with this version but ignore
                 // excluded files because these are not synchronized.
-                boolean synced = isSynchronized(fileInfo);
-                boolean excluded =
-                        folder.getDiskItemFilter().isExcluded(fileInfo);
-                showFile = !synced && !excluded;
+                if (folder.getDiskItemFilter().isExcluded(fileInfo)) {
+                    showFile = false;
+                } else {
+                    showFile = !isSynchronized(fileInfo);
+                }
                 break;
             case FILE_FILTER_MODE_LOCAL_AND_INCOMING:
             default:
