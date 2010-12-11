@@ -456,6 +456,7 @@ public class DirectoryFilter extends FilterModel {
 
         boolean isNew = transferManager.isCompletedDownload(fileInfo);
 
+
         switch (fileFilterMode) {
             case FILE_FILTER_MODE_LOCAL_ONLY:
                 showFile = !isIncoming && !isDeleted;
@@ -470,10 +471,12 @@ public class DirectoryFilter extends FilterModel {
                 showFile = isDeleted;
                 break;
             case FILE_FILTER_MODE_UNSYNCHRONIZED:
-                // See if all peers have this file with this
-                // version.
-                boolean isSynchronized = isSynchronized(fileInfo);
-                showFile = !isSynchronized;
+                // See if all peers have this file with this version but ignore
+                // excluded files because these are not synchronized.
+                boolean synced = isSynchronized(fileInfo);
+                boolean excluded =
+                        folder.getDiskItemFilter().isExcluded(fileInfo);
+                showFile = !synced && !excluded;
                 break;
             case FILE_FILTER_MODE_LOCAL_AND_INCOMING:
             default:
