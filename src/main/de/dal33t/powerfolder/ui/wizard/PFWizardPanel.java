@@ -226,7 +226,7 @@ public abstract class PFWizardPanel extends WizardPanel {
             .xywh(1, row, 2, 1, "left, default"));
         row += 2;
 
-        if(controller.isShowWizardClass()) {
+        if (controller.isVerbose()) {
             String className = getClass().getName();
             title += " (" + className.substring(className.lastIndexOf('.') + 1) + ')';
         }

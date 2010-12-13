@@ -1846,16 +1846,6 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Whether to display the wizard panel class name in the title.
-     * Primarily a development switch.
-     *
-     * @return true if wizard class should be shown.
-     */
-    public boolean isShowWizardClass() {
-        return commandLine != null && commandLine.hasOption('w');
-    }
-
-    /**
      * Opens the graphical user interface
      */
     private void openUI() {
