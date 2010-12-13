@@ -105,6 +105,9 @@ public class WinUtils extends Loggable {
      * @return the instance or NULL if not supported on this platform.
      */
     public static synchronized WinUtils getInstance() {
+        if (!OSUtil.isWindowsSystem()) {
+            return null;
+        }
         if (instance == null && !error) {
             if (OSUtil.loadLibrary(WinUtils.class, "desktoputils")) {
                 instance = new WinUtils();
