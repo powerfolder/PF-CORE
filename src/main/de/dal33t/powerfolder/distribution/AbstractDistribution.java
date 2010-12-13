@@ -117,7 +117,8 @@ public abstract class AbstractDistribution extends Loggable implements
                 .loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
             ConfigurationLoader.merge(preConfig, controller.getConfig(),
                 controller.getPreferences(), replaceExisting);
-            logInfo("Loaded preconfiguration file Client.config from jar file");
+            logInfo("Loaded preconfiguration file " + DEFAULT_CONFIG_FILENAME
+                + " from jar file");
             return true;
         } catch (IOException e) {
             logSevere("Error while loading " + DEFAULT_CONFIG_FILENAME
