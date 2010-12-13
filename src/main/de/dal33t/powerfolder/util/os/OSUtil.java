@@ -89,7 +89,7 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os.toLowerCase().startsWith("mac");
     }
-    
+
     /**
      * Tested on Mac OS X 10.6.5 Build 10H574.
      * 
@@ -97,7 +97,7 @@ public class OSUtil {
      */
     public static boolean isMacOSSnowLeopardOrNewer() {
         String osName = System.getProperty("os.name");
-        if (!osName.startsWith("Mac OS X")) { 
+        if (!osName.startsWith("Mac OS X")) {
             return false;
         }
 
@@ -109,7 +109,7 @@ public class OSUtil {
         if (!fragments[0].equals("10")) {
             return false;
         }
-        if (fragments.length < 2) { 
+        if (fragments.length < 2) {
             return false;
         }
 
@@ -124,7 +124,7 @@ public class OSUtil {
         }
 
         return false;
-     }
+    }
 
     /**
      * @return if the operating system is a linux os
@@ -242,7 +242,7 @@ public class OSUtil {
             altTargetFile.deleteOnExit();
             fLib = Util.copyResourceTo(fileName, dir, altTargetFile, false);
             if (fLib == null) {
-                log.severe(clazz.getName() + " --> Completely failed to load "
+                log.warning(clazz.getName() + " --> Completely failed to load "
                     + lib + ": Failed to copy resource to " + altTargetFile);
                 return false;
             }
@@ -253,7 +253,7 @@ public class OSUtil {
         if (loadLibrary(clazz, fLib.getAbsolutePath(), true, false)) {
             return true;
         }
-        log.severe(clazz.getName() + " --> Completely failed to load " + lib
+        log.warning(clazz.getName() + " --> Completely failed to load " + lib
             + " - see error above!");
         return false;
     }
