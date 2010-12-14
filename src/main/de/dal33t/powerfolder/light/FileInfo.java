@@ -772,6 +772,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         folderInfo = folderInfo != null ? folderInfo.intern() : null;
         modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
 
+        // #2159: Remove / in front and end of filename
+        if (fileName.endsWith("/")) {
+            fileName = fileName.substring(0, fileName.length() - 1);
+        }
+        if (fileName.startsWith("/")) {
+            fileName = fileName.substring(1);
+        }
+
         // validate();
     }
 

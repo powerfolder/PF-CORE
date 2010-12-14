@@ -264,6 +264,14 @@ public final class FileInfoFactory {
             fn = parent.getName() + '/' + fn;
             parent = parent.getParentFile();
         }
+        if (fn.endsWith("/")) {
+            // Crop off last /
+            fn = fn.substring(0, fn.length() - 1);
+        }
+        if (fn.startsWith("/")) {
+            // Crop off first /
+            fn = fn.substring(1);
+        }
         return fn;
     }
 }
