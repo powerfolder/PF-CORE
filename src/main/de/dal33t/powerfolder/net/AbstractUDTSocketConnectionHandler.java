@@ -829,7 +829,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
 
                 i++;
                 if (!started) {
-                    logWarning("Peer shutdown while sending: " + msg);
+                    logFine("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();

@@ -557,14 +557,14 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
 
         if (!isConnected()) {
-            logWarning("Remote member disconnected while waiting for identity reply. "
+            logFine("Remote member disconnected while waiting for identity reply. "
                 + identity);
             member = null;
             return false;
         }
 
         if (identityReply == null) {
-            logWarning("Did not receive a identity reply after " + took
+            logFine("Did not receive a identity reply after " + took
                 + "s. Connected? " + isConnected() + ". remote id: " + identity);
             member = null;
             return false;
@@ -862,7 +862,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
                 i++;
                 if (!started) {
-                    logWarning("Peer shutdown while sending: " + msg);
+                    logFine("Peer shutdown while sending: " + msg);
                     senderSpawnLock.lock();
                     sender = null;
                     senderSpawnLock.unlock();
