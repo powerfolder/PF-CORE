@@ -19,11 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -34,8 +32,8 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.adapter.PreferencesAdapter;
@@ -186,29 +184,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
-                ValueModel startWithWindowsVM = new ValueHolder(WinUtils
-                    .getInstance().isPFStartup(getController()));
-                startWithWindowsVM
-                    .addValueChangeListener(new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            try {
-                                if (WinUtils.getInstance() != null) {
-                                    WinUtils.getInstance().setPFStartup(
-                                        evt.getNewValue().equals(true),
-                                        getController());
-                                }
-                            } catch (IOException e) {
-                                logSevere("IOException", e);
-                            }
-                        }
-                    });
-                ValueModel tmpModel = new BufferedValueModel(
-                    startWithWindowsVM, writeTrigger);
-                startWithWindowsBox = BasicComponentFactory
-                    .createCheckBox(
-                        tmpModel,
-                        Translation
-                            .getTranslation("preferences.dialog.start_with_windows"));
+                startWithWindowsBox = new JCheckBox(Translation
+                    .getTranslation("preferences.dialog.start_with_windows"));
+                startWithWindowsBox.setSelected(WinUtils.getInstance()
+                    .isPFStartup(getController()));
             }
 
             if (OSUtil.isWindowsSystem()) {
@@ -444,6 +423,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(), String
             .valueOf(folderSyncSlider.getValue()));
+
+        boolean changed = WinUtils.getInstance().isPFStartup(getController()) != startWithWindowsBox
+            .isSelected();
+        if (changed) {
+            try {
+                if (WinUtils.getInstance() != null) {
+                    WinUtils.getInstance().setPFStartup(
+                        startWithWindowsBox.isSelected(), getController());
+                }
+            } catch (IOException e) {
+                logWarning("IOException", e);
+            }
+        }
     }
 
     private void configureFavorite(boolean newValue) {
