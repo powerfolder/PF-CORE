@@ -718,9 +718,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             validate();
             return true;
         } catch (Exception e) {
-            log
-                .log(Level.WARNING, "Invalid: " + toDetailString() + ". " + e,
-                    e);
+            log.log(Level.WARNING, "Invalid: " + toDetailString() + ". " + e);
             return false;
         }
     }
