@@ -281,10 +281,6 @@ public class FileRequestor extends PFComponent {
     }
 
     private void createDirectory(DirectoryInfo dirInfo) {
-        if (isFine()) {
-            logFine("Creating/Taking over direcory: "
-                + dirInfo.toDetailString());
-        }
         File dirFile = dirInfo.getDiskFile(getController()
             .getFolderRepository());
         Folder folder = dirInfo
@@ -295,6 +291,9 @@ public class FileRequestor extends PFComponent {
             return;
         }
         folder.scanDirectory(dirInfo, dirFile);
+        if (isFine()) {
+            logFine("Synced directory: " + dirInfo.toDetailString());
+        }
     }
 
     private void prepareDownload(FileInfo newestVersion, boolean autoDownload) {
@@ -434,25 +433,26 @@ public class FileRequestor extends PFComponent {
                             + " folder(s)");
                     }
                     long start = System.currentTimeMillis();
-                    for (Iterator<Folder> it = folderQueue.iterator(); it
-                        .hasNext();)
-                    {
+                    int i = 0;
+                    for (Folder folder : folderQueue) {
+                        if (i % 100 == 98) {
+                            logWarning("Still in queue: " + folderQueue.size());
+                        }
+                        i++;
                         try {
-                            Folder f = it.next();
-                            it.remove();
-                            requestMissingFilesForAutodownload(f);
+                            folderQueue.remove(folder);
+                            requestMissingFilesForAutodownload(folder);
                         } catch (RuntimeException e) {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
                         // Give CPU a bit time.
-                        Thread.sleep(2);
+                        Thread.sleep(1);
                     }
                     if (isFiner()) {
                         long took = System.currentTimeMillis() - start;
                         logFiner("Requesting files for " + nFolders
                             + " folder(s) took " + took + "ms.");
                     }
-
                     // Sleep a bit to avoid spamming
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
