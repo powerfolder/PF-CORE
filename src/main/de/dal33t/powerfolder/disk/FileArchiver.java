@@ -64,6 +64,12 @@ public interface FileArchiver {
     List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo);
 
     /**
+     * @param fileInfo
+     * @return true if archived {@link FileInfo} exists.
+     */
+    boolean hasArchivedFileInfo(FileInfo fileInfo);
+
+    /**
      * Restores/Copies a file version from the archive to the target location.
      * Does NOT deleted the file in the archive. Does NOT scan the related
      * folder!
@@ -95,5 +101,5 @@ public interface FileArchiver {
      */
     boolean maintain();
 
-    void purge()  throws IOException;
+    void purge() throws IOException;
 }

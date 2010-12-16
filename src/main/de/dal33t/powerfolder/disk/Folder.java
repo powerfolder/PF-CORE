@@ -1688,7 +1688,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
-                if (!getFileArchiver().getArchivedFilesInfos(file).isEmpty()) {
+                // Don't remove. We have archived files.
+                if (getFileArchiver().hasArchivedFileInfo(file)) {
                     continue;
                 }
                 expired++;

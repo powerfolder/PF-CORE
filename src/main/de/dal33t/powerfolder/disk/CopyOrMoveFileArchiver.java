@@ -304,6 +304,27 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         return ArchiveMode.FULL_BACKUP;
     }
 
+    public boolean hasArchivedFileInfo(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        // Find archive subdirectory.
+        File subdirectory = FileUtils.buildFileFromRelativeName(
+            archiveDirectory, fileInfo.getRelativeName()).getParentFile();
+        if (!subdirectory.exists()) {
+            return false;
+        }
+        String[] files = subdirectory.list();
+        if (files == null || files.length == 0) {
+            return false;
+        }
+        String fn = fileInfo.getFilenameOnly();
+        for (String fileName : files) {
+            if (fileName.startsWith(fn)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
@@ -383,4 +404,5 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         FileUtils.recursiveDelete(archiveDirectory);
         size = 0L;
     }
+
 }

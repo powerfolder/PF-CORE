@@ -667,7 +667,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folderScanner.start();
 
         // Now start thread
-        myThread = new Thread(this, "Folder repository");
+        myThread = new Thread(this, getClass().getName());
         // set to min priority
         myThread.setPriority(Thread.MIN_PRIORITY);
         myThread.start();

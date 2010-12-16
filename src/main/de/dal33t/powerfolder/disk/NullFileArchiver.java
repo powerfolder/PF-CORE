@@ -72,4 +72,8 @@ public class NullFileArchiver implements FileArchiver {
     public void purge() {
         // Nothing to do
     }
+
+    public boolean hasArchivedFileInfo(FileInfo fileInfo) {
+        return false;
+    }
 }
