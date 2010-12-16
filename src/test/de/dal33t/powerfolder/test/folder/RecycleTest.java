@@ -63,6 +63,7 @@ public class RecycleTest extends ControllerTestCase {
         FileInfo origFile = fileInfo;
         Date lastModified = fileInfo.getModifiedDate();
         File file = getFolder().getDiskFile(fileInfo);
+        assertFalse(archiver.hasArchivedFileInfo(fileInfo));
 
         TestHelper.waitMilliSeconds(2000);
         getFolder().removeFilesLocal(fileInfo);
@@ -73,6 +74,7 @@ public class RecycleTest extends ControllerTestCase {
         assertTrue(fileInfo.toDetailString(), fileInfo.getModifiedDate().after(
             lastModified));
 
+        assertTrue(archiver.hasArchivedFileInfo(fileInfo));
         archiver.restore(origFile, file);
 
         getFolder().scanChangedFile(origFile);
