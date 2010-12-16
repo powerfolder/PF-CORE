@@ -407,8 +407,11 @@ public enum ConfigurationEntry {
             {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
-                    rootDir = util.getSystemFolderPath(WinUtils.CSIDL_PERSONAL,
-                        false);
+                    String can = util.getSystemFolderPath(
+                        WinUtils.CSIDL_PERSONAL, false);
+                    if (StringUtils.isNotBlank(can)) {
+                        rootDir = can;
+                    }
                 }
             }
             return rootDir + File.separatorChar
@@ -603,15 +606,16 @@ public enum ConfigurationEntry {
     FOLDER_DB_PERSIST_TIME("filedb.persist.seconds", 30),
 
     /**
-     * The number of seconds between db maintenance scans (30 minutes).
+     * The number of seconds between db maintenance scans (1 hour).
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 1800),
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
-     * maintenance. In Seconds! Default: 1 month
+     * maintenance. In Seconds! Default: 6 month
      */
-    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30),
+    MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
+        * 6),
 
     /**
      * The http proxy to use for HTTP tunneled connections
