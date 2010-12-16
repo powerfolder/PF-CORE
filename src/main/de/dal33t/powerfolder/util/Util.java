@@ -180,6 +180,15 @@ public class Util {
         }
     }
 
+    public static boolean isMySelfPowerFolderComCloud(Controller controller) {
+        boolean pfCloud = false;
+        String hostname = ConfigurationEntry.HOSTNAME.getValue(controller);
+        if (hostname != null && hostname.contains("powerfolder.com")) {
+            pfCloud = true;
+        }
+        return pfCloud;
+    }
+
     /**
      * @param c
      * @param otherIsOnLAN
@@ -385,7 +394,7 @@ public class Util {
 
     /**
      * Place a String on the clipboard
-     *
+     * 
      * @param aString
      *            the string to place in the clipboard
      */
@@ -408,11 +417,12 @@ public class Util {
         String result = "";
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable contents = clipboard.getContents(null);
-        boolean hasTransferableText = contents != null &&
-                contents.isDataFlavorSupported(DataFlavor.stringFlavor);
+        boolean hasTransferableText = contents != null
+            && contents.isDataFlavorSupported(DataFlavor.stringFlavor);
         if (hasTransferableText) {
             try {
-                result = (String) contents.getTransferData(DataFlavor.stringFlavor);
+                result = (String) contents
+                    .getTransferData(DataFlavor.stringFlavor);
             } catch (UnsupportedFlavorException ex) {
                 LOG.severe(ex.getMessage());
             } catch (IOException ex) {
