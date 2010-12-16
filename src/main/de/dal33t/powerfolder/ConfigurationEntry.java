@@ -155,9 +155,8 @@ public enum ConfigurationEntry {
     /**
      * URL where bugs or tickets can be filed.
      */
-    PROVIDER_SUPPORT_FILE_TICKET_URL(
-        "provider.url.ticket",
-        "http://www.powerfolder.com/support/index.php?_m=tickets&_a=submit&step=1&departmentid=4"),
+    PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket",
+        "https://www.powerfolder.com/support/index.php?/Tickets/Submit"),
 
     /**
      * URL of the PowerFolder Pro page.
@@ -749,7 +748,7 @@ public enum ConfigurationEntry {
             value = getDefaultValue();
         }
         try {
-            return new Integer(value);
+            return new Integer(value.trim());
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a int. Value: " + value, e);
@@ -771,7 +770,7 @@ public enum ConfigurationEntry {
             value = getDefaultValue();
         }
         try {
-            return value.equalsIgnoreCase("true");
+            return value.trim().equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                 + configKey + "' into a boolean. Value: " + value, e);
