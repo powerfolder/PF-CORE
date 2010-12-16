@@ -560,12 +560,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 logWarning("Many messages in send queue: "
                     + messagesToSendQueue.size() + ": " + messagesToSendQueue);
             }
-            if (messagesToSendQueue.size() > 200) {
-                logWarning("Too many messages is queue ("
-                    + messagesToSendQueue.size() + "). Breaking connection");
-                shutdownWithMember();
-                return;
-            }
             if (sender == null) {
                 sender = new Sender();
                 getController().getIOProvider().startIO(sender);
