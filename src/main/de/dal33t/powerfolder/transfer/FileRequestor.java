@@ -426,7 +426,6 @@ public class FileRequestor extends PFComponent {
                             folderQueue.wait();
                         }
                     }
-
                     int nFolders = folderQueue.size();
                     if (isFine()) {
                         logFine("Start requesting files for " + nFolders
@@ -435,18 +434,25 @@ public class FileRequestor extends PFComponent {
                     long start = System.currentTimeMillis();
                     int i = 0;
                     for (Folder folder : folderQueue) {
-                        if (i % 100 == 98) {
-                            logWarning("Still in queue: " + folderQueue.size());
-                        }
+                        // if (i % 100 == 0) {
+                        // if (folderQueue.size() < 5) {
+                        // logWarning("Still in queue: " + folderQueue);
+                        // } else {
+                        // logWarning("Still in queue: "
+                        // + folderQueue.size());
+                        // }
+                        // }
                         i++;
                         try {
                             folderQueue.remove(folder);
+                            // Give CPU a bit time.
+                            if (i % 10 == 0) {
+                                Thread.sleep(1);
+                            }
                             requestMissingFilesForAutodownload(folder);
                         } catch (RuntimeException e) {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
-                        // Give CPU a bit time.
-                        Thread.sleep(1);
                     }
                     if (isFiner()) {
                         long took = System.currentTimeMillis() - start;
@@ -454,7 +460,7 @@ public class FileRequestor extends PFComponent {
                             + " folder(s) took " + took + "ms.");
                     }
                     // Sleep a bit to avoid spamming
-                    Thread.sleep(50);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     logFine("Stopped");
                     logFiner(e);
@@ -462,7 +468,6 @@ public class FileRequestor extends PFComponent {
                 }
             }
         }
-
     }
 
     /**
