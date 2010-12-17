@@ -1698,7 +1698,9 @@ public class Folder extends PFComponent {
                 for (Member member : members.values()) {
                     dao.delete(member.getId(), file);
                 }
-                logFine("FileInfo expired: " + file.toDetailString());
+                if (isFiner()) {
+                    logFiner("FileInfo expired: " + file.toDetailString());
+                }
             }
         }
         if (expired > 0) {
