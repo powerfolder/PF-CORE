@@ -1331,10 +1331,10 @@ public class Folder extends PFComponent {
      * @param fInfos
      */
     public void removeFilesLocal(Collection<FileInfo> fInfos) {
-        if (fInfos == null || fInfos.size() <= 0) {
-            throw new IllegalArgumentException("Files to delete are empty");
+        Reject.ifNull(fInfos, "Files null");
+        if (fInfos.isEmpty()) {
+            return;
         }
-
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         Comparator<FileInfo> comparator = new ReverseComparator<FileInfo>(
             FileInfoComparator
@@ -2307,12 +2307,10 @@ public class Folder extends PFComponent {
                             String[] remaining = localCopy.list();
                             if (remaining != null) {
                                 for (String path : remaining) {
-                                    if (path.toLowerCase()
-                                        .endsWith("thumbs.db")
-                                        || path.toLowerCase().endsWith(
-                                            ".ds_store")
-                                        || path.toLowerCase().endsWith(
-                                            "desktop.ini"))
+                                    String pathL = path.toLowerCase();
+                                    if (pathL.endsWith("thumbs.db")
+                                        || pathL.endsWith(".ds_store")
+                                        || pathL.endsWith("desktop.ini"))
                                     {
                                         new File(path).delete();
                                     }
