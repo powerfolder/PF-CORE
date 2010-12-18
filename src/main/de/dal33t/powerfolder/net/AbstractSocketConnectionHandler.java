@@ -597,6 +597,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     public ConnectionQuality getConnectionQuality() {
+        // When acting as HTTP tunnel. The other side is a socket connector.
+        if (identity != null && identity.isTunneled()) {
+            return ConnectionQuality.POOR;
+        }
         return ConnectionQuality.GOOD;
     }
 
