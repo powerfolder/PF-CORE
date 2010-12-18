@@ -19,20 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.AWTException;
-import java.awt.CheckboxMenuItem;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Frame;
-import java.awt.Image;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -401,26 +388,31 @@ public class UIController extends PFComponent {
 
     public void showPromoGFX(Window parent) {
         try {
-            JLabel promoLabel = new JLabel(new ImageIcon(new URL(
-                Constants.PROVIDER_CLIENT_PROMO_URL)));
-            promoLabel.setSize(new Dimension(230, 230));
-            Border border = BorderFactory.createCompoundBorder(BorderFactory
-                .createLineBorder(Color.DARK_GRAY), Borders
-                .createEmptyBorder("15, 15, 15, 15"));
-            promoLabel.setBorder(border);
-            promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            promoLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        BrowserLauncher.openURL(ProUtil
-                            .getBuyNowURL(getController()));
-                    } catch (IOException e1) {
-                        logWarning("Unable to goto homepage", e1);
+            ImageIcon icon = new ImageIcon(new URL(
+                    Constants.PROVIDER_CLIENT_PROMO_URL));
+            if (icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                JLabel promoLabel = new JLabel(icon);
+                promoLabel.setSize(new Dimension(230, 230));
+                Border border = BorderFactory.createCompoundBorder(BorderFactory
+                    .createLineBorder(Color.DARK_GRAY), Borders
+                    .createEmptyBorder("15, 15, 15, 15"));
+                promoLabel.setBorder(border);
+                promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                promoLabel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        try {
+                            BrowserLauncher.openURL(ProUtil
+                                .getBuyNowURL(getController()));
+                        } catch (IOException e1) {
+                            logWarning("Unable to goto homepage", e1);
+                        }
                     }
-                }
-            });
-            notifyComponent(promoLabel, parent, 20);
+                });
+                notifyComponent(promoLabel, parent, 20);
+            } else {
+                logWarning("Failed to downlaod PROVIDER_CLIENT_PROMO_URL");
+            }
         } catch (MalformedURLException e) {
             logWarning("Unable to show promo gfx. " + e, e);
         }
