@@ -392,14 +392,10 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                     // If dir does not exist or is not writable,
                     // give user a choice to locate in an alternate location.
                     boolean ok = true;
-                    String messageKey = null;
-
                     if (!f.exists()) {
                         ok = false;
-                        messageKey = "wizard.choose_disk_location.directory_non_existent";
                     } else if (!f.canWrite()) {
                         ok = false;
-                        messageKey = "wizard.choose_disk_location.directory_no_write";
                     }
                     if (!ok) {
                         String baseDir = getController().getFolderRepository()
@@ -415,29 +411,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         while (alternate.exists()) {
                             alternate = new File(baseDir, name + '-' + x++);
                         }
-
-                        // Ask user.
-                        int i = DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .getTranslation("wizard.choose_disk_location.target_dir"),
-                                Translation.getTranslation(messageKey, f
-                                    .getAbsolutePath(), alternate
-                                    .getAbsolutePath()), new String[]{
-                                    Translation
-                                        .getTranslation("general.accept"),
-                                    Translation
-                                        .getTranslation("general.cancel")}, 0,
-                                GenericDialogType.QUESTION);
-                        if (i == 0) { // Accept
-                            locationModel.setValue(alternate.getAbsolutePath());
-                            if (!alternate.exists()) {
-                                if (alternate.mkdirs()) {
-                                    startFolderSizeCalculator();
-                                }
-                            }
-                        }
+                        alternate.mkdirs();
+                        startFolderSizeCalculator();
+                        locationModel.setValue(alternate.getAbsolutePath());
                     }
                 } catch (Exception e) {
                     // Ignore
