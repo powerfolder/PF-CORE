@@ -637,7 +637,7 @@ public class FolderScanner extends PFComponent {
                 }
             }
         } catch (Exception e) {
-            logWarning("Unable to scan: " + fileToScan + ". " + e, e);
+            logWarning("Unable to scan: " + fileToScan + ". " + e);
             unableToScanFiles.add(fileToScan);
         }
         return true;
