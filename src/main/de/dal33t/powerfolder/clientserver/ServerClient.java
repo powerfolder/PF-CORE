@@ -920,6 +920,10 @@ public class ServerClient extends PFComponent {
         if (Util.equals(oldUrl, newTunnelURL)) {
             return false;
         }
+        // #2158: Don't override if we are a sever itself.
+        if (getController().getMySelf().isServer()) {
+            return false;
+        }
         // Currently not supported from config
         if (StringUtils.isBlank(newTunnelURL)) {
             ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
@@ -1208,27 +1212,6 @@ public class ServerClient extends PFComponent {
             connectHostingServers();
         }
     }
-
-    // private class AccountRefresh extends TimerTask {
-    // @Override
-    // public void run() {
-    // if (isConnected()) {
-    // return;
-    // }
-    // if (server.isMySelf()) {
-    // // Don't connect to myself
-    // return;
-    // }
-    // if (isLastLoginOK()) {
-    // Runnable refresher = new Runnable() {
-    // public void run() {
-    // refreshAccountDetails();
-    // }
-    // };
-    // getController().getIOProvider().startIO(refresher);
-    // }
-    // }
-    // }
 
     private class MyThrowableHandler implements ThrowableHandler {
         private int loginProblems;

@@ -24,6 +24,7 @@ import java.util.EventObject;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 
+@SuppressWarnings("serial")
 public class ServerClientEvent extends EventObject {
     private Member node;
     private AccountDetails accountDetails;
