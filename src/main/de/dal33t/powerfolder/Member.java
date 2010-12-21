@@ -146,9 +146,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     /** Folderlist waiter */
     private final Object folderListWaiter = new Object();
 
-    /** Handshake completed waiter */
-    private final Object handshakeCompletedWaiter = new Object();
-
     /**
      * Lock to ensure that only one thread executes the folder membership
      * synchronization.
@@ -1153,18 +1150,28 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if list was received successfully
      */
     private boolean waitForHandshakeCompletion() {
-        synchronized (handshakeCompletedWaiter) {
-            if (lastHandshakeCompleted == null) {
-                try {
-                    if (isFiner()) {
-                        logFiner("Waiting for handshake completions");
-                    }
-                    handshakeCompletedWaiter
-                        .wait(Constants.INCOMING_CONNECTION_TIMEOUT * 1000);
-                } catch (InterruptedException e) {
-                    logFiner(e);
-                }
+        // 120 minutes. Should never occur.
+        Waiter waiter = new Waiter(1000L * 60 * 120);
+        while (!waiter.isTimeout() && isConnected()) {
+            if (lastHandshakeCompleted != null && handshaked) {
+                return true;
             }
+            if (isFiner()) {
+                logFiner("Waiting for handshake completions");
+            }
+            Date lastMessageReceived = peer != null ? peer
+                .getLastKeepaliveMessageTime() : null;
+            if (lastMessageReceived == null) {
+                logSevere("Unable to check last received message date. got null while waiting for handshake complete");
+                return false;
+            }
+            boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
+                - lastMessageReceived.getTime() > 1000L * 60;
+            if (noChangeReceivedSineOneMinute) {
+                logWarning("No message received since 1 minute while waiting for handshake complete");
+                return false;
+            }
+            waiter.waitABit();
         }
         return lastHandshakeCompleted != null && handshaked;
     }
@@ -1175,15 +1182,12 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void shutdown() {
         boolean wasHandshaked = handshaked;
 
+        shutdownPeer();
+
         // Notify waiting locks.
         synchronized (folderListWaiter) {
             folderListWaiter.notifyAll();
         }
-        synchronized (handshakeCompletedWaiter) {
-            handshakeCompletedWaiter.notifyAll();
-        }
-
-        shutdownPeer();
 
         folderListReceived = false;
         lastFolderList = null;
@@ -1336,10 +1340,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof HandshakeCompleted) {
                 lastHandshakeCompleted = (HandshakeCompleted) message;
                 // Notify waiting ppl
-                synchronized (handshakeCompletedWaiter) {
-                    handshaked = true;
-                    handshakeCompletedWaiter.notifyAll();
-                }
+                handshaked = true;
                 expectedTime = 100;
             } else if (message instanceof FolderList) {
                 final FolderList fList = (FolderList) message;
