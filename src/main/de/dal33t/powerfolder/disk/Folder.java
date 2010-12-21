@@ -3867,7 +3867,7 @@ public class Folder extends PFComponent {
         {
             return;
         }
-        if (isPreviewOnly()) {
+        if (previewOnly) {
             return;
         }
 
@@ -3902,8 +3902,11 @@ public class Folder extends PFComponent {
                 }
             }
             if (ufp == null) {
+                // Calculate the actual number of days since the last sync.
+                int numberOfDays = (int) (new Date().getTime() -
+                        lastSyncDate.getTime()) / 24 / 3600 / 1000;
                 Problem problem = new UnsynchronizedFolderProblem(currentInfo,
-                    syncWarnDays);
+                    numberOfDays);
                 addProblem(problem);
             }
         } else {
