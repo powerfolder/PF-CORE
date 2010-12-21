@@ -189,7 +189,7 @@ public class OSUtil {
         sysTraySupport = false;
     }
 
-    private static boolean loadLibrary(Class clazz, String file,
+    private static boolean loadLibrary(Class<?> clazz, String file,
         boolean absPath, boolean logErrorsVerbose)
     {
         try {
@@ -218,7 +218,7 @@ public class OSUtil {
      * @param lib
      * @return if succeeded
      */
-    public static boolean loadLibrary(Class clazz, String lib) {
+    public static boolean loadLibrary(Class<?> clazz, String lib) {
         String dir = "";
         if (isWindowsSystem()) {
             dir = is64BitPlatform() ? "win64libs" : "win32libs";
