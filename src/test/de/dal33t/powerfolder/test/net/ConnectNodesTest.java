@@ -273,6 +273,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
+        TestHelper.waitMilliSeconds(100);
         margeAtLisa.shutdown();
         // Marge is already friend. So auto-reconnect should happen
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
