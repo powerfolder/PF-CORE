@@ -120,7 +120,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     private MessageListenerSupport messageListenerSupport;
 
     /** The current connection handler */
-    private ConnectionHandler peer;
+    private volatile ConnectionHandler peer;
 
     /**
      * If this node has completely handshaked. TODO: Move this into
@@ -155,7 +155,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /**
      * The last message indicating that the handshake was completed
      */
-    private HandshakeCompleted lastHandshakeCompleted;
+    private volatile HandshakeCompleted lastHandshakeCompleted;
 
     /** Folder memberships received? */
     private volatile boolean folderListReceived;
@@ -465,7 +465,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     public boolean isConnected() {
         try {
             return peer != null && peer.isConnected();
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -1152,12 +1152,13 @@ public class Member extends PFComponent implements Comparable<Member> {
     private boolean waitForHandshakeCompletion() {
         // 120 minutes. Should never occur.
         Waiter waiter = new Waiter(1000L * 60 * 120);
-        while (!waiter.isTimeout() && isConnected()) {
+
+        while (!waiter.isTimeout()) {
             if (lastHandshakeCompleted != null && handshaked) {
                 return true;
             }
             if (isFiner()) {
-                logFiner("Waiting for handshake completions");
+                logFiner("Waiting for handshake complete message");
             }
             Date lastMessageReceived = peer != null ? peer
                 .getLastKeepaliveMessageTime() : null;
@@ -1169,6 +1170,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
                 logWarning("No message received since 1 minute while waiting for handshake complete");
+                return false;
+            }
+            if (!isConnected()) {
                 return false;
             }
             waiter.waitABit();
