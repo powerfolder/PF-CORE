@@ -241,6 +241,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // Reconnect manager has to be started therefore!
         getContollerLisa().getReconnectManager().start();
+        getContollerMarge().getReconnectManager().start();
 
         final Member margeAtLisa = getContollerMarge().getMySelf().getInfo()
             .getNode(getContollerLisa(), true);
@@ -286,12 +287,11 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             }
         });
 
-       // LoggingManager.setConsoleLogging(Level.FINER);
         assertTrue("marge is not connected", margeAtLisa
             .isCompletelyConnected());
         margeAtLisa.shutdown();
 
-        // TestHelper.waitMilliSeconds(3000);
+        TestHelper.waitMilliSeconds(500);
 
         final Member lisaAtMarge = getContollerLisa().getMySelf().getInfo()
             .getNode(getContollerMarge(), true);
