@@ -42,6 +42,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -270,12 +271,15 @@ public class ByteSerializer extends Loggable {
                 LOG.log(Level.WARNING, "While deserializing: " + e2, e2);
                 throw e2;
             }
-            LOG
-                .warning("Stream was not as expected ("
-                    + (expectCompression
-                        ? "compression was expected, but received uncompressed data"
-                        : "no compression was expected, but received compressed data")
-                    + ") on " + result);
+            if (!(result instanceof Identity)) {
+                LOG
+                    .warning("Stream was not as expected ("
+                        + (expectCompression
+                            ? "compression was expected, but received uncompressed data"
+                            : "no compression was expected, but received compressed data")
+                        + ") on " + result);
+            }
+
         }
         return result;
     }
