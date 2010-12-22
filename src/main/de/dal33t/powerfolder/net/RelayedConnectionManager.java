@@ -550,7 +550,11 @@ public class RelayedConnectionManager extends PFComponent {
             currentRelay = relayFinder.findRelay(getController()
                 .getNodeManager());
             if (isFine()) {
-                logFine("Using relay: " + currentRelay);
+                if (currentRelay != null) {
+                    logFine("Using relay: " + currentRelay);
+                } else {
+                    logFine("No relay server found yet");
+                }
             }
             if (currentRelay == null || currentRelay.isConnected()
                 || currentRelay.isConnecting())
