@@ -77,7 +77,7 @@ public class UIUpdateHandler extends PFUIComponent implements UpdaterHandler {
 
         if (option == downloadAndUpdate || option == downloadAndUpdateSilent) {
             boolean updateSilently = option == downloadAndUpdateSilent;
-            URL releaseURL = event.getNewReleaseExeURL();
+            URL releaseURL = event.getNewWindowsExeURL();
             if (releaseURL == null) {
                 return;
             }

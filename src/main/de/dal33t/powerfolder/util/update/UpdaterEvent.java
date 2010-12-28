@@ -32,18 +32,18 @@ public class UpdaterEvent extends EventObject {
     private static final long serialVersionUID = 1L;
 
     private String newReleaseVersion;
-    private URL newReleaseExeURL;
+    private URL newWindowsExeURL;
 
     public UpdaterEvent(Updater source) {
         super(source);
     }
 
     public UpdaterEvent(Updater source, String newReleaseVersion,
-        URL newReleaseExeURL)
+        URL newWindowsExeURL)
     {
         super(source);
         this.newReleaseVersion = newReleaseVersion;
-        this.newReleaseExeURL = newReleaseExeURL;
+        this.newWindowsExeURL = newWindowsExeURL;
     }
     
     public Updater getUpdater() {
@@ -54,8 +54,8 @@ public class UpdaterEvent extends EventObject {
         return newReleaseVersion;
     }
 
-    public URL getNewReleaseExeURL() {
-        return newReleaseExeURL;
+    public URL getNewWindowsExeURL() {
+        return newWindowsExeURL;
     }
 
 }
