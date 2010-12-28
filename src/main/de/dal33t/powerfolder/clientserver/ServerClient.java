@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.distribution.AbstractDistribution;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
@@ -58,7 +59,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-import de.dal33t.powerfolder.util.update.Updater;
 
 /**
  * Client to a server.
@@ -427,28 +427,6 @@ public class ServerClient extends PFComponent {
             return null;
         }
         return getWebURL() + "/activate";
-    }
-
-    /**
-     * @return update settings to check and download new program client
-     *         versions.
-     */
-    public Updater.UpdateSetting createUpdateSettings() {
-        Updater.UpdateSetting settings = new Updater.UpdateSetting();
-
-        if (!hasWebURL()) {
-            logSevere("Unable to created update settings, no web URL for server found. "
-                + getServer() + " using defaults.");
-            return settings;
-        }
-
-        settings.versionCheckURL = getWebURL()
-            + "/client_deployment/PowerFolderPro_LatestVersion.txt";
-        settings.downloadLinkInfoURL = null;
-        settings.releaseExeURL = getWebURL()
-            + "/client_deployment/PowerFolder_Latest_Win32_Installer.exe";
-
-        return settings;
     }
 
     // Login ******************************************************************
@@ -1064,6 +1042,14 @@ public class ServerClient extends PFComponent {
     }
 
     // General ****************************************************************
+
+    public boolean showServerInfo() {
+        boolean pfCom = AbstractDistribution
+            .isPowerFolderServer(getController());
+        boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
+            .getValueBoolean(getController());
+        return prompt || !pfCom;
+    }
 
     /**
      * @return the string representing the server address
