@@ -250,7 +250,8 @@ public class TransferCounter implements Serializable {
 
     public String toString() {
         return "TransferCounter {bytes: "
-            + Format.formatBytesShort(getBytesTransferred())
-            + " current KB/s: " + calculateCurrentKBS() + "}";
+            + Format.formatBytesShort(getBytesTransferred()) + " current: "
+            + Format.formatBytesShort((long) (1024L * calculateCurrentKBS()))
+            + "/s}";
     }
 }
