@@ -25,9 +25,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.RelayFinder;
+import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
-import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
+import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 
 public class PowerFolderPro extends AbstractDistribution {
 
@@ -42,38 +44,31 @@ public class PowerFolderPro extends AbstractDistribution {
     public void init(Controller controller) {
         super.init(controller);
 
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
-            Boolean.FALSE);
+        loadPreConfigFromClasspath(getController());
 
-        // Reset network ID to default in default distribution.
-        // Separating networks should only be available with Server/Client
-        // distribution
-        resetNetworkID(controller);
-
-        // Reset Provider URLs to PowerFolder.com in default distribution
-        resetProviderURLs(controller);
-
-        // Reset primary server if not PowerFolder server
-        if (!isPowerFolderServer(controller)
-            || PowerFolderBeta.isBetaServer(controller))
-        {
-            resetServer(controller);
-        }
         // Switch to non-basic skin
         String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
         if (skinName.equals(SnowlandBasic.NAME)) {
             PreferencesEntry.SKIN_NAME.setValue(controller, Snowland.NAME);
         }
-    }
 
-    @Override
-    public UpdateSetting createUpdateSettings() {
-        // Pro URLs
-        UpdateSetting settings = new UpdateSetting();
-        settings.versionCheckURL = "http://checkversion.powerfolder.com/PowerFolderPro_LatestVersion.txt";
-        settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolderPro_DownloadLocation.txt";
-        settings.releaseExeURL = "http://download.powerfolder.com/pro/win/PowerFolder_Latest_Win32_Installer.exe";
-        return settings;
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
+            Boolean.FALSE);
+
+        boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
+            .getValueBoolean(getController());
+        if (prompt && isPowerFolderServer(controller)
+            && controller.isUIEnabled())
+        {
+            try {
+                LookAndFeelSupport.setLookAndFeel(new LightSky()
+                    .getLookAndFeel());
+            } catch (Exception e) {
+                logSevere("Failed to set look and feel", e);
+            }
+            // Configuration required
+            new ConfigurationLoaderDialog(controller).openAndWait();
+        }
     }
 
     public RelayFinder createRelayFinder() {

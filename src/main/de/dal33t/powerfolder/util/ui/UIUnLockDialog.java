@@ -128,7 +128,7 @@ public class UIUnLockDialog extends PFUIComponent {
                 cc.xyw(1, row, 3));
             row += 2;
 
-            if (getController().getDistribution().allowServerChange()) {
+            if (getController().getOSClient().showServerInfo()) {
                 serverLabel.setBorder(Borders
                     .createEmptyBorder("0, 0, 3dlu, 0"));
                 builder.add(serverLabel, cc.xy(1, row));

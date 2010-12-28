@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 public class PowerFolderBasic extends AbstractDistribution {
 
@@ -44,7 +43,7 @@ public class PowerFolderBasic extends AbstractDistribution {
 
         ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
             Boolean.FALSE);
-        
+
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
         // distribution
@@ -61,11 +60,7 @@ public class PowerFolderBasic extends AbstractDistribution {
         }
 
         // Switch to basic skin
-        // String skinName =
-        // PreferencesEntry.SKIN_NAME.getValueString(controller);
-        // if (skinName.equals(PreferencesEntry.SKIN_NAME.getDefaultValue())) {
         PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
-        // }
 
         // Load different Provider URLs
         try {
@@ -78,15 +73,6 @@ public class PowerFolderBasic extends AbstractDistribution {
             logSevere("Error while loading config/Basic.config from jar file",
                 e);
         }
-    }
-
-    public UpdateSetting createUpdateSettings() {
-        // Use standard URLs
-        UpdateSetting settings = new UpdateSetting();
-        settings.versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
-        settings.downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
-        settings.releaseExeURL = "http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.exe";
-        return settings;
     }
 
     public boolean allowSkinChange() {

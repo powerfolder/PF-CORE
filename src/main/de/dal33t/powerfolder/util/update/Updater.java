@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamCallback;
@@ -142,8 +141,6 @@ public class Updater extends Thread {
      */
     public File download(URL url, StreamCallback progressCallback) {
         URLConnection con;
-        String username = settings.httpUser;
-        String pw = settings.httpPassword;
         String filename = url.getFile();
         if (StringUtils.isBlank(filename)) {
             filename = "PowerFolder_Latest_Win32_Installer.exe";
@@ -151,13 +148,7 @@ public class Updater extends Thread {
         File targetFile = new File(Controller.getTempFilesLocation(), filename);
         try {
             con = url.openConnection();
-            if (!StringUtils.isEmpty(username)) {
-                String s = username + ":" + pw;
-                String base64 = "Basic " + Base64.encodeBytes(s.getBytes());
-                con.setDoInput(true);
-                con.setRequestProperty("Authorization", base64);
-                con.connect();
-            }
+            con.connect();
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to download from " + url, e);
             return null;
@@ -261,7 +252,7 @@ public class Updater extends Thread {
     private URL getReleaseExeURL() {
         URL releaseExeURL = null;
         try {
-            if (settings.downloadLinkInfoURL != null) {
+            if (StringUtils.isNotBlank(settings.downloadLinkInfoURL)) {
                 URL url = new URL(settings.downloadLinkInfoURL);
                 InputStream in = (InputStream) url.getContent();
                 StringBuilder b = new StringBuilder();
@@ -282,7 +273,7 @@ public class Updater extends Thread {
         if (releaseExeURL == null) {
             // Fallback to standart settings
             try {
-                releaseExeURL = new URL(settings.releaseExeURL);
+                releaseExeURL = new URL(settings.windowsExeURL);
             } catch (MalformedURLException e) {
                 LOG.log(Level.SEVERE, "Invalid release exec download location",
                     e);
@@ -308,21 +299,5 @@ public class Updater extends Thread {
                 + file.getAbsolutePath() + ". " + e, e);
             return null;
         }
-    }
-
-    /**
-     * Contains settings for the updatecheck.
-     */
-    public static class UpdateSetting {
-        public String versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
-        /**
-         * A info file containing the link that may override
-         * <code>releaseExeURL</code> if existing.
-         */
-        public String downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
-        public String releaseExeURL = "http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.exe";
-
-        public String httpUser;
-        public String httpPassword;
     }
 }

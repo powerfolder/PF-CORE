@@ -33,7 +33,6 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 /**
  * Offer various helper methods for branding
@@ -56,17 +55,8 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
-    public boolean allowServerChange() {
-        return false;
-    }
-
     public void init(Controller controller) {
         this.controller = controller;
-    }
-
-    public UpdateSetting createUpdateSettings() {
-        // Default: Load from own server.
-        return getController().getOSClient().createUpdateSettings();
     }
 
     public RelayFinder createRelayFinder() {

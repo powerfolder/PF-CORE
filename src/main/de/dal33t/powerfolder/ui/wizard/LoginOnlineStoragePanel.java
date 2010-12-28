@@ -261,7 +261,7 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         connectingLabel.setVisible(!enabled);
         workingBar.setVisible(!enabled);
 
-        if (getController().getDistribution().allowServerChange()) {
+        if (getController().getOSClient().showServerInfo()) {
             serverLabel.setVisible(true);
             serverInfoLabel.getUIComponent().setVisible(true);
             serverInfoLabel.setText(client.getServerString());

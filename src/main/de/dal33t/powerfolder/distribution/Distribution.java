@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.RelayFinder;
-import de.dal33t.powerfolder.util.update.Updater.UpdateSetting;
 
 /**
  * Interface which describes the information that can be retrieved from an
@@ -66,18 +65,6 @@ public interface Distribution {
      *         skins.
      */
     boolean allowSkinChange();
-
-    /**
-     * @return true if this distribution allows to switch the server. False if
-     *         this distribution is bound to a fix server.
-     */
-    boolean allowServerChange();
-
-    /**
-     * @return the update settings for this branded version. return null to use
-     *         default location
-     */
-    UpdateSetting createUpdateSettings();
 
     /**
      * @return the relayfinder for this distributon. return null for default.
