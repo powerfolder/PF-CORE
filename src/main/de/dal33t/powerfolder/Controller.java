@@ -115,7 +115,7 @@ import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
-import de.dal33t.powerfolder.util.update.Updater;
+import de.dal33t.powerfolder.util.update.UpdateSetting;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -1632,8 +1632,8 @@ public class Controller extends PFComponent {
     /**
      * @return the configured update settings for the current distribution
      */
-    public Updater.UpdateSetting getUpdateSettings() {
-        return distribution.createUpdateSettings();
+    public UpdateSetting getUpdateSettings() {
+        return UpdateSetting.create(this);
     }
 
     /**

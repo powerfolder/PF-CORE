@@ -221,6 +221,38 @@ public enum ConfigurationEntry {
     SERVER_CONFIG_UPDATE("server.config.update", true),
 
     /**
+     * Prompt for the server address if currently set server belongs to the
+     * powerfolder.com cloud.
+     */
+    CONFIG_PROMPT_SERVER_IF_PF_COM("config.promptifpf", false),
+
+    /**
+     * The URL of the current config
+     */
+    CONFIG_URL("config.url"),
+
+    /**
+     * Reload the config on start and on change.
+     */
+    CONFIG_AUTO_RELOAD("config.reload"),
+
+    /**
+     * http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt
+     */
+    UPDATE_VERSION_URL("update.version.url"),
+
+    /**
+     * http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt
+     */
+    UPDATE_DOWNLOADLINK_INFO_URL("update.download_info.url"),
+
+    /**
+     * http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.
+     * exe
+     */
+    UPDATE_WINDOWS_EXE_URL("update.windows_exe.url"),
+
+    /**
      * #1715 If it should be possible to register at the server.
      */
     SERVER_REGISTER_ENABLED("server.register.enabled", true),
