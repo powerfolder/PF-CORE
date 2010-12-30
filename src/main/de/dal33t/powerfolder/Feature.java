@@ -124,7 +124,13 @@ public enum Feature {
      * directory and mirror all contents to the actual target directory after it
      * is 100% sync.
      */
-    FOLDER_ATOMIC_COMMIT(false);
+    FOLDER_ATOMIC_COMMIT(false),
+
+    /**
+     * Temporary for #656 development.
+     */
+    SYNC_SHUTDOWN(false);
+
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

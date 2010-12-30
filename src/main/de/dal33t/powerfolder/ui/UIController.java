@@ -110,6 +110,7 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.UIUtil;
@@ -133,6 +134,12 @@ public class UIController extends PFComponent {
     public static final int INFO_FRAME_ID = 1;
     public static final int CHAT_FRAME_ID = 2;
     public static final int WIZARD_DIALOG_ID = 3;
+
+    private static final String COMMAND_OPENUI = "openui";
+    private static final String COMMAND_HIDEUI = "hideui";
+    private static final String COMMAND_SYNCALL = "syncall";
+    private static final String COMMAND_EXIT = "exit";
+    private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
 
     private boolean started;
     private SplashScreen splash;
@@ -481,14 +488,18 @@ public class UIController extends PFComponent {
 
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if ("openui".equals(e.getActionCommand())) {
+                if (COMMAND_OPENUI.equals(e.getActionCommand())) {
                     mainFrame.getUIComponent().setVisible(true);
-                } else if ("hideui".equals(e.getActionCommand())) {
+                } else if (COMMAND_HIDEUI.equals(e.getActionCommand())) {
                     mainFrame.getUIComponent().setVisible(false);
-                } else if ("exit".equals(e.getActionCommand())) {
+                } else if (COMMAND_EXIT.equals(e.getActionCommand())) {
                     // Exit to system
                     getController().tryToExit(0);
-                } else if ("syncall".equals(e.getActionCommand())) {
+                } else if (COMMAND_SYNC_SHUTDOWN.equals(e.getActionCommand())) {
+                    if (SystemUtil.shutdown()) {
+                        getController().tryToExit(0);
+                    }
+                } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             SyncAllFoldersAction.perfomSync(getController());
@@ -563,19 +574,26 @@ public class UIController extends PFComponent {
 
         item = menu.add(new MenuItem(Translation
             .getTranslation("systray.sync_all")));
-        item.setActionCommand("syncall");
+        item.setActionCommand(COMMAND_SYNCALL);
         item.addActionListener(systrayActionHandler);
 
         final MenuItem opentUI = menu.add(new MenuItem(Translation
             .getTranslation("systray.show")));
-        opentUI.setActionCommand("openui");
+        opentUI.setActionCommand(COMMAND_OPENUI);
         opentUI.addActionListener(systrayActionHandler);
 
         menu.addSeparator();
 
-        item = menu
-            .add(new MenuItem(Translation.getTranslation("systray.exit")));
-        item.setActionCommand("exit");
+        if (SystemUtil.isShutdownSupported()) {
+            item = menu.add(new MenuItem(Translation.getTranslation(
+                    "systray.sync_shutdown")));
+            item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
+            item.addActionListener(systrayActionHandler);
+        }
+
+        item = menu.add(new MenuItem(Translation.getTranslation(
+                "systray.exit")));
+        item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
         sysTrayMenu.addActionListener(new ActionListener() {
@@ -601,12 +619,12 @@ public class UIController extends PFComponent {
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent arg0) {
                 opentUI.setLabel(Translation.getTranslation("systray.hide"));
-                opentUI.setActionCommand("hideui");
+                opentUI.setActionCommand(COMMAND_HIDEUI);
             }
 
             public void componentHidden(ComponentEvent arg0) {
                 opentUI.setLabel(Translation.getTranslation("systray.show"));
-                opentUI.setActionCommand("openui");
+                opentUI.setActionCommand(COMMAND_OPENUI);
 
             }
         });
