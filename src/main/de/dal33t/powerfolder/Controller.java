@@ -49,16 +49,13 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import org.apache.commons.cli.CommandLine;
 
@@ -92,6 +89,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
+import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Debug;
@@ -111,6 +109,7 @@ import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
@@ -2418,4 +2417,28 @@ public class Controller extends PFComponent {
         }
     }
 
+    /**
+     * Perform a full sync, then wait for the repo to finish syncing.
+     * Then request system shutdown and exit PF.
+     */
+    public void syncAndShutdown() {
+        final AtomicBoolean oneShot = new AtomicBoolean(true);
+        SyncAllFoldersAction.perfomSync(this);
+        scheduleAndRepeat(new Runnable() {
+            public void run() {
+                if (oneShot.get() && !folderRepository.isSyncing()) {
+                    // Make sure we only try to shutdown once,
+                    // in case the user aborts the shutdown.
+                    oneShot.set(false);
+                    log.info("Sync and shutdown in sync.");
+                    if (SystemUtil.shutdown()) {
+                        log.info("Shutdown command issued.");
+                        tryToExit(0);
+                    } else {
+                        log.warning("Shutdown command failed.");
+                    }
+                }
+            }
+        }, 10000, 10000);
+    }
 }

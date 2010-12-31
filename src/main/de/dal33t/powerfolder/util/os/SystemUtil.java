@@ -55,9 +55,6 @@ public class SystemUtil {
      * @return
      */
     public static boolean isShutdownSupported() {
-        if (Feature.SYNC_SHUTDOWN.isDisabled()) {
-            return false;
-        }
         return OSUtil.isWindowsSystem();
     }
 }

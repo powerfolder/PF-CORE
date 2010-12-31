@@ -140,6 +140,7 @@ public class UIController extends PFComponent {
     private static final String COMMAND_SYNCALL = "syncall";
     private static final String COMMAND_EXIT = "exit";
     private static final String COMMAND_SYNC_SHUTDOWN = "sync-shutdown";
+    private static final String COMMAND_GOTOHP = "gotohp";
 
     private boolean started;
     private SplashScreen splash;
@@ -496,16 +497,14 @@ public class UIController extends PFComponent {
                     // Exit to system
                     getController().tryToExit(0);
                 } else if (COMMAND_SYNC_SHUTDOWN.equals(e.getActionCommand())) {
-                    if (SystemUtil.shutdown()) {
-                        getController().tryToExit(0);
-                    }
+                    getController().syncAndShutdown();
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             SyncAllFoldersAction.perfomSync(getController());
                         }
                     });
-                } else if ("gotohp".equals(e.getActionCommand())) {
+                } else if (COMMAND_GOTOHP.equals(e.getActionCommand())) {
                     try {
                         BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_URL
                             .getValue(getController()));
@@ -518,7 +517,7 @@ public class UIController extends PFComponent {
         };
         MenuItem item = menu.add(new MenuItem(Translation
             .getTranslation("general.application.name")));
-        item.setActionCommand("gotohp");
+        item.setActionCommand(COMMAND_GOTOHP);
         item.addActionListener(systrayActionHandler);
 
         menu.addSeparator();
