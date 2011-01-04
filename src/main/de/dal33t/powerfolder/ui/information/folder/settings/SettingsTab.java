@@ -571,16 +571,7 @@ public class SettingsTab extends PFUIComponent {
     /**
      * Controls the movement of a folder directory.
      */
-    private void moveLocalFolder() {
-
-        // Find out if the user wants to move the content of the current folder
-        // to the new one.
-        int moveContent = shouldMoveContent();
-
-        if (moveContent == 2) {
-            // Cancel
-            return;
-        }
+    public void moveLocalFolder() {
 
         File originalDirectory = folder.getCommitOrLocalDir();
 
@@ -604,6 +595,15 @@ public class SettingsTab extends PFUIComponent {
                                 .getTranslation("settings_tab.basedir.text"),
                             GenericDialogType.ERROR);
                 } else {
+                    // Find out if the user wants to move the content of the current folder
+                    // to the new one.
+                    int moveContent = shouldMoveContent();
+
+                    if (moveContent == 2) {
+                        // Cancel
+                        return;
+                    }
+
                     moveDirectory(originalDirectory, newDirectory,
                         moveContent == 0);
                 }

@@ -232,6 +232,12 @@ public class InformationFrame extends MagneticFrame {
         currentFolderInfo = folderInfo;
     }
 
+    public void moveLocalFolder(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfo(folderInfo);
+        folderInformationCard.moveLocalFolder();
+    }
+
     /**
      * Displays folder member info
      * 

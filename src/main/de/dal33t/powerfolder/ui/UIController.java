@@ -866,6 +866,16 @@ public class UIController extends PFComponent {
     }
 
     /**
+     * Displays the Settings information move folder dialog.
+     *
+     * @param folderInfo
+     *            info of the folder to display member settings information for.
+     */
+    public void moveLocalFolder(FolderInfo folderInfo) {
+        informationFrame.moveLocalFolder(folderInfo);
+    }
+
+    /**
      * Opens the Members information for a folder.
      * 
      * @param folderInfo

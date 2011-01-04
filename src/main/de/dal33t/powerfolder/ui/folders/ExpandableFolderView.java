@@ -47,7 +47,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -144,6 +143,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MySyncFolderAction syncFolderAction;
     private MyOpenFilesInformationAction openFilesInformationAction;
     private MyOpenSettingsInformationAction openSettingsInformationAction;
+    private MyMoveLocalFolderAction moveLocalFolderAction;
     private MyInviteAction inviteAction;
     private MyOpenMembersInformationAction openMembersInformationAction;
     private MyMostRecentChangesAction mostRecentChangesAction;
@@ -444,6 +444,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteAction = new MyInviteAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
+        moveLocalFolderAction = new MyMoveLocalFolderAction(getController());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
@@ -503,7 +504,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         localDirectoryLabel = new ActionLabel(getController(),
-            openSettingsInformationAction);
+            moveLocalFolderAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -838,26 +839,23 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateTransferMode() {
         String transferMode;
-        String localDirectory;
         if (folder == null) {
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", "?");
-            localDirectory = Translation.getTranslation(
-                "exp_folder_view.local_directory", "?");
+            localDirectoryLabel.setVisible(false);
         } else {
             transferMode = Translation.getTranslation(
                 "exp_folder_view.transfer_mode", folder.getSyncProfile()
                     .getName());
             String path = folder.getCommitOrLocalDir().getAbsolutePath();
-            if (path.length() >= 25) {
-                path = path.substring(0, 10) + "..."
-                    + path.substring(path.length() - 10, path.length());
+            if (path.length() >= 35) {
+                path = path.substring(0, 15) + "..."
+                    + path.substring(path.length() - 15, path.length());
             }
-            localDirectory = Translation.getTranslation(
-                "exp_folder_view.local_directory", path);
+            localDirectoryLabel.setVisible(true);
+            localDirectoryLabel.setText(path);
         }
         transferModeLabel.setText(transferMode);
-        localDirectoryLabel.setText(localDirectory);
     }
 
     /**
@@ -1337,6 +1335,16 @@ public class ExpandableFolderView extends PFUIComponent implements
         public void actionPerformed(ActionEvent e) {
             getController().getUIController().openSettingsInformation(
                 folderInfo);
+        }
+    }
+
+    private class MyMoveLocalFolderAction extends BaseAction {
+        private MyMoveLocalFolderAction(Controller controller) {
+            super("action_move_local_folder", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getUIController().moveLocalFolder(folderInfo);
         }
     }
 

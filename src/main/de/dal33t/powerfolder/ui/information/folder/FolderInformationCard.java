@@ -287,6 +287,13 @@ public class FolderInformationCard extends InformationCard {
     }
 
     /**
+     * Fires the move local folder function on the settings tab.
+     */
+    public void moveLocalFolder() {
+        settingsTab.moveLocalFolder();
+    }
+
+    /**
      * Display the problems tab.
      */
     public void showProblems() {
