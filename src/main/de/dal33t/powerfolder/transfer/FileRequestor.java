@@ -426,13 +426,11 @@ public class FileRequestor extends PFComponent {
                             folderQueue.wait();
                         }
                     }
-                    int nFolders = folderQueue.size();
-                    if (isFine()) {
-                        logFine("Start requesting files for " + nFolders
-                            + " folder(s)");
+                    int nFolders = 0;
+                    if (isFiner()) {
+                        logFiner("Started requesting files");
                     }
                     long start = System.currentTimeMillis();
-                    int i = 0;
                     for (Folder folder : folderQueue) {
                         // if (i % 100 == 0) {
                         // if (folderQueue.size() < 5) {
@@ -442,11 +440,11 @@ public class FileRequestor extends PFComponent {
                         // + folderQueue.size());
                         // }
                         // }
-                        i++;
+                        nFolders++;
                         try {
                             folderQueue.remove(folder);
                             // Give CPU a bit time.
-                            if (i % 10 == 0) {
+                            if (nFolders % 5 == 0) {
                                 Thread.sleep(1);
                             }
                             requestMissingFilesForAutodownload(folder);
@@ -454,9 +452,9 @@ public class FileRequestor extends PFComponent {
                             logSevere("RuntimeException: " + e.toString(), e);
                         }
                     }
-                    if (isFiner()) {
+                    if (isFine()) {
                         long took = System.currentTimeMillis() - start;
-                        logFiner("Requesting files for " + nFolders
+                        logFine("Requesting files for " + nFolders
                             + " folder(s) took " + took + "ms.");
                     }
                     // Sleep a bit to avoid spamming
