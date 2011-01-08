@@ -52,19 +52,13 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.border.Border;
 
 import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.PanelBuilder;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -497,7 +491,33 @@ public class UIController extends PFComponent {
                     // Exit to system
                     getController().tryToExit(0);
                 } else if (COMMAND_SYNC_SHUTDOWN.equals(e.getActionCommand())) {
-                    getController().syncAndShutdown();
+                    if (OSUtil.isLinux()) {
+                        FormLayout layout = new FormLayout(
+                                "pref, pref:grow, 3dlu, pref, pref",
+                                "3dlu, pref, 3dlu, pref, 3dlu");
+                        PanelBuilder builder = new PanelBuilder(layout);
+                        CellConstraints cc = new CellConstraints();
+                        builder.add(new JLabel(Translation.getTranslation(
+                                "shutdown.message")), cc.xyw(2, 2, 3));
+                        builder.add(new JLabel(Translation.getTranslation(
+                                "shutdown.prompt")), cc.xy(2, 4));
+                        JPasswordField textField = new JPasswordField(20);
+                        builder.add(textField, cc.xy(4, 4));
+                        int i = DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation("shutdown.title"),
+                                builder.getPanel(), new String[]{
+                                        Translation.getTranslation(
+                                                "general.ok"),
+                                        Translation.getTranslation(
+                                                "general.cancel")}, 0,
+                                GenericDialogType.QUESTION);
+                        if (i == 0) {
+                            String password = textField.getText();
+                            getController().syncAndShutdown(password);
+                        }
+                    } else {
+                        getController().syncAndShutdown(null);
+                    }
                 } else if (COMMAND_SYNCALL.equals(e.getActionCommand())) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

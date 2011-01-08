@@ -2420,8 +2420,10 @@ public class Controller extends PFComponent {
     /**
      * Perform a full sync, then wait for the repo to finish syncing.
      * Then request system shutdown and exit PF.
+     *
+     * @param password required only for Linux shutdowns.
      */
-    public void syncAndShutdown() {
+    public void syncAndShutdown(final String password) {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
         SyncAllFoldersAction.perfomSync(this);
         scheduleAndRepeat(new Runnable() {
@@ -2431,7 +2433,7 @@ public class Controller extends PFComponent {
                     // in case the user aborts the shutdown.
                     oneShot.set(false);
                     log.info("Sync and shutdown in sync.");
-                    if (SystemUtil.shutdown()) {
+                    if (SystemUtil.shutdown(password)) {
                         log.info("Shutdown command issued.");
                         tryToExit(0);
                     } else {

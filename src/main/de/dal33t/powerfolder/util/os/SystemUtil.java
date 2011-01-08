@@ -19,10 +19,8 @@
  */
 package de.dal33t.powerfolder.util.os;
 
-import de.dal33t.powerfolder.Feature;
-
+import java.io.*;
 import java.util.logging.Logger;
-import java.io.IOException;
 
 public class SystemUtil {
 
@@ -31,9 +29,11 @@ public class SystemUtil {
 
     /**
      * Shutdown local computer.
+     *
+     * @param password required only for Linux shutdowns.
      * @return
      */
-    public static boolean shutdown() {
+    public static boolean shutdown(String password) {
         // Keep isShutdownSupported() in sync with this method's abilities.
         if (OSUtil.isWindowsSystem()) {
             try {
@@ -46,15 +46,28 @@ public class SystemUtil {
             } catch (IOException e) {
                 log.severe(e.getMessage());
             }
+        } else if (OSUtil.isLinux()) {
+            try {
+                String[] commands = {"bash", "-c",
+                        "echo " + password + " | sudo -S shutdown -P +1",
+                        "&"};
+                Runtime.getRuntime().exec(commands);
+                // Do NOT waitFor this process
+                // because it will not finish until shutdown.
+                return true;
+            } catch (IOException e) {
+                log.severe(e.getMessage());
+            }
         }
         return false;
     }
 
     /**
      * Returns true if shutdown() is functional for this OS.
+     *
      * @return
      */
     public static boolean isShutdownSupported() {
-        return OSUtil.isWindowsSystem();
+        return OSUtil.isWindowsSystem() || OSUtil.isLinux();
     }
 }
