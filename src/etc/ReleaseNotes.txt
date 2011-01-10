@@ -1,20 +1,29 @@
-PowerFolder Version 4.4.2 - http://www.powerfolder.com
+PowerFolder Version 4.5.0 - http://www.powerfolder.com
 
 = New features =
- * File browser: New options on directories: Restore and download.
+ * Sync and shutdown. Right click the PowerFolder tray icon to start it.
 
 = Improvements =
- * Computers, that are offline 15 days or more, automatically get removed
-   from the folders member view.
- * Added chat typing notice.
- * Added chat formatting options.
-
+ * Mass delete detection warnings are now preserved on restart.
+   http://www.powerfolder.com/wiki/Mass_delete_protection
+ * Folders tab now shows the local target directory for each folder.
+ * Several internal security improvements.
+ * Simplified downloads/uploads cleanup slider.
+ * Removed several unclear warnings dialogs.
+ * Default excluded "ithmb" files (iPod Photo temporary files).
+ * Parallel uploads to other computers is not longer limited to 10.
+ * Several internal changes in preparation of PowerFolder Server 2.2:
+   http://www.powerfolder.com/wiki/Server_Overview
+ 
 = Bugfixes =
- * Fixed bug that prevented to store the local archive setting correctly for
-   new shared folders.
- * Uploads and downloads detail information are now correctly displayed again.
- * File browser/information window closes when the folder is removed.
- * Several other bugfixes
+ * Fixed connection bug with more than 500.000 files on a single folder.
+ * Ignore patterns are not longer reset when changing the local directory.
+   http://www.powerfolder.com/wiki/Excluding_Files_from_Synchronization
+ * File browser filter setting "Unsynchronized files" does not longer show
+   files, that are excluded from sync.
+ * File browser correctly updates view when restoring whole subdirectories.
+ * Warning about not unsynchronized folders now shows the correct number of days.
+ * Fixed a problem when filename starts with "/" (slash).
 
 
 Please give us feedback and request improvements:
@@ -42,6 +51,26 @@ Email      : contact (at) powerfolder.com
 
 
 == Version History ==
+
+Version 4.4.2
+-------------
+
+= New features =
+ * File browser: New options on directories: Restore and download.
+
+= Improvements =
+ * Computers, that are offline 15 days or more, automatically get removed
+   from the folders member view.
+ * Added chat typing notice.
+ * Added chat formatting options.
+
+= Bugfixes =
+ * Fixed bug that prevented to store the local archive setting correctly for
+   new shared folders.
+ * Uploads and downloads detail information are now correctly displayed again.
+ * File browser/information window closes when the folder is removed.
+ * Several other bugfixes
+
 
 Version 4.4.1
 -------------
