@@ -26,7 +26,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.logging.Level;
-import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -42,7 +41,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.ui.Icons;
@@ -94,9 +92,6 @@ public class DebugInformationCard extends InformationCard {
     private JCheckBox logToFileCheckBox;
 
     private JCheckBox scrollLockCheckBox;
-    private JCheckBox showDebugReportsCheckBox;
-
-    public static final String showDebugReportsPrefKey = "Debug.showDebugReports";
 
     public DebugInformationCard(Controller controller) {
         super(controller);
@@ -121,16 +116,6 @@ public class DebugInformationCard extends InformationCard {
         return uiComponent;
     }
 
-    private boolean showDebugReports() {
-        Preferences pref = getController().getPreferences();
-        return pref.getBoolean(showDebugReportsPrefKey, false);
-    }
-
-    private void setShowDebugReports(boolean show) {
-        Preferences pref = getController().getPreferences();
-        pref.putBoolean(showDebugReportsPrefKey, show);
-    }
-
     private void initialize() {
         textPanel = new TextPanel();
         textPanel.setText(LoggingManager.getLogBuffer(), true);
@@ -146,9 +131,6 @@ public class DebugInformationCard extends InformationCard {
         logToFileCheckBox = new JCheckBox("Write log files");
         scrollLockCheckBox = new JCheckBox("Scroll lock");
 
-        showDebugReportsCheckBox = new JCheckBox("Show debug reports");
-        showDebugReportsCheckBox
-            .setToolTipText("Toggles between Chat and Debut reports if clicked on user in tree");
         updateBoxes();
 
         ItemListener itemListener = new ItemListener() {
@@ -164,8 +146,6 @@ public class DebugInformationCard extends InformationCard {
                     }
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
-                } else if (e.getSource() == showDebugReportsCheckBox) {
-                    setShowDebugReports(showDebugReportsCheckBox.isSelected());
                 }
             }
         };
@@ -173,7 +153,6 @@ public class DebugInformationCard extends InformationCard {
         logLevelCombo.addItemListener(itemListener);
         logToFileCheckBox.addItemListener(itemListener);
         scrollLockCheckBox.addItemListener(itemListener);
-        showDebugReportsCheckBox.addItemListener(itemListener);
 
         shutdownFileRequestorButton = new JButton();
         shutdownFileRequestorButton.setIcon(Icons.getIconById(Icons.STOP));
@@ -410,7 +389,6 @@ public class DebugInformationCard extends InformationCard {
     private void updateBoxes() {
         logToFileCheckBox.setSelected(LoggingManager.isLogToFile());
         scrollLockCheckBox.setSelected(!textPanel.isAutoScroll());
-        showDebugReportsCheckBox.setSelected(showDebugReports());
     }
 
     public void buildUIComponent() {
@@ -464,14 +442,6 @@ public class DebugInformationCard extends InformationCard {
         bar.addRelatedGap();
         bar.addFixed(logLevelCombo);
         bar.addRelatedGap();
-
-        // Only show the debug reports check box if the debug.reports
-        // ConfigurationEntry is enabled.
-        if (getController().isDebugReports()) {
-            bar.addFixed(showDebugReportsCheckBox);
-            bar.addRelatedGap();
-        }
-
         bar.addFixed(logToFileCheckBox);
         bar.addRelatedGap();
         bar.addFixed(scrollLockCheckBox);
