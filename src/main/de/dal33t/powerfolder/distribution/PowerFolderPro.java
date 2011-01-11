@@ -52,9 +52,6 @@ public class PowerFolderPro extends AbstractDistribution {
             PreferencesEntry.SKIN_NAME.setValue(controller, Snowland.NAME);
         }
 
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
-            Boolean.FALSE);
-
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
             .getValueBoolean(getController());
         if (prompt && isPowerFolderServer(controller)
