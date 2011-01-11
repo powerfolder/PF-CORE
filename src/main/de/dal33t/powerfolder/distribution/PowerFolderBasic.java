@@ -19,14 +19,10 @@
  */
 package de.dal33t.powerfolder.distribution;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
 
 public class PowerFolderBasic extends AbstractDistribution {
 
@@ -41,8 +37,7 @@ public class PowerFolderBasic extends AbstractDistribution {
     public void init(Controller controller) {
         super.init(controller);
 
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
-            Boolean.FALSE);
+        loadPreConfigFromClasspath(getController(), true);
 
         // Reset network ID to default in default distribution.
         // Separating networks should only be available with Server/Client
@@ -59,20 +54,11 @@ public class PowerFolderBasic extends AbstractDistribution {
             resetServer(controller);
         }
 
-        // Switch to basic skin
+        // Deprecated. Already set in and overriden from Default.config
         PreferencesEntry.SKIN_NAME.setValue(controller, SnowlandBasic.NAME);
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(controller,
+            Boolean.FALSE);
 
-        // Load different Provider URLs
-        try {
-            Properties preConfig = ConfigurationLoader
-                .loadPreConfigFromClasspath("config/Basic.config");
-            ConfigurationLoader.merge(preConfig, controller.getConfig(),
-                controller.getPreferences(), true);
-            logInfo("Loaded preconfiguration file config/Basic.config from jar file");
-        } catch (IOException e) {
-            logSevere("Error while loading config/Basic.config from jar file",
-                e);
-        }
     }
 
     public boolean allowSkinChange() {
