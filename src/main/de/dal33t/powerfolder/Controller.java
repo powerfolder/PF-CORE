@@ -131,7 +131,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.4.3 - 2.1.0.12";
+    public static final String PROGRAM_VERSION = "4.5.0"; // 2.1.0.12
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2418,10 +2418,11 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Perform a full sync, then wait for the repo to finish syncing.
-     * Then request system shutdown and exit PF.
-     *
-     * @param password required only for Linux shutdowns.
+     * Perform a full sync, then wait for the repo to finish syncing. Then
+     * request system shutdown and exit PF.
+     * 
+     * @param password
+     *            required only for Linux shutdowns.
      */
     public void syncAndShutdown(final String password) {
         final AtomicBoolean oneShot = new AtomicBoolean(true);
