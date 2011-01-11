@@ -989,7 +989,8 @@ public class ServerClient extends PFComponent {
         logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
-        if (ProUtil.getPublicKey(getController(), newServerInfo.getNode()) == null)
+        if (ProUtil.isRunningProVersion()
+            && ProUtil.getPublicKey(getController(), newServerInfo.getNode()) == null)
         {
             PublicKey serverKey = publicKeyService.getPublicKey(newServerInfo
                 .getNode());
