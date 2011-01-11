@@ -27,13 +27,13 @@ import de.dal33t.powerfolder.util.Reject;
  * Contains settings for the updatecheck.
  */
 public class UpdateSetting {
-    public String versionCheckURL = "http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt";
+    public String versionCheckURL;
     /**
      * A info file containing the link that may override
-     * <code>releaseExeURL</code> if existing.
+     * <code>windowsExeURL</code> if existing.
      */
-    public String downloadLinkInfoURL = "http://checkversion.powerfolder.com/PowerFolder_DownloadLocation.txt";
-    public String windowsExeURL = "http://download.powerfolder.com/free/PowerFolder_Latest_Win32_Installer.exe";
+    public String downloadLinkInfoURL;
+    public String windowsExeURL;
 
     /**
      * For JUnit tests only.

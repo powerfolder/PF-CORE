@@ -232,7 +232,8 @@ public class Updater extends Thread {
                             + settings.versionCheckURL);
                     return null;
                 }
-                LOG.info("Latest available version: " + latestVersion);
+                LOG.info("Latest available version: " + latestVersion + " @ "
+                    + settings.versionCheckURL);
                 return latestVersion;
             }
         } catch (IOException e) {
