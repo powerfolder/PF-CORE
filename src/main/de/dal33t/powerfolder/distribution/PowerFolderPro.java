@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.skin.LightSky;
-import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.skin.SnowlandBasic;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
@@ -49,7 +48,7 @@ public class PowerFolderPro extends AbstractDistribution {
         // Switch to non-basic skin
         String skinName = PreferencesEntry.SKIN_NAME.getValueString(controller);
         if (skinName.equals(SnowlandBasic.NAME)) {
-            PreferencesEntry.SKIN_NAME.setValue(controller, Snowland.NAME);
+            PreferencesEntry.SKIN_NAME.setValue(controller, LightSky.NAME);
         }
 
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
