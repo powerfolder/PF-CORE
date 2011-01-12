@@ -100,7 +100,7 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtLisa().getKnownItemCount());
 
         // Wait for filelist from bart
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getIncomingFiles().size() >= expectedFilesAtBart;
             }
@@ -151,12 +151,12 @@ public class ProjectWorkSyncTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Wait for filelists
-        TestHelper.waitForCondition(2, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtLisa().getIncomingFiles().size() >= 3;
             }
         });
-        TestHelper.waitForCondition(2, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return getFolderAtBart().getIncomingFiles().size() >= 2;
             }
