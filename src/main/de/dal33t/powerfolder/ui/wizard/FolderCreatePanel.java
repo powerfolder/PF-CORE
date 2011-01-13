@@ -347,7 +347,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             FolderRepository folderRepo = getController().getFolderRepository();
             File baseDir = new File(folderRepo.getFoldersBasedir());
             if (!baseDir.exists()) {
-
                 log.info(String.format("Creating basedir: %s", baseDir
                     .getAbsolutePath()));
                 baseDir.mkdirs();
@@ -355,7 +354,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
             File existingFolder = new File(baseDir, folderInfo.name);
             if (existingFolder.exists()) {
-                log.info("Folder is already a subdirectory of basedir");
+                log.finer("Folder is an existing subdirectory in basedir: "
+                    + existingFolder);
                 return;
             }
 
