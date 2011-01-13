@@ -479,11 +479,19 @@ public abstract class TwoControllerTestCase extends TestCase {
         SyncProfile profile)
     {
         final Folder folder1;
+        final Folder meta1;
         final Folder folder2;
+        final Folder meta2;
         FolderSettings folderSettings1 = new FolderSettings(baseDir1, profile,
             false, ArchiveMode.FULL_BACKUP, 5);
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
+        if (Feature.META_FOLDER.isEnabled()) {
+            meta1 = getContollerBart().getFolderRepository()
+                .getMetaFolderForParent(folder1.getInfo());
+        } else {
+            meta1 = null;
+        }
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
             false, ArchiveMode.FULL_BACKUP, 5);
@@ -492,13 +500,21 @@ public abstract class TwoControllerTestCase extends TestCase {
         if (folder1.isDeviceDisconnected() || folder2.isDeviceDisconnected()) {
             fail("Unable to join both controller to " + foInfo);
         }
+        if (Feature.META_FOLDER.isEnabled()) {
+            meta2 = getContollerLisa().getFolderRepository()
+                .getMetaFolderForParent(folder2.getInfo());
+        } else {
+            meta2 = null;
+        }
 
         try {
             // Give them time to join
             TestHelper.waitForCondition(30, new Condition() {
                 public boolean reached() {
                     return folder1.getMembersCount() >= 2
-                        && folder2.getMembersCount() >= 2;
+                        && folder2.getMembersCount() >= 2
+                        && (meta1 == null || meta1.getMembersCount() >= 2)
+                        && (meta2 == null || meta2.getMembersCount() >= 2);
                 }
             });
         } catch (Exception e) {
