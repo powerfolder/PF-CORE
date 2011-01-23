@@ -229,7 +229,7 @@ public class IOProvider extends PFComponent {
                             continue;
                         }
                         if (!list.contains(peer)) {
-                            logSevere("ConHan not in keepalive list of " + node);
+                            logFine("ConHan not in keepalive list of " + node);
                             list.add(peer);
                         }
                     }
