@@ -314,9 +314,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         // Clear send queue
         messagesToSendQueue.clear();
 
-        getController().getIOProvider().removeKeepAliveCheck(this);
         getController().getIOProvider().getRelayedConnectionManager()
             .removePedingRelayedConnectionHandler(this);
+        getController().getIOProvider().removeKeepAliveCheck(this);
 
         // Trigger all waiting treads
         synchronized (identityWaiter) {
