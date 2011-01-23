@@ -30,8 +30,39 @@ package de.dal33t.powerfolder.transfer;
  * @version $Revision: 1.3 $
  */
 public class BandwidthLimiter {
-    protected long available = -1;
-    private Object monitor = new Object();
+
+    public static final long UNLIMITED = -1;
+
+    public static final BandwidthLimiter WAN_OUTPUT_BANDWIDTH_LIMITER = 
+            new BandwidthLimiter(BandwidthLimiterInfo.WAN_OUTPUT);
+    public static final BandwidthLimiter WAN_INPUT_BANDWIDTH_LIMITER =
+            new BandwidthLimiter(BandwidthLimiterInfo.WAN_INPUT);
+    public static final BandwidthLimiter LAN_OUTPUT_BANDWIDTH_LIMITER =
+            new BandwidthLimiter(BandwidthLimiterInfo.LAN_OUTPUT);
+    public static final BandwidthLimiter LAN_INPUT_BANDWIDTH_LIMITER =
+            new BandwidthLimiter(BandwidthLimiterInfo.LAN_INPUT);
+
+    /**
+     * The amount of bandwidth initially set by setAvailable().
+     * This is used to create stats and is NOT modified by bandwidth requests.
+     */
+    private long initialAvailable = UNLIMITED;
+
+    /**
+     * The amount of bandwidth remaining.
+     */
+    private long available = UNLIMITED;
+
+    private final Object monitor = new Object();
+    private BandwidthLimiterInfo id;
+
+    private BandwidthLimiter(BandwidthLimiterInfo id) {
+        this.id = id;
+    }
+
+    public BandwidthLimiterInfo getId() {
+        return id;
+    }
 
     /**
      * Requests bandwidth on a medium. Blocks until bandwidth is available.
@@ -56,20 +87,36 @@ public class BandwidthLimiter {
     }
 
     /**
-     * Sets the amount of available"bandwidth". As a side-effect this call will
+     * Sets the amount of available "bandwidth". As a side-effect this call will
      * wake Threads waiting in requestBandwidth().
      * 
      * @param amount
      *            the amount to set available. An amount < 0 states that there
      *            is no limit.
+     * @return a stat record of how much bandwidth there was initially
+     * and how much was left over.
      */
-    public void setAvailable(long amount) {
-    	synchronized (monitor) {
+    public BandwidthStat setAvailable(long amount) {
+
+        BandwidthStat bandwidthStat;
+
+        synchronized (monitor) {
+
+            // Create a stat of how much bandwidth there was initially
+            // and how much there is now.
+            bandwidthStat = new BandwidthStat(id, initialAvailable, amount);
+
+            // Set the new amount
+            initialAvailable = amount;
             available = amount;
+
+            // Let everyone know.
             if (available != 0) {
                 monitor.notifyAll();
             }
 		}
+
+        return bandwidthStat;
     }
 
     /**
@@ -88,7 +135,7 @@ public class BandwidthLimiter {
      * invocation of requestBandwidth which didn't use all of the requested
      * bandwidth.
      * 
-     * @param i
+     * @param amount
      */
     public void returnAvailable(int amount) {
     	synchronized (monitor) {

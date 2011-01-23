@@ -135,7 +135,7 @@ public class FileInfoSQLConverter {
         // if (controller != null) {
         // for (Folder folder : controller.getFolderRepository().getFolders())
         // {
-        // if (folder.getId().equals(folderId)) {
+        // if (folder.getInfo().equals(folderId)) {
         // foInfo = folder.getInfo();
         // break;
         // }

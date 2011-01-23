@@ -33,12 +33,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -170,28 +168,28 @@ public class TransferManager extends PFComponent {
 
     public TransferManager(Controller controller) {
         super(controller);
-        this.started = false;
-        this.queuedUploads = new CopyOnWriteArrayList<Upload>();
-        this.activeUploads = new CopyOnWriteArrayList<Upload>();
-        this.completedUploads = new CopyOnWriteArrayList<Upload>();
-        this.dlManagers = Util.createConcurrentHashMap();
-        this.pendingDownloads = new CopyOnWriteArrayList<Download>();
-        this.completedDownloads = Util.createConcurrentHashMap();
-        this.downloadsCount = Util.createConcurrentHashMap();
-        this.uploadCounter = new TransferCounter();
-        this.downloadCounter = new TransferCounter();
+        started = false;
+        queuedUploads = new CopyOnWriteArrayList<Upload>();
+        activeUploads = new CopyOnWriteArrayList<Upload>();
+        completedUploads = new CopyOnWriteArrayList<Upload>();
+        dlManagers = Util.createConcurrentHashMap();
+        pendingDownloads = new CopyOnWriteArrayList<Download>();
+        completedDownloads = Util.createConcurrentHashMap();
+        downloadsCount = Util.createConcurrentHashMap();
+        uploadCounter = new TransferCounter();
+        downloadCounter = new TransferCounter();
         totalUploadTrafficCounter = new TransferCounter();
         totalDownloadTrafficCounter = new TransferCounter();
 
         // Create listener support
-        this.listenerSupport = ListenerSupportFactory
+        listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
         bandwidthProvider = new BandwidthProvider(getController()
             .getThreadPool());
 
-        sharedWANOutputHandler = new BandwidthLimiter();
-        sharedWANInputHandler = new BandwidthLimiter();
+        sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
+        sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;
 
         checkConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN, 0);
@@ -203,8 +201,8 @@ public class TransferManager extends PFComponent {
         setAllowedUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN));
         setAllowedDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN));
 
-        sharedLANOutputHandler = new BandwidthLimiter();
-        sharedLANInputHandler = new BandwidthLimiter();
+        sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
+        sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
 
         // bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
         // set ul limit

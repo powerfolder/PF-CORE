@@ -19,15 +19,14 @@
 */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.Map;
-import java.util.TimerTask;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
@@ -42,12 +41,13 @@ public class BandwidthProvider extends Loggable {
     // ms between bandwidth "pushs"
     public static final int PERIOD = 1000;
 
-    private Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
+    private final Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
     private ScheduledExecutorService scheduledES;
     private ScheduledFuture<?> task;
+    private final BandwidthStatListener statListenerSupport = ListenerSupportFactory
+            .createListenerSupport(BandwidthStatListener.class);
     
     public BandwidthProvider(ScheduledExecutorService scheduledES) {
-        super();
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
         this.scheduledES = scheduledES;
     }
@@ -56,15 +56,20 @@ public class BandwidthProvider extends Loggable {
         task = scheduledES.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
-                    for (Map.Entry<BandwidthLimiter, Long> me : limits
-                        .entrySet())
-                    {
-                        if (me.getKey() == null)
+                    for (Map.Entry<BandwidthLimiter, Long> me :
+                            limits.entrySet()) {
+                        BandwidthLimiter limiter = me.getKey();
+                        if (limiter == null) {
                             continue;
-                        me.getKey().setAvailable(
-                            me.getValue() > 0
-                                ? PERIOD * me.getValue() / 1000
-                                : -1);
+                        }
+
+                        // Set new limit and distribute the stat from the
+                        // previous period.
+                        Long value = me.getValue();
+                        BandwidthStat stat = limiter.setAvailable(
+                            value > 0 ? PERIOD * value / 1000 :
+                                    BandwidthLimiter.UNLIMITED);
+                        statListenerSupport.handleBandwidthStat(stat);
                     }
                 }
             }
@@ -125,5 +130,13 @@ public class BandwidthProvider extends Loggable {
         synchronized (limits) {
             limits.remove(limiter);
         }
+    }
+
+    public void addBandwidthStatListener(BandwidthStatListener listener) {
+        ListenerSupportFactory.addListener(statListenerSupport, listener);
+    }
+
+    public void removeBandwidthStatListener(BandwidthStatListener listener) {
+        ListenerSupportFactory.addListener(statListenerSupport, listener);
     }
 }
