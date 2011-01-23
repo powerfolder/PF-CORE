@@ -30,7 +30,7 @@ public class UnsynchronizedFolderProblem extends Problem {
 
     private final String description;
 
-    public UnsynchronizedFolderProblem(FolderInfo folderInfo, int days) {
+    public UnsynchronizedFolderProblem(FolderInfo folderInfo, long days) {
         description = Translation.getTranslation("folder_problem.unsynchronized",
                 folderInfo.name, String.valueOf(days));
     }

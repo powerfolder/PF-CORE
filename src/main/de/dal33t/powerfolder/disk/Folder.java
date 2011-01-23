@@ -3903,8 +3903,8 @@ public class Folder extends PFComponent {
             }
             if (ufp == null) {
                 // Calculate the actual number of days since the last sync.
-                int numberOfDays = (int) (new Date().getTime() -
-                        lastSyncDate.getTime()) / 24 / 3600 / 1000;
+                long numberOfDays = (new Date().getTime() -
+                        lastSyncDate.getTime()) / 24L / 3600L / 1000L;
                 Problem problem = new UnsynchronizedFolderProblem(currentInfo,
                     numberOfDays);
                 addProblem(problem);
