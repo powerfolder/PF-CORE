@@ -44,8 +44,8 @@ public class BandwidthProvider extends Loggable {
     private final Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
     private ScheduledExecutorService scheduledES;
     private ScheduledFuture<?> task;
-    private final BandwidthStatListener statListenerSupport = ListenerSupportFactory
-            .createListenerSupport(BandwidthStatListener.class);
+    private final BandwidthStatsListener statListenerSupport = ListenerSupportFactory
+            .createListenerSupport(BandwidthStatsListener.class);
     
     public BandwidthProvider(ScheduledExecutorService scheduledES) {
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
@@ -132,11 +132,11 @@ public class BandwidthProvider extends Loggable {
         }
     }
 
-    public void addBandwidthStatListener(BandwidthStatListener listener) {
+    public void addBandwidthStatListener(BandwidthStatsListener listener) {
         ListenerSupportFactory.addListener(statListenerSupport, listener);
     }
 
-    public void removeBandwidthStatListener(BandwidthStatListener listener) {
+    public void removeBandwidthStatListener(BandwidthStatsListener listener) {
         ListenerSupportFactory.addListener(statListenerSupport, listener);
     }
 }

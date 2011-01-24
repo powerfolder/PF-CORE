@@ -50,6 +50,18 @@ public class BandwidthStat {
         return residualBandwidth;
     }
 
+    public long getUsedBandwidth() {
+        return initialBandwidth - residualBandwidth;
+    }
+
+    public double getUsedPercentage() {
+        try {
+            return 100.0 * getUsedBandwidth() / initialBandwidth;
+        } catch (ArithmeticException e) {
+            return 0.0;
+        }
+    }
+
     @Override
     public String toString() {
         return "BandwidthStat{" +

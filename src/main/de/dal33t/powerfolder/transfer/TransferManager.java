@@ -166,6 +166,8 @@ public class TransferManager extends PFComponent {
 
     private DownloadManagerFactory downloadManagerFactory = MultiSourceDownloadManager.factory;
 
+    private BandwidthStatsRecorder statsRecorder;
+
     public TransferManager(Controller controller) {
         super(controller);
         started = false;
@@ -187,6 +189,9 @@ public class TransferManager extends PFComponent {
 
         bandwidthProvider = new BandwidthProvider(getController()
             .getThreadPool());
+        
+        statsRecorder = new BandwidthStatsRecorder();
+        bandwidthProvider.addBandwidthStatListener(statsRecorder);
 
         sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
         sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;

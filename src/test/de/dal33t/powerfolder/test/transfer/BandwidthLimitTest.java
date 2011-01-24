@@ -190,7 +190,7 @@ public class BandwidthLimitTest extends TestCase {
         provider.start();
         provider.setLimitBPS(bl, 1000);
         final AtomicBoolean gotStat = new AtomicBoolean();
-        BandwidthStatListener listener = new BandwidthStatListener() {
+        BandwidthStatsListener listener = new BandwidthStatsListener() {
             public void handleBandwidthStat(BandwidthStat stat) {
                 System.out.println("Got a stat...");
                 gotStat.set(true);
