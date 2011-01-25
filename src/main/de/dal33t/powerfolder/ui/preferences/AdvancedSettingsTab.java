@@ -534,14 +534,18 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
             this.address = address;
 
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < address.getAddress().length; i++) {
-                if (i > 0) {
-                    sb.append('.');
+            if (address.getAddress() != null) {
+                for (int i = 0; i < address.getAddress().length; i++) {
+                    if (i > 0) {
+                        sb.append('.');
+                    }
+                    sb.append(address.getAddress()[i] & 0xff);
                 }
-                sb.append(address.getAddress()[i] & 0xff);
             }
             sb.append(" / ");
-            sb.append(netInterface.getDisplayName().trim());
+            if (StringUtils.isNotBlank(netInterface.getDisplayName())) {
+                sb.append(netInterface.getDisplayName().trim());
+            }
             showString = sb.toString();
         }
 
@@ -585,8 +589,8 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            File newLocation = DialogFactory.chooseDirectory(
-                getController().getUIController(), initial);
+            File newLocation = DialogFactory.chooseDirectory(getController()
+                .getUIController(), initial);
             if (newLocation != null) {
 
                 // Make sure that the user is not setting this to the base dir
