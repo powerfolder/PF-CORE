@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Identity;
@@ -181,12 +182,8 @@ public class Util {
     }
 
     public static boolean isMySelfPowerFolderComCloud(Controller controller) {
-        boolean pfCloud = false;
-        String hostname = ConfigurationEntry.HOSTNAME.getValue(controller);
-        if (hostname != null && hostname.contains("powerfolder.com")) {
-            pfCloud = true;
-        }
-        return pfCloud;
+        // WHAT A MESS
+        return Feature.CREDITS_SYSTEM.isEnabled();
     }
 
     /**
