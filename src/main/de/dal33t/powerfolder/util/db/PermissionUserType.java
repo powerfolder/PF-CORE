@@ -95,7 +95,7 @@ public class PermissionUserType extends Loggable implements UserType {
             return null;
             // throw new IllegalStateException("Permission ID is empty");
         }
-        // FolderPermissions (e. g. 4711_FolderAdminPermission)
+        // FolderPermissions (e. g. 4711_FP_FolderAdminPermission)
         else if (permissionID.contains("_FP_")) {
             String[] idAndName = permissionID.split("_FP_");
             String fiId = idAndName[0];
