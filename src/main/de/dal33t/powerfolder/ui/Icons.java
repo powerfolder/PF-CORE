@@ -228,7 +228,7 @@ public class Icons {
 
     private static Properties iconProperties;
 
-    private static final List<String> unknownIcons = new ArrayList<String>();
+    private static final List<String> UNKNOWN_ICONS = new ArrayList<String>();
 
     /**
      * Constructor - no instances.
@@ -276,6 +276,11 @@ public class Icons {
             return null;
         }
 
+        if (UNKNOWN_ICONS.contains(id)) {
+            // Already discovered that we do not know this one.
+            return null;
+        }
+
         Icon icon = ID_ICON_MAP.get(id);
         if (icon != null) {
             return icon;
@@ -304,13 +309,11 @@ public class Icons {
 
         String iconId = getIconId(id);
         if (iconId == null) {
-            if (!unknownIcons.contains(id)) {
-                // Log it - only once.
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Icon not found ID: '" + id + '\'');
-                }
-                unknownIcons.add(id);
+            // Log it.
+            if (log.isLoggable(Level.INFO)) {
+                log.info("Icon not found ID: '" + id + '\'');
             }
+            UNKNOWN_ICONS.add(id);
             return null;
         }
 
