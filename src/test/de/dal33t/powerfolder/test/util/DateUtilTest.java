@@ -26,6 +26,7 @@ import java.util.GregorianCalendar;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.DateUtil;
+import org.jdesktop.swingx.calendar.DateUtils;
 
 public class DateUtilTest extends TestCase {
 
@@ -66,6 +67,47 @@ public class DateUtilTest extends TestCase {
         assertTrue("Today is before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
         cal.add(Calendar.DATE, 1);
         assertFalse("Tomorrow is not before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+    }
+
+    public void testZeroTime() {
+        Date date = new Date();
+        Date result = DateUtil.zeroTime(date);
+        assertFalse("Dates are the same", date.equals(result));
+
+        Calendar dateCal = Calendar.getInstance();
+        dateCal.setTime(date);
+
+        Calendar resultCal = Calendar.getInstance();
+        resultCal.setTime(result);
+
+        assertSame("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
+                resultCal.get(Calendar.DAY_OF_YEAR));
+        assertFalse("The rest are same",
+                dateCal.get(Calendar.HOUR_OF_DAY) == resultCal.get(Calendar.HOUR_OF_DAY) &&
+                        dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
+                        dateCal.get(Calendar.SECOND) == resultCal.get(Calendar.SECOND) &&
+                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND));
+    }
+
+    public void testTruncateToHour() {
+        Date date = new Date();
+        Date result = DateUtil.truncateToHour(date);
+        assertFalse("Dates are the same", date.equals(result));
+
+        Calendar dateCal = Calendar.getInstance();
+        dateCal.setTime(date);
+
+        Calendar resultCal = Calendar.getInstance();
+        resultCal.setTime(result);
+
+        assertSame("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
+                resultCal.get(Calendar.DAY_OF_YEAR));
+        assertSame("Hours are different", dateCal.get(Calendar.HOUR_OF_DAY),
+                resultCal.get(Calendar.HOUR_OF_DAY));
+        assertFalse("The rest are same",
+                dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
+                        dateCal.get(Calendar.SECOND) == resultCal.get(Calendar.SECOND) &&
+                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND));
     }
 
 }

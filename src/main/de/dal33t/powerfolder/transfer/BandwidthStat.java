@@ -19,23 +19,31 @@
 */
 package de.dal33t.powerfolder.transfer;
 
+import java.util.Date;
+
 /**
  * Holds stats for a time unit of bandwidth.
- * Includes the BandwidthLimiter source info,
+ * Includes the date of the event, the BandwidthLimiter source info,
  * the bandwidth made available at the start of the time unit, and
  * the residual bandwith left at the end of the time unit.
  */
 public class BandwidthStat {
 
+    private final Date date;
     private final BandwidthLimiterInfo info;
     private final long initialBandwidth;
     private final long residualBandwidth;
 
-    public BandwidthStat(BandwidthLimiterInfo info, long initialBandwidth,
+    public BandwidthStat(Date date, BandwidthLimiterInfo info, long initialBandwidth,
                          long residualBandwidth) {
+        this.date = date;
         this.info = info;
         this.initialBandwidth = initialBandwidth;
         this.residualBandwidth = residualBandwidth;
+    }
+
+    public Date getDate() {
+        return date;
     }
 
     public BandwidthLimiterInfo getInfo() {
@@ -50,22 +58,11 @@ public class BandwidthStat {
         return residualBandwidth;
     }
 
-    public long getUsedBandwidth() {
-        return initialBandwidth - residualBandwidth;
-    }
-
-    public double getUsedPercentage() {
-        try {
-            return 100.0 * getUsedBandwidth() / initialBandwidth;
-        } catch (ArithmeticException e) {
-            return 0.0;
-        }
-    }
-
     @Override
     public String toString() {
         return "BandwidthStat{" +
-                "info=" + info +
+                "date=" + date +
+                ", info=" + info +
                 ", initialBandwidth=" + initialBandwidth +
                 ", residualBandwidth=" + residualBandwidth +
                 '}';

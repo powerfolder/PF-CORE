@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.transfer;
 
+import java.util.Date;
+
 /**
  * Convenient class to limit bandwidth (for example for streams). A
  * BandwidthLimiter starts out with 0 available and doesn't increase that. So it
@@ -104,7 +106,8 @@ public class BandwidthLimiter {
 
             // Create a stat of how much bandwidth there was initially
             // and how much there is now.
-            bandwidthStat = new BandwidthStat(id, initialAvailable, amount);
+            bandwidthStat = new BandwidthStat(new Date(), id,
+                    initialAvailable, amount);
 
             // Set the new amount
             initialAvailable = amount;

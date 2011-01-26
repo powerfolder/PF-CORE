@@ -110,7 +110,7 @@ public class DateUtil {
      * @param predicate
      * @return
      */
-    public static boolean isBeforeEndOfDate(Date subject, Date predicate) {
+    public static boolean isBeforeEndOfDate(Date subject,Date predicate) {
 
         Calendar cal = new GregorianCalendar();
         cal.setTime(zeroTime(predicate));
@@ -132,6 +132,22 @@ public class DateUtil {
         Calendar cal = new GregorianCalendar();
         cal.setTime(date);
         cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Returns a date that is the same day and hour as the arg
+     * with all other time parts == 0.
+     *
+     * @param date
+     * @return
+     */
+    public static Date truncateToHour(Date date) {
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
