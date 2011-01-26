@@ -40,9 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -230,6 +228,8 @@ public class Icons {
 
     private static Properties iconProperties;
 
+    private static final List<String> unknownIcons = new ArrayList<String>();
+
     /**
      * Constructor - no instances.
      */
@@ -304,8 +304,14 @@ public class Icons {
 
         String iconId = getIconId(id);
         if (iconId == null) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Icon not found ID: '" + id + '\'');
+            if (unknownIcons.contains(id)) {
+                // Ignore
+            } else {
+                // Log it - only once.
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Icon not found ID: '" + id + '\'');
+                }
+                unknownIcons.add(id);
             }
             return null;
         }
