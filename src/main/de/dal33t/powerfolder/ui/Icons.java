@@ -304,9 +304,7 @@ public class Icons {
 
         String iconId = getIconId(id);
         if (iconId == null) {
-            if (unknownIcons.contains(id)) {
-                // Ignore
-            } else {
+            if (!unknownIcons.contains(id)) {
                 // Log it - only once.
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("Icon not found ID: '" + id + '\'');
