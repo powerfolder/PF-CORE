@@ -131,7 +131,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.5.0"; // 2.1.0.12
+    public static final String PROGRAM_VERSION = "4.5.0 - 2.1.0.20"; // 2.1.0.12
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2217,8 +2217,8 @@ public class Controller extends PFComponent {
                 .load(Distribution.class);
             for (Distribution br : brandingLoader) {
                 if (distribution != null) {
-                    logSevere("Found multiple distribution classes: "
-                        + br.getName() + ", got already "
+                    logWarning("Found multiple distribution classes: "
+                        + br.getName() + ", already using "
                         + distribution.getName());
                 }
                 distribution = br;
