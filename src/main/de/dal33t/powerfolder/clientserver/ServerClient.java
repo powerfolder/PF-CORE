@@ -268,15 +268,6 @@ public class ServerClient extends PFComponent {
         if (server.equals(node)) {
             return true;
         }
-        // if (node.getInfo().contains("RELAY")) {
-        // logWarning("isServer: node: "
-        // + node.getReconnectAddress()
-        // + ". have: "
-        // + server.getReconnectAddress()
-        // + ". equals? "
-        // + server.getReconnectAddress().equals(
-        // node.getReconnectAddress()));
-        // }
         return isTempServerNode(server)
             && server.getReconnectAddress().equals(node.getReconnectAddress());
     }
