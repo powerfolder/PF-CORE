@@ -57,6 +57,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Class for choosing a directory. Shows a tree of the local file system. User
@@ -96,7 +97,6 @@ class DirectoryChooser extends BaseDialog {
         model = new DefaultTreeModel(rootTreeNode);
         tree = new DirectoryTree(model, onlineFolders);
         pathField = new JTextField();
-        pathField.setEditable(false);
         newDirectoryAction = new NewDirectoryAction(getController());
         newDirectoryAction.setEnabled(false);
         newDirButton = new JButton(newDirectoryAction);
@@ -147,18 +147,19 @@ class DirectoryChooser extends BaseDialog {
     }
 
     private void okEvent() {
-        if (tree.getSelectionPath() != null) {
-            Object o = tree.getSelectionPath().getLastPathComponent();
-            if (o instanceof DirectoryTreeNode) {
-                DirectoryTreeNode dtn = (DirectoryTreeNode) o;
-                selectedDir = dtn.getDir();
+        String path = pathField.getText();
+        if (StringUtils.isNotBlank(path)) {
+            File temp = new File(path);
 
-                // Create any virtual folders now.
-                if (!selectedDir.exists()) {
-                    selectedDir.mkdirs();
-                }
+            // Create any virtual folders now.
+            if (!temp.exists()) {
+                temp.mkdirs();
             }
-            setVisible(false);
+            
+            if (temp.exists()) {
+                selectedDir = temp;
+                setVisible(false);
+            }
         }
     }
 
@@ -310,10 +311,8 @@ class DirectoryChooser extends BaseDialog {
                                                     .getPathToRoot(childNode);
                                                 TreePath childPath = new TreePath(
                                                     childPathNodes);
-                                                tree
-                                                    .setSelectionPath(childPath);
-                                                tree
-                                                    .scrollPathToVisible(childPath);
+                                                tree.setSelectionPath(childPath);
+                                                tree.scrollPathToVisible(childPath);
                                                 break;
                                             }
                                         }
