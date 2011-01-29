@@ -223,8 +223,8 @@ public class Account implements Serializable {
      *            the folder.
      */
     public void revokeAllFolderPermission(FolderInfo foInfo) {
-        revoke(FolderPermission.read(foInfo), FolderPermission
-            .readWrite(foInfo), FolderPermission.admin(foInfo),
+        revoke(FolderPermission.read(foInfo),
+            FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo),
             FolderPermission.owner(foInfo));
     }
 
@@ -280,8 +280,8 @@ public class Account implements Serializable {
         if (permissions.isEmpty()) {
             return Collections.emptyList();
         }
-        Collection<FolderInfo> folders = new ArrayList<FolderInfo>(permissions
-            .size());
+        Collection<FolderInfo> folders = new ArrayList<FolderInfo>(
+            permissions.size());
         for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission) {
                 FolderPermission fp = (FolderPermission) p;
@@ -296,8 +296,8 @@ public class Account implements Serializable {
      *         granted.
      */
     public Collection<FolderInfo> getFolders() {
-        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>(permissions
-            .size());
+        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>(
+            permissions.size());
         for (Permission permission : permissions) {
             if (permission instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) permission;
@@ -439,10 +439,6 @@ public class Account implements Serializable {
     }
 
     public List<String> getLicenseKeyFiles() {
-        if (licenseKeyFileList == null && licenseKeyFiles != null) {
-            migrate();
-        }
-
         return licenseKeyFileList;
     }
 
@@ -454,8 +450,7 @@ public class Account implements Serializable {
             return -1;
         }
         long daysSinceRegistration = (System.currentTimeMillis() - registerDate
-            .getTime())
-            / (1000L * 60 * 60 * 24);
+            .getTime()) / (1000L * 60 * 60 * 24);
         return (int) daysSinceRegistration;
     }
 
@@ -725,11 +720,6 @@ public class Account implements Serializable {
         if (oid == null) {
             // Migration.
             oid = IdGenerator.makeId();
-        }
-        if (licenseKeyFileList != null && !licenseKeyFileList.isEmpty()
-            && licenseKeyFileList.isEmpty())
-        {
-            licenseKeyFileList.addAll(licenseKeyFiles);
         }
     }
 }
