@@ -32,7 +32,7 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
     /**
      * Map of stats by info-hour.
      */
-    private final Map<StatKey, StatValue> cumulativeStats =
+    private final Map<StatKey, StatValue> coalescedStats =
             new HashMap<StatKey, StatValue>();
 
     public void handleBandwidthStat(BandwidthStat stat) {
@@ -41,11 +41,13 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
 
         // Synchronize on the map so that we do not get concurrent updates to
         // stats.
-        synchronized (cumulativeStats) {
-            StatValue value = cumulativeStats.get(key);
+        synchronized (coalescedStats) {
+            StatValue value = coalescedStats.get(key);
+
+            // Create a new entry if required.
             if (value == null) {
                 value = new StatValue();
-                cumulativeStats.put(key, value);
+                coalescedStats.put(key, value);
             }
 
             // Update the stat data.
@@ -55,9 +57,9 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
     }
 
     public void pruneStats(Date date) {
-        synchronized (cumulativeStats) {
+        synchronized (coalescedStats) {
             for (Iterator<StatKey> iterator =
-                    cumulativeStats.keySet().iterator();
+                    coalescedStats.keySet().iterator();
                  iterator.hasNext();) {
                 StatKey statKey = iterator.next();
                 if (statKey.date.before(date)) {
@@ -65,14 +67,18 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
                 }
             }
         }
-        String s = "";
     }
 
+    /**
+     * Returns the coalesced stats.
+     *
+     * @return
+     */
     public Set<BandwidthStat> getStats() {
-        synchronized (cumulativeStats) {
+        synchronized (coalescedStats) {
             Set<BandwidthStat> stats = new TreeSet<BandwidthStat>();
             for (Map.Entry<StatKey, StatValue> entry :
-                    cumulativeStats.entrySet()) {
+                    coalescedStats.entrySet()) {
                 BandwidthStat stat = new BandwidthStat(entry.getKey().getDate(),
                         entry.getKey().getInfo(),
                         entry.getValue().getInitial(),

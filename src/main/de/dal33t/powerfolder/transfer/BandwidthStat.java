@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: BandwidthStat.java 7042 2009-02-27 01:17:24Z harry $
+* $Id: BandwidthStat.java 7042 2011-01-27 01:17:24Z harry $
 */
 package de.dal33t.powerfolder.transfer;
 
@@ -74,5 +74,31 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
         } else {
             return date.compareTo(o.date); 
         }
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        BandwidthStat that = (BandwidthStat) obj;
+
+        if (!date.equals(that.date)) {
+            return false;
+        }
+        if (info != that.info) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result = date.hashCode();
+        result = 31 * result + info.hashCode();
+        return result;
     }
 }

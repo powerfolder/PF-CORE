@@ -1,5 +1,5 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+* Copyright 2004 - 2011 Christian Sprajc. All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: BandwidthStatRecorderTest.java 4282 2011-01-28 03:25:09Z tot $
+* $Id: BandwidthStatRecorderTest.java 4282 2011-01-28 03:25:09Z harry $
 */
 package de.dal33t.powerfolder.test.transfer;
 
@@ -26,10 +26,18 @@ import de.dal33t.powerfolder.transfer.BandwidthLimiterInfo;
 
 import java.util.*;
 
+/**
+ * Set of tests to validate the BandwidthStatRecorder functionality.
+ */
 public class BandwidthStatRecorderTest extends TestCase {
 
     private BandwidthStatsRecorder recorder;
 
+    /**
+     * Create a BandwidthStatsRecorder to play with.
+     *
+     * @throws Exception
+     */
     public void setUp() throws Exception {
         super.setUp();
         recorder = new BandwidthStatsRecorder();
@@ -109,7 +117,7 @@ public class BandwidthStatRecorderTest extends TestCase {
     }
 
     /**
-     * Test that we can prune stas by date.
+     * Test that we can prune stats by date.
      */
     public void testPrune() {
         Calendar cal = Calendar.getInstance();
@@ -127,7 +135,7 @@ public class BandwidthStatRecorderTest extends TestCase {
 
         cal.add(Calendar.HOUR, -1);
 
-        // Remove old record.
+        // Remove the older record.
         recorder.pruneStats(cal.getTime());
 
         // Check the older one is gone.
@@ -137,7 +145,6 @@ public class BandwidthStatRecorderTest extends TestCase {
         BandwidthStat stat = iterator.next();
         assertEquals("Wrong initial", 999L, stat.getInitialBandwidth());
         assertEquals("Wrong residual", 99L, stat.getResidualBandwidth());
-
     }
 
 }

@@ -15,7 +15,7 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: BandwidthLimiterInfo.java 7042 2009-02-27 01:17:24Z harry $
+* $Id: BandwidthLimiterInfo.java 7042 2011-01-27 01:17:24Z harry $
 */
 package de.dal33t.powerfolder.transfer;
 
@@ -53,7 +53,6 @@ public enum BandwidthLimiterInfo {
         return input;
     }
 
-    @Override
     public String toString() {
         return "BandwidthLimiterInfo{" +
                 "name='" + name + '\'' +
