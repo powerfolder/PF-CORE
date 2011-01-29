@@ -27,7 +27,7 @@ import java.util.Date;
  * the bandwidth made available at the start of the time unit, and
  * the residual bandwith left at the end of the time unit.
  */
-public class BandwidthStat {
+public class BandwidthStat implements Comparable<BandwidthStat> {
 
     private final Date date;
     private final BandwidthLimiterInfo info;
@@ -66,5 +66,13 @@ public class BandwidthStat {
                 ", initialBandwidth=" + initialBandwidth +
                 ", residualBandwidth=" + residualBandwidth +
                 '}';
+    }
+
+    public int compareTo(BandwidthStat o) {
+        if  (date.compareTo(o.date) == 0) {
+            return info.compareTo(o.info);
+        } else {
+            return date.compareTo(o.date); 
+        }
     }
 }

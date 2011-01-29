@@ -22,9 +22,7 @@ package de.dal33t.powerfolder.transfer;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Reject;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class to allow the transfer manager to record bandwidth stats.
@@ -53,6 +51,35 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
             // Update the stat data.
             value.update(stat.getInitialBandwidth(),
                     stat.getResidualBandwidth());
+        }
+    }
+
+    public void pruneStats(Date date) {
+        synchronized (cumulativeStats) {
+            for (Iterator<StatKey> iterator =
+                    cumulativeStats.keySet().iterator();
+                 iterator.hasNext();) {
+                StatKey statKey = iterator.next();
+                if (statKey.date.before(date)) {
+                    iterator.remove();
+                }
+            }
+        }
+        String s = "";
+    }
+
+    public Set<BandwidthStat> getStats() {
+        synchronized (cumulativeStats) {
+            Set<BandwidthStat> stats = new TreeSet<BandwidthStat>();
+            for (Map.Entry<StatKey, StatValue> entry :
+                    cumulativeStats.entrySet()) {
+                BandwidthStat stat = new BandwidthStat(entry.getKey().getDate(),
+                        entry.getKey().getInfo(),
+                        entry.getValue().getInitial(),
+                        entry.getValue().getResidual());
+                stats.add(stat);
+            }
+            return stats;
         }
     }
 
@@ -123,13 +150,8 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
      */
     private static class StatValue {
 
-        private long count;
         private long initial;
         private long residual;
-
-        public long getCount() {
-            return count;
-        }
 
         public long getInitial() {
             return initial;
@@ -140,7 +162,6 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
         }
 
         public void update(long initialValue, long residualValue) {
-            count += 1;
             initial += initialValue;
             residual += residualValue;
         }
