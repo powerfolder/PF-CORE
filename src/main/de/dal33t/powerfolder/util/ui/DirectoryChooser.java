@@ -156,7 +156,7 @@ class DirectoryChooser extends BaseDialog {
                 temp.mkdirs();
             }
             
-            if (temp.exists()) {
+            if (temp.exists() && temp.isDirectory()) {
                 selectedDir = temp;
                 setVisible(false);
             }
