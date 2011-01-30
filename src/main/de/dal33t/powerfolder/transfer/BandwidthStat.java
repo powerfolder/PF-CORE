@@ -64,6 +64,18 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
         return count;
     }
 
+    public long getUsedBandwidth() {
+        return initialBandwidth - residualBandwidth;
+    }
+
+    public double getPercentageUsedBandwidth() {
+        return initialBandwidth == 0 ? 0.0 : 100.0 * getUsedBandwidth() / initialBandwidth;
+    }
+
+    public double getAverageUsedBandwidth() {
+        return count == 0 ? 0.0 : 1.0 * getUsedBandwidth() / count;
+    }
+
     @Override
     public String toString() {
         return "BandwidthStat{" +

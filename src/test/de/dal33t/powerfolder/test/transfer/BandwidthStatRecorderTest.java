@@ -147,4 +147,11 @@ public class BandwidthStatRecorderTest extends ControllerTest {
         assertEquals("Wrong residual", 99L, stat.getResidualBandwidth());
     }
 
+    public void testSyntheticFields() {
+        BandwidthStat stat = new BandwidthStat(new Date(), BandwidthLimiterInfo.LAN_INPUT, 5432L, 3453, 7);
+        assertEquals("Bad used bandwidth", 1979, stat.getUsedBandwidth());
+        assertEquals("Bad percent used bandwidth", 36.43225331369661, stat.getPercentageUsedBandwidth());
+        assertEquals("Bad Average used bandwidth", 282.7142857142857, stat.getAverageUsedBandwidth());
+    }
+
 }
