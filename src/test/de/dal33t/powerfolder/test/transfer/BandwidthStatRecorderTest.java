@@ -19,17 +19,17 @@
 */
 package de.dal33t.powerfolder.test.transfer;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.transfer.BandwidthStatsRecorder;
 import de.dal33t.powerfolder.transfer.BandwidthStat;
 import de.dal33t.powerfolder.transfer.BandwidthLimiterInfo;
+import de.dal33t.powerfolder.test.ControllerTest;
 
 import java.util.*;
 
 /**
  * Set of tests to validate the BandwidthStatRecorder functionality.
  */
-public class BandwidthStatRecorderTest extends TestCase {
+public class BandwidthStatRecorderTest extends ControllerTest {
 
     private BandwidthStatsRecorder recorder;
 
@@ -40,7 +40,7 @@ public class BandwidthStatRecorderTest extends TestCase {
      */
     public void setUp() throws Exception {
         super.setUp();
-        recorder = new BandwidthStatsRecorder();
+        recorder = new BandwidthStatsRecorder(getController());
     }
 
     /**
@@ -49,9 +49,9 @@ public class BandwidthStatRecorderTest extends TestCase {
     public void testBasicStats() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L, 1));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L, 1));
         Set<BandwidthStat> set = recorder.getStats();
 
         // Check that it coalesces stats.
@@ -69,12 +69,12 @@ public class BandwidthStatRecorderTest extends TestCase {
     public void testStatsByDate() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L, 1));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L, 1));
         cal.add(Calendar.HOUR, 1);
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L, 1));
         Set<BandwidthStat> set = recorder.getStats();
 
         // Check that it coalesces stats.
@@ -96,11 +96,11 @@ public class BandwidthStatRecorderTest extends TestCase {
     public void testStatsByInfo() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L, 1));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_OUTPUT, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_OUTPUT, 1001L, 107L, 1));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L, 1));
         Set<BandwidthStat> set = recorder.getStats();
 
         // Check that it coalesces stats.
@@ -122,12 +122,12 @@ public class BandwidthStatRecorderTest extends TestCase {
     public void testPrune() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L, 1));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L, 1));
         cal.add(Calendar.HOUR, 2);
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L, 1));
 
         // Check that it coalesces stats.
         Set<BandwidthStat> set = recorder.getStats();

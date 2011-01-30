@@ -46,6 +46,12 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
     public BandwidthStatsRecorder(Controller controller) {
         super(controller);
         loadStats();
+
+        // Prune old stats.
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        int prunedCount = pruneStats(cal.getTime());
+        logInfo("Pruned " + prunedCount + " stats.");
     }
 
     /**
@@ -88,7 +94,6 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         }
     }
 
-
     public void handleBandwidthStat(BandwidthStat stat) {
 
         StatKey key = new StatKey(stat.getInfo(), stat.getDate());
@@ -110,16 +115,19 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         }
     }
 
-    public void pruneStats(Date date) {
+    public int pruneStats(Date date) {
         synchronized (coalescedStats) {
+            int prunedCount = 0;
             for (Iterator<StatKey> iterator =
                     coalescedStats.keySet().iterator();
                  iterator.hasNext();) {
                 StatKey statKey = iterator.next();
                 if (statKey.date.before(date)) {
                     iterator.remove();
+                    prunedCount++;
                 }
             }
+            return prunedCount;
         }
     }
 
@@ -136,7 +144,8 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                 BandwidthStat stat = new BandwidthStat(entry.getKey().getDate(),
                         entry.getKey().getInfo(),
                         entry.getValue().getInitial(),
-                        entry.getValue().getResidual());
+                        entry.getValue().getResidual(),
+                        entry.getValue().getCount());
                 stats.add(stat);
             }
             return stats;
@@ -182,6 +191,9 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
      * Note that the date constructor arg is truncated to the nearest hour.
      */
     private static class StatKey implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         private final BandwidthLimiterInfo info;
         private final Date date;
 
@@ -229,6 +241,13 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             result = 31 * result + date.hashCode();
             return result;
         }
+
+        public String toString() {
+            return "StatKey{" +
+                    "info=" + info +
+                    ", date=" + date +
+                    '}';
+        }
     }
 
     /**
@@ -236,8 +255,11 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
      */
     private static class StatValue implements Serializable {
 
+        private static final long serialVersionUID = 1L;
+
         private long initial;
         private long residual;
+        private long count;
 
         public long getInitial() {
             return initial;
@@ -247,9 +269,22 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             return residual;
         }
 
+        public long getCount() {
+            return count;
+        }
+
         public void update(long initialValue, long residualValue) {
             initial += initialValue;
             residual += residualValue;
+            count++;
+        }
+
+        public String toString() {
+            return "StatValue{" +
+                    "initial=" + initial +
+                    ", residual=" + residual +
+                    ", count=" + count +
+                    '}';
         }
     }
 }

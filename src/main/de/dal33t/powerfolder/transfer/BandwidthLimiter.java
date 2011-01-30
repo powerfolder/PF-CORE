@@ -103,11 +103,13 @@ public class BandwidthLimiter {
         BandwidthStat bandwidthStat;
 
         synchronized (monitor) {
-
+                              if (initialAvailable != available) {
+                String s = "";                  
+                              }
             // Create a stat of how much bandwidth there was initially
             // and how much there is now.
             bandwidthStat = new BandwidthStat(new Date(), id,
-                    initialAvailable, amount);
+                    initialAvailable, available, 1);
 
             // Set the new amount
             initialAvailable = amount;

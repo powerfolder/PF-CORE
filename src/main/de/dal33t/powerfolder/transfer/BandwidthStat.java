@@ -33,13 +33,15 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
     private final BandwidthLimiterInfo info;
     private final long initialBandwidth;
     private final long residualBandwidth;
+    private final long count;
 
     public BandwidthStat(Date date, BandwidthLimiterInfo info, long initialBandwidth,
-                         long residualBandwidth) {
+                         long residualBandwidth, long count) {
         this.date = date;
         this.info = info;
         this.initialBandwidth = initialBandwidth;
         this.residualBandwidth = residualBandwidth;
+        this.count = count;
     }
 
     public Date getDate() {
@@ -56,6 +58,10 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
 
     public long getResidualBandwidth() {
         return residualBandwidth;
+    }
+
+    public long getCount() {
+        return count;
     }
 
     @Override
