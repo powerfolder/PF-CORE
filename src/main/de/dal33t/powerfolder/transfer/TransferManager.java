@@ -190,7 +190,7 @@ public class TransferManager extends PFComponent {
         bandwidthProvider = new BandwidthProvider(getController()
             .getThreadPool());
         
-        statsRecorder = new BandwidthStatsRecorder();
+        statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);
 
         sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
@@ -408,6 +408,8 @@ public class TransferManager extends PFComponent {
             fileRecordProvider.shutdown();
             fileRecordProvider = null;
         }
+
+        statsRecorder.persistStats();
 
         started = false;
         logFine("Stopped");
@@ -1511,7 +1513,7 @@ public class TransferManager extends PFComponent {
      * Be sure to hold downloadsLock when calling this method!
      */
     private void removeDownload(Download download) {
-        final DownloadManager man = download.getDownloadManager();
+        DownloadManager man = download.getDownloadManager();
         if (man == null) {
             return;
         }
@@ -1717,8 +1719,7 @@ public class TransferManager extends PFComponent {
 
             if (bestSources != null) {
                 for (Member bestSource : bestSources) {
-                    Download download;
-                    download = new Download(this, fileToDl, automatic);
+                    Download download = new Download(this, fileToDl, automatic);
                     if (isFiner()) {
                         logFiner("Best source for " + fInfo + " is "
                             + bestSource);

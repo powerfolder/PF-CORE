@@ -21,19 +21,73 @@ package de.dal33t.powerfolder.transfer;
 
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 
 import java.util.*;
+import java.io.*;
 
 /**
  * Class to allow the transfer manager to record bandwidth stats.
  */
-public class BandwidthStatsRecorder implements BandwidthStatsListener {
+public class BandwidthStatsRecorder extends PFComponent implements BandwidthStatsListener {
 
     /**
      * Map of stats by info-hour.
      */
     private final Map<StatKey, StatValue> coalescedStats =
             new HashMap<StatKey, StatValue>();
+
+    /**
+     * Constructor.
+     *
+     * @param controller
+     */
+    public BandwidthStatsRecorder(Controller controller) {
+        super(controller);
+        loadStats();
+    }
+
+    /**
+     * Load stats from file.
+     */
+    @SuppressWarnings("unchecked")
+    private void loadStats() {
+        String filename = getController().getConfigName() + ".stats";
+        File file = new File(Controller.getMiscFilesLocation(), filename);
+        if (file.exists()) {
+            logInfo("Loading stats");
+            ObjectInputStream inputStream = null;
+            try {
+                inputStream = new ObjectInputStream(
+                    new BufferedInputStream(new FileInputStream(file)));
+                Map<StatKey, StatValue> stats = (Map<StatKey, StatValue>) inputStream
+                    .readObject();
+                coalescedStats.putAll(stats);
+                inputStream.close();
+                logInfo("Loaded " + stats.size() + " stats.");
+            } catch (FileNotFoundException e) {
+                logSevere("FileNotFoundException", e);
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            } catch (ClassNotFoundException e) {
+                logSevere("ClassNotFoundException", e);
+            } catch (ClassCastException e) {
+                logSevere("ClassCastException", e);
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
+                    }
+                }
+            }
+        } else {
+            logInfo("No stats found - probably first start of PF.");
+        }
+    }
+
 
     public void handleBandwidthStat(BandwidthStat stat) {
 
@@ -93,6 +147,32 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
         return false;
     }
 
+    public void persistStats() {
+        synchronized (coalescedStats) {
+            String filename = getController().getConfigName() + ".stats";
+            File file = new File(Controller.getMiscFilesLocation(), filename);
+            ObjectOutputStream outputStream = null;
+            try {
+                logInfo("There are " + coalescedStats.size() + " stats to persist.");
+                outputStream = new ObjectOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(file)));
+                outputStream.writeUnshared(coalescedStats);
+            } catch (FileNotFoundException e) {
+                logSevere("FileNotFoundException", e);
+            } catch (IOException e) {
+                logSevere("IOException", e);
+            } finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        logSevere("IOException", e);
+                    }
+                }
+            }
+        }
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
@@ -101,7 +181,7 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
      * Inner class to act as a stat-date key limiter by hour.
      * Note that the date constructor arg is truncated to the nearest hour.
      */
-    private static class StatKey {
+    private static class StatKey implements Serializable {
         private final BandwidthLimiterInfo info;
         private final Date date;
 
@@ -154,7 +234,7 @@ public class BandwidthStatsRecorder implements BandwidthStatsListener {
     /**
      * Inner class to hold cumulative stat details.
      */
-    private static class StatValue {
+    private static class StatValue implements Serializable {
 
         private long initial;
         private long residual;
