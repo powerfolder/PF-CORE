@@ -15,31 +15,38 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id: BandwidthStat.java 7042 2011-01-27 01:17:24Z harry $
+* $Id: CoalescedBandwidthStat.java 7042 2011-01-31 01:17:24Z harry $
 */
 package de.dal33t.powerfolder.transfer;
 
 import java.util.Date;
 
 /**
- * Holds stats for a time unit of bandwidth.
- * Includes the date of the event, the BandwidthLimiter source info,
- * the bandwidth made available at the start of the time unit, and
- * the residual bandwith left at the end of the time unit.
+ * Holds coalesced stats for a time unit of bandwidth.
+ * Includes the date-hour of the event, the BandwidthLimiter source info,
+ * the total bandwidth made available during the period, and
+ * the residual bandwith left throughout the period.
+ *
+ * Used bandwidth, average bandwidth and peak bandwidth are calculated,
+ * and a count of th coalesced stats is available.
  */
-public class BandwidthStat implements Comparable<BandwidthStat> {
+public class CoalescedBandwidthStat implements Comparable<CoalescedBandwidthStat> {
 
     private final Date date;
     private final BandwidthLimiterInfo info;
     private final long initialBandwidth;
     private final long residualBandwidth;
+    private final long peakBandwidth;
+    private final long count;
 
-    public BandwidthStat(Date date, BandwidthLimiterInfo info, long initialBandwidth,
-                         long residualBandwidth) {
+    public CoalescedBandwidthStat(Date date, BandwidthLimiterInfo info, long initialBandwidth,
+                         long residualBandwidth, long peakBandwidth, long count) {
         this.date = date;
         this.info = info;
         this.initialBandwidth = initialBandwidth;
         this.residualBandwidth = residualBandwidth;
+        this.peakBandwidth = peakBandwidth;
+        this.count = count;
     }
 
     public Date getDate() {
@@ -58,20 +65,43 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
         return residualBandwidth;
     }
 
+    public long getPeakBandwidth() {
+        return peakBandwidth;
+    }
+
+    public long getCount() {
+        return count;
+    }
+
+    public long getUsedBandwidth() {
+        return initialBandwidth - residualBandwidth;
+    }
+
+    public double getPercentageUsedBandwidth() {
+        return initialBandwidth == 0 ? 0.0 :
+                100.0 * getUsedBandwidth() / initialBandwidth;
+    }
+
+    public double getAverageUsedBandwidth() {
+        return count == 0 ? 0.0 : 1.0 * getUsedBandwidth() / count;
+    }
+
     public String toString() {
         return "BandwidthStat{" +
                 "date=" + date +
                 ", info=" + info +
                 ", initialBandwidth=" + initialBandwidth +
                 ", residualBandwidth=" + residualBandwidth +
+                ", peakBandwidth=" + peakBandwidth +
+                ", count=" + count +
                 '}';
     }
 
-    public int compareTo(BandwidthStat o) {
+    public int compareTo(CoalescedBandwidthStat o) {
         if  (date.compareTo(o.date) == 0) {
             return info.compareTo(o.info);
         } else {
-            return date.compareTo(o.date); 
+            return date.compareTo(o.date);
         }
     }
 
@@ -83,7 +113,7 @@ public class BandwidthStat implements Comparable<BandwidthStat> {
             return false;
         }
 
-        BandwidthStat that = (BandwidthStat) obj;
+        CoalescedBandwidthStat that = (CoalescedBandwidthStat) obj;
 
         if (!date.equals(that.date)) {
             return false;

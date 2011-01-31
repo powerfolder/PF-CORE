@@ -136,15 +136,16 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
      *
      * @return
      */
-    public Set<BandwidthStat> getStats() {
+    public Set<CoalescedBandwidthStat> getStats() {
         synchronized (coalescedStats) {
-            Set<BandwidthStat> stats = new TreeSet<BandwidthStat>();
+            Set<CoalescedBandwidthStat> stats = new TreeSet<CoalescedBandwidthStat>();
             for (Map.Entry<StatKey, StatValue> entry :
                     coalescedStats.entrySet()) {
-                BandwidthStat stat = new BandwidthStat(entry.getKey().getDate(),
+                CoalescedBandwidthStat stat = new CoalescedBandwidthStat(entry.getKey().getDate(),
                         entry.getKey().getInfo(),
                         entry.getValue().getInitial(),
                         entry.getValue().getResidual(),
+                        entry.getValue().getPeak(),
                         entry.getValue().getCount());
                 stats.add(stat);
             }
@@ -259,6 +260,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
 
         private long initial;
         private long residual;
+        private long peak;
         private long count;
 
         public long getInitial() {
@@ -269,6 +271,10 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             return residual;
         }
 
+        public long getPeak() {
+            return peak;
+        }
+
         public long getCount() {
             return count;
         }
@@ -276,6 +282,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         public void update(long initialValue, long residualValue) {
             initial += initialValue;
             residual += residualValue;
+            peak = Math.max(peak, initialValue - residualValue);
             count++;
         }
 
@@ -283,6 +290,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             return "StatValue{" +
                     "initial=" + initial +
                     ", residual=" + residual +
+                    ", peak=" + peak +
                     ", count=" + count +
                     '}';
         }
