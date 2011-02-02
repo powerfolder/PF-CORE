@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -70,6 +71,7 @@ import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
@@ -286,8 +288,8 @@ public class TransferManager extends PFComponent {
 
         bandwidthProvider.start();
 
-        threadPool = new WrapperExecutorService(Executors
-            .newCachedThreadPool(new NamedThreadFactory("TMThread-")));
+        threadPool = new WrapperExecutorService(
+            Executors.newCachedThreadPool(new NamedThreadFactory("TMThread-")));
 
         myThread = new Thread(new TransferChecker(), "Transfer manager");
         myThread.start();
@@ -687,8 +689,8 @@ public class TransferManager extends PFComponent {
         for (DownloadManager man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 if (node.equals(download.getPartner())) {
-                    download.setBroken(TransferProblem.NODE_DISCONNECTED, node
-                        .getNick());
+                    download.setBroken(TransferProblem.NODE_DISCONNECTED,
+                        node.getNick());
                 }
             }
         }
@@ -725,8 +727,8 @@ public class TransferManager extends PFComponent {
         for (DownloadManager man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 if (fInfo.equals(download.getFile())) {
-                    download.setBroken(TransferProblem.FILE_CHANGED, fInfo
-                        .getRelativeName());
+                    download.setBroken(TransferProblem.FILE_CHANGED,
+                        fInfo.getRelativeName());
                 }
             }
         }
@@ -830,12 +832,30 @@ public class TransferManager extends PFComponent {
         command = command.replace("$sources", sourcesStr);
 
         try {
-            logInfo("Executing command: " + command);
-            Runtime.getRuntime().exec(command);
+            logInfo("Begin executing command: " + command);
+            final Process p = Runtime.getRuntime().exec(command);
+            // Auto-kill after 20 seconds
+            getController().schedule(new Runnable() {
+                public void run() {
+                    p.destroy();
+                }
+            }, 20000L);
+            byte[] out = StreamUtils.readIntoByteArray(p.getInputStream());
+            String output = new String(out);
+            byte[] err = StreamUtils.readIntoByteArray(p.getErrorStream());
+            String error = new String(err);
+            int res = p.waitFor();
+            logInfo("Executed command finished (exit value: " + res + "): "
+                + command + " | stdout: " + output + ", stderr: " + error);
         } catch (IOException e) {
-            logSevere("Unable to execute script after download. '"
-                + folder.getDownloadScript() + "' file: " + dlFile + ". " + e,
-                e);
+            logSevere(
+                "Unable to execute script after download. '"
+                    + folder.getDownloadScript() + "' file: " + dlFile
+                    + ", command: " + command + ". " + e, e);
+        } catch (InterruptedException e) {
+            logSevere("Abnormal termination of script after download. '"
+                + folder.getDownloadScript() + "' file: " + dlFile
+                + ", command: " + command + ". " + e, e);
         }
     }
 
@@ -1025,8 +1045,8 @@ public class TransferManager extends PFComponent {
         }
 
         // Store in config
-        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(), String
-            .valueOf(allowedCPS / 1024));
+        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1056,8 +1076,8 @@ public class TransferManager extends PFComponent {
         // }
         //
         // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(), String
-            .valueOf(allowedCPS / 1024));
+        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1086,8 +1106,8 @@ public class TransferManager extends PFComponent {
             allowedCPS = 3 * 1024;
         }
         // Store in config
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(), String
-            .valueOf(allowedCPS / 1024));
+        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1116,8 +1136,8 @@ public class TransferManager extends PFComponent {
         // allowedCPS = 3 * 1024;
         // }
         // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(), String
-            .valueOf(allowedCPS / 1024));
+        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
@@ -1134,7 +1154,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     *@see ConfigurationEntry#TRANSFERS_MAX_FILE_CHUNK_SIZE
+     * @see ConfigurationEntry#TRANSFERS_MAX_FILE_CHUNK_SIZE
      * @return the maximum size of a {@link FileChunk}
      */
     int getMaxFileChunkSize() {
@@ -1802,8 +1822,8 @@ public class TransferManager extends PFComponent {
 
                 try {
                     man = downloadManagerFactory
-                        .createDownloadManager(getController(), fInfo, download
-                            .isRequestedAutomatic());
+                        .createDownloadManager(getController(), fInfo,
+                            download.isRequestedAutomatic());
                     man.init(false);
                 } catch (IOException e) {
                     // Something gone badly wrong
@@ -2447,11 +2467,12 @@ public class TransferManager extends PFComponent {
 
                     if (man == null) {
                         man = downloadManagerFactory.createDownloadManager(
-                            getController(), download.getFile(), download
-                                .isRequestedAutomatic());
+                            getController(), download.getFile(),
+                            download.isRequestedAutomatic());
                         man.init(true);
-                        completedDownloads.put(new FileInfoKey(man
-                            .getFileInfo(), Type.VERSION_DATE_SIZE), man);
+                        completedDownloads.put(
+                            new FileInfoKey(man.getFileInfo(),
+                                Type.VERSION_DATE_SIZE), man);
                         // For faster loading
                         dlms.add(man);
                     }
@@ -2619,11 +2640,11 @@ public class TransferManager extends PFComponent {
         for (DownloadManager man : dlManagers.values()) {
             try {
                 if (!man.isDone()) {
-                    downloadNewestVersion(man.getFileInfo(), man
-                        .isRequestedAutomatic());
+                    downloadNewestVersion(man.getFileInfo(),
+                        man.isRequestedAutomatic());
                 }
-                downloadNewestVersion(man.getFileInfo(), man
-                    .isRequestedAutomatic());
+                downloadNewestVersion(man.getFileInfo(),
+                    man.isRequestedAutomatic());
                 for (Download download : man.getSources()) {
                     if (!download.isCompleted() && download.isBroken()) {
                         download.setBroken(TransferProblem.BROKEN_DOWNLOAD,
@@ -2732,8 +2753,8 @@ public class TransferManager extends PFComponent {
                     // MultiSourceDownload source = downloadNewestVersion(fInfo,
                     // download
                     // .isRequestedAutomatic());
-                    DownloadManager source = downloadNewestVersion(fInfo, dl
-                        .isRequestedAutomatic());
+                    DownloadManager source = downloadNewestVersion(fInfo,
+                        dl.isRequestedAutomatic());
                     if (source != null) {
                         logFine("Pending download restored: " + fInfo
                             + " from " + source);

@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -59,6 +61,14 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         super.tearDown();
         testScript.delete();
         outputFile.delete();
+    }
+
+    public void testExecuteAfterDownloadMutli() throws Exception {
+        for (int i = 0; i < 15; i++) {
+            testExecuteAfterDownload();
+            tearDown();
+            setUp();
+        }
     }
 
     public void testExecuteAfterDownload() throws IOException {
@@ -109,6 +119,52 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         assertEquals(expected, content.trim());
     }
 
+    public void testMultiDownloadExecute() throws IOException {
+        assertEquals(0, outputFile.length());
+        int nFiles = 100;
+        List<File> testFiles = new ArrayList<File>();
+        for (int i = 0; i < nFiles; i++) {
+            File f = TestHelper.createRandomFile(new File(getFolderAtBart()
+                .getLocalBase(), "subdir1"));
+            testFiles.add(f);
+        }
+
+        scanFolder(getFolderAtBart());
+        assertEquals(nFiles, getFolderAtBart().getKnownFiles().size());
+
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            public boolean reached() {
+                return outputFile.length() > 0;
+            }
+
+            public String message() {
+                try {
+                    FileInputStream in = new FileInputStream(outputFile);
+                    String content = new String(StreamUtils
+                        .readIntoByteArray(in));
+                    in.close();
+                    return "Output file does contain: '" + content + "'";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return "Error reading output file: " + e;
+                }
+            }
+        });
+        TestHelper.waitMilliSeconds(2000);
+
+        assertTrue(outputFile.length() > 0);
+        FileInputStream in = new FileInputStream(outputFile);
+        String content = new String(StreamUtils.readIntoByteArray(in));
+        in.close();
+
+        for (File file : testFiles) {
+            assertTrue(
+                "Content file did not contain filename " + file.getName()
+                    + ":\n" + content, content.contains(file.getName()));
+        }
+        System.out.println(content);
+    }
+
     private String createTestScript() throws IOException {
         testScript = File.createTempFile("script", ".bat");
         outputFile = File.createTempFile("output", ".txt");
@@ -117,12 +173,12 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         String params = "$file $path $folderpath $sources";
 
         if (OSUtil.isWindowsSystem()) {
-            content = ("echo %1 %2 %3 %4 %5 >" + outputFile.getAbsolutePath() + "\nexit")
+            content = ("echo %1 %2 %3 %4 %5 >>" + outputFile.getAbsolutePath() + "\nexit")
                 .getBytes();
             cmdLine = "cmd /C start " + testScript.getAbsolutePath() + ' '
                 + params;
         } else {
-            content = ("echo $* >\"" + outputFile.getAbsolutePath() + '"')
+            content = ("echo $* >>\"" + outputFile.getAbsolutePath() + '"')
                 .getBytes();
             cmdLine = "sh " + testScript.getAbsolutePath() + ' ' + params;
         }
