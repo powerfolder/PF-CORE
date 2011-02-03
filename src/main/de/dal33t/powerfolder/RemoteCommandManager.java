@@ -147,8 +147,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         ServerSocket testSocket = null;
         try {
             // Only bind to localhost
-            testSocket = new ServerSocket(port, 0, InetAddress
-                .getByName("127.0.0.1"));
+            testSocket = new ServerSocket(port, 0,
+                InetAddress.getByName("127.0.0.1"));
 
             // Server socket can be opend, no instance of PowerFolder running
             return false;
@@ -176,8 +176,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * @return true if succeeded, otherwise false
      */
     public static boolean sendCommand(String command) {
-        return sendCommand(Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
-            .getDefaultValue()), command);
+        return sendCommand(
+            Integer.valueOf(ConfigurationEntry.NET_RCON_PORT.getDefaultValue()),
+            command);
     }
 
     /**
@@ -193,8 +194,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         try {
             log.log(Level.INFO, "Sending remote command '" + command + '\'');
             Socket socket = new Socket("127.0.0.1", port);
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket
-                .getOutputStream(), ENCODING));
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(
+                socket.getOutputStream(), ENCODING));
 
             writer.println(REMOTECOMMAND_PREFIX + ';' + command);
             writer.flush();
@@ -216,8 +217,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             .getValueInt(getController());
         try {
             // Only bind to localhost
-            serverSocket = new ServerSocket(port, 0, InetAddress
-                .getByName("127.0.0.1"));
+            serverSocket = new ServerSocket(port, 0,
+                InetAddress.getByName("127.0.0.1"));
 
             // Start thread
             myThread = new Thread(this, "Remote command Manager");
@@ -429,8 +430,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             if (dir != null) {
                 try {
                     if (!candidate.getLocalBase().equals(dir)
-                        && !candidate.getLocalBase().getCanonicalPath().equals(
-                            dir.getCanonicalPath()))
+                        && !candidate.getLocalBase().getCanonicalPath()
+                            .equals(dir.getCanonicalPath()))
                     {
                         // path given, but no match. Skip
                         continue;
@@ -509,8 +510,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 
         if (!silent && getController().isUIEnabled()) {
-            PFWizard wizard = new PFWizard(getController(), Translation
-                .getTranslation("wizard.pfwizard.folder_title"));
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
             wizard.getWizardContext().setAttribute(
                 WizardContextAttributes.INITIAL_FOLDER_NAME, name);
             if (syncProfile != null) {
@@ -536,15 +537,16 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
             }
             FolderSettings settings = new FolderSettings(dir, syncProfile,
-                createInvitationFile, ArchiveMode
-                    .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                        .getValue(getController())), false, dlScript,
+                createInvitationFile,
+                ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                    .getValue(getController())), false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                     .getValueInt(getController()), true);
             getController().getFolderRepository()
                 .createFolder(foInfo, settings);
             if (backupByServer) {
-                new CreateFolderOnServerTask(foInfo, null)
+                new CreateFolderOnServerTask(foInfo,
+                    SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT)
                     .scheduleTask(getController());
             }
         }
@@ -609,8 +611,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         {
             try {
                 if (folder.getLocalBase().equals(targetDir)
-                    || folder.getLocalBase().getCanonicalPath().equals(
-                        targetDir.getCanonicalPath()))
+                    || folder.getLocalBase().getCanonicalPath()
+                        .equals(targetDir.getCanonicalPath()))
                 {
                     return folder;
                 }

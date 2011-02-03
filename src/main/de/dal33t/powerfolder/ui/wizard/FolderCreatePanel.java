@@ -178,8 +178,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     if (!StringUtils.isBlank(folderCreateItem
                         .getLinkToOnlineFolder()))
                     {
-                        joinFolders.put(folderInfo, folderCreateItem
-                            .getLinkToOnlineFolder());
+                        joinFolders.put(folderInfo,
+                            folderCreateItem.getLinkToOnlineFolder());
                     }
                     FolderSettings folderSettings = new FolderSettings(
                         localBase, syncProfile, saveLocalInvite, archiveMode,
@@ -207,9 +207,9 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 }
 
                 FolderSettings folderSettings = new FolderSettings(localBase,
-                    syncProfile, saveLocalInvite, ArchiveMode
-                        .valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                            .getValue(getController())), previewFolder, null,
+                    syncProfile, saveLocalInvite,
+                    ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
+                        .getValue(getController())), previewFolder, null,
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                         .getValueInt(getController()), true);
                 configurations.put(folderInfo, folderSettings);
@@ -247,17 +247,14 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                                 folderInfo.getName()))
                             {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
-                                    log
-                                        .info("Found online folder with same name: "
-                                            + folderInfo.getName()
-                                            + ". Using it");
+                                    log.info("Found online folder with same name: "
+                                        + folderInfo.getName() + ". Using it");
 
                                     // User actually wants to join, so use
                                     // online.
                                     folderInfo = onlineFolderInfo;
-                                    log
-                                        .info("Changed folder info to online version: "
-                                            + folderInfo.getName());
+                                    log.info("Changed folder info to online version: "
+                                        + folderInfo.getName());
                                     break;
                                 }
                             }
@@ -322,7 +319,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         continue;
                     }
 
-                    client.getFolderService().createFolder(folderInfo, null);
+                    client.getFolderService().createFolder(folderInfo,
+                        SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT);
 
                     // Set as default synced folder?
                     attribute = getWizardContext().getAttribute(
@@ -347,8 +345,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             FolderRepository folderRepo = getController().getFolderRepository();
             File baseDir = new File(folderRepo.getFoldersBasedir());
             if (!baseDir.exists()) {
-                log.info(String.format("Creating basedir: %s", baseDir
-                    .getAbsolutePath()));
+                log.info(String.format("Creating basedir: %s",
+                    baseDir.getAbsolutePath()));
                 baseDir.mkdirs();
             }
 
@@ -373,11 +371,10 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         filePath));
                     winUtils.createLink(shellLink, shortcutPath);
                 } catch (IOException e) {
-                    log
-                        .warning(String
-                            .format(
-                                "An exception was thrown when creating shortcut %s to %s",
-                                shortcutPath, filePath));
+                    log.warning(String
+                        .format(
+                            "An exception was thrown when creating shortcut %s to %s",
+                            shortcutPath, filePath));
                 }
             }
         }
@@ -391,14 +388,11 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             Writer w = null;
             try {
                 w = new OutputStreamWriter(new FileOutputStream(helpFile));
-                w
-                    .write("This is the default synchronized folder of PowerFolder.\r\n");
-                w
-                    .write("Simply place files into this directory to sync them\r\n");
+                w.write("This is the default synchronized folder of PowerFolder.\r\n");
+                w.write("Simply place files into this directory to sync them\r\n");
                 w.write("across all your computers running PowerFolder.\r\n");
                 w.write("\r\n");
-                w
-                    .write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
+                w.write("More information: http://wiki.powerfolder.com/wiki/Default_Folder");
                 w.close();
             } catch (IOException e) {
                 // Doesn't matter.
