@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.transfer;
 import java.util.Date;
 
 /**
- * Holds stats for a time unit of bandwidth.
+ * Holds raw stats data for a time unit of bandwidth.
  * Includes the date of the event, the BandwidthLimiter source info,
  * the bandwidth made available at the start of the time unit, and
  * the residual bandwith left at the end of the time unit.

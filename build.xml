@@ -83,7 +83,6 @@ For creation of the installer:
 		<property name="jnotify.src.dir" location="src/jnotify" />
 		<property name="etc.dir" location="src/etc" />
 		<property name="applet.dir" location="src/applet" />
-		<property name="demo.src.dir" location="src/demo" />
 		<property name="test.src.dir" location="src/test" />
 		<property name="skins.src.dir" location="src/skins" />
 
@@ -102,7 +101,10 @@ For creation of the installer:
 			<include name="jcalendar.jar" />
 			<include name="ejb3-persistence.jar" />
 			<include name="hibernate-annotations.jar" />
-			<include name="hibernate3-strip.jar" />
+      <include name="hibernate3-strip.jar" />
+
+      <include name="jfreechart/jfreechart-1.0.13.jar" />
+      <include name="jfreechart/jcommon-1.0.16.jar" />
 
 			<include name="synthetica/commons-logging-1.1.jar" />
 			<include name="synthetica/flexdock.jar" />
