@@ -121,7 +121,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
 
     public void testMultiDownloadExecute() throws IOException {
         assertEquals(0, outputFile.length());
-        int nFiles = 100;
+        int nFiles = 20;
         List<File> testFiles = new ArrayList<File>();
         for (int i = 0; i < nFiles; i++) {
             File f = TestHelper.createRandomFile(new File(getFolderAtBart()
