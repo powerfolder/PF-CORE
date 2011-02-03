@@ -98,6 +98,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JLabel networkModeLabel;
     private JButton openAboutBoxButton;
     private JButton openPreferencesButton;
+    private JButton openStatsChartButton;
     private JButton openDebugButton;
     private JButton pendingMessagesButton;
     private boolean shownQualityWarningToday;
@@ -135,7 +136,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             FormLayout mainLayout = new FormLayout(
                 "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
-                    + portArea + debugArea + " pref, 3dlu, pref, 1dlu", "pref");
+                    + portArea + debugArea + " pref, 3dlu, pref, 3dlu, pref, 1dlu",
+                    "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
             CellConstraints cc = new CellConstraints();
@@ -159,6 +161,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 mainBuilder.add(openDebugButton, cc.xy(col, 1));
                 col += 2;
             }
+            mainBuilder.add(openStatsChartButton, cc.xy(col, 1));
+            col += 2;
             mainBuilder.add(openPreferencesButton, cc.xy(col, 1));
             col += 2;
             mainBuilder.add(openAboutBoxButton, cc.xy(col, 1));
@@ -244,6 +248,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         networkModeLabel = new JLabel("nwm");
 
+        openStatsChartButton = new JButtonMini(getApplicationModel()
+            .getActionModel().getOpenStatsChartsAction());
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
