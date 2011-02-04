@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.ui.information.downloads.DownloadsInformationCard;
 import de.dal33t.powerfolder.ui.information.folder.FolderInformationCard;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsInformationCard;
 import de.dal33t.powerfolder.ui.information.notices.NoticesInformationCard;
+import de.dal33t.powerfolder.ui.information.stats.StatsInformationCard;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
 /**
@@ -55,6 +56,7 @@ public class InformationFrame extends MagneticFrame {
     private UploadsInformationCard uploadsInformationCard;
     private DebugInformationCard debugInformationCard;
     private NoticesInformationCard noticesCard;
+    private StatsInformationCard statsCard;
 
     private boolean showingFolder;
 
@@ -290,6 +292,12 @@ public class InformationFrame extends MagneticFrame {
         showingFolder = false;
     }
 
+    public void displayStats() {
+        buildStatsCard();
+        displayCard(statsCard);
+        showingFolder = false;
+    }
+
     /**
      * Displays a card with tile and icon.
      * 
@@ -345,6 +353,15 @@ public class InformationFrame extends MagneticFrame {
     private void buildNoticesCard() {
         if (noticesCard == null) {
             noticesCard = new NoticesInformationCard(getController());
+        }
+    }
+
+    /**
+     * Builds the local StatsCard if required.
+     */
+    private void buildStatsCard() {
+        if (statsCard == null) {
+            statsCard = new StatsInformationCard(getController());
         }
     }
 

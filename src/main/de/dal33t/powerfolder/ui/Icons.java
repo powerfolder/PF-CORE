@@ -155,6 +155,8 @@ public class Icons {
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
     
+    public static final String STATS = "stats.icon";
+
     public static final String STATUS_TAB_TELL_A_FRIEND = "status_tab_tell_friend_icon";
     public static final String TWITTER_BUTTON = "twitter.icon";
     public static final String FACEBOOK_BUTTON = "facebook.icon";
@@ -163,7 +165,7 @@ public class Icons {
     
     // Sync icons
     public static final String SYNC = "sync.icon";
-    public static final String[] SYNC_ANIMATION = new String[]{"sync00.icon",
+    public static final String[] SYNC_ANIMATION = {"sync00.icon",
         "sync01.icon", "sync02.icon", "sync03.icon", "sync04.icon",
         "sync05.icon", "sync06.icon", "sync07.icon", "sync08.icon",
         "sync09.icon", "sync10.icon", "sync11.icon"};
