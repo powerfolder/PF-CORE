@@ -53,7 +53,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
                 BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
                 BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
-        Set<CoalescedBandwidthStat> set = recorder.getStats();
+        Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
         assertEquals("Wrong size", 1, set.size());
@@ -77,7 +77,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
         cal.add(Calendar.HOUR, 1);
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
                 BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
-        Set<CoalescedBandwidthStat> set = recorder.getStats();
+        Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
         assertEquals("Wrong size", 2, set.size());
@@ -105,7 +105,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
                 BandwidthLimiterInfo.LAN_OUTPUT, 1001L, 107L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
                 BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
-        Set<CoalescedBandwidthStat> set = recorder.getStats();
+        Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
         assertEquals("Wrong size", 2, set.size());
@@ -136,7 +136,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
                 BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
 
         // Check that it coalesces stats.
-        Set<CoalescedBandwidthStat> set = recorder.getStats();
+        Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
         assertEquals("Wrong size", 2, set.size());
 
         cal.add(Calendar.HOUR, -1);
@@ -145,7 +145,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
         recorder.pruneStats(cal.getTime());
 
         // Check the older one is gone.
-        set = recorder.getStats();
+        set = recorder.getBandwidthStats();
         assertEquals("Wrong size", 1, set.size());
         Iterator<CoalescedBandwidthStat> iterator = set.iterator();
         CoalescedBandwidthStat stat = iterator.next();

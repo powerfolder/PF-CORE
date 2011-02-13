@@ -136,7 +136,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
      *
      * @return
      */
-    public Set<CoalescedBandwidthStat> getStats() {
+    public Set<CoalescedBandwidthStat> getBandwidthStats() {
         synchronized (coalescedStats) {
             Set<CoalescedBandwidthStat> stats = new TreeSet<CoalescedBandwidthStat>();
             for (Map.Entry<StatKey, StatValue> entry :

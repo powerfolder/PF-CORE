@@ -28,17 +28,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -2563,6 +2553,10 @@ public class TransferManager extends PFComponent {
             fireCompletedDownloadRemoved(new TransferManagerEvent(this,
                 download));
         }
+    }
+
+    public Set<CoalescedBandwidthStat> getBandwidthStats() {
+        return statsRecorder.getBandwidthStats();
     }
 
     // Worker code ************************************************************
