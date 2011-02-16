@@ -46,12 +46,6 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
     public BandwidthStatsRecorder(Controller controller) {
         super(controller);
         loadStats();
-
-        // Prune old stats.
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -1);
-        int prunedCount = pruneStats(cal.getTime());
-        logInfo("Pruned " + prunedCount + " stats.");
     }
 
     /**
@@ -115,9 +109,16 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         }
     }
 
-    public int pruneStats(Date date) {
+    /**
+     * Prune stats older than a month.
+     */
+    public void pruneStats() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        Date date = cal.getTime();
+
+        int prunedCount = 0;
         synchronized (coalescedStats) {
-            int prunedCount = 0;
             for (Iterator<StatKey> iterator =
                     coalescedStats.keySet().iterator();
                  iterator.hasNext();) {
@@ -127,8 +128,8 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                     prunedCount++;
                 }
             }
-            return prunedCount;
         }
+        logInfo("Pruned " + prunedCount + " stats.");
     }
 
     /**

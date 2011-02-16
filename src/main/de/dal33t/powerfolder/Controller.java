@@ -893,11 +893,12 @@ public class Controller extends PFComponent {
      * Sets up the task, which should be executes periodically.
      */
     private void setupPeriodicalTasks() {
+
         // Test the connectivity after a while.
         LimitedConnectivityChecker.install(this);
 
-        // Schedule a task to reconfigure the Logger file every day.
-        final Calendar cal = new GregorianCalendar();
+        // Schedule a task to do housekeeping every day.
+        Calendar cal = new GregorianCalendar();
         long now = cal.getTime().getTime();
 
         // Midnight tomorrow morning.
@@ -917,13 +918,18 @@ public class Controller extends PFComponent {
         logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                logFine("Reconfiguring logs for new day: " + cal.getTime());
-                initLogger();
-                LoggingManager.resetFileLogging();
-                logFine("Reconfigured logs for new day: " + cal.getTime());
+                performHousekeeping(true);
             }
         }, secondsToMidnight, 24 * 3600, TimeUnit.SECONDS);
 
+        // Also run housekeeping one minute after start up.
+        threadPool.schedule(new TimerTask() {
+            public void run() {
+                performHousekeeping(false);
+            }
+        }, 1, TimeUnit.MINUTES);
+
+        // Do profiling
         if (Profiling.ENABLED) {
             threadPool.scheduleWithFixedDelay(new TimerTask() {
                 @Override
@@ -952,6 +958,30 @@ public class Controller extends PFComponent {
                 logSevere("ConnectionException", e);
             }
         }
+    }
+
+    /**
+     * General houskeeping task. Runs one minute after start
+     * and every midnight.
+     *
+     * @param midnightRun
+     *          true if this is the midnight invokation,
+     *          false if this is at start up.
+     */
+    private void performHousekeeping(boolean midnightRun) {
+        log.info("Performing housekeeping " + midnightRun);
+        Date now = new Date();
+        if (midnightRun) {
+
+            // Reconfigure log file after midnight.
+            logFine("Reconfiguring logs for new day: " + now);
+            initLogger();
+            LoggingManager.resetFileLogging();
+            logFine("Reconfigured logs for new day: " + now);
+        }
+
+        // Prune stats.
+        transferManager.pruneStats();
     }
 
     /**
@@ -1120,8 +1150,7 @@ public class Controller extends PFComponent {
             for (ConnectionListener additionalConnectionListener : additionalConnectionListeners)
             {
                 try {
-                    ConnectionListener addListener = additionalConnectionListener;
-                    addListener.start();
+                    additionalConnectionListener.start();
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener "
                         + connectionListener, e);

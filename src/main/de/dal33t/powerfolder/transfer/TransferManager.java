@@ -407,6 +407,10 @@ public class TransferManager extends PFComponent {
         logFine("Stopped");
     }
 
+    public void pruneStats() {
+        statsRecorder.pruneStats();
+    }
+
     /**
      * for debug
      * 
