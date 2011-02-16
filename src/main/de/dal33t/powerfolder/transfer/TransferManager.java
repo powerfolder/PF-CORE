@@ -407,8 +407,14 @@ public class TransferManager extends PFComponent {
         logFine("Stopped");
     }
 
+    /**
+     * Prune stats older than a month.
+     */
     public void pruneStats() {
-        statsRecorder.pruneStats();
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        Date date = cal.getTime();
+        statsRecorder.pruneStats(date);
     }
 
     /**

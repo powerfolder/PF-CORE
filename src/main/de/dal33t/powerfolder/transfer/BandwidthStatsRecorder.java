@@ -110,12 +110,9 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
     }
 
     /**
-     * Prune stats older than a month.
+     * Prune stats older than date.
      */
-    public void pruneStats() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -1);
-        Date date = cal.getTime();
+    public void pruneStats(Date date) {
 
         int prunedCount = 0;
         synchronized (coalescedStats) {
