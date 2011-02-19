@@ -456,7 +456,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Returns the transferstatus by calculating it new
+     * Returns the transfer status by calculating it new
      * 
      * @return the current status
      */

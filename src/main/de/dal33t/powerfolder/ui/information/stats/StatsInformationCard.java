@@ -58,8 +58,9 @@ public class StatsInformationCard extends InformationCard {
     private JComboBox graphTypeComboBox;
     private DefaultComboBoxModel graphTypeModel;
 
-    private TimeSeries availableSeries;
-    private TimeSeries usedSeries;
+    private TimeSeries availableBandwidthSeries;
+    private TimeSeries usedBandwidthSeries;
+    private TimeSeries averageBandwidthSeries;
 
     /**
      * Constructor
@@ -107,18 +108,20 @@ public class StatsInformationCard extends InformationCard {
      */
     private void initialize() {
         dataTypeModel = new DefaultComboBoxModel();
-        dataTypeModel.addElement("WAN upload");
-        dataTypeModel.addElement("WAN download");
-        dataTypeModel.addElement("LAN upload");
-        dataTypeModel.addElement("LAN download");
+        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_upload"));
+        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_download"));
+        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_upload"));
+        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_download"));
 
         graphTypeModel = new DefaultComboBoxModel();
-        graphTypeModel.addElement("Used and available");
-        graphTypeModel.addElement("Used only");
-        graphTypeModel.addElement("Available only");
+        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_and_available"));
+        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_only"));
+        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.available_only"));
+        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.average"));
 
-        usedSeries = new TimeSeries("Used", Hour.class);
-        availableSeries = new TimeSeries("Available", Hour.class);
+        usedBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.used"), Hour.class);
+        availableBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.available"), Hour.class);
+        averageBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.average"), Hour.class);
     }
 
     /**
@@ -145,12 +148,13 @@ public class StatsInformationCard extends InformationCard {
 
     private JPanel getUsedPanel() {
 
-        DateAxis domain = new DateAxis("Date");
+        DateAxis domain = new DateAxis(Translation.getTranslation("stats_information_card.date"));
         TimeSeriesCollection series = new TimeSeriesCollection();
-        NumberAxis axis = new NumberAxis("Bandwidth");
+        NumberAxis axis = new NumberAxis(Translation.getTranslation("stats_information_card.bandwidth"));
 
-        series.addSeries(availableSeries);
-        series.addSeries(usedSeries);
+        series.addSeries(availableBandwidthSeries);
+        series.addSeries(usedBandwidthSeries);
+        series.addSeries(averageBandwidthSeries);
 
         XYItemRenderer renderer = new StandardXYItemRenderer();
         XYPlot plot = new XYPlot(series, domain, axis, renderer);
@@ -190,48 +194,60 @@ public class StatsInformationCard extends InformationCard {
 
     private void redrawBandwidthStats() {
 
-        int graphType = graphTypeComboBox.getSelectedIndex();
-        int dataType = dataTypeComboBox.getSelectedIndex();
+        Cursor c = uiComponent.getCursor();
+        try {
+            uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        System.out.println("hghg " + graphType + " " + dataType);
+            int graphType = graphTypeComboBox.getSelectedIndex();
+            int dataType = dataTypeComboBox.getSelectedIndex();
 
-        availableSeries.clear();
-        usedSeries.clear();
+            availableBandwidthSeries.clear();
+            usedBandwidthSeries.clear();
+            averageBandwidthSeries.clear();
 
-        Set<CoalescedBandwidthStat> stats = getController().getTransferManager().getBandwidthStats();
-        Calendar cal = Calendar.getInstance();
-        boolean first = true;
-        Date last = null;
-        for (CoalescedBandwidthStat stat : stats) {
-            if (stat.getInfo() == BandwidthLimiterInfo.WAN_INPUT && dataType == 0 ||
-                    stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && dataType == 1 ||
-                    stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && dataType == 2 ||
-                    stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && dataType == 3) {
-                if (first) {
-                    first = false;
-                    cal.setTime(stat.getDate());
+            Set<CoalescedBandwidthStat> stats = getController().getTransferManager().getBandwidthStats();
+            Calendar cal = Calendar.getInstance();
+            boolean first = true;
+            Date last = null;
+            for (CoalescedBandwidthStat stat : stats) {
+                if (stat.getInfo() == BandwidthLimiterInfo.WAN_INPUT && dataType == 0 ||
+                        stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && dataType == 1 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && dataType == 2 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && dataType == 3) {
+                    if (first) {
+                        first = false;
+                        cal.setTime(stat.getDate());
+                    }
+                    Hour hour = new Hour(stat.getDate());
+                    if (graphType == 0 || graphType == 1) {
+                        usedBandwidthSeries.add(hour, stat.getUsedBandwidth() / 1000.0);
+                    }
+                    if (graphType == 0 || graphType == 2) {
+                        availableBandwidthSeries.add(hour, stat.getInitialBandwidth() / 1000.0);
+                    }
+                    if (graphType == 3) {
+                        averageBandwidthSeries.add(hour, stat.getAverageUsedBandwidth() / 1000.0);
+                    }
+                    last = stat.getDate();
                 }
-                Hour hour = new Hour(stat.getDate());
-                if (graphType == 0 || graphType == 1) {
-                    availableSeries.add(hour, stat.getInitialBandwidth());
-                }
-                if (graphType == 0 || graphType == 2) {
-                    usedSeries.add(hour, stat.getUsedBandwidth());
-                }
-                last = stat.getDate();
             }
-        }
-        if (last != null) {
-            while (cal.getTime().before(last)) {
-                Hour hour = new Hour(cal.getTime());
-                if (availableSeries.getDataItem(hour) == null) {
-                    availableSeries.add(hour, 0.0);
+            if (last != null) {
+                while (cal.getTime().before(last)) {
+                    Hour hour = new Hour(cal.getTime());
+                    if (availableBandwidthSeries.getDataItem(hour) == null) {
+                        availableBandwidthSeries.add(hour, 0.0);
+                    }
+                    if (usedBandwidthSeries.getDataItem(hour) == null) {
+                        usedBandwidthSeries.add(hour, 0.0);
+                    }
+                    if (averageBandwidthSeries.getDataItem(hour) == null) {
+                        averageBandwidthSeries.add(hour, 0.0);
+                    }
+                    cal.add(Calendar.HOUR, 1);
                 }
-                if (usedSeries.getDataItem(hour) == null) {
-                    usedSeries.add(hour, 0.0);
-                }
-                cal.add(Calendar.HOUR, 1);
             }
+        } finally {
+            uiComponent.setCursor(c);
         }
     }
 
@@ -242,7 +258,11 @@ public class StatsInformationCard extends InformationCard {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == dataTypeComboBox || e.getSource() == graphTypeComboBox) {
-                redrawBandwidthStats();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        redrawBandwidthStats();
+                    }
+                });
             }
         }
     }
