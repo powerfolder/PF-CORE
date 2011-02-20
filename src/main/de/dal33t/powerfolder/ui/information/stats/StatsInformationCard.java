@@ -53,14 +53,19 @@ import java.util.Set;
 public class StatsInformationCard extends InformationCard {
 
     private JPanel uiComponent;
-    private JComboBox dataTypeComboBox;
-    private DefaultComboBoxModel dataTypeModel;
-    private JComboBox graphTypeComboBox;
-    private DefaultComboBoxModel graphTypeModel;
+    private JComboBox usedDataTypeComboBox;
+    private DefaultComboBoxModel usedDataTypeModel;
+    private JComboBox usedGraphTypeComboBox;
+    private DefaultComboBoxModel usedGraphTypeModel;
+
+    private DefaultComboBoxModel percentDataTypeModel;
 
     private TimeSeries availableBandwidthSeries;
     private TimeSeries usedBandwidthSeries;
     private TimeSeries averageBandwidthSeries;
+
+    private TimeSeries percentageBandwidthSeries;
+    private JComboBox percentDataTypeComboBox;
 
     /**
      * Constructor
@@ -98,7 +103,8 @@ public class StatsInformationCard extends InformationCard {
         if (uiComponent == null) {
             initialize();
             buildUIComponent();
-            redrawBandwidthStats();
+            redrawUsedBandwidthStats();
+            redrawPercentageBandwidthStats();
         }
         return uiComponent;
     }
@@ -107,21 +113,30 @@ public class StatsInformationCard extends InformationCard {
      * Initialize components
      */
     private void initialize() {
-        dataTypeModel = new DefaultComboBoxModel();
-        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_upload"));
-        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_download"));
-        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_upload"));
-        dataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_download"));
+        usedDataTypeModel = new DefaultComboBoxModel();
+        usedDataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_upload"));
+        usedDataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_download"));
+        usedDataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_upload"));
+        usedDataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_download"));
 
-        graphTypeModel = new DefaultComboBoxModel();
-        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_and_available"));
-        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_only"));
-        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.available_only"));
-        graphTypeModel.addElement(Translation.getTranslation("stats_information_card.average"));
+        usedGraphTypeModel = new DefaultComboBoxModel();
+        usedGraphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_and_available"));
+        usedGraphTypeModel.addElement(Translation.getTranslation("stats_information_card.used_only"));
+        usedGraphTypeModel.addElement(Translation.getTranslation("stats_information_card.available_only"));
+        usedGraphTypeModel.addElement(Translation.getTranslation("stats_information_card.average"));
+
+        percentDataTypeModel = new DefaultComboBoxModel();
+        percentDataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_upload"));
+        percentDataTypeModel.addElement(Translation.getTranslation("stats_information_card.wan_download"));
+        percentDataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_upload"));
+        percentDataTypeModel.addElement(Translation.getTranslation("stats_information_card.lan_download"));
 
         usedBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.used"), Hour.class);
         availableBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.available"), Hour.class);
         averageBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.average"), Hour.class);
+
+        percentageBandwidthSeries = new TimeSeries(Translation.getTranslation("stats_information_card.percentage"), Hour.class);
+
     }
 
     /**
@@ -143,7 +158,38 @@ public class StatsInformationCard extends InformationCard {
         tabbedPane.setToolTipTextAt(0, Translation.getTranslation(
                 "stats_information_card.used_graph.tip"));
 
+        JPanel averagePanel = getAveragePanel();
+        tabbedPane.add(averagePanel, Translation.getTranslation(
+                "stats_information_card.percentage_graph.text"));
+        tabbedPane.setToolTipTextAt(1, Translation.getTranslation(
+                "stats_information_card.percentage_graph.tip"));
+
         uiComponent = builder.getPanel();
+    }
+
+    private JPanel getAveragePanel() {
+        DateAxis domain = new DateAxis(Translation.getTranslation("stats_information_card.date"));
+        TimeSeriesCollection series = new TimeSeriesCollection();
+        NumberAxis axis = new NumberAxis(Translation.getTranslation("stats_information_card.percentage"));
+
+        series.addSeries(percentageBandwidthSeries);
+
+        XYItemRenderer renderer = new StandardXYItemRenderer();
+        XYPlot plot = new XYPlot(series, domain, axis, renderer);
+        JFreeChart graph = new JFreeChart(plot);
+        ChartPanel cp = new ChartPanel(graph);
+
+        FormLayout layout = new FormLayout("3dlu, fill:pref:grow, 3dlu",
+                "3dlu, pref , 3dlu, pref, 3dlu, fill:pref:grow, 3dlu");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        JPanel p = buildPercentStatsControlPanel();
+
+        builder.add(p, cc.xy(2,2));
+        builder.addSeparator(null, cc.xyw(1, 4, 3));
+        builder.add(cp, cc.xy(2,6));
+        return builder.getPanel();
     }
 
     private JPanel getUsedPanel() {
@@ -166,7 +212,7 @@ public class StatsInformationCard extends InformationCard {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JPanel p = buildStatsControlPanel();
+        JPanel p = buildUsedStatsControlPanel();
 
         builder.add(p, cc.xy(2,2));
         builder.addSeparator(null, cc.xyw(1, 4, 3));
@@ -174,32 +220,46 @@ public class StatsInformationCard extends InformationCard {
         return builder.getPanel();
     }
 
-    private JPanel buildStatsControlPanel() {
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu",
+    private JPanel buildUsedStatsControlPanel() {
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu",
                 "3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        dataTypeComboBox = new JComboBox(dataTypeModel);
-        builder.add(dataTypeComboBox, cc.xy(2, 2));
+        usedDataTypeComboBox = new JComboBox(usedDataTypeModel);
+        builder.add(usedDataTypeComboBox, cc.xy(2, 2));
         MyActionListener actionListener = new MyActionListener();
-        dataTypeComboBox.addActionListener(actionListener);
+        usedDataTypeComboBox.addActionListener(actionListener);
 
-        graphTypeComboBox = new JComboBox(graphTypeModel);
-        builder.add(graphTypeComboBox, cc.xy(4, 2));
-        graphTypeComboBox.addActionListener(actionListener);
+        usedGraphTypeComboBox = new JComboBox(usedGraphTypeModel);
+        builder.add(usedGraphTypeComboBox, cc.xy(4, 2));
+        usedGraphTypeComboBox.addActionListener(actionListener);
 
         return builder.getPanel();
     }
 
-    private void redrawBandwidthStats() {
+    private JPanel buildPercentStatsControlPanel() {
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu",
+                "3dlu, pref, 3dlu");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        MyActionListener actionListener = new MyActionListener();
+        percentDataTypeComboBox = new JComboBox(percentDataTypeModel);
+        builder.add(percentDataTypeComboBox, cc.xy(2, 2));
+        percentDataTypeComboBox.addActionListener(actionListener);
+
+        return builder.getPanel();
+    }
+
+    private void redrawUsedBandwidthStats() {
 
         Cursor c = uiComponent.getCursor();
         try {
             uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            int graphType = graphTypeComboBox.getSelectedIndex();
-            int dataType = dataTypeComboBox.getSelectedIndex();
+            int usedGraphType = usedGraphTypeComboBox.getSelectedIndex();
+            int usedDataType = usedDataTypeComboBox.getSelectedIndex();
 
             availableBandwidthSeries.clear();
             usedBandwidthSeries.clear();
@@ -210,26 +270,26 @@ public class StatsInformationCard extends InformationCard {
             boolean first = true;
             Date last = null;
             for (CoalescedBandwidthStat stat : stats) {
-                if (stat.getInfo() == BandwidthLimiterInfo.WAN_INPUT && dataType == 0 ||
-                        stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && dataType == 1 ||
-                        stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && dataType == 2 ||
-                        stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && dataType == 3) {
-                    if (first) {
-                        first = false;
-                        cal.setTime(stat.getDate());
-                    }
-                    Hour hour = new Hour(stat.getDate());
-                    if (graphType == 0 || graphType == 1) {
+                Hour hour = new Hour(stat.getDate());
+                if (first) {
+                    first = false;
+                    cal.setTime(stat.getDate());
+                }
+                if (stat.getInfo() == BandwidthLimiterInfo.WAN_INPUT && usedDataType == 0 ||
+                        stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && usedDataType == 1 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && usedDataType == 2 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && usedDataType == 3) {
+                    if (usedGraphType == 0 || usedGraphType == 1) {
                         usedBandwidthSeries.add(hour, stat.getUsedBandwidth() / 1000.0);
                     }
-                    if (graphType == 0 || graphType == 2) {
+                    if (usedGraphType == 0 || usedGraphType == 2) {
                         availableBandwidthSeries.add(hour, stat.getInitialBandwidth() / 1000.0);
                     }
-                    if (graphType == 3) {
+                    if (usedGraphType == 3) {
                         averageBandwidthSeries.add(hour, stat.getAverageUsedBandwidth() / 1000.0);
                     }
-                    last = stat.getDate();
                 }
+                last = stat.getDate();
             }
             if (last != null) {
                 while (cal.getTime().before(last)) {
@@ -251,16 +311,65 @@ public class StatsInformationCard extends InformationCard {
         }
     }
 
+    private void redrawPercentageBandwidthStats() {
+
+        Cursor c = uiComponent.getCursor();
+        try {
+            uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+            int percentDataType = percentDataTypeComboBox.getSelectedIndex();
+
+            percentageBandwidthSeries.clear();
+
+            Set<CoalescedBandwidthStat> stats = getController().getTransferManager().getBandwidthStats();
+            Calendar cal = Calendar.getInstance();
+            boolean first = true;
+            Date last = null;
+            for (CoalescedBandwidthStat stat : stats) {
+                Hour hour = new Hour(stat.getDate());
+                if (first) {
+                    first = false;
+                    cal.setTime(stat.getDate());
+                }
+                if (stat.getInfo() == BandwidthLimiterInfo.WAN_INPUT && percentDataType == 0 ||
+                        stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && percentDataType == 1 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && percentDataType == 2 ||
+                        stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && percentDataType == 3) {
+                    System.out.println("hghg " + stat.getPercentageUsedBandwidth());
+                    percentageBandwidthSeries.add(hour, stat.getPercentageUsedBandwidth());
+                }
+                last = stat.getDate();
+            }
+            if (last != null) {
+                while (cal.getTime().before(last)) {
+                    Hour hour = new Hour(cal.getTime());
+                    if (percentageBandwidthSeries.getDataItem(hour) == null) {
+                        percentageBandwidthSeries.add(hour, 0.0);
+                    }
+                    cal.add(Calendar.HOUR, 1);
+                }
+            }
+        } finally {
+            uiComponent.setCursor(c);
+        }
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
 
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == dataTypeComboBox || e.getSource() == graphTypeComboBox) {
+            if (e.getSource() == usedDataTypeComboBox || e.getSource() == usedGraphTypeComboBox) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        redrawBandwidthStats();
+                        redrawUsedBandwidthStats();
+                    }
+                });
+            } else if (e.getSource() == percentDataTypeComboBox) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        redrawPercentageBandwidthStats();
                     }
                 });
             }
