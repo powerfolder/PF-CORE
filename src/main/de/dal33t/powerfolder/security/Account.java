@@ -112,6 +112,8 @@ public class Account implements Serializable {
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
     private boolean proUser;
+    
+    @Column(length=1024)
     private String notes;
 
     /**
