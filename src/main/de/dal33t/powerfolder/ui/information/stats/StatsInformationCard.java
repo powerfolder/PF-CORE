@@ -335,7 +335,6 @@ public class StatsInformationCard extends InformationCard {
                         stat.getInfo() == BandwidthLimiterInfo.WAN_OUTPUT && percentDataType == 1 ||
                         stat.getInfo() == BandwidthLimiterInfo.LAN_INPUT && percentDataType == 2 ||
                         stat.getInfo() == BandwidthLimiterInfo.LAN_OUTPUT && percentDataType == 3) {
-                    System.out.println("hghg " + stat.getPercentageUsedBandwidth());
                     percentageBandwidthSeries.add(hour, stat.getPercentageUsedBandwidth());
                 }
                 last = stat.getDate();
