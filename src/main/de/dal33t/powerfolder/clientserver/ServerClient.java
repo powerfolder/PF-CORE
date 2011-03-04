@@ -479,7 +479,7 @@ public class ServerClient extends PFComponent {
         }
 
         if (!StringUtils.isBlank(un)) {
-            return login(un, pw);
+            return login0(un, Util.toString(pw), true);
         } else {
             logFine("Not logging in. Username blank");
         }
@@ -526,11 +526,33 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     private Account login(String theUsername, String thePasswordObj) {
+        return login0(theUsername, thePasswordObj, false);
+    }
+
+    /**
+     * Logs into the server and saves the identity as my login.
+     * <p>
+     * If the server is not connected and invalid account is returned and the
+     * login data saved for auto-login on reconnect.
+     * 
+     * @param theUsername
+     * @param thePasswordObj
+     *            the obfuscated password
+     * @return the identity with this username or <code>InvalidAccount</code> if
+     *         login failed. NEVER returns <code>null</code>
+     */
+    private Account login0(String theUsername, String thePasswordObj,
+        boolean initFromConfig)
+    {
         logFine("Login with: " + theUsername);
         synchronized (loginLock) {
+            boolean same = username != null && username.equals(theUsername)
+                && passwordObf != null && passwordObf.equals(thePasswordObj);
             username = theUsername;
             passwordObf = thePasswordObj;
-            saveLastKnowLogin();
+            if (!same && !initFromConfig) {
+                saveLastKnowLogin();
+            }
             if (!isConnected() || StringUtils.isBlank(passwordObf)) {
                 setAnonAccount();
                 fireLogin(accountDetails);
