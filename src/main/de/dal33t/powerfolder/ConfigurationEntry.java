@@ -178,6 +178,17 @@ public enum ConfigurationEntry {
      */
     PROVIDER_WIKI_URL("provider.url.wiki", "http://www.powerfolder.com/wiki"),
 
+    // Distribution infos *****************************************************
+
+    DIST_BINARY_NAME("dist.binaryname", "PowerFolder"),
+
+    DIST_NAME("dist.name", "PowerFolder"),
+    
+    DIST_DESCRIPTION("dist.description", "Sync your world"),
+    
+    DIST_FOLDERS_BASE_NAME("dist.folderbasename",
+        Constants.FOLDERS_BASE_DIR_SUBDIR_NAME),
+
     // Server settings ********************************************************
 
     /**
