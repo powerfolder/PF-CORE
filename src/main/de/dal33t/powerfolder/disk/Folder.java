@@ -642,8 +642,8 @@ public class Folder extends PFComponent {
         if (!localBase.exists()) {
             // TRAC #1249
             if ((OSUtil.isMacOS() || OSUtil.isLinux())
-                && localBase.getAbsolutePath().toLowerCase().startsWith(
-                    "/volumes"))
+                && localBase.getAbsolutePath().toLowerCase()
+                    .startsWith("/volumes"))
             {
                 throw new FolderException(currentInfo,
                     "Unmounted volume not available at "
@@ -664,8 +664,8 @@ public class Folder extends PFComponent {
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
             throw new FolderException(currentInfo, Translation.getTranslation(
-                "foldercreate.error.unable_to_open", localBase
-                    .getAbsolutePath()));
+                "foldercreate.error.unable_to_open",
+                localBase.getAbsolutePath()));
         }
 
         // Complex checks
@@ -1150,8 +1150,8 @@ public class Folder extends PFComponent {
                     } else {
                         fInfo = FileInfoFactory.unmarshallExistingFile(
                             currentInfo, fInfo.getRelativeName(), size,
-                            modifiedBy, modDate, fInfo.getVersion(), file
-                                .isDirectory());
+                            modifiedBy, modDate, fInfo.getVersion(),
+                            file.isDirectory());
                     }
 
                     store(getController().getMySelf(), fInfo);
@@ -1759,8 +1759,8 @@ public class Folder extends PFComponent {
         }
 
         if (active) {
-            return Util.createDesktopShortcut(shortCutName, localBase
-                .getAbsoluteFile());
+            return Util.createDesktopShortcut(shortCutName,
+                localBase.getAbsoluteFile());
         }
 
         // Remove shortcuts to folder if not wanted
@@ -2190,8 +2190,9 @@ public class Folder extends PFComponent {
                         + " possible files");
                 }
                 List<FileInfo> list = new ArrayList<FileInfo>(dirList);
-                Collections.sort(list, new ReverseComparator<FileInfo>(
-                    FileInfoComparator
+                Collections.sort(
+                    list,
+                    new ReverseComparator<FileInfo>(FileInfoComparator
                         .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
                 // logWarning("" + list.size());
                 synchronized (scanLock) {
@@ -2449,32 +2450,32 @@ public class Folder extends PFComponent {
         if (!scanResult.getNewFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
-                    return FolderFilesChanged.create(currentInfo, scanResult
-                        .getNewFiles(), diskItemFilter, useExt);
+                    return FolderFilesChanged.create(currentInfo,
+                        scanResult.getNewFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getChangedFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
-                    return FolderFilesChanged.create(currentInfo, scanResult
-                        .getChangedFiles(), diskItemFilter, useExt);
+                    return FolderFilesChanged.create(currentInfo,
+                        scanResult.getChangedFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getDeletedFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
-                    return FolderFilesChanged.create(currentInfo, scanResult
-                        .getDeletedFiles(), diskItemFilter, useExt);
+                    return FolderFilesChanged.create(currentInfo,
+                        scanResult.getDeletedFiles(), diskItemFilter, useExt);
                 }
             });
         }
         if (!scanResult.getRestoredFiles().isEmpty()) {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
-                    return FolderFilesChanged.create(currentInfo, scanResult
-                        .getRestoredFiles(), diskItemFilter, useExt);
+                    return FolderFilesChanged.create(currentInfo,
+                        scanResult.getRestoredFiles(), diskItemFilter, useExt);
                 }
             });
         }
@@ -2771,8 +2772,8 @@ public class Folder extends PFComponent {
             boolean fileSizeSame = localFileInfo.getSize() == remoteFileInfo
                 .getSize();
             boolean dateSame = DateUtil.equalsFileDateCrossPlattform(
-                localFileInfo.getModifiedDate(), remoteFileInfo
-                    .getModifiedDate());
+                localFileInfo.getModifiedDate(),
+                remoteFileInfo.getModifiedDate());
             boolean fileCaseSame = localFileInfo.getRelativeName().equals(
                 remoteFileInfo.getRelativeName());
 
@@ -3675,23 +3676,23 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     public boolean hasReadPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .read(getParentFolderInfo()));
+        return hasFolderPermission(member,
+            FolderPermission.read(getParentFolderInfo()));
     }
 
     public boolean hasWritePermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .readWrite(getParentFolderInfo()));
+        return hasFolderPermission(member,
+            FolderPermission.readWrite(getParentFolderInfo()));
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .admin(getParentFolderInfo()));
+        return hasFolderPermission(member,
+            FolderPermission.admin(getParentFolderInfo()));
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member, FolderPermission
-            .owner(getParentFolderInfo()));
+        return hasFolderPermission(member,
+            FolderPermission.owner(getParentFolderInfo()));
     }
 
     private boolean hasFolderPermission(Member member,
@@ -3894,8 +3895,8 @@ public class Folder extends PFComponent {
             }
             if (ufp == null) {
                 // Calculate the actual number of days since the last sync.
-                long numberOfDays = (new Date().getTime() -
-                        lastSyncDate.getTime()) / 24L / 3600L / 1000L;
+                long numberOfDays = (new Date().getTime() - lastSyncDate
+                    .getTime()) / 24L / 3600L / 1000L;
                 Problem problem = new UnsynchronizedFolderProblem(currentInfo,
                     numberOfDays);
                 addProblem(problem);
