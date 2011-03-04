@@ -86,7 +86,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
 import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
@@ -484,7 +483,7 @@ public class Folder extends PFComponent {
     public void setArchiveMode(ArchiveMode mode) {
         try {
             archiver = mode.getInstance(this);
-            // Store on disk
+            // Use md5 of folder id as entry id in config...
             String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
                 .getBytes())));
             String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
@@ -501,7 +500,7 @@ public class Folder extends PFComponent {
 
     public void setArchiveVersions(int versions) {
         archiver.setVersionsPerFile(versions);
-        // Store on disk
+        // Use md5 of folder id as entry id in config...
         String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
@@ -1803,7 +1802,7 @@ public class Folder extends PFComponent {
      */
     public void setDownloadScript(String downloadScript) {
         this.downloadScript = downloadScript;
-        // Store on disk
+        // Use md5 of folder id as entry id in config...
         String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
             .getBytes())));
         String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
@@ -1839,8 +1838,8 @@ public class Folder extends PFComponent {
             "Can not change Sync Profile in Preview mode.");
         syncProfile = aSyncProfile;
 
-        // Store on disk
         if (!currentInfo.isMetaFolder()) {
+            // Use md5 of folder id as entry id in config...
             String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
                 .getBytes())));
             String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
@@ -1994,15 +1993,7 @@ public class Folder extends PFComponent {
 
             Message[] filelistMsgs = FileList.create(this,
                 supportExternalizable(member));
-            for (Message message : filelistMsgs) {
-                try {
-                    member.sendMessage(message);
-                } catch (ConnectionException e) {
-                    logWarning("Unable to send filelist to " + member + ". "
-                        + e);
-                    break;
-                }
-            }
+            member.sendMessagesAsynchron(filelistMsgs);
         }
         if (!wasMember) {
             // Fire event if this member is new
@@ -2968,7 +2959,7 @@ public class Folder extends PFComponent {
      */
     public void setCommitDir(File commitDir) {
         this.commitDir = commitDir;
-        // Store on disk
+        // Use md5 of folder id as entry id in config...
         String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
             .getBytes())));
         String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
@@ -3930,7 +3921,7 @@ public class Folder extends PFComponent {
 
     public void setSyncPatterns(boolean syncPatterns) {
         this.syncPatterns = syncPatterns;
-        // Store on disk
+        // Use md5 of folder id as entry id in config...
         String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
             .getBytes())));
         String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
