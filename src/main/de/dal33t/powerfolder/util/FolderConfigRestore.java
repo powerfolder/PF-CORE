@@ -1,14 +1,5 @@
 package de.dal33t.powerfolder.util;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +51,7 @@ public class FolderConfigRestore {
         FolderSettings foSettings = new FolderSettings(baseDir,
             SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT, false,
             ArchiveMode.FULL_BACKUP, 0);
-        saveFolderConfig(foInfo, foSettings, config);
+        foSettings.set(foInfo, config);
     }
 
     private static FolderInfo readFolderInfo(File baseDir) throws IOException,
@@ -79,36 +70,4 @@ public class FolderConfigRestore {
         return files[0].getFolderInfo();
     }
 
-    public static void saveFolderConfig(FolderInfo folderInfo,
-        FolderSettings folderSettings, Properties config)
-    {
-        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
-            .getBytes())));
-        // store folder in config
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_NAME, folderInfo.name);
-        config
-            .setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5 + ".recycle", "true");
-        config
-            .setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5 + FOLDER_SETTINGS_ID,
-                folderInfo.id);
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_DIR, folderSettings.getLocalBaseDir()
-            .getAbsolutePath());
-        // Save sync profiles as internal configuration for custom profiles.
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_SYNC_PROFILE, folderSettings.getSyncProfile()
-            .getFieldList());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_ARCHIVE, folderSettings.getArchiveMode().name());
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_PREVIEW, String.valueOf(folderSettings
-            .isPreviewOnly()));
-        String dlScript = folderSettings.getDownloadScript() != null
-            ? folderSettings.getDownloadScript()
-            : "";
-        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + md5
-            + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
-
-    }
 }

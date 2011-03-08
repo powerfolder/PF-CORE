@@ -82,8 +82,8 @@ public class PreviewToJoinPanel extends BaseDialog {
      */
     private void initComponents() {
 
-        final FolderSettings existingFoldersSettings = getController()
-            .getFolderRepository().loadFolderSettings(folder.getInfo());
+        final FolderSettings existingFoldersSettings = FolderSettings.load(
+            getController(), folder.getConfigEntryId());
 
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(
             getController(), existingFoldersSettings.getSyncProfile());
@@ -100,8 +100,8 @@ public class PreviewToJoinPanel extends BaseDialog {
 
         // Buttons
         joinButton = new JButton(Translation.getTranslation("folder_join.join"));
-        joinButton.setMnemonic(Translation.getTranslation(
-            "folder_join.join.key").trim().charAt(0));
+        joinButton.setMnemonic(Translation
+            .getTranslation("folder_join.join.key").trim().charAt(0));
 
         joinButton.addActionListener(new ActionListener() {
 
@@ -116,7 +116,7 @@ public class PreviewToJoinPanel extends BaseDialog {
                     existingFoldersSettings.getArchiveMode(), false,
                     existingFoldersSettings.getDownloadScript(),
                     existingFoldersSettings.getVersions(),
-                        existingFoldersSettings.isSyncPatterns());
+                    existingFoldersSettings.isSyncPatterns());
 
                 FolderPreviewHelper.convertFolderFromPreview(getController(),
                     folder, newFolderSettings, false);
@@ -134,8 +134,8 @@ public class PreviewToJoinPanel extends BaseDialog {
 
     @Override
     public String getTitle() {
-        return Translation.getTranslation("folder_join.dialog.title", folder
-            .getName());
+        return Translation.getTranslation("folder_join.dialog.title",
+            folder.getName());
     }
 
     @Override
@@ -194,9 +194,9 @@ public class PreviewToJoinPanel extends BaseDialog {
         locationTF.setText((String) locationModel.getValue());
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButtonMini locationButton = new JButtonMini(Icons
-            .getIconById(Icons.DIRECTORY), Translation
-            .getTranslation("folder_join.location.tip"));
+        JButtonMini locationButton = new JButtonMini(
+            Icons.getIconById(Icons.DIRECTORY),
+            Translation.getTranslation("folder_join.location.tip"));
         locationButton.addActionListener(new MyActionListener());
         builder.add(locationButton, cc.xy(3, 1));
         return builder.getPanel();
@@ -209,9 +209,8 @@ public class PreviewToJoinPanel extends BaseDialog {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            File file = DialogFactory.chooseDirectory(
-                    getController().getUIController(),
-                initial);
+            File file = DialogFactory.chooseDirectory(getController()
+                .getUIController(), initial);
             if (file != null) {
                 locationModel.setValue(file.getAbsolutePath());
             }

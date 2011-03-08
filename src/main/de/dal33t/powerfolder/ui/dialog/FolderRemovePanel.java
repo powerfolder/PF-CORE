@@ -129,8 +129,8 @@ public class FolderRemovePanel extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 removeButton.setEnabled(false);
                 confirmedFolderLeave(removeFromLocalBox.isSelected(),
-                    deleteSystemSubFolderBox.isSelected(), removeFromServerBox
-                        .isSelected());
+                    deleteSystemSubFolderBox.isSelected(),
+                    removeFromServerBox.isSelected());
             }
         });
 
@@ -142,10 +142,12 @@ public class FolderRemovePanel extends BaseDialog {
     }
 
     private void createRemoveButton(ActionListener listener) {
-        removeButton = new JButton(Translation
-            .getTranslation("folder_remove.dialog.button.name"));
-        removeButton.setMnemonic(Translation.getTranslation(
-            "folder_remove.dialog.button.key").trim().charAt(0));
+        removeButton = new JButton(
+            Translation.getTranslation("folder_remove.dialog.button.name"));
+        removeButton
+            .setMnemonic(Translation
+                .getTranslation("folder_remove.dialog.button.key").trim()
+                .charAt(0));
         removeButton.addActionListener(listener);
     }
 
@@ -245,8 +247,8 @@ public class FolderRemovePanel extends BaseDialog {
 
             if (!removeLocal) {
                 // TODO For what is that?
-                FolderSettings folderSettings = folderRepository
-                    .loadFolderSettings(foInfo);
+                FolderSettings folderSettings = FolderSettings.load(
+                    getController(), folder.getConfigEntryId());
                 folderRepository.saveFolderConfig(foInfo, folderSettings, true);
             }
         }
