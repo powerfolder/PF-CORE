@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -458,6 +459,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 + folderConfig);
             return;
         }
+        FolderRepository repo = getController().getFolderRepository();
         File dir = new File(config.get(FOLDER_SCRIPT_CONFIG_DIR));
 
         // Show user?
@@ -483,9 +485,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES
             .getValueBoolean(getController()))
         {
-            Folder oldFolder = findExistingFolder(dir);
+            Folder oldFolder = repo.findExistingFolder(dir);
             if (oldFolder != null) {
-                oldFolder = findExistingFolder(name);
+                oldFolder = repo.findExistingFolder(name);
             }
             if (oldFolder != null) {
                 // Re-use old ID to prevent breaking existing setup.
@@ -493,8 +495,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 logWarning("Deleting folder: " + oldFolder + " at "
                     + oldFolder.getLocalBase() + ". Replacing it new one at "
                     + dir);
-                getController().getFolderRepository().removeFolder(oldFolder,
-                    true);
+                repo.removeFolder(oldFolder, true);
             }
         }
 
@@ -542,8 +543,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     .getValue(getController())), false, dlScript,
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                     .getValueInt(getController()), true);
-            getController().getFolderRepository()
-                .createFolder(foInfo, settings);
+            repo.createFolder(foInfo, settings);
             if (backupByServer) {
                 new CreateFolderOnServerTask(foInfo,
                     SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT)
@@ -601,37 +601,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                 + "'.", e);
         }
 
-        return null;
-    }
-
-    // Helper *****************************************************************
-
-    private Folder findExistingFolder(File targetDir) {
-        for (Folder folder : getController().getFolderRepository().getFolders())
-        {
-            try {
-                if (folder.getLocalBase().equals(targetDir)
-                    || folder.getLocalBase().getCanonicalPath()
-                        .equals(targetDir.getCanonicalPath()))
-                {
-                    return folder;
-                }
-                // System.out.println(folder.getLocalBase().getCanonicalPath()
-                // + " =?= " + targetDir.getCanonicalPath());
-            } catch (IOException e) {
-                logWarning(e);
-            }
-        }
-        return null;
-    }
-
-    private Folder findExistingFolder(String folderName) {
-        for (Folder folder : getController().getFolderRepository().getFolders())
-        {
-            if (folder.getName().equalsIgnoreCase(folderName)) {
-                return folder;
-            }
-        }
         return null;
     }
 }

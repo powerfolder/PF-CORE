@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
-
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
@@ -41,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
@@ -49,13 +46,17 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.TimerTask;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.cli.CommandLine;
 
@@ -131,7 +132,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.5.0 - 2.1.0.20"; // 2.1.0.12
+    public static final String PROGRAM_VERSION = "4.5.2 RC1"; // 2.1.0.25
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -760,7 +761,6 @@ public class Controller extends PFComponent {
             }
             bis = new BufferedInputStream(new FileInputStream(configFile));
             config.load(bis);
-            backupConfigIfV3();
         } catch (FileNotFoundException e) {
             logWarning("Unable to start config, file '" + filename
                 + "' not found, using defaults");
@@ -778,50 +778,6 @@ public class Controller extends PFComponent {
             }
         }
         return true;
-    }
-
-    /**
-     * This backs up version 3 config, because version 4 config is very
-     * different and once converted, there is no going back.
-     */
-    @SuppressWarnings("unchecked")
-    private void backupConfigIfV3() {
-
-        boolean v3 = false;
-        for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();)
-        {
-            // Look for a v3 'folder.' entry.
-            String propName = en.nextElement();
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V3)) {
-                v3 = true;
-                break;
-            }
-        }
-
-        // Found a V3 config file. Back it up before anything changes it.
-        if (v3) {
-            String backupFilename = configFilename + ".v3";
-            File backupFile = new File(getConfigLocationBase(), backupFilename);
-
-            // Do it only once.
-            if (!backupFile.exists()) {
-                try {
-                    logInfo("Backing up version 3 config file to "
-                        + backupFile.getAbsolutePath());
-                    PropertiesUtil.saveConfig(backupFile, config,
-                        "PowerFolder config file (v3 backup)");
-                } catch (IOException e) {
-                    logSevere("Unable to save v3 backup config", e);
-                } catch (Exception e) {
-                    // major problem , setting code is wrong
-                    System.out
-                        .println("major problem , v3 setting code is wrong");
-                    e.printStackTrace();
-                    logSevere("major problem , v3 setting code is wrong", e);
-                }
-            }
-        }
     }
 
     /**
@@ -2249,6 +2205,7 @@ public class Controller extends PFComponent {
                     logWarning("Found multiple distribution classes: "
                         + br.getName() + ", already using "
                         + distribution.getName());
+                    break;
                 }
                 distribution = br;
             }
@@ -2261,8 +2218,8 @@ public class Controller extends PFComponent {
                 logFine("Distributon not found. Falling back to "
                     + distribution.getName());
             }
-            logInfo("Running distribution: " + distribution.getName());
             distribution.init(this);
+            logInfo("Running distribution: " + distribution.getName());
         } catch (Exception e) {
             logSevere("Failed to initialize distribution "
                 + (distribution == null ? "null" : distribution.getName()), e);
