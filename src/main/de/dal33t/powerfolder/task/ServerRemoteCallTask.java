@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.task;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -104,7 +103,8 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
 
     /**
      * Execute a remote call to the service. When this method is called it is
-     * guranteed that the server is connected
+     * guranteed that the server is connected. The call is responsible for
+     * removing the task via {@link #remove()}.
      * 
      * @param client
      * @throws Exception
