@@ -189,6 +189,12 @@ public class Folder extends PFComponent {
     private SyncProfile syncProfile;
 
     /**
+     * The entry id in config file. Usually MD5(random ID, folderID or a
+     * meaningful unique name, e.g. Desktop).
+     */
+    private String configEntryId;
+
+    /**
      * Flag indicating that folder has a set of own know files will be true
      * after first scan ever
      */
@@ -284,6 +290,7 @@ public class Folder extends PFComponent {
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
         previewOnly = folderSettings.isPreviewOnly();
+        configEntryId = folderSettings.getConfigEntryId();
 
         // Check base dir
         try {
@@ -483,10 +490,7 @@ public class Folder extends PFComponent {
     public void setArchiveMode(ArchiveMode mode) {
         try {
             archiver = mode.getInstance(this);
-            // Use md5 of folder id as entry id in config...
-            String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-                .getBytes())));
-            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
                 + FolderSettings.FOLDER_SETTINGS_ARCHIVE;
             getController().getConfig().put(syncProfKey, mode.name());
             getController().saveConfig();
@@ -500,10 +504,7 @@ public class Folder extends PFComponent {
 
     public void setArchiveVersions(int versions) {
         archiver.setVersionsPerFile(versions);
-        // Use md5 of folder id as entry id in config...
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_VERSIONS;
         getController().getConfig().put(syncProfKey, String.valueOf(versions));
         getController().saveConfig();
@@ -1802,10 +1803,7 @@ public class Folder extends PFComponent {
      */
     public void setDownloadScript(String downloadScript) {
         this.downloadScript = downloadScript;
-        // Use md5 of folder id as entry id in config...
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
         String confVal = downloadScript != null ? downloadScript : "";
         getController().getConfig().put(confKey, confVal);
@@ -1839,10 +1837,7 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
-            // Use md5 of folder id as entry id in config...
-            String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-                .getBytes())));
-            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+            String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
                 + FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
             getController().getConfig().put(syncProfKey,
                 syncProfile.getFieldList());
@@ -2960,10 +2955,7 @@ public class Folder extends PFComponent {
      */
     public void setCommitDir(File commitDir) {
         this.commitDir = commitDir;
-        // Use md5 of folder id as entry id in config...
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String confKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+        String confKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
         String confVal = commitDir != null ? commitDir.getAbsolutePath() : "";
         getController().getConfig().put(confKey, confVal);
@@ -3065,6 +3057,10 @@ public class Folder extends PFComponent {
 
     public String getName() {
         return currentInfo.name;
+    }
+
+    public String getConfigEntryId() {
+        return configEntryId;
     }
 
     public int getKnownItemCount() {
@@ -3922,10 +3918,7 @@ public class Folder extends PFComponent {
 
     public void setSyncPatterns(boolean syncPatterns) {
         this.syncPatterns = syncPatterns;
-        // Use md5 of folder id as entry id in config...
-        String md5 = new String(Util.encodeHex(Util.md5(currentInfo.id
-            .getBytes())));
-        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + md5
+        String syncProfKey = FOLDER_SETTINGS_PREFIX_V4 + configEntryId
             + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
         getController().getConfig().put(syncProfKey,
             String.valueOf(syncPatterns));

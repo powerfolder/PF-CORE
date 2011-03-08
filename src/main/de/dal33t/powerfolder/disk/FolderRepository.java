@@ -19,18 +19,9 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ARCHIVE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_COMMIT_DIR;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DIR;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_DOWNLOAD_SCRIPT;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V3;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREVIEW;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_SYNC_PROFILE;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_VERSIONS;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,17 +56,19 @@ import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
@@ -98,7 +93,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintaitingFolder;
-    // Flag if the repo is already started
+    private final Set<String> onLoginFolderEntryIds;
+    // Flag if the repo is started
     private boolean started;
     // The trigger to start scanning
     private final Object scanTrigger = new Object();
@@ -115,24 +111,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private AllFolderMembershipSynchronizer folderMembershipSynchronizer;
     private final Object folderMembershipSynchronizerLock = new Object();
-
-    /**
-     * Field list for backup taget pre #777. Used to convert to new backup
-     * target for #787.
-     */
-    private static final String PRE_777_BACKUP_TARGET_FIELD_LIST = "true,true,true,true,0,false,12,0,m";
-    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST = "true,true,true,true,1,false,12,0,m,"
-        + Translation
-            .getTranslation("transfer_mode.automatic_synchronization.name");
-    private static final String PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST = "true,true,true,true,10,false,12,0,m,"
-        + Translation
-            .getTranslation("transfer_mode.automatic_synchronization_10min.name");
-    private static final String PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST = "false,false,false,false,5,false,12,0,m,"
-        + Translation.getTranslation("transfer_mode.backup_source_5min.name")
-        + ",false";
-    private static final String PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST = "false,false,false,false,60,false,12,0,m,"
-        + Translation.getTranslation("transfer_mode.backup_source_hour.name")
-        + ",false";
 
     /**
      * Registered to ALL folders to deligate problem event of any folder to
@@ -154,6 +132,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Rest
         folders = new ConcurrentHashMap<FolderInfo, Folder>();
         metaFolders = new ConcurrentHashMap<FolderInfo, Folder>();
+        onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
 
@@ -198,8 +177,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController());
         if (warnOnClose) {
             Collection<Folder> folderCollection = getFolders();
-            List<Folder> foldersToWarn = new ArrayList<Folder>(folderCollection
-                .size());
+            List<Folder> foldersToWarn = new ArrayList<Folder>(
+                folderCollection.size());
             for (Folder folder : folderCollection) {
                 if (folder.isTransferring()) {
                     logWarning("Close warning on folder: " + folder);
@@ -222,12 +201,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .getEtaSyncDate();
                         text = Translation.getTranslation(
                             "folder_repository.warn_on_close_eta.text",
-                            folderslist.toString(), Format
-                                .formatDateShort(syncDate));
+                            folderslist.toString(),
+                            Format.formatDateShort(syncDate));
                     } else {
                         text = Translation.getTranslation(
-                            "folder_repository.warn_on_close.text", folderslist
-                                .toString());
+                            "folder_repository.warn_on_close.text",
+                            folderslist.toString());
                     }
                     String question = Translation
                         .getTranslation("general.neverAskAgain");
@@ -268,13 +247,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void init() {
 
-        processV3Format();
-
         processV4Format();
 
         // Set the folders base with a desktop ini.
-        FileUtils.maintainDesktopIni(getController(), new File(
-            getFoldersBasedir()));
+        File folderBaseDir = new File(getFoldersBasedir());
+        FileUtils.maintainDesktopIni(getController(), folderBaseDir);
+        if (!folderBaseDir.exists()) {
+            folderBaseDir.mkdirs();
+        }
 
         // Maintain link
         boolean useFavLink = ConfigurationEntry.USE_PF_LINK
@@ -290,167 +270,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Version 3 (and earlier) folder format was like 'folder.<folderName>.XXXX
-     * This is replaced with V4 format, allowing folders with the same name to
-     * be saved.
-     */
-    private void processV3Format() {
-        final Properties config = getController().getConfig();
-
-        // Find all folder names.
-        Set<String> allFolderNames = new TreeSet<String>();
-        for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();)
-        {
-            String propName = en.nextElement();
-
-            // Look for a folder.<foldername>.XXXX
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V3)) {
-                int firstDot = propName.indexOf('.');
-                int secondDot = propName.indexOf('.', firstDot + 1);
-
-                if (firstDot > 0 && secondDot > 0
-                    && secondDot < propName.length())
-                {
-                    String folderName = propName.substring(firstDot + 1,
-                        secondDot);
-                    allFolderNames.add(folderName);
-                }
-            }
-        }
-
-        // Load with 6 concurrent threads.
-        final Semaphore loadPermit = new Semaphore(6);
-        final AtomicInteger nCreated = new AtomicInteger();
-        // Scan config for all found folder names.
-        for (final String folderName : allFolderNames) {
-            try {
-                loadPermit.acquire();
-            } catch (InterruptedException e) {
-                logFiner(e);
-                return;
-            }
-            Runnable folderCreator = new Runnable() {
-                public void run() {
-                    try {
-                        String folderId = config
-                            .getProperty(FOLDER_SETTINGS_PREFIX_V3 + folderName
-                                + FOLDER_SETTINGS_ID);
-                        FolderInfo foInfo = new FolderInfo(folderName, folderId)
-                            .intern();
-
-                        FolderSettings folderSettings = loadV3FolderSettings(folderName);
-
-                        // Do not add0 if already added
-                        if (!hasJoinedFolder(foInfo) && folderId != null
-                            && folderSettings != null)
-                        {
-                            createFolder0(foInfo, folderSettings, false);
-                        }
-                    } catch (Exception e) {
-                        logSevere("Problem loading/creating folder '"
-                            + folderName + "'. " + e, e);
-                    }
-                    loadPermit.release();
-                    synchronized (nCreated) {
-                        nCreated.incrementAndGet();
-                        nCreated.notify();
-                    }
-                }
-            };
-            getController().getIOProvider().startIO(folderCreator);
-        }
-
-        // Wait for creators to complete
-        while (nCreated.get() < allFolderNames.size()) {
-            synchronized (nCreated) {
-                try {
-                    nCreated.wait(10);
-                } catch (InterruptedException e) {
-                    logFiner(e);
-                    return;
-                }
-            }
-        }
-    }
-
-    /**
-     * Load a folder's settings from disk. This will try to use the V4 way, and
-     * fall back to V3 for older folders.
-     * 
-     * @param folderInfo
-     * @return the folder settings.
-     */
-    public FolderSettings loadFolderSettings(FolderInfo folderInfo) {
-        String md5 = new String(Util.encodeHex(Util.md5(folderInfo.id
-            .getBytes())));
-        FolderSettings settings = loadV4FolderSettings(md5);
-        if (settings == null) {
-            settings = loadV3FolderSettings(folderInfo.name);
-        }
-        return settings;
-    }
-
-    private FolderSettings loadV3FolderSettings(String folderName) {
-
-        Properties config = getController().getConfig();
-
-        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_DIR);
-
-        if (folderDir == null) {
-            logSevere("No folder directory for " + folderName);
-            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderName);
-            getController().saveConfig();
-            return null;
-        }
-
-        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_SYNC_PROFILE);
-
-        // Migration for #603
-        if ("autodownload_friends".equals(syncProfConfig)) {
-            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS.getFieldList();
-        }
-
-        SyncProfile syncProfile;
-        if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
-            // Migration for #787 (backup target timeBetweenScans changed
-            // from 0 to 60).
-            syncProfile = SyncProfile.BACKUP_TARGET;
-        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST
-            .equals(syncProfConfig)
-            || PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST
-                .equals(syncProfConfig))
-        {
-            // Migration for #2040 (new auto sync uses JNotify).
-            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
-        } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
-            .equals(syncProfConfig)
-            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST.equals(syncProfConfig))
-        {
-            // Migration for #2074 (new backup source uses JNotify).
-            syncProfile = SyncProfile.BACKUP_SOURCE;
-        } else {
-            // Load profile from field list.
-            syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
-        }
-
-        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_PREVIEW);
-        boolean preview = previewSetting != null
-            && "true".equalsIgnoreCase(previewSetting);
-
-        String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V3
-            + folderName + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
-        return new FolderSettings(new File(folderDir), syncProfile, false,
-            ArchiveMode.valueOf(ConfigurationEntry.DEFAULT_ARCHIVE_MODE
-                .getValue(getController())), preview, dlScript,
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-                .getValueInt(getController()), true);
-    }
-
-    /**
      * Version 4 format is like f.<md5>.XXXX, where md5 is the MD5 of the folder
      * id. This format allows folders with the same name to be stored.
      */
@@ -458,13 +277,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         final Properties config = getController().getConfig();
 
         // Find all folder names.
-        Set<String> allFolderMD5s = new TreeSet<String>();
-        for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();)
+        Set<String> entryIds = new TreeSet<String>();
+
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en
+            .hasMoreElements();)
         {
             String propName = en.nextElement();
 
-            // Look for a f.<folderMD5>.XXXX
+            // Look for a f.<entryId>.XXXX
             if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
                 int firstDot = propName.indexOf('.');
                 int secondDot = propName.indexOf('.', firstDot + 1);
@@ -472,9 +293,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (firstDot > 0 && secondDot > 0
                     && secondDot < propName.length())
                 {
-                    String folderMD5 = propName.substring(firstDot + 1,
-                        secondDot);
-                    allFolderMD5s.add(folderMD5);
+                    String entryId = propName
+                        .substring(firstDot + 1, secondDot);
+                    entryIds.add(entryId);
                 }
             }
         }
@@ -484,7 +305,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         final Semaphore loadPermit = new Semaphore(loaders);
         final AtomicInteger nCreated = new AtomicInteger();
         // Scan config for all found folder MD5s.
-        for (final String folderMD5 : allFolderMD5s) {
+        for (final String folderEntryId : entryIds) {
             try {
                 loadPermit.acquire();
             } catch (InterruptedException e) {
@@ -495,28 +316,61 @@ public class FolderRepository extends PFComponent implements Runnable {
                 public void run() {
                     try {
                         String folderId = config
-                            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
-                                + FOLDER_SETTINGS_ID);
+                            .getProperty(FOLDER_SETTINGS_PREFIX_V4
+                                + folderEntryId + FOLDER_SETTINGS_ID);
                         if (StringUtils.isBlank(folderId)) {
-                            logWarning("Removed illegal folder config entry: "
-                                + folderId + '/' + folderMD5);
-                            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4
-                                + folderMD5);
+                            logWarning("Folder id blank. Removed illegal folder config entry: "
+                                + folderEntryId);
+                            removeConfigEntries(folderEntryId);
                             return;
                         }
                         String folderName = config
-                            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
-                                + FOLDER_SETTINGS_NAME);
+                            .getProperty(FOLDER_SETTINGS_PREFIX_V4
+                                + folderEntryId + FOLDER_SETTINGS_NAME);
                         if (StringUtils.isBlank(folderName)) {
-                            logWarning("Removed illegal folder config entry: "
-                                + folderName + '/' + folderMD5);
-                            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4
-                                + folderMD5);
+                            logWarning("Foldername not found."
+                                + "Removed illegal folder config entry: "
+                                + folderName + '/' + folderEntryId);
+                            removeConfigEntries(folderEntryId);
                             return;
                         }
+
+                        // #2203 Load later if folder id should be taken from
+                        // account.
+                        if (folderId
+                            .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT))
+                        {
+                            logWarning("Loading folder " + folderName
+                                + " for setup after login. entry: "
+                                + folderEntryId);
+                            onLoginFolderEntryIds.add(folderEntryId);
+                            return;
+                        }
+
+                        boolean spawned = false;
+                        if (folderId
+                            .contains(FolderSettings.FOLDER_ID_GENERATE))
+                        {
+                            String generatedId = '[' + IdGenerator.makeId() + ']';
+                            folderId = folderId.replace(
+                                FolderSettings.FOLDER_ID_GENERATE, generatedId);
+                            logInfo("Spawned new folder id for config entry "
+                                + folderEntryId + ": " + folderId);
+                            spawned = true;
+                        }
+
                         FolderInfo foInfo = new FolderInfo(folderName, folderId)
                             .intern();
-                        FolderSettings folderSettings = loadV4FolderSettings(folderMD5);
+                        FolderSettings folderSettings = FolderSettings.load(
+                            getController(), folderEntryId);
+
+                        if (folderSettings == null) {
+                            logWarning("Unable to load folder settings."
+                                + "Removed folder config entry: " + folderName
+                                + '/' + folderEntryId);
+                            removeConfigEntries(folderEntryId);
+                            return;
+                        }
 
                         // Do not add0 if already added
                         if (!hasJoinedFolder(foInfo) && folderId != null
@@ -524,9 +378,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                         {
                             createFolder0(foInfo, folderSettings, false);
                         }
+
+                        if (spawned) {
+                            removeConfigEntries(folderEntryId);
+                            folderSettings.set(foInfo, config);
+                            getController().saveConfig();
+                        }
+
                     } catch (Exception e) {
                         logSevere("Problem loading/creating folder #"
-                            + folderMD5 + ". " + e, e);
+                            + folderEntryId + ". " + e, e);
                     } finally {
                         loadPermit.release();
                         synchronized (nCreated) {
@@ -540,7 +401,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Wait for creators to complete
-        while (nCreated.get() < allFolderMD5s.size()) {
+        while (nCreated.get() < entryIds.size()) {
             synchronized (nCreated) {
                 try {
                     nCreated.wait(10);
@@ -550,108 +411,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         }
-    }
-
-    private FolderSettings loadV4FolderSettings(String folderMD5) {
-
-        Properties config = getController().getConfig();
-
-        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_DIR);
-
-        if (folderDir == null) {
-            logSevere("No folder directory for " + folderMD5);
-            removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4 + folderMD5);
-            getController().saveConfig();
-            return null;
-        }
-
-        File commitDir = null;
-        String commitDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_COMMIT_DIR);
-        if (StringUtils.isNotBlank(commitDirStr)) {
-            commitDir = new File(commitDirStr);
-        }
-
-        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_SYNC_PROFILE);
-
-        // Migration for #603
-        if ("autodownload_friends".equals(syncProfConfig)) {
-            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS.getFieldList();
-        }
-
-        SyncProfile syncProfile;
-        if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
-            // Migration for #787 (backup target timeBetweenScans changed
-            // from 0 to 60).
-            syncProfile = SyncProfile.BACKUP_TARGET;
-        } else if (PRE_2040_AUTOMATIC_SYNCHRONIZATION_FIELD_LIST
-            .equals(syncProfConfig)
-            || PRE_2040_AUTOMATIC_SYNCHRONIZATION_10MIN_FIELD_LIST
-                .equals(syncProfConfig))
-        {
-            // Migration for #2040 (new auto sync uses JNotify).
-            syncProfile = SyncProfile.AUTOMATIC_SYNCHRONIZATION;
-        } else if (PRE_2074_BACKUP_SOURCE_5MIN_FIELD_LIST
-            .equals(syncProfConfig)
-            || PRE_2074_BACKUP_SOURCE_HOUR_FIELD_LIST.equals(syncProfConfig))
-        {
-            // Migration for #2074 (new backup source uses JNotify).
-            syncProfile = SyncProfile.BACKUP_SOURCE;
-        } else {
-            // Load profile from field list.
-            syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
-        }
-        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-            .getValueInt(getController());
-
-        String archiveSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_ARCHIVE);
-        ArchiveMode archiveMode;
-        try {
-            if (archiveSetting != null) {
-                archiveMode = ArchiveMode.valueOf(archiveSetting);
-            } else {
-                log.log(Level.WARNING, "ArchiveMode not set: " + archiveSetting
-                    + ", falling back to DEFAULT: " + defaultVersions);
-                archiveMode = ArchiveMode.FULL_BACKUP;
-            }
-        } catch (Exception e) {
-            log.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
-                + ", falling back to DEFAULT: " + defaultVersions);
-            log.log(Level.FINE, e.toString(), e);
-            archiveMode = ArchiveMode.FULL_BACKUP;
-        }
-
-        String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
-            + FOLDER_SETTINGS_VERSIONS);
-        int versions;
-        if (ver != null && ver.length() > 0) {
-            versions = Integer.valueOf(ver);
-        } else {
-            // Take default as fallback.
-            versions = defaultVersions;
-            logFine("Unable to find archive settings for " + folderMD5
-                + ". Using default: " + versions);
-        }
-
-        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_PREVIEW);
-        boolean preview = previewSetting != null
-            && "true".equalsIgnoreCase(previewSetting);
-
-        String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + folderMD5 + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
-
-        String syncPatternsSetting = config
-            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + folderMD5
-                + FOLDER_SETTINGS_SYNC_PATTERNS);
-        // Default syncPatterns to true.
-        boolean syncPatterns = syncPatternsSetting == null
-            || "true".equalsIgnoreCase(syncPatternsSetting);
-        return new FolderSettings(new File(folderDir), syncProfile, false,
-            archiveMode, preview, dlScript, versions, syncPatterns, commitDir);
     }
 
     /**
@@ -834,6 +593,45 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Finds an folder on the give target directory.
+     * 
+     * @param folderName
+     * @return the folder with the targetDir as local base or null if not found
+     */
+    public Folder findExistingFolder(File targetDir) {
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            try {
+                if (folder.getLocalBase().equals(targetDir)
+                    || folder.getCommitOrLocalDir().getCanonicalPath()
+                        .equals(targetDir.getCanonicalPath()))
+                {
+                    return folder;
+                }
+            } catch (IOException e) {
+                logWarning(e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds an folder with the give folder name. Search is non-case sensitive!
+     * 
+     * @param folderName
+     * @return the folder with the given name or null if not found
+     */
+    public Folder findExistingFolder(String folderName) {
+        for (Folder folder : getController().getFolderRepository().getFolders())
+        {
+            if (folder.getName().equalsIgnoreCase(folderName)) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -924,10 +722,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             SyncProfile syncProfile = SyncProfile.NO_SYNC;
 
             folderSettings = new FolderSettings(newBaseDir, syncProfile,
-                folderSettings.isCreateInvitationFile(), folderSettings
-                    .getArchiveMode(), folderSettings.isPreviewOnly(),
-                folderSettings.getDownloadScript(), folderSettings
-                    .getVersions(), folderSettings.isSyncPatterns(), commitDir);
+                folderSettings.isCreateInvitationFile(),
+                folderSettings.getArchiveMode(),
+                folderSettings.isPreviewOnly(),
+                folderSettings.getDownloadScript(),
+                folderSettings.getVersions(), folderSettings.isSyncPatterns(),
+                commitDir);
             logWarning("Auto-commit setup. temp dir: " + newBaseDir
                 + ". commit dir:" + commitDir);
         }
@@ -1001,9 +801,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void saveFolderConfig(FolderInfo folderInfo,
         FolderSettings folderSettings, boolean saveConfig)
     {
-        // #1448 - remove any old V3 config entries before saving V4 ones.
-        removeConfigEntries(FOLDER_SETTINGS_PREFIX_V3 + folderInfo.name);
-
         // store folder in config
         Properties config = getController().getConfig();
 
@@ -1033,9 +830,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FileUtils.deleteDesktopIni(folder.getLocalBase());
 
         // remove folder from config
-        String md5 = new String(Util.encodeHex(Util.md5(folder.getInfo().id
-            .getBytes())));
-        removeConfigEntries(FOLDER_SETTINGS_PREFIX_V4 + md5);
+        removeConfigEntries(folder.getConfigEntryId());
 
         // Save config
         getController().saveConfig();
@@ -1076,8 +871,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     invite.delete();
                 } catch (Exception e) {
-                    logSevere("Failed to delete invitation: "
-                        + invite.getAbsolutePath(), e);
+                    logSevere(
+                        "Failed to delete invitation: "
+                            + invite.getAbsolutePath(), e);
                 }
             }
 
@@ -1320,6 +1116,74 @@ public class FolderRepository extends PFComponent implements Runnable {
         return null;
     }
 
+    // Callbacks from ServerClient on login ***********************************
+
+    public void updateFolders(Account a) {
+        Reject.ifNull(a, "Account");
+        if (getController().getMySelf().isServer()) {
+            return;
+        }
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController()))
+        {
+            removeLocalFolders(a);
+        }
+        createLocalFolders(a);
+    }
+
+    private void removeLocalFolders(Account a) {
+        for (Folder folder : getFolders()) {
+            if (!a.hasReadPermissions(folder.getInfo())
+                && getController().getOSClient().isConnected())
+            {
+                logWarning("Removing local " + folder + " " + a
+                    + " does not have read permission");
+                removeFolder(folder, false);
+            }
+        }
+    }
+
+    private synchronized void createLocalFolders(Account a) {
+        if (!a.isValid()) {
+            return;
+        }
+        for (Iterator<String> it = onLoginFolderEntryIds.iterator(); it
+            .hasNext();)
+        {
+            String folderEntryId = it.next();
+            FolderSettings settings = FolderSettings.load(getController(),
+                folderEntryId);
+            String folderName = getController().getConfig().getProperty(
+                FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
+                    + FOLDER_SETTINGS_NAME);
+            FolderInfo foInfo = null;
+            for (FolderInfo candidate : a.getFolders()) {
+                if (candidate.getName().equals(folderName)) {
+                    logWarning("Folder found on account " + a.getUsername()
+                        + ". Loading it: " + candidate);
+                    foInfo = candidate;
+                    break;
+                }
+            }
+            if (foInfo != null) {
+                // Load existing.
+                createFolder0(foInfo, settings, true);
+            } else {
+                // Spawn/Create a new one.
+                foInfo = new FolderInfo(folderName,
+                    '[' + IdGenerator.makeId() + ']');
+                createFolder(foInfo, settings);
+                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+                    foInfo, null);
+                getController().getTaskManager().scheduleTask(task);
+                logWarning("Folder NOT found on account " + a.getUsername()
+                    + ". Created new: " + foInfo);
+            }
+            // Remove from pending entries.
+            it.remove();
+        }
+    }
+
     // Event support **********************************************************
 
     private void fireFolderCreated(Folder folder) {
@@ -1354,32 +1218,24 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Remove all preview folders
-     */
-    public void removeAllPreviewFolders() {
-        for (Folder folder : folders.values()) {
-            if (folder.isPreviewOnly()) {
-                removeFolder(folder, true);
-            }
-        }
-    }
-
-    /**
      * Expect something like 'f.c70001efd21928644ee14e327aa94724' or
-     * 'folder.TEST-Contacts' to remove config entries beginning with these.
+     * 'f.TEST-Contacts' to remove config entries beginning with these.
      * 
      * @param prefix
      */
-    private void removeConfigEntries(String prefix) {
+    private void removeConfigEntries(String folderEntryId) {
         Properties config = getController().getConfig();
-        for (Enumeration<String> en = (Enumeration<String>) config
-            .propertyNames(); en.hasMoreElements();)
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en
+            .hasMoreElements();)
         {
             String propName = en.nextElement();
 
-            // Add a dot to prefix, like 'folder.TEST-Contacts.', to prevent it
-            // from also deleting things like 'folder.TEST.XXXXX'.
-            if (propName.startsWith(prefix + '.')) {
+            // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
+            // from also deleting things like 'f.TEST.XXXXX'.
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
+                + '.'))
+            {
                 config.remove(propName);
             }
         }

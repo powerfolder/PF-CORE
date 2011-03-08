@@ -80,8 +80,8 @@ public class FolderPreviewHelper {
 
         FolderRepository folderRepository = controller.getFolderRepository();
 
-        FolderSettings initialFolderSettings = folderRepository
-            .loadFolderSettings(folder.getInfo());
+        FolderSettings initialFolderSettings = FolderSettings.load(controller,
+            folder.getConfigEntryId());
 
         if (initialFolderSettings == null) {
             return false;
@@ -93,12 +93,13 @@ public class FolderPreviewHelper {
 
         // Saved FolderSettings are like initial, but preview is true.
         FolderSettings savedFolderSettings = new FolderSettings(
-                initialFolderSettings.getLocalBaseDir(), initialFolderSettings
-                        .getSyncProfile(), initialFolderSettings
-                        .isCreateInvitationFile(), initialFolderSettings
-                        .getArchiveMode(), true,
-                initialFolderSettings.getDownloadScript(), initialFolderSettings
-                        .getVersions(), initialFolderSettings.isSyncPatterns());
+            initialFolderSettings.getLocalBaseDir(),
+            initialFolderSettings.getSyncProfile(),
+            initialFolderSettings.isCreateInvitationFile(),
+            initialFolderSettings.getArchiveMode(), true,
+            initialFolderSettings.getDownloadScript(),
+            initialFolderSettings.getVersions(),
+            initialFolderSettings.isSyncPatterns());
 
         folderRepository.removeFolder(folder, false);
         folderRepository.createPreviewFolder(folderInfo, previewFolderSettings);
