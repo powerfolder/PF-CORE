@@ -197,7 +197,7 @@ public class PersistentTaskManager extends PFComponent {
     public synchronized void scheduleTask(final PersistentTask task) {
         if (tasks == null) {
             log.log(Level.SEVERE,
-                "Unable to shedule task, taskmanager not initialized! Task: "
+                "Unable to schedule task, taskmanager not initialized! Task: "
                     + task, new RuntimeException("here"));
             return;
         }
