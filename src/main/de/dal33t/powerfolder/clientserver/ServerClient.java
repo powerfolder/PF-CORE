@@ -479,7 +479,7 @@ public class ServerClient extends PFComponent {
         }
 
         if (!StringUtils.isBlank(un)) {
-            return login0(un, Util.toString(pw), true);
+            return login(un, pw);
         } else {
             logFine("Not logging in. Username blank");
         }
@@ -526,33 +526,11 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     private Account login(String theUsername, String thePasswordObj) {
-        return login0(theUsername, thePasswordObj, false);
-    }
-
-    /**
-     * Logs into the server and saves the identity as my login.
-     * <p>
-     * If the server is not connected and invalid account is returned and the
-     * login data saved for auto-login on reconnect.
-     * 
-     * @param theUsername
-     * @param thePasswordObj
-     *            the obfuscated password
-     * @return the identity with this username or <code>InvalidAccount</code> if
-     *         login failed. NEVER returns <code>null</code>
-     */
-    private Account login0(String theUsername, String thePasswordObj,
-        boolean initFromConfig)
-    {
         logFine("Login with: " + theUsername);
         synchronized (loginLock) {
-            boolean same = username != null && username.equals(theUsername)
-                && passwordObf != null && passwordObf.equals(thePasswordObj);
             username = theUsername;
             passwordObf = thePasswordObj;
-            if (!same && !initFromConfig) {
-                saveLastKnowLogin();
-            }
+            saveLastKnowLogin();
             if (!isConnected() || StringUtils.isBlank(passwordObf)) {
                 setAnonAccount();
                 fireLogin(accountDetails);
@@ -718,29 +696,7 @@ public class ServerClient extends PFComponent {
 
     private void updateLocalSettings(Account a) {
         updateFriendsList(a);
-        updateFolders(a);
-    }
-
-    private void updateFolders(Account a) {
-        if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()))
-        {
-            return;
-        }
-        if (getController().getMySelf().isServer()) {
-            return;
-        }
-        for (Folder folder : getController().getFolderRepository().getFolders())
-        {
-            if (!a.hasReadPermissions(folder.getInfo())
-                && getController().getOSClient().isConnected())
-            {
-                logWarning("Removing local " + folder + " " + a
-                    + " does not have read permission");
-                getController().getFolderRepository().removeFolder(folder,
-                    false);
-            }
-        }
+        getController().getFolderRepository().updateFolders(a);
     }
 
     private void updateFriendsList(Account a) {
@@ -1010,8 +966,8 @@ public class ServerClient extends PFComponent {
             if (serverKey != null) {
                 logFine("Retrieved new key for server "
                     + newServerInfo.getNode() + ". " + serverKey);
-                ProUtil.addNodeToKeyStore(getController(), newServerInfo
-                    .getNode(), serverKey);
+                ProUtil.addNodeToKeyStore(getController(),
+                    newServerInfo.getNode(), serverKey);
             }
         }
 
