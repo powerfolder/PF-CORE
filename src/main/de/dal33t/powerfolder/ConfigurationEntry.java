@@ -718,7 +718,10 @@ public enum ConfigurationEntry {
      * #2132: This transfer mode will be recommend by default.
      */
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
-        SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList());
+        SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
+
+    /** Whether to automatiaclly accept folder invites. */
+    AUTO_ACCEPT_INVITE("auto.accept.invite", false);
 
     // Methods/Constructors ***************************************************
 

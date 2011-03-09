@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -27,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
@@ -35,6 +35,8 @@ import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class to display the forders tab.
@@ -45,7 +47,8 @@ public class FoldersTab extends PFUIComponent {
     private FoldersList foldersList;
     private JScrollPane scrollPane;
     private JLabel emptyLabel;
-    private ActionLabel tellFriendLabel;
+    private JCheckBox autoAcceptCB;
+
 
     /**
      * Constructor
@@ -80,11 +83,20 @@ public class FoldersTab extends PFUIComponent {
      */
     private void buildUI() {
 
-        tellFriendLabel = SimpleComponentFactory
-            .createTellAFriendLabel(getController());
+        ActionLabel tellFriendLabel = SimpleComponentFactory
+                .createTellAFriendLabel(getController());
         tellFriendLabel.getUIComponent().setOpaque(false);
         tellFriendLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
+
+        autoAcceptCB = new JCheckBox(Translation.getTranslation(
+                "folders_tab.auto_accept.text"));
+        autoAcceptCB.setToolTipText(Translation.getTranslation(
+                "folders_tab.auto_accept.tip"));
+        autoAcceptCB.addActionListener(new MyActionListener());
+        autoAcceptCB.setSelected(ConfigurationEntry.AUTO_ACCEPT_INVITE.
+                getValueBoolean(getController()));
+
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -110,7 +122,7 @@ public class FoldersTab extends PFUIComponent {
             builder.add(tellFriendLabel.getUIComponent(), cc.xy(1, 7));
         }
 
-        uiComponent = uiComponent = GradientPanel.create(builder.getPanel());
+        uiComponent = GradientPanel.create(builder.getPanel());
 
         updateEmptyLabel();
 
@@ -143,12 +155,14 @@ public class FoldersTab extends PFUIComponent {
             .getPreferredSize());
         searchComputerButton.setVisible(false);
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
-        bar.setBorder(Borders.createEmptyBorder("0, 3dlu, 0, 0"));
-        bar.addGridded(newFolderButton);
-        bar.addRelatedGap();
-        bar.addGridded(searchComputerButton);
-        return bar.getPanel();
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(newFolderButton, cc.xy(2, 1));
+        builder.add(autoAcceptCB, cc.xy(4, 1));
+        return builder.getPanel();
     }
 
     /**
@@ -157,4 +171,26 @@ public class FoldersTab extends PFUIComponent {
     public void populate() {
         foldersList.populate();
     }
+
+    private void configureAutoAccept() {
+        ConfigurationEntry.AUTO_ACCEPT_INVITE.setValue(getController(),
+                autoAcceptCB.isSelected());
+        getController().saveConfig();
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
+    /**
+     * Action listener for type list.
+     */
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource().equals(autoAcceptCB)) {
+                configureAutoAccept();
+            }
+        }
+    }
+
 }

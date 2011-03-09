@@ -60,6 +60,8 @@ public class ComputersTab extends PFUIComponent {
 
         showOfflineCB = new JCheckBox(Translation.getTranslation(
                 "computers_tab.show_offline"));
+        showOfflineCB.setToolTipText(Translation.getTranslation(
+                "computers_tab.show_offline.tip"));
         showOfflineCB.addActionListener(new MyActionListener());
         showOfflineCB.setSelected(PreferencesEntry.SHOW_OFFLINE.getValueBoolean(
                 getController()));
