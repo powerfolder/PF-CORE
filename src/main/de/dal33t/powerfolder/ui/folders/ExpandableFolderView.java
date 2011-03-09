@@ -100,6 +100,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     private boolean local;
     private boolean online;
 
+    private ActionLabel upperSyncLink;
+    private JButtonMini upperOpenFilesButton;
+    private JButtonMini upperInviteButton;
+
     private ResizingJLabel nameLabel;
     private JButtonMini openSettingsInformationButton;
     private JButtonMini openFilesInformationButton;
@@ -156,10 +160,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
     private DelayedUpdater folderDetailsUpdater;
-
-    private ActionLabel upperSyncLink;
-    private JButtonMini upperOpenFilesButton;
-    private JButtonMini upperInviteButton;
 
     /**
      * Constructor
@@ -746,8 +746,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                             .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized", Format
-                                .formatDecimal(sync));
+                            "exp_folder_view.synchronized",
+                            Format.formatDecimal(sync));
                         upperSyncPercent = Format.formatDecimal(sync) + '%';
                     }
                 }
@@ -768,8 +768,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available", String
-                            .valueOf(count));
+                        "exp_folder_view.files_available",
+                        String.valueOf(count));
                 }
             } else {
                 syncPercentText = Translation
@@ -1018,8 +1018,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (newFiles) {
                 newCountString = " (" + newCount + ')';
                 nameLabel.setToolTipText(Translation.getTranslation(
-                    "exp_folder_view.new_files_tip_text", String
-                        .valueOf(newCount)));
+                    "exp_folder_view.new_files_tip_text",
+                    String.valueOf(newCount)));
             }
         }
 
@@ -1049,6 +1049,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         private void updateIfRequired(NodeManagerEvent e) {
             if (folder != null && folder.hasMember(e.getNode())) {
                 updateFolderMembershipDetails();
+                doFolderChanges(folder);
             }
         }
 
@@ -1073,49 +1074,49 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    private void doFolderChanges(Folder eventFolder) {
+        if (folder == null || folder.equals(eventFolder)) {
+            folderUpdater.schedule(new Runnable() {
+                public void run() {
+                    updateNumberOfFiles();
+                    updateDeletedFiles();
+                    updateStatsDetails();
+                    updateIconAndOS();
+                    updateButtons();
+                    updateTransferMode();
+                    updatePermissions();
+                }
+            });
+        }
+    }
+
     /**
      * Class to respond to folder events.
      */
     private class MyFolderListener implements FolderListener {
 
-        private void doFolderChanges(FolderEvent folderEvent) {
-            if (folder == null || folder.equals(folderEvent.getFolder())) {
-                folderUpdater.schedule(new Runnable() {
-                    public void run() {
-                        updateNumberOfFiles();
-                        updateDeletedFiles();
-                        updateStatsDetails();
-                        updateIconAndOS();
-                        updateButtons();
-                        updateTransferMode();
-                        updatePermissions();
-                    }
-                });
-            }
-        }
-
         public void statisticsCalculated(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public void fileChanged(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public void filesDeleted(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public void remoteContentsChanged(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public void scanResultCommited(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public void syncProfileChanged(FolderEvent folderEvent) {
-            doFolderChanges(folderEvent);
+            doFolderChanges(folderEvent.getFolder());
         }
 
         public boolean fireInEventDispatchThread() {
@@ -1132,10 +1133,12 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
             updateFolderMembershipDetails();
+            doFolderChanges(folder);
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
             updateFolderMembershipDetails();
+            doFolderChanges(folder);
         }
 
         public boolean fireInEventDispatchThread() {
@@ -1307,8 +1310,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }
                     if (folder == null && folderInfo != null) {
                         PFWizard.openSingletonOnlineStorageJoinWizard(
-                            getController(), Collections
-                                .singletonList(folderInfo));
+                            getController(),
+                            Collections.singletonList(folderInfo));
                     }
                 }
             }
