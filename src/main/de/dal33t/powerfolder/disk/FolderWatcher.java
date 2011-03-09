@@ -271,6 +271,10 @@ public class FolderWatcher extends PFComponent {
             if (!FileUtils.isScannable(name, folder.getInfo())) {
                 return;
             }
+            // For linux
+            if (name.endsWith("/")) {
+                name = name.substring(0, name.length() - 1);
+            }
             if (dirtyFiles.containsKey(name)) {
                 // Skipping already dirty file
                 return;
