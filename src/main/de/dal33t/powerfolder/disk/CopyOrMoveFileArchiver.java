@@ -106,7 +106,7 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         File target = getArchiveTarget(fileInfo);
 
         if (target.exists()) {
-            log.warning("File " + fileInfo
+            log.warning("File " + fileInfo.toDetailString()
                 + " seems to be archived already, doing nothing.");
             // Maybe throw Exception instead?
             return;
@@ -137,8 +137,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             }
 
             // Success, now check if we have to remove a file
-            File[] list = getArchivedFiles(target.getParentFile(), fileInfo
-                .getFilenameOnly());
+            File[] list = getArchivedFiles(target.getParentFile(),
+                fileInfo.getFilenameOnly());
             checkArchivedFile(list);
         } else {
             throw new IOException("Failed to create directory: "
