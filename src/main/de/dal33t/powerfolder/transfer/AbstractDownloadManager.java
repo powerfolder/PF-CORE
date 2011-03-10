@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
@@ -309,7 +310,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             if (remotePartRecord != null) {
                 tempFileHash = FileUtils.digest(getTempFile(),
                     MessageDigest.getInstance("MD5"), new ProgressListener() {
-
                         public void progressReached(double percentageReached) {
                             setTransferState(percentageReached / 100.0);
                         }
@@ -324,7 +324,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             {
                 return true;
             }
-            logWarning("Checksum test FAILED on " + fileInfo.toDetailString());
+            logWarning("Checksum test FAILED on " + fileInfo.toDetailString()
+                + ". MD5 found: " + Base64.encodeBytes(tempFileHash)
+                + " expected: "
+                + Base64.encodeBytes(remotePartRecord.getFileDigest()));
             counter = new TransferCounter(0, fileInfo.getSize());
             // filePartsState.setPartState(Range.getRangeByLength(0,
             // filePartsState.getFileLength()), PartState.NEEDED);
