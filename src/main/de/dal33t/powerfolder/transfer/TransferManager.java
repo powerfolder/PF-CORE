@@ -1990,7 +1990,7 @@ public class TransferManager extends PFComponent {
         }
         // Sort by the best upload availibility
         Collections.shuffle(sources);
-        Collections.sort(sources, new ReverseComparator(
+        Collections.sort(sources, new ReverseComparator<Member>(
             MemberComparator.BY_UPLOAD_AVAILIBILITY));
 
         return sources;
@@ -2586,7 +2586,7 @@ public class TransferManager extends PFComponent {
      */
     private class TransferChecker implements Runnable {
         public void run() {
-            long waitTime = getController().getWaitTime() * 2;
+            long waitTime = Controller.getWaitTime() * 2;
             int count = 0;
 
             while (!Thread.currentThread().isInterrupted()) {
