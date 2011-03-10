@@ -157,8 +157,8 @@ public class WinUtils extends Loggable {
             .getFoldersBasedir());
         File shortCut = new File(linksDir, baseDir.getName() + ".lnk");
         if (setup) {
-            ShellLink link = new ShellLink(null, baseDir.getName(), baseDir
-                .getAbsolutePath(), null);
+            ShellLink link = new ShellLink(null, baseDir.getName(),
+                baseDir.getAbsolutePath(), null);
             createLink(link, shortCut.getAbsolutePath());
         } else {
             shortCut.delete();
@@ -168,9 +168,9 @@ public class WinUtils extends Loggable {
     public void setPFStartup(boolean setup, Controller controller)
         throws IOException
     {
-        File pfile = new File(new File(System.getProperty("java.class.path"))
-            .getParentFile(), controller.getDistribution().getBinaryName()
-            + ".exe");
+        File pfile = new File(
+            new File(System.getProperty("java.class.path")).getParentFile(),
+            controller.getDistribution().getBinaryName() + ".exe");
         if (!pfile.exists()) {
             logSevere("Couldn't find PowerFolder executable! "
                 + "Note: Setting up a shortcut only works "
@@ -178,16 +178,15 @@ public class WinUtils extends Loggable {
             return;
         }
         logFiner("Found " + pfile.getAbsolutePath());
-        String shortCutname = controller.getDistribution().getBinaryName()
-            + ".lnk";
+        String shortCutname = controller.getDistribution().getName() + ".lnk";
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname);
         if (setup) {
-            ShellLink sl = new ShellLink("--minimized", Translation
-                .getTranslation("winutils.shortcut.description"), pfile
-                .getAbsolutePath(), pfile.getParent());
+            ShellLink sl = new ShellLink("--minimized",
+                Translation.getTranslation("winutils.shortcut.description"),
+                pfile.getAbsolutePath(), pfile.getParent());
             logFiner("Creating startup link: " + pflnk.getAbsolutePath());
             createLink(sl, pflnk.getAbsolutePath());
         } else {
@@ -235,8 +234,7 @@ public class WinUtils extends Loggable {
             : "PROGRAMFILES";
         String programFiles = System.getenv(envEntry);
         if (StringUtils.isBlank(programFiles)) {
-            LOG
-                .severe("Unable to update Windows installation of PowerFolder. Program files directory not found");
+            LOG.severe("Unable to update Windows installation of PowerFolder. Program files directory not found");
             return null;
         }
         return new File(programFiles + "/PowerFolder.com/PowerFolder");
@@ -276,9 +274,8 @@ public class WinUtils extends Loggable {
             String appDataAllUsers = System.getenv("ProgramData");
             File dir = new File(appDataAllUsers);
             if (dir.exists()) {
-                LOG
-                    .warning("Retrieved APPDATA (all users) via ENV(ProgramData): "
-                        + appDataAllUsers);
+                LOG.warning("Retrieved APPDATA (all users) via ENV(ProgramData): "
+                    + appDataAllUsers);
                 return appDataAllUsers;
             }
         }
@@ -303,9 +300,8 @@ public class WinUtils extends Loggable {
             String appDataAllUsers = allUsersProfile + temp;
             File dir = new File(appDataAllUsers);
             if (dir.exists()) {
-                LOG
-                    .warning("Retrieved APPDATA (all users) via ENV(USERPROFILE/APPDATA/ALLUSERSPROFILE): "
-                        + appDataAllUsers);
+                LOG.warning("Retrieved APPDATA (all users) via ENV(USERPROFILE/APPDATA/ALLUSERSPROFILE): "
+                    + appDataAllUsers);
                 return appDataAllUsers;
             }
         }
