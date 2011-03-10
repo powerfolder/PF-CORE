@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.transfer.TransferProblem;
 
 public interface DownloadControl {
     /**
@@ -16,7 +17,7 @@ public interface DownloadControl {
      * @throws IOException
      */
     void init(boolean completed) throws IOException;
-    
+
     /**
      * Returns the download belonging to the given member.
      * 
@@ -75,5 +76,5 @@ public interface DownloadControl {
      * 
      * @param string
      */
-    void setBroken(String string);
+    void setBroken(TransferProblem problem, String details);
 }
