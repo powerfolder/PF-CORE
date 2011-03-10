@@ -28,7 +28,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -48,8 +59,8 @@ import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoKey;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FileInfoKey.Type;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.AbortUpload;
 import de.dal33t.powerfolder.message.DownloadQueued;
 import de.dal33t.powerfolder.message.FileChunk;
@@ -181,7 +192,7 @@ public class TransferManager extends PFComponent {
 
         bandwidthProvider = new BandwidthProvider(getController()
             .getThreadPool());
-        
+
         statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);
 
@@ -392,7 +403,7 @@ public class TransferManager extends PFComponent {
         // done after storeDownloads(), so they are restored!
         for (DownloadManager man : dlManagers.values()) {
             synchronized (man) {
-                man.setBroken("shutdown");
+                man.setBroken(TransferProblem.BROKEN_DOWNLOAD, "shutdown");
             }
         }
 
@@ -652,11 +663,8 @@ public class TransferManager extends PFComponent {
         }
 
         for (DownloadManager man : dlManagers.values()) {
-            for (Download download : man.getSources()) {
-                if (foInfo.equals(download.getFile().getFolderInfo())) {
-                    download.setBroken(TransferProblem.FOLDER_REMOVED,
-                        foInfo.name);
-                }
+            if (foInfo.equals(man.getFileInfo().getFolderInfo())) {
+                man.setBroken(TransferProblem.FOLDER_REMOVED, foInfo.name);
             }
         }
     }
@@ -708,8 +716,8 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (fInfo.equals(upload.getFile())) {
-                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo
-                        .getRelativeName());
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED,
+                        fInfo.getRelativeName());
                 }
             }
         }
@@ -718,18 +726,16 @@ public class TransferManager extends PFComponent {
             for (Upload upload : activeUploads) {
                 if (fInfo.equals(upload.getFile())) {
                     upload.abort();
-                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo
-                        .getRelativeName());
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED,
+                        fInfo.getRelativeName());
                 }
             }
         }
 
         for (DownloadManager man : dlManagers.values()) {
-            for (Download download : man.getSources()) {
-                if (fInfo.equals(download.getFile())) {
-                    download.setBroken(TransferProblem.FILE_CHANGED,
-                        fInfo.getRelativeName());
-                }
+            if (fInfo.equals(man.getFileInfo())) {
+                man.setBroken(TransferProblem.FILE_CHANGED,
+                    fInfo.getRelativeName());
             }
         }
     }
@@ -765,8 +771,10 @@ public class TransferManager extends PFComponent {
             } else {
                 logSevere("Scanning of completed file failed: "
                     + fInfo.toDetailString() + " at " + dlManager.getTempFile());
-                dlManager.setBroken("Scanning of completed file failed: "
-                    + fInfo.toDetailString());
+                dlManager.setBroken(
+                    TransferProblem.FILE_CHANGED,
+                    "Scanning of completed file failed: "
+                        + fInfo.toDetailString());
                 return;
             }
         }
@@ -1548,7 +1556,8 @@ public class TransferManager extends PFComponent {
                 if (!man.hasSources()) {
                     if (!man.isDone()) {
                         logFine("No further sources, removing " + man);
-                        man.setBroken("Out of sources for download");
+                        man.setBroken(TransferProblem.BROKEN_DOWNLOAD,
+                            "Out of sources for download");
                     } else {
                         logFine("No further sources in that manager, Not removing it because it's already done");
                     }
@@ -1814,7 +1823,8 @@ public class TransferManager extends PFComponent {
             {
                 if (man != null) {
                     if (!man.isDone()) {
-                        logWarning("Got active download of different file version, aborting.");
+                        logWarning("Aborting download. Got active download of different file version: "
+                            + man);
                         man.abortAndCleanup();
                     }
                     return;

@@ -176,8 +176,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     public synchronized boolean addSource(Download download) {
         validateDownload(download);
-        Reject.ifFalse(download.isCompleted()
-            || canAddSource(download.getPartner()),
+        Reject.ifFalse(
+            download.isCompleted() || canAddSource(download.getPartner()),
             "Illegal addSource() call!!");
         return addSource0(download);
     }
@@ -289,10 +289,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
     }
 
-    public synchronized void setBroken(String reason) {
-        setBroken(TransferProblem.BROKEN_DOWNLOAD, reason);
-    }
-
     @Override
     public String toString() {
         return "[" + getClass().getSimpleName() + "; state= " + state
@@ -311,14 +307,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         try {
             byte[] tempFileHash = null;
             if (remotePartRecord != null) {
-                tempFileHash = FileUtils.digest(getTempFile(), MessageDigest
-                    .getInstance("MD5"), new ProgressListener() {
+                tempFileHash = FileUtils.digest(getTempFile(),
+                    MessageDigest.getInstance("MD5"), new ProgressListener() {
 
-                    public void progressReached(double percentageReached) {
-                        setTransferState(percentageReached / 100.0);
-                    }
+                        public void progressReached(double percentageReached) {
+                            setTransferState(percentageReached / 100.0);
+                        }
 
-                });
+                    });
             }
             // If we don't have a record, no hashing was performed and the file
             // is assumed to be "valid"
@@ -442,8 +438,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             }
             setFilePartsState(calcedState);
             counter = new TransferCounter(filePartsState.countPartStates(
-                filePartsState.getRange(), PartState.AVAILABLE), fileInfo
-                .getSize());
+                filePartsState.getRange(), PartState.AVAILABLE),
+                fileInfo.getSize());
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA Digest not found. Fatal error", e);
@@ -478,7 +474,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         automatic = auto;
     }
 
-    protected synchronized void setBroken(final TransferProblem problem,
+    public synchronized void setBroken(final TransferProblem problem,
         final String message)
     {
         if (isBroken()) {
@@ -515,9 +511,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         for (Download d : sources) {
             d.setBroken(problem, message);
         }
-        tm
-            .downloadManagerBroken(AbstractDownloadManager.this, problem,
-                message);
+        tm.downloadManagerBroken(AbstractDownloadManager.this, problem, message);
     }
 
     protected synchronized void setCompleted() {
@@ -1081,15 +1075,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                                             startActiveDownload();
                                         } catch (BrokenDownloadException e) {
                                             setBroken(
-                                                TransferProblem.IO_EXCEPTION, e
-                                                    .toString());
+                                                TransferProblem.IO_EXCEPTION,
+                                                e.toString());
                                         }
                                     }
                                 }
                             }
                         } catch (final BrokenDownloadException e) {
-                            setBroken(TransferProblem.IO_EXCEPTION, e
-                                .toString());
+                            setBroken(TransferProblem.IO_EXCEPTION,
+                                e.toString());
                         } catch (InterruptedException e) {
                             logFiner("InterruptedException", e);
                         }
@@ -1131,7 +1125,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 removeSourceImpl(download);
 
                 if (!isDone()) {
-                    setBroken("Source lost.");
+                    setBroken(TransferProblem.BROKEN_DOWNLOAD, "Source lost.");
                 }
                 break;
             case MATCHING_AND_COPYING :

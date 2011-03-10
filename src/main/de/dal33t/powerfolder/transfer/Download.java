@@ -206,11 +206,11 @@ public class Download extends Transfer {
         }
         try {
             if (getPartner().getProtocolVersion() >= 100) {
-                rp = new RequestPartExt(getFile(), range, Math.max(0, state
-                    .getProgress()));
+                rp = new RequestPartExt(getFile(), range, Math.max(0,
+                    state.getProgress()));
             } else {
-                rp = new RequestPart(getFile(), range, Math.max(0, state
-                    .getProgress()));
+                rp = new RequestPart(getFile(), range, Math.max(0,
+                    state.getProgress()));
             }
         } catch (IllegalArgumentException e) {
             // I need to do this because FileInfos are NOT immutable...
@@ -307,7 +307,7 @@ public class Download extends Transfer {
     /**
      * Requests to abort this dl
      */
-    public void abort() {
+    void abort() {
         abort(true);
     }
 
@@ -373,7 +373,7 @@ public class Download extends Transfer {
      * @param problem
      * @param message
      */
-    public void setBroken(final TransferProblem problem, final String message) {
+    void setBroken(final TransferProblem problem, final String message) {
         synchronized (this) {
             // Prevent setBroken from being called more than once on a
             // single download
@@ -410,8 +410,7 @@ public class Download extends Transfer {
         if (stateCanTimeout()) {
             boolean timedOut = System.currentTimeMillis()
                 - Constants.DOWNLOAD_REQUEST_TIMEOUT_LIMIT > lastTouch
-                .getTime()
-                && !queued;
+                .getTime() && !queued;
             if (timedOut) {
                 if (isFine()) {
                     logFine("Break cause: Timeout. "
