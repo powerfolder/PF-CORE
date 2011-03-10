@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.security;
 
-import de.dal33t.powerfolder.os.OnlineStorageSubscriptionType;
-
 /**
  * Empty/Null account to avoid NPEs on not logged in users.
  * <p>
@@ -34,7 +32,6 @@ public class AnonymousAccount extends Account {
     private static final long serialVersionUID = 100L;
 
     public AnonymousAccount() {
-        getOSSubscription().setType(OnlineStorageSubscriptionType.NONE);
     }
 
     @Override
@@ -44,7 +41,7 @@ public class AnonymousAccount extends Account {
 
     @Override
     public String toString() {
-        return "Account ANON, 0 permissions";
+        return "Anonymous: " + super.toString();
     }
 
 }
