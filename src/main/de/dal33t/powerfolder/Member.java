@@ -1575,7 +1575,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     invitation.setInvitor(getInfo());
                 }
 
-                getController().invitationReceived(invitation, false);
+                getController().invitationReceived(invitation);
                 expectedTime = 100;
 
             } else if (message instanceof Problem) {

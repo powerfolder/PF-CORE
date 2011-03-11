@@ -98,8 +98,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         mock.checking(new Expectations() {
             {
                 one(handler).gotInvitation(
-                    with(any(Invitation.class)),
-                    with(any(Boolean.class)));
+                    with(any(Invitation.class)));
             }
         });
         getContollerLisa().addInvitationHandler(handler);

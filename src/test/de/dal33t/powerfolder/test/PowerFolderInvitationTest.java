@@ -86,7 +86,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         InvitationUtil.save(invitation, inviteFile);
 
         Invitation inviteAtBart = InvitationUtil.load(inviteFile);
-        getContollerBart().invitationReceived(inviteAtBart, true);
+        getContollerBart().invitationReceived(inviteAtBart);
         Thread.sleep(5000);
 
         // controller bart should now have one folder

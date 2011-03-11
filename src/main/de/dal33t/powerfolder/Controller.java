@@ -2286,10 +2286,10 @@ public class Controller extends PFComponent {
      * @param invitation
      * @param sendIfJoined
      */
-    public void invitationReceived(Invitation invitation, boolean sendIfJoined)
+    public void invitationReceived(Invitation invitation)
     {
         for (InvitationHandler handler : invitationHandlers) {
-            handler.gotInvitation(invitation, sendIfJoined);
+            handler.gotInvitation(invitation);
         }
     }
 

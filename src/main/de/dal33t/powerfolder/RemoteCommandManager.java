@@ -387,7 +387,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             // Load invitation file
             Invitation invitation = InvitationUtil.load(file);
             if (invitation != null) {
-                getController().invitationReceived(invitation, true);
+                getController().invitationReceived(invitation);
             }
         } else if (file.getName().endsWith(".nodes")) {
             // Load nodes file
