@@ -46,8 +46,7 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         // implement a replacement for the UI
         getContollerBart().addInvitationHandler(new InvitationHandler() {
 
-            public void gotInvitation(Invitation invitation,
-                boolean sendIfJoined)
+            public void gotInvitation(Invitation invitation)
             {
                 File dir = new File(getContollerBart().getFolderRepository()
                     .getFoldersBasedir()

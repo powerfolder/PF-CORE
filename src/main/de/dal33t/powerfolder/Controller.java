@@ -2430,4 +2430,16 @@ public class Controller extends PFComponent {
             }
         }, 10000, 10000);
     }
+
+    /**
+     * Automatically accept an invitation.
+     * If not able to, silently return false.
+     *
+     * @param invitation
+     * @return true if the invitation was accepted.
+     */
+    public boolean autoAcceptInvitation(Invitation invitation) {
+        //@todo #2210
+        return false;
+    }
 }

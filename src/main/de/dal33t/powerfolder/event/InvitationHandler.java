@@ -25,5 +25,5 @@ import de.dal33t.powerfolder.message.Invitation;
  * Class to indicate that an invitation has been received.
  */
 public interface InvitationHandler {
-    void gotInvitation(Invitation invitation, boolean sendIfJoined);
+    void gotInvitation(Invitation invitation);
 }
