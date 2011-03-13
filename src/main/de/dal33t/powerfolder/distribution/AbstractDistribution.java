@@ -84,8 +84,8 @@ public abstract class AbstractDistribution extends Loggable implements
     protected boolean addTranslation(String language) {
         // Load texts
         String translationFile = "Translation_" + language + ".properties";
-        if (Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            translationFile) != null)
+        if (Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(translationFile) != null)
         {
             Locale l = new Locale(language);
             Translation.addSupportedLocales(l);
@@ -98,17 +98,47 @@ public abstract class AbstractDistribution extends Loggable implements
         return false;
     }
 
+    /**
+     * Loads and merges the default config file (Default.config) from classpath
+     * and merges it with the existing config and preferences.
+     * 
+     * @param controller
+     * @param replaceExisting
+     *            true to replace all values, false to preserve all values of
+     *            the existing config/prefs, null check the
+     *            {@link ConfigurationEntry#CONFIG_OVERWRITE_VALUES} in the
+     *            loaded config.
+     * @return
+     */
     protected boolean loadPreConfigFromClasspath(Controller controller,
-        boolean replaceExisting)
+        Boolean replaceExisting)
     {
         Reject.ifNull(controller, "Controller");
         try {
             Properties preConfig = ConfigurationLoader
                 .loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
-            ConfigurationLoader.merge(preConfig, controller.getConfig(),
-                controller.getPreferences(), replaceExisting);
-            logInfo("Loaded preconfiguration file " + DEFAULT_CONFIG_FILENAME
-                + " from jar file");
+
+            boolean overWrite;
+            if (replaceExisting != null) {
+                overWrite = replaceExisting;
+            } else {
+                overWrite = Boolean
+                    .valueOf(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+                        .getDefaultValue());
+                String owStr = preConfig
+                    .getProperty(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+                        .getConfigKey());
+                try {
+                    overWrite = Boolean.parseBoolean(owStr);
+                } catch (Exception e) {
+                    logWarning("Unable to parse pre-config overwrite value. Problem value: "
+                        + owStr + ". Now using: " + overWrite + ". " + e);
+                }
+            }
+            int n = ConfigurationLoader.merge(preConfig,
+                controller.getConfig(), controller.getPreferences(), overWrite);
+            logInfo("Loaded " + n + " preconfiguration file "
+                + DEFAULT_CONFIG_FILENAME + " from jar file");
             return true;
         } catch (IOException e) {
             logSevere("Error while loading " + DEFAULT_CONFIG_FILENAME
