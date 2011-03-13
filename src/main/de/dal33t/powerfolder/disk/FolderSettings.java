@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +34,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor
@@ -54,7 +57,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
     public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
 
-    public static final String FOLDER_ID_GENERATE = "$generateId";
+    public static final String FOLDER_ID_GENERATE = "$generate";
     public static final String FOLDER_ID_FROM_ACCOUNT = "$fromAccount";
 
     /**
@@ -76,7 +79,12 @@ public class FolderSettings {
         + ",false";
 
     /**
-     * Base location of files in the folder.
+     * Original value from config.
+     */
+    private String localBaseDirStr;
+
+    /**
+     * Physical location of files in the folder.
      */
     private final File localBaseDir;
 
@@ -247,9 +255,10 @@ public class FolderSettings {
 
     public static FolderSettings load(Controller c, String entryId) {
         Properties config = c.getConfig();
-        String folderDir = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+        String folderDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DIR);
 
+        File folderDir = translateFolderDir(folderDirStr);
         if (folderDir == null) {
             return null;
         }
@@ -258,7 +267,7 @@ public class FolderSettings {
         String commitDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
-            commitDir = new File(commitDirStr);
+            commitDir = translateFolderDir(commitDirStr);
         }
 
         String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
@@ -338,10 +347,11 @@ public class FolderSettings {
         // Default syncPatterns to true.
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
-        FolderSettings settings = new FolderSettings(new File(folderDir),
-            syncProfile, false, archiveMode, preview, dlScript, versions,
-            syncPatterns, commitDir);
+        FolderSettings settings = new FolderSettings(folderDir, syncProfile,
+            false, archiveMode, preview, dlScript, versions, syncPatterns,
+            commitDir);
         settings.configEntryId = entryId;
+        settings.localBaseDirStr = folderDirStr;
         return settings;
     }
 
@@ -358,8 +368,12 @@ public class FolderSettings {
             + FOLDER_SETTINGS_NAME, folderInfo.name);
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_ID, folderInfo.id);
+        String baseDir = localBaseDirStr;
+        if (StringUtils.isBlank(baseDir)) {
+            baseDir = getLocalBaseDir().getAbsolutePath();
+        }
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_DIR, getLocalBaseDir().getAbsolutePath());
+            + FOLDER_SETTINGS_DIR, baseDir);
         String commitDir = getCommitDir() != null ? getCommitDir()
             .getAbsolutePath() : "";
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
@@ -380,4 +394,29 @@ public class FolderSettings {
             + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
     }
 
+    private static File translateFolderDir(String str) {
+        if (str == null) {
+            return null;
+        }
+        String res = str;
+        try {
+            Map<String, UserDirectory> dirs = UserDirectories
+                .getUserDirectories();
+            for (UserDirectory dir : dirs.values()) {
+                if (StringUtils.isBlank(dir.getPlaceholder())) {
+                    continue;
+                }
+                if (res.contains(dir.getPlaceholder())) {
+                    res = res.replace(dir.getPlaceholder(), dir.getDirectory()
+                        .getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            LOG.warning("Unable to translate directory path: " + str + ". " + e);
+        }
+        if (res.contains("$")) {
+            LOG.severe("Directory path still contains placeholders: " + res);
+        }
+        return new File(res);
+    }
 }
