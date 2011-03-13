@@ -23,9 +23,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Helper class around configuration
@@ -38,11 +42,54 @@ public class ConfigurationLoader {
     // TODO #2025
     private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
     private static final String PREFERENCES_PREFIX = "pref.";
+    private static final int URL_CONNECT_TIMEOUT_SECONDS = 15;
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
 
     private ConfigurationLoader() {
+    }
+
+    /**
+     * #2179 Loads the the config from the server and merges it with the
+     * controllers config.
+     * 
+     * @param controller
+     * @return if a config was successfully loaded
+     */
+    public static boolean loadAndMergeConfigURL(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        String configURL = ConfigurationEntry.CONFIG_URL.getValue(controller);
+        if (StringUtils.isBlank(configURL)) {
+            return false;
+        }
+        try {
+            Properties serverConfig = loadPreConfiguration(configURL);
+            boolean overWrite = Boolean
+                .valueOf(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+                    .getDefaultValue());
+            String owStr = serverConfig
+                .getProperty(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+                    .getConfigKey());
+            try {
+                overWrite = Boolean.parseBoolean(owStr);
+            } catch (Exception e) {
+                LOG.warning("Unable to parse config from server: " + configURL
+                    + ". Overwrite str: " + owStr + ". " + e);
+            }
+            int i = merge(serverConfig, controller.getConfig(),
+                controller.getPreferences(), overWrite);
+            LOG.warning("Loaded " + i + " settings (overwrite? " + overWrite
+                + ") from server: " + configURL);
+            if (i > 0) {
+                controller.saveConfig();
+            }
+            return true;
+        } catch (Exception e) {
+            LOG.warning("Unable to load config from server: " + configURL
+                + ". " + e);
+            return false;
+        }
     }
 
     /**
@@ -60,8 +107,10 @@ public class ConfigurationLoader {
         if (!finalURL.startsWith("http")) {
             finalURL = "http://" + finalURL;
         }
-        finalURL += CLIENT_PROPERTIES_URI;
-        return ConfigurationLoader.loadPreConfiguration(new URL(finalURL));
+        if (!finalURL.endsWith(".config")) {
+            finalURL += CLIENT_PROPERTIES_URI;
+        }
+        return loadPreConfiguration(new URL(finalURL));
     }
 
     /**
@@ -74,7 +123,10 @@ public class ConfigurationLoader {
      */
     public static Properties loadPreConfiguration(URL from) throws IOException {
         Reject.ifNull(from, "URL is null");
-        InputStream in = from.openStream();
+        URLConnection con = from.openConnection();
+        con.setConnectTimeout(1000 * URL_CONNECT_TIMEOUT_SECONDS);
+        con.connect();
+        InputStream in = con.getInputStream();
         try {
             return loadPreConfiguration(in);
         } finally {
@@ -149,7 +201,7 @@ public class ConfigurationLoader {
      *            pre config.
      * @return the number of merged entries.
      */
-    public static int mergeConfigs(Properties preConfig,
+    private static int mergeConfigs(Properties preConfig,
         Properties targetConfig, boolean replaceExisting)
     {
         Reject.ifNull(preConfig, "PreConfig is null");
@@ -175,6 +227,9 @@ public class ConfigurationLoader {
     }
 
     /**
+     * PUBLIC because of tests. DO NOT USE. Use
+     * {@link #merge(Properties, Properties, Preferences, boolean)} instead.
+     * <p>
      * Merges the give pre configuration properties into the target preferences.
      * It can be choosen if existing keys in the target preferences should be
      * replaced or not. Will only set those values from preConfig where the key
@@ -209,7 +264,7 @@ public class ConfigurationLoader {
             if (entryMissing || replaceExisting) {
                 targetPreferences.put(key, value);
                 n++;
-                LOG.warning("Preconfigured " + key + "=" + value);
+                LOG.finer("Preconfigured " + key + "=" + value);
             }
         }
         if (n > 0) {
