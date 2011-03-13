@@ -89,6 +89,7 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -98,7 +99,7 @@ import de.dal33t.powerfolder.util.ui.UserDirectories;
  */
 public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
-    private Map<String, File> userDirectories;
+    private Map<String, UserDirectory> userDirectories;
     private WizardPanel next;
     private JLabel folderSizeLabel;
     private LinkLabel warningLabel;
@@ -187,7 +188,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     // Ignore disabled boxes - these are already set up.
                     if (box.isSelected() && box.isEnabled()) {
                         FolderCreateItem item = new FolderCreateItem(
-                            userDirectories.get(boxName));
+                            userDirectories.get(boxName).getDirectory());
                         item.setSyncProfile(syncProfile);
                         item.setFolderInfo(createFolderInfo(boxName));
                         folderCreateItems.add(item);
@@ -235,8 +236,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     protected JPanel buildContent() {
         // Create boxes.
-        JCheckBox allBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_multi_disk_location.all_files"));
+        JCheckBox allBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_multi_disk_location.all_files"));
         allBox.setOpaque(false);
         allBox.addActionListener(new MyAllActionListner());
         boxes.add(allBox);
@@ -347,9 +349,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         userDirectories = UserDirectories.getUserDirectories();
 
         folderSizeLabel = new JLabel();
-        warningLabel = new LinkLabel(getController(), Translation
-            .getTranslation("pro.wizard.activation.order_now"), ProUtil
-            .getBuyNowURL(getController()));
+        warningLabel = new LinkLabel(getController(),
+            Translation.getTranslation("pro.wizard.activation.order_now"),
+            ProUtil.getBuyNowURL(getController()));
         warningLabel.setVisible(false);
 
         boxes = new ArrayList<JCheckBox>();
@@ -392,8 +394,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create manual sync cb
-        manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.maual_sync"));
+        manualSyncCheckBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -516,7 +519,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         if (box.getText().equals(boxName)) {
                             // Ignore disabled boxes - these are already set up.
                             if (box.isSelected() && box.isEnabled()) {
-                                File file = userDirectories.get(boxName);
+                                File file = userDirectories.get(boxName)
+                                    .getDirectory();
                                 originalList.add(file);
                             }
                         }
@@ -544,7 +548,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         if (box.getText().equals(boxName)) {
                             // Ignore disabled boxes - these are already set up.
                             if (box.isSelected() && box.isEnabled()) {
-                                File file = userDirectories.get(boxName);
+                                File file = userDirectories.get(boxName)
+                                    .getDirectory();
                                 finalList.add(file);
                             }
                         }
@@ -574,8 +579,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 try {
                     folderSizeLabel.setText(Translation.getTranslation(
                         "wizard.choose_disk_location.total_directory_size",
-                        Format.formatBytes(totalDirectorySize), Format
-                            .formatLong(recursiveFileCount)));
+                        Format.formatBytes(totalDirectorySize),
+                        Format.formatLong(recursiveFileCount)));
                     warningLabel.setText("");
                     warningLabel.setIcon(null);
                     warningLabel.setVisible(false);
@@ -656,7 +661,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 .getFolders();
             ServerClient client = getController().getOSClient();
             for (String name : userDirectories.keySet()) {
-                File file = userDirectories.get(name);
+                File file = userDirectories.get(name).getDirectory();
                 boolean local = false;
                 for (Folder folder : folders) {
                     if (folder.getLocalBase().equals(file)) {
@@ -691,14 +696,12 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                         box.setFont(font);
                         box.setEnabled(!local);
                         if (local) {
-                            box
-                                .setToolTipText(Translation
-                                    .getTranslation("wizard.choose_disk_location.already_synchronized"));
+                            box.setToolTipText(Translation
+                                .getTranslation("wizard.choose_disk_location.already_synchronized"));
                             box.setSelected(true);
                         } else if (onlineOnly) {
-                            box
-                                .setToolTipText(Translation
-                                    .getTranslation("wizard.choose_disk_location.already_online"));
+                            box.setToolTipText(Translation
+                                .getTranslation("wizard.choose_disk_location.already_online"));
                         } else {
                             box.setToolTipText(null);
                         }
@@ -721,8 +724,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             String fileName = (String) customDirectoryList.getSelectedValue();
             File file = new File(fileName);
             LinkFolderOnlineDialog dialog = new LinkFolderOnlineDialog(
-                getController(), ChooseMultiDiskLocationPanel.this, file, links
-                    .get(file));
+                getController(), ChooseMultiDiskLocationPanel.this, file,
+                links.get(file));
             dialog.open();
         }
     }

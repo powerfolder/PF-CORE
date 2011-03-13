@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * A generally used wizard panel for choosing a disk location for a folder.
@@ -90,7 +91,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
     private WizardPanel next;
     private final String initialLocation;
     private ValueModel locationModel;
-    private static Map<String, File> userDirectories;
+    private static Map<String, UserDirectory> userDirectories;
     private JTextField locationTF;
     private JRadioButton customRB;
     private JCheckBox backupByOnlineStorageBox;
@@ -187,7 +188,7 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         int col = 1;
         for (String name : userDirectories.keySet()) {
-            final File file = userDirectories.get(name);
+            final File file = userDirectories.get(name).getDirectory();
             JRadioButton button = new JRadioButton(name);
             button.addItemListener(myItemListener);
             button.setOpaque(false);
@@ -303,8 +304,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
         // Create customRB now,
         // so the listener does not see the initial selection later.
-        customRB = new JRadioButton(Translation
-            .getTranslation("user.dir.custom"));
+        customRB = new JRadioButton(
+            Translation.getTranslation("user.dir.custom"));
         customRB.setSelected(true);
         customRB.addItemListener(myItemListener);
 
@@ -346,8 +347,9 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         backupByOnlineStorageBox.setOpaque(false);
 
         // Create manual sync cb
-        manualSyncCheckBox = new JCheckBox(Translation
-            .getTranslation("wizard.choose_disk_location.maual_sync"));
+        manualSyncCheckBox = new JCheckBox(
+            Translation
+                .getTranslation("wizard.choose_disk_location.maual_sync"));
 
         manualSyncCheckBox.setOpaque(false);
 
@@ -526,8 +528,8 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         private boolean canWriteDirectory(File dir) {
             File testFile;
             do {
-                testFile = new File(dir, FileUtils
-                    .removeInvalidFilenameChars(IdGenerator.makeId()));
+                testFile = new File(dir,
+                    FileUtils.removeInvalidFilenameChars(IdGenerator.makeId()));
             } while (testFile.exists());
             try {
                 testFile.createNewFile();

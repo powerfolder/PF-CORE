@@ -51,9 +51,10 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * Class to do sync profile configuration for OS joins.
@@ -117,8 +118,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation.getTranslation("general.folder"), cc
-            .xy(1, 1));
+        builder.addLabel(Translation.getTranslation("general.folder"),
+            cc.xy(1, 1));
         builder.add(folderInfoCombo, cc.xy(3, 1));
 
         builder
@@ -130,8 +131,9 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         builder.add(localFolderField, cc.xy(3, 3));
         builder.add(localFolderButton, cc.xy(5, 3));
 
-        builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(1, 5));
+        builder.add(
+            new JLabel(Translation.getTranslation("general.transfer_mode")),
+            cc.xy(1, 5));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xyw(3, 5, 4));
@@ -167,7 +169,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
      * Build map of foInfo and syncProfs
      */
     public void afterDisplay() {
-        Map<String, File> userDirs = UserDirectories
+        Map<String, UserDirectory> userDirs = UserDirectories
             .getUserDirectoriesFiltered(getController());
         folderProfileMap = new HashMap<FolderInfo, SyncProfile>();
         folderLocalBaseMap = new HashMap<FolderInfo, File>();
@@ -180,10 +182,12 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             folderProfileMap.put(folderInfo,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             // Suggesr user dir.
-            File dirSuggestion = userDirs.get(folderInfo.name);
-            if (dirSuggestion == null) {
-                dirSuggestion = new File(folderBasedir, FileUtils
-                    .removeInvalidFilenameChars(folderInfo.name));
+            File dirSuggestion = null;
+            if (userDirs.get(folderInfo.name) == null) {
+                dirSuggestion = new File(folderBasedir,
+                    FileUtils.removeInvalidFilenameChars(folderInfo.name));
+            } else {
+                dirSuggestion = userDirs.get(folderInfo.name).getDirectory();
             }
             folderLocalBaseMap.put(folderInfo, dirSuggestion);
             folderInfoComboModel.addElement(folderInfo.name);
@@ -212,8 +216,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         if (selectedFolderInfo != null) {
             localFolderField.setText(folderLocalBaseMap.get(selectedFolderInfo)
                 .getAbsolutePath());
-            syncProfileSelectorPanel.setSyncProfile(folderProfileMap
-                .get(selectedFolderInfo), false);
+            syncProfileSelectorPanel.setSyncProfile(
+                folderProfileMap.get(selectedFolderInfo), false);
         }
 
         changingSelecton = false;
@@ -261,9 +265,8 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            File file = DialogFactory.chooseDirectory(
-                    getController().getUIController(),
-                    folderLocalBaseMap.get(selectedFolderInfo));
+            File file = DialogFactory.chooseDirectory(getController()
+                .getUIController(), folderLocalBaseMap.get(selectedFolderInfo));
             if (file != null) {
                 localFolderField.setText(file.getAbsolutePath());
                 folderLocalBaseMap.put(selectedFolderInfo, file);
