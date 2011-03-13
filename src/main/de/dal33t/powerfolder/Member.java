@@ -843,12 +843,12 @@ public class Member extends PFComponent implements Comparable<Member> {
             FolderList folderList;
             if (getProtocolVersion() >= 106) {
                 folderList = new FolderListExt(getController()
-                    .getFolderRepository().getJoinedFolderInfos(), peer
-                    .getRemoteMagicId());
+                    .getFolderRepository().getJoinedFolderInfos(),
+                    peer.getRemoteMagicId());
             } else {
                 folderList = new FolderList(getController()
-                    .getFolderRepository().getJoinedFolderInfos(), peer
-                    .getRemoteMagicId());
+                    .getFolderRepository().getJoinedFolderInfos(),
+                    peer.getRemoteMagicId());
             }
             peer.sendMessagesAsynchron(folderList);
         }
@@ -941,8 +941,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // FIX for #924
             folder.waitForScan();
             // Send filelist of joined folders
-            Message[] filelistMsgs = FileList.create(folder, folder
-                .supportExternalizable(this));
+            Message[] filelistMsgs = FileList.create(folder,
+                folder.supportExternalizable(this));
             for (Message message : filelistMsgs) {
                 try {
                     sendMessage(message);
@@ -1044,8 +1044,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             getController().getFolderRepository().getFileRequestor()
                 .triggerFileRequesting(folder.getInfo());
             if (folder.getSyncProfile().isSyncDeletion()) {
-                folder.triggerSyncRemoteDeletedFiles(Collections
-                    .singleton(this), false);
+                folder.triggerSyncRemoteDeletedFiles(
+                    Collections.singleton(this), false);
             }
         }
 
@@ -1418,6 +1418,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof AbortDownload) {
                 AbortDownload abort = (AbortDownload) message;
                 // Abort the upload
+                logFine("Received " + abort + " from " + this);
                 getController().getTransferManager().abortUpload(abort.file,
                     this);
                 expectedTime = 100;
@@ -1611,8 +1612,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof AddFriendNotification) {
                 AddFriendNotification notification = (AddFriendNotification) message;
                 AskForFriendshipEvent event = new AskForFriendshipEvent(
-                    notification.getMemberInfo(), notification
-                        .getPersonalMessage());
+                    notification.getMemberInfo(),
+                    notification.getPersonalMessage());
                 getController().addAskForFriendship(event);
                 expectedTime = 50;
             } else if (message instanceof Notification) {
@@ -1759,19 +1760,17 @@ public class Member extends PFComponent implements Comparable<Member> {
                     try {
                         logInfo("Processing message: " + clr);
                         if (StringUtils.isNotBlank(clr.getConfigURL())) {
+                            ConfigurationEntry.CONFIG_URL.setValue(
+                                getController(), clr.getConfigURL());
+
                             Properties preConfig = ConfigurationLoader
                                 .loadPreConfiguration(clr.getConfigURL());
-
                             ConfigurationLoader.merge(preConfig,
                                 getController().getConfig(), getController()
                                     .getPreferences(), clr.isReplaceExisting());
 
                             // Seems to be valid, store.
                             getController().saveConfig();
-                        }
-                        if (clr.isModifyWinINIConfigCentral()) {
-                            ConfigurationLoadRequest
-                                .modifyWinINIConfigCentral(getController());
                         }
                         if (clr.isRestartRequired()) {
                             getController().shutdownAndRequestRestart();
