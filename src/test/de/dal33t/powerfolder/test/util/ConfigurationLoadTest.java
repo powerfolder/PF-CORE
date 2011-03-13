@@ -57,7 +57,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
 
     public void testRestartOnConfigReload() throws ConnectionException {
         ConfigurationLoadRequest r = new ConfigurationLoadRequest(
-            TEST_CONFIG_URL, false, true, false);
+            TEST_CONFIG_URL, false, true);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -76,7 +76,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
         getContollerLisa().setNetworkingMode(NetworkingMode.LANONLYMODE);
 
         ConfigurationLoadRequest r = new ConfigurationLoadRequest("http://"
-            + TEST_CONFIG_URL, false, false, true);
+            + TEST_CONFIG_URL, false, false);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitMilliSeconds(1000);
@@ -87,8 +87,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             .getValueBoolean(getContollerLisa()));
 
         // Now overwrite values.
-        r = new ConfigurationLoadRequest(TEST_CONFIG_URL + "/", true, false,
-            false);
+        r = new ConfigurationLoadRequest(TEST_CONFIG_URL + "/", true, false);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
