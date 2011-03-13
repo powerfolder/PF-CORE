@@ -21,10 +21,10 @@ package de.dal33t.powerfolder.util.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalExclusionType;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.awt.Dialog.ModalExclusionType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -69,9 +70,7 @@ import de.dal33t.powerfolder.util.Util;
 
 public class ConfigurationLoaderDialog extends PFUIComponent {
 
-    private static final String[] SERVICE_PROVIDER_URLS = {"http://www.powerfolder.com",
-    // , "http://relay001.node.powerfolder.com:7777"
-    };
+    private final Vector<String> serviceProviderUrls = new Vector<String>();
 
     private JFrame frame;
     private JComboBox addressBox;
@@ -123,18 +122,17 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             builder.setDefaultDialogBorder();
             CellConstraints cc = new CellConstraints();
             int row = 1;
-            builder
-                .addLabel(Translation
-                    .getTranslation("config.loader.dialog.info"), cc.xyw(1,
-                    row, 3));
+            builder.addLabel(
+                Translation.getTranslation("config.loader.dialog.info"),
+                cc.xyw(1, row, 3));
             row += 2;
             builder.add(addressBox, cc.xy(1, row));
             builder.add(Help.createWikiLinkButton(getController(),
                 WikiLinks.SERVER_CLIENT_DEPLOYMENT), cc.xy(3, row));
 
             row += 2;
-            builder.add(proxySettingsLabel, cc.xywh(1, row, 1, 1,
-                "right, center"));
+            builder.add(proxySettingsLabel,
+                cc.xywh(1, row, 1, 1, "right, center"));
 
             row += 2;
             builder.add(progressBar, cc.xyw(1, row, 3));
@@ -170,9 +168,36 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         return frame;
     }
 
+    private void addServerURL(String value) {
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
+        // Skip entries with google analytics stuff (e.g. in Basic distribution)
+        if (!value.contains("utm_source")
+            && !serviceProviderUrls.contains(value))
+        {
+            serviceProviderUrls.add(value);
+        }
+    }
+
     @SuppressWarnings("serial")
     private void initComponents() {
-        addressBox = new JComboBox(SERVICE_PROVIDER_URLS);
+        if (StringUtils.isNotBlank(ConfigurationEntry.CONFIG_URL
+            .getValue(getController())))
+        {
+            addServerURL(ConfigurationEntry.CONFIG_URL
+                .getValue(getController()));
+        }
+        if (getController().getOSClient().hasWebURL()) {
+            addServerURL(getController().getOSClient().getWebURL());
+        }
+        if (ConfigurationEntry.PROVIDER_URL.hasValue(getController())) {
+            addServerURL(ConfigurationEntry.PROVIDER_URL
+                .getValue(getController()));
+        }
+        addServerURL(ConfigurationEntry.PROVIDER_URL.getDefaultValue());
+
+        addressBox = new JComboBox(serviceProviderUrls);
         addressBox.setEditable(true);
         try {
             JTextField editorField = (JTextField) addressBox.getEditor()
@@ -184,8 +209,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         }
 
         proxySettingsLabel = new ActionLabel(getController(),
-            new AbstractAction(Translation
-                .getTranslation("general.proxy_settings"))
+            new AbstractAction(
+                Translation.getTranslation("general.proxy_settings"))
             {
                 public void actionPerformed(ActionEvent e) {
                     new HTTPProxySettingsDialog(getController(), frame).open();
@@ -210,8 +235,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             }
         });
 
-        JButton skipButton = new JButton(Translation
-            .getTranslation("config.loader.dialog.skip"));
+        JButton skipButton = new JButton(
+            Translation.getTranslation("config.loader.dialog.skip"));
         skipButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.setVisible(false);
@@ -219,8 +244,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 mainProgrammContinue();
             }
         });
-        JButton exitButton = new JButton(Translation
-            .getTranslation("config.loader.dialog.exit"));
+        JButton exitButton = new JButton(
+            Translation.getTranslation("config.loader.dialog.exit"));
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 exit();
@@ -286,6 +311,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             Properties preConfig = null;
             String input = (String) addressBox.getSelectedItem();
             try {
+                ConfigurationEntry.CONFIG_URL.setValue(getController(), input);
+                getController().saveConfig();
                 preConfig = ConfigurationLoader.loadPreConfiguration(input);
             } catch (IOException e) {
                 if (StringUtils.isNotBlank(input)) {
@@ -303,8 +330,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                             ConfigurationEntry.SERVER_NODEID
                                 .removeValue(getController());
                             preConfig = new Properties();
-                            preConfig.put(ConfigurationEntry.SERVER_HOST
-                                .getConfigKey(), input);
+                            preConfig.put(
+                                ConfigurationEntry.SERVER_HOST.getConfigKey(),
+                                input);
                         }
                     } catch (Exception e2) {
                         logInfo("Not direct TCP connect possible to " + input);
@@ -390,7 +418,8 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
          * Asks user about restart and executes that if requested
          */
         private void handleRestartRequest() {
-            int result = DialogFactory.genericDialog(getController(),
+            int result = DialogFactory.genericDialog(
+                getController(),
                 Translation.getTranslation("preferences.dialog.restart.title"),
                 Translation.getTranslation("preferences.dialog.restart.text"),
                 new String[]{
