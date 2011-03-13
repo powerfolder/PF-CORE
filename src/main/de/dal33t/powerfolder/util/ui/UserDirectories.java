@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  */
 public class UserDirectories {
 
-    private static final Map<String, File> userDirectories = new TreeMap<String, File>();
+    private static final Map<String, UserDirectory> userDirectories = new TreeMap<String, UserDirectory>();
 
     // Some standard user directory names from various OS.
     private static final String USER_DIR_CONTACTS = "Contacts";
@@ -145,7 +145,7 @@ public class UserDirectories {
     /**
      * @return all user directories name -> target location on disk.
      */
-    public static Map<String, File> getUserDirectories() {
+    public static Map<String, UserDirectory> getUserDirectories() {
         if (userDirectories.isEmpty()) {
             synchronized (userDirectories) {
                 findUserDirectories();
@@ -159,15 +159,15 @@ public class UserDirectories {
      * @return @return user directories that are not setup as folder yet. name
      *         -> target location on disk.
      */
-    public static Map<String, File> getUserDirectoriesFiltered(
+    public static Map<String, UserDirectory> getUserDirectoriesFiltered(
         Controller controller)
     {
-        Map<String, File> filteredDirs = new TreeMap<String, File>(
+        Map<String, UserDirectory> filteredDirs = new TreeMap<String, UserDirectory>(
             getUserDirectories());
-        for (Iterator<File> it = filteredDirs.values().iterator(); it.hasNext();)
+        for (Iterator<UserDirectory> it = filteredDirs.values().iterator(); it
+            .hasNext();)
         {
-            File directory = it.next();
-
+            File directory = it.next().getDirectory();
             // See if any folders already exists for this directory.
             // No reason to show if already subscribed.
             for (Folder folder : controller.getFolderRepository().getFolders())
@@ -187,83 +187,77 @@ public class UserDirectories {
      */
     private static void findUserDirectories() {
         File userHome = new File(System.getProperty("user.home"));
-        addTargetDirectory(userHome, USER_DIR_CONTACTS, Translation
-            .getTranslation("user.dir.contacts"), false);
-        addTargetDirectory(userHome, USER_DIR_DESKTOP, Translation
-            .getTranslation("user.dir.desktop"), false);
-        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, Translation
-            .getTranslation("user.dir.documents"), false);
-        addTargetDirectory(userHome, USER_DIR_EVOLUTION, Translation
-            .getTranslation("user.dir.evolution"), true);
-        addTargetDirectory(userHome, USER_DIR_FAVORITES, Translation
-            .getTranslation("user.dir.favorites"), false);
-        addTargetDirectory(userHome, USER_DIR_LINKS, Translation
-            .getTranslation("user.dir.links"), false);
-        addTargetDirectory(userHome, USER_DIR_MUSIC, Translation
-            .getTranslation("user.dir.music"), false);
-        addTargetDirectory(userHome, USER_DIR_MOVIES, Translation
-            .getTranslation("user.dir.movies"), false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
-            .getTranslation("user.dir.videos"), false);
-        addTargetDirectory(userHome, USER_DIR_DOWNLOADS, Translation
-            .getTranslation("user.dir.downloads"), false);
-        addTargetDirectory(userHome, USER_DIR_PUBLIC, Translation
-            .getTranslation("user.dir.public"), false);
-        addTargetDirectory(userHome, USER_DIR_SITES, Translation
-            .getTranslation("user.dir.sites"), false);
-        addTargetDirectory(userHome, USER_DIR_DROPBOX, Translation
-            .getTranslation("user.dir.dropbox"), false);
+        addTargetDirectory(userHome, USER_DIR_CONTACTS, "user.dir.contacts",
+            false);
+        addTargetDirectory(userHome, USER_DIR_DESKTOP, "user.dir.desktop",
+            false);
+        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, "user.dir.documents",
+            false);
+        addTargetDirectory(userHome, USER_DIR_EVOLUTION, "user.dir.evolution",
+            true);
+        addTargetDirectory(userHome, USER_DIR_FAVORITES, "user.dir.favorites",
+            false);
+        addTargetDirectory(userHome, USER_DIR_LINKS, "user.dir.links", false);
+        addTargetDirectory(userHome, USER_DIR_MUSIC, "user.dir.music", false);
+        addTargetDirectory(userHome, USER_DIR_MOVIES, "user.dir.movies", false);
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos", false);
+        addTargetDirectory(userHome, USER_DIR_DOWNLOADS, "user.dir.downloads",
+            false);
+        addTargetDirectory(userHome, USER_DIR_PUBLIC, "user.dir.public", false);
+        addTargetDirectory(userHome, USER_DIR_SITES, "user.dir.sites", false);
+        addTargetDirectory(userHome, USER_DIR_DROPBOX, "user.dir.dropbox",
+            false);
 
         // Hidden by Vista.
         if (!OSUtil.isWindowsVistaSystem() && !OSUtil.isWindows7System()) {
             if (USER_DIR_MY_DOCUMENTS != null) {
-                addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS), Translation
-                    .getTranslation("user.dir.my_documents"), false);
+                // #2203 Use same placeholder as on Vista or Win 7
+                addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS),
+                    "user.dir.my_documents", false, "user.dir.documents");
             }
             if (USER_DIR_MY_MUSIC != null) {
-                addTargetDirectory(new File(USER_DIR_MY_MUSIC), Translation
-                    .getTranslation("user.dir.my_music"), false);
+                // #2203 Use same placeholder as on Vista or Win 7
+                addTargetDirectory(new File(USER_DIR_MY_MUSIC),
+                    "user.dir.my_music", false, "user.dir.music");
             }
             if (USER_DIR_MY_PICTURES != null) {
-                addTargetDirectory(new File(USER_DIR_MY_PICTURES), Translation
-                    .getTranslation("user.dir.my_pictures"), false);
+                // #2203 Use same placeholder as on Vista or Win 7
+                addTargetDirectory(new File(USER_DIR_MY_PICTURES),
+                    "user.dir.my_pictures", false, "user.dir.pictures");
             }
             if (USER_DIR_MY_VIDEOS != null) {
-                addTargetDirectory(new File(USER_DIR_MY_VIDEOS), Translation
-                    .getTranslation("user.dir.my_videos"), false);
+                // #2203 Use same placeholder as on Vista or Win 7
+                addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
+                    "user.dir.my_videos", false, "user.dir.videos");
             }
         }
 
-        addTargetDirectory(userHome, USER_DIR_PICTURES, Translation
-            .getTranslation("user.dir.pictures"), false);
-        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS, Translation
-            .getTranslation("user.dir.recent_documents"), false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
-            .getTranslation("user.dir.videos"), false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, Translation
-            .getTranslation("user.dir.videos"), false);
+        addTargetDirectory(userHome, USER_DIR_PICTURES, "user.dir.pictures",
+            false);
+        addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS,
+            "user.dir.recent_documents", false);
+        addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos", false);
 
         if (OSUtil.isWindowsSystem()) {
             String appDataname = WinUtils.getAppDataCurrentUser();
             if (appDataname != null) {
                 File appData = new File(appDataname);
-                addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
-                    .getTranslation("apps.dir.firefox"), false);
-                addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
-                    .getTranslation("apps.dir.sunbird"), false);
+                addTargetDirectory(appData, "apps.dir", true);
+                addTargetDirectory(appData, APPS_DIR_FIREFOX,
+                    "apps.dir.firefox", false);
+                addTargetDirectory(appData, APPS_DIR_SUNBIRD,
+                    "apps.dir.sunbird", false);
                 if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
                     addTargetDirectory(appData, APPS_DIR_THUNDERBIRD,
-                        Translation.getTranslation("apps.dir.thunderbird"),
-                        false);
+                        "apps.dir.thunderbird", false);
                 }
                 if (APPS_DIR_OUTLOOK != null) {
-                    addTargetDirectory(new File(APPS_DIR_OUTLOOK), Translation
-                        .getTranslation("apps.dir.outlook"), false);
+                    addTargetDirectory(new File(APPS_DIR_OUTLOOK),
+                        "apps.dir.outlook", false);
                 }
                 if (APPS_DIR_WINDOWS_MAIL != null) {
                     addTargetDirectory(new File(APPS_DIR_WINDOWS_MAIL),
-                        Translation.getTranslation("apps.dir.windows_mail"),
-                        false);
+                        "apps.dir.windows_mail", false);
                 }
             } else {
                 Logger.getAnonymousLogger().severe(
@@ -271,23 +265,23 @@ public class UserDirectories {
             }
         } else if (OSUtil.isLinux()) {
             File appData = new File("/etc");
-            addTargetDirectory(appData, APPS_DIR_FIREFOX2, Translation
-                .getTranslation("apps.dir.firefox"), false);
-            addTargetDirectory(appData, APPS_DIR_SUNBIRD2, Translation
-                .getTranslation("apps.dir.sunbird"), false);
+            addTargetDirectory(appData, APPS_DIR_FIREFOX2, "apps.dir.firefox",
+                false);
+            addTargetDirectory(appData, APPS_DIR_SUNBIRD2, "apps.dir.sunbird",
+                false);
             if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
-                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2, Translation
-                    .getTranslation("apps.dir.thunderbird"), false);
+                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD2,
+                    "apps.dir.thunderbird", false);
             }
         } else if (OSUtil.isMacOS()) {
             File appData = new File(userHome, "Library");
-            addTargetDirectory(appData, APPS_DIR_FIREFOX, Translation
-                .getTranslation("apps.dir.firefox"), false);
-            addTargetDirectory(appData, APPS_DIR_SUNBIRD, Translation
-                .getTranslation("apps.dir.sunbird"), false);
+            addTargetDirectory(appData, APPS_DIR_FIREFOX, "apps.dir.firefox",
+                false);
+            addTargetDirectory(appData, APPS_DIR_SUNBIRD, "apps.dir.sunbird",
+                false);
             if (Feature.USER_DIRECTORIES_EMAIL_CLIENTS.isEnabled()) {
-                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD, Translation
-                    .getTranslation("apps.dir.thunderbird"), false);
+                addTargetDirectory(appData, APPS_DIR_THUNDERBIRD,
+                    "apps.dir.thunderbird", false);
             }
         }
     }
@@ -302,10 +296,10 @@ public class UserDirectories {
      *            allow display of hidden dirs
      */
     private static void addTargetDirectory(File root, String subdir,
-        String translation, boolean allowHidden)
+        String translationId, boolean allowHidden)
     {
         File directory = joinFile(root, subdir);
-        addTargetDirectory(directory, translation, allowHidden);
+        addTargetDirectory(directory, translationId, allowHidden);
     }
 
     private static File joinFile(File root, String subdir) {
@@ -319,13 +313,30 @@ public class UserDirectories {
      * @param allowHidden
      *            allow display of hidden dirs
      */
+    private static void addTargetDirectory(File directory,
+        String translationId, boolean allowHidden)
+    {
+        String translation = Translation.getTranslation(translationId);
+        String placeholder = '$' + translationId;
+        addTargetDirectory(directory, translation, allowHidden, placeholder);
+    }
+
+    /**
+     * Adds a generic user directory if if exists for this os.
+     * 
+     * @param translation
+     * @param allowHidden
+     *            allow display of hidden dirs
+     */
     private static void addTargetDirectory(File directory, String translation,
-        boolean allowHidden)
+        boolean allowHidden, String placeholder)
     {
         if (directory.exists() && directory.isDirectory()
             && (allowHidden || !directory.isHidden()))
         {
-            userDirectories.put(translation, directory);
+            UserDirectory userDir = new UserDirectory(translation, placeholder,
+                directory);
+            userDirectories.put(translation, userDir);
         }
     }
 }
