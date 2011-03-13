@@ -93,6 +93,7 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
@@ -132,7 +133,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.5.2 RC1"; // 2.1.0.25
+    public static final String PROGRAM_VERSION = "4.5.3 - 2.1.0.29"; // RC3 - 2.1.0.25
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -386,6 +387,7 @@ public class Controller extends PFComponent {
         if (!loadConfigFile(filename)) {
             return;
         }
+
         boolean isDefaultConfig = DEFAULT_CONFIG_FILE
             .startsWith(getConfigName());
         if (isDefaultConfig) {
@@ -426,6 +428,9 @@ public class Controller extends PFComponent {
         if (!Desktop.isDesktopSupported() && isUIEnabled()) {
             logWarning("Desktop utility not supported");
         }
+
+        // #2179: Load from server. How to handle timeouts?
+        ConfigurationLoader.loadAndMergeConfigURL(this);
 
         // Init silentmode
         silentMode = preferences.getBoolean("silentMode", false);
@@ -917,12 +922,11 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * General houskeeping task. Runs one minute after start
-     * and every midnight.
-     *
+     * General houskeeping task. Runs one minute after start and every midnight.
+     * 
      * @param midnightRun
-     *          true if this is the midnight invokation,
-     *          false if this is at start up.
+     *            true if this is the midnight invokation, false if this is at
+     *            start up.
      */
     private void performHousekeeping(boolean midnightRun) {
         log.info("Performing housekeeping " + midnightRun);
@@ -985,7 +989,9 @@ public class Controller extends PFComponent {
                         boolean listenerOpened = openListener(port);
                         if (listenerOpened && connectionListener != null) {
                             // set reconnect on first successfull listener
-                            nodeManager.getMySelf().getInfo()
+                            nodeManager
+                                .getMySelf()
+                                .getInfo()
                                 .setConnectAddress(
                                     connectionListener.getAddress());
                         }
@@ -1084,8 +1090,8 @@ public class Controller extends PFComponent {
         if ((openListener(ConnectionListener.DEFAULT_PORT) || openListener(0))
             && connectionListener != null)
         {
-            nodeManager.getMySelf().getInfo().setConnectAddress(
-                connectionListener.getAddress());
+            nodeManager.getMySelf().getInfo()
+                .setConnectAddress(connectionListener.getAddress());
         } else {
             logSevere("failed to open random port!!!");
             fatalStartError(Translation.getTranslation("dialog.bind_error"));
@@ -1205,7 +1211,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     *Sets the silent mode.
+     * Sets the silent mode.
      * 
      * @param newSilentMode
      */
@@ -1294,8 +1300,8 @@ public class Controller extends PFComponent {
             ConfigurationEntry.NETWORKING_MODE.setValue(this, newMode.name());
 
             networkingMode = newMode;
-            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue, newMode
-                .toString());
+            firePropertyChange(PROPERTY_NETWORKING_MODE, oldValue,
+                newMode.toString());
 
             // Restart nodeManager
             nodeManager.shutdown();
@@ -1438,16 +1444,14 @@ public class Controller extends PFComponent {
         }
 
         if ((portWasOpened || ConfigurationEntry.NET_FIREWALL_OPENPORT
-            .getValueBoolean(this))
-            && connectionListener != null)
+            .getValueBoolean(this)) && connectionListener != null)
         {
             if (FirewallUtil.isFirewallAccessible()) {
                 Thread closer = new Thread(new Runnable() {
                     public void run() {
                         try {
                             logFine("Closing port on Firewall.");
-                            FirewallUtil
-                                .closeport(connectionListener.getPort());
+                            FirewallUtil.closeport(connectionListener.getPort());
                         } catch (IOException e) {
                             logWarning("Unable to remove firewall rule in Windows Firewall. "
                                 + e);
@@ -2164,9 +2168,9 @@ public class Controller extends PFComponent {
                         .getTranslation("dialog.already_running.exit_button")};
                 exitOption = 1;
             }
-            if (JOptionPane.showOptionDialog(parent, Translation
-                .getTranslation("dialog.already_running.warning"), Translation
-                .getTranslation("dialog.already_running.title"),
+            if (JOptionPane.showOptionDialog(parent,
+                Translation.getTranslation("dialog.already_running.warning"),
+                Translation.getTranslation("dialog.already_running.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                 null, options, options[0]) == exitOption)
             { // exit pressed
@@ -2186,8 +2190,8 @@ public class Controller extends PFComponent {
         if (isUIEnabled()) {
             Object[] options = {Translation
                 .getTranslation("dialog.already_running.exit_button")};
-            JOptionPane.showOptionDialog(parent, message, Translation
-                .getTranslation("dialog.fatal_error.title"),
+            JOptionPane.showOptionDialog(parent, message,
+                Translation.getTranslation("dialog.fatal_error.title"),
                 JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null,
                 options, options[0]);
         } else {
