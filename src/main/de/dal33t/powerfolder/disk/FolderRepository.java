@@ -340,9 +340,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (folderId
                             .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT))
                         {
-                            logWarning("Loading folder " + folderName
-                                + " for setup after login. entry: "
-                                + folderEntryId);
+                            logWarning("Folder load scheduled after first login: "
+                                + folderName + "/" + folderEntryId);
                             onLoginFolderEntryIds.add(folderEntryId);
                             return;
                         }
