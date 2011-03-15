@@ -398,6 +398,10 @@ public class FolderSettings {
         if (str == null) {
             return null;
         }
+        if (!str.contains("$")) {
+            // No placeholders found
+            return new File(str);
+        }
         String res = str;
         try {
             Map<String, UserDirectory> dirs = UserDirectories
