@@ -243,19 +243,9 @@ public enum ConfigurationEntry {
     CONFIG_URL("config.url"),
 
     /**
-     * Guess what
-     */
-    CONFIG_NAME("config.name"),
-
-    /**
      * If this URL should override all previously set or default values.
      */
     CONFIG_OVERWRITE_VALUES("config.overwrite", false),
-
-    /**
-     * Reload the config on start and on change.
-     */
-    CONFIG_AUTO_RELOAD("config.reload"),
 
     /**
      * http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt
