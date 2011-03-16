@@ -62,6 +62,7 @@ import org.apache.commons.cli.CommandLine;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
@@ -92,23 +93,7 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.action.SyncAllFoldersAction;
 import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.JavaVersion;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.PropertiesUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
@@ -1799,7 +1784,7 @@ public class Controller extends PFComponent {
      * @throws ConnectionException
      * @returns the connected node
      */
-    public Member connect(final String connectStr) throws ConnectionException {
+    public Member connect(String connectStr) throws ConnectionException {
         return connect(Util.parseConnectionString(connectStr));
     }
 
@@ -2443,7 +2428,18 @@ public class Controller extends PFComponent {
      * @return true if the invitation was accepted.
      */
     public boolean autoAcceptInvitation(Invitation invitation) {
-        //@todo #2210
-        return false;
+        File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
+        if (suggestedLocalBase == null) {
+            logInfo("Can not autoAccept " + invitation + " because no suggested local base.");
+            return false;
+        } else if (suggestedLocalBase.exists()) {
+            logInfo("Can not autoAccept " + invitation + " because suggested local base already exists.");
+            return false;
+        }
+        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase, 
+                invitation.getSuggestedSyncProfile(), false,
+                ArchiveMode.FULL_BACKUP, 5);
+        folderRepository.createFolder(invitation.folder, folderSettings);
+        return true;
     }
 }
