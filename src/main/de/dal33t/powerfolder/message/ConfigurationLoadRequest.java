@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.message;
 
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message to force the client to reload the config from a given URL.
@@ -39,7 +38,6 @@ public class ConfigurationLoadRequest extends Message {
         boolean restartRequired)
     {
         super();
-        Reject.ifBlank(configURL, "Config URL");
         this.configURL = configURL;
         this.replaceExisting = replaceExisting;
         this.restartRequired = restartRequired;
