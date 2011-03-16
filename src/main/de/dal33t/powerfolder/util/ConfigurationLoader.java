@@ -107,7 +107,9 @@ public class ConfigurationLoader {
         if (!finalURL.startsWith("http")) {
             finalURL = "http://" + finalURL;
         }
-        if (!finalURL.endsWith(".config")) {
+        if (!finalURL.endsWith(".config")
+            && !finalURL.contains(CLIENT_PROPERTIES_URI))
+        {
             finalURL += CLIENT_PROPERTIES_URI;
         }
         return loadPreConfiguration(new URL(finalURL));
