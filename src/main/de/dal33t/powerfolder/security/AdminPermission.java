@@ -27,12 +27,7 @@ package de.dal33t.powerfolder.security;
  */
 public class AdminPermission extends SingeltonPermission {
     private static final long serialVersionUID = 100L;
-
     public static final AdminPermission INSTANCE = new AdminPermission();
-
-    private AdminPermission() {
-        super();
-    }
 
     public boolean implies(Permission impliedPermision) {
         // ADMIN, All permissions implied except SystemSettings
@@ -40,9 +35,5 @@ public class AdminPermission extends SingeltonPermission {
             return false;
         }
         return true;
-    }
-
-    public String toString() {
-        return getClass().getSimpleName();
     }
 }
