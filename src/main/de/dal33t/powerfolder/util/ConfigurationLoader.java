@@ -38,9 +38,11 @@ import de.dal33t.powerfolder.Controller;
  * @version $Revision$
  */
 public class ConfigurationLoader {
-    // TODO Sync with MaintenanceFolder.CLIENT_CONFIG_FILENAME
+    // TODO Sync with MaintenanceFolder.DEFAULT_CONFIG_FILENAME
     // TODO #2025
-    private static final String CLIENT_PROPERTIES_URI = "/client_deployment/Client.config";
+    public static final String DEFAULT_CONFIG_FILENAME = "Default.config";
+    private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
+        + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
     private static final int URL_CONNECT_TIMEOUT_SECONDS = 15;
 
@@ -108,9 +110,9 @@ public class ConfigurationLoader {
             finalURL = "http://" + finalURL;
         }
         if (!finalURL.endsWith(".config")
-            && !finalURL.contains(CLIENT_PROPERTIES_URI))
+            && !finalURL.contains(DEFAULT_PROPERTIES_URI))
         {
-            finalURL += CLIENT_PROPERTIES_URI;
+            finalURL += DEFAULT_PROPERTIES_URI;
         }
         return loadPreConfiguration(new URL(finalURL));
     }
