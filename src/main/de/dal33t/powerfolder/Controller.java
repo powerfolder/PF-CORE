@@ -102,6 +102,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
+import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -2145,7 +2146,7 @@ public class Controller extends PFComponent {
             int exitOption = 0;
             options = new Object[]{Translation
                 .getTranslation("dialog.already_running.exit_button")};
-            if (isVerbose()) {
+            if (verbose) {
                 options = new Object[]{
                     Translation
                         .getTranslation("dialog.already_running.start_button"),
@@ -2428,6 +2429,8 @@ public class Controller extends PFComponent {
      * @return true if the invitation was accepted.
      */
     public boolean autoAcceptInvitation(Invitation invitation) {
+
+        // Is the local base valid?
         File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
         if (suggestedLocalBase == null) {
             logInfo("Can not autoAccept " + invitation + " because no suggested local base.");
@@ -2436,7 +2439,24 @@ public class Controller extends PFComponent {
             logInfo("Can not autoAccept " + invitation + " because suggested local base already exists.");
             return false;
         }
-        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase, 
+
+        // Is this invitation from a friend?
+        boolean invitorIsFriend = false;
+        MemberInfo memberInfo = invitation.getInvitor();
+        if (memberInfo != null) {
+            Member node = nodeManager.getNode(memberInfo);
+            if (node != null) {
+                invitorIsFriend = nodeManager.isFriend(node);
+            }
+        }
+        if (!invitorIsFriend) {
+            logInfo("Not autoAccepting " + invitation + " because " + memberInfo + " is not a friend.");
+            return false;
+        }
+
+        logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
+
+        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
                 invitation.getSuggestedSyncProfile(), false,
                 ArchiveMode.FULL_BACKUP, 5);
         folderRepository.createFolder(invitation.folder, folderSettings);
