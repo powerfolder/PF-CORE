@@ -25,11 +25,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 
 /**
  * Helper class around configuration
@@ -50,6 +52,67 @@ public class ConfigurationLoader {
     private ConfigurationLoader() {
     }
 
+    public static boolean overwriteConfigEntries(Properties p) {
+        boolean overWrite = Boolean
+            .valueOf(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+                .getDefaultValue());
+        String owStr = p.getProperty(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
+            .getConfigKey());
+        try {
+            overWrite = Boolean.parseBoolean(owStr);
+        } catch (Exception e) {
+            LOG.warning("Unable to parse pre-config overwrite value. Problem value: "
+                + owStr + ". Now using: " + overWrite + ". " + e);
+        }
+        return overWrite;
+    }
+
+    /**
+     * Processes/Handles a configuration (re-) load request.
+     * 
+     * @param controller
+     * @param clr
+     */
+    public static void processMessage(Controller controller,
+        ConfigurationLoadRequest clr)
+    {
+        Reject.ifNull(controller, "Controller");
+        Reject.ifNull(clr, "Message");
+        try {
+            LOG.info("Processing message: " + clr);
+            if (StringUtils.isNotBlank(clr.getConfigURL())) {
+                Properties preConfig = ConfigurationLoader
+                    .loadPreConfiguration(clr.getConfigURL());
+                if (preConfig != null) {
+                    boolean overwrite;
+                    if (clr.isReplaceExisting() != null) {
+                        overwrite = clr.isReplaceExisting();
+                    } else {
+                        overwrite = overwriteConfigEntries(preConfig);
+                    }
+                    int i = ConfigurationLoader.merge(preConfig,
+                        controller.getConfig(), controller.getPreferences(),
+                        overwrite);
+                    LOG.log(Level.WARNING, "Loaded/Merged " + i
+                        + " config/prefs entries from: " + clr.getConfigURL());
+                    ConfigurationEntry.CONFIG_URL.setValue(controller,
+                        clr.getConfigURL());
+                    // Seems to be valid, store.
+                    controller.saveConfig();
+                } else {
+                    LOG.log(Level.WARNING,
+                        "Unable to load config from " + clr.getConfigURL());
+                }
+            }
+            if (clr.isRestartRequired()) {
+                controller.shutdownAndRequestRestart();
+            }
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Unable to reload configuration: " + clr
+                + ". " + e, e);
+        }
+    }
+
     /**
      * #2179 Loads the the config from the server and merges it with the
      * controllers config.
@@ -65,18 +128,7 @@ public class ConfigurationLoader {
         }
         try {
             Properties serverConfig = loadPreConfiguration(configURL);
-            boolean overWrite = Boolean
-                .valueOf(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
-                    .getDefaultValue());
-            String owStr = serverConfig
-                .getProperty(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
-                    .getConfigKey());
-            try {
-                overWrite = Boolean.parseBoolean(owStr);
-            } catch (Exception e) {
-                LOG.warning("Unable to parse config from server: " + configURL
-                    + ". Overwrite str: " + owStr + ". " + e);
-            }
+            boolean overWrite = overwriteConfigEntries(serverConfig);
             int i = merge(serverConfig, controller.getConfig(),
                 controller.getPreferences(), overWrite);
             LOG.warning("Loaded " + i + " settings (overwrite? " + overWrite
@@ -112,7 +164,7 @@ public class ConfigurationLoader {
         {
             finalURL += DEFAULT_PROPERTIES_URI;
         }
-        return loadPreConfiguration(new URL(finalURL));
+        return loadPreConfiguration(new URL(finalURL.replace(" ", "%20")));
     }
 
     /**

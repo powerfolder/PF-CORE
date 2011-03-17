@@ -122,18 +122,8 @@ public abstract class AbstractDistribution extends Loggable implements
             if (replaceExisting != null) {
                 overWrite = replaceExisting;
             } else {
-                overWrite = Boolean
-                    .valueOf(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
-                        .getDefaultValue());
-                String owStr = preConfig
-                    .getProperty(ConfigurationEntry.CONFIG_OVERWRITE_VALUES
-                        .getConfigKey());
-                try {
-                    overWrite = Boolean.parseBoolean(owStr);
-                } catch (Exception e) {
-                    logWarning("Unable to parse pre-config overwrite value. Problem value: "
-                        + owStr + ". Now using: " + overWrite + ". " + e);
-                }
+                overWrite = ConfigurationLoader
+                    .overwriteConfigEntries(preConfig);
             }
             int n = ConfigurationLoader.merge(preConfig,
                 controller.getConfig(), controller.getPreferences(), overWrite);

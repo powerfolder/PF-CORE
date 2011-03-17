@@ -1097,16 +1097,21 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().getMySelf().isServer()) {
             return;
         }
+
+        Collection<FolderInfo> created = createLocalFolders(a);
+
         if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
             .getValueBoolean(getController()))
         {
-            removeLocalFolders(a);
+            removeLocalFolders(a, created);
         }
-        createLocalFolders(a);
     }
 
-    private void removeLocalFolders(Account a) {
+    private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
         for (Folder folder : getFolders()) {
+            if (skip.contains(folder.getInfo())) {
+                continue;
+            }
             if (!a.hasReadPermissions(folder.getInfo())
                 && getController().getOSClient().isConnected())
             {
@@ -1117,10 +1122,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private synchronized void createLocalFolders(Account a) {
+    private synchronized Collection<FolderInfo> createLocalFolders(Account a) {
         if (!a.isValid()) {
-            return;
+            return Collections.emptyList();
         }
+        Collection<FolderInfo> folders = new ArrayList<FolderInfo>();
         for (Iterator<String> it = onLoginFolderEntryIds.iterator(); it
             .hasNext();)
         {
@@ -1154,7 +1160,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Remove from pending entries.
             it.remove();
+            folders.add(foInfo);
         }
+        return folders;
     }
 
     // Event support **********************************************************
