@@ -20,8 +20,11 @@
 package de.dal33t.powerfolder.disk;
 
 import java.io.File;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -217,6 +220,13 @@ public class FolderSettings {
         return commitDir;
     }
 
+    /**
+     * @return the original config entry basedir. May contain placeholder
+     */
+    public String getLocalBaseDirString() {
+        return localBaseDirStr;
+    }
+
     public SyncProfile getSyncProfile() {
         return syncProfile;
     }
@@ -253,9 +263,79 @@ public class FolderSettings {
         return configEntryId;
     }
 
+    /**
+     * @param properties
+     * @param entryId
+     * @return
+     */
+    public static String loadFolderName(Properties properties, String entryId) {
+        Reject.ifBlank(entryId, "EntryId");
+        return properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+            + FOLDER_SETTINGS_NAME);
+    }
+
+    /**
+     * @param properties
+     *            the config properties
+     * @return all entry ids as set.
+     */
+    public static Set<String> loadEntryIds(Properties properties) {
+        // Find all folder names.
+        Set<String> entryIds = new TreeSet<String>();
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> en = (Enumeration<String>) properties
+            .propertyNames(); en.hasMoreElements();)
+        {
+            String propName = en.nextElement();
+            // Look for a f.<entryId>.XXXX
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
+                int firstDot = propName.indexOf('.');
+                int secondDot = propName.indexOf('.', firstDot + 1);
+
+                if (firstDot > 0 && secondDot > 0
+                    && secondDot < propName.length())
+                {
+                    String entryId = propName
+                        .substring(firstDot + 1, secondDot);
+                    entryIds.add(entryId);
+                }
+            }
+        }
+        return entryIds;
+    }
+
+    /**
+     * Expect something like 'f.c70001efd21928644ee14e327aa94724' or
+     * 'f.TEST-Contacts' to remove config entries beginning with these.
+     */
+    public static void removeEntries(Properties p, String entryId) {
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> en = (Enumeration<String>) p.propertyNames(); en
+            .hasMoreElements();)
+        {
+            String propName = en.nextElement();
+
+            // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
+            // from also deleting things like 'f.TEST.XXXXX'.
+            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + entryId + '.'))
+            {
+                p.remove(propName);
+            }
+        }
+    }
+
     public static FolderSettings load(Controller c, String entryId) {
-        Properties config = c.getConfig();
-        String folderDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+            .getValueInt(c);
+        return load(c.getConfig(), entryId, defaultVersions);
+    }
+
+    public static FolderSettings load(Properties properties, String entryId,
+        int fallbackDefaultVersions)
+    {
+        Reject.ifNull(properties, "Config");
+        Reject.ifBlank(entryId, "Entry Id");
+        String folderDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DIR);
 
         File folderDir = translateFolderDir(folderDirStr);
@@ -264,14 +344,15 @@ public class FolderSettings {
         }
 
         File commitDir = null;
-        String commitDirStr = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+        String commitDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
             commitDir = translateFolderDir(commitDirStr);
         }
 
-        String syncProfConfig = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_SYNC_PROFILE);
+        String syncProfConfig = properties
+            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_SYNC_PROFILE);
 
         // Migration for #603
         if ("autodownload_friends".equals(syncProfConfig)) {
@@ -300,48 +381,48 @@ public class FolderSettings {
             // Load profile from field list.
             syncProfile = SyncProfile.getSyncProfileByFieldList(syncProfConfig);
         }
-        int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
-            .getValueInt(c);
 
-        String archiveSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_ARCHIVE);
+        String archiveSetting = properties
+            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_ARCHIVE);
         ArchiveMode archiveMode;
         try {
             if (archiveSetting != null) {
                 archiveMode = ArchiveMode.valueOf(archiveSetting);
             } else {
                 LOG.log(Level.WARNING, "ArchiveMode not set: " + archiveSetting
-                    + ", falling back to DEFAULT: " + defaultVersions);
+                    + ", falling back to DEFAULT: " + fallbackDefaultVersions);
                 archiveMode = ArchiveMode.FULL_BACKUP;
             }
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
-                + ", falling back to DEFAULT: " + defaultVersions);
+                + ", falling back to DEFAULT: " + fallbackDefaultVersions);
             LOG.log(Level.FINE, e.toString(), e);
             archiveMode = ArchiveMode.FULL_BACKUP;
         }
 
-        String ver = config.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+        String ver = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_VERSIONS);
         int versions;
         if (ver != null && ver.length() > 0) {
             versions = Integer.valueOf(ver);
         } else {
             // Take default as fallback.
-            versions = defaultVersions;
+            versions = fallbackDefaultVersions;
             LOG.fine("Unable to find archive settings for " + entryId
                 + ". Using default: " + versions);
         }
 
-        String previewSetting = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
-            + entryId + FOLDER_SETTINGS_PREVIEW);
+        String previewSetting = properties
+            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_PREVIEW);
         boolean preview = previewSetting != null
             && "true".equalsIgnoreCase(previewSetting);
 
-        String dlScript = config.getProperty(FOLDER_SETTINGS_PREFIX_V4
+        String dlScript = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DOWNLOAD_SCRIPT);
 
-        String syncPatternsSetting = config
+        String syncPatternsSetting = properties
             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
                 + FOLDER_SETTINGS_SYNC_PATTERNS);
         // Default syncPatterns to true.

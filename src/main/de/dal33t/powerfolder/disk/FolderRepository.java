@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.disk;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_NAME;
 import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V4;
 
 import java.io.File;
@@ -29,14 +28,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -276,29 +273,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void processV4Format() {
         final Properties config = getController().getConfig();
 
-        // Find all folder names.
-        Set<String> entryIds = new TreeSet<String>();
-
-        for (@SuppressWarnings("unchecked")
-        Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en
-            .hasMoreElements();)
-        {
-            String propName = en.nextElement();
-
-            // Look for a f.<entryId>.XXXX
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4)) {
-                int firstDot = propName.indexOf('.');
-                int secondDot = propName.indexOf('.', firstDot + 1);
-
-                if (firstDot > 0 && secondDot > 0
-                    && secondDot < propName.length())
-                {
-                    String entryId = propName
-                        .substring(firstDot + 1, secondDot);
-                    entryIds.add(entryId);
-                }
-            }
-        }
+        // Find all folder entries.
+        Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
         // Load on all processor
         int loaders = Math.min(Runtime.getRuntime().availableProcessors(), 8);
@@ -324,9 +300,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                             removeConfigEntries(folderEntryId);
                             return;
                         }
-                        String folderName = config
-                            .getProperty(FOLDER_SETTINGS_PREFIX_V4
-                                + folderEntryId + FOLDER_SETTINGS_NAME);
+                        String folderName = FolderSettings.loadFolderName(
+                            getController().getConfig(), folderEntryId);
                         if (StringUtils.isBlank(folderName)) {
                             logWarning("Foldername not found."
                                 + "Removed illegal folder config entry: "
@@ -1152,9 +1127,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             String folderEntryId = it.next();
             FolderSettings settings = FolderSettings.load(getController(),
                 folderEntryId);
-            String folderName = getController().getConfig().getProperty(
-                FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
-                    + FOLDER_SETTINGS_NAME);
+            String folderName = FolderSettings.loadFolderName(getController()
+                .getConfig(), folderEntryId);
             FolderInfo foInfo = null;
             for (FolderInfo candidate : a.getFolders()) {
                 if (candidate.getName().equals(folderName)) {
@@ -1216,28 +1190,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             listener);
     }
 
-    /**
-     * Expect something like 'f.c70001efd21928644ee14e327aa94724' or
-     * 'f.TEST-Contacts' to remove config entries beginning with these.
-     * 
-     * @param prefix
-     */
     private void removeConfigEntries(String folderEntryId) {
         Properties config = getController().getConfig();
-        for (@SuppressWarnings("unchecked")
-        Enumeration<String> en = (Enumeration<String>) config.propertyNames(); en
-            .hasMoreElements();)
-        {
-            String propName = en.nextElement();
-
-            // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
-            // from also deleting things like 'f.TEST.XXXXX'.
-            if (propName.startsWith(FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
-                + '.'))
-            {
-                config.remove(propName);
-            }
-        }
+        FolderSettings.removeEntries(config, folderEntryId);
     }
 
     private final class OldSyncWarningCheckTask implements Runnable {
