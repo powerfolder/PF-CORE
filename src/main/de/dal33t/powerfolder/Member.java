@@ -1757,31 +1757,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof ConfigurationLoadRequest) {
                 if (isServer()) {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
-                    try {
-                        logInfo("Processing message: " + clr);
-                        if (StringUtils.isNotBlank(clr.getConfigURL())) {
-                            ConfigurationEntry.CONFIG_URL.setValue(
-                                getController(), clr.getConfigURL());
-
-                            Properties preConfig = ConfigurationLoader
-                                .loadPreConfiguration(clr.getConfigURL());
-                            int i = ConfigurationLoader.merge(preConfig,
-                                getController().getConfig(), getController()
-                                    .getPreferences(), clr.isReplaceExisting());
-
-                            logInfo("Loaded/Merged " + i
-                                + " config/prefs entries from: "
-                                + clr.getConfigURL());
-                            // Seems to be valid, store.
-                            getController().saveConfig();
-                        }
-                        if (clr.isRestartRequired()) {
-                            getController().shutdownAndRequestRestart();
-                        }
-                    } catch (IOException e) {
-                        logSevere("Unable to reload configuration: " + clr
-                            + ". " + e, e);
-                    }
+                    ConfigurationLoader.processMessage(getController(), clr);
                 } else {
                     logWarning("Ingnoring reload config request from non server: "
                         + message);
@@ -2439,7 +2415,8 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     @Override
     public String getLoggerName() {
-        return "Computer '" + getNick() + '\'' + (isSupernode() ? " (s)" : "");
+        return super.getLoggerName() + " '" + getNick() + '\''
+            + (isSupernode() ? " (s)" : "");
     }
 
     /*
