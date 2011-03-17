@@ -600,7 +600,7 @@ public class NodeManager extends PFComponent {
      * @return the list of friends
      */
     public Member[] getFriends() {
-        return friends.values().toArray(new Member[0]);
+        return friends.values().toArray(new Member[friends.values().size()]);
     }
 
     /**
