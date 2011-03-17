@@ -38,8 +38,6 @@ import de.dal33t.powerfolder.Controller;
  * @version $Revision$
  */
 public class ConfigurationLoader {
-    // TODO Sync with MaintenanceFolder.DEFAULT_CONFIG_FILENAME
-    // TODO #2025
     public static final String DEFAULT_CONFIG_FILENAME = "Default.config";
     private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
         + DEFAULT_CONFIG_FILENAME;
