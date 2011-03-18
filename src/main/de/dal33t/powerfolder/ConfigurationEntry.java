@@ -246,6 +246,11 @@ public enum ConfigurationEntry {
      * If this URL should override all previously set or default values.
      */
     CONFIG_OVERWRITE_VALUES("config.overwrite", false),
+    
+    /**
+     * If all folder settings should be dropped when this config is loaded
+     */
+    CONFIG_DROP_FOLDER_SETTINGS("config.drop.folders.settings", false),
 
     /**
      * http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt

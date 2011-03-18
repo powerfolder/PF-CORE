@@ -25,12 +25,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 
 /**
@@ -67,6 +69,22 @@ public class ConfigurationLoader {
         return overWrite;
     }
 
+    private static boolean dropFolderSettings(Properties p) {
+        boolean drop = Boolean
+            .valueOf(ConfigurationEntry.CONFIG_DROP_FOLDER_SETTINGS
+                .getDefaultValue());
+        String owStr = p
+            .getProperty(ConfigurationEntry.CONFIG_DROP_FOLDER_SETTINGS
+                .getConfigKey());
+        try {
+            drop = Boolean.parseBoolean(owStr);
+        } catch (Exception e) {
+            LOG.warning("Unable to parse pre-config drop folders settings value. Problem value: "
+                + owStr + ". Now using: " + drop + ". " + e);
+        }
+        return drop;
+    }
+
     /**
      * Processes/Handles a configuration (re-) load request.
      * 
@@ -89,6 +107,14 @@ public class ConfigurationLoader {
                         overwrite = clr.isReplaceExisting();
                     } else {
                         overwrite = overwriteConfigEntries(preConfig);
+                    }
+                    if (dropFolderSettings(preConfig)) {
+                        Set<String> entryIds = FolderSettings
+                            .loadEntryIds(controller.getConfig());
+                        for (String entryId : entryIds) {
+                            FolderSettings.removeEntries(
+                                controller.getConfig(), entryId);
+                        }
                     }
                     int i = ConfigurationLoader.merge(preConfig,
                         controller.getConfig(), controller.getPreferences(),
@@ -129,6 +155,14 @@ public class ConfigurationLoader {
         try {
             Properties serverConfig = loadPreConfiguration(configURL);
             boolean overWrite = overwriteConfigEntries(serverConfig);
+            if (dropFolderSettings(serverConfig)) {
+                Set<String> entryIds = FolderSettings.loadEntryIds(controller
+                    .getConfig());
+                for (String entryId : entryIds) {
+                    FolderSettings.removeEntries(controller.getConfig(),
+                        entryId);
+                }
+            }
             int i = merge(serverConfig, controller.getConfig(),
                 controller.getPreferences(), overWrite);
             LOG.warning("Loaded " + i + " settings (overwrite? " + overWrite

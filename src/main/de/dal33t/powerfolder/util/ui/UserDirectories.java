@@ -191,16 +191,13 @@ public class UserDirectories {
             false);
         addTargetDirectory(userHome, USER_DIR_DESKTOP, "user.dir.desktop",
             false);
-        addTargetDirectory(userHome, USER_DIR_DOCUMENTS, "user.dir.documents",
-            false);
+
         addTargetDirectory(userHome, USER_DIR_EVOLUTION, "user.dir.evolution",
             true);
         addTargetDirectory(userHome, USER_DIR_FAVORITES, "user.dir.favorites",
             false);
         addTargetDirectory(userHome, USER_DIR_LINKS, "user.dir.links", false);
-        addTargetDirectory(userHome, USER_DIR_MUSIC, "user.dir.music", false);
         addTargetDirectory(userHome, USER_DIR_MOVIES, "user.dir.movies", false);
-        addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos", false);
         addTargetDirectory(userHome, USER_DIR_DOWNLOADS, "user.dir.downloads",
             false);
         addTargetDirectory(userHome, USER_DIR_PUBLIC, "user.dir.public", false);
@@ -208,32 +205,55 @@ public class UserDirectories {
         addTargetDirectory(userHome, USER_DIR_DROPBOX, "user.dir.dropbox",
             false);
 
-        // Hidden by Vista.
-        if (!OSUtil.isWindowsVistaSystem() && !OSUtil.isWindows7System()) {
+        boolean foundDocuments = false;
+        boolean foundMusic = false;
+        boolean foundPictures = false;
+        boolean foundVideos = false;
+        // Hidden by Vista and 7
+        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()
+            && !OSUtil.isWindows7System())
+        {
             if (USER_DIR_MY_DOCUMENTS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                addTargetDirectory(new File(USER_DIR_MY_DOCUMENTS),
-                    "user.dir.my_documents", false, "user.dir.documents");
+                foundDocuments = addTargetDirectory(new File(
+                    USER_DIR_MY_DOCUMENTS), "user.dir.my_documents", false,
+                    "user.dir.documents");
             }
             if (USER_DIR_MY_MUSIC != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                addTargetDirectory(new File(USER_DIR_MY_MUSIC),
+                foundMusic = addTargetDirectory(new File(USER_DIR_MY_MUSIC),
                     "user.dir.my_music", false, "user.dir.music");
             }
             if (USER_DIR_MY_PICTURES != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                addTargetDirectory(new File(USER_DIR_MY_PICTURES),
-                    "user.dir.my_pictures", false, "user.dir.pictures");
+                foundPictures = addTargetDirectory(new File(
+                    USER_DIR_MY_PICTURES), "user.dir.my_pictures", false,
+                    "user.dir.pictures");
             }
             if (USER_DIR_MY_VIDEOS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
+                foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
                     "user.dir.my_videos", false, "user.dir.videos");
             }
         }
 
-        addTargetDirectory(userHome, USER_DIR_PICTURES, "user.dir.pictures",
-            false);
+        if (!foundDocuments) {
+            addTargetDirectory(userHome, USER_DIR_DOCUMENTS,
+                "user.dir.documents", false);
+        }
+        if (!foundMusic) {
+            addTargetDirectory(userHome, USER_DIR_MUSIC, "user.dir.music",
+                false);
+        }
+        if (!foundPictures) {
+            addTargetDirectory(userHome, USER_DIR_PICTURES,
+                "user.dir.pictures", false);
+        }
+        if (!foundVideos) {
+            addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos",
+                false);
+        }
+
         addTargetDirectory(userHome, USER_DIR_RECENT_DOCUMENTS,
             "user.dir.recent_documents", false);
         addTargetDirectory(userHome, USER_DIR_VIDEOS, "user.dir.videos", false);
@@ -316,27 +336,24 @@ public class UserDirectories {
     private static void addTargetDirectory(File directory,
         String translationId, boolean allowHidden)
     {
-        String translation = Translation.getTranslation(translationId);
-        String placeholder = '$' + translationId;
-        addTargetDirectory(directory, translation, allowHidden, placeholder);
+        addTargetDirectory(directory, translationId, allowHidden, translationId);
     }
 
     /**
      * Adds a generic user directory if if exists for this os.
-     * 
-     * @param translation
-     * @param allowHidden
-     *            allow display of hidden dirs
      */
-    private static void addTargetDirectory(File directory, String translation,
-        boolean allowHidden, String placeholder)
+    private static boolean addTargetDirectory(File directory,
+        String translationId, boolean allowHidden, String placeholder)
     {
         if (directory.exists() && directory.isDirectory()
             && (allowHidden || !directory.isHidden()))
         {
-            UserDirectory userDir = new UserDirectory(translation, placeholder,
-                directory);
+            String translation = Translation.getTranslation(translationId);
+            UserDirectory userDir = new UserDirectory(translation,
+                '$' + placeholder, directory);
             userDirectories.put(translation, userDir);
+            return true;
         }
+        return false;
     }
 }

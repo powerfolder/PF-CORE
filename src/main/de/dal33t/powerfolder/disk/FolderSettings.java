@@ -327,18 +327,18 @@ public class FolderSettings {
     public static FolderSettings load(Controller c, String entryId) {
         int defaultVersions = ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
             .getValueInt(c);
-        return load(c.getConfig(), entryId, defaultVersions);
+        return load(c.getConfig(), entryId, defaultVersions, true);
     }
 
     public static FolderSettings load(Properties properties, String entryId,
-        int fallbackDefaultVersions)
+        int fallbackDefaultVersions, boolean verify)
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
         String folderDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_DIR);
 
-        File folderDir = translateFolderDir(folderDirStr);
+        File folderDir = translateFolderDir(folderDirStr, verify);
         if (folderDir == null) {
             return null;
         }
@@ -347,7 +347,7 @@ public class FolderSettings {
         String commitDirStr = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4
             + entryId + FOLDER_SETTINGS_COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
-            commitDir = translateFolderDir(commitDirStr);
+            commitDir = translateFolderDir(commitDirStr, verify);
         }
 
         String syncProfConfig = properties
@@ -385,20 +385,26 @@ public class FolderSettings {
         String archiveSetting = properties
             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
                 + FOLDER_SETTINGS_ARCHIVE);
-        ArchiveMode archiveMode;
+        ArchiveMode archiveMode = null;
         try {
             if (archiveSetting != null) {
                 archiveMode = ArchiveMode.valueOf(archiveSetting);
             } else {
-                LOG.log(Level.WARNING, "ArchiveMode not set: " + archiveSetting
-                    + ", falling back to DEFAULT: " + fallbackDefaultVersions);
-                archiveMode = ArchiveMode.FULL_BACKUP;
+                if (verify) {
+                    LOG.log(Level.FINE, "ArchiveMode not set: "
+                        + archiveSetting + ", falling back to DEFAULT: "
+                        + fallbackDefaultVersions);
+                    archiveMode = ArchiveMode.FULL_BACKUP;
+                }
             }
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Unsupported ArchiveMode: " + archiveSetting
-                + ", falling back to DEFAULT: " + fallbackDefaultVersions);
-            LOG.log(Level.FINE, e.toString(), e);
-            archiveMode = ArchiveMode.FULL_BACKUP;
+            if (verify) {
+                LOG.log(Level.WARNING, "Unsupported ArchiveMode: "
+                    + archiveSetting + ", falling back to DEFAULT: "
+                    + fallbackDefaultVersions);
+                LOG.log(Level.FINE, e.toString(), e);
+                archiveMode = ArchiveMode.FULL_BACKUP;
+            }
         }
 
         String ver = properties.getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
@@ -475,7 +481,7 @@ public class FolderSettings {
             + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
     }
 
-    private static File translateFolderDir(String str) {
+    private static File translateFolderDir(String str, boolean verify) {
         if (str == null) {
             return null;
         }
@@ -487,6 +493,7 @@ public class FolderSettings {
         try {
             Map<String, UserDirectory> dirs = UserDirectories
                 .getUserDirectories();
+            LOG.warning("Local placeholder directories: " + dirs);
             for (UserDirectory dir : dirs.values()) {
                 if (StringUtils.isBlank(dir.getPlaceholder())) {
                     continue;
@@ -499,9 +506,18 @@ public class FolderSettings {
         } catch (Exception e) {
             LOG.warning("Unable to translate directory path: " + str + ". " + e);
         }
-        if (res.contains("$")) {
-            LOG.severe("Directory path still contains placeholders: " + res);
+        if (verify) {
+            if (res.contains("$user.dir.") || res.contains("$apps.dir.")) {
+                LOG.warning("Local directory for placeholders not found: "
+                    + res);
+                return null;
+            }
+            if (res.contains("$")) {
+                LOG.warning("Directory path may still contain placeholders: "
+                    + res);
+            }
         }
+
         return new File(res);
     }
 }

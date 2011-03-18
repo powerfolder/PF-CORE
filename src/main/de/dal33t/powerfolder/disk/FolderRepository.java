@@ -1135,6 +1135,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folderEntryId);
             String folderName = FolderSettings.loadFolderName(getController()
                 .getConfig(), folderEntryId);
+            if (settings == null) {
+                String folderDirStr = getController().getConfig().getProperty(
+                    FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
+                        + FolderSettings.FOLDER_SETTINGS_DIR);
+                logWarning("Not setting up folder " + folderName + " / "
+                    + folderEntryId + " local base dir not found: "
+                    + folderDirStr);
+                continue;
+            }
             FolderInfo foInfo = null;
             for (FolderInfo candidate : a.getFolders()) {
                 if (candidate.getName().equals(folderName)) {
@@ -1152,12 +1161,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 foInfo = new FolderInfo(folderName,
                     '[' + IdGenerator.makeId() + ']');
                 createFolder(foInfo, settings);
-                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                    foInfo, null);
-                getController().getTaskManager().scheduleTask(task);
                 logWarning("Folder NOT found on account " + a.getUsername()
                     + ". Created new: " + foInfo);
             }
+
+            // Make sure it is backed up by the server.
+            CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+                foInfo, null);
+            getController().getTaskManager().scheduleTask(task);
+
             // Remove from pending entries.
             it.remove();
             folders.add(foInfo);

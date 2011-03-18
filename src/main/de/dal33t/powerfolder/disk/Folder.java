@@ -3593,8 +3593,11 @@ public class Folder extends PFComponent {
 
         // #2083
         if (UserDirectories.getMyDocuments() != null) {
-            if (getLocalBase().equals(
-                new File(UserDirectories.getMyDocuments())))
+            logWarning("My documents @ " + UserDirectories.getMyDocuments());
+            logWarning("Folder @ " + getLocalBase().getAbsolutePath());
+
+            if (getLocalBase().getAbsolutePath().equals(
+                UserDirectories.getMyDocuments()))
             {
                 logWarning("Adding transition ignore patterns for My documents folder");
 
