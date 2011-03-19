@@ -154,4 +154,19 @@ public class ProUtil {
         }
         return false;
     }
+
+    /**
+     * #2219
+     */
+    public static final String rtrvePwssd(Controller controller, String input) {
+        try {
+            Class<?> c = Class.forName(Constants.PRO_LOADER_PLUGIN_CLASS);
+            Method m = c
+                .getMethod("rtrvePwssd", Controller.class, String.class);
+            return (String) m.invoke(null, controller, input);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Exception. " + e, e);
+        }
+        return null;
+    }
 }
