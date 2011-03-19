@@ -46,7 +46,7 @@ public class ConfigurationLoader {
     private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
-    private static final int URL_CONNECT_TIMEOUT_SECONDS = 15;
+    private static final int URL_CONNECT_TIMEOUT_SECONDS = 10;
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
@@ -213,6 +213,7 @@ public class ConfigurationLoader {
         Reject.ifNull(from, "URL is null");
         URLConnection con = from.openConnection();
         con.setConnectTimeout(1000 * URL_CONNECT_TIMEOUT_SECONDS);
+        con.setReadTimeout(1000 * URL_CONNECT_TIMEOUT_SECONDS);
         con.connect();
         InputStream in = con.getInputStream();
         try {
