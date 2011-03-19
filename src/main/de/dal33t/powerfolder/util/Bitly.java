@@ -34,6 +34,7 @@ public class Bitly {
             con = apiURL.openConnection();
 
             con.setConnectTimeout(REQUEST_TIMEOUT);
+            con.setReadTimeout(REQUEST_TIMEOUT);
             con.setDoOutput(true);
             con.setDoInput(true);
             con.connect();
