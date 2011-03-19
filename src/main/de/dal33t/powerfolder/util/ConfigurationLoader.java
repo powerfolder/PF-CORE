@@ -91,7 +91,7 @@ public class ConfigurationLoader {
      * @param controller
      * @param clr
      */
-    public static void processMessage(Controller controller,
+    public static void processMessage(final Controller controller,
         ConfigurationLoadRequest clr)
     {
         Reject.ifNull(controller, "Controller");
@@ -130,8 +130,16 @@ public class ConfigurationLoader {
                         "Unable to load config from " + clr.getConfigURL());
                 }
             }
-            if (clr.isRestartRequired()) {
-                controller.shutdownAndRequestRestart();
+            if (clr.isRestartRequired() && controller.isStarted()) {
+                if (controller.getUptime() < 10000L) {
+                    controller.schedule(new Runnable() {
+                        public void run() {
+                            controller.shutdownAndRequestRestart();
+                        }
+                    }, 10000L);
+                } else {
+                    controller.shutdownAndRequestRestart();
+                }
             }
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to reload configuration: " + clr
