@@ -125,7 +125,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             initComponents();
 
             String debugArea = "";
-            if (ConfigurationEntry.VERBOSE.getValueBoolean(getController())) {
+            if (getController().isVerbose()) {
                 debugArea = "pref, 3dlu, ";
             }
 
@@ -136,8 +136,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
             FormLayout mainLayout = new FormLayout(
                 "1dlu, pref, 3dlu, pref, 3dlu, pref, center:pref:grow, pref, 3dlu, "
-                    + portArea + debugArea + " pref, 3dlu, pref, 3dlu, pref, 1dlu",
-                    "pref");
+                    + portArea + debugArea
+                    + " pref, 3dlu, pref, 3dlu, pref, 1dlu", "pref");
             DefaultFormBuilder mainBuilder = new DefaultFormBuilder(mainLayout);
             mainBuilder.setBorder(Borders.createEmptyBorder("3dlu, 0, 0, 0"));
             CellConstraints cc = new CellConstraints();
@@ -190,7 +190,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
-                    getApplicationModel().getActionModel().getConnectAction()
+                    getApplicationModel()
+                        .getActionModel()
+                        .getConnectAction()
                         .actionPerformed(
                             new ActionEvent(onlineStateInfo,
                                 ActionEvent.ACTION_PERFORMED, "clicked"));
@@ -200,8 +202,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 } else if (getApplicationModel().getLicenseModel()
                     .getActivationAction() != null)
                 {
-                    getApplicationModel().getLicenseModel()
-                        .getActivationAction().actionPerformed(
+                    getApplicationModel()
+                        .getLicenseModel()
+                        .getActivationAction()
+                        .actionPerformed(
                             new ActionEvent(onlineStateInfo,
                                 ActionEvent.ACTION_PERFORMED, "clicked"));
                 }
@@ -250,6 +254,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
         openStatsChartButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenStatsChartsAction());
+        openStatsChartButton.setVisible(getController().isVerbose());
         openPreferencesButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenPreferencesAction());
         openAboutBoxButton = new JButtonMini(getApplicationModel()
@@ -257,9 +262,9 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         openDebugButton = new JButtonMini(getApplicationModel()
             .getActionModel().getOpenDebugInformationAction());
 
-        pendingMessagesButton = new JButtonMini(Icons
-            .getIconById(Icons.CHAT_PENDING), Translation
-            .getTranslation("status.chat_pending"));
+        pendingMessagesButton = new JButtonMini(
+            Icons.getIconById(Icons.CHAT_PENDING),
+            Translation.getTranslation("status.chat_pending"));
         pendingMessagesButton.addActionListener(listener);
         showPendingMessages(false);
     }
@@ -313,9 +318,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                         .showConnectivityWarning(controller);
                 }
             };
-            RunnableNotice notice = new RunnableNotice(Translation
-                .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.limited_connectivity"),
+            RunnableNotice notice = new RunnableNotice(
+                Translation.getTranslation("warning_notice.title"),
+                Translation
+                    .getTranslation("warning_notice.limited_connectivity"),
                 runnable, NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
@@ -490,10 +496,10 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
             };
 
-            RunnableNotice notice = new RunnableNotice(Translation
-                .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.poor_quality"), runnable,
-                    NoticeSeverity.WARINING);
+            RunnableNotice notice = new RunnableNotice(
+                Translation.getTranslation("warning_notice.title"),
+                Translation.getTranslation("warning_notice.poor_quality"),
+                runnable, NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
                 .getNoticesModel().addNotice(notice);
         }
@@ -511,8 +517,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         label.setIcon(icon);
-                        label.setText(String.format(format, tc
-                            .calculateCurrentKBS()));
+                        label.setText(String.format(format,
+                            tc.calculateCurrentKBS()));
                         label.setToolTipText(toolTip);
                     }
                 });
