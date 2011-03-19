@@ -478,6 +478,14 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        if (StringUtils.isBlank(un)
+            && ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
+                .getValueBoolean(getController()))
+        {
+            un = System.getProperty("user.name");
+            pw = Util.toCharArray(ProUtil.rtrvePwssd(getController(), un));
+        }
+
         if (!StringUtils.isBlank(un)) {
             return login(un, pw);
         } else {
