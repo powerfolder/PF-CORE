@@ -246,7 +246,7 @@ public enum ConfigurationEntry {
      * If this URL should override all previously set or default values.
      */
     CONFIG_OVERWRITE_VALUES("config.overwrite", false),
-    
+
     /**
      * If all folder settings should be dropped when this config is loaded
      */
@@ -282,6 +282,13 @@ public enum ConfigurationEntry {
      * Password for connection (obfuscated)
      */
     SERVER_CONNECT_PASSWORD("server.connect.passwordobf"),
+
+    /**
+     * #2219: Allow clients to login with no password. Use system property
+     * "user.name" as login username.
+     */
+    SERVER_CONNECT_NO_PASSWORD_ALLOWED("server.connect.nopassword.allowed",
+        false),
 
     // General settings *******************************************************
 
