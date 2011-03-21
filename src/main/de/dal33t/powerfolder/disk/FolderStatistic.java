@@ -360,6 +360,13 @@ public class FolderStatistic extends PFComponent {
         return "Folder statistic on '" + folder.getName() + '\'';
     }
 
+    /**
+     * @return the current statistic info.
+     */
+    public FolderStatisticInfo getCurrent() {
+        return current;
+    }
+
     public long getTotalSize() {
         return current.getTotalSize();
     }
