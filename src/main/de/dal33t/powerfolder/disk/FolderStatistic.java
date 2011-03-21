@@ -40,8 +40,11 @@ import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
 import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.ui.SimpleTimeEstimator;
 
 /**
@@ -69,9 +72,6 @@ public class FolderStatistic extends PFComponent {
     private CalculationResult current;
     private SimpleTimeEstimator estimator;
 
-    /** Map of bytes received for a file for a member. */
-    private final Map<Member, Map<FileInfo, Long>> partialSyncStatMap;
-
     /**
      * The Date of the last change to a folder file.
      */
@@ -88,9 +88,7 @@ public class FolderStatistic extends PFComponent {
     FolderStatistic(Folder folder) {
         super(folder.getController());
 
-        // Empty at start
-        partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
-        current = new CalculationResult();
+        current = new CalculationResult(folder.getInfo());
         estimator = new SimpleTimeEstimator();
         this.folder = folder;
         downloadCounter = new TransferCounter();
@@ -160,11 +158,11 @@ public class FolderStatistic extends PFComponent {
         }
         long startTime = System.currentTimeMillis();
         // clear statistics before
-        calculating = new CalculationResult();
+        calculating = new CalculationResult(folder.getInfo());
 
         Collection<Member> members = folder.getMembersAsCollection();
-        Collection<Member> membersCalulated = new ArrayList<Member>(members
-            .size());
+        Collection<Member> membersCalulated = new ArrayList<Member>(
+            members.size());
 
         // Calc member stats.
         for (Member member : members) {
@@ -179,7 +177,8 @@ public class FolderStatistic extends PFComponent {
         calculating.estimatedSyncDate = estimator.updateEstimate(calculating
             .getAverageSyncPercentage());
 
-        // Switch figures
+        // Switch figures / Take over partial sync infos.
+        calculating.partialSyncStatMap.putAll(current.partialSyncStatMap);
         current = calculating;
         calculating = null;
 
@@ -278,7 +277,8 @@ public class FolderStatistic extends PFComponent {
 
             if (inSync) {
                 // Remove partial stat for this member / file, if it exists.
-                Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);
+                Map<FileInfo, Long> memberMap = current.partialSyncStatMap
+                    .get(member);
                 if (memberMap != null) {
                     Long removedBytes = memberMap.remove(fileInfo);
                     if (removedBytes != null) {
@@ -347,11 +347,12 @@ public class FolderStatistic extends PFComponent {
             }
         }
 
-        calculating.filesCount.put(member, memberFilesCount);
-        calculating.filesCountInSync.put(member, memberFilesCountInSync);
-        calculating.sizes.put(member, memberSize);
+        calculating.filesCount.put(member.getInfo(), memberFilesCount);
+        calculating.filesCountInSync.put(member.getInfo(),
+            memberFilesCountInSync);
+        calculating.sizes.put(member.getInfo(), memberSize);
         // logWarning("put: " + member + ", sizeinSync: " + memberSizeInSync);
-        calculating.sizesInSync.put(member, memberSizeInSync);
+        calculating.sizesInSync.put(member.getInfo(), memberSizeInSync);
         return true;
     }
 
@@ -376,7 +377,7 @@ public class FolderStatistic extends PFComponent {
      * @return the number of files this member has
      */
     public int getFilesCount(Member member) {
-        Integer count = current.filesCount.get(member);
+        Integer count = current.filesCount.get(member.getInfo());
         return count != null ? count : 0;
     }
 
@@ -385,7 +386,7 @@ public class FolderStatistic extends PFComponent {
      * @return the number of files this member has in sync
      */
     public int getFilesCountInSync(Member member) {
-        Integer count = current.filesCountInSync.get(member);
+        Integer count = current.filesCountInSync.get(member.getInfo());
         return count != null ? count : 0;
     }
 
@@ -394,7 +395,7 @@ public class FolderStatistic extends PFComponent {
      * @return the members ACTUAL size of this folder.
      */
     public long getSize(Member member) {
-        Long size = current.sizes.get(member);
+        Long size = current.sizes.get(member.getInfo());
         return size != null ? size : 0;
     }
 
@@ -404,7 +405,7 @@ public class FolderStatistic extends PFComponent {
      *         version.
      */
     public long getSizeInSync(Member member) {
-        Long size = current.sizesInSync.get(member);
+        Long size = current.sizesInSync.get(member.getInfo());
         return size != null ? size : 0;
     }
 
@@ -412,7 +413,8 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer integer = current.filesCount.get(getController().getMySelf());
+        Integer integer = current.filesCount.get(getController().getMySelf()
+            .getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -423,14 +425,14 @@ public class FolderStatistic extends PFComponent {
      * @return the sync percentage of the member, -1 if unknown
      */
     public double getSyncPercentage(Member member) {
-        return current.getSyncPercentage(member);
+        return current.getSyncPercentage(member.getInfo());
     }
 
     /**
      * @return the local sync percentage.-1 if unknown.
      */
     public double getLocalSyncPercentage() {
-        return current.getSyncPercentage(getController().getMySelf());
+        return getSyncPercentage(getController().getMySelf());
     }
 
     /**
@@ -503,7 +505,7 @@ public class FolderStatistic extends PFComponent {
      * @return my ACTUAL size of this folder.
      */
     public long getLocalSize() {
-        Long size = current.sizes.get(getController().getMySelf());
+        Long size = current.sizes.get(getController().getMySelf().getInfo());
         return size != null ? size : 0;
     }
 
@@ -550,10 +552,10 @@ public class FolderStatistic extends PFComponent {
             logFiner("Partial stat for " + fileInfo.getRelativeName() + ", "
                 + member.getInfo().nick + ", " + bytesTransferred);
         }
-        Map<FileInfo, Long> memberMap = partialSyncStatMap.get(member);
+        Map<FileInfo, Long> memberMap = current.partialSyncStatMap.get(member);
         if (memberMap == null) {
             memberMap = Util.createConcurrentHashMap(4);
-            partialSyncStatMap.put(member, memberMap);
+            current.partialSyncStatMap.put(member, memberMap);
         }
         memberMap.put(fileInfo, bytesTransferred);
         if (current != null) {
@@ -679,33 +681,43 @@ public class FolderStatistic extends PFComponent {
         }
     }
 
-    private class CalculationResult {
+    private static class CalculationResult extends Loggable {
+
+        public CalculationResult(FolderInfo folder) {
+            super();
+            this.folder = folder;
+        }
+
+        private FolderInfo folder;
 
         // Total size of folder in bytes
-        public long totalSize;
+        private long totalSize;
 
         // Total number of files
-        public int totalFilesCount;
+        private int totalFilesCount;
 
         // Date at which the folder should be synchronized.
-        public Date estimatedSyncDate;
+        private Date estimatedSyncDate;
 
         // Finer values
-        public int incomingFilesCount;
+        private int incomingFilesCount;
 
-        public int analyzedFiles;
+        private int analyzedFiles;
 
         // Number of files
-        public Map<Member, Integer> filesCount = new HashMap<Member, Integer>();
+        private final Map<MemberInfo, Integer> filesCount = new HashMap<MemberInfo, Integer>();
 
         // Number of files in sync
-        public Map<Member, Integer> filesCountInSync = new HashMap<Member, Integer>();
+        private final Map<MemberInfo, Integer> filesCountInSync = new HashMap<MemberInfo, Integer>();
 
         // Size of folder per member
-        public Map<Member, Long> sizes = new HashMap<Member, Long>();
+        private final Map<MemberInfo, Long> sizes = new HashMap<MemberInfo, Long>();
 
         // Size of folder that are in sync per member
-        public Map<Member, Long> sizesInSync = new HashMap<Member, Long>();
+        private final Map<MemberInfo, Long> sizesInSync = new HashMap<MemberInfo, Long>();
+
+        /** Map of bytes received for a file for a member. */
+        private final Map<Member, Map<FileInfo, Long>> partialSyncStatMap = new ConcurrentHashMap<Member, Map<FileInfo, Long>>();
 
         /**
          * Calculate the sync percentage for a member. This is the size of files
@@ -714,8 +726,8 @@ public class FolderStatistic extends PFComponent {
          * @param member
          * @return the sync percentage for the given member
          */
-        public double getSyncPercentage(Member member) {
-            Long size = sizesInSync.get(member);
+        public double getSyncPercentage(MemberInfo memberInfo) {
+            Long size = sizesInSync.get(memberInfo);
             if (size == null) {
                 size = 0L;
             }
@@ -724,9 +736,8 @@ public class FolderStatistic extends PFComponent {
             } else if (size == 0) {
                 return 0;
             } else {
-
                 // Total up partial transfers for this member.
-                Map<FileInfo, Long> map = partialSyncStatMap.get(member);
+                Map<FileInfo, Long> map = partialSyncStatMap.get(memberInfo);
                 long partialTotal = 0;
                 if (map != null) {
                     for (FileInfo fileInfo : map.keySet()) {
@@ -741,15 +752,14 @@ public class FolderStatistic extends PFComponent {
                 // total size.
                 double sync = 100.0 * (size + partialTotal) / totalSize;
                 if (isFiner()) {
-                    logFiner("Sync for member " + member.getInfo().nick + ", "
-                        + size + " + " + partialTotal + " / " + totalSize
-                        + " = " + sync);
+                    logFiner("Sync for member " + memberInfo.nick + ", " + size
+                        + " + " + partialTotal + " / " + totalSize + " = "
+                        + sync);
                 }
 
                 if (Double.compare(sync, 100.0) > 0) {
-                    logWarning("Sync percentage > 100% - folder="
-                        + folder.getInfo().name + ", member="
-                        + member.getInfo().nick + ", sync=" + sync);
+                    logWarning("Sync percentage > 100% - folder=" + folder.name
+                        + ", member=" + memberInfo.nick + ", sync=" + sync);
                     sync = 100.0;
                 }
                 return sync;
@@ -767,13 +777,13 @@ public class FolderStatistic extends PFComponent {
                 return 100.0;
             }
             double syncSum = 0;
-            for (Member member : sizesInSync.keySet()) {
-                syncSum += getSyncPercentage(member);
+            for (MemberInfo memberInfo : sizesInSync.keySet()) {
+                syncSum += getSyncPercentage(memberInfo);
             }
             double sync = syncSum / sizesInSync.size();
             if (Double.compare(sync, 100.0) > 0) {
                 logWarning("Average sync percentage > 100% - folder="
-                    + folder.getInfo().name + ", sync=" + sync);
+                    + folder.name + ", sync=" + sync);
                 sync = 100.0;
             }
             return sync;
