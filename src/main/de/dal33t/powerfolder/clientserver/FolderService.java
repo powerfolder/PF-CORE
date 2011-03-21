@@ -26,6 +26,7 @@ import java.util.List;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -200,4 +201,15 @@ public interface FolderService {
      *         [1] = the archive size occupied by the given folders.
      */
     long[] calculateSizes(Collection<FolderInfo> foInfos);
+
+    /**
+     * Returns stats only for the known/joined folders.
+     * 
+     * @param foInfos
+     * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
+     *         s.
+     */
+    Collection<FolderStatisticInfo> getStatisticInfo(
+        Collection<FolderInfo> foInfos);
+
 }

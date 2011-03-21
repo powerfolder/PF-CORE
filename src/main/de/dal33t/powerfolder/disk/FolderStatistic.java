@@ -363,7 +363,7 @@ public class FolderStatistic extends PFComponent {
     /**
      * @return the current statistic info.
      */
-    public FolderStatisticInfo getCurrent() {
+    public FolderStatisticInfo getInfo() {
         return current;
     }
 
