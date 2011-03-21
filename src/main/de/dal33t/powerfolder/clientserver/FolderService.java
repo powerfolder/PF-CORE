@@ -192,18 +192,6 @@ public interface FolderService {
     boolean hasJoined(FolderInfo foInfo);
 
     /**
-     * @param foInfos
-     * @return the local size occupied by the given folders.
-     */
-    long calculateLocalSize(Collection<FolderInfo> foInfos);
-
-    /**
-     * @param foInfos
-     * @return the archive size occupied by the given folders.
-     */
-    long calculateArchiveSize(Collection<FolderInfo> foInfos);
-
-    /**
      * Bulk get of archive and local folders size.
      * 
      * @param foInfos
