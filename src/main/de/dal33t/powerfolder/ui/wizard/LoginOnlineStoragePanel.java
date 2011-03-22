@@ -125,7 +125,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
 
     public WizardPanel next() {
         WizardPanel loginWorkerPanel = new SwingWorkerPanel(getController(),
-            new LoginTask(), Translation
+            new LoginTask(),
+            Translation
                 .getTranslation("wizard.login_online_storage.logging_in"),
             Translation
                 .getTranslation("wizard.login_online_storage.logging_in.text"),
@@ -147,9 +148,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         builder.add(usernameField, cc.xy(3, row));
         builder.add(connectingLabel, cc.xyw(1, row, 4));
         if (client.supportsWebRegistration()) {
-            LinkLabel signupLabel = new LinkLabel(getController(), Translation
-                .getTranslation("pro.wizard.activation.register_now"), client
-                .getRegisterURL());
+            LinkLabel signupLabel = new LinkLabel(getController(),
+                Translation
+                    .getTranslation("pro.wizard.activation.register_now"),
+                client.getRegisterURL());
             signupLabel.convertToBigLabel();
             builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
         }
@@ -176,8 +178,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         if (showUseOS) {
             builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
-            LinkLabel link = new LinkLabel(getController(), Translation
-                .getTranslation("wizard.webservice.learn_more"),
+            LinkLabel link = new LinkLabel(getController(),
+                Translation.getTranslation("wizard.webservice.learn_more"),
                 ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUIComponent(), cc.xyw(1, row, 5));
             row += 2;
@@ -203,13 +205,19 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         serverInfoLabel.setText(client.getServerString());
 
         // FIXME Use separate account stores for different servers?
-        usernameLabel = new JLabel(Translation
-            .getTranslation("wizard.webservice.username"));
+        usernameLabel = new JLabel(
+            Translation.getTranslation("wizard.webservice.username"));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
-        passwordLabel = new JLabel(Translation
-            .getTranslation("wizard.webservice.password"));
+        usernameField
+            .setEditable(ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                .getValueBoolean(getController()));
+        passwordLabel = new JLabel(
+            Translation.getTranslation("wizard.webservice.password"));
         passwordField = new JPasswordField();
+        passwordField
+            .setEditable(ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                .getValueBoolean(getController()));
 
         if (client.isConnected()) {
             usernameField.setText(client.getUsername());
@@ -235,8 +243,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
         rememberPasswordBox.setOpaque(false);
         useOSBox = BasicComponentFactory.createCheckBox(
             new BooleanNotConverter(getController().getUIController()
-                .getApplicationModel().getUseOSModel()), Translation
-                .getTranslation("wizard.login_online_storage.no_os"));
+                .getApplicationModel().getUseOSModel()),
+            Translation.getTranslation("wizard.login_online_storage.no_os"));
         useOSBox.setOpaque(false);
         connectingLabel = SimpleComponentFactory.createLabel(Translation
             .getTranslation("wizard.login_online_storage.connecting"));
@@ -284,13 +292,15 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 loginOk = client.login(usernameField.getText(), pw).isValid();
                 LoginUtil.clear(pw);
                 if (!loginOk) {
-                    throw new SecurityException(Translation
-                        .getTranslation("online_storage.account_data"));
+                    throw new SecurityException(
+                        Translation
+                            .getTranslation("online_storage.account_data"));
                 }
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Problem logging in", e);
-                throw new SecurityException(e.getMessage() == null ? e
-                    .toString() : e.getMessage());
+                throw new SecurityException(e.getMessage() == null
+                    ? e.toString()
+                    : e.getMessage());
             }
         }
     }

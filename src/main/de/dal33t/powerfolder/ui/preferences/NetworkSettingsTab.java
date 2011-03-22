@@ -123,16 +123,16 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         wanSpeed = new LineSpeedSelectionPanel(true);
         wanSpeed.loadWANSelection();
         TransferManager tm = getController().getTransferManager();
-        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, tm
-            .getAllowedDownloadCPSForWAN() / 1024);
+        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
+            tm.getAllowedDownloadCPSForWAN() / 1024);
 
         lanSpeed = new LineSpeedSelectionPanel(true);
         lanSpeed.loadLANSelection();
-        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024, tm
-            .getAllowedDownloadCPSForLAN() / 1024);
+        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
+            tm.getAllowedDownloadCPSForLAN() / 1024);
 
-        silentThrottleLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.silent_throttle"));
+        silentThrottleLabel = new JLabel(
+            Translation.getTranslation("preferences.dialog.silent_throttle"));
         silentThrottleLabel.setToolTipText(Translation
             .getTranslation("preferences.dialog.silent_throttle.tooltip"));
 
@@ -148,12 +148,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         {
             smtT.put(i, new JLabel(Integer.toString(i) + '%'));
         }
-        smtT.put(silentModeThrottle.getMinimum(), new JLabel(silentModeThrottle
-            .getMinimum()
-            + "%"));
-        smtT.put(silentModeThrottle.getMaximum(), new JLabel(silentModeThrottle
-            .getMaximum()
-            + "%"));
+        smtT.put(silentModeThrottle.getMinimum(),
+            new JLabel(silentModeThrottle.getMinimum() + "%"));
+        smtT.put(silentModeThrottle.getMaximum(),
+            new JLabel(silentModeThrottle.getMaximum() + "%"));
         silentModeThrottle.setLabelTable(smtT);
 
         int smt = 25;
@@ -166,8 +164,8 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         }
         silentModeThrottle.setValue(smt);
 
-        httpProxyButton = new JButton(Translation
-            .getTranslation("general.proxy_settings"));
+        httpProxyButton = new JButton(
+            Translation.getTranslation("general.proxy_settings"));
         httpProxyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new HTTPProxySettingsDialog(getController()).open();
@@ -176,8 +174,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
         severSelector = new ServerSelectorPanel(getController());
 
-        useOnlineStorageCB = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.online_storage.text"));
+        useOnlineStorageCB = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.online_storage.text"));
         useOnlineStorageCB.setToolTipText(Translation
             .getTranslation("preferences.dialog.online_storage.tip"));
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
@@ -231,8 +230,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 1, row));
             builder.add(networkingMode, cc.xy(3, row));
 
-            if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(
-                    getController())) {
+            if (!getController().isBackupOnly()) {
                 row += 2;
                 builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
             }
@@ -248,9 +246,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 cc.xy(3, row));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.line_settings"), cc.xywh(1,
-                row, 1, 1, "default, top"));
+            builder.addLabel(
+                Translation.getTranslation("preferences.dialog.line_settings"),
+                cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(wanSpeed, cc.xy(3, row));
 
             row += 2;
@@ -260,13 +258,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed, cc.xy(3, row));
 
             row += 2;
-            builder.add(silentThrottleLabel, cc.xywh(1, row, 1, 1,
-                "default, top"));
+            builder.add(silentThrottleLabel,
+                cc.xywh(1, row, 1, 1, "default, top"));
             builder.add(silentModeThrottle, cc.xy(3, row));
 
             row += 2;
-            builder.addLabel(Translation
-                .getTranslation("preferences.dialog.server"), cc.xy(1, row));
+            builder.addLabel(
+                Translation.getTranslation("preferences.dialog.server"),
+                cc.xy(1, row));
             builder.add(severSelector.getUIComponent(), cc.xy(3, row));
 
             row += 2;
@@ -286,8 +285,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     public void save() {
 
         if (PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController())
-            ^ useOnlineStorageCB.isSelected())
+            .getValueBoolean(getController()) ^ useOnlineStorageCB.isSelected())
         {
             needsRestart = true;
         }

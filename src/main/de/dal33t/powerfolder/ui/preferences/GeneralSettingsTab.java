@@ -143,19 +143,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             checkForUpdate);
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
-            showAdvancedSettingsModel, Translation
-                .getTranslation("preferences.dialog.show_advanced"));
+            showAdvancedSettingsModel,
+            Translation.getTranslation("preferences.dialog.show_advanced"));
 
-        backupOnlyClientBox = BasicComponentFactory.createCheckBox(
-            backupOnlyClientModel, Translation
+        backupOnlyClientBox = BasicComponentFactory
+            .createCheckBox(backupOnlyClientModel, Translation
                 .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel massDeleteModel = new ValueHolder(
             ConfigurationEntry.MASS_DELETE_PROTECTION
                 .getValueBoolean(getController()));
         massDeleteBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(massDeleteModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.use_mass_delete"));
+            new BufferedValueModel(massDeleteModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.use_mass_delete"));
         massDeleteBox.addItemListener(new MassDeleteItemListener());
         massDeleteSlider = new JSlider(20, 100,
             ConfigurationEntry.MASS_DELETE_THRESHOLD
@@ -184,8 +184,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
-                startWithWindowsBox = new JCheckBox(Translation
-                    .getTranslation("preferences.dialog.start_with_windows"));
+                startWithWindowsBox = new JCheckBox(
+                    Translation
+                        .getTranslation("preferences.dialog.start_with_windows"));
                 startWithWindowsBox.setSelected(WinUtils.getInstance()
                     .isPFStartup(getController()));
             }
@@ -217,8 +218,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                 .getValueInt(getController()));
 
-        folderSyncCB = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.folder_sync_warn.use"));
+        folderSyncCB = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.folder_sync_warn.use"));
         folderSyncCB.setSelected(ConfigurationEntry.FOLDER_SYNC_USE
             .getValueBoolean(getController()));
 
@@ -239,8 +241,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         dictionary.put(30, new JLabel("30"));
         folderSyncSlider.setLabelTable(dictionary);
 
-        folderSyncLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.folder_sync_text"));
+        folderSyncLabel = new JLabel(
+            Translation.getTranslation("preferences.dialog.folder_sync_text"));
 
         folderSyncCB.addChangeListener(new FolderChangeListener());
 
@@ -264,8 +266,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.nickname")), cc.xy(1, row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.dialog.nickname")), cc.xy(1,
+                    row));
             builder.add(nickField, cc.xy(3, row));
 
             // Add info for non-windows systems
@@ -298,17 +302,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(new JLabel(Translation
-                    .getTranslation("preferences.dialog.non_windows_info"),
-                    SwingConstants.CENTER), cc.xyw(1, row, 4));
+                builder.add(
+                    new JLabel(Translation
+                        .getTranslation("preferences.dialog.non_windows_info"),
+                        SwingConstants.CENTER), cc.xyw(1, row, 4));
             }
 
             row += 2;
             builder.add(updateCheck, cc.xyw(3, row, 2));
 
-            if (!ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController()))
-            {
+            if (!getController().isBackupOnly()) {
                 row += 2;
                 builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
             }
@@ -320,9 +323,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.mass_delete_threshold")),
-                cc.xy(1, row));
+            builder
+                .add(
+                    new JLabel(
+                        Translation
+                            .getTranslation("preferences.dialog.mass_delete_threshold")),
+                    cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
@@ -332,8 +338,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         Translation
                             .getTranslation("preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
-            builder.add(archiveModeSelectorPanel.getUIComponent(), cc.xyw(3,
-                row, 2));
+            builder.add(archiveModeSelectorPanel.getUIComponent(),
+                cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(folderSyncCB, cc.xyw(3, row, 2));
@@ -392,21 +398,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         {
             needsRestart = true;
         }
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(), String
-            .valueOf(backupOnlyClientBox.isSelected()));
+        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
+            String.valueOf(backupOnlyClientBox.isSelected()));
 
         if (usePowerFolderIconBox != null) {
             // PowerFolder icon
-            ConfigurationEntry.USE_PF_ICON.setValue(getController(), Boolean
-                .toString(usePowerFolderIconBox.isSelected()));
+            ConfigurationEntry.USE_PF_ICON.setValue(getController(),
+                Boolean.toString(usePowerFolderIconBox.isSelected()));
         }
 
         if (usePowerFolderLink != null) {
             boolean newValue = usePowerFolderLink.isSelected();
             configureFavorite(newValue);
             // PowerFolder favorite
-            ConfigurationEntry.USE_PF_LINK.setValue(getController(), Boolean
-                .toString(usePowerFolderLink.isSelected()));
+            ConfigurationEntry.USE_PF_LINK.setValue(getController(),
+                Boolean.toString(usePowerFolderLink.isSelected()));
         }
 
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
@@ -418,11 +424,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             ((ArchiveMode) modeModel.getValue()).name());
         ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
             versionModel.getValue().toString());
-        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(), String
-            .valueOf(folderSyncCB.isSelected()));
+        ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(),
+            String.valueOf(folderSyncCB.isSelected()));
 
-        ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(), String
-            .valueOf(folderSyncSlider.getValue()));
+        ConfigurationEntry.FOLDER_SYNC_WARN.setValue(getController(),
+            String.valueOf(folderSyncSlider.getValue()));
 
         boolean changed = WinUtils.getInstance().isPFStartup(getController()) != startWithWindowsBox
             .isSelected();

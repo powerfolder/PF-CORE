@@ -290,6 +290,12 @@ public enum ConfigurationEntry {
     SERVER_CONNECT_NO_PASSWORD_ALLOWED("server.connect.nopassword.allowed",
         false),
 
+    /**
+     * #2229: Disallow change of login
+     */
+    SERVER_CONNECT_CHANGE_LOGIN_ALLOWED("server.connect.changelogin.allowed",
+        true),
+
     // General settings *******************************************************
 
     /**

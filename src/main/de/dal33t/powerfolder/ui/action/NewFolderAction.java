@@ -42,11 +42,11 @@ public class NewFolderAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
         getController().getUIController().getApplicationModel()
             .getServerClientModel().checkAndSetupAccount();
-        if (ConfigurationEntry.BACKUP_ONLY_CLIENT.getValueBoolean(getController())) {
-            PFWizard wizard = new PFWizard(getController(), Translation
-                .getTranslation("wizard.pfwizard.folder_title"));
+        if (getController().isBackupOnly()) {
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
             wizard.open(WhatToDoPanel.doBackupOption(getController(),
-                    wizard.getWizardContext()));
+                wizard.getWizardContext()));
         } else {
             PFWizard.openWhatToDoWizard(getController());
         }

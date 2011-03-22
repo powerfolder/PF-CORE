@@ -299,8 +299,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         if (!getController().isLanOnly()
             && PreferencesEntry.USE_ONLINE_STORAGE
                 .getValueBoolean(getController())
-            && !ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController()))
+            && !getController().isBackupOnly())
         {
             builder.add(backupByOnlineStorageBox, cc.xyw(1, row, 3));
         }
