@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -211,5 +212,13 @@ public interface FolderService {
      */
     Collection<FolderStatisticInfo> getStatisticInfo(
         Collection<FolderInfo> foInfos);
+
+    /**
+     * Returns stats for the folders from the target server of the user account.
+     * 
+     * @param accountInfo
+     * @return
+     */
+    Collection<FolderStatisticInfo> getStatisticInfo(AccountInfo accountInfo);
 
 }
