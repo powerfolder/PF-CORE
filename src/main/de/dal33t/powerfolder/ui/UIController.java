@@ -102,6 +102,7 @@ import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
@@ -389,15 +390,18 @@ public class UIController extends PFComponent {
     }
 
     public void showPromoGFX(Window parent) {
+        if (StringUtils.isBlank(ProUtil.getBuyNowURL(getController()))) {
+            return;
+        }
         try {
             ImageIcon icon = new ImageIcon(new URL(
-                    Constants.PROVIDER_CLIENT_PROMO_URL));
+                Constants.PROVIDER_CLIENT_PROMO_URL));
             if (icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
                 JLabel promoLabel = new JLabel(icon);
                 promoLabel.setSize(new Dimension(230, 230));
-                Border border = BorderFactory.createCompoundBorder(BorderFactory
-                    .createLineBorder(Color.DARK_GRAY), Borders
-                    .createEmptyBorder("15, 15, 15, 15"));
+                Border border = BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.DARK_GRAY),
+                    Borders.createEmptyBorder("15, 15, 15, 15"));
                 promoLabel.setBorder(border);
                 promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 promoLabel.addMouseListener(new MouseAdapter() {
@@ -493,24 +497,28 @@ public class UIController extends PFComponent {
                 } else if (COMMAND_SYNC_SHUTDOWN.equals(e.getActionCommand())) {
                     if (OSUtil.isLinux()) {
                         FormLayout layout = new FormLayout(
-                                "pref, pref:grow, 3dlu, pref, pref",
-                                "3dlu, pref, 3dlu, pref, 3dlu");
+                            "pref, pref:grow, 3dlu, pref, pref",
+                            "3dlu, pref, 3dlu, pref, 3dlu");
                         PanelBuilder builder = new PanelBuilder(layout);
                         CellConstraints cc = new CellConstraints();
-                        builder.add(new JLabel(Translation.getTranslation(
-                                "shutdown.message")), cc.xyw(2, 2, 3));
-                        builder.add(new JLabel(Translation.getTranslation(
-                                "shutdown.prompt")), cc.xy(2, 4));
+                        builder.add(
+                            new JLabel(Translation
+                                .getTranslation("shutdown.message")), cc.xyw(2,
+                                2, 3));
+                        builder.add(
+                            new JLabel(Translation
+                                .getTranslation("shutdown.prompt")), cc
+                                .xy(2, 4));
                         JPasswordField textField = new JPasswordField(20);
                         builder.add(textField, cc.xy(4, 4));
-                        int i = DialogFactory.genericDialog(getController(),
-                                Translation.getTranslation("shutdown.title"),
-                                builder.getPanel(), new String[]{
-                                        Translation.getTranslation(
-                                                "general.ok"),
-                                        Translation.getTranslation(
-                                                "general.cancel")}, 0,
-                                GenericDialogType.QUESTION);
+                        int i = DialogFactory.genericDialog(
+                            getController(),
+                            Translation.getTranslation("shutdown.title"),
+                            builder.getPanel(),
+                            new String[]{
+                                Translation.getTranslation("general.ok"),
+                                Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             String password = textField.getText();
                             getController().syncAndShutdown(password);
@@ -542,13 +550,13 @@ public class UIController extends PFComponent {
 
         menu.addSeparator();
 
-        Menu notificationsMenu = new Menu(Translation
-            .getTranslation("systray.notifications"));
+        Menu notificationsMenu = new Menu(
+            Translation.getTranslation("systray.notifications"));
         menu.add(notificationsMenu);
         notificationsMenu.addActionListener(systrayActionHandler);
 
-        final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(Translation
-            .getTranslation("systray.notifications.chat"));
+        final CheckboxMenuItem chatMenuItem = new CheckboxMenuItem(
+            Translation.getTranslation("systray.notifications.chat"));
         notificationsMenu.add(chatMenuItem);
         chatMenuItem.setState((Boolean) applicationModel
             .getChatNotificationsValueModel().getValue());
@@ -583,8 +591,8 @@ public class UIController extends PFComponent {
                 }
             });
 
-        sysTrayFoldersMenu = new Menu(Translation
-            .getTranslation("general.folder"));
+        sysTrayFoldersMenu = new Menu(
+            Translation.getTranslation("general.folder"));
         sysTrayFoldersMenu.setEnabled(false);
         if (OSUtil.isMacOS() || OSUtil.isWindowsSystem()) {
             menu.add(sysTrayFoldersMenu);
@@ -604,14 +612,14 @@ public class UIController extends PFComponent {
         menu.addSeparator();
 
         if (SystemUtil.isShutdownSupported()) {
-            item = menu.add(new MenuItem(Translation.getTranslation(
-                    "systray.sync_shutdown")));
+            item = menu.add(new MenuItem(Translation
+                .getTranslation("systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
 
-        item = menu.add(new MenuItem(Translation.getTranslation(
-                "systray.exit")));
+        item = menu
+            .add(new MenuItem(Translation.getTranslation("systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
@@ -764,8 +772,8 @@ public class UIController extends PFComponent {
         if (!found) {
             // Can not find one with this name - use the first one.
             activeSkin = skins[0];
-            PreferencesEntry.SKIN_NAME.setValue(getController(), activeSkin
-                .getName());
+            PreferencesEntry.SKIN_NAME.setValue(getController(),
+                activeSkin.getName());
         }
 
         Properties props = activeSkin.getIconsProperties();
@@ -775,11 +783,13 @@ public class UIController extends PFComponent {
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
-            logSevere("Failed to set look and feel for skin "
-                + activeSkin.getName(), e);
+            logSevere(
+                "Failed to set look and feel for skin " + activeSkin.getName(),
+                e);
         } catch (ParseException e) {
-            logSevere("Failed to set look and feel for skin "
-                + activeSkin.getName(), e);
+            logSevere(
+                "Failed to set look and feel for skin " + activeSkin.getName(),
+                e);
         }
     }
 
@@ -797,8 +807,10 @@ public class UIController extends PFComponent {
                 WikiLinks.MEMORY_CONFIGURATION);
             String infoText = Translation.getTranslation(
                 "low_memory.error.text", memoryConfigHelp);
-            int response = DialogFactory.genericDialog(getController(),
-                Translation.getTranslation("low_memory.error.title"), infoText,
+            int response = DialogFactory.genericDialog(
+                getController(),
+                Translation.getTranslation("low_memory.error.title"),
+                infoText,
                 new String[]{
                     Translation.getTranslation("general.ok"),
                     Translation
@@ -887,7 +899,7 @@ public class UIController extends PFComponent {
 
     /**
      * Displays the Settings information move folder dialog.
-     *
+     * 
      * @param folderInfo
      *            info of the folder to display member settings information for.
      */
@@ -1115,8 +1127,8 @@ public class UIController extends PFComponent {
 
             if (totalCPSdownKB > 1024) {
                 downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb", Format
-                        .formatDecimal(totalCPSdownKB / 1024));
+                    "systray.tooltip.down.mb",
+                    Format.formatDecimal(totalCPSdownKB / 1024));
             } else {
                 downText = Translation.getTranslation("systray.tooltip.down",
                     Format.formatDecimal(totalCPSdownKB));
@@ -1337,9 +1349,9 @@ public class UIController extends PFComponent {
             // Disabled popup of sync start.
             if (changed) {
                 String text2 = Translation.getTranslation(
-                    "check_status.powerfolders", Format
-                        .formatBytes(nTotalBytes), String.valueOf(folders
-                        .size()));
+                    "check_status.powerfolders",
+                    Format.formatBytes(nTotalBytes),
+                    String.valueOf(folders.size()));
 
                 applicationModel.getNoticesModel().handleNotice(
                     new SimpleNotificationNotice(Translation
@@ -1405,10 +1417,10 @@ public class UIController extends PFComponent {
      */
     private class MyMassDeletionHandler implements MassDeletionHandler {
         public void localMassDeletion(LocalMassDeletionEvent event) {
-            LocalDeleteNotice notice = new LocalDeleteNotice(Translation
-                .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.mass_deletion"), event
-                .getFolderInfo());
+            LocalDeleteNotice notice = new LocalDeleteNotice(
+                Translation.getTranslation("warning_notice.title"),
+                Translation.getTranslation("warning_notice.mass_deletion"),
+                event.getFolderInfo());
             applicationModel.getNoticesModel().addNotice(notice);
         }
 
@@ -1430,9 +1442,10 @@ public class UIController extends PFComponent {
                         .getName());
             }
 
-            WarningNotice notice = new WarningNotice(Translation
-                .getTranslation("warning_notice.title"), Translation
-                .getTranslation("warning_notice.mass_deletion"), message);
+            WarningNotice notice = new WarningNotice(
+                Translation.getTranslation("warning_notice.title"),
+                Translation.getTranslation("warning_notice.mass_deletion"),
+                message);
             applicationModel.getNoticesModel().addNotice(notice);
         }
     }
@@ -1440,8 +1453,9 @@ public class UIController extends PFComponent {
     private class MyInvitationHandler implements InvitationHandler {
         public void gotInvitation(Invitation invitation) {
             boolean autoAccepted = false;
-            if (ConfigurationEntry.AUTO_ACCEPT_INVITE.getValueBoolean(
-                    getController())) {
+            if (ConfigurationEntry.AUTO_ACCEPT_INVITE
+                .getValueBoolean(getController()))
+            {
 
                 // Automatically accept this invitation, if possible.
                 autoAccepted = getController().autoAcceptInvitation(invitation);
@@ -1450,11 +1464,11 @@ public class UIController extends PFComponent {
             if (!autoAccepted) {
 
                 // Let user decide what to do with the invitation.
-                Notice notice = new InvitationNotice(Translation
-                    .getTranslation("notice.invitation.title"), Translation
-                    .getTranslation("notice.invitation.summary", invitation
-                        .getInvitor().getNick(), invitation.folder.name),
-                    invitation);
+                Notice notice = new InvitationNotice(
+                    Translation.getTranslation("notice.invitation.title"),
+                    Translation.getTranslation("notice.invitation.summary",
+                        invitation.getInvitor().getNick(),
+                        invitation.folder.name), invitation);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
         }
@@ -1467,8 +1481,9 @@ public class UIController extends PFComponent {
             if (PreferencesEntry.ASK_FOR_FRIENDSHIP_ON_PRIVATE_FOLDER_JOIN
                 .getValueBoolean(getController()))
             {
-                Notice notice = new AskForFriendshipEventNotice(Translation
-                    .getTranslation("notice.ask_for_friendship.title"),
+                Notice notice = new AskForFriendshipEventNotice(
+                    Translation
+                        .getTranslation("notice.ask_for_friendship.title"),
                     Translation.getTranslation(
                         "notice.ask_for_friendship.summary", event
                             .getMemberInfo().getNick()), event);
