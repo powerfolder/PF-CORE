@@ -75,6 +75,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.TransferCounter;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -183,30 +184,31 @@ public class StatusTab extends PFUIComponent {
     private void initComponents() {
         synchronizationStatusLabel = new JLabel();
         synchronizationDateLabel = new JLabel();
-        numberOfFoldersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.folders"), Translation
-            .getTranslation("status_tab.no_folders"), false, true, null, null);
-        sizeOfFoldersLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.total", "KB"), null, true, false, null,
-            null);
-        filesAvailableLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.files_available"), null, true, true,
-            new AbstractAction() {
+        numberOfFoldersLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.folders"),
+            Translation.getTranslation("status_tab.no_folders"), false, true,
+            null, null);
+        sizeOfFoldersLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.total", "KB"), null, true,
+            false, null, null);
+        filesAvailableLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.files_available"), null,
+            true, true, new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     getUIController().getMainFrame().showFoldersTab();
                 }
             }, null);
-        newNoticesLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.unread_notices"), null, false, true,
-            getApplicationModel().getActionModel().getViewNoticesAction(),
-            Icons.getIconById(Icons.WARNING));
-        downloadsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.files_downloads"), null, false, true,
-            getApplicationModel().getActionModel()
+        newNoticesLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.unread_notices"), null,
+            false, true, getApplicationModel().getActionModel()
+                .getViewNoticesAction(), Icons.getIconById(Icons.WARNING));
+        downloadsLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.files_downloads"), null,
+            false, true, getApplicationModel().getActionModel()
                 .getOpenDownloadsInformationAction(), null);
-        uploadsLine = new StatusTabLine(getController(), Translation
-            .getTranslation("status_tab.files_uploads"), null, false, true,
-            getApplicationModel().getActionModel()
+        uploadsLine = new StatusTabLine(getController(),
+            Translation.getTranslation("status_tab.files_uploads"), null,
+            false, true, getApplicationModel().getActionModel()
                 .getOpenUploadsInformationAction(), null);
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
@@ -228,8 +230,10 @@ public class StatusTab extends PFUIComponent {
         buyNowLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("20dlu, 0, 0, 0"));
         if (!ProUtil.isRunningProVersion() && Feature.BETA.isDisabled()) {
-            updateBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
+            updateBuyNowLink(
+                Translation
+                    .getTranslation("pro.status_tab.upgrade_powerfolder"),
+                true);
         }
         tellFriendLabel = SimpleComponentFactory
             .createTellAFriendLabel(getController());
@@ -322,8 +326,9 @@ public class StatusTab extends PFUIComponent {
         builder.add(uploadsLine.getUIComponent(), cc.xy(1, row));
         row += 2;
 
-        builder.addSeparator(Translation
-            .getTranslation("status_tab.online_storage.title"), cc.xy(1, row));
+        builder.addSeparator(
+            Translation.getTranslation("status_tab.online_storage.title"),
+            cc.xy(1, row));
         row += 2;
         builder.add(onlineStorageAccountLabel.getUIComponent(), cc.xy(1, row));
         row++;
@@ -426,6 +431,9 @@ public class StatusTab extends PFUIComponent {
     }
 
     private void updateBuyNowLink(String text, boolean visible) {
+        if (StringUtils.isBlank(ProUtil.getBuyNowURL(getController()))) {
+            visible = false;
+        }
         buyNowLabel.setTextAndURL(text, ProUtil.getBuyNowURL(getController()));
         buyNowLabel.getUIComponent().setVisible(visible);
     }
@@ -480,8 +488,10 @@ public class StatusTab extends PFUIComponent {
         }
 
         if (!ProUtil.isRunningProVersion()) {
-            updateBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
+            updateBuyNowLink(
+                Translation
+                    .getTranslation("pro.status_tab.upgrade_powerfolder"),
+                true);
             return;
         }
 
@@ -492,11 +502,14 @@ public class StatusTab extends PFUIComponent {
         boolean aboutToExpire = daysValid != null && daysValid != -1
             && daysValid < 30;
         if (trial || !allowed) {
-            updateBuyNowLink(Translation
-                .getTranslation("pro.status_tab.upgrade_powerfolder"), true);
+            updateBuyNowLink(
+                Translation
+                    .getTranslation("pro.status_tab.upgrade_powerfolder"),
+                true);
         } else if (aboutToExpire) {
-            updateBuyNowLink(Translation
-                .getTranslation("pro.status_tab.renew_license"), true);
+            updateBuyNowLink(
+                Translation.getTranslation("pro.status_tab.renew_license"),
+                true);
         }
     }
 
@@ -615,8 +628,9 @@ public class StatusTab extends PFUIComponent {
         }
 
         // Show Buy now link if: Disabled OR >80%
-        updateBuyNowLink(Translation
-            .getTranslation("pro.status_tab.upgrade_powerfolder"), showBuyNow);
+        updateBuyNowLink(
+            Translation.getTranslation("pro.status_tab.upgrade_powerfolder"),
+            showBuyNow);
         // Make sure to display buy now if license is about to expire.
         updateLicenseDetails();
     }
