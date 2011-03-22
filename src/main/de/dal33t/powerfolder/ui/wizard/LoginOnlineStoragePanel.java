@@ -195,6 +195,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
      */
     @SuppressWarnings("serial")
     protected void initComponents() {
+        boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+            .getValueBoolean(getController());
         serverLabel = new JLabel(Translation.getTranslation("general.server"));
         serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
         {
@@ -203,21 +205,18 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             }
         });
         serverInfoLabel.setText(client.getServerString());
+        serverInfoLabel.setEnabled(changeLoginAllowed);
 
         // FIXME Use separate account stores for different servers?
         usernameLabel = new JLabel(
             Translation.getTranslation("wizard.webservice.username"));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
-        usernameField
-            .setEditable(ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-                .getValueBoolean(getController()));
+        usernameField.setEditable(changeLoginAllowed);
         passwordLabel = new JLabel(
             Translation.getTranslation("wizard.webservice.password"));
         passwordField = new JPasswordField();
-        passwordField
-            .setEditable(ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-                .getValueBoolean(getController()));
+        passwordField.setEditable(changeLoginAllowed);
 
         if (client.isConnected()) {
             usernameField.setText(client.getUsername());
@@ -241,6 +240,8 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
                 Translation
                     .getTranslation("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
+        rememberPasswordBox.setEnabled(changeLoginAllowed);
+
         useOSBox = BasicComponentFactory.createCheckBox(
             new BooleanNotConverter(getController().getUIController()
                 .getApplicationModel().getUseOSModel()),

@@ -41,6 +41,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -573,12 +574,20 @@ public class StatusTab extends PFUIComponent {
                                 .getTranslation("status_tab.online_storage.account_disabled.tips"));
                         showBuyNow = true;
                     } else {
-                        onlineStorageAccountLabel.setText(Translation
-                            .getTranslation(
-                                "status_tab.online_storage.account", username));
-                        onlineStorageAccountLabel
-                            .setToolTipText(Translation
-                                .getTranslation("status_tab.online_storage.account.tips"));
+                        if (ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                            .getValueBoolean(getController()))
+                        {
+                            onlineStorageAccountLabel.setText(Translation
+                                .getTranslation(
+                                    "status_tab.online_storage.account",
+                                    username));
+                            onlineStorageAccountLabel
+                                .setToolTipText(Translation
+                                    .getTranslation("status_tab.online_storage.account.tips"));
+                        } else {
+                            onlineStorageAccountLabel.setText(username);
+                            onlineStorageAccountLabel.setToolTipText("");
+                        }
                         active = true;
                     }
                 } else if (loginSuccess) {
