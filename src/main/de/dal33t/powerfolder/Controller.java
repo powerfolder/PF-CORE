@@ -119,7 +119,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.6.0 RC6"; // RC3 - 2.1.0.29
+    public static final String PROGRAM_VERSION = "4.6.1 - 2.2.0.2"; // RC8 - 2.2.0.1
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2276,8 +2276,7 @@ public class Controller extends PFComponent {
      * @param invitation
      * @param sendIfJoined
      */
-    public void invitationReceived(Invitation invitation)
-    {
+    public void invitationReceived(Invitation invitation) {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation);
         }
@@ -2422,9 +2421,9 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Automatically accept an invitation.
-     * If not able to, silently return false.
-     *
+     * Automatically accept an invitation. If not able to, silently return
+     * false.
+     * 
      * @param invitation
      * @return true if the invitation was accepted.
      */
@@ -2433,10 +2432,12 @@ public class Controller extends PFComponent {
         // Is the local base valid?
         File suggestedLocalBase = invitation.getSuggestedLocalBase(this);
         if (suggestedLocalBase == null) {
-            logInfo("Can not autoAccept " + invitation + " because no suggested local base.");
+            logInfo("Can not autoAccept " + invitation
+                + " because no suggested local base.");
             return false;
         } else if (suggestedLocalBase.exists()) {
-            logInfo("Can not autoAccept " + invitation + " because suggested local base already exists.");
+            logInfo("Can not autoAccept " + invitation
+                + " because suggested local base already exists.");
             return false;
         }
 
@@ -2450,15 +2451,16 @@ public class Controller extends PFComponent {
             }
         }
         if (!invitorIsFriend) {
-            logInfo("Not autoAccepting " + invitation + " because " + memberInfo + " is not a friend.");
+            logInfo("Not autoAccepting " + invitation + " because "
+                + memberInfo + " is not a friend.");
             return false;
         }
 
         logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
 
         FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
-                invitation.getSuggestedSyncProfile(), false,
-                ArchiveMode.FULL_BACKUP, 5);
+            invitation.getSuggestedSyncProfile(), false,
+            ArchiveMode.FULL_BACKUP, 5);
         folderRepository.createFolder(invitation.folder, folderSettings);
         return true;
     }
