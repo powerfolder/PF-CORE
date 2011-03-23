@@ -420,10 +420,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
             massDeleteSlider.getValue());
 
-        ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
-            ((ArchiveMode) modeModel.getValue()).name());
-        ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(getController(),
-            versionModel.getValue().toString());
+        try {
+            ConfigurationEntry.DEFAULT_ARCHIVE_MODE.setValue(getController(),
+                ((ArchiveMode) modeModel.getValue()).name());
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.setValue(
+                getController(), versionModel.getValue().toString());
+        } catch (Exception e) {
+            logWarning("Unable to store archive settings: " + e);
+        }
+
         ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(),
             String.valueOf(folderSyncCB.isSelected()));
 

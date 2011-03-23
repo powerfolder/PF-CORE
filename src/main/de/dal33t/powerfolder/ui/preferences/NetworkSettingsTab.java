@@ -160,7 +160,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .parseInt(ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE
                     .getValue(getController()))));
         } catch (NumberFormatException e) {
-            logWarning("silentmodethrottle" + e);
+            logWarning("silentmodethrottle: " + e);
         }
         silentModeThrottle.setValue(smt);
 
@@ -298,8 +298,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
-        ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
-            getController(), Integer.toString(silentModeThrottle.getValue()));
+        try {
+            ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
+                getController(),
+                Integer.toString(silentModeThrottle.getValue()));
+        } catch (Exception e) {
+            logSevere("Unable to set silent mode throttle: " + e);
+        }
+
         ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(
             getController(), String.valueOf(relayedConnectionBox.isSelected()));
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
