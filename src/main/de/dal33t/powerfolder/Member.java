@@ -1637,18 +1637,13 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             } else if (message instanceof RequestPart) {
                 final RequestPart pr = (RequestPart) message;
-                Runnable r = new Runnable() {
-                    public void run() {
-                        Upload up = getController().getTransferManager()
-                            .getUpload(Member.this, pr.getFile());
-                        if (up != null) { // If the upload isn't broken
-                            up.enqueuePartRequest(pr);
-                        } else {
-                            sendMessageAsynchron(new AbortUpload(pr.getFile()));
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(r);
+                Upload up = getController().getTransferManager().getUpload(
+                    Member.this, pr.getFile());
+                if (up != null) { // If the upload isn't broken
+                    up.enqueuePartRequest(pr);
+                } else {
+                    sendMessageAsynchron(new AbortUpload(pr.getFile()));
+                }
                 expectedTime = 100;
 
             } else if (message instanceof StartUpload) {
