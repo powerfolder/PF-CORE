@@ -1883,7 +1883,8 @@ public class TransferManager extends PFComponent {
 
         if (dlWasRequested) {
             if (isFiner()) {
-                logFiner("File really was requested!");
+                logFiner("File really was requested!"
+                    + download.getFile().toDetailString());
             }
             // Fire event
             fireDownloadRequested(new TransferManagerEvent(this, download));
