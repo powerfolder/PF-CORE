@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.test.util;
 
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -29,6 +30,7 @@ import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -60,7 +62,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             TEST_CONFIG_URL, false, true);
         lisaAtBart.sendMessage(r);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
                 return "Lisa started? " + getContollerLisa().isStarted();
             }
