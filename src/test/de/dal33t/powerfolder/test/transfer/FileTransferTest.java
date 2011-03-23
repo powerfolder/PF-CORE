@@ -923,20 +923,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Reconnect /Resume transfer
         connectBartAndLisa();
 
-        // Wait untill download is started
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() > 0;
-            }
-        });
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 0;
-            }
-        });
-
         assertTrue("Tempfile does exist although MD5_ERROR has been observed:"
             + tempFile, !tempFile.exists());
 
@@ -1073,8 +1059,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test has to be >= because it could happen that the download gets
         // broken before the received data is written
         assertTrue("Downloaded: " + bytesDownloaded + " filesize: "
-            + incompleteFile.length(), bytesDownloaded >= incompleteFile
-            .length());
+            + incompleteFile.length(),
+            bytesDownloaded >= incompleteFile.length());
         // System.err.println("Incomplete file: " +
         // incompleteFile.lastModified()
         // + ", size: " + incompleteFile.length());
@@ -1084,8 +1070,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             "Last modified date mismatch of orignial file and incompleted dl file",
             DateUtil.equalsFileDateCrossPlattform(bartFile.lastModified(),
                 incompleteFile.lastModified()));
-        assertEquals(bartFInfo.getModifiedDate().getTime(), incompleteFile
-            .lastModified());
+        assertEquals(bartFInfo.getModifiedDate().getTime(),
+            incompleteFile.lastModified());
 
         System.err.println("Transferred " + incompleteFile.length() + " bytes");
 
@@ -1417,12 +1403,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         assertTrue(TestHelper.compareFiles(fbart, flisa));
-        assertTrue("Expected "
-            + getFolderAtLisa().getStatistic().getDownloadCounter()
-                .getBytesTransferred() + " - " + oldByteCount + " < "
-            + fbart.length() / 2, getFolderAtLisa().getStatistic()
-            .getDownloadCounter().getBytesTransferred()
-            - oldByteCount < fbart.length() / 2);
+        assertTrue(
+            "Expected "
+                + getFolderAtLisa().getStatistic().getDownloadCounter()
+                    .getBytesTransferred() + " - " + oldByteCount + " < "
+                + fbart.length() / 2, getFolderAtLisa().getStatistic()
+                .getDownloadCounter().getBytesTransferred()
+                - oldByteCount < fbart.length() / 2);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
