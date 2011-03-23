@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
@@ -190,12 +191,8 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
-                    getApplicationModel()
-                        .getActionModel()
-                        .getConnectAction()
-                        .actionPerformed(
-                            new ActionEvent(onlineStateInfo,
-                                ActionEvent.ACTION_PERFORMED, "clicked"));
+                    PFWizard.openLoginWizard(getController(), getController()
+                        .getOSClient());
                 } else if (!ProUtil.isRunningProVersion()) {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
