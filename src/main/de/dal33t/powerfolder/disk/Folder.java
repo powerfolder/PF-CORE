@@ -117,8 +117,9 @@ public class Folder extends PFComponent {
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
 
-    public static final int TEN_MINUTES = 60 * 10;
-    public static final int ONE_MINUTE = 60;
+    private static final int TEN_MINUTES = 60 * 10;
+    private static final int ONE_MINUTE = 60;
+    private static final int TEN_SECONDS = 10;
 
     /** The base location of the folder. */
     private final File localBase;
@@ -892,11 +893,35 @@ public class Folder extends PFComponent {
             return true;
         }
         if (syncProfile.isInstantSync()) {
-            // On supportes systems, scan every ten minutes in case an instant
-            // detection got missed. On unsupported systems, scan every minue.
             long secondsSinceLastSync = (System.currentTimeMillis() - wasLastScan
                 .getTime()) / 1000;
-            int frequency = watcher.isSupported() ? TEN_MINUTES : ONE_MINUTE;
+
+            int items = getKnownItemCount();
+            // Dynamically adapt fallback scan time.
+            // The less files we have, the faster we scan.
+            // 0 files = every 10 seconds (MIN)
+            // 100 files = every minute
+            // 1.000 files = every 10 minutes (MAX)
+            // 30.000 files = every 10 minutes
+            // If folder watch is not supported max is 1 minute.
+            int frequency = (int) (60L * items / 100L);
+
+            // Min
+            if (frequency < TEN_SECONDS) {
+                frequency = TEN_SECONDS;
+            }
+            
+            // Max
+            if (watcher.isSupported()) {
+                if (frequency > TEN_MINUTES) {
+                    frequency = TEN_MINUTES;
+                }
+            } else {
+                if (frequency > ONE_MINUTE) {
+                    frequency = ONE_MINUTE;
+                }
+            }
+
             if (secondsSinceLastSync < frequency) {
                 if (isFiner()) {
                     logFiner("Skipping regular scan");
