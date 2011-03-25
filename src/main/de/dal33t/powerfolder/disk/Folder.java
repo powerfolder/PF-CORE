@@ -3593,8 +3593,8 @@ public class Folder extends PFComponent {
 
         // #2083
         if (UserDirectories.getMyDocuments() != null) {
-            logWarning("My documents @ " + UserDirectories.getMyDocuments());
-            logWarning("Folder @ " + getLocalBase().getAbsolutePath());
+            logFine("My documents @ " + UserDirectories.getMyDocuments());
+            logFine("Folder @ " + getLocalBase().getAbsolutePath());
 
             if (getLocalBase().getAbsolutePath().equals(
                 UserDirectories.getMyDocuments()))
