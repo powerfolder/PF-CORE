@@ -129,7 +129,12 @@ public enum Feature {
     /**
      * Temporary for #656 development.
      */
-    SYNC_SHUTDOWN(false);
+    SYNC_SHUTDOWN(false),
+
+    /**
+     * Temp for #2207
+     */
+    NEW_FOLDER_CANDIDATE(false);
 
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());

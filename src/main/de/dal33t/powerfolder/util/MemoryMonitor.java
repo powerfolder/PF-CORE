@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -108,7 +107,7 @@ public class MemoryMonitor implements Runnable {
             }
         }, NoticeSeverity.WARINING);
         controller.getUIController().getApplicationModel().getNoticesModel()
-            .addNotice(notice);
+            .handleNotice(notice);
     }
 
     /**

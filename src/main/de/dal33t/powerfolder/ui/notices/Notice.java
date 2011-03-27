@@ -32,7 +32,7 @@ import java.io.Serializable;
  */
 public interface Notice extends Serializable {
 
-    /** uniqu id for class chain. */
+    /** unique id for class chain. */
     UUID getUuid();
 
     /** Date created. */

@@ -41,7 +41,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -321,7 +320,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                     .getTranslation("warning_notice.limited_connectivity"),
                 runnable, NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
-                .getNoticesModel().addNotice(notice);
+                .getNoticesModel().handleNotice(notice);
         }
     }
 
@@ -496,7 +495,7 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 Translation.getTranslation("warning_notice.poor_quality"),
                 runnable, NoticeSeverity.WARINING);
             controller.getUIController().getApplicationModel()
-                .getNoticesModel().addNotice(notice);
+                .getNoticesModel().handleNotice(notice);
         }
     }
 

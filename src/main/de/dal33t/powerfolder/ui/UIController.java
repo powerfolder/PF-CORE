@@ -71,14 +71,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -358,6 +351,7 @@ public class UIController extends PFComponent {
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
+        getController().getFolderRepository().addNewFolderCandidateListener(new MyNewFolderCandidateListener());
     }
 
     private void checkLimits(boolean forceOpen) {
@@ -791,6 +785,18 @@ public class UIController extends PFComponent {
                 "Failed to set look and feel for skin " + activeSkin.getName(),
                 e);
         }
+    }
+
+    /**
+     * Handle new folder candidates by adding a notification for the user to
+     * action.
+     */
+    private void handleNewFolderCandidateEvent(NewFolderCandidateEvent event) {
+        applicationModel.getNoticesModel().handleNotice(new NewFolderCandidateNotice(
+                Translation.getTranslation("new_folder_candidate_notice.title"),
+                Translation.getTranslation("new_folder_candidate_notice.text",
+                        event.getDirectory().getName()),
+                event.getDirectory()));
     }
 
     /**
@@ -1421,7 +1427,7 @@ public class UIController extends PFComponent {
                 Translation.getTranslation("warning_notice.title"),
                 Translation.getTranslation("warning_notice.mass_deletion"),
                 event.getFolderInfo());
-            applicationModel.getNoticesModel().addNotice(notice);
+            applicationModel.getNoticesModel().handleNotice(notice);
         }
 
         public void remoteMassDeletion(RemoteMassDeletionEvent event) {
@@ -1446,7 +1452,7 @@ public class UIController extends PFComponent {
                 Translation.getTranslation("warning_notice.title"),
                 Translation.getTranslation("warning_notice.mass_deletion"),
                 message);
-            applicationModel.getNoticesModel().addNotice(notice);
+            applicationModel.getNoticesModel().handleNotice(notice);
         }
     }
 
@@ -1489,6 +1495,17 @@ public class UIController extends PFComponent {
                             .getMemberInfo().getNick()), event);
                 applicationModel.getNoticesModel().handleNotice(notice);
             }
+        }
+    }
+
+    private class MyNewFolderCandidateListener implements
+            NewFolderCandidateListener {
+        public void newFolderCandidateDetected(NewFolderCandidateEvent event) {
+            handleNewFolderCandidateEvent(event);
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return false;
         }
     }
 

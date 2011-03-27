@@ -88,14 +88,12 @@ public class NoticesModel extends PFUIComponent {
         return unreadNoticesCountVM;
     }
 
-    public boolean addNotice(Notice notice) {
+    private void addNotice(Notice notice) {
         if (notices.contains(notice)) {
             logFine("Ignoring existing notice: " + notice);
-            return false;
         }
         notices.add(notice);
         updateNoticeCounts();
-        return true;
     }
 
     /**
@@ -128,6 +126,7 @@ public class NoticesModel extends PFUIComponent {
             return;
         }
 
+        // Show notice?
         if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
             .getValue()
             && notice.isNotification())
@@ -144,13 +143,12 @@ public class NoticesModel extends PFUIComponent {
                 InvitationNotice in = (InvitationNotice) notice;
                 Invitation i = in.getPayload(getController());
                 FolderInfo fi = i.folder;
-                if (!getController().getFolderRepository().hasJoinedFolder(fi))
+                if (getController().getFolderRepository().hasJoinedFolder(fi))
                 {
-                    addNotice(notice);
+                    return;
                 }
-            } else {
-                addNotice(notice);
             }
+            addNotice(notice);
         }
     }
 
@@ -189,9 +187,6 @@ public class NoticesModel extends PFUIComponent {
      */
     public void markRead(Notice notice) {
         notice.setRead();
-        if (!notices.contains(notice)) {
-            addNotice(notice);
-        }
         updateNoticeCounts();
     }
 

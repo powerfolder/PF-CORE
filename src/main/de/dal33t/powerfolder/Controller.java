@@ -2368,7 +2368,7 @@ public class Controller extends PFComponent {
                     inputStream.close();
                     for (Notice notice : notices) {
                         uiController.getApplicationModel().getNoticesModel()
-                            .addNotice(notice);
+                            .handleNotice(notice);
                     }
                     logInfo("Loaded " + notices.size() + " notices.");
                 } catch (FileNotFoundException e) {
