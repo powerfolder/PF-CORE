@@ -66,12 +66,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
@@ -885,6 +880,13 @@ public class Controller extends PFComponent {
                 }
             }, 0, 60L, TimeUnit.SECONDS);
         }
+
+        // Monitor the default directory for possible new folders.
+        threadPool.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                folderRepository.lookForNewFolders();
+            }
+        }, 1L, 1L, TimeUnit.MINUTES);
     }
 
     /**

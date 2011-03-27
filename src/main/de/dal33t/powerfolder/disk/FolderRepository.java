@@ -49,9 +49,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -117,6 +115,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final ProblemListener valveProblemListenerSupport;
 
+
+    private NewFolderCandidateListener newFolderCandidateListenerSupport;
+
+
     /**
      * Constructor
      * 
@@ -140,6 +142,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderRepositoryListener.class);
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
+        newFolderCandidateListenerSupport = ListenerSupportFactory
+                .createListenerSupport(NewFolderCandidateListener.class);
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -149,6 +153,16 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public void removeProblemListenerFromAllFolders(ProblemListener listener) {
         ListenerSupportFactory.removeListener(valveProblemListenerSupport,
+            listener);
+    }
+
+    public void addNewFolderCandidateListener(NewFolderCandidateListener listener) {
+        ListenerSupportFactory.addListener(newFolderCandidateListenerSupport,
+            listener);
+    }
+
+    public void removeNewFolderCandidateListener(NewFolderCandidateListener listener) {
+        ListenerSupportFactory.removeListener(newFolderCandidateListenerSupport,
             listener);
     }
 
@@ -316,7 +330,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT))
                         {
                             logWarning("Folder load scheduled after first login: "
-                                + folderName + "/" + folderEntryId);
+                                + folderName + '/' + folderEntryId);
                             onLoginFolderEntryIds.add(folderEntryId);
                             return;
                         }
@@ -1043,6 +1057,37 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * Scan the PowerFolder base directory for new directories that
+     * might be new folders.
+     */
+    public void lookForNewFolders() {
+        logInfo("Searching for new folders...");
+        String baseDirName = getFoldersBasedir();
+        File baseDir = new File(baseDirName);
+        if (baseDir.exists() && baseDir.canRead()) {
+            File[] files = baseDir.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    boolean known = false;
+                    for (Folder folder : getFolders()) {
+                        File localBase = folder.getLocalBase();
+                        if (localBase.equals(file)) {
+                            known = true;
+                            break;
+                        }
+                    }
+                    if (!known) {
+                        log.info("Found new folder candidate at " + file);
+                        newFolderCandidateListenerSupport
+                                .newFolderCandidateDetected(
+                                        new NewFolderCandidateEvent(file));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * "syncing" means SCANNING local files OR uploding files OR downloading
      * files.
      * 
@@ -1115,7 +1160,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!a.hasReadPermissions(folder.getInfo())
                 && getController().getOSClient().isConnected())
             {
-                logWarning("Removing local " + folder + " " + a
+                logWarning("Removing local " + folder + ' ' + a
                     + " does not have read permission");
                 removeFolder(folder, false);
             }
