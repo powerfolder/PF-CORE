@@ -470,6 +470,15 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
         senderSpawnLock.lock();
         messagesToSendQueue.offer(message);
+        if (messagesToSendQueue.size() > 50 && isWarning()) {
+            String msg = "Many messages in send queue: "
+                + messagesToSendQueue.size() + ": " + messagesToSendQueue;
+            if (msg.length() > 300) {
+                msg = msg.substring(0, 300);
+                msg += "...";
+            }
+            logWarning(msg);
+        }
         if (sender == null) {
             sender = new Sender();
             getController().getIOProvider().startIO(sender);

@@ -482,8 +482,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 // Write paket header / total length
                 out.write(Convert.convert2Bytes(data.length));
                 getController().getTransferManager()
-                    .getTotalUploadTrafficCounter().bytesTransferred(
-                        data.length + 4);
+                    .getTotalUploadTrafficCounter()
+                    .bytesTransferred(data.length + 4);
                 // out.flush();
 
                 // Do some calculations before send
@@ -557,8 +557,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         try {
             messagesToSendQueue.offer(message);
             if (messagesToSendQueue.size() > 50 && isWarning()) {
-                logWarning("Many messages in send queue: "
-                    + messagesToSendQueue.size() + ": " + messagesToSendQueue);
+                String msg = "Many messages in send queue: "
+                    + messagesToSendQueue.size() + ": " + messagesToSendQueue;
+                if (msg.length() > 300) {
+                    msg = msg.substring(0, 300);
+                    msg += "...";
+                }
+                logWarning(msg);
             }
             if (sender == null) {
                 sender = new Sender();
@@ -910,8 +915,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
                     lastKeepaliveMessage = new Date();
                     getController().getTransferManager()
-                        .getTotalDownloadTrafficCounter().bytesTransferred(
-                            totalSize);
+                        .getTotalDownloadTrafficCounter()
+                        .bytesTransferred(totalSize);
 
                     if (isFiner()) {
                         logFiner("<- (received, "
