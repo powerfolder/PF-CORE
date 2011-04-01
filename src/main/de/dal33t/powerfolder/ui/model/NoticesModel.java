@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.NoticeHandler;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.*;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -174,7 +174,15 @@ public class NoticesModel extends PFUIComponent {
             LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof NewFolderCandidateNotice) {
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
             NewFolderCandidateNotice eventNotice = (NewFolderCandidateNotice) notice;
+            TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                Translation.getTranslation("wizard.setup_success"), Translation
+                    .getTranslation("wizard.success_join"));
+            LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController());
+            //WizardContext context = wizard.getWizardContext();
+            wizard.open(choosePanel);
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
