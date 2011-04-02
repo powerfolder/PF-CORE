@@ -19,21 +19,21 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 import jwf.WizardPanel;
 
 import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -48,20 +48,22 @@ public class LoadCandidatePanel extends PFWizardPanel {
     private static final Logger log = Logger
             .getLogger(LoadCandidatePanel.class.getName());
 
+    private final File directory;
+
     private JLabel locationHintLabel;
     private JTextField locationField;
 
     private JLabel folderHintLabel;
     private JTextField folderNameLabel;
 
-    private JLabel estimatedSizeHintLabel;
-    private JLabel estimatedSize;
+    private JLabel totalSizeLabel;
 
     private JLabel syncProfileHintLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
-    public LoadCandidatePanel(Controller controller) {
+    public LoadCandidatePanel(Controller controller, File directory) {
         super(controller);
+        this.directory = directory;
     }
 
     @Override
@@ -90,32 +92,32 @@ public class LoadCandidatePanel extends PFWizardPanel {
     }
 
     @Override
+    protected void afterDisplay() {
+        SwingWorker worker = new MyFolderSizeSwingWorker();
+        worker.start();
+    }
+
+    @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, "
-                        + "3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        // Please select invite...
-        builder.addLabel(Translation
-                .getTranslation("wizard.load_candidate.select_file"), cc.xy(3, 1));
-
-        // Invite selector
-        builder.add(locationHintLabel, cc.xy(1, 3));
-        builder.add(locationField, cc.xy(3, 3));
+        // Directory location
+        builder.add(locationHintLabel, cc.xy(1, 1));
+        builder.add(locationField, cc.xy(3, 1));
 
         // Folder
-        builder.add(folderHintLabel, cc.xy(1, 5));
-        builder.add(folderNameLabel, cc.xy(3, 5));
+        builder.add(folderHintLabel, cc.xy(1, 3));
+        builder.add(folderNameLabel, cc.xy(3, 3));
 
-        // Est size
-        builder.add(estimatedSizeHintLabel, cc.xy(1, 11));
-        builder.add(estimatedSize, cc.xy(3, 11));
+        // Total size
+        builder.add(totalSizeLabel, cc.xy(3, 5));
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, 13));
+        builder.add(syncProfileHintLabel, cc.xy(1, 7));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
 
@@ -124,7 +126,7 @@ public class LoadCandidatePanel extends PFWizardPanel {
         builder2.add(p, cc.xy(1, 1));
 
         JPanel panel = builder2.getPanel();
-        builder.add(panel, cc.xyw(3, 13, 2));
+        builder.add(panel, cc.xyw(3, 7, 2));
         panel.setOpaque(false);
 
         return builder.getPanel();
@@ -135,55 +137,66 @@ public class LoadCandidatePanel extends PFWizardPanel {
      */
     @Override
     protected void initComponents() {
-
-        ValueModel locationModel = new ValueHolder();
-
-        // Invite behavior
-        locationModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                loadInvitation((String) evt.getNewValue());
-                updateButtons();
-            }
-        });
-
         // Invite selector
         locationHintLabel = new JLabel(Translation
                 .getTranslation("general.directory"));
-        locationField = new JTextField();
-        locationField.setEnabled(false);
+        locationField = new JTextField(directory.getAbsolutePath());
+        locationField.setEditable(false);
 
         // Folder name label
         folderHintLabel = new JLabel(Translation
                 .getTranslation("general.folder_name"));
-        folderHintLabel.setEnabled(false);
-        folderNameLabel = new JTextField();
+        folderNameLabel = new JTextField(directory.getName());
 
-        // Estimated size
-        estimatedSizeHintLabel = new JLabel(Translation
-                .getTranslation("general.estimated_size"));
-        estimatedSizeHintLabel.setEnabled(false);
-        estimatedSize = SimpleComponentFactory.createLabel();
+        // Total size
+        totalSizeLabel = new JLabel(Translation
+                .getTranslation("wizard.load_candidate.total_directory_size"));
 
         // Sync profile
         syncProfileHintLabel = new JLabel(Translation
                 .getTranslation("general.transfer_mode"));
-        syncProfileHintLabel.setEnabled(false);
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
-        syncProfileSelectorPanel.setEnabled(false);
     }
 
     @Override
     protected String getTitle() {
-        return Translation.getTranslation("wizard.load_invitation.select");
+        return Translation.getTranslation("wizard.load_candidate.select_file");
     }
 
-    private void loadInvitation(String file) {
-        if (file == null) {
-            return;
-        }
-        estimatedSizeHintLabel.setEnabled(true);
+    // ////////////////
+    // Inner classes //
+    // ////////////////
 
-        syncProfileHintLabel.setEnabled(true);
-        syncProfileSelectorPanel.setEnabled(true);
+    private class MyFolderSizeSwingWorker extends SwingWorker {
+
+        private int recursiveFileCount = 0;
+        private long totalDirectorySize = 0;
+
+        protected void beforeConstruct() {
+            totalSizeLabel.setText(Translation.getTranslation(
+                    "wizard.load_candidate.calculating_directory_size"));
+        }
+
+        public Object construct() {
+            try {
+                recursiveFileCount = 0;
+                totalDirectorySize = 0;
+                Long[] longs = FileUtils
+                        .calculateDirectorySizeAndCount(directory);
+                totalDirectorySize += longs[0];
+                recursiveFileCount += longs[1];
+            } catch (Exception e) {
+                Logger.getAnonymousLogger().log(Level.WARNING, e.toString(), e);
+            }
+            return null;
+        }
+
+        public void finished() {
+            totalSizeLabel.setText(Translation.getTranslation(
+                    "wizard.choose_disk_location.total_directory_size",
+                    Format.formatBytes(totalDirectorySize),
+                    Format.formatLong(recursiveFileCount)));
+            updateButtons();
+        }
     }
 }

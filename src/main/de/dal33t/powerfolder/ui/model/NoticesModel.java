@@ -174,13 +174,15 @@ public class NoticesModel extends PFUIComponent {
             LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof NewFolderCandidateNotice) {
+            // @todo put this in invoke later.
             PFWizard wizard = new PFWizard(getController(),
                 Translation.getTranslation("wizard.pfwizard.folder_title"));
             NewFolderCandidateNotice eventNotice = (NewFolderCandidateNotice) notice;
             TextPanelPanel successPanel = new TextPanelPanel(getController(),
                 Translation.getTranslation("wizard.setup_success"), Translation
                     .getTranslation("wizard.success_join"));
-            LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController());
+            LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController(), 
+                    eventNotice.getPayload(getController()));
             //WizardContext context = wizard.getWizardContext();
             wizard.open(choosePanel);
         } else {
