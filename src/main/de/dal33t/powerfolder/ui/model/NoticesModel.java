@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LinkedTextBuilder;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
+import jwf.WizardContext;
 
 /**
  * Model of the notices awaiting action by the user.
@@ -174,22 +175,28 @@ public class NoticesModel extends PFUIComponent {
             LocalDeleteNotice eventNotice = (LocalDeleteNotice) notice;
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof NewFolderCandidateNotice) {
-            // @todo put this in invoke later.
-            PFWizard wizard = new PFWizard(getController(),
-                Translation.getTranslation("wizard.pfwizard.folder_title"));
             NewFolderCandidateNotice eventNotice = (NewFolderCandidateNotice) notice;
-            TextPanelPanel successPanel = new TextPanelPanel(getController(),
-                Translation.getTranslation("wizard.setup_success"), Translation
-                    .getTranslation("wizard.success_join"));
-            LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController(), 
-                    eventNotice.getPayload(getController()));
-            //WizardContext context = wizard.getWizardContext();
-            wizard.open(choosePanel);
+            handleNewFolderCandidate(eventNotice);
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
         }
         markRead(notice);
+    }
+
+    private void handleNewFolderCandidate(NewFolderCandidateNotice eventNotice) {
+        PFWizard wizard = new PFWizard(getController(),
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
+        WizardContext context = wizard.getWizardContext();
+
+        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.success_join"));
+        context.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+
+        LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController(),
+                eventNotice.getPayload(getController()));
+        wizard.open(choosePanel);
     }
 
     /**

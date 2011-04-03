@@ -93,10 +93,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
     }
 
     @Override
-    protected void initComponents() {
-    }
-
-    @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.create_folder.title");
     }
@@ -130,33 +126,45 @@ public class FolderCreatePanel extends SwingWorkerPanel {
         public void run() {
             Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
             Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
-            boolean backupByOS;
 
-            boolean createDesktopShortcut;
-
-            // Mandatory
+            // Mandatory - save invite locally
             Boolean saveLocalInvite = (Boolean) getWizardContext()
                 .getAttribute(SAVE_INVITE_LOCALLY);
             Reject.ifNull(saveLocalInvite,
                 "Save invite locally attribute is null/not set");
 
-            // Optional
-            Boolean prevAtt = (Boolean) getWizardContext().getAttribute(
-                PREVIEW_FOLDER_ATTIRBUTE);
-            boolean previewFolder = prevAtt != null && prevAtt;
+            // Preview folder
+            Object attribute = getWizardContext().getAttribute(PREVIEW_FOLDER_ATTIRBUTE);
+            boolean previewFolder = false;
+            if (attribute != null && attribute instanceof Boolean) {
+                previewFolder = (Boolean) attribute;
+            }
 
-            createDesktopShortcut = (Boolean) getWizardContext().getAttribute(
-                CREATE_DESKTOP_SHORTCUT);
-            Boolean osAtt = (Boolean) getWizardContext().getAttribute(
-                BACKUP_ONLINE_STOARGE);
-            backupByOS = osAtt != null && osAtt;
+            // Create desktop shortcut
+            attribute = getWizardContext().getAttribute(CREATE_DESKTOP_SHORTCUT);
+            boolean createDesktopShortcut = false;
+            if (attribute != null && attribute instanceof Boolean) {
+                createDesktopShortcut = (Boolean) attribute;
+            }
+
+            // Online storage
+            attribute = getWizardContext().getAttribute(BACKUP_ONLINE_STOARGE);
+            boolean backupByOS = false;
+            if (attribute != null && attribute instanceof Boolean) {
+                backupByOS = (Boolean) attribute;
+            }
             if (backupByOS) {
                 getController().getUIController().getApplicationModel()
                     .getServerClientModel().checkAndSetupAccount();
             }
-            Boolean sendInvsAtt = (Boolean) getWizardContext().getAttribute(
+
+            // Send invitation after
+            attribute = getWizardContext().getAttribute(
                 SEND_INVIATION_AFTER_ATTRIBUTE);
-            sendInvitations = sendInvsAtt == null || sendInvsAtt;
+            sendInvitations = false;
+            if (attribute != null && attribute instanceof Boolean) {
+                sendInvitations = (Boolean) attribute; 
+            }
 
             // Either we have FOLDER_CREATE_ITEMS ...
             List<FolderCreateItem> folderCreateItems = (List<FolderCreateItem>) getWizardContext()
@@ -297,7 +305,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
 
                 // Is there a member to make a friend?
                 // Invitation invitors are automatically made friends.
-                Object attribute = getWizardContext().getAttribute(
+                attribute = getWizardContext().getAttribute(
                     MAKE_FRIEND_AFTER);
                 if (attribute != null && attribute instanceof MemberInfo) {
                     MemberInfo memberInfo = (MemberInfo) attribute;

@@ -74,14 +74,13 @@ public class LoadCandidatePanel extends PFWizardPanel {
     @Override
     public WizardPanel next() {
 
-        // Set sync profile
+        getWizardContext().setAttribute(FOLDER_LOCAL_BASE,
+                directory);
+
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 syncProfileSelectorPanel.getSyncProfile());
 
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
-
-        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, Boolean.FALSE);
+        getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
 
         return new FolderCreatePanel(getController());
     }
@@ -113,11 +112,8 @@ public class LoadCandidatePanel extends PFWizardPanel {
         builder.add(folderHintLabel, cc.xy(1, 3));
         builder.add(folderNameLabel, cc.xy(3, 3));
 
-        // Total size
-        builder.add(totalSizeLabel, cc.xy(3, 5));
-
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, 7));
+        builder.add(syncProfileHintLabel, cc.xy(1, 5));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
 
@@ -126,8 +122,11 @@ public class LoadCandidatePanel extends PFWizardPanel {
         builder2.add(p, cc.xy(1, 1));
 
         JPanel panel = builder2.getPanel();
-        builder.add(panel, cc.xyw(3, 7, 2));
+        builder.add(panel, cc.xyw(3, 5, 2));
         panel.setOpaque(false);
+
+        // Total size
+        builder.add(totalSizeLabel, cc.xy(3, 7));
 
         return builder.getPanel();
     }
