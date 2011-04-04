@@ -61,6 +61,8 @@ public class LoadCandidatePanel extends PFWizardPanel {
     private JLabel syncProfileHintLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
+    private JCheckBox onlineStorageCB;
+
     public LoadCandidatePanel(Controller controller, File directory) {
         super(controller);
         this.directory = directory;
@@ -79,6 +81,9 @@ public class LoadCandidatePanel extends PFWizardPanel {
 
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
                 syncProfileSelectorPanel.getSyncProfile());
+
+        getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                onlineStorageCB.isSelected());
 
         getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
 
@@ -99,7 +104,7 @@ public class LoadCandidatePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -128,6 +133,9 @@ public class LoadCandidatePanel extends PFWizardPanel {
         // Total size
         builder.add(totalSizeLabel, cc.xy(3, 7));
 
+        // Online storage
+        builder.add(onlineStorageCB, cc.xy(3, 9));
+
         return builder.getPanel();
     }
 
@@ -155,6 +163,11 @@ public class LoadCandidatePanel extends PFWizardPanel {
         syncProfileHintLabel = new JLabel(Translation
                 .getTranslation("general.transfer_mode"));
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
+
+        onlineStorageCB = new JCheckBox(Translation.getTranslation(
+                "wizard.load_candidate.backup_by_online_storage"));
+        onlineStorageCB.setOpaque(false);
+
     }
 
     @Override
