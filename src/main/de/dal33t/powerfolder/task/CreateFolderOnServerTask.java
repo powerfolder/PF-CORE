@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -39,6 +40,7 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
     private static final long serialVersionUID = 100L;
     private FolderInfo foInfo;
     private SyncProfile syncProfile;
+    private Integer archiveVersions;
 
     public CreateFolderOnServerTask(AccountInfo issuer, FolderInfo foInfo,
         SyncProfile syncProfile)
@@ -64,6 +66,14 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
         this.syncProfile = syncProfile;
     }
 
+    public Integer getArchiveVersions() {
+        return archiveVersions;
+    }
+
+    public void setArchiveVersions(Integer archiveVersions) {
+        this.archiveVersions = archiveVersions;
+    }
+
     @Override
     public void executeRemoteCall(ServerClient client) throws Exception {
         if (!getController().getFolderRepository().hasJoinedFolder(foInfo)) {
@@ -76,6 +86,12 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
             // Only do this with security context.
             LOG.info("Setting folder up for cloud backup: " + foInfo);
             client.getFolderService().createFolder(foInfo, syncProfile);
+
+            if (archiveVersions != null) {
+                client.getFolderService().setArchiveMode(foInfo,
+                    ArchiveMode.FULL_BACKUP, archiveVersions);
+            }
+
             // Remove task
             remove();
         }
