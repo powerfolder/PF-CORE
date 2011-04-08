@@ -1247,9 +1247,14 @@ public class TransferManager extends PFComponent {
             }
             if (isWarning()) {
                 logWarning("File not in sync with disk: '"
-                    + dl.file.toDetailString() + "', should be modified at "
+                    + dl.file.toDetailString() + "', disk file at "
                     + diskFile.lastModified());
             }
+            
+            //[04:45:50] WARN   [TransferManager]: File not in sync with disk: '[App Data]:/PowerFolder/Client.nodes, size: 89439 bytes, version: 0, modified: Sat Apr 02 04:36:41 CEST 2011 (1301711801068) by 'powerfolder-03'', should be modified at 1301711861080
+            //[04:45:50] FINER  [Folder 'App Data']: Scanning file: [App Data]:/PowerFolder/Client.nodes, folderId: [App Data]:/PowerFolder/Client.nodes
+            //[04:45:50] FINER  [Folder 'App Data']: Scan known file: [App Data]:/PowerFolder/Client.nodes, size: 89439 bytes, version: 0, modified: Sat Apr 02 04:36:41 CEST 2011 (1301711801068) by 'powerfolder-03'
+         
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
                 folder.scanChangedFile(dl.file);
