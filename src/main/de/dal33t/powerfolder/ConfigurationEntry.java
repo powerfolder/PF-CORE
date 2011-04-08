@@ -230,6 +230,8 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
+    
+    // Config META information ************************************************
 
     /**
      * Prompt for the server address if currently set server belongs to the
@@ -251,6 +253,8 @@ public enum ConfigurationEntry {
      * If all folder settings should be dropped when this config is loaded
      */
     CONFIG_DROP_FOLDER_SETTINGS("config.drop.folders.settings", false),
+    
+    // Update settings ********************************************************
 
     /**
      * http://checkversion.powerfolder.com/PowerFolder_LatestVersion.txt
@@ -267,6 +271,8 @@ public enum ConfigurationEntry {
      * exe
      */
     UPDATE_WINDOWS_EXE_URL("update.windows_exe.url"),
+    
+    // Server connection ******************************************************
 
     /**
      * #1715 If it should be possible to register at the server.
