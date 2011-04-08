@@ -103,6 +103,7 @@ import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
 
@@ -910,7 +911,7 @@ public class Folder extends PFComponent {
             if (frequency < TEN_SECONDS) {
                 frequency = TEN_SECONDS;
             }
-            
+
             // Max
             if (watcher.isSupported()) {
                 if (frequency > TEN_MINUTES) {
@@ -1197,14 +1198,19 @@ public class Folder extends PFComponent {
                     return fInfo;
                 }
 
-                if (isFiner()) {
-                    logFiner("Scan known file: " + fInfo.toDetailString());
-                }
-
                 FileInfo syncFile = localFile
                     .syncFromDiskIfRequired(this, file);
                 if (syncFile != null) {
                     store(getController().getMySelf(), syncFile);
+                    if (isFiner()) {
+                        logFiner("Scan file changed: "
+                            + syncFile.toDetailString());
+                    }
+                } else {
+                    if (isFiner()) {
+                        logFiner("Scan file unchanged: "
+                            + localFile.toDetailString());
+                    }
                 }
                 return syncFile;
             }
@@ -1925,7 +1931,7 @@ public class Folder extends PFComponent {
      * @return true if auto scanning files on-the-fly is allowed now.
      */
     public boolean scanAllowedNow() {
-        return (!syncProfile.isManualSync() && !syncProfile.isDailySync())
+        return !syncProfile.isManualSync() && !syncProfile.isDailySync()
             && !getController().isSilentMode();
     }
 
@@ -3616,42 +3622,44 @@ public class Folder extends PFComponent {
         addPattern(Pattern.DS_STORE);
         addPattern(Pattern.ITHUMB);
 
+        if (WinUtils.getAppDataCurrentUser() != null
+            && getLocalBase().getAbsolutePath().equals(
+                WinUtils.getAppDataCurrentUser()))
+        {
+            addPattern("PowerFolder/logs/*");
+        }
         // #2083
-        if (UserDirectories.getMyDocuments() != null) {
+        if (UserDirectories.getMyDocuments() != null
+            && getLocalBase().getAbsolutePath().equals(
+                UserDirectories.getMyDocuments()))
+        {
             logFine("My documents @ " + UserDirectories.getMyDocuments());
             logFine("Folder @ " + getLocalBase().getAbsolutePath());
 
-            if (getLocalBase().getAbsolutePath().equals(
-                UserDirectories.getMyDocuments()))
-            {
-                logWarning("Adding transition ignore patterns for My documents folder");
+            logWarning("Adding transition ignore patterns for My documents folder");
 
-                // Ignore My Pictures, My Music, My Videos, PowerFolders
-                addPattern(Constants.FOLDERS_BASE_DIR_SUBDIR_NAME + '*');
+            // Ignore My Pictures, My Music, My Videos, PowerFolders
+            addPattern(Constants.FOLDERS_BASE_DIR_SUBDIR_NAME + '*');
 
-                if (UserDirectories.getMyDocuments() != null) {
-                    int i = UserDirectories.getMyDocuments().length();
-                    if (UserDirectories.getMyMusic() != null
-                        && UserDirectories.getMyMusic().startsWith(
-                            UserDirectories.getMyDocuments()))
-                    {
-                        addPattern(UserDirectories.getMyMusic()
-                            .substring(i + 1) + '*');
-                    }
-                    if (UserDirectories.getMyPictures() != null
-                        && UserDirectories.getMyPictures().startsWith(
-                            UserDirectories.getMyDocuments()))
-                    {
-                        addPattern(UserDirectories.getMyPictures().substring(
-                            i + 1) + '*');
-                    }
-                    if (UserDirectories.getMyVideos() != null
-                        && UserDirectories.getMyVideos().startsWith(
-                            UserDirectories.getMyDocuments()))
-                    {
-                        addPattern(UserDirectories.getMyVideos().substring(
-                            i + 1) + '*');
-                    }
+            if (UserDirectories.getMyDocuments() != null) {
+                int i = UserDirectories.getMyDocuments().length();
+                if (UserDirectories.getMyMusic() != null
+                    && UserDirectories.getMyMusic().startsWith(
+                        UserDirectories.getMyDocuments()))
+                {
+                    addPattern(UserDirectories.getMyMusic().substring(i + 1) + '*');
+                }
+                if (UserDirectories.getMyPictures() != null
+                    && UserDirectories.getMyPictures().startsWith(
+                        UserDirectories.getMyDocuments()))
+                {
+                    addPattern(UserDirectories.getMyPictures().substring(i + 1) + '*');
+                }
+                if (UserDirectories.getMyVideos() != null
+                    && UserDirectories.getMyVideos().startsWith(
+                        UserDirectories.getMyDocuments()))
+                {
+                    addPattern(UserDirectories.getMyVideos().substring(i + 1) + '*');
                 }
             }
         }
