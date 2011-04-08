@@ -129,8 +129,8 @@ public class MultiFileRestorePanel extends PFWizardPanel {
         builder.add(minuteSpinner, cc.xy(7, row));
 
         row += 2;
-        builder.add(infoLabel, cc.xy(1, row, CellConstraints.CENTER,
-            CellConstraints.DEFAULT));
+        builder.add(infoLabel,
+            cc.xy(1, row, CellConstraints.CENTER, CellConstraints.DEFAULT));
 
         row += 2;
 
@@ -164,14 +164,16 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
     protected void initComponents() {
         bar = new JProgressBar();
-        latestVersionButton = new JRadioButton(Translation
-            .getTranslation("wizard.multi_file_restore_panel.button_latest"));
+        latestVersionButton = new JRadioButton(
+            Translation
+                .getTranslation("wizard.multi_file_restore_panel.button_latest"));
         latestVersionButton
             .setToolTipText(Translation
                 .getTranslation("wizard.multi_file_restore_panel.button_latest.tip"));
         latestVersionButton.setSelected(true);
-        dateVersionButton = new JRadioButton(Translation
-            .getTranslation("wizard.multi_file_restore_panel.button_date"));
+        dateVersionButton = new JRadioButton(
+            Translation
+                .getTranslation("wizard.multi_file_restore_panel.button_date"));
         dateVersionButton.setToolTipText(Translation
             .getTranslation("wizard.multi_file_restore_panel.button_date.tip"));
         ButtonGroup bg = new ButtonGroup();
@@ -180,11 +182,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
 
         dateChooser = new JDateChooser();
         Calendar cal = new GregorianCalendar();
-        hourSpinner = new JSpinner(new SpinnerNumberModel(cal
-            .get(Calendar.HOUR_OF_DAY), 0, 23, 1));
+        hourSpinner = new JSpinner(new SpinnerNumberModel(
+            cal.get(Calendar.HOUR_OF_DAY), 0, 23, 1));
         hourSpinner.setToolTipText(Translation.getTranslation("general.hours"));
-        minuteSpinner = new JSpinner(new SpinnerNumberModel(cal
-            .get(Calendar.MINUTE), 0, 59, 1));
+        minuteSpinner = new JSpinner(new SpinnerNumberModel(
+            cal.get(Calendar.MINUTE), 0, 59, 1));
         minuteSpinner.setToolTipText(Translation
             .getTranslation("general.minutes"));
 
@@ -239,10 +241,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
     // Inner Classes //
     // ////////////////
 
-    private class VersionLoaderWorker extends SwingWorker<List<FileInfo>, FileInfo>
+    private class VersionLoaderWorker extends
+        SwingWorker<List<FileInfo>, FileInfo>
     {
         int count = 1;
-        
+
         public List<FileInfo> doInBackground() {
             List<FileInfo> versions = new ArrayList<FileInfo>(
                 fileInfosToRestore.size());
@@ -289,12 +292,19 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     }
 
                     if (service != null) {
-                        List<FileInfo> serviceList = service
-                            .getArchivedFilesInfos(fileInfo);
-                        for (FileInfo info : serviceList) {
-                            if (isBetterVersion(mostRecent, info, targetDate)) {
-                                mostRecent = info;
+                        try {
+                            List<FileInfo> serviceList = service
+                                .getArchivedFilesInfos(fileInfo);
+                            for (FileInfo info : serviceList) {
+                                if (isBetterVersion(mostRecent, info,
+                                    targetDate))
+                                {
+                                    mostRecent = info;
+                                }
                             }
+                        } catch (Exception e) {
+                            log.warning("Unable to check server/cloud archive: "
+                                + fileInfo + ". " + e);
                         }
                     }
 
@@ -328,9 +338,9 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         .getTranslation("wizard.multi_file_restore_panel.retrieving_none"));
             } else {
                 infoLabel.setText(Translation.getTranslation(
-                    "wizard.multi_file_restore_panel.retrieving", Format
-                        .formatLong(count++), Format.formatLong(filesToRestore
-                        .size())));
+                    "wizard.multi_file_restore_panel.retrieving",
+                    Format.formatLong(count++),
+                    Format.formatLong(filesToRestore.size())));
                 // infoLabel
                 // .setText(Translation
                 // .getTranslation("wizard.multi_file_restore_panel.retrieving_success"));
