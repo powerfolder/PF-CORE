@@ -115,9 +115,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final ProblemListener valveProblemListenerSupport;
 
-
     private NewFolderCandidateListener newFolderCandidateListenerSupport;
-
 
     /**
      * Constructor
@@ -143,7 +141,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
         newFolderCandidateListenerSupport = ListenerSupportFactory
-                .createListenerSupport(NewFolderCandidateListener.class);
+            .createListenerSupport(NewFolderCandidateListener.class);
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -156,14 +154,18 @@ public class FolderRepository extends PFComponent implements Runnable {
             listener);
     }
 
-    public void addNewFolderCandidateListener(NewFolderCandidateListener listener) {
+    public void addNewFolderCandidateListener(
+        NewFolderCandidateListener listener)
+    {
         ListenerSupportFactory.addListener(newFolderCandidateListenerSupport,
             listener);
     }
 
-    public void removeNewFolderCandidateListener(NewFolderCandidateListener listener) {
-        ListenerSupportFactory.removeListener(newFolderCandidateListenerSupport,
-            listener);
+    public void removeNewFolderCandidateListener(
+        NewFolderCandidateListener listener)
+    {
+        ListenerSupportFactory.removeListener(
+            newFolderCandidateListenerSupport, listener);
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */
@@ -1057,8 +1059,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Scan the PowerFolder base directory for new directories that
-     * might be new folders.
+     * Scan the PowerFolder base directory for new directories that might be new
+     * folders.
      */
     public void lookForNewFolders() {
         logInfo("Searching for new folders...");
@@ -1079,9 +1081,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (!known) {
                         log.info("Found new folder candidate at " + file);
                         if (Feature.NEW_FOLDER_CANDIDATE.isEnabled()) {
-                        newFolderCandidateListenerSupport
-                                .newFolderCandidateDetected(
-                                        new NewFolderCandidateEvent(file));
+                            newFolderCandidateListenerSupport
+                                .newFolderCandidateDetected(new NewFolderCandidateEvent(
+                                    file));
                         }
                     }
                 }
@@ -1215,6 +1217,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Make sure it is backed up by the server.
             CreateFolderOnServerTask task = new CreateFolderOnServerTask(
                 foInfo, null);
+            task.setArchiveVersions(settings.getVersions());
             getController().getTaskManager().scheduleTask(task);
 
             // Remove from pending entries.
