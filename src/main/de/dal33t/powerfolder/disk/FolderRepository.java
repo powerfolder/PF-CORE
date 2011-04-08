@@ -1063,7 +1063,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
-        logInfo("Searching for new folders...");
+        if (isFine()) {
+            logFine("Searching for new folders...");
+        }
         String baseDirName = getFoldersBasedir();
         File baseDir = new File(baseDirName);
         if (baseDir.exists() && baseDir.canRead()) {
