@@ -560,57 +560,63 @@ public class ServerClient extends PFComponent {
                 LoginUtil.clear(pw);
             }
 
-            if (!loginOk) {
+            if (loginOk) {
+                AccountDetails newAccountDetails = securityService
+                    .getAccountDetails();
+                logFine("Login to server " + server.getReconnectAddress()
+                    + " (user " + theUsername + ") result: "
+                    + newAccountDetails);
+                if (newAccountDetails != null) {
+                    accountDetails = newAccountDetails;
+
+                    if (updateConfig) {
+                        boolean configChanged;
+                        if (accountDetails.getAccount().getServer() != null) {
+                            configChanged = setServerWebURLInConfig(accountDetails
+                                .getAccount().getServer().getWebUrl());
+                            configChanged = setServerHTTPTunnelURLInConfig(accountDetails
+                                .getAccount().getServer().getHTTPTunnelUrl())
+                                || configChanged;
+                        } else {
+                            configChanged = setServerWebURLInConfig(null);
+                            configChanged = setServerHTTPTunnelURLInConfig(null)
+                                || configChanged;
+                        }
+                        if (configChanged) {
+                            getController().saveConfig();
+                        }
+                    }
+
+                    // Fire login success
+                    fireLogin(accountDetails);
+                    updateLocalSettings(accountDetails.getAccount());
+
+                    // Possible switch to new server
+                    ServerInfo targetServer = accountDetails.getAccount()
+                        .getServer();
+                    if (targetServer != null && allowServerChange) {
+                        // Not hosted on the server we just have logged into.
+                        boolean changeServer = !server.getInfo().equals(
+                            targetServer.getNode());
+                        if (changeServer) {
+                            changeToServer(targetServer);
+                        }
+                    }
+                } else {
+                    logWarning("Login to server "
+                        + server.getReconnectAddress() + " (user "
+                        + theUsername + ") failed!");
+                    setAnonAccount();
+                    fireLogin(accountDetails, false);
+                }
+            } else {
                 logWarning("Login to server " + server.getReconnectAddress()
                     + " (user " + theUsername + ") failed!");
                 setAnonAccount();
                 fireLogin(accountDetails, false);
-                return accountDetails.getAccount();
             }
-            AccountDetails newAccountDetails = securityService
-                .getAccountDetails();
-            logFine("Login to server " + server.getReconnectAddress()
-                + " (user " + theUsername + ") result: " + newAccountDetails);
-            if (newAccountDetails != null) {
-                accountDetails = newAccountDetails;
-
-                if (updateConfig) {
-                    boolean configChanged;
-                    if (accountDetails.getAccount().getServer() != null) {
-                        configChanged = setServerWebURLInConfig(accountDetails
-                            .getAccount().getServer().getWebUrl());
-                        configChanged = setServerHTTPTunnelURLInConfig(accountDetails
-                            .getAccount().getServer().getHTTPTunnelUrl())
-                            || configChanged;
-                    } else {
-                        configChanged = setServerWebURLInConfig(null);
-                        configChanged = setServerHTTPTunnelURLInConfig(null)
-                            || configChanged;
-                    }
-                    if (configChanged) {
-                        getController().saveConfig();
-                    }
-                }
-
-                // Fire login success
-                fireLogin(accountDetails);
-                updateLocalSettings(accountDetails.getAccount());
-
-                // Possible switch to new server
-                ServerInfo targetServer = accountDetails.getAccount()
-                    .getServer();
-                if (targetServer != null && allowServerChange) {
-                    // Not hosted on the server we just have logged into.
-                    boolean changeServer = !server.getInfo().equals(
-                        targetServer.getNode());
-                    if (changeServer) {
-                        changeToServer(targetServer);
-                    }
-                }
-            } else {
-                setAnonAccount();
-                fireLogin(accountDetails, false);
-            }
+            getController().scheduleAndRepeat(new HostingServerRetriever(),
+                200L);
             return accountDetails.getAccount();
         }
     }
@@ -1100,8 +1106,6 @@ public class ServerClient extends PFComponent {
                 if (username != null && StringUtils.isNotBlank(passwordObf)) {
                     try {
                         login(username, passwordObf);
-                        getController().schedule(new HostingServerRetriever(),
-                            1000L);
                     } catch (RemoteCallException ex) {
                         logWarning("Unable to login. " + ex);
                         logFine(ex);
