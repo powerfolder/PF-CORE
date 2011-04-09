@@ -153,7 +153,9 @@ public enum PreferencesEntry {
     /**
      * If the "Tell a friend" / Referral system should be visible.
      */
-    SHOW_TELL_A_FRIEND("show.tell-a-friend", true);
+    SHOW_TELL_A_FRIEND("show.tell-a-friend", true),
+
+    SHOW_FOLDER_CANDIDATES("show.folder.candidates", true);
 
     /** String, Boolean, Integer */
     private Class type;

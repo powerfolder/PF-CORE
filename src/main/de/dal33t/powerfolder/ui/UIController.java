@@ -351,7 +351,8 @@ public class UIController extends PFComponent {
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
-        getController().getFolderRepository().addNewFolderCandidateListener(new MyNewFolderCandidateListener());
+        getController().getFolderRepository().addNewFolderCandidateListener(new
+                MyNewFolderCandidateListener());
     }
 
     private void checkLimits(boolean forceOpen) {
@@ -1501,7 +1502,10 @@ public class UIController extends PFComponent {
     private class MyNewFolderCandidateListener implements
             NewFolderCandidateListener {
         public void newFolderCandidateDetected(NewFolderCandidateEvent event) {
-            handleNewFolderCandidateEvent(event);
+            if (PreferencesEntry.SHOW_FOLDER_CANDIDATES.getValueBoolean(
+                    getController())) {
+                handleNewFolderCandidateEvent(event);
+            }
         }
 
         public boolean fireInEventDispatchThread() {

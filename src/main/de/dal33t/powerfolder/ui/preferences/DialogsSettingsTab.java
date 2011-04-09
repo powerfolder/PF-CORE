@@ -52,25 +52,28 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     private JSlider notificationDisplaySlider;
 
     /** Ask to add to friends if user becomes member of a folder */
-    private JCheckBox askForFriendship;
+    private JCheckBox askForFriendshipCB;
 
     /** Add personal message with freindship status change */
-    private JCheckBox askForFriendshipMessage;
+    private JCheckBox askForFriendshipMessageCB;
+
+    /** Show possible new folder candidates in the PF folder base. */
+    private JCheckBox showCandidateFoldersBox;
 
     /** warn on limited connectivity */
-    private JCheckBox warnOnLimitedConnectivity;
+    private JCheckBox warnOnLimitedConnectivityCB;
 
     /** warn on posible filename problems */
-    private JCheckBox warnOnPossibleFilenameProblems;
+    private JCheckBox warnOnPossibleFilenameProblemsCB;
 
     /** warn on close program if a folder is still syncing */
-    private JCheckBox warnOnCloseIfNotInSync;
+    private JCheckBox warnOnCloseIfNotInSyncCB;
 
     /** warn if changing profile for multiple folders */
-    private JCheckBox warnOnDuplicateFolders;
+    private JCheckBox warnOnDuplicateFoldersCB;
 
     /** warn if connection quality is poor */
-    private JCheckBox warnOnPoorConnectionQuality;
+    private JCheckBox warnOnPoorConnectionQualityCB;
 
     private JPanel panel;
 
@@ -133,6 +136,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
                 }
             });
 
+        // Show system notifications when minimized
+        showCandidateFoldersBox = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.show_candidate_folders"));
+        showCandidateFoldersBox.setSelected(
+                PreferencesEntry.SHOW_FOLDER_CANDIDATES.getValueBoolean(
+                        getController()));
+
         notificationDisplaySlider = new JSlider();
         notificationDisplaySlider.setMinimum(0);
         notificationDisplaySlider.setMaximum(30);
@@ -187,31 +197,31 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             .getValueBoolean(getController());
         boolean poorConnection = PreferencesEntry.WARN_POOR_QUALITY
             .getValueBoolean(getController());
-        askForFriendship = new JCheckBox(
+        askForFriendshipCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_to_friends_if_node_becomes_member_of_folder"),
             askFriendship);
-        askForFriendshipMessage = new JCheckBox(
+        askForFriendshipMessageCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.ask_to_add_friend_message"),
             askFriendshipMessage);
-        warnOnCloseIfNotInSync = new JCheckBox(
+        warnOnCloseIfNotInSyncCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_close_if_not_in_sync"),
             warnOnClose);
-        warnOnLimitedConnectivity = new JCheckBox(
+        warnOnLimitedConnectivityCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_limited_connectivity"),
             testConnectivity);
-        warnOnPossibleFilenameProblems = new JCheckBox(
+        warnOnPossibleFilenameProblemsCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_possible_file_name_problems"),
             filenamCheck);
-        warnOnDuplicateFolders = new JCheckBox(
+        warnOnDuplicateFoldersCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_duplicate_folders"),
             duplicateFolders);
-        warnOnPoorConnectionQuality = new JCheckBox(
+        warnOnPoorConnectionQualityCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.dialogs.warn_on_poor_connection_quality"),
             poorConnection);
@@ -226,7 +236,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, pref",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
                 .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
@@ -234,25 +244,28 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
             int row = 1;
 
-            builder.add(warnOnCloseIfNotInSync, cc.xy(3, row));
+            builder.add(warnOnCloseIfNotInSyncCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnLimitedConnectivity, cc.xy(3, row));
+            builder.add(warnOnLimitedConnectivityCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnPossibleFilenameProblems, cc.xy(3, row));
+            builder.add(warnOnPossibleFilenameProblemsCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(askForFriendship, cc.xy(3, row));
+            builder.add(askForFriendshipCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(askForFriendshipMessage, cc.xy(3, row));
+            builder.add(askForFriendshipMessageCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnDuplicateFolders, cc.xy(3, row));
+            builder.add(showCandidateFoldersBox, cc.xy(3, row));
 
             row += 2;
-            builder.add(warnOnPoorConnectionQuality, cc.xy(3, row));
+            builder.add(warnOnDuplicateFoldersCB, cc.xy(3, row));
+
+            row += 2;
+            builder.add(warnOnPoorConnectionQualityCB, cc.xy(3, row));
 
             // //////////////////////////////////////
             // Notification stuff only below here //
@@ -322,13 +335,13 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         // Write properties into core
         writeTrigger.triggerCommit();
 
-        boolean testConnectivity = warnOnLimitedConnectivity.isSelected();
-        boolean warnOnClose = warnOnCloseIfNotInSync.isSelected();
-        boolean filenamCheck = warnOnPossibleFilenameProblems.isSelected();
-        boolean askFriendship = askForFriendship.isSelected();
-        boolean askFriendshipMessage = askForFriendshipMessage.isSelected();
-        boolean duplicateFolders = warnOnDuplicateFolders.isSelected();
-        boolean poorConnection = warnOnPoorConnectionQuality.isSelected();
+        boolean testConnectivity = warnOnLimitedConnectivityCB.isSelected();
+        boolean warnOnClose = warnOnCloseIfNotInSyncCB.isSelected();
+        boolean filenamCheck = warnOnPossibleFilenameProblemsCB.isSelected();
+        boolean askFriendship = askForFriendshipCB.isSelected();
+        boolean askFriendshipMessage = askForFriendshipMessageCB.isSelected();
+        boolean duplicateFolders = warnOnDuplicateFoldersCB.isSelected();
+        boolean poorConnection = warnOnPoorConnectionQualityCB.isSelected();
 
         if (showChatNotificationBox != null) {
             applicationModel.getChatNotificationsValueModel().setValue(
@@ -342,6 +355,9 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
 
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
             notificationTranslucentSlider.getValue());
+
+        PreferencesEntry.SHOW_FOLDER_CANDIDATES.setValue(getController(),
+            showCandidateFoldersBox.isSelected());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
             notificationDisplaySlider.getValue());

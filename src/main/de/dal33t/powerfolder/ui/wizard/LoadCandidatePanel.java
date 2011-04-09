@@ -23,6 +23,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
@@ -35,6 +36,8 @@ import javax.swing.*;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Class that lets the user configure a new folder candidate found in the
@@ -62,6 +65,8 @@ public class LoadCandidatePanel extends PFWizardPanel {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
 
     private JCheckBox onlineStorageCB;
+
+    private JCheckBox neverAskAgainCB;
 
     public LoadCandidatePanel(Controller controller, File directory) {
         super(controller);
@@ -104,7 +109,7 @@ public class LoadCandidatePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -135,6 +140,9 @@ public class LoadCandidatePanel extends PFWizardPanel {
 
         // Online storage
         builder.add(onlineStorageCB, cc.xy(3, 9));
+
+        // Never ask again for folder candidates.
+        builder.add(neverAskAgainCB, cc.xy(3, 11));
 
         return builder.getPanel();
     }
@@ -167,6 +175,14 @@ public class LoadCandidatePanel extends PFWizardPanel {
         onlineStorageCB = new JCheckBox(Translation.getTranslation(
                 "wizard.load_candidate.backup_by_online_storage"));
         onlineStorageCB.setOpaque(false);
+
+        neverAskAgainCB = new JCheckBox(Translation.getTranslation(
+                "general.neverAskAgain"));
+        neverAskAgainCB.setOpaque(false);
+
+        neverAskAgainCB.setSelected(!PreferencesEntry.SHOW_FOLDER_CANDIDATES
+                .getValueBoolean(getController()));
+        neverAskAgainCB.addActionListener(new MyActionListener());
 
     }
 
@@ -209,6 +225,19 @@ public class LoadCandidatePanel extends PFWizardPanel {
                     Format.formatBytes(totalDirectorySize),
                     Format.formatLong(recursiveFileCount)));
             updateButtons();
+        }
+    }
+
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == neverAskAgainCB) {
+                PreferencesEntry.SHOW_FOLDER_CANDIDATES.setValue(getController(),
+                        !neverAskAgainCB.isSelected());
+            }
         }
     }
 }
