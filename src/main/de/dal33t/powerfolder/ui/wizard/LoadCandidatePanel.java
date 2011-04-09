@@ -66,6 +66,8 @@ public class LoadCandidatePanel extends PFWizardPanel {
 
     private JCheckBox onlineStorageCB;
 
+    private JCheckBox sendInvitationsCB;
+
     private JCheckBox neverAskAgainCB;
 
     public LoadCandidatePanel(Controller controller, File directory) {
@@ -90,6 +92,9 @@ public class LoadCandidatePanel extends PFWizardPanel {
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
                 onlineStorageCB.isSelected());
 
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                sendInvitationsCB.isSelected());
+
         getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
 
         return new FolderCreatePanel(getController());
@@ -109,7 +114,7 @@ public class LoadCandidatePanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
         FormLayout layout = new FormLayout("pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
@@ -141,8 +146,11 @@ public class LoadCandidatePanel extends PFWizardPanel {
         // Online storage
         builder.add(onlineStorageCB, cc.xy(3, 9));
 
+        // Send invitations
+        builder.add(sendInvitationsCB, cc.xy(3, 11));
+
         // Never ask again for folder candidates.
-        builder.add(neverAskAgainCB, cc.xy(3, 11));
+        builder.add(neverAskAgainCB, cc.xy(3, 13));
 
         return builder.getPanel();
     }
@@ -175,6 +183,10 @@ public class LoadCandidatePanel extends PFWizardPanel {
         onlineStorageCB = new JCheckBox(Translation.getTranslation(
                 "wizard.load_candidate.backup_by_online_storage"));
         onlineStorageCB.setOpaque(false);
+
+        sendInvitationsCB = new JCheckBox(Translation.getTranslation(
+                "wizard.load_candidate.send_invitation"));
+        sendInvitationsCB.setOpaque(false);
 
         neverAskAgainCB = new JCheckBox(Translation.getTranslation(
                 "general.neverAskAgain"));
