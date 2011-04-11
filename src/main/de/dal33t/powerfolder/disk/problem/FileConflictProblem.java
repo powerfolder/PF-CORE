@@ -30,4 +30,28 @@ public class FileConflictProblem extends Problem {
         return WikiLinks.PROBLEM_FILE_CONFLICT;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fInfo == null) ? 0 : fInfo.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FileConflictProblem other = (FileConflictProblem) obj;
+        if (fInfo == null) {
+            if (other.fInfo != null)
+                return false;
+        } else if (!fInfo.equals(other.fInfo))
+            return false;
+        return true;
+    }
 }

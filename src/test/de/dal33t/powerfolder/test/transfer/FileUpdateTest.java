@@ -233,5 +233,42 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     && getFolderAtLisa().getKnownItemCount() == 2;
             }
         });
+
+        // Second case: version is lower, but last modification date if newer
+        disconnectBartAndLisa();
+        getFolderAtBart().removeProblem(cp);
+
+        TestHelper.waitMilliSeconds(500);
+        TestHelper.changeFile(fileAtBart);
+        scanFolder(getFolderAtBart());
+        TestHelper.waitMilliSeconds(500);
+        TestHelper.changeFile(fileAtBart);
+        scanFolder(getFolderAtBart());
+        TestHelper.waitMilliSeconds(500);
+        TestHelper.changeFile(fileAtBart);
+        scanFolder(getFolderAtBart());
+        fInfoAtBart = fInfoAtBart.getLocalFileInfo(getContollerBart()
+            .getFolderRepository());
+        assertEquals(4, fInfoAtBart.getVersion());
+
+        TestHelper.waitMilliSeconds(2000);
+        TestHelper.changeFile(fileAtLisa);
+        scanFolder(getFolderAtLisa());
+        fInfoAtLisa = fInfoAtLisa.getLocalFileInfo(getContollerLisa()
+            .getFolderRepository());
+        assertEquals(2, fInfoAtLisa.getVersion());
+
+        connectBartAndLisa();
+        // The old copy should have been distributed.
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtBart().getKnownItemCount() == 3
+                    && getFolderAtLisa().getKnownItemCount() == 3;
+            }
+        });
+        p = getFolderAtLisa().getProblems().iterator().next();
+        assertTrue(p instanceof FileConflictProblem);
+        cp = (FileConflictProblem) p;
+        assertEquals(fInfoAtLisa, cp.getFileInfo());
     }
 }

@@ -803,9 +803,12 @@ public class Folder extends PFComponent {
     private FileInfo doSimpleConflictDetection(FileInfo fInfo, File targetFile,
         FileInfo oldLocalFileInfo)
     {
-        if (oldLocalFileInfo.getVersion() == fInfo.getVersion()
-            && fInfo.isNewerThan(oldLocalFileInfo))
-        {
+        boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
+            && fInfo.isNewerThan(oldLocalFileInfo);
+        conflict |= oldLocalFileInfo.getVersion() <= fInfo.getVersion()
+            && DateUtil.isNewerFileDateCrossPlattform(
+                oldLocalFileInfo.getModifiedDate(), fInfo.getModifiedDate());
+        if (conflict) {
             logWarning("Conflict detected on file " + fInfo.toDetailString()
                 + ". old: " + oldLocalFileInfo.toDetailString());
             // Really basic raw conflict detection.
