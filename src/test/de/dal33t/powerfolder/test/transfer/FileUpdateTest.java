@@ -1,27 +1,29 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
+ */
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -41,8 +43,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         .getBytes();
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         // Join on testfolder
@@ -80,10 +81,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
 
-        assertFileMatch(fileAtBart, getFolderAtBart().getKnownFiles().iterator().next(),
-            getContollerBart());
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles().iterator().next(),
-            getContollerLisa());
+        assertFileMatch(fileAtBart, getFolderAtBart().getKnownFiles()
+            .iterator().next(), getContollerBart());
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()
+            .iterator().next(), getContollerLisa());
 
         // Now let them sync with auto-download
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
@@ -98,26 +99,28 @@ public class FileUpdateTest extends TwoControllerTestCase {
         });
 
         // Test barts file (=newer)
-        FileInfo fileInfoAtBart = getFolderAtBart().getKnownFiles().iterator().next();
+        FileInfo fileInfoAtBart = getFolderAtBart().getKnownFiles().iterator()
+            .next();
         assertEquals(0, fileInfoAtBart.getVersion());
         assertEquals(fileAtBart.getName(), fileInfoAtBart.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtBart.getSize());
         assertEquals(fileAtBart.lastModified(), fileInfoAtBart
             .getModifiedDate().getTime());
-        assertEquals(getContollerBart().getMySelf().getInfo(), fileInfoAtBart
-            .getModifiedBy());
+        assertEquals(getContollerBart().getMySelf().getInfo(),
+            fileInfoAtBart.getModifiedBy());
 
         // Test lisas file (=should be override by barts newer file)
-        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator().next();
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles().iterator().next(),
-            getContollerLisa());
+        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
+            .next();
+        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()
+            .iterator().next(), getContollerLisa());
         assertTrue(fileInfoAtLisa.inSyncWithDisk(fileAtLisa));
         assertEquals(fileAtBart.getName(), fileInfoAtLisa.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtLisa.getSize());
         assertEquals(fileAtBart.lastModified(), fileInfoAtLisa
             .getModifiedDate().getTime());
-        assertEquals(getContollerBart().getMySelf().getInfo(), fileInfoAtLisa
-            .getModifiedBy());
+        assertEquals(getContollerBart().getMySelf().getInfo(),
+            fileInfoAtLisa.getModifiedBy());
     }
 
     /**
@@ -140,8 +143,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // = db
         assertEquals(LONG_FILE_CONTENTS.length, getFolderAtBart()
             .getKnownFiles().iterator().next().getSize());
-        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles().iterator().next()
-            .getSize());
+        assertNotSame(fileAtBart.length(), getFolderAtBart().getKnownFiles()
+            .iterator().next().getSize());
 
         // Change sync profile = auto download.
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
@@ -166,5 +169,69 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // Download stays forever
         assertEquals("Lisa has a stuck download", 0, getContollerLisa()
             .getTransferManager().countNumberOfDownloads(getFolderAtLisa()));
+    }
+
+    public void testFileConflict() {
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        final File fileAtBart = TestHelper.createTestFile(getFolderAtBart()
+            .getLocalBase(), TEST_FILENAME, LONG_FILE_CONTENTS);
+        // Scan the file
+        scanFolder(getFolderAtBart());
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
+
+        final File fileAtLisa = getFolderAtBart().getKnownFiles().iterator()
+            .next().getDiskFile(getContollerLisa().getFolderRepository());
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                return fileAtLisa.exists();
+            }
+        });
+
+        disconnectBartAndLisa();
+
+        TestHelper.waitMilliSeconds(2000);
+        TestHelper.changeFile(fileAtBart);
+        TestHelper.waitMilliSeconds(2000);
+        TestHelper.changeFile(fileAtLisa);
+
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
+
+        FileInfo fInfoAtBart = getFolderAtBart().getKnownFiles().iterator()
+            .next();
+        FileInfo fInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
+            .next();
+        assertEquals(1, fInfoAtBart.getVersion());
+        assertEquals(1, fInfoAtLisa.getVersion());
+
+        assertTrue(fInfoAtLisa.isNewerThan(fInfoAtBart));
+        assertFalse(fInfoAtLisa.getSize() == fInfoAtBart.getSize());
+        // Now we have a conflict: SAME file version, but different modification
+        // dates and sizes. In this scenario LISAs file wins
+
+        connectBartAndLisa();
+        // Let them sync.
+        TestHelper.waitForCondition(5, new Condition() {
+            public boolean reached() {
+                return fileAtLisa.length() == fileAtBart.length();
+            }
+        });
+        // Now Bart should have detected an conflict.
+        assertEquals(1, getFolderAtBart().getProblems().size());
+        assertEquals(0, getFolderAtLisa().getProblems().size());
+        Problem p = getFolderAtBart().getProblems().iterator().next();
+        assertTrue(p instanceof FileConflictProblem);
+        FileConflictProblem cp = (FileConflictProblem) p;
+        assertEquals(fInfoAtLisa, cp.getFileInfo());
+
+        // The old copy should have been distributed.
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtBart().getKnownItemCount() == 2
+                    && getFolderAtLisa().getKnownItemCount() == 2;
+            }
+        });
     }
 }

@@ -64,6 +64,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
+import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -736,6 +737,13 @@ public class Folder extends PFComponent {
                     FileInfo oldLocalFileInfo = fInfo
                         .getLocalFileInfo(getController().getFolderRepository());
                     if (oldLocalFileInfo != null) {
+                        try {
+                            doSimpleConflictDetection(fInfo, targetFile,
+                                oldLocalFileInfo);
+                        } catch (Exception e) {
+                            logSevere("Problem withe conflict detection. " + e);
+                        }
+
                         arch.archive(oldLocalFileInfo, targetFile, false);
                     }
                 } catch (IOException e) {
@@ -790,6 +798,47 @@ public class Folder extends PFComponent {
             }
         }
         return true;
+    }
+
+    private FileInfo doSimpleConflictDetection(FileInfo fInfo, File targetFile,
+        FileInfo oldLocalFileInfo)
+    {
+        if (oldLocalFileInfo.getVersion() == fInfo.getVersion()
+            && fInfo.isNewerThan(oldLocalFileInfo))
+        {
+            logWarning("Conflict detected on file " + fInfo.toDetailString()
+                + ". old: " + oldLocalFileInfo.toDetailString());
+            // Really basic raw conflict detection.
+            addProblem(new FileConflictProblem(fInfo));
+            String fn = fInfo.getFilenameOnly();
+            String extraInfo = "_";
+            extraInfo += oldLocalFileInfo.getModifiedBy().getNick();
+            extraInfo += "_";
+            extraInfo += oldLocalFileInfo.getVersion();
+            if (fn.contains(".")) {
+                int i = fn.lastIndexOf('.');
+                fn = fn.substring(0, i) + extraInfo
+                    + fn.substring(i, fn.length());
+            } else {
+                fn += extraInfo;
+            }
+            File oldCopy = new File(targetFile.getParentFile(), fn);
+            FileInfo oldCopyFInfo = FileInfoFactory.lookupInstance(this,
+                oldCopy);
+            watcher.addIgnoreFile(oldCopyFInfo);
+            try {
+                FileUtils.copyFile(targetFile, oldCopy);
+                logInfo("Saved copy of conflicting file to " + oldCopy);
+                return scanChangedFile(oldCopyFInfo);
+            } catch (Exception e) {
+                logWarning("Unable to save old copy on conflict file to "
+                    + oldCopy + ": " + e);
+            } finally {
+                watcher.removeIgnoreFile(oldCopyFInfo);
+
+            }
+        }
+        return null;
     }
 
     /**
