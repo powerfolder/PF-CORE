@@ -22,7 +22,7 @@ public class FileConflictProblem extends Problem {
     @Override
     public String getDescription() {
         return Translation.getTranslation("file_conflict_problem.description",
-            fInfo.getFilenameOnly());
+            fInfo.getRelativeName());
     }
 
     @Override

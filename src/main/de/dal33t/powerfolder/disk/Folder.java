@@ -822,7 +822,8 @@ public class Folder extends PFComponent {
             } else {
                 fn += extraInfo;
             }
-            File oldCopy = new File(targetFile.getParentFile(), fn);
+            File oldCopy = new File(targetFile.getParentFile(),
+                FileUtils.removeInvalidFilenameChars(fn));
             FileInfo oldCopyFInfo = FileInfoFactory.lookupInstance(this,
                 oldCopy);
             watcher.addIgnoreFile(oldCopyFInfo);

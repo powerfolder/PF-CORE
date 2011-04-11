@@ -41,7 +41,7 @@ public interface WikiLinks {
     String PROBLEM_FILENAME_TOO_LONG = "File-Name-Too-Long";
     String PROBLEM_NO_CONFLICT_DETECTION_POSSIBLE = "Version_Conflict_With_Old_Client";
     String PROBLEM_NO_OWNER = "No-Owner";
-    String PROBLEM_FILE_CONFLICT = "Conflict_Handling";
+    String PROBLEM_FILE_CONFLICT = "Conflict_handling";
     String SCRIPT_EXECUTION = "Script_execution";
     String DEFAULT_FOLDER = "Default_Folder";
     String INVITATIONS = "Invitations";

@@ -975,15 +975,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return;
             }
         }
-        try {
-            // initial wait before first scan
-            synchronized (scanTrigger) {
-                scanTrigger.wait(Controller.getWaitTime() * 4);
-            }
-        } catch (InterruptedException e) {
-            logFiner(e);
-            return;
-        }
+//        try {
+//            // initial wait before first scan
+//            synchronized (scanTrigger) {
+//                scanTrigger.wait(Controller.getWaitTime() * 4);
+//            }
+//        } catch (InterruptedException e) {
+//            logFiner(e);
+//            return;
+//        }
 
         List<Folder> scanningFolders = new ArrayList<Folder>();
         Controller controller = getController();
