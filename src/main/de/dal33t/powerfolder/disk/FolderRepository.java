@@ -975,15 +975,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return;
             }
         }
-//        try {
-//            // initial wait before first scan
-//            synchronized (scanTrigger) {
-//                scanTrigger.wait(Controller.getWaitTime() * 4);
-//            }
-//        } catch (InterruptedException e) {
-//            logFiner(e);
-//            return;
-//        }
+        // try {
+        // // initial wait before first scan
+        // synchronized (scanTrigger) {
+        // scanTrigger.wait(Controller.getWaitTime() * 4);
+        // }
+        // } catch (InterruptedException e) {
+        // logFiner(e);
+        // return;
+        // }
 
         List<Folder> scanningFolders = new ArrayList<Folder>();
         Controller controller = getController();
@@ -1081,8 +1081,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     }
                     if (!known) {
-                        log.info("Found new folder candidate at " + file);
                         if (Feature.NEW_FOLDER_CANDIDATE.isEnabled()) {
+                            if (log.isLoggable(Level.FINE)) {
+                                log.fine("Found new folder candidate at "
+                                    + file);
+                            }
                             newFolderCandidateListenerSupport
                                 .newFolderCandidateDetected(new NewFolderCandidateEvent(
                                     file));
