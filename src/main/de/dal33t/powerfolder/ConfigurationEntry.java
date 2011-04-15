@@ -230,7 +230,7 @@ public enum ConfigurationEntry {
      * established
      */
     SERVER_CONFIG_UPDATE("server.config.update", true),
-    
+
     // Config META information ************************************************
 
     /**
@@ -253,7 +253,12 @@ public enum ConfigurationEntry {
      * If all folder settings should be dropped when this config is loaded
      */
     CONFIG_DROP_FOLDER_SETTINGS("config.drop.folders.settings", false),
-    
+
+    /**
+     * #2248 Automatically assign client to server by IP address
+     */
+    CONFIG_ASSIGN_IP_LIST("config.assign.iplist", "192.168.0.1-192.168.255.255"),
+
     // Update settings ********************************************************
 
     /**
@@ -271,7 +276,7 @@ public enum ConfigurationEntry {
      * exe
      */
     UPDATE_WINDOWS_EXE_URL("update.windows_exe.url"),
-    
+
     // Server connection ******************************************************
 
     /**
@@ -452,7 +457,7 @@ public enum ConfigurationEntry {
      */
     USE_DELTA_ON_INTERNET("deltasync.internet.enabled", true),
 
-    USE_DELTA_ON_LAN("deltasync.lan.enabled", false),
+    USE_DELTA_ON_LAN("deltasync.lan.enabled", true),
 
     /**
      * Setting to enable/disable swarming.
