@@ -119,7 +119,7 @@ public class ConfigurationLoader {
                     int i = ConfigurationLoader.merge(preConfig,
                         controller.getConfig(), controller.getPreferences(),
                         overwrite);
-                    LOG.log(Level.WARNING, "Loaded/Merged " + i
+                    LOG.log(Level.FINE, "Loaded/Merged " + i
                         + " config/prefs entries from: " + clr.getConfigURL());
                     ConfigurationEntry.CONFIG_URL.setValue(controller,
                         clr.getConfigURL());
@@ -173,7 +173,7 @@ public class ConfigurationLoader {
             }
             int i = merge(serverConfig, controller.getConfig(),
                 controller.getPreferences(), overWrite);
-            LOG.warning("Loaded " + i + " settings (overwrite? " + overWrite
+            LOG.fine("Loaded " + i + " settings (overwrite? " + overWrite
                 + ") from server: " + configURL);
             if (i > 0) {
                 controller.saveConfig();
