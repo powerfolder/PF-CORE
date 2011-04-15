@@ -139,7 +139,7 @@ public class UDTSocket {
     public UDTSocket() {
         sock = socket();
         if (openSockets.incrementAndGet() > 20) {
-            LOG.severe("Many open UDT sockets (" + openSockets.get() + ')');
+            LOG.warning("Many open UDT sockets (" + openSockets.get() + ')');
         }
 
     }
