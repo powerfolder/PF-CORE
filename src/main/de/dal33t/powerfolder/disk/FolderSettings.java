@@ -493,7 +493,7 @@ public class FolderSettings {
         try {
             Map<String, UserDirectory> dirs = UserDirectories
                 .getUserDirectories();
-            LOG.warning("Local placeholder directories: " + dirs);
+            LOG.fine("Local placeholder directories: " + dirs);
             for (UserDirectory dir : dirs.values()) {
                 if (StringUtils.isBlank(dir.getPlaceholder())) {
                     continue;
