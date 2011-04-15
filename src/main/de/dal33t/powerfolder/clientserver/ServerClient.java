@@ -286,10 +286,10 @@ public class ServerClient extends PFComponent {
      * @param serverNode
      * @param serverChange
      */
-    public void setServer(Member serverNode, boolean serverChange) {
+    public void setServer(Member serverNode, boolean allowServerChange) {
         Reject.ifNull(serverNode, "Server node is null");
         setNewServerNode(serverNode);
-        this.allowServerChange = serverChange;
+        this.allowServerChange = allowServerChange;
         loginWithLastKnown();
         if (!isConnected()) {
             getServer().markForImmediateConnect();
