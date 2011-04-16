@@ -129,8 +129,7 @@ public class NoticesModel extends PFUIComponent {
 
         // Show notice?
         if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
-            .getValue()
-            && notice.isNotification())
+            .getValue() && notice.isNotification() && !notice.isRead())
         {
             NoticeHandler noticeHandler = new NoticeHandler(getController(),
                 notice);
@@ -144,8 +143,7 @@ public class NoticesModel extends PFUIComponent {
                 InvitationNotice in = (InvitationNotice) notice;
                 Invitation i = in.getPayload(getController());
                 FolderInfo fi = i.folder;
-                if (getController().getFolderRepository().hasJoinedFolder(fi))
-                {
+                if (getController().getFolderRepository().hasJoinedFolder(fi)) {
                     return;
                 }
             }
@@ -184,18 +182,19 @@ public class NoticesModel extends PFUIComponent {
         markRead(notice);
     }
 
-    private void handleNewFolderCandidate(NewFolderCandidateNotice eventNotice) {
+    private void handleNewFolderCandidate(NewFolderCandidateNotice eventNotice)
+    {
         PFWizard wizard = new PFWizard(getController(),
             Translation.getTranslation("wizard.pfwizard.folder_title"));
         WizardContext context = wizard.getWizardContext();
 
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
+            Translation.getTranslation("wizard.setup_success"),
+            Translation.getTranslation("wizard.success_join"));
         context.setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        LoadCandidatePanel choosePanel = new LoadCandidatePanel(getController(),
-                eventNotice.getPayload(getController()));
+        LoadCandidatePanel choosePanel = new LoadCandidatePanel(
+            getController(), eventNotice.getPayload(getController()));
         wizard.open(choosePanel);
     }
 
@@ -275,9 +274,10 @@ public class NoticesModel extends PFUIComponent {
                 JPanel panel1 = panelBuilder.getPanel();
                 builder.add(panel1, cc.xy(1, 1));
                 if (!StringUtils.isEmpty(message)) {
-                    builder.add(new JLabel(Translation.getTranslation(
-                        "dialog.ask_for_friendship.message_title", member
-                            .getNick())), cc.xy(1, 3));
+                    builder.add(
+                        new JLabel(Translation.getTranslation(
+                            "dialog.ask_for_friendship.message_title",
+                            member.getNick())), cc.xy(1, 3));
                     JTextArea textArea = new JTextArea(message);
                     textArea.setEditable(false);
                     JScrollPane scrollPane = new JScrollPane(textArea);
@@ -338,9 +338,10 @@ public class NoticesModel extends PFUIComponent {
                     JPanel panel1 = panelBuilder.getPanel();
                     builder.add(panel1, cc.xy(1, 1));
                     if (!StringUtils.isEmpty(message)) {
-                        builder.add(new JLabel(Translation.getTranslation(
-                            "dialog.ask_for_friendship.message_title", node
-                                .getNick())), cc.xy(1, 3));
+                        builder.add(
+                            new JLabel(Translation.getTranslation(
+                                "dialog.ask_for_friendship.message_title",
+                                node.getNick())), cc.xy(1, 3));
                         JTextArea textArea = new JTextArea(message);
                         textArea.setEditable(false);
                         JScrollPane scrollPane = new JScrollPane(textArea);
