@@ -118,6 +118,14 @@ public class FolderInformationCard extends InformationCard {
         updateProblems();
     }
 
+    public void setFolderInfoUnsynced(FolderInfo folderInfo) {
+        detachProblemListener();
+        setFolderInfo0(folderInfo);
+        filesTab.setFolderInfoUnsynced(folderInfo);
+        atachProblemListener();
+        updateProblems();
+    }
+
     /**
      * Sets the folder in the tabs with incoming set.
      * 

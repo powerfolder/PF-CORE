@@ -196,6 +196,21 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
             .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_DELETED_PREVIOUS);
     }
 
+    public void setFolderInfoUnsynced(FolderInfo folderInfo) {
+        folder = getController().getFolderRepository().getFolder(folderInfo);
+        updateNodes();
+        directoryFilter.setFolder(folder, FileInfoFactory.lookupDirectory(
+            folder.getInfo(), ""));
+        tablePanel.setFolder(folder);
+        tablePanel.sortLatestDate();
+        flatViewCB.setSelected(true);
+        flatMode.setValue(flatViewCB.isSelected());
+
+        // Triggers mode change and schedule filtering (MyActionListener).
+        filterSelectionComboBox
+            .setSelectedIndex(DirectoryFilter.FILE_FILTER_MODE_UNSYNCHRONIZED);
+    }
+
     /**
      * Set the tab with details for a folder with incoming files.
      * 

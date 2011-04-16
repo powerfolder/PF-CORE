@@ -882,6 +882,11 @@ public class UIController extends PFComponent {
         displayInformationWindow();
     }
 
+    public void openFilesInformationUnsynced(FolderInfo folderInfo) {
+        informationFrame.displayFolderFilesUnsynced(folderInfo);
+        displayInformationWindow();
+    }
+
     /**
      * Opens the Files information for a folder.
      * 

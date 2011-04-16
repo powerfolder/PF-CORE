@@ -191,6 +191,15 @@ public class InformationFrame extends MagneticFrame {
         currentFolderInfo = folderInfo;
     }
 
+    public void displayFolderFilesUnsynced(FolderInfo folderInfo) {
+        buildFolderInformationCard();
+        folderInformationCard.setFolderInfoUnsynced(folderInfo);
+        folderInformationCard.showFiles();
+        displayCard(folderInformationCard);
+        showingFolder = true;
+        currentFolderInfo = folderInfo;
+    }
+
     /**
      * Displays file info for a folder with filter set to new and sort set to
      * date descending.
