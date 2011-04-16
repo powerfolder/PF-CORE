@@ -1081,15 +1081,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     }
                     if (!known) {
-                        if (Feature.NEW_FOLDER_CANDIDATE.isEnabled()) {
-                            if (log.isLoggable(Level.FINE)) {
-                                log.fine("Found new folder candidate at "
-                                    + file);
-                            }
-                            newFolderCandidateListenerSupport
-                                .newFolderCandidateDetected(new NewFolderCandidateEvent(
-                                    file));
+                        if (log.isLoggable(Level.FINE)) {
+                            log.fine("Found new folder candidate at "
+                                + file);
                         }
+                        newFolderCandidateListenerSupport
+                            .newFolderCandidateDetected(new NewFolderCandidateEvent(
+                                file));
                     }
                 }
             }
