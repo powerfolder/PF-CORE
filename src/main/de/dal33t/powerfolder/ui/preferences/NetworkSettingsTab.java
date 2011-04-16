@@ -249,13 +249,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.line_settings"),
                 cc.xywh(1, row, 1, 1, "default, top"));
-            builder.add(wanSpeed, cc.xy(3, row));
+            builder.add(wanSpeed, cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.lan_line_settings"), cc
                 .xywh(1, row, 1, 1, "default, top"));
-            builder.add(lanSpeed, cc.xy(3, row));
+            builder.add(lanSpeed, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(silentThrottleLabel,

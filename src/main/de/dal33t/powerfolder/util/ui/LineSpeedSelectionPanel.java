@@ -78,8 +78,8 @@ public class LineSpeedSelectionPanel extends JPanel {
         CellConstraints cc = new CellConstraints();
         customSpeedPanel = createCustomSpeedInputFieldPanel();
         customSpeedPanel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
-
-        add(speedSelectionBox, cc.xy(1, 1));
+        JPanel speedSelectionPanel = createSpeedSelectionPanel();
+        add(speedSelectionPanel, cc.xy(1, 1));
         add(customSpeedPanel, cc.xy(1, 3));
     }
 
@@ -119,20 +119,37 @@ public class LineSpeedSelectionPanel extends JPanel {
         });
     }
 
+    private JPanel createSpeedSelectionPanel() {
+        FormLayout layout = new FormLayout(
+            "140dlu, pref:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+
+        builder.add(speedSelectionBox, cc.xy(1,1));
+
+        JPanel panel = builder.getPanel();
+        panel.setOpaque(false);
+        return panel;
+    }
+
     private JPanel createCustomSpeedInputFieldPanel() {
         FormLayout layout = new FormLayout(
-            "pref:grow, 3dlu, pref, 3dlu, 30dlu, 7dlu, pref, 3dlu, 30dlu",
+            "pref, 3dlu, 30dlu, 3dlu, pref, 7dlu, pref, 3dlu, 30dlu, 3dlu, pref",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(new JLabel(Translation
-            .getTranslation("line_speed.download_speed")), cc.xy(3, 1));
-        builder.add(customDownloadSpeedField, cc.xy(5, 1));
+            .getTranslation("line_speed.download_speed")), cc.xy(1, 1));
+        builder.add(customDownloadSpeedField, cc.xy(3, 1));
+        builder.add(new JLabel(Translation.getTranslation("general.kbPerS")),
+                cc.xy(5, 1));
 
         builder.add(new JLabel(Translation
             .getTranslation("line_speed.upload_speed")), cc.xy(7, 1));
         builder.add(customUploadSpeedField, cc.xy(9, 1));
+        builder.add(new JLabel(Translation.getTranslation("general.kbPerS")), 
+                cc.xy(11, 1));
 
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
