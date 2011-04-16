@@ -278,9 +278,16 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         }
 
         public void update(long initialValue, long residualValue) {
-            initial += initialValue;
-            residual += residualValue;
-            peak = Math.max(peak, initialValue - residualValue);
+            // Check > 0 to fix for the initial UNLIMITED (-1) stat values.
+            if (initialValue >= 0) {
+                initial += initialValue;
+            }
+            if (residualValue >= 0) {
+                residual += residualValue;
+            }
+            if (initialValue >= 0 && residualValue >= 0) {
+                peak = Math.max(peak, initialValue - residualValue);
+            }
             count++;
         }
 
