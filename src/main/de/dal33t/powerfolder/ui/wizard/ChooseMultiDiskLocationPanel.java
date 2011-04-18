@@ -47,12 +47,16 @@ import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -86,7 +90,6 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.ui.SwingWorker;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
 import de.dal33t.powerfolder.util.ui.UserDirectory;
 
@@ -103,6 +106,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     private JLabel folderSizeLabel;
     private LinkLabel warningLabel;
 
+    private JComponent customDirectoryComp;
     private JList customDirectoryList;
     private DefaultListModel customDirectoryListModel;
     private JCheckBox backupByOnlineStorageBox;
@@ -255,7 +259,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
 
         String verticalLayout = verticalUserDirectoryLayout
-            + "9dlu, pref, 3dlu, 40dlu, 3dlu, pref, 12dlu, pref, 3dlu, max(16dlu;pref), 12dlu, pref";
+            + "9dlu, min(40dlu;pref), 3dlu, pref, 12dlu, pref, 3dlu, max(16dlu;pref), 12dlu, pref";
         // info custom add size os w
         // Fixed (60dlu) sizing used so that other components display okay if
         // there is only 1 or two (or even zero) check boxes displayed.
@@ -281,17 +285,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             }
         }
         row += 3;
-
-        builder
-            .addLabel(
-                Translation
-                    .getTranslation("wizard.choose_multi_disk_location.select_additional"),
-                cc.xyw(1, row, 6));
+        builder.add(customDirectoryComp, cc.xyw(1, row, 7));
         row += 2;
-
-        builder.add(new JScrollPane(customDirectoryList), cc.xyw(1, row, 7));
-        row += 2;
-
         builder.add(createCustomButtons(), cc.xyw(1, row, 7));
         row += 2;
 
@@ -324,13 +319,18 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private JPanel createCustomButtons() {
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu, pref, 0:grow, 3dlu, pref", "pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, 130dlu, 3dlu, 0:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(new JButtonMini(addAction), cc.xy(1, 1));
         builder.add(removeButton, cc.xy(3, 1));
         builder.add(linkButton, cc.xy(5, 1));
-        builder.add(folderSizeLabel, cc.xy(8, 1));
+        builder
+            .addLabel(
+                Translation
+                    .getTranslation("wizard.choose_multi_disk_location.select_additional"),
+                cc.xy(7, 1));
+        builder.add(folderSizeLabel, cc.xy(9, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         return panel;
@@ -362,10 +362,29 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         customDirectoryListModel = new DefaultListModel();
         customDirectoryList = new JList(customDirectoryListModel);
+        customDirectoryComp = new JScrollPane(customDirectoryList);
         customDirectoryList
             .setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         customDirectoryList
             .addListSelectionListener(new MyListSelectionListener());
+        customDirectoryList.getModel().addListDataListener(
+            new ListDataListener() {
+                public void intervalRemoved(ListDataEvent e) {
+                    customDirectoryComp.setVisible(customDirectoryList
+                        .getModel().getSize() > 0);
+                }
+
+                public void intervalAdded(ListDataEvent e) {
+                    customDirectoryComp.setVisible(customDirectoryList
+                        .getModel().getSize() > 0);
+                }
+
+                public void contentsChanged(ListDataEvent e) {
+                    customDirectoryComp.setVisible(customDirectoryList
+                        .getModel().getSize() > 0);
+                }
+            });
+        customDirectoryComp.setVisible(false);
 
         // Online Storage integration
         boolean backupByOS = !getController().isLanOnly()
@@ -440,8 +459,11 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private void startFolderSizeCalculator() {
-        SwingWorker worker = new MyFolderSizeSwingWorker();
-        worker.start();
+        folderSizeLabel
+            .setText(Translation
+                .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
+        folderSizeLabel.setForeground(SystemColor.textText);
+        new MyFolderSizeSwingWorker().execute();
     }
 
     private void enableRemoveLinkAction() {
@@ -469,8 +491,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      * Start process to configure userDirectory checkboxes.
      */
     private void startConfigureCheckboxes() {
-        SwingWorker worker = new MyConfigureCBSwingWorker();
-        worker.start();
+        new MyConfigureCBSwingWorker().execute();
     }
 
     private static FolderInfo createFolderInfo(String name) {
@@ -493,21 +514,14 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     // Inner classes //
     // ////////////////
 
-    private class MyFolderSizeSwingWorker extends SwingWorker {
-
+    private class MyFolderSizeSwingWorker extends SwingWorker<Void, Void> {
         private int nDirectories = 0;
         private int recursiveFileCount = 0;
         private long totalDirectorySize = 0;
         private boolean valid = true;
 
-        protected void beforeConstruct() {
-            folderSizeLabel
-                .setText(Translation
-                    .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
-            folderSizeLabel.setForeground(SystemColor.textText);
-        }
-
-        public Object construct() {
+        @Override
+        protected Void doInBackground() throws Exception {
             try {
                 recursiveFileCount = 0;
                 totalDirectorySize = 0;
@@ -572,7 +586,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             return null;
         }
 
-        public void finished() {
+        @Override
+        public void done() {
             if (valid) {
                 try {
                     folderSizeLabel.setText(Translation.getTranslation(
@@ -637,6 +652,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             }
             updateButtons();
         }
+
     }
 
     private long calculateTotalLocalSharedSize() {
@@ -653,8 +669,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
      * Worker to gray out checkboxes for synchronized folders and bold
      * checkboxes for non-sync online folders.
      */
-    private class MyConfigureCBSwingWorker extends SwingWorker {
-        public Object construct() throws Throwable {
+    private class MyConfigureCBSwingWorker extends SwingWorker<Void, Void> {
+        @Override
+        protected Void doInBackground() throws Exception {
             Collection<Folder> folders = getController().getFolderRepository()
                 .getFolders();
             ServerClient client = getController().getOSClient();
@@ -709,8 +726,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
             }
             return null;
         }
+
     }
 
+    @SuppressWarnings("serial")
     private class MyLinkAction extends BaseAction {
 
         MyLinkAction(Controller controller) {
@@ -780,6 +799,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     }
 
+    @SuppressWarnings("serial")
     private class MyAddAction extends BaseAction {
 
         MyAddAction(Controller controller) {
@@ -827,6 +847,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         }
     }
 
+    @SuppressWarnings("serial")
     private class MyRemoveAction extends BaseAction {
 
         MyRemoveAction(Controller controller) {
