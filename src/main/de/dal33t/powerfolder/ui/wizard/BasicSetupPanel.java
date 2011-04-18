@@ -90,17 +90,17 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
-        builder.addLabel(Translation
-            .getTranslation("wizard.basic_setup.computer_name"), cc.xy(1, 1));
+        builder.addLabel(
+            Translation.getTranslation("wizard.basic_setup.computer_name"),
+            cc.xy(1, 1));
         builder.add(nameField, cc.xy(3, 1));
-        builder.addLabel(Translation
-            .getTranslation("preferences.dialog.line_settings"), cc.xywh(1, 3,
-            1, 1, "default, top"));
+        builder.addLabel(
+            Translation.getTranslation("preferences.dialog.line_settings"),
+            cc.xywh(1, 3, 1, 1, "default, top"));
         builder.add(wanLineSpeed, cc.xy(3, 3));
-        builder
-            .addLabel(Translation
-                .getTranslation("wizard.basic_setup.language_restart"), cc.xy(
-                1, 5));
+        builder.addLabel(
+            Translation.getTranslation("wizard.basic_setup.language_restart"),
+            cc.xy(1, 5));
         builder.add(languageChooser, cc.xy(3, 5));
         builder.add(defaultFolderHelper.getUIComponent(), cc.xyw(3, 7, 2));
 
@@ -140,10 +140,6 @@ public class BasicSetupPanel extends PFWizardPanel {
             Translation.saveLocalSetting(null);
         }
 
-        // Basic setup completed. No longer show
-        getController().getPreferences().putBoolean("openwizard2", false);
-        getController().getPreferences().putBoolean("openwizard_os2", false);
-
         if (getController().getOSClient().isLoggedIn()
             || getController().isLanOnly())
         {
@@ -176,8 +172,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         wanLineSpeed = new LineSpeedSelectionPanel(false);
         wanLineSpeed.loadWANSelection();
         TransferManager tm = getController().getTransferManager();
-        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024, tm
-            .getAllowedDownloadCPSForWAN() / 1024);
+        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
+            tm.getAllowedDownloadCPSForWAN() / 1024);
 
         networkingModeModel = new ValueHolder();
         // Network mode chooser
@@ -198,8 +194,7 @@ public class BasicSetupPanel extends PFWizardPanel {
             .setEnabled(networkingModeChooser.getSelectedItem() instanceof PrivateNetworking);
         networkingModeChooser.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                wanLineSpeed
-                    .setEnabled(e.getItem() instanceof PrivateNetworking);
+                wanLineSpeed.setEnabled(e.getItem() instanceof PrivateNetworking);
             }
         });
 

@@ -114,7 +114,10 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.6.1 - 2.2.0.2"; // RC8 - 2.2.0.1
+    public static final String PROGRAM_VERSION = "4.6.4 - 2.2.0.4"; // 4.6.4 -
+                                                                    // 5.0.0
+                                                                    // beta1 -
+                                                                    // 2.2.0.4
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -333,6 +336,15 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
+        // Shutdown controller on system exit or SIGTERM.
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                if (!isShuttingDown()) {
+                    shutdown();
+                }
+            }
+        });
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
@@ -1396,6 +1408,7 @@ public class Controller extends PFComponent {
     public synchronized void shutdown() {
         shuttingDown = true;
         logInfo("Shutting down...");
+        setFirstStart(false);
         // if (started && !OSUtil.isSystemService()) {
         // // Save config need a started in that method so do that first
         // saveConfig();
@@ -1596,6 +1609,17 @@ public class Controller extends PFComponent {
      */
     public Preferences getPreferences() {
         return preferences;
+    }
+
+    /**
+     * @return true if this is the first start of PowerFolder of this config.
+     */
+    public boolean isFirstStart() {
+        return getController().getPreferences().getBoolean("openwizard2", true);
+    }
+
+    public void setFirstStart(boolean bool) {
+        getController().getPreferences().putBoolean("openwizard2", bool);
     }
 
     /**

@@ -19,7 +19,21 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -52,13 +66,23 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.SwingUtilities;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 
-import com.jgoodies.forms.factories.Borders;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.factories.Borders;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -71,7 +95,16 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.NewFolderCandidateEvent;
+import de.dal33t.powerfolder.event.NewFolderCandidateListener;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -84,7 +117,13 @@ import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
+import de.dal33t.powerfolder.ui.notices.NewFolderCandidateNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
@@ -305,7 +344,7 @@ public class UIController extends PFComponent {
         }
 
         // Open wizard on first start. PRO version has activation wizard first
-        if (getController().getPreferences().getBoolean("openwizard2", true)
+        if (getController().isFirstStart()
             && (!ProUtil.isRunningProVersion() || Feature.BETA.isEnabled()))
         {
             UIUtil.invokeLaterInEDT(new Runnable() {
@@ -351,8 +390,8 @@ public class UIController extends PFComponent {
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
-        getController().getFolderRepository().addNewFolderCandidateListener(new
-                MyNewFolderCandidateListener());
+        getController().getFolderRepository().addNewFolderCandidateListener(
+            new MyNewFolderCandidateListener());
     }
 
     private void checkLimits(boolean forceOpen) {
@@ -793,11 +832,11 @@ public class UIController extends PFComponent {
      * action.
      */
     private void handleNewFolderCandidateEvent(NewFolderCandidateEvent event) {
-        applicationModel.getNoticesModel().handleNotice(new NewFolderCandidateNotice(
-                Translation.getTranslation("new_folder_candidate_notice.title"),
+        applicationModel.getNoticesModel().handleNotice(
+            new NewFolderCandidateNotice(Translation
+                .getTranslation("new_folder_candidate_notice.title"),
                 Translation.getTranslation("new_folder_candidate_notice.text",
-                        event.getDirectory().getName()),
-                event.getDirectory()));
+                    event.getDirectory().getName()), event.getDirectory()));
     }
 
     /**
@@ -1505,10 +1544,12 @@ public class UIController extends PFComponent {
     }
 
     private class MyNewFolderCandidateListener implements
-            NewFolderCandidateListener {
+        NewFolderCandidateListener
+    {
         public void newFolderCandidateDetected(NewFolderCandidateEvent event) {
-            if (PreferencesEntry.SHOW_FOLDER_CANDIDATES.getValueBoolean(
-                    getController())) {
+            if (PreferencesEntry.SHOW_FOLDER_CANDIDATES
+                .getValueBoolean(getController()))
+            {
                 handleNewFolderCandidateEvent(event);
             }
         }
