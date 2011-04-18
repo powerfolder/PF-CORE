@@ -57,6 +57,7 @@ public class PFWizard extends PFUIComponent {
     // The attribute in the wizard context of the success panel. Displayed at
     // end
     public static final String SUCCESS_PANEL = "successpanel";
+    private static volatile int N_WIZARDS_OPEN = 0;
 
     private JDialog dialog;
     private Wizard wizard;
@@ -70,6 +71,10 @@ public class PFWizard extends PFUIComponent {
         super(controller);
         wizard = new Wizard();
         this.title = title;
+    }
+
+    public static boolean isWizardOpen() {
+        return N_WIZARDS_OPEN > 0;
     }
 
     /**
@@ -216,6 +221,7 @@ public class PFWizard extends PFUIComponent {
             buildUI();
         }
         wizard.start(wizardPanel, false);
+        N_WIZARDS_OPEN++;
         dialog.setVisible(true);
     }
 
@@ -263,11 +269,13 @@ public class PFWizard extends PFUIComponent {
             public void wizardFinished(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
+                N_WIZARDS_OPEN--;
             }
 
             public void wizardCancelled(Wizard wizard) {
                 dialog.setVisible(false);
                 dialog.dispose();
+                N_WIZARDS_OPEN--;
             }
 
             public void wizardPanelChanged(Wizard wizard) {

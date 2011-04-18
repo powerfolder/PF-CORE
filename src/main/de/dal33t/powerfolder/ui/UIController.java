@@ -489,7 +489,10 @@ public class UIController extends PFComponent {
                             if (!ProUtil.isRunningProVersion()
                                 || ProUtil.isTrial(getController()))
                             {
-                                showPromoGFX(getMainFrame().getUIComponent());
+                                if (!PFWizard.isWizardOpen()) {
+                                    showPromoGFX(getMainFrame()
+                                        .getUIComponent());
+                                }
                             }
                         }
                     });
@@ -1445,15 +1448,7 @@ public class UIController extends PFComponent {
         }
     }
 
-    public void notifyComponent(JComponent content) {
-        Slider slider = new Slider(content,
-            PreferencesEntry.NOTIFICATION_DISPLAY.getValueInt(getController()),
-            PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()), getController().isNotifyLeft());
-        slider.show();
-    }
-
-    public void notifyComponent(JComponent content, Window owner,
+    private void notifyComponent(JComponent content, Window owner,
         int seconds2Display)
     {
         Slider slider = new Slider(content, owner, seconds2Display,

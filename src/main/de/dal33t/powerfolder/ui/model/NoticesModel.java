@@ -129,7 +129,10 @@ public class NoticesModel extends PFUIComponent {
 
         // Show notice?
         if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
-            .getValue() && notice.isNotification() && !notice.isRead())
+            .getValue()
+            && notice.isNotification()
+            && !notice.isRead()
+            && !PFWizard.isWizardOpen())
         {
             NoticeHandler noticeHandler = new NoticeHandler(getController(),
                 notice);
