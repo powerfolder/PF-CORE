@@ -48,7 +48,11 @@ public class NewFolderAction extends BaseAction {
             wizard.open(WhatToDoPanel.doBackupOption(getController(),
                 wizard.getWizardContext()));
         } else {
-            PFWizard.openWhatToDoWizard(getController());
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
+            wizard.open(WhatToDoPanel.doSyncOption(getController(),
+                wizard.getWizardContext()));
+            // PFWizard.openWhatToDoWizard(getController());
         }
     }
 }

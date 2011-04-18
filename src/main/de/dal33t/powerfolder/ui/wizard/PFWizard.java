@@ -78,11 +78,13 @@ public class PFWizard extends PFUIComponent {
      * @param controller
      */
     public static void openBasicSetupWizard(Controller controller) {
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.folder_title"));
-        WhatToDoPanel wtdp = new WhatToDoPanel(controller);
-        BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
-        wizard.open(new LoginOnlineStoragePanel(controller, basicPanel,
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
+        // WhatToDoPanel wtdp = new WhatToDoPanel(controller);
+        // BasicSetupPanel basicPanel = new BasicSetupPanel(controller, wtdp);
+        WizardPanel nextPanel = WhatToDoPanel.doSyncOption(controller,
+            wizard.getWizardContext());
+        wizard.open(new LoginOnlineStoragePanel(controller, nextPanel,
             !controller.isBackupOnly()));
     }
 
@@ -92,8 +94,8 @@ public class PFWizard extends PFUIComponent {
      * @param controller
      */
     public static void openWhatToDoWizard(Controller controller) {
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
         wizard.open(new WhatToDoPanel(controller));
     }
 
@@ -108,8 +110,8 @@ public class PFWizard extends PFUIComponent {
     public static void openSendInvitationWizard(Controller controller,
         FolderInfo foInfo)
     {
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.invitation_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.invitation_title"));
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
 
         TextPanelPanel successPanel = new TextPanelPanel(controller,
@@ -126,8 +128,8 @@ public class PFWizard extends PFUIComponent {
         Controller controller, List<FolderInfo> folderInfoList)
     {
 
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.online_storage_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.online_storage_title"));
 
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.FOLDER_INFOS, folderInfoList);
@@ -140,8 +142,8 @@ public class PFWizard extends PFUIComponent {
 
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.success_join"));
+            Translation.getTranslation("wizard.setup_success"),
+            Translation.getTranslation("wizard.success_join"));
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new MultiOnlineStorageSetupPanel(controller));
@@ -158,16 +160,16 @@ public class PFWizard extends PFUIComponent {
     {
         ReceivedInvitationPanel panel = new ReceivedInvitationPanel(controller,
             invitation);
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.invitation_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.invitation_title"));
         wizard.open(panel);
     }
 
     public static void openLoginWizard(Controller controller,
         ServerClient client)
     {
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.login_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.login_title"));
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.finish.os_login_title"),
             Translation.getTranslation("wizard.finish.os_login_text"), true);
@@ -185,8 +187,8 @@ public class PFWizard extends PFUIComponent {
     public static void openMirrorFolderWizard(Controller controller,
         Folder folderToSetup)
     {
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
         wizard.open(new FolderOnlineStoragePanel(controller, folderToSetup
             .getInfo()));
     }
@@ -196,8 +198,8 @@ public class PFWizard extends PFUIComponent {
     {
         Reject.ifTrue(directory == null || !directory.exists(),
             "No directory supplied");
-        PFWizard wizard = new PFWizard(controller, Translation
-            .getTranslation("wizard.pfwizard.folder_title"));
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE, true);
         wizard.open(new ConfirmDiskLocationPanel(controller, directory));
@@ -233,26 +235,26 @@ public class PFWizard extends PFUIComponent {
 
         // Add i18n
         Map<String, String> i18nMap = new HashMap<String, String>();
-        i18nMap.put(Wizard.BACK_I18N, Translation
-            .getTranslation("wizard.control.back"));
-        i18nMap.put(Wizard.NEXT_I18N, Translation
-            .getTranslation("wizard.control.next"));
-        i18nMap.put(Wizard.FINISH_I18N, Translation
-            .getTranslation("wizard.control.finish"));
-        i18nMap.put(Wizard.CANCEL_I18N, Translation
-            .getTranslation("wizard.control.cancel"));
-        i18nMap.put(Wizard.HELP_I18N, Translation
-            .getTranslation("wizard.control.help"));
-        i18nMap.put(Wizard.BACK_I18N_DESCRIPTION, Translation
-            .getTranslation("wizard.control.back.description"));
-        i18nMap.put(Wizard.NEXT_I18N_DESCRIPTION, Translation
-            .getTranslation("wizard.control.next.description"));
-        i18nMap.put(Wizard.FINISH_I18N_DESCRIPTION, Translation
-            .getTranslation("wizard.control.finish.description"));
-        i18nMap.put(Wizard.CANCEL_I18N_DESCRIPTION, Translation
-            .getTranslation("wizard.control.cancel.description"));
-        i18nMap.put(Wizard.HELP_I18N_DESCRIPTION, Translation
-            .getTranslation("wizard.control.help.description"));
+        i18nMap.put(Wizard.BACK_I18N,
+            Translation.getTranslation("wizard.control.back"));
+        i18nMap.put(Wizard.NEXT_I18N,
+            Translation.getTranslation("wizard.control.next"));
+        i18nMap.put(Wizard.FINISH_I18N,
+            Translation.getTranslation("wizard.control.finish"));
+        i18nMap.put(Wizard.CANCEL_I18N,
+            Translation.getTranslation("wizard.control.cancel"));
+        i18nMap.put(Wizard.HELP_I18N,
+            Translation.getTranslation("wizard.control.help"));
+        i18nMap.put(Wizard.BACK_I18N_DESCRIPTION,
+            Translation.getTranslation("wizard.control.back.description"));
+        i18nMap.put(Wizard.NEXT_I18N_DESCRIPTION,
+            Translation.getTranslation("wizard.control.next.description"));
+        i18nMap.put(Wizard.FINISH_I18N_DESCRIPTION,
+            Translation.getTranslation("wizard.control.finish.description"));
+        i18nMap.put(Wizard.CANCEL_I18N_DESCRIPTION,
+            Translation.getTranslation("wizard.control.cancel.description"));
+        i18nMap.put(Wizard.HELP_I18N_DESCRIPTION,
+            Translation.getTranslation("wizard.control.help.description"));
 
         wizard.setI18NMap(i18nMap);
         dialog.getRootPane().setDefaultButton(wizard.getNextButton());
