@@ -224,9 +224,10 @@ public class LoggingManager {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 String logFilename = prefix + '-' + sdf.format(new Date())
                     + "-log.txt";
-                fileLoggingFileName = new File(getDebugDir(), FileUtils
-                    .removeInvalidFilenameChars(logFilename)).getAbsolutePath();
-                fileHandler = new FileHandler(fileLoggingFileName);
+                fileLoggingFileName = new File(getDebugDir(),
+                    FileUtils.removeInvalidFilenameChars(logFilename))
+                    .getAbsolutePath();
+                fileHandler = new FileHandler(fileLoggingFileName, true);
                 fileHandler.setFormatter(new LoggingFormatter());
                 getRootLogger().addHandler(fileHandler);
                 fileHandler.setFilter(DEFAULT_FILTER);
