@@ -26,16 +26,16 @@ import de.dal33t.powerfolder.Controller;
  * there is no payload and it is not to be added to the app model notices.
  */
 public class SimpleNotificationNotice extends NoticeBase {
-    
+
     private static final long serialVersionUID = 100L;
-    
+
     /**
      * Constuct a simple notification notice.
-     *
+     * 
      * @param title
-     *          the title to display in the notification.
+     *            the title to display in the notification.
      * @param summary
-     *          the summary message to display in the notification.
+     *            the summary message to display in the notification.
      */
     public SimpleNotificationNotice(String title, String summary) {
         super(title, summary);
@@ -43,7 +43,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * Just a notification; low importance.
-     *
+     * 
      * @return
      */
     public NoticeSeverity getNoticeSeverity() {
@@ -52,7 +52,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * No payload; notification opnly.
-     *
+     * 
      * @return
      */
     public Object getPayload(Controller controller) {
@@ -70,7 +70,7 @@ public class SimpleNotificationNotice extends NoticeBase {
 
     /**
      * This is a simple notification notice.
-     *
+     * 
      * @return
      */
     public boolean isNotification() {
@@ -84,5 +84,11 @@ public class SimpleNotificationNotice extends NoticeBase {
      */
     public boolean isPersistable() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleNotificationNotice [getTitle()=" + getTitle()
+            + ", getSummary()=" + getSummary() + "]";
     }
 }
