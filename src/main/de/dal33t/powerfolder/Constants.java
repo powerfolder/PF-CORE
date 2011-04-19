@@ -181,7 +181,7 @@ public class Constants {
     /**
      * The delay before checking for unsynchronized folders
      */
-    public static final long FOLDER_UNSYNCED_CHECK_DELAY = 180;
+    public static final long FOLDER_UNSYNCED_CHECK_DELAY = 120;
 
     /**
      * the number of seconds (aprox) between request for hosting servers for our

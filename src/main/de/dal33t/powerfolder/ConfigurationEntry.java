@@ -724,7 +724,7 @@ public enum ConfigurationEntry {
     FOLDER_SYNC_USE("sync.folder.use", true),
 
     /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN("sync.folder.warn", 10),
+    FOLDER_SYNC_WARN_DAYS("sync.folder.warn", 10),
 
     /**
      * TRAC #1776

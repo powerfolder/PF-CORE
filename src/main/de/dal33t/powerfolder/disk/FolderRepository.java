@@ -424,11 +424,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Start filerequestor
         fileRequestor.start();
 
-        // Defer 3 minutes, so it is not 'in-your-face' at start up.
-        // Also run this each day, for long-running installations.
-        getController().scheduleAndRepeat(new OldSyncWarningCheckTask(),
+        // Defer 2 minutes, so it is not 'in-your-face' at start up.
+        // Also run this every minute.
+        getController().scheduleAndRepeat(new CheckSyncTask(),
             1000L * Constants.FOLDER_UNSYNCED_CHECK_DELAY,
-            Constants.MILLIS_PER_DAY);
+            Constants.MILLIS_PER_MINUTE);
 
         started = true;
     }
@@ -717,7 +717,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folderSettings.isPreviewOnly(),
                 folderSettings.getDownloadScript(),
                 folderSettings.getVersions(), folderSettings.isSyncPatterns(),
-                commitDir);
+                commitDir, folderSettings.getSyncWarnSeconds());
             logWarning("Auto-commit setup. temp dir: " + newBaseDir
                 + ". commit dir:" + commitDir);
         }
@@ -1082,8 +1082,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     if (!known) {
                         if (log.isLoggable(Level.FINE)) {
-                            log.fine("Found new folder candidate at "
-                                + file);
+                            log.fine("Found new folder candidate at " + file);
                         }
                         newFolderCandidateListenerSupport
                             .newFolderCandidateDetected(new NewFolderCandidateEvent(
@@ -1268,7 +1267,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings.removeEntries(config, folderEntryId);
     }
 
-    private final class OldSyncWarningCheckTask implements Runnable {
+    private final class CheckSyncTask implements Runnable {
         public void run() {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
@@ -1276,7 +1275,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (folder.isPreviewOnly()) {
                     continue;
                 }
-                folder.processUnsyncFolder();
+                folder.checkSync();
             }
         }
     }

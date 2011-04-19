@@ -59,6 +59,7 @@ public class FolderSettings {
     public static final String FOLDER_SETTINGS_ARCHIVE = ".archive";
     public static final String FOLDER_SETTINGS_VERSIONS = ".versions";
     public static final String FOLDER_SETTINGS_SYNC_PATTERNS = ".sync-patterns";
+    public static final String FOLDER_SETTINGS_SYNC_WARN_SECONDS = ".sync-warn-seconds";
 
     public static final String FOLDER_ID_GENERATE = "$generate";
     public static final String FOLDER_ID_FROM_ACCOUNT = "$fromAccount";
@@ -132,6 +133,11 @@ public class FolderSettings {
     private final boolean syncPatterns;
 
     /**
+     * #2265: Extend monitoring.
+     */
+    private final int syncWarnSeconds;
+
+    /**
      * Loaded from that config entry id.
      */
     private String configEntryId;
@@ -154,7 +160,7 @@ public class FolderSettings {
         boolean syncPatterns)
     {
         this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
-            previewOnly, downloadScript, versions, syncPatterns, null);
+            previewOnly, downloadScript, versions, syncPatterns, null, -1);
     }
 
     /**
@@ -169,11 +175,12 @@ public class FolderSettings {
      * @param versions
      * @param syncPatterns
      * @param commitDir
+     * @param syncWarnSeconds
      */
     public FolderSettings(File localBaseDir, SyncProfile syncProfile,
         boolean createInvitationFile, ArchiveMode archiveMode,
         boolean previewOnly, String downloadScript, int versions,
-        boolean syncPatterns, File commitDir)
+        boolean syncPatterns, File commitDir, int syncWarnSeconds)
     {
 
         Reject.ifNull(localBaseDir, "Local base dir required");
@@ -187,6 +194,7 @@ public class FolderSettings {
         this.downloadScript = downloadScript;
         this.versions = versions;
         this.syncPatterns = syncPatterns;
+        this.syncWarnSeconds = syncWarnSeconds;
         // Generate a unique entry id for config file.
         this.configEntryId = new String(Util.encodeHex(Util.md5(IdGenerator
             .makeIdBytes())));
@@ -253,6 +261,10 @@ public class FolderSettings {
 
     public boolean isSyncPatterns() {
         return syncPatterns;
+    }
+
+    public int getSyncWarnSeconds() {
+        return syncWarnSeconds;
     }
 
     /**
@@ -434,9 +446,23 @@ public class FolderSettings {
         // Default syncPatterns to true.
         boolean syncPatterns = syncPatternsSetting == null
             || "true".equalsIgnoreCase(syncPatternsSetting);
+
+        String syncWarnSecSetting = properties
+            .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+        int syncWarnSeconds = -1;
+        if (StringUtils.isNotBlank(syncWarnSecSetting)) {
+            try {
+                syncWarnSeconds = Integer.parseInt(syncWarnSecSetting);
+            } catch (Exception e) {
+                LOG.warning("Unable to parse sync warning settings: "
+                    + syncWarnSecSetting + ". Using default.");
+            }
+        }
+
         FolderSettings settings = new FolderSettings(folderDir, syncProfile,
             false, archiveMode, preview, dlScript, versions, syncPatterns,
-            commitDir);
+            commitDir, syncWarnSeconds);
         settings.configEntryId = entryId;
         settings.localBaseDirStr = folderDirStr;
         return settings;
@@ -457,21 +483,22 @@ public class FolderSettings {
             + FOLDER_SETTINGS_ID, folderInfo.id);
         String baseDir = localBaseDirStr;
         if (StringUtils.isBlank(baseDir)) {
-            baseDir = getLocalBaseDir().getAbsolutePath();
+            baseDir = localBaseDir.getAbsolutePath();
         }
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_DIR, baseDir);
-        String commitDir = getCommitDir() != null ? getCommitDir()
-            .getAbsolutePath() : "";
+        String commitDirStr = commitDir != null
+            ? commitDir.getAbsolutePath()
+            : "";
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_COMMIT_DIR, commitDir);
+            + FOLDER_SETTINGS_COMMIT_DIR, commitDirStr);
         // Save sync profiles as internal configuration for custom profiles.
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_SYNC_PROFILE, getSyncProfile().getFieldList());
+            + FOLDER_SETTINGS_SYNC_PROFILE, syncProfile.getFieldList());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_ARCHIVE, getArchiveMode().name());
+            + FOLDER_SETTINGS_ARCHIVE, archiveMode.name());
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
-            + FOLDER_SETTINGS_VERSIONS, String.valueOf(getVersions()));
+            + FOLDER_SETTINGS_VERSIONS, String.valueOf(versions));
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_PREVIEW, String.valueOf(isPreviewOnly()));
         String dlScript = getDownloadScript() != null
@@ -479,6 +506,17 @@ public class FolderSettings {
             : "";
         config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
             + FOLDER_SETTINGS_DOWNLOAD_SCRIPT, dlScript);
+
+        config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+            + FOLDER_SETTINGS_SYNC_PATTERNS, String.valueOf(syncPatterns));
+        if (syncWarnSeconds > 0) {
+            config.setProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_SYNC_WARN_SECONDS,
+                String.valueOf(syncWarnSeconds));
+        } else {
+            config.remove(FOLDER_SETTINGS_PREFIX_V4 + entryId
+                + FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+        }
     }
 
     private static File translateFolderDir(String str, boolean verify) {

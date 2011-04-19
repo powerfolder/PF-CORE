@@ -19,27 +19,51 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+import java.util.Date;
+
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Controller;
 
 /**
  * Problem where a folder has not been synchronized in n days.
  */
 public class UnsynchronizedFolderProblem extends ResolvableProblem {
 
-    private final String description;
+    private Date lastSyncDate;
     private FolderInfo folderInfo;
 
-    public UnsynchronizedFolderProblem(FolderInfo folderInfo, long days) {
+    public UnsynchronizedFolderProblem(FolderInfo folderInfo, Date lastSyncDate)
+    {
         this.folderInfo = folderInfo;
-        description = Translation.getTranslation("folder_problem.unsynchronized",
-                folderInfo.name, String.valueOf(days));
+        this.lastSyncDate = lastSyncDate;
     }
 
     public String getDescription() {
-        return description;
+        long time = System.currentTimeMillis() - lastSyncDate.getTime();
+        time = time / 1000;
+        time = time / 60;
+
+        // Minutes
+        if (time <= 59) {
+            return Translation.getTranslation(
+                "folder_problem.unsynchronized_minutes", folderInfo.name,
+                String.valueOf(time));
+        }
+
+        // Hours
+        time = time / 60;
+        if (time <= 23) {
+            return Translation.getTranslation(
+                "folder_problem.unsynchronized_hours", folderInfo.name,
+                String.valueOf(time));
+        }
+
+        // Days
+        time = time / 24;
+        return Translation.getTranslation("folder_problem.unsynchronized",
+            folderInfo.name, String.valueOf(time));
     }
 
     public String getWikiLinkKey() {
@@ -47,7 +71,8 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.getTranslation("folder_problem.unsynchronized.soln_desc");
+        return Translation
+            .getTranslation("folder_problem.unsynchronized.soln_desc");
     }
 
     /**
@@ -60,7 +85,7 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         return new Runnable() {
             public void run() {
                 controller.getUIController().openFilesInformationUnsynced(
-                        folderInfo);
+                    folderInfo);
             }
         };
     }

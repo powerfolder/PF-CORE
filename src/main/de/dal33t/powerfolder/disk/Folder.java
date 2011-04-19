@@ -259,6 +259,14 @@ public class Folder extends PFComponent {
     private boolean syncPatterns;
 
     /**
+     * The number of seconds the folder is allowed to be out of sync. If it is
+     * longer out of sync it produces an {@link UnsynchronizedFolderProblem}. If
+     * not set (0) the default global will be assumed
+     * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
+     */
+    private int syncWarnSeconds;
+
+    /**
      * Constructor for folder.
      * 
      * @param controller
@@ -292,6 +300,7 @@ public class Folder extends PFComponent {
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
+        syncWarnSeconds = folderSettings.getSyncWarnSeconds();
         previewOnly = folderSettings.isPreviewOnly();
         configEntryId = folderSettings.getConfigEntryId();
 
@@ -3938,7 +3947,7 @@ public class Folder extends PFComponent {
      * This creates / removes a warning if the folder has not been synchronized
      * in a long time.
      */
-    public void processUnsyncFolder() {
+    public void checkSync() {
         if (!ConfigurationEntry.FOLDER_SYNC_USE
             .getValueBoolean(getController()))
         {
@@ -3947,12 +3956,18 @@ public class Folder extends PFComponent {
         if (previewOnly) {
             return;
         }
-
         // Calculate the date that folders should be synced by.
-        Integer syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN
-            .getValueInt(getController());
+        int warnSeconds = syncWarnSeconds;
+        if (warnSeconds <= 0) {
+            int syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN_DAYS
+                .getValueInt(getController());
+            warnSeconds = 60 * 60 * 24 * syncWarnDays;
+        }
+        if (warnSeconds <= 0) {
+            return;
+        }
         Calendar cal = new GregorianCalendar();
-        cal.add(Calendar.DATE, -syncWarnDays);
+        cal.add(Calendar.SECOND, -warnSeconds);
         Date warningDate = cal.getTime();
 
         // If others are in sync, do not warn because I can sync up with them.
@@ -3966,10 +3981,10 @@ public class Folder extends PFComponent {
             }
         }
 
-        if (lastSyncDate != null && lastSyncDate.before(warningDate)
-            && !othersInSync && !isSyncing())
+        Date myLastSyncDate = lastSyncDate;
+        if (myLastSyncDate != null && myLastSyncDate.before(warningDate)
+            && !(othersInSync && isSyncing()))
         {
-
             // Only need one of these.
             UnsynchronizedFolderProblem ufp = null;
             for (Problem problem : problems) {
@@ -3979,11 +3994,11 @@ public class Folder extends PFComponent {
                 }
             }
             if (ufp == null) {
-                // Calculate the actual number of days since the last sync.
-                long numberOfDays = (new Date().getTime() - lastSyncDate
-                    .getTime()) / 24L / 3600L / 1000L;
+                if (new Date().before(lastSyncDate)) {
+                    logWarning("Last sync date in future: " + lastSyncDate);
+                }
                 Problem problem = new UnsynchronizedFolderProblem(currentInfo,
-                    numberOfDays);
+                    myLastSyncDate);
                 addProblem(problem);
             }
         } else {
@@ -4011,6 +4026,31 @@ public class Folder extends PFComponent {
             + FolderSettings.FOLDER_SETTINGS_SYNC_PATTERNS;
         getController().getConfig().put(syncProfKey,
             String.valueOf(syncPatterns));
+        getController().saveConfig();
+    }
+
+    public int getSyncWarnSeconds() {
+        return syncWarnSeconds;
+    }
+
+    /**
+     * @param syncWarnSeconds
+     *            The number of seconds after the folder will raise a
+     *            {@link UnsynchronizedFolderProblem} if not 100% sync. 0 or
+     *            lower means use default.
+     */
+    public void setSyncWarnSeconds(int syncWarnSeconds) {
+        this.syncWarnSeconds = syncWarnSeconds;
+        if (syncWarnSeconds > 0) {
+            getController().getConfig().setProperty(
+                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
+                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS,
+                String.valueOf(syncWarnSeconds));
+        } else {
+            getController().getConfig().remove(
+                FOLDER_SETTINGS_PREFIX_V4 + configEntryId
+                    + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS);
+        }
         getController().saveConfig();
     }
 

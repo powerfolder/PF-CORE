@@ -187,8 +187,8 @@ public class SettingsTab extends PFUIComponent {
         onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
             controller, onlineModeModel, onlineVersionModel,
             new OnlinePurgeListener());
-        onlineLabel = new JLabel(Translation
-            .getTranslation("general.online_archive_mode"));
+        onlineLabel = new JLabel(
+            Translation.getTranslation("general.online_archive_mode"));
         onlineLabel.setVisible(false);
         onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
     }
@@ -254,38 +254,45 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         int row = 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("general.transfer_mode")), cc.xy(2, row));
-        builder.add(transferModeSelectorPanel.getUIComponent(), cc.xyw(4, row,
-            4));
+        builder.add(
+            new JLabel(Translation.getTranslation("general.transfer_mode")),
+            cc.xy(2, row));
+        builder.add(transferModeSelectorPanel.getUIComponent(),
+            cc.xyw(4, row, 4));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.local_folder_location")), cc.xy(2,
-            row));
+        builder.add(
+            new JLabel(Translation
+                .getTranslation("settings_tab.local_folder_location")), cc.xy(
+                2, row));
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("general.local_archive_mode")), cc.xy(2, row));
-        builder.add(localArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
-            row, 4));
+        builder
+            .add(
+                new JLabel(Translation
+                    .getTranslation("general.local_archive_mode")), cc.xy(2,
+                    row));
+        builder.add(localArchiveModeSelectorPanel.getUIComponent(),
+            cc.xyw(4, row, 4));
 
         row += 2;
         builder.add(onlineLabel, cc.xy(2, row));
-        builder.add(onlineArchiveModeSelectorPanel.getUIComponent(), cc.xyw(4,
-            row, 4));
+        builder.add(onlineArchiveModeSelectorPanel.getUIComponent(),
+            cc.xyw(4, row, 4));
 
         row += 2;
-        builder.addLabel(Translation
-            .getTranslation("settings_tab.download_script"), cc.xy(2, row));
+        builder.addLabel(
+            Translation.getTranslation("settings_tab.download_script"),
+            cc.xy(2, row));
         builder.add(createScriptField(), cc.xyw(4, row, 4));
 
         row += 2;
-        builder.add(new JLabel(Translation
-            .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
-            "right, top"));
+        builder.add(
+            new JLabel(Translation
+                .getTranslation("settings_tab.ignore_patterns")), cc.xy(2, row,
+                "right, top"));
         builder.add(createPatternsPanel(), cc.xyw(4, row, 4));
 
         row += 2;
@@ -415,9 +422,9 @@ public class SettingsTab extends PFUIComponent {
         locationTF.setEditable(true);
         builder.add(locationTF, cc.xy(1, 1));
 
-        JButton locationButton = new JButtonMini(Icons
-            .getIconById(Icons.DIRECTORY), Translation
-            .getTranslation("settings_tab.download_script"));
+        JButton locationButton = new JButtonMini(
+            Icons.getIconById(Icons.DIRECTORY),
+            Translation.getTranslation("settings_tab.download_script"));
         locationButton.addActionListener(new SelectScriptAction());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
@@ -464,8 +471,8 @@ public class SettingsTab extends PFUIComponent {
         bar.add(removeButton, cc.xy(3, 1));
         bar.add(Help.createWikiLinkButton(getController(),
             WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
-        syncPatternsCheckBox = new JCheckBox(Translation
-            .getTranslation("settings_tab.sync_patterns"));
+        syncPatternsCheckBox = new JCheckBox(
+            Translation.getTranslation("settings_tab.sync_patterns"));
         syncPatternsCheckBox.setToolTipText(Translation
             .getTranslation("settings_tab.sync_patterns.tip"));
         syncPatternsCheckBox.addActionListener(new MyActionListener());
@@ -543,15 +550,15 @@ public class SettingsTab extends PFUIComponent {
                 if (count++ >= 10) {
                     // Too many selections - enough!!!
                     sb.append(Translation
-                        .getTranslation("general.more.lower_case")
-                        + "...\n");
+                        .getTranslation("general.more.lower_case") + "...\n");
                     break;
                 }
                 sb.append(pattern + '\n');
             }
             String message = Translation
                 .getTranslation("settings_tab.add_patterns.text_1")
-                + "\n\n" + sb.toString();
+                + "\n\n"
+                + sb.toString();
             String title = Translation
                 .getTranslation("settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getController(), title,
@@ -580,9 +587,9 @@ public class SettingsTab extends PFUIComponent {
             .getUIController(), originalDirectory);
         if (newDirectory != null) {
             if (FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
-                DialogFactory.genericDialog(getController(), Translation
-                    .getTranslation("settings_tab.subdir.title"), Translation
-                    .getTranslation("settings_tab.subdir.text"),
+                DialogFactory.genericDialog(getController(),
+                    Translation.getTranslation("settings_tab.subdir.title"),
+                    Translation.getTranslation("settings_tab.subdir.text"),
                     GenericDialogType.ERROR);
             } else {
                 File foldersBaseDir = new File(getController()
@@ -595,7 +602,8 @@ public class SettingsTab extends PFUIComponent {
                                 .getTranslation("settings_tab.basedir.text"),
                             GenericDialogType.ERROR);
                 } else {
-                    // Find out if the user wants to move the content of the current folder
+                    // Find out if the user wants to move the content of the
+                    // current folder
                     // to the new one.
                     int moveContent = shouldMoveContent();
 
@@ -617,12 +625,14 @@ public class SettingsTab extends PFUIComponent {
      * @return true if should move.
      */
     private int shouldMoveContent() {
-        return DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("settings_tab.move_content.title"), Translation
-            .getTranslation("settings_tab.move_content"), new String[]{
-            Translation.getTranslation("settings_tab.move_content.move"),
-            Translation.getTranslation("settings_tab.move_content.dont"),
-            Translation.getTranslation("general.cancel"),}, 0,
+        return DialogFactory.genericDialog(
+            getController(),
+            Translation.getTranslation("settings_tab.move_content.title"),
+            Translation.getTranslation("settings_tab.move_content"),
+            new String[]{
+                Translation.getTranslation("settings_tab.move_content.move"),
+                Translation.getTranslation("settings_tab.move_content.dont"),
+                Translation.getTranslation("general.cancel"),}, 0,
             GenericDialogType.INFO);
     }
 
@@ -697,8 +707,8 @@ public class SettingsTab extends PFUIComponent {
                 Translation
                     .getTranslation("settings_tab.folder_not_empty.title"),
                 Translation.getTranslation("settings_tab.folder_not_empty",
-                    newDirectory.getAbsolutePath()), new String[]{
-                    Translation.getTranslation("general.continue"),
+                    newDirectory.getAbsolutePath()),
+                new String[]{Translation.getTranslation("general.continue"),
                     Translation.getTranslation("general.cancel")}, 1,
                 GenericDialogType.WARN); // Default is cancel.
             if (result != 0) {
@@ -758,11 +768,12 @@ public class SettingsTab extends PFUIComponent {
 
             // Create the new Folder in the repository.
             FolderInfo fi = new FolderInfo(folder);
-            FolderSettings fs = new FolderSettings(newDirectory, folder
-                .getSyncProfile(), false, folder.getFileArchiver()
-                .getArchiveMode(), folder.isPreviewOnly(), folder
-                .getDownloadScript(), folder.getFileArchiver()
-                .getVersionsPerFile(), folder.isSyncPatterns(), commitDir);
+            FolderSettings fs = new FolderSettings(newDirectory,
+                folder.getSyncProfile(), false, folder.getFileArchiver()
+                    .getArchiveMode(), folder.isPreviewOnly(),
+                folder.getDownloadScript(), folder.getFileArchiver()
+                    .getVersionsPerFile(), folder.isSyncPatterns(), commitDir,
+                folder.getSyncWarnSeconds());
             folder = repository.createFolder(fi, fs);
 
             // Restore patterns if content not moved.
@@ -788,10 +799,11 @@ public class SettingsTab extends PFUIComponent {
      *            the error
      */
     private void displayError(Exception e) {
-        DialogFactory.genericDialog(getController(), Translation
-            .getTranslation("settings_tab.move_error.title"), Translation
-            .getTranslation("settings_tab.move_error.other", e.getMessage()),
-            GenericDialogType.WARN);
+        DialogFactory.genericDialog(
+            getController(),
+            Translation.getTranslation("settings_tab.move_error.title"),
+            Translation.getTranslation("settings_tab.move_error.other",
+                e.getMessage()), GenericDialogType.WARN);
     }
 
     /**
@@ -862,19 +874,17 @@ public class SettingsTab extends PFUIComponent {
             {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        int i = DialogFactory
-                            .genericDialog(
-                                getController(),
+                        int i = DialogFactory.genericDialog(
+                            getController(),
+                            Translation
+                                .getTranslation("settings_tab.offer_maintenance.title"),
+                            Translation
+                                .getTranslation("settings_tab.offer_maintenance.text"),
+                            new String[]{
                                 Translation
-                                    .getTranslation("settings_tab.offer_maintenance.title"),
-                                Translation
-                                    .getTranslation("settings_tab.offer_maintenance.text"),
-                                new String[]{
-                                    Translation
-                                        .getTranslation("settings_tab.offer_maintenance.cleanup_button"),
-                                    Translation
-                                        .getTranslation("general.cancel")}, 0,
-                                GenericDialogType.QUESTION);
+                                    .getTranslation("settings_tab.offer_maintenance.cleanup_button"),
+                                Translation.getTranslation("general.cancel")},
+                            0, GenericDialogType.QUESTION);
                         if (i == 0) {
                             SwingWorker worker = new MyMaintainSwingWorker();
                             worker.start();
@@ -919,7 +929,8 @@ public class SettingsTab extends PFUIComponent {
         if (folder == null) {
             logSevere("Calling purgeArchive with no folder???");
         } else {
-            int result = DialogFactory.genericDialog(getController(),
+            int result = DialogFactory.genericDialog(
+                getController(),
                 Translation.getTranslation("settings_tab.purge_archive_title"),
                 Translation
                     .getTranslation("settings_tab.purge_archive_message"),
@@ -952,7 +963,8 @@ public class SettingsTab extends PFUIComponent {
         if (folder == null) {
             logSevere("Calling purgeArchive with no folder???");
         } else {
-            int result = DialogFactory.genericDialog(getController(),
+            int result = DialogFactory.genericDialog(
+                getController(),
                 Translation.getTranslation("settings_tab.purge_archive_title"),
                 Translation
                     .getTranslation("settings_tab.purge_archive_message"),
@@ -1179,9 +1191,9 @@ public class SettingsTab extends PFUIComponent {
             String title = Translation
                 .getTranslation("settings_tab.edit_a_pattern.title");
 
-            String pattern = (String) JOptionPane.showInputDialog(UIUtil
-                .getParentWindow(e), text, title, JOptionPane.PLAIN_MESSAGE,
-                null, null,
+            String pattern = (String) JOptionPane.showInputDialog(
+                UIUtil.getParentWindow(e), text, title,
+                JOptionPane.PLAIN_MESSAGE, null, null,
                 // the text to edit:
                 selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
