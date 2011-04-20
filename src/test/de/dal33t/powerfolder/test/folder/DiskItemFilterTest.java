@@ -89,7 +89,15 @@ public class DiskItemFilterTest extends TestCase {
             folderInfo, "images/deepinimages/THUMBS.db")));
         assertFalse(blacklist2.isRetained(FileInfoFactory.lookupInstance(
             folderInfo, "images/deepinimages/thumbs.DB")));
+
+        blacklist2.addPattern("*gc.2010*");
+        assertTrue(blacklist2.isExcluded(FileInfoFactory.lookupInstance(
+            folderInfo, "file.gc.20100412.gc")));
+        assertFalse(blacklist2.isExcluded(FileInfoFactory.lookupInstance(
+            folderInfo, "file.gc")));
+
     }
+
     public void testMulti() throws Exception {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
