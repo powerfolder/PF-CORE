@@ -22,9 +22,9 @@ package de.dal33t.powerfolder.clientserver;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -204,21 +204,23 @@ public interface FolderService {
     long[] calculateSizes(Collection<FolderInfo> foInfos);
 
     /**
+     * Returns stats for all folders which are available in the cloud.
+     * 
+     * @param foInfos
+     * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
+     *         s.
+     */
+    Map<FolderInfo, FolderStatisticInfo> getCloudStatisticInfo(
+        Collection<FolderInfo> foInfos);
+
+    /**
      * Returns stats only for the known/joined folders.
      * 
      * @param foInfos
      * @return the {@link FolderStatisticInfo} for the given {@link FolderInfo}
      *         s.
      */
-    Collection<FolderStatisticInfo> getStatisticInfo(
+    Map<FolderInfo, FolderStatisticInfo> getLocalStatisticInfo(
         Collection<FolderInfo> foInfos);
-
-    /**
-     * Returns stats for the folders from the target server of the user account.
-     * 
-     * @param accountInfo
-     * @return
-     */
-    Collection<FolderStatisticInfo> getStatisticInfo(AccountInfo accountInfo);
 
 }
