@@ -3958,7 +3958,7 @@ public class Folder extends PFComponent {
         }
         // Calculate the date that folders should be synced by.
         int warnSeconds = syncWarnSeconds;
-        if (warnSeconds <= 0) {
+        if (warnSeconds == 0) {
             int syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN_DAYS
                 .getValueInt(getController());
             warnSeconds = 60 * 60 * 24 * syncWarnDays;
