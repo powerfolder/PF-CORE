@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.util.Reject;
@@ -209,5 +210,19 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             sync = 100.0;
         }
         return sync;
+    }
+
+    /**
+     * @param controller
+     * @return a sever node which is syncing the folder. null if not found.
+     */
+    public Member getServerNode(Controller controller) {
+        for (MemberInfo nodeInfo : filesCount.keySet()) {
+            Member node = nodeInfo.getNode(controller, false);
+            if (node != null && node.isServer()) {
+                return node;
+            }
+        }
+        return null;
     }
 }
