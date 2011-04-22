@@ -133,7 +133,8 @@ public class FolderSettings {
     private final boolean syncPatterns;
 
     /**
-     * #2265: Extend monitoring.
+     * #2265: Extend monitoring. negative value = disabled, 0 = use default,
+     * positive value = warn if folder is X seconds out of sync.
      */
     private final int syncWarnSeconds;
 
@@ -160,7 +161,7 @@ public class FolderSettings {
         boolean syncPatterns)
     {
         this(localBaseDir, syncProfile, createInvitationFile, archiveMode,
-            previewOnly, downloadScript, versions, syncPatterns, null, -1);
+            previewOnly, downloadScript, versions, syncPatterns, null, 0);
     }
 
     /**
@@ -450,7 +451,7 @@ public class FolderSettings {
         String syncWarnSecSetting = properties
             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
                 + FOLDER_SETTINGS_SYNC_WARN_SECONDS);
-        int syncWarnSeconds = -1;
+        int syncWarnSeconds = 0;
         if (StringUtils.isNotBlank(syncWarnSecSetting)) {
             try {
                 syncWarnSeconds = Integer.parseInt(syncWarnSecSetting);
