@@ -1163,7 +1163,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Date lastMessageReceived = peer != null ? peer
                 .getLastKeepaliveMessageTime() : null;
             if (lastMessageReceived == null) {
-                logSevere("Unable to check last received message date. got null while waiting for handshake complete");
+                logFine("Unable to check last received message date. Got disconnected while waiting for handshake complete");
                 return false;
             }
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
