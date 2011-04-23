@@ -118,6 +118,7 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
+    private static final String METAFOLDER_MEMBERS = "Members";
 
     private static final int TEN_MINUTES = 60 * 10;
     private static final int ONE_MINUTE = 60;
@@ -421,7 +422,7 @@ public class Folder extends PFComponent {
 
         // Remove desktop.ini. Was accidentally created in 4.3.0 release.
         if (currentInfo.isMetaFolder()) {
-            File desktopIni = new File(getLocalBase(),
+            File desktopIni = new File(localBase,
                 FileUtils.DESKTOP_INI_FILENAME);
             if (desktopIni.exists() && desktopIni.delete()) {
                 scanChangedFile(FileInfoFactory
@@ -1157,14 +1158,14 @@ public class Folder extends PFComponent {
                 i++;
             }
         }
-        if (fileInfos.size() > 0) {
+        if (!fileInfos.isEmpty()) {
             fireFilesChanged(fileInfos);
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
-                public Message[] getMessages(boolean useExternalizable) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, fileInfos,
-                        diskItemFilter, useExternalizable);
+                        diskItemFilter, useExt);
                 }
             });
         }
@@ -1259,6 +1260,8 @@ public class Folder extends PFComponent {
                     }
                     return fInfo;
                 }
+
+                updateMetaFolderMembersFromMetaFolder(fInfo);
 
                 FileInfo syncFile = localFile
                     .syncFromDiskIfRequired(this, file);
@@ -1448,7 +1451,7 @@ public class Folder extends PFComponent {
                 c.addMySelf(this);
                 c.setPath((DirectoryInfo) dirInfo);
                 logInfo("Deleting directory: " + dirInfo);
-                removeFilesLocal(getDAO().findFiles(c));
+                removeFilesLocal(dao.findFiles(c));
                 removeFileLocal(dirInfo);
             }
         }
@@ -1458,9 +1461,9 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
-                public Message[] getMessages(boolean useExternalizable) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, removedFiles,
-                        diskItemFilter, useExternalizable);
+                        diskItemFilter, useExt);
                 }
             });
         }
@@ -1493,6 +1496,7 @@ public class Folder extends PFComponent {
      * @return true if succeeded
      */
     // @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked"})
     private boolean loadFolderDB(File dbFile) {
         synchronized (scanLock) {
             if (!dbFile.exists()) {
@@ -1782,7 +1786,7 @@ public class Folder extends PFComponent {
             }
             if (file.getModifiedDate().before(removeBeforeDate)) {
                 // Don't remove. We have archived files.
-                if (getFileArchiver().hasArchivedFileInfo(file)) {
+                if (archiver.hasArchivedFileInfo(file)) {
                     continue;
                 }
                 expired++;
@@ -2086,6 +2090,177 @@ public class Folder extends PFComponent {
         if (!wasMember) {
             // Fire event if this member is new
             fireMemberJoined(member);
+            updateMetaFolderMembersFromParent();
+        }
+    }
+
+    /**
+     * A new member has been added.
+     * Update the metafolder Members file.
+     */
+    private void updateMetaFolderMembersFromParent() {
+        System.out.println("hghg updateMetaFolderMembersFromParent");
+        if (Feature.META_FOLDER.isDisabled()) {
+            return;
+        }
+        // Only do this for parent folders.
+        if (currentInfo.isMetaFolder()) {
+            return;
+        }
+        FolderRepository folderRepository = getController()
+            .getFolderRepository();
+        Folder metaFolder = folderRepository
+            .getMetaFolderForParent(currentInfo);
+        if (metaFolder == null) {
+            logWarning("Could not find metaFolder for " + currentInfo);
+            return;
+        }
+        if (metaFolder.deviceDisconnected) {
+            logFiner("Not writing members. Meta folder disconnected.");
+            return;
+        }
+        // Update in the meta directory.
+        File file = new File(metaFolder.localBase, METAFOLDER_MEMBERS);
+        FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
+        // Read in.
+        Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
+        // Update with my new members.
+        for (Member member : members.keySet()) {
+            membersMap.put(member.getId(), member.getInfo());
+        }
+        // Write back and scan.
+        writewMetaFolderMembers(membersMap, fileInfo);
+        System.out.println("hghg Wrote " + membersMap.size() + " members to metaFolder after new member");
+    }
+
+    /**
+     * Metafolder members file changed?
+     * Update it with any new members we know about.
+     *
+     * @param fileInfo
+     */
+    private void updateMetaFolderMembersFromMetaFolder(FileInfo fileInfo) {
+        System.out.println("hghg updateMetaFolderMembersFromMetaFolder " +  fileInfo);
+        if (Feature.META_FOLDER.isDisabled()) {
+            return;
+        }
+        // Only interested in the Members file.
+        if (!fileInfo.getFilenameOnly().equals(METAFOLDER_MEMBERS)) {
+            return;
+        }
+        // Only do this for metaFolders.
+        if (!currentInfo.isMetaFolder()) {
+            return;
+        }
+        FolderRepository folderRepository = getController()
+            .getFolderRepository();
+        Folder parentFolder = folderRepository.getParentFolder(currentInfo);
+        if (parentFolder == null) {
+            logWarning("Could not find parent folder for " + currentInfo);
+            return;
+        }
+        if (parentFolder.deviceDisconnected) {
+            logFiner("Not writing members. Parent folder disconnected.");
+            return;
+        }
+        // Update in the meta directory.
+        File file = new File(localBase, METAFOLDER_MEMBERS);
+        FileInfo targetFileInfo = FileInfoFactory.lookupInstance(this, file);
+        if (!targetFileInfo.equals(fileInfo)) {
+            // Not the correct file.
+            return;
+        }
+        // Read in.
+        Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
+        // Update with my new members.
+        for (Member member : parentFolder.members.keySet()) {
+            membersMap.put(member.getId(), member.getInfo());
+        }
+        // Write back and scan.
+        writewMetaFolderMembers(membersMap, fileInfo);
+        System.out.println("hghg Wrote " + membersMap.size() + " members to metaFolder after Members file change");
+    }
+
+    /**
+     * Read the metafolder Members file from disk.
+     * It is a Map<String, MemberInfo>.
+     *
+     * @param fileInfo
+     * @return
+     */
+    @SuppressWarnings({"unchecked"})
+    private Map<String, MemberInfo> readMetaFolderMembers(FileInfo fileInfo) {
+        logFine("Loading metafolder members from " + fileInfo + '.');
+        Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
+        InputStream is = null;
+        ObjectInputStream ois = null;
+        try{
+            is = new BufferedInputStream(new FileInputStream(
+                    fileInfo.getDiskFile(
+                            getController().getFolderRepository())));
+            ois = new ObjectInputStream(is);
+            membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
+        } catch (IOException e) {
+            logSevere(e);
+        } catch (ClassNotFoundException e) {
+            logSevere(e);
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    // Don't care.
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // Don't care.
+                }
+            }
+        }
+        logFine("Loaded " + membersMap.size() + " metafolder members.");
+        return membersMap;
+    }
+
+    /**
+     * Write the metafolder Members file with all known members.
+     *
+     * @param membersMap
+     * @param fileInfo
+     */
+    private void writewMetaFolderMembers(Map<String,MemberInfo> membersMap,
+                                         FileInfo fileInfo) {
+        logFine("Saving " + membersMap.size() + " metafolder member(s) to " +
+                fileInfo + '.');
+        OutputStream os = null;
+        ObjectOutputStream oos = null;
+        try {
+            os = new BufferedOutputStream(new FileOutputStream(
+                    fileInfo.getDiskFile(
+                            getController().getFolderRepository())));
+            oos = new ObjectOutputStream(os);
+            oos.writeObject(membersMap);
+        } catch (IOException e) {
+            logSevere(e);
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.flush();
+                    oos.close();
+                } catch (IOException e) {
+                    // Don't care.
+                }
+            }
+            if (os != null) {
+                try {
+                    os.flush();
+                    os.close();
+                } catch (IOException e) {
+                    // Don't care.
+                }
+            }
         }
     }
 
@@ -2197,16 +2372,16 @@ public class Folder extends PFComponent {
      * Triggers the deletion sync in background.
      * <p>
      * 
-     * @param members
+     * @param collection
      *            selected members to sync deletions with
      * @param force
      */
-    public void triggerSyncRemoteDeletedFiles(final Collection<Member> members,
+    public void triggerSyncRemoteDeletedFiles(final Collection<Member> collection,
         final boolean force)
     {
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
-                syncRemoteDeletedFiles(members, force);
+                syncRemoteDeletedFiles(collection, force);
             }
         });
     }
@@ -2231,9 +2406,9 @@ public class Folder extends PFComponent {
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
      */
-    public void syncRemoteDeletedFiles(Collection<Member> members, boolean force)
+    public void syncRemoteDeletedFiles(Collection<Member> collection, boolean force)
     {
-        if (members.isEmpty()) {
+        if (collection.isEmpty()) {
             // Skip.
             return;
         }
@@ -2244,7 +2419,7 @@ public class Folder extends PFComponent {
 
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         // synchronized (scanLock) {
-        for (Member member : members) {
+        for (Member member : collection) {
             if (!member.isCompletelyConnected()) {
                 // disconnected go to next member
                 continue;
@@ -2299,9 +2474,9 @@ public class Folder extends PFComponent {
             setDBDirty();
 
             broadcastMessages(new MessageProducer() {
-                public Message[] getMessages(boolean useExternalizable) {
+                public Message[] getMessages(boolean useExt) {
                     return FolderFilesChanged.create(currentInfo, removedFiles,
-                        diskItemFilter, useExternalizable);
+                        diskItemFilter, useExt);
                 }
             });
         }
@@ -3132,11 +3307,11 @@ public class Folder extends PFComponent {
         boolean addProblem = disconnected;
         for (Problem problem : problems) {
             if (problem instanceof DeviceDisconnectedProblem) {
-                if (!deviceDisconnected) {
+                if (deviceDisconnected) {
+                    addProblem = false;
+                } else {
                     logInfo("Device connected again");
                     removeProblem(problem);
-                } else {
-                    addProblem = false;
                 }
             }
         }
@@ -3685,18 +3860,18 @@ public class Folder extends PFComponent {
         addPattern(Pattern.ITHUMB);
 
         if (WinUtils.getAppDataCurrentUser() != null
-            && getLocalBase().getAbsolutePath().equals(
+            && localBase.getAbsolutePath().equals(
                 WinUtils.getAppDataCurrentUser()))
         {
             addPattern("PowerFolder/logs/*");
         }
         // #2083
         if (UserDirectories.getMyDocuments() != null
-            && getLocalBase().getAbsolutePath().equals(
+            && localBase.getAbsolutePath().equals(
                 UserDirectories.getMyDocuments()))
         {
             logFine("My documents @ " + UserDirectories.getMyDocuments());
-            logFine("Folder @ " + getLocalBase().getAbsolutePath());
+            logFine("Folder @ " + localBase.getAbsolutePath());
 
             logWarning("Adding transition ignore patterns for My documents folder");
 
@@ -3866,9 +4041,9 @@ public class Folder extends PFComponent {
         final FileInfo localInfo = getFile(fileInfo);
         if (diskItemFilter.isRetained(localInfo)) {
             broadcastMessages(new MessageProducer() {
-                public Message[] getMessages(boolean useExternalizable) {
+                public Message[] getMessages(boolean useExt) {
                     return new Message[]{FolderFilesChanged.create(localInfo,
-                        useExternalizable)};
+                            useExt)};
                 }
             });
         }
@@ -4077,12 +4252,12 @@ public class Folder extends PFComponent {
             logWarning("Could not find metaFolder for " + currentInfo);
             return;
         }
-        if (metaFolder.isDeviceDisconnected()) {
+        if (metaFolder.deviceDisconnected) {
             logFiner("Not writing synced ignored patterns. Meta folder disconnected");
             return;
         }
         // Write the patterns in the meta directory.
-        File file = new File(metaFolder.getLocalBase(),
+        File file = new File(metaFolder.localBase,
             DiskItemFilter.PATTERNS_FILENAME);
         FileInfo fInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         diskItemFilter.savePatternsTo(file, false);
