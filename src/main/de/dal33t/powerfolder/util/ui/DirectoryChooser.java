@@ -53,7 +53,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * Class for choosing a directory. Shows a tree of the local file system. User
@@ -151,19 +150,14 @@ class DirectoryChooser extends BaseDialog {
     }
 
     private void okEvent() {
-        String path = pathField.getText();
-        if (StringUtils.isNotBlank(path)) {
-            File temp = new File(path);
-
+        for (File selectedDir : selectedDirs) {
             // Create any virtual folders now.
-            if (!temp.exists()) {
-                temp.mkdirs();
+            if (!selectedDir.exists()) {
+                selectedDir.mkdirs();
             }
-            
-            if (temp.exists() && temp.isDirectory()) {
-                //selectedDir = temp;  //hghg
-                setVisible(false);
-            }
+        }
+        if (!selectedDirs.isEmpty()) {
+            setVisible(false);
         }
     }
 
@@ -349,20 +343,33 @@ class DirectoryChooser extends BaseDialog {
     }
 
     private void processTreeChange() {
-        TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
+        selectedDirs.clear();
+        TreePath[] treePaths = tree.getSelectionPaths();
         if (treePaths != null && treePaths.length > 1) {
             // Multiple selection, so disable pathField.
             pathField.setEnabled(false);
             pathField.setText("");
             newDirectoryAction.setEnabled(false);
+            for (TreePath treePath : treePaths) {
+                DirectoryTreeNode dtn = (DirectoryTreeNode)
+                        treePath.getLastPathComponent();
+                if (isFine()) {
+                    logFine("DirectoryTreeNode scanned " + dtn.isScanned()
+                        + " volume " + dtn.isVolume());
+                }
+                File f = dtn.getDir();
+                if (isFine()) {
+                    logFine("DirectoryTreeNode file " + f.getAbsolutePath());
+                }
+                selectedDirs.add(f);
+            }
         } else {
             pathField.setEnabled(true);
-            logInfo("processTreeChange()");
             pathField.setText("");
-            if (tree.getSelectionPath() != null
-                && tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode)
-            {
-                DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
+            TreePath path = tree.getSelectionPath();
+            if (path != null
+                && path.getLastPathComponent() instanceof DirectoryTreeNode) {
+                DirectoryTreeNode dtn = (DirectoryTreeNode) path
                     .getLastPathComponent();
                 if (isFine()) {
                     logFine("DirectoryTreeNode scanned " + dtn.isScanned()
@@ -373,9 +380,8 @@ class DirectoryChooser extends BaseDialog {
                     logFine("DirectoryTreeNode file " + f.getAbsolutePath());
                 }
                 pathField.setText(f.getAbsolutePath());
-                newDirectoryAction.setEnabled(tree.isExpanded(tree
-                    .getSelectionPath())
-                    || dtn.isLeaf());
+                newDirectoryAction.setEnabled(true);
+                selectedDirs.add(f);
             }
         }
     }

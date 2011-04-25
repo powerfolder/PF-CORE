@@ -817,26 +817,37 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
             List<File> files = DialogFactory.chooseDirectory(getUIController(),
                 initialDirectory == null ? null : new File(initialDirectory),
-                onlineFolders, false); // hghg
+                onlineFolders, true);
             if (files.isEmpty()) {
                 return;
             }
             File localBase = new File(getController().getFolderRepository()
                 .getFoldersBasedir());
-            File file = files.get(0);
-            if (file.equals(localBase)) {
-                DialogFactory.genericDialog(getController(), Translation
-                            .getTranslation("wizard.choose_disk_location.local_base.title"),
-                        Translation
-                            .getTranslation("wizard.choose_disk_location.local_base.text"),
-                        GenericDialogType.ERROR);
-                return;
+            // Check none are local base, that's bad.
+            for (File file1 : files) {
+                if (file1.equals(localBase)) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.getTranslation(
+                                    "wizard.choose_disk_location.local_base.title"),
+                            Translation.getTranslation(
+                                    "wizard.choose_disk_location.local_base.text"),
+                            GenericDialogType.ERROR);
+                    return;
+                }
             }
-            initialDirectory = file.getAbsolutePath();
-            if (!customDirectoryListModel.contains(file.getAbsolutePath())) {
-                customDirectoryListModel.addElement(file.getAbsolutePath());
-                customDirectoryList.setSelectedIndex(customDirectoryListModel
-                    .size() - 1);
+            // Remember the first as the initial for next time.
+            initialDirectory = files.get(0).getAbsolutePath();
+            // Update the list model.
+            boolean changed = false;
+            for (File file1 : files) {
+                if (!customDirectoryListModel.contains(file1.getAbsolutePath())) {
+                    customDirectoryListModel.addElement(file1.getAbsolutePath());
+                    customDirectoryList.setSelectedIndex(customDirectoryListModel
+                        .size() - 1);
+                    changed = true;
+                }
+            }
+            if (changed) {
                 updateButtons();
                 startFolderSizeCalculator();
             }
