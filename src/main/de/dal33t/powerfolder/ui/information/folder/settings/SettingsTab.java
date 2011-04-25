@@ -583,9 +583,10 @@ public class SettingsTab extends PFUIComponent {
         File originalDirectory = folder.getCommitOrLocalDir();
 
         // Select the new folder.
-        File newDirectory = DialogFactory.chooseDirectory(getController()
-            .getUIController(), originalDirectory);
-        if (newDirectory != null) {
+        List<File> files = DialogFactory.chooseDirectory(getController()
+            .getUIController(), originalDirectory, false);
+        if (!files.isEmpty()) {
+            File newDirectory = files.get(0);
             if (FileUtils.isSubdirectory(originalDirectory, newDirectory)) {
                 DialogFactory.genericDialog(getController(),
                     Translation.getTranslation("settings_tab.subdir.title"),

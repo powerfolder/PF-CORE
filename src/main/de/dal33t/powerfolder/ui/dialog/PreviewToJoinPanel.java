@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -209,10 +210,10 @@ public class PreviewToJoinPanel extends BaseDialog {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            File file = DialogFactory.chooseDirectory(getController()
-                .getUIController(), initial);
-            if (file != null) {
-                locationModel.setValue(file.getAbsolutePath());
+            List<File> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), initial, false);
+            if (!files.isEmpty()) {
+                locationModel.setValue(files.get(0).getAbsolutePath());
             }
         }
     }

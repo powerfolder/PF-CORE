@@ -150,7 +150,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         boolean limitedLicense = getGBsAllowed() > 0
             || ProUtil.isTrial(getController());
         return countSelectedFolders() > 0
-            && (!(limitedLicense && warningLabel.getUIComponent().isVisible()));
+            && !(limitedLicense && warningLabel.getUIComponent().isVisible());
     }
 
     private int getGBsAllowed() {
@@ -325,10 +325,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         builder.add(new JButtonMini(addAction), cc.xy(1, 1));
         builder.add(removeButton, cc.xy(3, 1));
         builder.add(linkButton, cc.xy(5, 1));
-        builder
-            .addLabel(
-                Translation
-                    .getTranslation("wizard.choose_multi_disk_location.select_additional"),
+        builder.addLabel(Translation.getTranslation(
+                "wizard.choose_multi_disk_location.select_additional"),
                 cc.xy(7, 1));
         builder.add(folderSizeLabel, cc.xy(9, 1));
         JPanel panel = builder.getPanel();
@@ -817,19 +815,17 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                 }
             }
 
-            File file = DialogFactory.chooseDirectory(getUIController(),
+            List<File> files = DialogFactory.chooseDirectory(getUIController(),
                 initialDirectory == null ? null : new File(initialDirectory),
-                onlineFolders);
-            if (file == null) {
+                onlineFolders, false); // hghg
+            if (files.isEmpty()) {
                 return;
             }
             File localBase = new File(getController().getFolderRepository()
                 .getFoldersBasedir());
+            File file = files.get(0);
             if (file.equals(localBase)) {
-                DialogFactory
-                    .genericDialog(
-                        getController(),
-                        Translation
+                DialogFactory.genericDialog(getController(), Translation
                             .getTranslation("wizard.choose_disk_location.local_base.title"),
                         Translation
                             .getTranslation("wizard.choose_disk_location.local_base.text"),

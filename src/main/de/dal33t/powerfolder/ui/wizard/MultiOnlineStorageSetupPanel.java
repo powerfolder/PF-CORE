@@ -168,6 +168,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
     /**
      * Build map of foInfo and syncProfs
      */
+    @SuppressWarnings({"unchecked"})
     public void afterDisplay() {
         Map<String, UserDirectory> userDirs = UserDirectories
             .getUserDirectoriesFiltered(getController());
@@ -182,7 +183,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             folderProfileMap.put(folderInfo,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
             // Suggesr user dir.
-            File dirSuggestion = null;
+            File dirSuggestion;
             if (userDirs.get(folderInfo.name) == null) {
                 dirSuggestion = new File(folderBasedir,
                     FileUtils.removeInvalidFilenameChars(folderInfo.name));
@@ -265,9 +266,11 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             }
         }
         if (selectedFolderInfo != null) {
-            File file = DialogFactory.chooseDirectory(getController()
-                .getUIController(), folderLocalBaseMap.get(selectedFolderInfo));
-            if (file != null) {
+            List<File> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), folderLocalBaseMap.get(selectedFolderInfo),
+                    false);
+            if (!files.isEmpty()) {
+                File file = files.get(0);
                 localFolderField.setText(file.getAbsolutePath());
                 folderLocalBaseMap.put(selectedFolderInfo, file);
             }

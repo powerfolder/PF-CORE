@@ -53,12 +53,12 @@ public class DialogFactory {
      *            optional name of the initial selected directory
      * @return the chosen directory
      */
-    public static File chooseDirectory(UIController uiController,
-        String initialDirectoryName)
+    public static List<File> chooseDirectory(UIController uiController,
+        String initialDirectoryName, boolean multiSelect)
     {
         File file = initialDirectoryName != null ? new File(
             initialDirectoryName) : null;
-        return chooseDirectory(uiController, file);
+        return chooseDirectory(uiController, file, multiSelect);
     }
 
     /**
@@ -71,9 +71,9 @@ public class DialogFactory {
      *            optional initial selected directory
      * @return the chosen directory
      */
-    public static File chooseDirectory(UIController uiController,
-        File initialDirectory) {
-        return chooseDirectory(uiController, initialDirectory, null);
+    public static List<File> chooseDirectory(UIController uiController,
+        File initialDirectory, boolean multiSelect) {
+        return chooseDirectory(uiController, initialDirectory, null, multiSelect);
     }
     /**
      * Opens a DirectoryChooser with the current dir and returns the new
@@ -90,13 +90,14 @@ public class DialogFactory {
      *            PF base dir that a user may want to create.
      * @return the chosen directory
      */
-    public static File chooseDirectory(UIController uiController,
-        File initialDirectory, List<String> onlineFolders)
+    public static List<File> chooseDirectory(UIController uiController,
+        File initialDirectory, List<String> onlineFolders, boolean multiSelect)
     {
         DirectoryChooser dc = new DirectoryChooser(
-            uiController.getController(), initialDirectory, onlineFolders);
+            uiController.getController(), initialDirectory, onlineFolders,
+                multiSelect);
         dc.open();
-        return dc.getSelectedDir();
+        return dc.getSelectedDirs();
     }
 
     /**

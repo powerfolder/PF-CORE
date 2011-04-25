@@ -45,6 +45,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Dialog for restoring a selected file archive.
@@ -136,10 +137,10 @@ public class RestoreArchiveDialog extends BaseDialog {
     }
 
     private void showFileDialog() {
-        File dir = DialogFactory.chooseDirectory(getController()
-            .getUIController(), fileLocationField.getText());
-        if (dir != null) {
-            fileLocationField.setText(dir.getAbsolutePath());
+        List<File> files = DialogFactory.chooseDirectory(getController()
+            .getUIController(), fileLocationField.getText(), false);
+        if (!files.isEmpty()) {
+            fileLocationField.setText(files.get(0).getAbsolutePath());
             enableComponents();
         }
     }

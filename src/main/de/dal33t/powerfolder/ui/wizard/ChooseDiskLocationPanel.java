@@ -37,6 +37,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -463,14 +464,15 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     private void displayChooseDirectory() {
         String initial = (String) locationModel.getValue();
-        File file = DialogFactory.chooseDirectory(getController()
-            .getUIController(), initial);
-        if (file != null) {
-            locationModel.setValue(file.getAbsolutePath());
+        List<File> files = DialogFactory.chooseDirectory(getController()
+            .getUIController(), initial, false);
+        if (!files.isEmpty()) {
+            File localFile = files.get(0);
+            locationModel.setValue(localFile.getAbsolutePath());
 
             // Update this so that if the user clicks other user dirs
             // and then 'Custom', the selected dir will show.
-            transientDirectory = file.getAbsolutePath();
+            transientDirectory = localFile.getAbsolutePath();
         }
     }
 

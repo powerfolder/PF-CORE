@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -225,10 +226,10 @@ public class SendInvitationsAdvancedPanel extends BaseDialog {
                 updateButtons();
             } else if (e.getSource() == locationButton) {
                 String initial = (String) locationValueModel.getValue();
-                File file = DialogFactory.chooseDirectory(getController()
-                    .getUIController(), initial);
-                if (file != null) {
-                    location = file.getAbsolutePath();
+                List<File> files = DialogFactory.chooseDirectory(getController()
+                    .getUIController(), initial, false);
+                if (!files.isEmpty()) {
+                    location = files.get(0).getAbsolutePath();
                     locationDirectoryField.setText(location);
                     updateButtons();
                 }

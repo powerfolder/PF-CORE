@@ -26,8 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -42,10 +41,7 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -68,7 +64,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  */
 class DirectoryChooser extends BaseDialog {
 
-    private File selectedDir;
+    private final List<File> selectedDirs;
     private final DirectoryTree tree;
     private final JTextField pathField;
     private final JButton newDirButton;
@@ -76,6 +72,7 @@ class DirectoryChooser extends BaseDialog {
     private JPopupMenu popupMenu;
     private NewDirectoryAction newDirectoryAction;
     private JButton okButton;
+    private boolean multiSelect;
 
     /**
      * Constructor.
@@ -88,14 +85,21 @@ class DirectoryChooser extends BaseDialog {
      *            optional list of online folder names that are rendered as
      *            globe icons. These are expected to be online folders in the
      *            PF base dir that a user may want to create.
+     * @param multiSelect
+     *            whether multiple directories may be selected.
      */
     DirectoryChooser(Controller controller, File initialValue,
-                     List<String> onlineFolders) {
+                     List<String> onlineFolders, boolean multiSelect) {
         super(controller, true);
-        selectedDir = initialValue;
+        this.multiSelect = multiSelect;
+        selectedDirs = new ArrayList<File>();
+        selectedDirs.add(initialValue);
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
         model = new DefaultTreeModel(rootTreeNode);
         tree = new DirectoryTree(model, onlineFolders);
+        tree.getSelectionModel().setSelectionMode(multiSelect ?
+                TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION :
+                TreeSelectionModel.SINGLE_TREE_SELECTION);
         pathField = new JTextField();
         newDirectoryAction = new NewDirectoryAction(getController());
         newDirectoryAction.setEnabled(false);
@@ -103,8 +107,8 @@ class DirectoryChooser extends BaseDialog {
         tree.addMouseListener(new NavTreeListener());
     }
 
-    public File getSelectedDir() {
-        return selectedDir;
+    public List<File> getSelectedDirs() {
+        return Collections.unmodifiableList(selectedDirs);
     }
 
     /**
@@ -125,7 +129,7 @@ class DirectoryChooser extends BaseDialog {
         JButton cancelButton = createCancelButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 // Signal cancel with a null vm value.
-                selectedDir = null;
+                selectedDirs.clear();
                 setVisible(false);
             }
         });
@@ -157,7 +161,7 @@ class DirectoryChooser extends BaseDialog {
             }
             
             if (temp.exists() && temp.isDirectory()) {
-                selectedDir = temp;
+                //selectedDir = temp;  //hghg
                 setVisible(false);
             }
         }
@@ -207,23 +211,31 @@ class DirectoryChooser extends BaseDialog {
 
         // Panel builder.
         FormLayout layout = new FormLayout("pref, 3dlu, pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref");
+            "pref, 3dlu, pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         // Set the components.
         CellConstraints cc = new CellConstraints();
-        builder.add(scrollPane, cc.xyw(1, 1, 5));
+        int row = 1;
+        builder.add(scrollPane, cc.xyw(1, row, 5));
+        row += 2;
+        if (multiSelect) {
+            builder.add(new JLabel(Translation.getTranslation(
+                    "dialog.directorychooser.hold_control")),
+                    cc.xyw(1, row, 5));
+            row +=2;
+        }
         builder.add(
-            new JLabel(Translation.getTranslation("general.directory")), cc.xy(
-                1, 3));
-        builder.add(pathField, cc.xy(3, 3));
+            new JLabel(Translation.getTranslation("general.directory")),
+                cc.xy(1, row));
+        builder.add(pathField, cc.xy(3, row));
         builder.add(ButtonBarFactory.buildRightAlignedBar(newDirButton), cc.xy(
-            5, 3));
+            5, row));
         JComponent c = builder.getPanel();
 
         // Initialize the tree path on the path supplied.
         logFine("Initializing path...");
-        tree.initializePath(selectedDir);
+        tree.initializePath(selectedDirs.get(0));
         logFine("Initialized path");
         return c;
     }
@@ -337,25 +349,34 @@ class DirectoryChooser extends BaseDialog {
     }
 
     private void processTreeChange() {
-        logInfo("processTreeChange()");
-        pathField.setText("");
-        if (tree.getSelectionPath() != null
-            && tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode)
-        {
-            DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
-                .getLastPathComponent();
-            if (isFine()) {
-                logFine("DirectoryTreeNode scanned " + dtn.isScanned()
-                    + " volume " + dtn.isVolume());
+        TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
+        if (treePaths != null && treePaths.length > 1) {
+            // Multiple selection, so disable pathField.
+            pathField.setEnabled(false);
+            pathField.setText("");
+            newDirectoryAction.setEnabled(false);
+        } else {
+            pathField.setEnabled(true);
+            logInfo("processTreeChange()");
+            pathField.setText("");
+            if (tree.getSelectionPath() != null
+                && tree.getSelectionPath().getLastPathComponent() instanceof DirectoryTreeNode)
+            {
+                DirectoryTreeNode dtn = (DirectoryTreeNode) tree.getSelectionPath()
+                    .getLastPathComponent();
+                if (isFine()) {
+                    logFine("DirectoryTreeNode scanned " + dtn.isScanned()
+                        + " volume " + dtn.isVolume());
+                }
+                File f = dtn.getDir();
+                if (isFine()) {
+                    logFine("DirectoryTreeNode file " + f.getAbsolutePath());
+                }
+                pathField.setText(f.getAbsolutePath());
+                newDirectoryAction.setEnabled(tree.isExpanded(tree
+                    .getSelectionPath())
+                    || dtn.isLeaf());
             }
-            File f = dtn.getDir();
-            if (isFine()) {
-                logFine("DirectoryTreeNode file " + f.getAbsolutePath());
-            }
-            pathField.setText(f.getAbsolutePath());
-            newDirectoryAction.setEnabled(tree.isExpanded(tree
-                .getSelectionPath())
-                || dtn.isLeaf());
         }
     }
 
@@ -364,18 +385,19 @@ class DirectoryChooser extends BaseDialog {
         // ever any problems with PF dir chooser.
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setMultiSelectionEnabled(false);
-        if (selectedDir != null) {
-            chooser.setCurrentDirectory(selectedDir);
+        chooser.setMultiSelectionEnabled(multiSelect);
+        if (!selectedDirs.isEmpty()) {
+            chooser.setCurrentDirectory(selectedDirs.get(0));
         }
-        // setVisible(false);
         int i = chooser.showDialog(getUIController().getActiveFrame(),
             Translation.getTranslation("general.select"));
         if (i == JFileChooser.APPROVE_OPTION) {
-            selectedDir = chooser.getSelectedFile();
+            selectedDirs.clear();
+            File[] selectedFiles = chooser.getSelectedFiles();
+            selectedDirs.addAll(Arrays.asList(selectedFiles));
             setVisible(false);
         } else {
-            selectedDir = null;
+            selectedDirs.clear();
             setVisible(true);
         }
     }

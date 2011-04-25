@@ -30,6 +30,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -589,10 +590,10 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
     private class MyActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String initial = (String) locationModel.getValue();
-            File newLocation = DialogFactory.chooseDirectory(getController()
-                .getUIController(), initial);
-            if (newLocation != null) {
-
+            List<File> files = DialogFactory.chooseDirectory(getController()
+                .getUIController(), initial, false);
+            if (!files.isEmpty()) {
+                File newLocation = files.get(0);
                 // Make sure that the user is not setting this to the base dir
                 // of an existing folder.
                 for (Folder folder : getController().getFolderRepository()
