@@ -80,6 +80,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.LinkFolderOnlineDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -319,16 +320,16 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
     private JPanel createCustomButtons() {
         FormLayout layout = new FormLayout(
-            "pref, 3dlu, pref, 3dlu, pref, 3dlu, 130dlu, 3dlu, 0:grow", "pref");
+            "pref, pref, pref, pref, 0:grow, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(new JButtonMini(addAction), cc.xy(1, 1));
-        builder.add(removeButton, cc.xy(3, 1));
-        builder.add(linkButton, cc.xy(5, 1));
-        builder.addLabel(Translation.getTranslation(
-                "wizard.choose_multi_disk_location.select_additional"),
-                cc.xy(7, 1));
-        builder.add(folderSizeLabel, cc.xy(9, 1));
+        builder.add(removeButton, cc.xy(2, 1));
+        builder.add(linkButton, cc.xy(3, 1));
+        ActionLabel additionalLabel = new ActionLabel(getController(),
+                addAction);
+        builder.add(additionalLabel.getUIComponent(), cc.xy(4, 1));
+        builder.add(folderSizeLabel, cc.xy(6, 1));
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
         return panel;
@@ -457,9 +458,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private void startFolderSizeCalculator() {
-        folderSizeLabel
-            .setText(Translation
-                .getTranslation("wizard.choose_disk_location.calculating_directory_size"));
+        folderSizeLabel.setText(Translation.getTranslation(
+                "wizard.choose_disk_location.calculating_directory_size"));
         folderSizeLabel.setForeground(SystemColor.textText);
         new MyFolderSizeSwingWorker().execute();
     }
@@ -607,9 +607,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                                 .getSpaceUsed();
                             if (spaceUsed + totalDirectorySize > totalStorage) {
                                 warningLabel.setVisible(true);
-                                warningLabel
-                                    .setText(Translation
-                                        .getTranslation("wizard.choose_disk_location.os_over_size"));
+                                warningLabel.setText(Translation.getTranslation(
+                                        "wizard.choose_disk_location.os_over_size"));
                                 warningLabel.setIcon(Icons
                                     .getIconById(Icons.WARNING));
                                 JDialog dialog = (JDialog) getWizardContext()
@@ -624,11 +623,12 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
                     // Trial licenses
                     long bytesAllowed = getGBsAllowed() * 1024 * 1024 * 1024;
                     boolean licenseOverUse = bytesAllowed > 0
-                        && calculateTotalLocalSharedSize() + totalDirectorySize > bytesAllowed;
+                        && calculateTotalLocalSharedSize() + totalDirectorySize
+                            > bytesAllowed;
                     boolean trialOverUse = ProUtil.isTrial(getController())
-                        && (nDirectories
+                        && nDirectories
                             + getController().getFolderRepository()
-                                .getFoldersCount() > 3);
+                                .getFoldersCount() > 3;
                     if (licenseOverUse || trialOverUse) {
                         warningLabel.setVisible(true);
                         warningLabel
@@ -794,7 +794,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 
     @SuppressWarnings("serial")
@@ -802,7 +801,8 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         MyAddAction(Controller controller) {
             super("action_add_directory", controller);
-            putValue(NAME, "");
+            putValue(NAME, Translation.getTranslation(
+                    "wizard.choose_multi_disk_location.select_additional"));
         }
 
         public void actionPerformed(ActionEvent e) {
