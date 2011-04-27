@@ -723,8 +723,35 @@ public enum ConfigurationEntry {
     /** Warning about unsyned folders. */
     FOLDER_SYNC_USE("sync.folder.use", true),
 
-    /** Days before warning about unsynced folders. */
-    FOLDER_SYNC_WARN_DAYS("sync.folder.warn", 10),
+    /** Seconds before warning about unsynced folders (10 days). */
+    FOLDER_SYNC_WARN_SECONDS("sync.folder.warn.seconds", 864000) {
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                try {
+                    value = String.valueOf(24L * 60 * 60 * Integer
+                        .valueOf(controller.getConfig().getProperty(
+                            "sync.folder.warn")));
+                } catch (Exception e) {
+                }
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("sync.folder.warn");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("sync.folder.warn");
+        }
+    },
 
     /**
      * TRAC #1776
