@@ -2095,8 +2095,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * A new member has been added.
-     * Update the metafolder Members file.
+     * A new member has been added. Update the metafolder Members file.
      */
     private void updateMetaFolderMembersFromParent() {
         System.out.println("hghg updateMetaFolderMembersFromParent");
@@ -2130,17 +2129,19 @@ public class Folder extends PFComponent {
         }
         // Write back and scan.
         writewMetaFolderMembers(membersMap, fileInfo);
-        System.out.println("hghg Wrote " + membersMap.size() + " members to metaFolder after new member");
+        System.out.println("hghg Wrote " + membersMap.size()
+            + " members to metaFolder after new member");
     }
 
     /**
-     * Metafolder members file changed?
-     * Update it with any new members we know about.
-     *
+     * Metafolder members file changed? Update it with any new members we know
+     * about.
+     * 
      * @param fileInfo
      */
     private void updateMetaFolderMembersFromMetaFolder(FileInfo fileInfo) {
-        System.out.println("hghg updateMetaFolderMembersFromMetaFolder " +  fileInfo);
+        System.out.println("hghg updateMetaFolderMembersFromMetaFolder "
+            + fileInfo);
         if (Feature.META_FOLDER.isDisabled()) {
             return;
         }
@@ -2178,13 +2179,14 @@ public class Folder extends PFComponent {
         }
         // Write back and scan.
         writewMetaFolderMembers(membersMap, fileInfo);
-        System.out.println("hghg Wrote " + membersMap.size() + " members to metaFolder after Members file change");
+        System.out.println("hghg Wrote " + membersMap.size()
+            + " members to metaFolder after Members file change");
     }
 
     /**
-     * Read the metafolder Members file from disk.
-     * It is a Map<String, MemberInfo>.
-     *
+     * Read the metafolder Members file from disk. It is a Map<String,
+     * MemberInfo>.
+     * 
      * @param fileInfo
      * @return
      */
@@ -2194,10 +2196,9 @@ public class Folder extends PFComponent {
         Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
         InputStream is = null;
         ObjectInputStream ois = null;
-        try{
+        try {
             is = new BufferedInputStream(new FileInputStream(
-                    fileInfo.getDiskFile(
-                            getController().getFolderRepository())));
+                fileInfo.getDiskFile(getController().getFolderRepository())));
             ois = new ObjectInputStream(is);
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
         } catch (IOException e) {
@@ -2226,20 +2227,20 @@ public class Folder extends PFComponent {
 
     /**
      * Write the metafolder Members file with all known members.
-     *
+     * 
      * @param membersMap
      * @param fileInfo
      */
-    private void writewMetaFolderMembers(Map<String,MemberInfo> membersMap,
-                                         FileInfo fileInfo) {
-        logFine("Saving " + membersMap.size() + " metafolder member(s) to " +
-                fileInfo + '.');
+    private void writewMetaFolderMembers(Map<String, MemberInfo> membersMap,
+        FileInfo fileInfo)
+    {
+        logFine("Saving " + membersMap.size() + " metafolder member(s) to "
+            + fileInfo + '.');
         OutputStream os = null;
         ObjectOutputStream oos = null;
         try {
             os = new BufferedOutputStream(new FileOutputStream(
-                    fileInfo.getDiskFile(
-                            getController().getFolderRepository())));
+                fileInfo.getDiskFile(getController().getFolderRepository())));
             oos = new ObjectOutputStream(os);
             oos.writeObject(membersMap);
         } catch (IOException e) {
@@ -2376,8 +2377,8 @@ public class Folder extends PFComponent {
      *            selected members to sync deletions with
      * @param force
      */
-    public void triggerSyncRemoteDeletedFiles(final Collection<Member> collection,
-        final boolean force)
+    public void triggerSyncRemoteDeletedFiles(
+        final Collection<Member> collection, final boolean force)
     {
         getController().getIOProvider().startIO(new Runnable() {
             public void run() {
@@ -2406,7 +2407,8 @@ public class Folder extends PFComponent {
      *            true if the sync is forced with ALL connected members of the
      *            folder. otherwise it checks the modifier.
      */
-    public void syncRemoteDeletedFiles(Collection<Member> collection, boolean force)
+    public void syncRemoteDeletedFiles(Collection<Member> collection,
+        boolean force)
     {
         if (collection.isEmpty()) {
             // Skip.
@@ -4043,7 +4045,7 @@ public class Folder extends PFComponent {
             broadcastMessages(new MessageProducer() {
                 public Message[] getMessages(boolean useExt) {
                     return new Message[]{FolderFilesChanged.create(localInfo,
-                            useExt)};
+                        useExt)};
                 }
             });
         }
@@ -4127,6 +4129,7 @@ public class Folder extends PFComponent {
         if (!ConfigurationEntry.FOLDER_SYNC_USE
             .getValueBoolean(getController()))
         {
+            removeUnsyncedProblem();
             return;
         }
         if (previewOnly) {
@@ -4135,11 +4138,11 @@ public class Folder extends PFComponent {
         // Calculate the date that folders should be synced by.
         int warnSeconds = syncWarnSeconds;
         if (warnSeconds == 0) {
-            int syncWarnDays = ConfigurationEntry.FOLDER_SYNC_WARN_DAYS
+            warnSeconds = ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS
                 .getValueInt(getController());
-            warnSeconds = 60 * 60 * 24 * syncWarnDays;
         }
         if (warnSeconds <= 0) {
+            removeUnsyncedProblem();
             return;
         }
         Calendar cal = new GregorianCalendar();
@@ -4178,17 +4181,24 @@ public class Folder extends PFComponent {
                 addProblem(problem);
             }
         } else {
-            // Perhaps now need to remove it?
-            UnsynchronizedFolderProblem ufp = null;
-            for (Problem problem : problems) {
-                if (problem instanceof UnsynchronizedFolderProblem) {
-                    ufp = (UnsynchronizedFolderProblem) problem;
-                    break;
-                }
+            removeUnsyncedProblem();
+        }
+    }
+
+    private void removeUnsyncedProblem() {
+        if (problems.isEmpty()) {
+            return;
+        }
+        // Perhaps now need to remove it?
+        UnsynchronizedFolderProblem ufp = null;
+        for (Problem problem : problems) {
+            if (problem instanceof UnsynchronizedFolderProblem) {
+                ufp = (UnsynchronizedFolderProblem) problem;
+                break;
             }
-            if (ufp != null) {
-                removeProblem(ufp);
-            }
+        }
+        if (ufp != null) {
+            removeProblem(ufp);
         }
     }
 
@@ -4217,7 +4227,7 @@ public class Folder extends PFComponent {
      */
     public void setSyncWarnSeconds(int syncWarnSeconds) {
         this.syncWarnSeconds = syncWarnSeconds;
-        if (syncWarnSeconds > 0) {
+        if (syncWarnSeconds != 0) {
             getController().getConfig().setProperty(
                 FOLDER_SETTINGS_PREFIX_V4 + configEntryId
                     + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS,
@@ -4228,6 +4238,7 @@ public class Folder extends PFComponent {
                     + FolderSettings.FOLDER_SETTINGS_SYNC_WARN_SECONDS);
         }
         getController().saveConfig();
+        checkSync();
     }
 
     /**
