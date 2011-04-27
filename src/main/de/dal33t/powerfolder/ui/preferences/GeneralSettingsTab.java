@@ -227,8 +227,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         folderSyncSlider = new JSlider();
         folderSyncSlider.setMinimum(1);
         folderSyncSlider.setMaximum(30);
-        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN_DAYS
-            .getValueInt(getController()));
+        folderSyncSlider.setValue(ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS
+            .getValueInt(getController()) / 60 / 60 / 24);
         folderSyncSlider.setMinorTickSpacing(1);
 
         folderSyncSlider.setPaintTicks(true);
@@ -432,8 +432,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.FOLDER_SYNC_USE.setValue(getController(),
             String.valueOf(folderSyncCB.isSelected()));
 
-        ConfigurationEntry.FOLDER_SYNC_WARN_DAYS.setValue(getController(),
-            String.valueOf(folderSyncSlider.getValue()));
+        ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS.setValue(getController(),
+            String.valueOf(folderSyncSlider.getValue() * 60 * 60 * 24));
 
         boolean changed = WinUtils.getInstance().isPFStartup(getController()) != startWithWindowsBox
             .isSelected();
