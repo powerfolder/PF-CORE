@@ -4106,6 +4106,7 @@ public class Folder extends PFComponent {
     /** package protected because fired by FolderStatistics */
     void notifyStatisticsCalculated() {
         checkLastSyncDate();
+        checkSync();
 
         FolderEvent folderEvent = new FolderEvent(this);
         folderListenerSupport.statisticsCalculated(folderEvent);
