@@ -423,8 +423,8 @@ public class FolderScanner extends PFComponent {
                     }
                 }
             } else if (file.isDirectory()) {
-                if (!FileUtils.isScannable(file, currentScanningFolder
-                    .getInfo())
+                if (!FileUtils.isScannable(file,
+                    currentScanningFolder.getInfo())
                     || currentScanningFolder.isSystemSubDir(file))
                 {
                     continue;
@@ -579,7 +579,7 @@ public class FolderScanner extends PFComponent {
             // Try harder, same file with the
             for (FileInfo otherFInfo : remaining.values()) {
                 if (otherFInfo.getRelativeName().equalsIgnoreCase(filename)) {
-                    logWarning("Found local diskfile with diffrent name-case in db. file: "
+                    logFine("Found local diskfile with diffrent name-case in db. file: "
                         + fileToScan.getAbsolutePath()
                         + ", dbFile: "
                         + otherFInfo.toDetailString());
@@ -768,8 +768,8 @@ public class FolderScanner extends PFComponent {
                     break;
                 }
                 if (subFile.isFile()) {
-                    if (FileUtils.isScannable(subFile, currentScanningFolder
-                        .getInfo()))
+                    if (FileUtils.isScannable(subFile,
+                        currentScanningFolder.getInfo()))
                     {
                         if (!scanFile(subFile, currentDirName)) {
                             // hardware failure
@@ -778,8 +778,8 @@ public class FolderScanner extends PFComponent {
                         }
                     }
                 } else if (subFile.isDirectory()) {
-                    if (FileUtils.isScannable(subFile, currentScanningFolder
-                        .getInfo()))
+                    if (FileUtils.isScannable(subFile,
+                        currentScanningFolder.getInfo()))
                     {
                         if (!scanDir(subFile)) {
                             // hardware failure
