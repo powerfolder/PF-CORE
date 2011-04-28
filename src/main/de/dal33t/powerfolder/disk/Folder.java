@@ -118,7 +118,7 @@ public class Folder extends PFComponent {
     public static final String DB_FILENAME = ".PowerFolder.db";
     public static final String DB_BACKUP_FILENAME = ".PowerFolder.db.bak";
     private static final String LAST_SYNC_INFO_FILENAME = "Last_sync";
-    private static final String METAFOLDER_MEMBERS = "Members";
+    public static final String METAFOLDER_MEMBERS = "Members";
 
     private static final int TEN_MINUTES = 60 * 10;
     private static final int ONE_MINUTE = 60;
@@ -1261,8 +1261,6 @@ public class Folder extends PFComponent {
                     return fInfo;
                 }
 
-                updateMetaFolderMembersFromMetaFolder(fInfo);
-
                 FileInfo syncFile = localFile
                     .syncFromDiskIfRequired(this, file);
                 if (syncFile != null) {
@@ -2090,15 +2088,15 @@ public class Folder extends PFComponent {
         if (!wasMember) {
             // Fire event if this member is new
             fireMemberJoined(member);
-            updateMetaFolderMembersFromParent();
+            updateMetaFolderMembers();
         }
     }
 
     /**
-     * A new member has been added. Update the metafolder Members file.
+     * Merge members with metafolder Members file
+     * and write back if there was a change.
      */
-    private void updateMetaFolderMembersFromParent() {
-        System.out.println("hghg updateMetaFolderMembersFromParent");
+    public void updateMetaFolderMembers() {
         if (Feature.META_FOLDER.isDisabled()) {
             return;
         }
@@ -2123,64 +2121,29 @@ public class Folder extends PFComponent {
         FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         // Read in.
         Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
+        Map<String, MemberInfo> originalMap = new HashMap<String, MemberInfo>();
+        originalMap.putAll(membersMap);
         // Update with my new members.
         for (Member member : members.keySet()) {
             membersMap.put(member.getId(), member.getInfo());
         }
-        // Write back and scan.
-        writewMetaFolderMembers(membersMap, fileInfo);
-        System.out.println("hghg Wrote " + membersMap.size()
-            + " members to metaFolder after new member");
-    }
-
-    /**
-     * Metafolder members file changed? Update it with any new members we know
-     * about.
-     * 
-     * @param fileInfo
-     */
-    private void updateMetaFolderMembersFromMetaFolder(FileInfo fileInfo) {
-        System.out.println("hghg updateMetaFolderMembersFromMetaFolder "
-            + fileInfo);
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
+        // See if there has been a change to the members.
+        boolean changed = false;
+        if (originalMap.size() == membersMap.size()) {
+            for (String s : membersMap.keySet()) {
+                if (!originalMap.containsKey(s)) {
+                    changed = true;
+                    break;
+                }
+            }
+        } else {
+            changed = true;
         }
-        // Only interested in the Members file.
-        if (!fileInfo.getFilenameOnly().equals(METAFOLDER_MEMBERS)) {
-            return;
+        if (changed) {
+            // Write back and scan.
+            writewMetaFolderMembers(membersMap, fileInfo);
+            metaFolder.scanLocalFiles();
         }
-        // Only do this for metaFolders.
-        if (!currentInfo.isMetaFolder()) {
-            return;
-        }
-        FolderRepository folderRepository = getController()
-            .getFolderRepository();
-        Folder parentFolder = folderRepository.getParentFolder(currentInfo);
-        if (parentFolder == null) {
-            logWarning("Could not find parent folder for " + currentInfo);
-            return;
-        }
-        if (parentFolder.deviceDisconnected) {
-            logFiner("Not writing members. Parent folder disconnected.");
-            return;
-        }
-        // Update in the meta directory.
-        File file = new File(localBase, METAFOLDER_MEMBERS);
-        FileInfo targetFileInfo = FileInfoFactory.lookupInstance(this, file);
-        if (!targetFileInfo.equals(fileInfo)) {
-            // Not the correct file.
-            return;
-        }
-        // Read in.
-        Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
-        // Update with my new members.
-        for (Member member : parentFolder.members.keySet()) {
-            membersMap.put(member.getId(), member.getInfo());
-        }
-        // Write back and scan.
-        writewMetaFolderMembers(membersMap, fileInfo);
-        System.out.println("hghg Wrote " + membersMap.size()
-            + " members to metaFolder after Members file change");
     }
 
     /**
@@ -2192,7 +2155,9 @@ public class Folder extends PFComponent {
      */
     @SuppressWarnings({"unchecked"})
     private Map<String, MemberInfo> readMetaFolderMembers(FileInfo fileInfo) {
-        logFine("Loading metafolder members from " + fileInfo + '.');
+        if (isFine()) {
+            logFine("Loading metafolder members from " + fileInfo + '.');
+        }
         Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
         InputStream is = null;
         ObjectInputStream ois = null;
@@ -2221,7 +2186,9 @@ public class Folder extends PFComponent {
                 }
             }
         }
-        logFine("Loaded " + membersMap.size() + " metafolder members.");
+        if (isFine()) {
+            logFine("Loaded " + membersMap.size() + " metafolder members.");
+        }
         return membersMap;
     }
 
@@ -2231,11 +2198,18 @@ public class Folder extends PFComponent {
      * @param membersMap
      * @param fileInfo
      */
-    private void writewMetaFolderMembers(Map<String, MemberInfo> membersMap,
-        FileInfo fileInfo)
-    {
-        logFine("Saving " + membersMap.size() + " metafolder member(s) to "
-            + fileInfo + '.');
+    private void writewMetaFolderMembers(Map<String,MemberInfo> membersMap,
+                                         FileInfo fileInfo) {
+        if (isFine()) {
+            logFine("Saving " + membersMap.size() + " metafolder member(s) to "
+                    + fileInfo + '.');
+        }
+        if (isFiner()) {
+            for (MemberInfo memberInfo : membersMap.values()) {
+                logFiner("Saved " + memberInfo.getNick());
+            }
+        }
+
         OutputStream os = null;
         ObjectOutputStream oos = null;
         try {
@@ -2263,6 +2237,7 @@ public class Folder extends PFComponent {
                 }
             }
         }
+
     }
 
     public boolean waitForScan() {

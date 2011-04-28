@@ -42,6 +42,7 @@ public class MetaFolderDataHandler extends PFComponent {
      *            metaFolder file info
      */
     public void handleMetaFolderFileInfo(FileInfo fileInfo) {
+        System.out.println("hghg metafolderfile " + fileInfo);
         if (!fileInfo.getFolderInfo().isMetaFolder()) {
             logSevere("Unable to handle meta data file. Not in meta folder: "
                 + fileInfo.toDetailString());
@@ -51,7 +52,7 @@ public class MetaFolderDataHandler extends PFComponent {
             .getParentFolder(fileInfo.getFolderInfo());
         if (parentFolder == null) {
             logSevere("Parent folder for meta folder not found: "
-                + fileInfo.getFolderInfo() + "/" + fileInfo.getFolderInfo().id);
+                + fileInfo.getFolderInfo() + '/' + fileInfo.getFolderInfo().id);
             return;
         }
         if (fileInfo.getRelativeName().endsWith(
@@ -59,6 +60,19 @@ public class MetaFolderDataHandler extends PFComponent {
         {
             handleMetaFolderSyncPatterns(parentFolder, fileInfo);
         }
+        if (fileInfo.getRelativeName().equals(Folder.METAFOLDER_MEMBERS)) {
+            handleMetaFolderMembers(parentFolder);
+        }
+    }
+
+    /**
+     * Update the members in the parent folder.
+     *
+     * @param parentFolder
+     * @param fileInfo
+     */
+    private static void handleMetaFolderMembers(Folder parentFolder) {
+        parentFolder.updateMetaFolderMembers();
     }
 
     /**
@@ -68,7 +82,7 @@ public class MetaFolderDataHandler extends PFComponent {
      * @param fileInfo
      *            fileInfo of the new sync patterns
      */
-    private void handleMetaFolderSyncPatterns(Folder parentFolder,
+    private static void handleMetaFolderSyncPatterns(Folder parentFolder,
         FileInfo fileInfo)
     {
         parentFolder.handleMetaFolderSyncPatterns(fileInfo);
