@@ -42,7 +42,6 @@ public class MetaFolderDataHandler extends PFComponent {
      *            metaFolder file info
      */
     public void handleMetaFolderFileInfo(FileInfo fileInfo) {
-        System.out.println("hghg metafolderfile " + fileInfo);
         if (!fileInfo.getFolderInfo().isMetaFolder()) {
             logSevere("Unable to handle meta data file. Not in meta folder: "
                 + fileInfo.toDetailString());
