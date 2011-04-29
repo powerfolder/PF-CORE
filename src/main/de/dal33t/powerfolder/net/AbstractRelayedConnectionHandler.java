@@ -795,14 +795,38 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         } catch (ConnectionException e) {
             logFiner("ConnectionException", e);
             logConnectionClose(e);
+            
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < message.getPayload().length; i++) {
+                hexString.append(Integer.toHexString(0xFF & message
+                    .getPayload()[i]));
+            }
+            logWarning("On message: " + message + ": " + hexString);
+            
         } catch (ClassNotFoundException e) {
             logFiner("ClassNotFoundException", e);
             logWarning("Received unknown packet/class: " + e.getMessage()
                 + " from " + AbstractRelayedConnectionHandler.this);
+            
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < message.getPayload().length; i++) {
+                hexString.append(Integer.toHexString(0xFF & message
+                    .getPayload()[i]));
+            }
+            logWarning("On message: " + message + ": " + hexString);
+            
             // do not break connection
         } catch (RuntimeException e) {
             logSevere("RuntimeException", e);
             shutdownWithMember();
+            
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < message.getPayload().length; i++) {
+                hexString.append(Integer.toHexString(0xFF & message
+                    .getPayload()[i]));
+            }
+            logWarning("On message: " + message + ": " + hexString);
+            
             throw e;
         }
 
