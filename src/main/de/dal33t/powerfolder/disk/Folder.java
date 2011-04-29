@@ -305,13 +305,15 @@ public class Folder extends PFComponent {
                 + folderSettings.getLocalBaseDir().getPath());
             logWarning("Choosen relative path: " + localBase);
         }
-        if (folderSettings.getCommitDir().isAbsolute()) {
-            commitDir = folderSettings.getCommitDir();
-        } else {
-            commitDir = new File(getController().getFolderRepository()
-                .getFoldersBasedir()
-                + File.separatorChar
-                + folderSettings.getCommitDir().getPath());
+        if (folderSettings.getCommitDir() != null) {
+            if (folderSettings.getCommitDir().isAbsolute()) {
+                commitDir = folderSettings.getCommitDir();
+            } else {
+                commitDir = new File(getController().getFolderRepository()
+                    .getFoldersBasedir()
+                    + File.separatorChar
+                    + folderSettings.getCommitDir().getPath());
+            }
         }
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
@@ -1542,26 +1544,7 @@ public class Folder extends PFComponent {
                 // Do not load members
                 logFiner("Loading " + members1.length + " members");
                 for (MemberInfo memberInfo : members1) {
-                    if (memberInfo.isInvalid(getController())) {
-                        continue;
-                    }
-                    Member member = memberInfo.getNode(getController(), true);
-                    if (member.isMySelf()) {
-                        continue;
-                    }
-                    Date deadLine = new Date(System.currentTimeMillis()
-                        - Constants.NODE_TIME_TO_REMOVE_MEMBER);
-                    boolean offline2Long = memberInfo.lastConnectTime == null
-                        || memberInfo.lastConnectTime.before(deadLine);
-                    if (offline2Long) {
-                        logFine(member + " was offline too long. "
-                            + "Hiding in memberslist: " + member
-                            + " last seen online: "
-                            + memberInfo.lastConnectTime);
-                        continue;
-                    }
-                    // Ok let him join
-                    join0(member);
+                    join0(memberInfo);
                 }
 
                 // Old blacklist explicit items.
@@ -2049,6 +2032,35 @@ public class Folder extends PFComponent {
     /*
      * Member managing methods
      */
+
+    /**
+     * Join a Member from its MemberInfo
+     *
+     * @param memberInfo
+     */
+    private void join0(MemberInfo memberInfo) {
+        if (memberInfo.isInvalid(getController())) {
+            return;
+        }
+        Member member = memberInfo.getNode(getController(), true);
+        if (member.isMySelf()) {
+            return;
+        }
+        Date deadLine = new Date(System.currentTimeMillis()
+            - Constants.NODE_TIME_TO_REMOVE_MEMBER);
+        boolean offline2Long = memberInfo.lastConnectTime == null
+            || memberInfo.lastConnectTime.before(deadLine);
+        if (offline2Long) {
+            logFine(member + " was offline too long. "
+                + "Hiding in memberslist: " + member
+                + " last seen online: "
+                + memberInfo.lastConnectTime);
+            return;
+        }
+        // Ok let him join
+        join0(member);
+    }
+
     /**
      * Joins a member to the folder,
      * 
@@ -2109,7 +2121,7 @@ public class Folder extends PFComponent {
 
     /**
      * Merge members with metafolder Members file and write back if there was a
-     * change.
+     * change. Also join any new members found in the file.
      */
     public void updateMetaFolderMembers() {
         if (Feature.META_FOLDER.isDisabled()) {
@@ -2138,11 +2150,25 @@ public class Folder extends PFComponent {
         Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
         Map<String, MemberInfo> originalMap = new HashMap<String, MemberInfo>();
         originalMap.putAll(membersMap);
-        // Update with my new members.
+        // Update members with any new ones from this file.
+        for (MemberInfo memberInfo : membersMap.values()) {
+            boolean gotThisMember = false;
+            for (Member member : members.keySet()) {
+                if (member.getInfo().equals(memberInfo)) {
+                    gotThisMember = true;
+                    break;
+                }
+            }
+            if (!gotThisMember) {
+                logInfo("Discovered new Member " + memberInfo);
+                join0(memberInfo);
+            }
+        }
+        // Update members map with my members.
         for (Member member : members.keySet()) {
             membersMap.put(member.getId(), member.getInfo());
         }
-        // See if there has been a change to the members.
+        // See if there has been a change to the members map.
         boolean changed = false;
         if (originalMap.size() == membersMap.size()) {
             for (String s : membersMap.keySet()) {

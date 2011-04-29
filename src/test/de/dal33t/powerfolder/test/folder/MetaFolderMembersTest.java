@@ -19,24 +19,15 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -61,25 +52,36 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
      */
     public void testMembersSync() {
         // 1. Bart creates a folder and Homer joins.
-        FolderInfo folderInfo = new FolderInfo("testFolder", "testFolder" + IdGenerator.makeId());
+        FolderInfo folderInfo = new FolderInfo("testFolder", "testFolder" +
+                IdGenerator.makeId());
 
         Controller controllerBart = getContollerBart();
-        FolderSettings folderSettingsBart = new FolderSettings(TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION, false, ArchiveMode.NO_BACKUP, 0);
-        final Folder folderBart = controllerBart.getFolderRepository().createFolder(folderInfo, folderSettingsBart);
+        FolderSettings folderSettingsBart = new FolderSettings(
+                TESTFOLDER_BASEDIR_BART, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
+                false, ArchiveMode.NO_BACKUP, 0);
+        final Folder folderBart =
+                controllerBart.getFolderRepository().createFolder(folderInfo,
+                        folderSettingsBart);
 
-        FolderSettings folderSettingsHomer = new FolderSettings(TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION, false, ArchiveMode.NO_BACKUP, 0);
+        FolderSettings folderSettingsHomer = new FolderSettings(
+                TESTFOLDER_BASEDIR_HOMER, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
+                false, ArchiveMode.NO_BACKUP, 0);
         Controller controllerHomer = getContollerHomer();
-        final Folder folderHomer = controllerHomer.getFolderRepository().createFolder(folderInfo, folderSettingsHomer);
+        final Folder folderHomer =
+                controllerHomer.getFolderRepository().createFolder(folderInfo,
+                        folderSettingsHomer);
 
         try {
-            controllerBart.connect(controllerHomer.getConnectionListener().getAddress());
+            controllerBart.connect(
+                    controllerHomer.getConnectionListener().getAddress());
         } catch (ConnectionException e) {
             e.printStackTrace();
         }
 
         TestHelper.waitForCondition(20, new Condition() {
             public boolean reached() {
-                return folderBart.getMembersCount() == 2 && folderHomer.getMembersCount() == 2;
+                return folderBart.getMembersCount() == 2
+                        && folderHomer.getMembersCount() == 2;
             }
         });
 
@@ -87,22 +89,33 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
         controllerHomer.shutdown();
 
         // 3. Marge joins with Bart.
-        FolderSettings folderSettingsMarge = new FolderSettings(TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION, false, ArchiveMode.NO_BACKUP, 0);
+        FolderSettings folderSettingsMarge = new FolderSettings(
+                TESTFOLDER_BASEDIR_MARGE, SyncProfile.AUTOMATIC_SYNCHRONIZATION,
+                false, ArchiveMode.NO_BACKUP, 0);
         Controller controllerMarge = getContollerMarge();
-        final Folder folderMarge = controllerMarge.getFolderRepository().createFolder(folderInfo, folderSettingsMarge);
+        final Folder folderMarge =
+                controllerMarge.getFolderRepository().createFolder(folderInfo,
+                        folderSettingsMarge);
 
         try {
-            controllerBart.connect(controllerMarge.getConnectionListener().getAddress());
+            controllerBart.connect(
+                    controllerMarge.getConnectionListener().getAddress());
         } catch (ConnectionException e) {
             e.printStackTrace();
         }
 
         // Result: Marge should know about Bart and Homer.
-//        TestHelper.waitForCondition(20, new Condition() {
-//            public boolean reached() {
-//                return folderBart.getMembersCount() == 3 && folderMarge.getMembersCount() == 3;
-//            }
-//        });
+        TestHelper.waitForCondition(20, new Condition() {
+            public boolean reached() {
+                return folderBart.getMembersCount() == 3
+                        && folderMarge.getMembersCount() == 3;
+            }
+        });
+
+        assertEquals("Bart has the wrong number of members", 3,
+                folderBart.getMembersCount());
+        assertEquals("Marge has the wrong number of members", 3,
+                folderMarge.getMembersCount());
 
     }
 }
