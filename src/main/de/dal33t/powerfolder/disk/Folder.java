@@ -296,8 +296,23 @@ public class Folder extends PFComponent {
         hasOwnDatabase = false;
         dirty = false;
         problems = new CopyOnWriteArrayList<Problem>();
-        localBase = folderSettings.getLocalBaseDir();
-        commitDir = folderSettings.getCommitDir();
+        if (folderSettings.getLocalBaseDir().isAbsolute()) {
+            localBase = folderSettings.getLocalBaseDir();
+        } else {
+            localBase = new File(getController().getFolderRepository()
+                .getFoldersBasedir()
+                + File.separatorChar
+                + folderSettings.getLocalBaseDir().getPath());
+            logWarning("Choosen relative path: " + localBase);
+        }
+        if (folderSettings.getCommitDir().isAbsolute()) {
+            commitDir = folderSettings.getCommitDir();
+        } else {
+            commitDir = new File(getController().getFolderRepository()
+                .getFoldersBasedir()
+                + File.separatorChar
+                + folderSettings.getCommitDir().getPath());
+        }
         syncProfile = folderSettings.getSyncProfile();
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
@@ -2093,8 +2108,8 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Merge members with metafolder Members file
-     * and write back if there was a change.
+     * Merge members with metafolder Members file and write back if there was a
+     * change.
      */
     public void updateMetaFolderMembers() {
         if (Feature.META_FOLDER.isDisabled()) {
@@ -2198,11 +2213,12 @@ public class Folder extends PFComponent {
      * @param membersMap
      * @param fileInfo
      */
-    private void writewMetaFolderMembers(Map<String,MemberInfo> membersMap,
-                                         FileInfo fileInfo) {
+    private void writewMetaFolderMembers(Map<String, MemberInfo> membersMap,
+        FileInfo fileInfo)
+    {
         if (isFine()) {
             logFine("Saving " + membersMap.size() + " metafolder member(s) to "
-                    + fileInfo + '.');
+                + fileInfo + '.');
         }
         if (isFiner()) {
             for (MemberInfo memberInfo : membersMap.values()) {
