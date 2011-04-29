@@ -114,7 +114,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.6.4 - 2.2.0.4"; // 4.6.4 -
+    public static final String PROGRAM_VERSION = "5.0.0 - 3.0.0 beta1"; // 4.6.4 -
                                                                     // 5.0.0
                                                                     // beta1 -
                                                                     // 2.2.0.4
@@ -751,7 +751,7 @@ public class Controller extends PFComponent {
             if (configFile.exists()) {
                 logInfo("Loading configfile " + configFile);
             } else {
-                logInfo("Config file does not exist. " + configFile);
+                logFine("Config file does not exist. " + configFile);
             }
             if (OSUtil.isWebStart()) {
                 logFine("WebStart, config file location: "
@@ -1570,7 +1570,6 @@ public class Controller extends PFComponent {
         if (configFilename == null) {
             return null;
         }
-
         String configName = configFilename;
         int dot = configName.indexOf('.');
         if (dot > 0) {
