@@ -427,7 +427,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                         "Connection to remote peer closed").with(this);
                 }
                 byte[] data = serialize(message);
-                RelayedMessage dataMsg = relay.getProtocolVersion() >= 108
+                RelayedMessage dataMsg = identity != null
+                    && identity.getProtocolVersion() >= 108
+                    && relay.getProtocolVersion() >= 108
                     ? new RelayedMessageExt(Type.DATA_ZIPPED, getController()
                         .getMySelf().getInfo(), remote, connectionId, data)
                     : new RelayedMessage(Type.DATA_ZIPPED, getController()
@@ -435,8 +437,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 relay.sendMessage(dataMsg);
 
                 getController().getTransferManager()
-                    .getTotalUploadTrafficCounter().bytesTransferred(
-                        data.length + 4);
+                    .getTotalUploadTrafficCounter()
+                    .bytesTransferred(data.length + 4);
             }
         } catch (RuntimeException e) {
             logSevere("Runtime exception while serializing: " + message, e);
@@ -795,38 +797,38 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         } catch (ConnectionException e) {
             logFiner("ConnectionException", e);
             logConnectionClose(e);
-            
+
             StringBuffer hexString = new StringBuffer();
             for (int i = 0; i < message.getPayload().length; i++) {
                 hexString.append(Integer.toHexString(0xFF & message
                     .getPayload()[i]));
             }
             logWarning("On message: " + message + ": " + hexString);
-            
+
         } catch (ClassNotFoundException e) {
             logFiner("ClassNotFoundException", e);
             logWarning("Received unknown packet/class: " + e.getMessage()
                 + " from " + AbstractRelayedConnectionHandler.this);
-            
+
             StringBuffer hexString = new StringBuffer();
             for (int i = 0; i < message.getPayload().length; i++) {
                 hexString.append(Integer.toHexString(0xFF & message
                     .getPayload()[i]));
             }
             logWarning("On message: " + message + ": " + hexString);
-            
+
             // do not break connection
         } catch (RuntimeException e) {
             logSevere("RuntimeException", e);
             shutdownWithMember();
-            
+
             StringBuffer hexString = new StringBuffer();
             for (int i = 0; i < message.getPayload().length; i++) {
                 hexString.append(Integer.toHexString(0xFF & message
                     .getPayload()[i]));
             }
             logWarning("On message: " + message + ": " + hexString);
-            
+
             throw e;
         }
 
