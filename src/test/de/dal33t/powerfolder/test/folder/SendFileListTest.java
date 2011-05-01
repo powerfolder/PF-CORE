@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.test.folder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import de.dal33t.powerfolder.Member;
@@ -67,7 +68,9 @@ public class SendFileListTest extends TwoControllerTestCase {
         assertEquals(0, list.files.length);
         list = (FileList) lisasListener.messages.get(1);
         assertEquals(0, list.nFollowingDeltas);
-        assertEquals(0, list.files.length);
+        // Members file
+        assertEquals("Files? " + Arrays.asList(list.files), 1,
+            list.files.length);
     }
 
     public void testSendAfterScan() {

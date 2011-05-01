@@ -65,9 +65,9 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     public static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
-        .getTestDir(), "ControllerBart/testFolder");
+        .getTestDir().getAbsoluteFile(), "ControllerBart/testFolder");
     public static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
-        .getTestDir(), "ControllerLisa/testFolder");
+        .getTestDir().getAbsoluteFile(), "ControllerLisa/testFolder");
 
     private Controller controllerBart;
     private Controller controllerLisa;
@@ -77,8 +77,8 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("user.home", new File("build/test/home")
-            .getCanonicalPath());
+        System.setProperty("user.home",
+            new File("build/test/home").getCanonicalPath());
         Loggable.setLogNickPrefix(true);
         super.setUp();
 
@@ -404,8 +404,8 @@ public abstract class TwoControllerTestCase extends TestCase {
                         && member1atCon2.isCompletelyConnected();
                     boolean nodeManagersOK = cont1.getNodeManager()
                         .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes().contains(
-                            member1atCon2);
+                        && cont2.getNodeManager().getConnectedNodes()
+                            .contains(member1atCon2);
                     return connected && nodeManagersOK;
                 }
             });
