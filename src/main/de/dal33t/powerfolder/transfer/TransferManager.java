@@ -752,8 +752,10 @@ public class TransferManager extends PFComponent {
             // TODO PREVENT further uploads of this file unless it's "there"
             // Search for active uploads of the file and break them
             boolean abortedUL;
+            int tries = 0;
             do {
                 abortedUL = abortUploadsOf(fInfo);
+                tries++;
                 if (abortedUL) {
                     try {
                         Thread.sleep(50);
@@ -873,8 +875,7 @@ public class TransferManager extends PFComponent {
         try {
             for (Upload u : activeUploads) {
                 if (u.getFile().equals(fInfo)) {
-                    abortUpload(fInfo, u.getPartner());
-                    abortedUL = true;
+                    abortedUL = abortUpload(fInfo, u.getPartner()) || abortedUL;
                 }
             }
             List<Upload> remove = new LinkedList<Upload>();
@@ -1250,11 +1251,7 @@ public class TransferManager extends PFComponent {
                     + dl.file.toDetailString() + "', disk file at "
                     + diskFile.lastModified());
             }
-            
-            //[04:45:50] WARN   [TransferManager]: File not in sync with disk: '[App Data]:/PowerFolder/Client.nodes, size: 89439 bytes, version: 0, modified: Sat Apr 02 04:36:41 CEST 2011 (1301711801068) by 'powerfolder-03'', should be modified at 1301711861080
-            //[04:45:50] FINER  [Folder 'App Data']: Scanning file: [App Data]:/PowerFolder/Client.nodes, folderId: [App Data]:/PowerFolder/Client.nodes
-            //[04:45:50] FINER  [Folder 'App Data']: Scan known file: [App Data]:/PowerFolder/Client.nodes, size: 89439 bytes, version: 0, modified: Sat Apr 02 04:36:41 CEST 2011 (1301711801068) by 'powerfolder-03'
-         
+
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
                 folder.scanChangedFile(dl.file);
