@@ -303,6 +303,7 @@ public class Folder extends PFComponent {
                 .getFoldersBasedir()
                 + File.separatorChar
                 + folderSettings.getLocalBaseDir().getPath());
+            logWarning("Original: " + folderSettings.getLocalBaseDir());
             logWarning("Choosen relative path: " + localBase);
         }
         if (folderSettings.getCommitDir() != null) {
@@ -2035,7 +2036,7 @@ public class Folder extends PFComponent {
 
     /**
      * Join a Member from its MemberInfo
-     *
+     * 
      * @param memberInfo
      */
     private void join0(MemberInfo memberInfo) {
@@ -2052,8 +2053,7 @@ public class Folder extends PFComponent {
             || memberInfo.lastConnectTime.before(deadLine);
         if (offline2Long) {
             logFine(member + " was offline too long. "
-                + "Hiding in memberslist: " + member
-                + " last seen online: "
+                + "Hiding in memberslist: " + member + " last seen online: "
                 + memberInfo.lastConnectTime);
             return;
         }
@@ -2136,7 +2136,8 @@ public class Folder extends PFComponent {
         Folder metaFolder = folderRepository
             .getMetaFolderForParent(currentInfo);
         if (metaFolder == null) {
-            logWarning("Could not find metaFolder for " + currentInfo);
+            // May happen at startup
+            logFine("Could not yet find metaFolder for " + currentInfo);
             return;
         }
         if (metaFolder.deviceDisconnected) {
@@ -2202,15 +2203,18 @@ public class Folder extends PFComponent {
         Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
         InputStream is = null;
         ObjectInputStream ois = null;
+        File f = fileInfo.getDiskFile(getController().getFolderRepository());
+        if (!f.exists()) {
+            return membersMap;
+        }
         try {
-            is = new BufferedInputStream(new FileInputStream(
-                fileInfo.getDiskFile(getController().getFolderRepository())));
+            is = new BufferedInputStream(new FileInputStream(f));
             ois = new ObjectInputStream(is);
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
         } catch (IOException e) {
-            logSevere(e);
+            logWarning("Unable to read members file " + fileInfo + ". " + e);
         } catch (ClassNotFoundException e) {
-            logSevere(e);
+            logWarning("Unable to read members file " + fileInfo + ". " + e);
         } finally {
             if (ois != null) {
                 try {
