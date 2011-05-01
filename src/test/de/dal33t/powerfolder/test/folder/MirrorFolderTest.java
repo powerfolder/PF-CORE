@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
@@ -37,7 +36,6 @@ import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.EqualsCondition;
@@ -208,7 +206,6 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
 
-        LoggingManager.setConsoleLogging(Level.WARNING);
         MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
         File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
@@ -225,7 +222,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             .triggerFileRequesting();
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
-        TestHelper.waitMilliSeconds(5);
+        TestHelper.waitMilliSeconds(500);
 
         assertEquals("" + getFolderAtBart().getIncomingFiles(), 0,
             getFolderAtBart().getIncomingFiles().size());
