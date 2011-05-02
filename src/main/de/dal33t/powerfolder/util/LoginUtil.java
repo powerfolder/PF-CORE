@@ -55,9 +55,6 @@ public class LoginUtil {
         if (password == null) {
             return null;
         }
-        if (password.length == 0) {
-            return null;
-        }
         CharBuffer cBuf = CharBuffer.wrap(password);
         byte[] buf = new byte[password.length * 3];
         ByteBuffer bBuf = ByteBuffer.wrap(buf);
@@ -83,9 +80,6 @@ public class LoginUtil {
      */
     public static char[] deobfuscate(String passwordOBF) {
         if (passwordOBF == null) {
-            return null;
-        }
-        if (StringUtils.isBlank(passwordOBF)) {
             return null;
         }
         try {
