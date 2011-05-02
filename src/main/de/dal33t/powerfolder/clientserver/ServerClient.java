@@ -1204,7 +1204,12 @@ public class ServerClient extends PFComponent {
                 }
                 logWarning("Auto-login for " + username
                     + " required. Caused by " + t);
-                login(username, passwordObf);
+                try {
+                    login(username, passwordObf);
+                } catch (Exception e) {
+                    logWarning("Unable to login with " + username + " at "
+                        + getServerString() + ". " + e);
+                }
             }
         }
     }
