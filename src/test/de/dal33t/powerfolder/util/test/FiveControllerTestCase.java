@@ -56,16 +56,19 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected static final String MAGGIE_ID = "Maggie";
 
     // For the optional test folder.
-    protected static final File TESTFOLDER_BASEDIR_BART = new File(TestHelper
-        .getTestDir(), "ControllerBart/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_HOMER = new File(TestHelper
-        .getTestDir(), "ControllerHomer/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_MARGE = new File(TestHelper
-        .getTestDir(), "ControllerMarge/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_LISA = new File(TestHelper
-        .getTestDir(), "ControllerLisa/testFolder");
-    protected static final File TESTFOLDER_BASEDIR_MAGGIE = new File(TestHelper
-        .getTestDir(), "ControllerMaggie/testFolder");
+    protected static final File TESTFOLDER_BASEDIR_BART = new File(
+        TestHelper.getTestDir(), "ControllerBart/testFolder").getAbsoluteFile();
+    protected static final File TESTFOLDER_BASEDIR_HOMER = new File(
+        TestHelper.getTestDir(), "ControllerHomer/testFolder")
+        .getAbsoluteFile();
+    protected static final File TESTFOLDER_BASEDIR_MARGE = new File(
+        TestHelper.getTestDir(), "ControllerMarge/testFolder")
+        .getAbsoluteFile();
+    protected static final File TESTFOLDER_BASEDIR_LISA = new File(
+        TestHelper.getTestDir(), "ControllerLisa/testFolder").getAbsoluteFile();
+    protected static final File TESTFOLDER_BASEDIR_MAGGIE = new File(
+        TestHelper.getTestDir(), "ControllerMaggie/testFolder")
+        .getAbsoluteFile();
 
     /**
      * The test folder info.
@@ -203,7 +206,8 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      * @param profile
      *            the profile to use
      */
-    protected FolderInfo joinTestFolder(SyncProfile profile, boolean checkMemberships)
+    protected FolderInfo joinTestFolder(SyncProfile profile,
+        boolean checkMemberships)
     {
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
         // FIXME Waiting between join only because of race condition making join
