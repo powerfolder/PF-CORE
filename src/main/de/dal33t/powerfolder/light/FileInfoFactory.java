@@ -113,19 +113,19 @@ public final class FileInfoFactory {
                     LOG.warning("Corrected FolderInfo on "
                         + original.toDetailString());
                 }
-                return new FileInfo(original.getRelativeName(), original
-                    .getSize(), original.getModifiedBy(), original
-                    .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi.intern());
+                return new FileInfo(original.getRelativeName(),
+                    original.getSize(), original.getModifiedBy(),
+                    original.getModifiedDate(), original.getVersion(),
+                    original.isDeleted(), fi.intern());
             } else if (original.isDiretory()) {
                 if (LOG.isLoggable(Level.WARNING)) {
                     LOG.warning("Corrected DirectoryInfo on "
                         + original.toDetailString());
                 }
-                return new DirectoryInfo(original.getRelativeName(), original
-                    .getSize(), original.getModifiedBy(), original
-                    .getModifiedDate(), original.getVersion(), original
-                    .isDeleted(), fi.intern());
+                return new DirectoryInfo(original.getRelativeName(),
+                    original.getSize(), original.getModifiedBy(),
+                    original.getModifiedDate(), original.getVersion(),
+                    original.isDeleted(), fi.intern());
             } else {
                 throw new IllegalArgumentException(
                     "Illegal original FileInfo: " + original.getClass() + ": "
@@ -175,9 +175,9 @@ public final class FileInfoFactory {
                 false, folder.getInfo());
         } else {
             return new FileInfo(
-                buildFileName(folder.getLocalBase(), localFile), localFile
-                    .length(), creator, new Date(localFile.lastModified()), 0,
-                false, folder.getInfo());
+                buildFileName(folder.getLocalBase(), localFile),
+                localFile.length(), creator,
+                new Date(localFile.lastModified()), 0, false, folder.getInfo());
         }
     }
 
@@ -218,8 +218,8 @@ public final class FileInfoFactory {
                 original.getVersion() + 1, true, original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(original.getRelativeName(), 0L, delby,
-                delDate, original.getVersion() + 1, true, original
-                    .getFolderInfo());
+                delDate, original.getVersion() + 1, true,
+                original.getFolderInfo());
         } else {
             throw new IllegalArgumentException("Illegal original FileInfo: "
                 + original.getClass() + ": " + original.toDetailString());
@@ -237,7 +237,8 @@ public final class FileInfoFactory {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
             "Cannot update template FileInfo!");
-        Reject.ifTrue(original instanceof DirectoryInfo,
+        Reject.ifTrue(
+            original instanceof DirectoryInfo,
             "Possible problem. Unable to perform on dirInfo:"
                 + original.toDetailString());
         return new FileInfo(original.getRelativeName(), original.getSize(),
@@ -259,7 +260,8 @@ public final class FileInfoFactory {
         while (!baseDirectory.equals(parent)) {
             if (parent == null) {
                 throw new IllegalArgumentException(
-                    "Local file seems not to be in a subdir of the local powerfolder copy");
+                    "Local file seems not to be in a subdir of the local powerfolder copy. Basedir: "
+                        + baseDirectory + ", file: " + file);
             }
             fn = parent.getName() + '/' + fn;
             parent = parent.getParentFile();
