@@ -300,9 +300,8 @@ public class Folder extends PFComponent {
             localBase = folderSettings.getLocalBaseDir();
         } else {
             localBase = new File(getController().getFolderRepository()
-                .getFoldersBasedir()
-                + File.separatorChar
-                + folderSettings.getLocalBaseDir().getPath());
+                .getFoldersAbsoluteDir(), folderSettings.getLocalBaseDir()
+                .getPath());
             logWarning("Original: " + folderSettings.getLocalBaseDir());
             logWarning("Choosen relative path: " + localBase);
         }
@@ -311,9 +310,8 @@ public class Folder extends PFComponent {
                 commitDir = folderSettings.getCommitDir();
             } else {
                 commitDir = new File(getController().getFolderRepository()
-                    .getFoldersBasedir()
-                    + File.separatorChar
-                    + folderSettings.getCommitDir().getPath());
+                    .getFoldersAbsoluteDir(), folderSettings.getCommitDir()
+                    .getPath());
             }
         }
         syncProfile = folderSettings.getSyncProfile();
@@ -325,7 +323,7 @@ public class Folder extends PFComponent {
 
         // Check base dir
         try {
-            checkBaseDir(localBase, false);
+            checkBaseDir(false);
             logFine("Opened " + toString() + " at '"
                 + localBase.getAbsolutePath() + '\'');
         } catch (FolderException e) {
@@ -426,7 +424,7 @@ public class Folder extends PFComponent {
         if (folderSettings.isCreateInvitationFile()) {
             try {
                 Invitation inv = createInvitation();
-                File invFile = new File(folderSettings.getLocalBaseDir(),
+                File invFile = new File(localBase,
                     FileUtils.removeInvalidFilenameChars(inv.folder.name)
                         + ".invitation");
                 InvitationUtil.save(inv, invFile);
@@ -662,14 +660,10 @@ public class Folder extends PFComponent {
     /**
      * Checks the basedir is valid
      * 
-     * @param baseDir
-     *            the base dir to test
      * @throws FolderException
      *             if base dir is not ok
      */
-    private void checkBaseDir(File baseDir, boolean quite)
-        throws FolderException
-    {
+    private void checkBaseDir(boolean quite) throws FolderException {
         // Basic checks
         if (!localBase.exists()) {
             // TRAC #1249
@@ -702,9 +696,10 @@ public class Folder extends PFComponent {
 
         // Complex checks
         FolderRepository repo = getController().getFolderRepository();
-        if (new File(repo.getFoldersBasedir()).equals(baseDir)) {
+        if (repo.getFoldersAbsoluteDir().equals(localBase)) {
             throw new FolderException(currentInfo, Translation.getTranslation(
-                "foldercreate.error.it_is_base_dir", baseDir.getAbsolutePath()));
+                "foldercreate.error.it_is_base_dir",
+                localBase.getAbsolutePath()));
         }
     }
 
@@ -3303,7 +3298,7 @@ public class Folder extends PFComponent {
          * Check that we still have a good local base.
          */
         try {
-            checkBaseDir(localBase, true);
+            checkBaseDir(true);
         } catch (FolderException e) {
             logFiner("invalid local base: " + e);
             return setDeviceDisconnected(true);

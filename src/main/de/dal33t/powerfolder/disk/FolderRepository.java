@@ -484,6 +484,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * @return the default basedir for all folders. basedir is just suggested
+     */
+    public File getFoldersAbsoluteDir() {
+        return new File(getFoldersBasedir()).getAbsoluteFile();
+    }
+
+    /**
      * @return the file requestor
      */
     public FileRequestor getFileRequestor() {
