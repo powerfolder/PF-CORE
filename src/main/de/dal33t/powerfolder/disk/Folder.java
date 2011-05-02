@@ -2053,7 +2053,7 @@ public class Folder extends PFComponent {
             return;
         }
         // Ok let him join
-        join0(member);
+        join(member);
     }
 
     /**
