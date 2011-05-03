@@ -2179,7 +2179,7 @@ public class Folder extends PFComponent {
         if (changed) {
             // Write back and scan.
             writewMetaFolderMembers(membersMap, fileInfo);
-            metaFolder.scanLocalFiles();
+            metaFolder.scanChangedFile(fileInfo);
         }
     }
 
