@@ -4242,6 +4242,9 @@ public class Folder extends PFComponent {
      *            lower means use default.
      */
     public void setSyncWarnSeconds(int syncWarnSeconds) {
+        if (syncWarnSeconds == this.syncWarnSeconds) {
+            return;
+        }
         this.syncWarnSeconds = syncWarnSeconds;
         if (syncWarnSeconds != 0) {
             getController().getConfig().setProperty(
