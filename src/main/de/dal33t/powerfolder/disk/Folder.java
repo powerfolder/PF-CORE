@@ -4177,24 +4177,24 @@ public class Folder extends PFComponent {
         }
 
         Date myLastSyncDate = lastSyncDate;
-        if (myLastSyncDate != null && myLastSyncDate.before(warningDate)
-            && !(othersInSync && isSyncing()))
-        {
-            // Only need one of these.
-            UnsynchronizedFolderProblem ufp = null;
-            for (Problem problem : problems) {
-                if (problem instanceof UnsynchronizedFolderProblem) {
-                    ufp = (UnsynchronizedFolderProblem) problem;
-                    break;
+        if (myLastSyncDate != null && myLastSyncDate.before(warningDate)) {
+            if (!(othersInSync && isSyncing())) {
+                // Only need one of these.
+                UnsynchronizedFolderProblem ufp = null;
+                for (Problem problem : problems) {
+                    if (problem instanceof UnsynchronizedFolderProblem) {
+                        ufp = (UnsynchronizedFolderProblem) problem;
+                        break;
+                    }
                 }
-            }
-            if (ufp == null) {
-                if (new Date().before(lastSyncDate)) {
-                    logWarning("Last sync date in future: " + lastSyncDate);
+                if (ufp == null) {
+                    if (new Date().before(lastSyncDate)) {
+                        logWarning("Last sync date in future: " + lastSyncDate);
+                    }
+                    Problem problem = new UnsynchronizedFolderProblem(
+                        currentInfo, myLastSyncDate);
+                    addProblem(problem);
                 }
-                Problem problem = new UnsynchronizedFolderProblem(currentInfo,
-                    myLastSyncDate);
-                addProblem(problem);
             }
         } else {
             removeUnsyncedProblem();
