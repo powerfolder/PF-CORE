@@ -52,6 +52,7 @@ import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
@@ -646,7 +647,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
-        if (getController().getOSClient().isLoggedIn()) {
+        if (getController().getOSClient().isLoggedIn()
+            && !getController().getOSClient().getAccount()
+                .hasPermission(FolderPermission.read(folderInfo)))
+        {
             getController().getTaskManager().scheduleTask(
                 new FolderObtainPermissionTask(getController().getOSClient()
                     .getAccountInfo(), folder.getInfo()));
