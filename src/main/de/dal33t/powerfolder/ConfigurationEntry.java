@@ -598,6 +598,11 @@ public enum ConfigurationEntry {
      * Whether to set PowerFolders as a Favorite Link.
      */
     USE_PF_LINK("use.pf.link", true),
+    
+    /**
+     * #2256: Simple conflict detection.
+     */
+    CONFLICT_DETECTION("conflict.detection", true),
 
     /**
      * Whether to log verbose.
