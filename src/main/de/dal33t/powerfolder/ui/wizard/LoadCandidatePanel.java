@@ -75,9 +75,14 @@ public class LoadCandidatePanel extends PFWizardPanel {
         this.directory = directory;
     }
 
+    /**
+     * Don't allow next if the never-ask button is selected.
+     * 
+     * @return
+     */
     @Override
     public boolean hasNext() {
-        return true;
+        return !neverAskAgainCB.isSelected();
     }
 
     @Override
@@ -250,6 +255,7 @@ public class LoadCandidatePanel extends PFWizardPanel {
                 PreferencesEntry.SHOW_FOLDER_CANDIDATES.setValue(getController(),
                         !neverAskAgainCB.isSelected());
             }
+            updateButtons();
         }
     }
 }
