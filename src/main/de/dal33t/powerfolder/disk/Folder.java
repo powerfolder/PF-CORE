@@ -760,11 +760,14 @@ public class Folder extends PFComponent {
                     FileInfo oldLocalFileInfo = fInfo
                         .getLocalFileInfo(getController().getFolderRepository());
                     if (oldLocalFileInfo != null) {
-                        try {
-                            doSimpleConflictDetection(fInfo, targetFile,
-                                oldLocalFileInfo);
-                        } catch (Exception e) {
-                            logSevere("Problem withe conflict detection. " + e);
+                        if (!currentInfo.isMetaFolder()) {
+                            try {
+                                doSimpleConflictDetection(fInfo, targetFile,
+                                    oldLocalFileInfo);
+                            } catch (Exception e) {
+                                logSevere("Problem withe conflict detection. "
+                                    + e);
+                            }
                         }
 
                         arch.archive(oldLocalFileInfo, targetFile, false);
