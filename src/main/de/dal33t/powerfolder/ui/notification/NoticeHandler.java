@@ -97,9 +97,9 @@ public class NoticeHandler extends PFComponent {
         }
 
         // Show it.
-        NotificationForm notificationForm = new NotificationForm(notice
-            .getTitle(), notice.getSummary(), acceptOptionLabel, acceptAction,
-            cancelOptionLabel, cancelAction, true);
+        NotificationForm notificationForm = new NotificationForm(getController(),
+                notice.getTitle(), notice.getSummary(), acceptOptionLabel,
+                acceptAction, cancelOptionLabel, cancelAction, true, false, true);
         contentPane.add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();

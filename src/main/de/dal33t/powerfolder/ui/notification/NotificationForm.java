@@ -21,16 +21,11 @@ package de.dal33t.powerfolder.ui.notification;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
-import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -38,12 +33,19 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.Controller;
 
 /**
  * Class representing the message notification form.
  */
 @SuppressWarnings("serial")
 public class NotificationForm extends JPanel {
+
+    private final Controller controller;
+    private JCheckBox neverShowChatCB;
+    private JCheckBox neverShowSystemCB;
 
     /**
      * Constructor. Displays a panel with title and message. Also accept and
@@ -56,26 +58,29 @@ public class NotificationForm extends JPanel {
      * @param cancelOptionLabel
      * @param cancelAction
      */
-    NotificationForm(String titleText, String messageText,
+    NotificationForm(Controller controller, String titleText, String messageText,
         String acceptOptionLabel, Action acceptAction,
-        String cancelOptionLabel, Action cancelAction, boolean showButtons)
-    {
+        String cancelOptionLabel, Action cancelAction, boolean showButtons,
+        boolean chat, boolean system) {
+        this.controller = controller;
         setLayout(new BorderLayout());
-        JPanel jPanel = createPanel(titleText, messageText, acceptOptionLabel,
-            acceptAction, cancelOptionLabel, cancelAction, showButtons);
-        add(jPanel, BorderLayout.CENTER);
+        JPanel panel = createPanel(titleText, messageText, acceptOptionLabel,
+            acceptAction, cancelOptionLabel, cancelAction, showButtons, chat,
+                system);
+        add(panel, BorderLayout.CENTER);
         setBorder(new LineBorder(Color.lightGray, 1));
     }
 
     /**
      * Create the UI for notification form
      */
-    private static JPanel createPanel(String titleText, String msgText,
+    private JPanel createPanel(String titleText, String msgText,
         String acceptOptionLabel, Action acceptAction,
-        String cancelOptionLabel, Action cancelAction, boolean showAccept)
+        String cancelOptionLabel, Action cancelAction, boolean showButtons,
+        boolean showNeverAskForChat, boolean showNeverAskForSystem)
     {
-        JPanel jPanel = new JPanel();
-        jPanel.setBackground(Color.WHITE);
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.WHITE);
         CellConstraints cc = new CellConstraints();
 
         JButton button = new JButton();
@@ -83,105 +88,92 @@ public class NotificationForm extends JPanel {
         button.setText(acceptOptionLabel);
         FormLayout formLayout;
         int internalWidth;
-        int[] cols;
         if (cancelOptionLabel == null) {
             formLayout = new FormLayout(
-                "fill:7px:none, fill:85px:none, fill:80px:none, fill:85px:none, fill:7px:none",
-                "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+                "3dlu, 50dlu, 50dlu:grow, 50dlu, 3dlu",
+                "3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu");
             internalWidth = 3;
-            jPanel.setLayout(formLayout);
-            if (showAccept) {
-                jPanel.add(button, cc.xy(3, 4));
+            panel.setLayout(formLayout);
+            if (showButtons) {
+                panel.add(button, cc.xy(3, 8));
             }
-            cols = new int[]{2, 3, 4};
         } else {
             formLayout = new FormLayout(
-                "fill:7px:none, fill:30px:none, fill:pref:none, fill:pref:none, fill:pref:none, fill:30px:none, fill:7px:none",
-                "center:40px:none, center:70px:none, center:12px:none, center:default:none, center:default:none");
+                "3dlu, 20dlu, 50dlu:grow, 10dlu, 50dlu:grow, 20dlu, 3dlu",
+                "3dlu, pref, 6dlu, pref, 6dlu, pref, 3dlu, pref, 3dlu");
             internalWidth = 5;
-            jPanel.setLayout(formLayout);
-            jPanel.add(button, cc.xy(3, 4));
+            panel.setLayout(formLayout);
+            panel.add(button, cc.xy(3, 8));
 
-            if (showAccept) {
+            if (showButtons) {
                 button = new JButton();
                 button.setAction(cancelAction);
                 button.setText(cancelOptionLabel);
-                jPanel.add(button, cc.xy(5, 4));
+                panel.add(button, cc.xy(5, 8));
             }
-            cols = new int[]{2, 3, 4, 5, 6};
         }
 
-        // 
+        if (showButtons) {
+            if (showNeverAskForChat) {
+                neverShowChatCB = new JCheckBox(Translation.getTranslation(
+                        "notification_form.never_show_chat_notifications"));
+                neverShowChatCB.addActionListener(new MyActionListener());
+                panel.add(neverShowChatCB, cc.xywh(2, 6, internalWidth, 1));
+            } else if (showNeverAskForSystem)  {
+                neverShowSystemCB = new JCheckBox(Translation.getTranslation(
+                        "notification_form.never_show_system_notifications"));
+                neverShowSystemCB.addActionListener(new MyActionListener());
+                panel.add(neverShowSystemCB, cc.xywh(2, 6, internalWidth, 1));
+            }
+        }
 
-        jPanel.add(createHeaderPanel(titleText), cc
-            .xywh(2, 1, internalWidth, 1));
+        panel.add(createHeaderPanel(titleText), cc.xywh(2, 2, internalWidth, 1));
 
         JTextArea textArea = new JTextArea(msgText);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        jPanel.add(textArea, new CellConstraints(2, 2, internalWidth, 1,
+        panel.add(textArea, new CellConstraints(2, 4, internalWidth, 1,
             CellConstraints.DEFAULT, CellConstraints.TOP));
 
-        addFillComponents(jPanel, cols, new int[]{1, 2, 3, 4, 5});
-        return jPanel;
-    }
-
-    private static void addFillComponents(Container panel, int[] cols,
-        int[] rows)
-    {
-        Dimension filler = new Dimension(10, 10);
-
-        boolean doneColumnOne = false;
-        CellConstraints cc = new CellConstraints();
-        if (cols.length > 0 && rows.length > 0) {
-            if (cols[0] == 1 && rows[0] == 1) {
-                /** add a rigid area */
-                panel.add(Box.createRigidArea(filler), cc.xy(1, 1));
-                doneColumnOne = true;
-            }
-        }
-
-        for (int col : cols) {
-            if (col == 1 && doneColumnOne) {
-                continue;
-            }
-            panel.add(Box.createRigidArea(filler), cc.xy(col, 1));
-        }
-
-        for (int row : rows) {
-            if (row == 1 && doneColumnOne) {
-                continue;
-            }
-            panel.add(Box.createRigidArea(filler), cc.xy(1, row));
-        }
-
+        return panel;
     }
 
     /**
      * Create header subpanel with icon and text
      */
     private static JPanel createHeaderPanel(String title) {
-        JPanel jPanel = new JPanel();
-        jPanel.setBackground(null);
-        FormLayout formlayout1 = new FormLayout(
-            "fill:default:none, fill:7px:none, fill:default:none",
-            "center:default:none");
+        JPanel panel = new JPanel();
+        panel.setBackground(null);
+        FormLayout formlayout1 = new FormLayout("pref, 3dlu, pref", "pref");
         CellConstraints cc = new CellConstraints();
-        jPanel.setLayout(formlayout1);
+        panel.setLayout(formlayout1);
 
-        JLabel jLabel = new JLabel();
-        jLabel.setText(Translation.getTranslation("notification_form.title",
+        JLabel label = new JLabel();
+        label.setText(Translation.getTranslation("notification_form.title",
             title));
-        jLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        jPanel.add(jLabel, cc.xy(3, 1));
+        label.setHorizontalAlignment(SwingConstants.LEFT);
+        panel.add(label, cc.xy(3, 1));
 
         JLabel logo = new JLabel(Icons.getIconById(Icons.SMALL_LOGO));
         logo.setSize(new Dimension(Icons.getIconById(Icons.SMALL_LOGO)
             .getIconWidth(), Icons.getIconById(Icons.SMALL_LOGO)
             .getIconHeight()));
-        jPanel.add(logo, cc.xy(1, 1));
+        panel.add(logo, cc.xy(1, 1));
 
-        addFillComponents(jPanel, new int[]{1, 2}, new int[]{1});
-        return jPanel;
+        return panel;
+    }
+
+    private class MyActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == neverShowChatCB) {
+                controller.getUIController().getApplicationModel()
+                        .getChatNotificationsValueModel().setValue(
+                        !neverShowChatCB.isSelected());
+            } else if(e.getSource() == neverShowSystemCB) {
+                controller.getUIController().getApplicationModel()
+                        .getSystemNotificationsValueModel().setValue(
+                        !neverShowSystemCB.isSelected());
+            }
+        }
     }
 }

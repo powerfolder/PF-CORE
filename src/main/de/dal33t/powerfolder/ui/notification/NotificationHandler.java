@@ -53,7 +53,7 @@ public class NotificationHandler extends PFComponent {
     /** The optional label for the cancel button */
     private final String cancelOptionLabel;
 
-    private final boolean showAccept;
+    private final boolean showButtons;
 
     /**
      * Constructor. Shows a message with an okay button.
@@ -61,10 +61,11 @@ public class NotificationHandler extends PFComponent {
      * @param controller
      * @param title
      * @param message
-     * @param showAccept
+     * @param showButtons
+     *          show the Accept or Cancel button
      */
     public NotificationHandler(Controller controller, String title,
-        String message, boolean showAccept)
+        String message, boolean showButtons)
     {
         super(controller);
         Reject.ifNull(title, "Title must not be null");
@@ -73,7 +74,7 @@ public class NotificationHandler extends PFComponent {
         this.message = message;
         acceptOptionLabel = Translation.getTranslation("general.ok");
         cancelOptionLabel = null;
-        this.showAccept = showAccept;
+        this.showButtons = showButtons;
     }
 
     /**
@@ -102,9 +103,9 @@ public class NotificationHandler extends PFComponent {
         };
 
         // Show it.
-        NotificationForm notificationForm = new NotificationForm(title,
-            message, acceptOptionLabel, acceptAction, cancelOptionLabel,
-            cancelAction, showAccept);
+        NotificationForm notificationForm = new NotificationForm(getController(),
+                title, message, acceptOptionLabel, acceptAction,
+                cancelOptionLabel, cancelAction, showButtons, true, false);
         contentPane.add(notificationForm, BorderLayout.CENTER);
         dialog.pack();
         slider.show();
