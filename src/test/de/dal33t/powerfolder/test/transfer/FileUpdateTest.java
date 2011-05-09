@@ -51,7 +51,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
     }
 
     /**
-     * Test the inital sync of two files with same name and place but diffrent
+     * Test the initial sync of two files with same name and place but different
      * modification dates.
      * <p>
      * Ticket #345
