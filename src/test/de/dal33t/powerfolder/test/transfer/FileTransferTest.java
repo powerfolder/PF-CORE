@@ -1336,7 +1336,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 1
                     && lisaListener.downloadRequested >= 1
-                    && bartListener.uploadCompleted >= 1;
+                    && bartListener.uploadCompleted >= 1
+                    && getFolderAtLisa().getKnownFiles().size() == 1;
             }
         });
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
