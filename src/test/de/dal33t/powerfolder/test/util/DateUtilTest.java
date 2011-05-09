@@ -19,14 +19,12 @@
 */
 package de.dal33t.powerfolder.test.util;
 
-import java.util.Date;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.DateUtil;
-import org.jdesktop.swingx.calendar.DateUtils;
 
 public class DateUtilTest extends TestCase {
 
@@ -80,7 +78,7 @@ public class DateUtilTest extends TestCase {
         Calendar resultCal = Calendar.getInstance();
         resultCal.setTime(result);
 
-        assertSame("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
+        assertEquals("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
                 resultCal.get(Calendar.DAY_OF_YEAR));
         assertFalse("The rest are same",
                 dateCal.get(Calendar.HOUR_OF_DAY) == resultCal.get(Calendar.HOUR_OF_DAY) &&
@@ -100,9 +98,9 @@ public class DateUtilTest extends TestCase {
         Calendar resultCal = Calendar.getInstance();
         resultCal.setTime(result);
 
-        assertSame("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
+        assertEquals("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
                 resultCal.get(Calendar.DAY_OF_YEAR));
-        assertSame("Hours are different", dateCal.get(Calendar.HOUR_OF_DAY),
+        assertEquals("Hours are different", dateCal.get(Calendar.HOUR_OF_DAY),
                 resultCal.get(Calendar.HOUR_OF_DAY));
         assertFalse("The rest are same",
                 dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
