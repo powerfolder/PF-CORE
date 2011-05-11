@@ -63,9 +63,7 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 public class NodeManagerModel extends PFUIComponent {
 
     public enum Type {
-        MY_COMPUTERS_INDEX,
-        FRIENDS_INDEX,
-        CONNECTED_LAN;
+        MY_COMPUTERS_INDEX, FRIENDS_INDEX, CONNECTED_LAN;
     }
 
     private ValueModel showOfflineModel;
@@ -188,10 +186,8 @@ public class NodeManagerModel extends PFUIComponent {
     }
 
     /**
-     * Returns a Map of Members.
-     * Map 0 is My Computers
-     * Map 1 is Friends
-     * Map 2 is Connected LAN
+     * Returns a Map of Members. Map 0 is My Computers Map 1 is Friends Map 2 is
+     * Connected LAN
      * 
      * @return
      */
@@ -210,8 +206,7 @@ public class NodeManagerModel extends PFUIComponent {
         Set<Member> copy = new HashSet<Member>();
         copy.addAll(nodes);
 
-        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();)
-        {
+        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();) {
             Member member = iterator.next();
             // My computers should get automatically friends by
             // ServerClient.updateFriendsList(..)
@@ -221,8 +216,7 @@ public class NodeManagerModel extends PFUIComponent {
             }
         }
 
-        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();)
-        {
+        for (Iterator<Member> iterator = copy.iterator(); iterator.hasNext();) {
             Member member = iterator.next();
             if (member.isOnLAN() && member.isCompletelyConnected()) {
                 connectedLans.add(member);
@@ -246,7 +240,7 @@ public class NodeManagerModel extends PFUIComponent {
 
     /**
      * Returns a count of the nodes in the three groups.
-     *
+     * 
      * @return
      */
     public int getSize() {
@@ -375,6 +369,10 @@ public class NodeManagerModel extends PFUIComponent {
         public void login(ServerClientEvent event) {
             updateNode(getController().getMySelf());
         }
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateNode(event.getServerNode());
+        }
 
         public void serverConnected(ServerClientEvent event) {
         }
@@ -382,9 +380,9 @@ public class NodeManagerModel extends PFUIComponent {
         public void serverDisconnected(ServerClientEvent event) {
         }
 
+
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 }

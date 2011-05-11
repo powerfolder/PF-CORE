@@ -319,7 +319,10 @@ public class LoginOnlineStoragePanel extends PFWizardPanel {
             passwordField.setText(client.getPasswordClearText());
             updateOnlineStatus();
         }
-
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
+        
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStatus();
         }

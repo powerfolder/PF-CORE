@@ -1146,7 +1146,12 @@ public class SettingsTab extends PFUIComponent {
             enableConfigOSAction();
             loadOnlineArchiveMode();
         }
-
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            enableConfigOSAction();
+            loadOnlineArchiveMode();
+        }
+        
         public boolean fireInEventDispatchThread() {
             return true;
         }

@@ -154,6 +154,10 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
         public void serverConnected(ServerClientEvent event) {
             checkAndExecute(event.getClient());
         }
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            checkAndExecute(event.getClient());
+        }
 
         public void serverDisconnected(ServerClientEvent event) {
         }
@@ -161,7 +165,6 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
         public boolean fireInEventDispatchThread() {
             return false;
         }
-
     }
 
 }

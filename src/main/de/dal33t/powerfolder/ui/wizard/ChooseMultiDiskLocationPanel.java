@@ -790,6 +790,9 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public void serverDisconnected(ServerClientEvent event) {
             startConfigureCheckboxes();
         }
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
 
         public boolean fireInEventDispatchThread() {
             return true;

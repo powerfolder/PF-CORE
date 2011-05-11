@@ -380,6 +380,10 @@ public class FoldersList extends PFUIComponent {
         public void serverDisconnected(ServerClientEvent event) {
             updateFolders();
         }
+        
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateFolders();
+        }
 
         public boolean fireInEventDispatchThread() {
             return true;

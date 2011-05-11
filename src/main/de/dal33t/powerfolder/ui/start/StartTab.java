@@ -363,6 +363,10 @@ public class StartTab extends PFUIComponent {
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStorageDetails();
         }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
     }
 
 }

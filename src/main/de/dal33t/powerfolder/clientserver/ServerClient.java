@@ -809,6 +809,9 @@ public class ServerClient extends PFComponent {
                     Member hostingServer = serverMInfo.getNode(getController(),
                         true);
                     hostingServer.setServer(true);
+                    listenerSupport
+                        .nodeServerStatusChanged(new ServerClientEvent(
+                            ServerClient.this, hostingServer));
 
                     if (hostingServer.isConnected()
                         || hostingServer.isConnecting()
@@ -909,6 +912,8 @@ public class ServerClient extends PFComponent {
     private void setNewServerNode(Member newServerNode) {
         server = newServerNode;
         server.setServer(true);
+        listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
+            ServerClient.this, server));
         // Why?
         // // Put on friendslist
         // if (!isTempServerNode(server)) {

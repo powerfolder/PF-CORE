@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.event.CoreListener;
 
 public interface ServerClientListener extends CoreListener {
@@ -52,4 +53,12 @@ public interface ServerClientListener extends CoreListener {
      * @param event
      */
     void serverDisconnected(ServerClientEvent event);
+
+    /**
+     * When a Member becomes a server.
+     * 
+     * @param event
+     * @see Member#setServer(boolean)
+     */
+    void nodeServerStatusChanged(ServerClientEvent event);
 }

@@ -132,6 +132,9 @@ public abstract class BoundPermission extends PFComponent {
                 }
             }, 0);
         }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
     }
 
 }

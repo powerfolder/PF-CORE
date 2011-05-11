@@ -780,6 +780,10 @@ public class StatusTab extends PFUIComponent {
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStorageDetails();
         }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
     }
 
     private class UseOSModelListener implements PropertyChangeListener {
