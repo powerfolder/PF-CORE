@@ -64,12 +64,12 @@ public class MainFrameBlinkManager extends PFUIComponent {
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
         uiController.getApplicationModel().getNoticesModel()
-            .getAllNoticesCountVM().addValueChangeListener(
-                new MyNoticesCountListener());
+            .getUnreadNoticesCountVM()
+            .addValueChangeListener(new MyNoticesCountListener());
         uiController.getMainFrame().addTabbedPaneChangeListener(
             new MyMainTabChangeListener());
-        uiController.getController().getFolderRepository().addProblemListenerToAllFolders(
-            new MyProblemListener());
+        uiController.getController().getFolderRepository()
+            .addProblemListenerToAllFolders(new MyProblemListener());
     }
 
     /**
@@ -150,9 +150,7 @@ public class MainFrameBlinkManager extends PFUIComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
 
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getNoticesModel().getAllNoticesCountVM()
-                .getValue();
+            Integer count = (Integer) evt.getNewValue();
 
             if (count == null || count == 0
                 || selectedMainTab.get() == MainTabbedPane.STATUS_INDEX)

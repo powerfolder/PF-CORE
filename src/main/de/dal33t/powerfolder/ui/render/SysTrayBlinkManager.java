@@ -63,13 +63,13 @@ public class SysTrayBlinkManager extends PFUIComponent {
         this.uiController = uiController;
         MyTimerTask task = new MyTimerTask();
         getController().scheduleAndRepeat(task, 1000);
-        uiController.getApplicationModel().getChatModel().addChatModelListener(
-            new MyChatModelListener());
+        uiController.getApplicationModel().getChatModel()
+            .addChatModelListener(new MyChatModelListener());
         uiController.getApplicationModel().getNoticesModel()
-            .getAllNoticesCountVM().addValueChangeListener(
-                new MyNoticesCountListener());
-        uiController.getMainFrame().getUIComponent().addWindowListener(
-            new MyWindowListener());
+            .getUnreadNoticesCountVM()
+            .addValueChangeListener(new MyNoticesCountListener());
+        uiController.getMainFrame().getUIComponent()
+            .addWindowListener(new MyWindowListener());
         getController().getFolderRepository().addProblemListenerToAllFolders(
             new MyProblemListener());
         getController().getNodeManager().addNodeManagerListener(
@@ -170,11 +170,11 @@ public class SysTrayBlinkManager extends PFUIComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
 
-            Integer count = (Integer) uiController.getApplicationModel()
-                .getNoticesModel().getAllNoticesCountVM().getValue();
+            Integer count = (Integer) evt.getNewValue();
 
             if (count == null || count == 0
-                || !uiController.getMainFrame().isIconifiedOrHidden()) {
+                || !uiController.getMainFrame().isIconifiedOrHidden())
+            {
                 return;
             }
 
