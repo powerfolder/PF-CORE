@@ -292,9 +292,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     @Override
     public String toString() {
+        String tInfo = tempFile == null ? "n/a" : tempFile.toString();
         return "[" + getClass().getSimpleName() + "; state= " + state
             + " file=" + getFileInfo() + "; tempFileRAF: " + tempRAF
-            + "; tempFile: " + getTempFile() + "; broken: " + isBroken()
+            + "; tempFile: " + tInfo + "; broken: " + isBroken()
             + "; completed: " + isCompleted() + "; aborted: " + isAborted()
             + "; partsState: " + filePartsState;
     }
