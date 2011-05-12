@@ -61,6 +61,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private JPanel panel;
     private JTextField nickField;
+    private JCheckBox createPowerFoldersDesktopShortcutsBox;
     private JCheckBox createDesktopShortcutsBox;
 
     private JCheckBox startWithWindowsBox;
@@ -79,8 +80,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
     private ValueModel versionModel;
-
-    private JCheckBox updateCheck;
 
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
@@ -135,13 +134,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
-        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
-            .getValueBoolean(getController());
-        updateCheck = new JCheckBox(
-            Translation
-                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
-            checkForUpdate);
-
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel,
             Translation.getTranslation("preferences.dialog.show_advanced"));
@@ -180,9 +172,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             createDesktopShortcutsBox = BasicComponentFactory
                 .createCheckBox(
                     new BufferedValueModel(csModel, writeTrigger),
-                    Translation
-                        .getTranslation("preferences.dialog.create_desktop_shortcuts"));
+                    Translation.getTranslation(
+                            "preferences.dialog.create_desktop_shortcuts"));
 
+            boolean createPowerFoldersDesktopShortcut =
+                    PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+                            .getValueBoolean(getController());
+            createPowerFoldersDesktopShortcutsBox = new JCheckBox(Translation
+                    .getTranslation(
+                    "preferences.dialog.dialogs.create_powerfolders_shotrcut"),
+            createPowerFoldersDesktopShortcut);
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
                     Translation
@@ -279,6 +278,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
 
+                row += 2;
+                builder.add(createPowerFoldersDesktopShortcutsBox, cc.xyw(3, row, 2));
+
                 if (startWithWindowsBox != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
@@ -307,9 +309,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                         .getTranslation("preferences.dialog.non_windows_info"),
                         SwingConstants.CENTER), cc.xyw(1, row, 4));
             }
-
-            row += 2;
-            builder.add(updateCheck, cc.xyw(3, row, 2));
 
             if (!getController().isBackupOnly()) {
                 row += 2;
@@ -385,12 +384,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             getController().changeNick(nickField.getText(), false);
         }
 
-        boolean checkForUpdate = updateCheck.isSelected();
-        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
-
         // setAdvanced
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
             showAdvancedSettingsBox.isSelected());
+
+        // Desktop PowerFolders shortcut.
+        boolean oldValue = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+                .getValueBoolean(getController());
+        boolean newValue = createPowerFoldersDesktopShortcutsBox.isSelected();
+        if (oldValue ^ newValue) {
+            PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
+                    getController(), newValue);
+            getUIController().doDesktopShortcut();
+        }
 
         // set bu only
         if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
@@ -408,7 +414,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         if (usePowerFolderLink != null) {
-            boolean newValue = usePowerFolderLink.isSelected();
+            newValue = usePowerFolderLink.isSelected();
             configureFavorite(newValue);
             // PowerFolder favorite
             ConfigurationEntry.USE_PF_LINK.setValue(getController(),

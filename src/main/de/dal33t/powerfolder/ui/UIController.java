@@ -129,13 +129,7 @@ import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Help;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -392,6 +386,23 @@ public class UIController extends PFComponent {
             new MyAskForFriendshipListener());
         getController().getFolderRepository().addNewFolderCandidateListener(
             new MyNewFolderCandidateListener());
+
+        doDesktopShortcut();
+    }
+
+    /**
+     * Creates a desktop shortcut of the folders base dir.
+     */
+    public void doDesktopShortcut() {
+        if (PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.getValueBoolean(
+                getController())) {
+            Util.createDesktopShortcut(Translation.getTranslation(
+                    "general.powerfolders.name"),
+                getController().getFolderRepository().getFoldersAbsoluteDir());
+        } else {
+            Util.removeDesktopShortcut(Translation.getTranslation(
+                    "general.powerfolders.name"));
+        }
     }
 
     private void checkLimits(boolean forceOpen) {

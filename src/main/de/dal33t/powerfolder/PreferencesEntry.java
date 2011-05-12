@@ -155,7 +155,9 @@ public enum PreferencesEntry {
      */
     SHOW_TELL_A_FRIEND("show.tell-a-friend", true),
 
-    SHOW_FOLDER_CANDIDATES("show.folder.candidates", true);
+    SHOW_FOLDER_CANDIDATES("show.folder.candidates", true),
+
+    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
 
     /** String, Boolean, Integer */
     private Class type;

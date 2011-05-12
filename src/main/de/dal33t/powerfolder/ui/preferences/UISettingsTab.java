@@ -78,6 +78,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JLabel transPercLabel;
     private JSlider transPercSlider;
     private int originalInline;
+    private JCheckBox updateCheck;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
@@ -127,6 +128,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             // Display exit on x if not enabled
             xBehaviorModel.setValue(Boolean.TRUE);
         }
+
+        boolean checkForUpdate = PreferencesEntry.CHECK_UPDATE
+            .getValueBoolean(getController());
+        updateCheck = new JCheckBox(
+            Translation
+                .getTranslation("preferences.dialog.dialogs.check_for_program_updates"),
+            checkForUpdate);
 
         ValueModel minToSysTrayModel = new ValueHolder(
             PreferencesEntry.MIN_TO_SYS_TRAY.getValueBoolean(getController()));
@@ -302,7 +310,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -341,6 +349,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
             row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(updateCheck, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(underlineLinkBox, cc.xyw(3, row, 2));
@@ -404,6 +415,9 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             // Remove setting
             Translation.saveLocalSetting(null);
         }
+
+        boolean checkForUpdate = updateCheck.isSelected();
+        PreferencesEntry.CHECK_UPDATE.setValue(getController(), checkForUpdate);
 
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
