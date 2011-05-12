@@ -360,7 +360,8 @@ public class Folder extends PFComponent {
         loadMetadata();
 
         // put myself in membership
-        join0(controller.getMySelf());
+        //join0(controller.getMySelf());
+        members.put(controller.getMySelf(), controller.getMySelf());
 
         // Now calc.
         statistic = new FolderStatistic(this);
