@@ -444,8 +444,14 @@ public class AdvancedSettingsTab extends PFComponent implements PreferenceTab {
         }
 
         // Set folder base
-        String folderbase = (String) locationModel.getValue();
-        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), folderbase);
+        String oldFolderBase =
+                ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String newFolderbase = (String) locationModel.getValue();
+        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(),
+                newFolderbase);
+        if (!StringUtils.isEqual(oldFolderBase, newFolderbase)) {
+            getController().getUIController().configureDesktopShortcut(true);
+        }
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN

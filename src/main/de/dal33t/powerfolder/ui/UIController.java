@@ -387,21 +387,26 @@ public class UIController extends PFComponent {
         getController().getFolderRepository().addNewFolderCandidateListener(
             new MyNewFolderCandidateListener());
 
-        doDesktopShortcut();
+        configureDesktopShortcut(false);
     }
 
     /**
-     * Creates a desktop shortcut of the folders base dir.
+     * Creates / removes a desktop shortcut of the folders base dir.
+     *
+     * @param removeFirst remove any shortcut before creating a new one.
      */
-    public void doDesktopShortcut() {
+    public void configureDesktopShortcut(boolean removeFirst) {
+        if (removeFirst ||
+                !PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.getValueBoolean(
+                        getController())) {
+            Util.removeDesktopShortcut(Translation.getTranslation(
+                    "general.powerfolders.name"));
+        }
         if (PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.getValueBoolean(
                 getController())) {
             Util.createDesktopShortcut(Translation.getTranslation(
                     "general.powerfolders.name"),
-                getController().getFolderRepository().getFoldersAbsoluteDir());
-        } else {
-            Util.removeDesktopShortcut(Translation.getTranslation(
-                    "general.powerfolders.name"));
+                    getController().getFolderRepository().getFoldersAbsoluteDir());
         }
     }
 

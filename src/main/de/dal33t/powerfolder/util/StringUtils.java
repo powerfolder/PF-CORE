@@ -59,7 +59,7 @@ public class StringUtils {
             return true;
         }
         for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return false;
             }
         }
@@ -88,7 +88,7 @@ public class StringUtils {
             return false;
         }
         for (int i = 0; i < strLen; i++) {
-            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+            if (!Character.isWhitespace(str.charAt(i))) {
                 return true;
             }
         }
@@ -155,8 +155,9 @@ public class StringUtils {
             return text;
         }
 
-        StringBuffer   buf = new StringBuffer  (text.length());
-        int start = 0, end = 0;
+        StringBuilder buf = new StringBuilder(text.length());
+        int start = 0;
+        int end;
         while ((end = text.indexOf(repl, start)) != -1) {
             buf.append(text.substring(start, end)).append(with);
             start = end + repl.length();
@@ -167,6 +168,16 @@ public class StringUtils {
         }
         buf.append(text.substring(start));
         return buf.toString();
+    }
+
+    public static boolean isEqual(String string1, String string2) {
+        if (string1 == null && string2 == null) {
+            return true;
+        } else if (string1 != null && string2 != null) {
+            return string1.equals(string2);
+        } else {
+            return false;
+        }
     }
 
 }

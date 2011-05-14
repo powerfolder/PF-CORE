@@ -395,7 +395,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (oldValue ^ newValue) {
             PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
                     getController(), newValue);
-            getUIController().doDesktopShortcut();
+            getUIController().configureDesktopShortcut(false);
         }
 
         // set bu only
