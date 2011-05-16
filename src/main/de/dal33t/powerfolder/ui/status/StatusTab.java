@@ -682,7 +682,7 @@ public class StatusTab extends PFUIComponent {
                 synchronizationDateLabel.setVisible(false);
             } else {
                 String syncDateText;
-                if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 30)) {
+                if (DateUtil.isDateMoreThanNDaysInFuture(syncDate, 2)) {
                     syncDateText = Translation
                         .getTranslation("status_tab.sync_unknown");
                 } else {

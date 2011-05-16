@@ -85,6 +85,7 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 
@@ -147,7 +148,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MySyncFolderAction syncFolderAction;
     private MyOpenFilesInformationAction openFilesInformationAction;
     private MyOpenSettingsInformationAction openSettingsInformationAction;
-    private MyMoveLocalFolderAction moveLocalFolderAction;
     private MyInviteAction inviteAction;
     private MyOpenMembersInformationAction openMembersInformationAction;
     private MyMostRecentChangesAction mostRecentChangesAction;
@@ -444,7 +444,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteAction = new MyInviteAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
-        moveLocalFolderAction = new MyMoveLocalFolderAction(getController());
+        MyMoveLocalFolderAction moveLocalFolderAction =
+                new MyMoveLocalFolderAction(getController());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
@@ -504,7 +505,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         localDirectoryLabel = new ActionLabel(getController(),
-            moveLocalFolderAction);
+                moveLocalFolderAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -722,10 +723,15 @@ public class ExpandableFolderView extends PFUIComponent implements
                 {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
-                        String formattedDate = Format.formatDateShort(date);
-                        syncDateText = Translation.getTranslation(
-                            "exp_folder_view.estimated_synchronized",
-                            formattedDate);
+                        if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
+                            syncDateText = Translation.getTranslation(
+                                "exp_folder_view.estimated_unknown");
+                        } else {
+                            String formattedDate = Format.formatDateShort(date);
+                            syncDateText = Translation.getTranslation(
+                                "exp_folder_view.estimated_synchronized",
+                                formattedDate);
+                        }
                     }
                 }
 
