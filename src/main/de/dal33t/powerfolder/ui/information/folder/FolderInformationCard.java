@@ -169,7 +169,9 @@ public class FolderInformationCard extends InformationCard {
             if (problemList.isEmpty()) {
                 removeProblemsTab();
             } else {
-                addProblemsTab();
+                if (tabbedPane.getComponentCount() <= getProblemsTabIndex()) {
+                    addProblemsTab();
+                }
             }
             problemsTab.updateProblems(problemList);
         }

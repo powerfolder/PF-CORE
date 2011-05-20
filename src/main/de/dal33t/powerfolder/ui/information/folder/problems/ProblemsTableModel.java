@@ -150,7 +150,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     public void updateProblems(List<Problem> problemList) {
         problems.clear();
         problems.addAll(problemList);
-        modelChanged(new TableModelEvent(this, 0, problems.size() - 1));
+        modelChanged(new TableModelEvent(this));
     }
 
     /**
@@ -173,7 +173,7 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
         sortAscending = ascending;
     }
 
-// ////////////////
+    // ////////////////
     // Inner classes //
     // ////////////////
 
