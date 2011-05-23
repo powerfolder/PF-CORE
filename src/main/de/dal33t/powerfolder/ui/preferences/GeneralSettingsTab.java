@@ -172,16 +172,15 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             createDesktopShortcutsBox = BasicComponentFactory
                 .createCheckBox(
                     new BufferedValueModel(csModel, writeTrigger),
-                    Translation.getTranslation(
-                            "preferences.dialog.create_desktop_shortcuts"));
+                    Translation
+                        .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
-            boolean createPowerFoldersDesktopShortcut =
-                    PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
-                            .getValueBoolean(getController());
-            createPowerFoldersDesktopShortcutsBox = new JCheckBox(Translation
-                    .getTranslation(
-                    "preferences.dialog.dialogs.create_powerfolders_shotrcut"),
-            createPowerFoldersDesktopShortcut);
+            boolean createPowerFoldersDesktopShortcut = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+                .getValueBoolean(getController());
+            createPowerFoldersDesktopShortcutsBox = new JCheckBox(
+                Translation
+                    .getTranslation("preferences.dialog.dialogs.create_powerfolders_shotrcut"),
+                createPowerFoldersDesktopShortcut);
             if (WinUtils.getInstance() != null && !OSUtil.isWebStart()) {
                 startWithWindowsBox = new JCheckBox(
                     Translation
@@ -279,7 +278,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
 
                 row += 2;
-                builder.add(createPowerFoldersDesktopShortcutsBox, cc.xyw(3, row, 2));
+                builder.add(createPowerFoldersDesktopShortcutsBox,
+                    cc.xyw(3, row, 2));
 
                 if (startWithWindowsBox != null) {
                     builder.appendRow("3dlu");
@@ -390,11 +390,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Desktop PowerFolders shortcut.
         boolean oldValue = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
-                .getValueBoolean(getController());
+            .getValueBoolean(getController());
         boolean newValue = createPowerFoldersDesktopShortcutsBox.isSelected();
         if (oldValue ^ newValue) {
             PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
-                    getController(), newValue);
+                getController(), newValue);
             getUIController().configureDesktopShortcut(false);
         }
 
@@ -441,16 +441,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         ConfigurationEntry.FOLDER_SYNC_WARN_SECONDS.setValue(getController(),
             String.valueOf(folderSyncSlider.getValue() * 60 * 60 * 24));
 
-        boolean changed = WinUtils.getInstance().isPFStartup(getController()) != startWithWindowsBox
-            .isSelected();
-        if (changed) {
-            try {
-                if (WinUtils.getInstance() != null) {
-                    WinUtils.getInstance().setPFStartup(
-                        startWithWindowsBox.isSelected(), getController());
+        if (WinUtils.isSupported()) {
+            boolean changed = WinUtils.getInstance().isPFStartup(
+                getController()) != startWithWindowsBox.isSelected();
+            if (changed) {
+                try {
+                    if (WinUtils.getInstance() != null) {
+                        WinUtils.getInstance().setPFStartup(
+                            startWithWindowsBox.isSelected(), getController());
+                    }
+                } catch (IOException e) {
+                    logWarning("IOException", e);
                 }
-            } catch (IOException e) {
-                logWarning("IOException", e);
             }
         }
     }
