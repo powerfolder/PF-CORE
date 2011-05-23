@@ -188,7 +188,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             addServerURL(ConfigurationEntry.CONFIG_URL
                 .getValue(getController()));
         }
-        if (getController().getOSClient().hasWebURL()) {
+        if (getController().getOSClient() != null
+            && getController().getOSClient().hasWebURL())
+        {
             addServerURL(getController().getOSClient().getWebURL());
         }
         if (ConfigurationEntry.PROVIDER_URL.hasValue(getController())) {
