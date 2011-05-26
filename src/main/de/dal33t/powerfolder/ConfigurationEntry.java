@@ -598,7 +598,7 @@ public enum ConfigurationEntry {
      * Whether to set PowerFolders as a Favorite Link.
      */
     USE_PF_LINK("use.pf.link", true),
-    
+
     /**
      * #2256: Simple conflict detection.
      */
@@ -765,6 +765,11 @@ public enum ConfigurationEntry {
      * Duplicate folders by should be automatically prevented.
      */
     FOLDER_CREATE_AVOID_DUPES("create.folder.avoid.dupes", false),
+
+    /**
+     * Uses any existing directory found at the default path, even if not empty.
+     */
+    FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", false),
 
     /** Online storage only client. */
     BACKUP_ONLY_CLIENT("backup.only.client", false),
