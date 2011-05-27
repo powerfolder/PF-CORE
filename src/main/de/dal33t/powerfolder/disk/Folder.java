@@ -355,7 +355,7 @@ public class Folder extends PFComponent {
         loadMetadata();
 
         // put myself in membership
-        //join0(controller.getMySelf());
+        // join0(controller.getMySelf());
         members.put(controller.getMySelf(), controller.getMySelf());
 
         // Now calc.
@@ -3034,14 +3034,8 @@ public class Folder extends PFComponent {
             logFiner("Triing to find same files in remote list with "
                 + remoteFileInfos.size() + " files from " + member);
         }
-        if (!hasWritePermission(member)) {
-            if (isInfo()) {
-                logInfo("Not searching same files. " + member + " / "
-                    + member.getAccountInfo() + " no write permission");
-            }
-            return;
-        }
 
+        Boolean hasWrite = null;
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
@@ -3067,12 +3061,25 @@ public class Folder extends PFComponent {
                 // localFileInfo.getModifiedDate(), remoteFileInfo
                 // .getModifiedDate());
                 if (fileSizeSame && dateSame) {
+                    if (hasWrite == null) {
+                        hasWrite = hasWritePermission(member);
+                    }
+                    if (!hasWrite) {
+                        if (isInfo()) {
+                            logInfo("Not searching same files. " + member
+                                + " / " + member.getAccountInfo()
+                                + " no write permission");
+                        }
+                        return;
+                    }
+
                     if (isFine()) {
                         logFine("Found identical file remotely: local "
                             + localFileInfo.toDetailString() + " remote: "
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
                     }
+
                     // localFileInfo.copyFrom(remoteFileInfo);
                     store(getController().getMySelf(), remoteFileInfo);
                     // FIXME That might produce a LOT of traffic! Single update
@@ -3100,6 +3107,18 @@ public class Folder extends PFComponent {
                 if (localFileInfo.getRelativeName().compareTo(
                     remoteFileInfo.getRelativeName()) <= 0)
                 {
+                    if (hasWrite == null) {
+                        hasWrite = hasWritePermission(member);
+                    }
+                    if (!hasWrite) {
+                        if (isInfo()) {
+                            logInfo("Not searching same files. " + member
+                                + " / " + member.getAccountInfo()
+                                + " no write permission");
+                        }
+                        return;
+                    }
+
                     // Skip this fileinfo. Compare by name is performed
                     // to ensure that the FileInfo with the greatest
                     // lexographic index is taken. This is a
