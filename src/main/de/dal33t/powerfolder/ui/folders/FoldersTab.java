@@ -27,7 +27,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.ui.FileDropTransferHandler;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
@@ -46,9 +50,14 @@ public class FoldersTab extends PFUIComponent {
     private JPanel uiComponent;
     private FoldersList foldersList;
     private JScrollPane scrollPane;
-    private JLabel emptyLabel;
     private JCheckBox autoAcceptCB;
-
+    private JLabel connectingLabel;
+    private JLabel notLoggedInLabel;
+    private ActionLabel loginActionLabel;
+    private JLabel noFoldersFoundLabel;
+    private ActionLabel newFolderActionLabel;
+    private JPanel emptyPanelOuter;
+    private ServerClient client;
 
     /**
      * Constructor
@@ -57,11 +66,20 @@ public class FoldersTab extends PFUIComponent {
      */
     public FoldersTab(Controller controller) {
         super(controller);
-        emptyLabel = new JLabel(Translation
-            .getTranslation("folders_tab.no_folders_available"),
-            SwingConstants.CENTER);
-        emptyLabel.setEnabled(false);
+        connectingLabel = new JLabel(Translation.getTranslation(
+                "folders_tab.connecting"));
+        notLoggedInLabel = new JLabel(Translation.getTranslation(
+                "folders_tab.not_logged_in"));
+        loginActionLabel = new ActionLabel(getController(), new MyLoginAction());
+        loginActionLabel.setText(Translation.getTranslation("folders_tab.login"));
+        noFoldersFoundLabel = new JLabel(Translation.getTranslation(
+                "folders_tab.no_folders_found"));
         foldersList = new FoldersList(getController(), this);
+        newFolderActionLabel = new ActionLabel(getController(), getApplicationModel()
+            .getActionModel().getNewFolderAction());
+        newFolderActionLabel.setText(Translation.getTranslation("folders_tab.new_folder"));
+        client = getApplicationModel().getServerClientModel().getClient();
+        client.addListener(new MyServerClientListener());
     }
 
     /**
@@ -113,7 +131,8 @@ public class FoldersTab extends PFUIComponent {
         UIUtil.removeBorder(scrollPane);
 
         // emptyLabel and scrollPane occupy the same slot.
-        builder.add(emptyLabel, cc.xywh(1, 6, 1, 1));
+        buildEmptyPanel();
+        builder.add(emptyPanelOuter, cc.xywh(1, 6, 1, 1));
         builder.add(scrollPane, cc.xywh(1, 6, 1, 1));
 
         if (PreferencesEntry.SHOW_TELL_A_FRIEND
@@ -128,10 +147,51 @@ public class FoldersTab extends PFUIComponent {
 
     }
 
+    private void buildEmptyPanel() {
+        FormLayout layoutOuter = new FormLayout("center:pref:grow", "center:pref:grow");
+        PanelBuilder builderOuter = new PanelBuilder(layoutOuter);
+        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow", "pref");
+        PanelBuilder builderInner = new PanelBuilder(layoutInner);
+        CellConstraints cc = new CellConstraints();
+        builderInner.add(connectingLabel, cc.xyw(1, 1, 3));
+        builderInner.add(notLoggedInLabel, cc.xy(1, 1));
+        builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
+        builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
+        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+        JPanel emptyPanelInner = builderInner.getPanel();
+        builderOuter.add(emptyPanelInner, cc.xy(1, 1));
+        emptyPanelOuter = builderOuter.getPanel();
+    }
+
     public void updateEmptyLabel() {
         if (foldersList != null) {
-            if (emptyLabel != null) {
-                emptyLabel.setVisible(foldersList.isEmpty());
+            if (emptyPanelOuter != null) {
+                if (foldersList.isEmpty()) {
+                    String username = client.getUsername();
+                    if (!client.isConnected()) {
+                        connectingLabel.setVisible(true);
+                        notLoggedInLabel.setVisible(false);
+                        loginActionLabel.setVisible(false);
+                        noFoldersFoundLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                    } else if (username == null ||
+                            username.trim().length() == 0 ||
+                            client.isPasswordEmpty() ||
+                            !client.isLoggedIn()) {
+                        connectingLabel.setVisible(false);
+                        notLoggedInLabel.setVisible(true);
+                        loginActionLabel.setVisible(true);
+                        noFoldersFoundLabel.setVisible(false);
+                        newFolderActionLabel.setVisible(false);
+                    } else {
+                        connectingLabel.setVisible(false);
+                        notLoggedInLabel.setVisible(false);
+                        loginActionLabel.setVisible(false);
+                        noFoldersFoundLabel.setVisible(true);
+                        newFolderActionLabel.setVisible(true);
+                    }
+                }
+                emptyPanelOuter.setVisible(foldersList.isEmpty());
             }
             if (scrollPane != null) {
                 scrollPane.setVisible(!foldersList.isEmpty());
@@ -190,6 +250,39 @@ public class FoldersTab extends PFUIComponent {
             if (e.getSource().equals(autoAcceptCB)) {
                 configureAutoAccept();
             }
+        }
+    }
+
+    private class MyLoginAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            PFWizard.openLoginWizard(getController(), getController()
+                .getOSClient());
+        }
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+        public void accountUpdated(ServerClientEvent event) {
+            updateEmptyLabel();
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void login(ServerClientEvent event) {
+            updateEmptyLabel();
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateEmptyLabel();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateEmptyLabel();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateEmptyLabel();
         }
     }
 

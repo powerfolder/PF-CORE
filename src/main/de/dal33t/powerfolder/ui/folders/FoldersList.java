@@ -91,7 +91,7 @@ public class FoldersList extends PFUIComponent {
      */
     public FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
-        this.empty = true;
+        empty = true;
         this.foldersTab = foldersTab;
         transfersUpdater = new DelayedUpdater(getController());
         foldersUpdater = new DelayedUpdater(getController());
