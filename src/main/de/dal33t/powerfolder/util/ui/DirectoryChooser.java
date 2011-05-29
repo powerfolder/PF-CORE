@@ -440,15 +440,11 @@ class DirectoryChooser extends BaseDialog {
     }
 
     /**
-     * Listener to respond to click / double click events.
+     * Listener to respond to click events.
      */
     private class NavTreeListener extends MouseAdapter {
 
         public void mousePressed(MouseEvent e) {
-
-            if (e.getClickCount() == 2) {
-                okEvent();
-            }
 
             if (e.isPopupTrigger()) {
                 showContextMenu(e);
