@@ -372,8 +372,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             row += 2;
 
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc
-                .xy(5, row));
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(),
+                cc.xy(5, row));
 
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
@@ -390,8 +390,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             row += 2;
 
-            lowerBuilder.add(localDirectoryLabel.getUIComponent(), cc
-                .xy(2, row));
+            lowerBuilder.add(localDirectoryLabel.getUIComponent(),
+                cc.xy(2, row));
 
         }
 
@@ -444,8 +444,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteAction = new MyInviteAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
-        MyMoveLocalFolderAction moveLocalFolderAction =
-                new MyMoveLocalFolderAction(getController());
+        MyMoveLocalFolderAction moveLocalFolderAction = new MyMoveLocalFolderAction(
+            getController());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
@@ -505,7 +505,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         transferModeLabel = new ActionLabel(getController(),
             openSettingsInformationAction);
         localDirectoryLabel = new ActionLabel(getController(),
-                moveLocalFolderAction);
+            moveLocalFolderAction);
         syncPercentLabel = new JLabel();
         syncDateLabel = new ActionLabel(getController(),
             mostRecentChangesAction);
@@ -724,8 +724,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
-                            syncDateText = Translation.getTranslation(
-                                "exp_folder_view.estimated_unknown");
+                            syncDateText = Translation
+                                .getTranslation("exp_folder_view.estimated_unknown");
                         } else {
                             String formattedDate = Format.formatDateShort(date);
                             syncDateText = Translation.getTranslation(
@@ -1516,6 +1516,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             // FolderOnlineStoragePanel knows if folder already joined :-)
+            getUIController().getApplicationModel().getServerClientModel()
+                .checkAndSetupAccount();
             PFWizard.openMirrorFolderWizard(getController(), folder);
         }
     }
@@ -1527,6 +1529,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void actionPerformed(ActionEvent e) {
             // FolderOnlineStoragePanel knows if folder already joined :-)
+            getUIController().getApplicationModel().getServerClientModel()
+                .checkAndSetupAccount();
             PFWizard.openMirrorFolderWizard(getController(), folder);
         }
     }
