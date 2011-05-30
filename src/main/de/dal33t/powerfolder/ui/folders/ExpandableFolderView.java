@@ -21,9 +21,7 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -33,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.ByteArrayOutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -82,10 +81,8 @@ import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 
@@ -156,6 +153,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private FolderRemoveAction removeFolderAction;
     private BackupOnlineStorageAction backupOnlineStorageAction;
     private StopOnlineStorageAction stopOnlineStorageAction;
+    private WebdavAction webdavAction;
 
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
@@ -461,6 +459,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         MyProblemAction myProblemAction = new MyProblemAction(getController());
         syncFolderAction = new MySyncFolderAction(getController());
+
+        webdavAction = new WebdavAction(getController());
 
         expanded = new AtomicBoolean();
         mouseOver = new AtomicBoolean();
@@ -993,6 +993,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
+        if (online) {
+            if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
+                contextMenu.add(webdavAction);
+            }
+        }
         return contextMenu;
     }
 
@@ -1044,6 +1049,23 @@ public class ExpandableFolderView extends PFUIComponent implements
             ? Font.BOLD
             : Font.PLAIN, nameLabel.getFont().getSize()));
         clearCompletedDownloadsAction.setEnabled(newFiles);
+    }
+
+    /**
+     * Create a WebDAV connection to this folder.
+     *
+     */
+    private void createWebdavConnection() {
+        try {
+            Process process = Runtime.getRuntime().exec("net use * \"" + serverClient.getWebURL() + "/webdav/" + folderInfo.getName() + "\" /User:" + serverClient.getUsername() + " " + serverClient.getPasswordClearText());
+            byte[] out = StreamUtils.readIntoByteArray(process.getInputStream());
+            String output = new String(out);
+            byte[] err = StreamUtils.readIntoByteArray(process.getErrorStream());
+            String error = new String(err);
+            System.out.println(output + " - " + error);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // ////////////////
@@ -1549,6 +1571,16 @@ public class ExpandableFolderView extends PFUIComponent implements
                     openExplorer();
                 }
             }
+        }
+    }
+
+    private class WebdavAction extends BaseAction {
+        private WebdavAction(Controller controller) {
+            super("action_webdav", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            createWebdavConnection();
         }
     }
 
