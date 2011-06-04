@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.io.ByteArrayOutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -80,11 +79,14 @@ import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * Class to render expandable view of a folder.
@@ -161,7 +163,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Constructor
-     * 
+     *
      * @param controller
      * @param folderInfo
      */
@@ -178,7 +180,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     /**
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
-     * 
+     *
      * @param folderArg
      */
     public void configure(Folder folderArg, boolean localArg, boolean onlineArg)
@@ -265,7 +267,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Gets the ui component, building if required.
-     * 
+     *
      * @return
      */
     public JPanel getUIComponent() {
@@ -954,7 +956,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Is the view expanded?
-     * 
+     *
      * @return
      */
     public boolean isExpanded() {
@@ -1053,19 +1055,84 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Create a WebDAV connection to this folder.
-     *
+     * Should be something like 'net use * "https://access.powerfolder.com/node/os004/webdav/afolder" /User:bob@powerfolder.com pazzword'
      */
     private void createWebdavConnection() {
-        try {
-            Process process = Runtime.getRuntime().exec("net use * \"" + serverClient.getWebURL() + "/webdav/" + folderInfo.getName() + "\" /User:" + serverClient.getUsername() + " " + serverClient.getPasswordClearText());
-            byte[] out = StreamUtils.readIntoByteArray(process.getInputStream());
-            String output = new String(out);
-            byte[] err = StreamUtils.readIntoByteArray(process.getErrorStream());
-            String error = new String(err);
-            System.out.println(output + " - " + error);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ActivityVisualizationWorker worker =
+                new ActivityVisualizationWorker(getUIController()) {
+            protected String getTitle() {
+                return Translation.getTranslation("exp_folder_view.webdav_title");
+            }
+
+            protected String getWorkingText() {
+                return Translation.getTranslation("exp_folder_view.webdav_working_text");
+            }
+
+            public Object construct() throws Throwable {
+                try {
+                    Process process = Runtime.getRuntime().exec("net use * \"" +
+                            serverClient.getWebURL() + "/webdav/" +
+                            folderInfo.getName() + "\" /User:" +
+                            serverClient.getUsername() + ' ' +
+                            serverClient.getPasswordClearText());
+                    byte[] out = StreamUtils.readIntoByteArray(process.getInputStream());
+                    String output = new String(out);
+                    byte[] err = StreamUtils.readIntoByteArray(process.getErrorStream());
+                    String error = new String(err);
+                    if (StringUtils.isEmpty(error)) {
+                        if (!StringUtils.isEmpty(output)) {
+                            // Looks like the link succeeded :-)
+                            return 'Y' + output;
+                        }
+                    } else {
+                        // Looks like the link failed :-(
+                        return 'N' + error;
+                    }
+                } catch (Exception e) {
+                    // Looks like the link failed, badly :-(
+                    logSevere(e.getMessage(), e);
+                    return 'N' + e.getMessage();
+                }
+                // Huh?
+                return null;
+            }
+
+            public void finished() {
+
+                // See what happened.
+                String result = (String) get();
+                if (result != null) {
+                    if (result.startsWith("Y")) {
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "exp_folder_view.webdav_success_title"),
+                                Translation.getTranslation(
+                                        "exp_folder_view.webdav_success_text",
+                                        result.substring(1)),
+                                GenericDialogType.INFO);
+                    } else if (result.startsWith("N")) {
+                        DialogFactory.genericDialog(getController(),
+                                Translation.getTranslation(
+                                        "exp_folder_view.webdav_failure_title"),
+                                Translation.getTranslation(
+                                        "exp_folder_view.webdav_failure_text",
+                                        result.substring(1)),
+                                GenericDialogType.ERROR);
+                    }
+                }
+            }
+        };
+        worker.start();
+    }
+
+    /**
+     * Display the reslt of a webDav connection.
+     * The result starts with 'Y' for success,
+     * and 'N' for failure.
+     *
+     * @param result
+     */
+    private void displayWebDavResult(String result) {
     }
 
     // ////////////////
