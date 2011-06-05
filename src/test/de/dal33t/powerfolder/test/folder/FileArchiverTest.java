@@ -56,7 +56,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return fb.getKnownFiles().size() > 0;
             }
@@ -98,6 +98,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         FileInfo fib = fb.getKnownFiles().iterator().next();
 
         for (int i = 0; i < 4; i++) {
+            TestHelper.waitMilliSeconds(2100);
             modLisaFile(tl, fib);
         }
 
@@ -110,6 +111,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertFalse(ver[0].exists());
         assertTrue(ver[1].exists());
 
+        TestHelper.waitMilliSeconds(2100);
         modLisaFile(tl, fib);
         assertFalse(ver[1].exists());
         assertTrue(ver[2].exists());
@@ -136,7 +138,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         scanFolder(fl);
 
-        TestHelper.waitForCondition(5, new Condition() {
+        TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
                 return fb.getKnownFiles().size() > 0;
             }
@@ -146,6 +148,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         File ver[] = new File[5];
         for (int i = 0; i < ver.length; i++) {
+            TestHelper.waitMilliSeconds(2100);
             modLisaFile(tl, fib);
         }
         File archdir = new File(fb.getSystemSubDir(), "archive");
@@ -185,10 +188,12 @@ public class FileArchiverTest extends TwoControllerTestCase {
         File f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         scanFolder(getFolderAtLisa());
         FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
+        TestHelper.waitMilliSeconds(2100);
         modLisaFile(f, fInfo);
 
         FileArchiver aBart = getFolderAtBart().getFileArchiver();
         for (int i = 0; i < nVersion; i++) {
+            TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
             assertTrue("Archived versions not found. Got: "
                 + aBart.getArchivedFilesInfos(fInfo), aBart
