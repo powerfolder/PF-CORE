@@ -195,15 +195,16 @@ public class FileArchiverTest extends TwoControllerTestCase {
         for (int i = 0; i < nVersion; i++) {
             TestHelper.waitMilliSeconds(2100);
             assertEquals(i + 2, modLisaFile(f, fInfo).getVersion());
-            assertTrue("Archived versions not found. Got: "
-                + aBart.getArchivedFilesInfos(fInfo), aBart
-                .getArchivedFilesInfos(fInfo).size() > 0);
+            assertTrue(
+                "Archived versions not found. Got: "
+                    + aBart.getArchivedFilesInfos(fInfo), aBart
+                    .getArchivedFilesInfos(fInfo).size() > 0);
         }
         assertTrue(getFolderAtBart().getFileArchiver().getSize() > 0);
-        assertEquals(nVersion, aBart.getArchivedFilesInfos(fInfo).size());
+        assertEquals(nVersion + 1, aBart.getArchivedFilesInfos(fInfo).size());
 
         List<FileInfo> archived = aBart.getArchivedFilesInfos(fInfo);
-        assertEquals(nVersion, archived.size());
+        assertEquals(nVersion + 1, archived.size());
 
         // Now restore
         FileInfo versionInfo = archived.get(4);
@@ -213,7 +214,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         getFolderAtBart().scanChangedFile(versionInfo);
 
         archived = aBart.getArchivedFilesInfos(fInfo);
-        assertEquals(nVersion, archived.size());
+        assertEquals(nVersion + 1, archived.size());
     }
 
     private FileInfo modLisaFile(File file, final FileInfo fInfo) {
