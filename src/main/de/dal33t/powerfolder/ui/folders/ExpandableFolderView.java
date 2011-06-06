@@ -997,7 +997,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         if (online) {
             if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
-                contextMenu.add(webdavAction);
+                if (serverClient.getFolderService().hasJoined(folderInfo)) {
+                    contextMenu.add(webdavAction);
+                }
             }
         }
         return contextMenu;
