@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -1112,6 +1113,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                                         "exp_folder_view.webdav_success_text",
                                         result.substring(1)),
                                 GenericDialogType.INFO);
+                        String[] parts = result.substring(1).split("\\s");
+                        for (String part : parts) {
+                            if (part.length() == 2 && part.charAt(1) == ':') {
+                                // Probably the new drive name, so open it.
+                                FileUtils.openFile(new File(part));
+                                break;
+                            }
+                        }
                     } else if (result.startsWith("N")) {
                         DialogFactory.genericDialog(getController(),
                                 Translation.getTranslation(
