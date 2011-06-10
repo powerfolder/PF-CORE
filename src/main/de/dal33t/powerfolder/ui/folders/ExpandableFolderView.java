@@ -1136,16 +1136,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         worker.start();
     }
 
-    /**
-     * Display the reslt of a webDav connection.
-     * The result starts with 'Y' for success,
-     * and 'N' for failure.
-     *
-     * @param result
-     */
-    private void displayWebDavResult(String result) {
-    }
-
     // ////////////////
     // Inner Classes //
     // ////////////////
