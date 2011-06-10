@@ -72,7 +72,6 @@ import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
 import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
-import de.dal33t.powerfolder.util.ui.SyncIconHelper;
 import de.dal33t.powerfolder.util.ui.UIPanel;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
@@ -109,8 +108,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
 
     private DelayedUpdater syncUpdater;
     private DelayedUpdater connectLabelUpdater;
-    /** TODO: Find a better place for systray icon setter */
-    private SyncIconHelper syncHelper;
 
     protected StatusBar(Controller controller) {
         super(controller);
@@ -238,9 +235,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             new MyFolderRepositoryListener());
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
-
-        // FIND a better place
-        syncHelper = new SyncIconHelper(getController());
 
         portLabel = new JLabel(Translation.getTranslation("status.port.text",
             String.valueOf(getController().getConnectionListener().getPort())));
@@ -549,7 +543,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 }
                 syncButton.setVisible(anySynchronizing);
                 syncButton.spin(anySynchronizing);
-                syncHelper.setVisible(anySynchronizing);
             }
         });
     }

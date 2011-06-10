@@ -38,7 +38,7 @@ import de.dal33t.powerfolder.util.Translation;
 public class SyncIconButtonMini extends JButtonMini {
 
     private static final long ROTATION_STEP_DELAY = 200L;
-    private int state;
+    private int angle;
     private volatile boolean spin;
     private static final Icon ICON_ZERO = Icons
         .getIconById(Icons.SYNC_ANIMATION[0]);
@@ -46,7 +46,7 @@ public class SyncIconButtonMini extends JButtonMini {
     public SyncIconButtonMini(Controller controller) {
         super(ICON_ZERO, Translation
             .getTranslation("sync_icon_button_mini.tip"));
-        state = 0;
+        angle = 0;
         // TODO Possible memory leak
         controller.scheduleAndRepeat(new MyUpdateTask(this),
             ROTATION_STEP_DELAY);
@@ -54,19 +54,18 @@ public class SyncIconButtonMini extends JButtonMini {
 
     private void rotate() {
 
-        // Complete final rotation before stopping - do not jump to ICON_ZERO.
-        if (state == 0 && !spin) {
+        if (!spin) {
             if (!getIcon().equals(ICON_ZERO)) {
                 setIcon(ICON_ZERO);
             }
             return;
         }
 
-        state++;
-        if (state >= Icons.SYNC_ANIMATION.length) {
-            state = 0;
+        angle++;
+        if (angle >= Icons.SYNC_ANIMATION.length) {
+            angle = 0;
         }
-        Icon icon = Icons.getIconById(Icons.SYNC_ANIMATION[state]);
+        Icon icon = Icons.getIconById(Icons.SYNC_ANIMATION[angle]);
         setIcon(icon);
     }
 

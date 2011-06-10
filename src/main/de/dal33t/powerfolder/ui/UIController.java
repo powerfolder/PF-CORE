@@ -26,13 +26,11 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
-import java.awt.TrayIcon;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -165,8 +163,7 @@ public class UIController extends PFComponent {
 
     private boolean started;
     private SplashScreen splash;
-    private Image defaultIcon;
-    private TrayIcon sysTrayMenu;
+    private TrayIconManager trayIconManager;
     private MainFrame mainFrame;
     private SystemMonitorFrame systemMonitorFrame;
     private InformationFrame informationFrame;
@@ -521,22 +518,10 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        defaultIcon = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
-        if (defaultIcon == null) {
-            logSevere("Unable to retrieve default system tray icon. "
-                + "System tray disabled");
-            OSUtil.disableSystray();
-            return;
-        }
-        sysTrayMenu = new TrayIcon(defaultIcon);
-        sysTrayMenu.setImageAutoSize(true);
-        sysTrayMenu.setToolTip(getController().getMySelf().getNick()
-            + " | "
-            + Translation.getTranslation("systray.powerfolder",
-                Controller.PROGRAM_VERSION));
+        trayIconManager = new TrayIconManager(getController());
         PopupMenu menu = new PopupMenu();
 
-        sysTrayMenu.setPopupMenu(menu);
+        trayIconManager.setPopupMenu(menu);
 
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -676,7 +661,7 @@ public class UIController extends PFComponent {
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
-        sysTrayMenu.addActionListener(new ActionListener() {
+        trayIconManager.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Previously was double click, this isn't supported by this
                 // systray implementation
@@ -687,9 +672,9 @@ public class UIController extends PFComponent {
         });
 
         try {
-            SystemTray.getSystemTray().add(sysTrayMenu);
-        } catch (AWTException e) {
-            logSevere("AWTException", e);
+            SystemTray.getSystemTray().add(trayIconManager.getTrayIcon());
+        } catch (Exception e) {
+            logSevere("Exception", e);
             OSUtil.disableSystray();
             return;
         }
@@ -1170,6 +1155,12 @@ public class UIController extends PFComponent {
         mainFrame.showPendingMessages(show);
     }
 
+    public void blinkTrayIcon(boolean blink) {
+        if (trayIconManager != null) {
+            trayIconManager.setBlink(blink);
+        }
+    }
+
     // /////////////////
     // Inner Classes //
     // /////////////////
@@ -1214,7 +1205,7 @@ public class UIController extends PFComponent {
             }
 
             tooltip.append(' ' + upText + ' ' + downText);
-            sysTrayMenu.setToolTip(tooltip.toString());
+            trayIconManager.setToolTip(tooltip.toString());
         }
     }
 
@@ -1242,8 +1233,8 @@ public class UIController extends PFComponent {
             mainFrame.getUIComponent().dispose();
 
             // Close systray
-            if (OSUtil.isSystraySupported() && sysTrayMenu != null) {
-                SystemTray.getSystemTray().remove(sysTrayMenu);
+            if (OSUtil.isSystraySupported() && trayIconManager != null) {
+                SystemTray.getSystemTray().remove(trayIconManager.getTrayIcon());
             }
         }
 
@@ -1301,31 +1292,6 @@ public class UIController extends PFComponent {
      */
     public ApplicationModel getApplicationModel() {
         return applicationModel;
-    }
-
-    // Systray interface/install code *****************************************
-
-    /**
-     * Sets the icon of the systray
-     * 
-     * @param icon
-     */
-    public synchronized void setTrayIcon(Image icon) {
-        if (!OSUtil.isSystraySupported()) {
-            return;
-        }
-        if (sysTrayMenu == null) {
-            return;
-        }
-        if (icon == null) {
-            sysTrayMenu.setImage(defaultIcon);
-        } else {
-            sysTrayMenu.setImage(icon);
-        }
-    }
-
-    public Image getTrayIcon() {
-        return sysTrayMenu != null ? sysTrayMenu.getImage() : null;
     }
 
     // Message dialog helpers *************************************************

@@ -23,17 +23,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
@@ -48,8 +43,6 @@ import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
  */
 public class SysTrayBlinkManager extends PFUIComponent {
 
-    private final AtomicBoolean flashSysTray = new AtomicBoolean();
-
     private final UIController uiController;
 
     /**
@@ -61,8 +54,6 @@ public class SysTrayBlinkManager extends PFUIComponent {
     public SysTrayBlinkManager(UIController uiController) {
         super(uiController.getController());
         this.uiController = uiController;
-        MyTimerTask task = new MyTimerTask();
-        getController().scheduleAndRepeat(task, 1000);
         uiController.getApplicationModel().getChatModel()
             .addChatModelListener(new MyChatModelListener());
         uiController.getApplicationModel().getNoticesModel()
@@ -77,27 +68,12 @@ public class SysTrayBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Update the sys tray icon with the image required.
+     * Sets the icon blinking.
+     *
+     * @param blink
      */
-    private void update() {
-        boolean blink = System.currentTimeMillis() / 1000 % 2 != 0;
-        if (blink && flashSysTray.get()) {
-            uiController.setTrayIcon(Icons.getImageById(Icons.BLANK));
-        } else if (uiController.getTrayIcon() == Icons
-            .getImageById(Icons.BLANK))
-        {
-            uiController.setTrayIcon(null); // the default
-        }
-    }
-
-    /**
-     * Sets the icon flashing.
-     * 
-     * @param flash
-     */
-    private void flashTrayIcon(boolean flash) {
-        flashSysTray.set(flash);
-        update();
+    private void blinkTrayIcon(boolean blink) {
+        uiController.blinkTrayIcon(blink);
     }
 
     /* ------------- */
@@ -117,7 +93,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
             {
                 return;
             }
-            flashTrayIcon(true);
+            blinkTrayIcon(true);
         }
 
         public void chatAdvice(ChatAdviceEvent event) {
@@ -130,25 +106,12 @@ public class SysTrayBlinkManager extends PFUIComponent {
     }
 
     /**
-     * Timer task, always running, updates the sys tray icon.
-     */
-    private class MyTimerTask extends TimerTask {
-        public void run() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    update();
-                }
-            });
-        }
-    }
-
-    /**
      * Listen for deiconification to stop flashing icon.
      */
     private class MyWindowListener extends WindowAdapter {
 
         public void windowDeiconified(WindowEvent e) {
-            flashTrayIcon(false);
+            blinkTrayIcon(false);
         }
 
         /**
@@ -158,7 +121,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
          */
         public void windowActivated(WindowEvent e) {
             if (!uiController.getMainFrame().isIconifiedOrHidden()) {
-                flashTrayIcon(false);
+                blinkTrayIcon(false);
             }
         }
     }
@@ -178,7 +141,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
                 return;
             }
 
-            flashTrayIcon(true);
+            blinkTrayIcon(true);
         }
     }
 
@@ -188,7 +151,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
             if (!uiController.getMainFrame().isIconifiedOrHidden()) {
                 return;
             }
-            flashTrayIcon(true);
+            blinkTrayIcon(true);
         }
 
         public void problemRemoved(Problem problem) {
@@ -203,7 +166,7 @@ public class SysTrayBlinkManager extends PFUIComponent {
     private class MyNodeManagerListener extends NodeManagerAdapter {
 
         public void startStop(NodeManagerEvent e) {
-            flashTrayIcon(!getController().getNodeManager().isStarted());
+            blinkTrayIcon(!getController().getNodeManager().isStarted());
         }
 
         public boolean fireInEventDispatchThread() {
