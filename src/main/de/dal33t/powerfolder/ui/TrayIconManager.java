@@ -15,50 +15,67 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: TrayIconManager.java 15105 2011-03-27 09:36:16Z harry $
+ * $Id: TrayIconManager.java 15105 2011-05-11 09:26:16Z harry $
  */
 package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.transfer.TransferManager;
+import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
+import de.dal33t.powerfolder.ui.chat.ChatModelListener;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
 
 /**
- * Encapsualtes tray icon functionality.
- * Anything to do with the tray icon should be done *HERE*.
- * This keeps all functionality encapsulated.
- * Note, if blink is true and syncing, the icon does not blink.
+ * Encapsualtes tray icon functionality. Anything to do with the tray icon
+ * should be done *HERE*. This keeps all tray functionality encapsulated.
+ * <p/>
+ * Blink has the highest priority. If blink is true, the 'P' icon will blink
+ * and the blinkText will be the tool tip, explaining why it is blinking.
+ * <p/>
+ * Sync has second highest priority. If syncing, the icon will rotate
+ * and tool tip will say 'syncing'.
+ * <p/>
+ * Otherwise, normal or warning will display.
  */
 public class TrayIconManager extends PFComponent {
 
     private static final long ROTATION_STEP_DELAY = 200L;
 
-    public enum TrayIconState {
+    private enum TrayIconState {
         NORMAL,
-        WARNING
+        NOT_CONNECTED,
+        NOT_LOGGED_IN
     }
 
+    private UIController uiController;
     private TrayIcon trayIcon;
     private volatile int angle = 0;
     private volatile TrayIconState state;
     private volatile boolean blink;
-    private volatile boolean syncing;
+    private volatile String blinkText;
+    private String downText = "";
+    private String upText = "";
 
-    private DelayedUpdater syncUpdater;
-
-
-    public TrayIconManager(Controller controller) {
-        super(controller);
-        syncUpdater = new DelayedUpdater(getController(), 1000L);
+    public TrayIconManager(UIController uiController) {
+        super(uiController.getController());
+        this.uiController = uiController;
 
         Image image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
         if (image == null) {
@@ -69,14 +86,21 @@ public class TrayIconManager extends PFComponent {
         }
         trayIcon = new TrayIcon(image);
         trayIcon.setImageAutoSize(true);
-        trayIcon.setToolTip(getController().getMySelf().getNick()
-                + " | "
-                + Translation.getTranslation("systray.powerfolder",
-                Controller.PROGRAM_VERSION));
-        getController().scheduleAndRepeat(new MyUpdateTask(),
+        updateConnectionStatus();
+        updateIcon();
+        Controller controller = getController();
+        controller.scheduleAndRepeat(new MyUpdateTask(),
                 ROTATION_STEP_DELAY);
-        getController().getFolderRepository().addFolderRepositoryListener(
-                new MyFolderRepositoryListener());
+        controller.getOSClient().addListener(new MyServerClientListener());
+        controller.getFolderRepository().addProblemListenerToAllFolders(
+                new MyProblemListener());
+        uiController.getMainFrame().getUIComponent().addWindowListener(
+                new MyWindowListener());
+        ApplicationModel applicationModel = uiController.getApplicationModel();
+        applicationModel.getNoticesModel().getUnreadNoticesCountVM()
+                .addValueChangeListener(new MyNoticesCountListener());
+        applicationModel.getChatModel().addChatModelListener(
+                new MyChatModelListener());
     }
 
     /**
@@ -89,88 +113,104 @@ public class TrayIconManager extends PFComponent {
         return trayIcon;
     }
 
-    public void setPopupMenu(PopupMenu menu) {
-        if (trayIcon != null) {
-            trayIcon.setPopupMenu(menu);
-        }
-    }
-
-    public void addActionListener(ActionListener actionListener) {
-        if (trayIcon != null) {
-            trayIcon.addActionListener(actionListener);
-        }
-    }
-
-    public void setToolTip(String s) {
-        if (trayIcon != null) {
-            trayIcon.setToolTip(s);
+    private void updateConnectionStatus() {
+        state = TrayIconManager.TrayIconState.NORMAL;
+        ServerClient client = getController().getOSClient();
+        if (!client.isConnected()) {
+            state = TrayIconManager.TrayIconState.NOT_CONNECTED;
+        } else if (!client.isLoggedIn()) {
+            state = TrayIconManager.TrayIconState.NOT_LOGGED_IN;
         }
     }
 
     private void updateIcon() {
 
+        if (trayIcon == null) {
+            // Tray icon not supported?
+            return;
+        }
+        StringBuilder tooltip = new StringBuilder();
+
         Image image;
-        if (syncing) {
-            // Increment angle and get new rotation image.
-            angle++;
-            if (angle >= Icons.SYNC_ANIMATION.length) {
-                angle = 0;
-            }
-            image = Icons.getImageById(Icons.SYNC_ANIMATION[angle]);
-            if (trayIcon != null) {
-                trayIcon.setImage(image);
-            }
-        } else {
-            angle = 0;
+        if (blink) {
+            tooltip.append(blinkText).append(' ');
             if (blink && System.currentTimeMillis() / 1000 % 2 != 0) {
                 // Blank for blink.
                 image = Icons.getImageById(Icons.BLANK);
             } else {
-                if (state == TrayIconState.NORMAL) {
-                    image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
-                } else if (state == TrayIconState.WARNING) {
-                    image = Icons.getImageById(Icons.WARNING);
+                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+            }
+        } else {
+
+            // Always increment the angle.
+            // If it is zero, we also update the tooltip up / down rates.
+            angle++;
+            if (angle >= Icons.SYNC_ANIMATION.length) {
+                angle = 0;
+            }
+
+            tooltip.append(Translation.getTranslation(
+                    "general.application.name"));
+            tooltip.append(' ');
+
+            if (getController().getFolderRepository().isSyncing()) {
+                image = Icons.getImageById(Icons.SYNC_ANIMATION[angle]);
+                if (trayIcon != null) {
+                    trayIcon.setImage(image);
+                }
+                tooltip.append(Translation.getTranslation(
+                        "systray.tooltip.syncing"));
+            } else if (state == TrayIconState.NORMAL) {
+                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+                tooltip.append(Translation.getTranslation(
+                        "systray.tooltip.in_sync"));
+            } else if (state == TrayIconState.NOT_CONNECTED) {
+                image = Icons.getImageById(Icons.WARNING);
+                tooltip.append(Translation.getTranslation(
+                        "systray.tooltip.not_connected"));
+            } else if (state == TrayIconState.NOT_LOGGED_IN) {
+                image = Icons.getImageById(Icons.WARNING);
+                tooltip.append(Translation.getTranslation(
+                        "systray.tooltip.not_logged_in"));
+            } else {
+                logSevere("Indeterminate TrayIcon state " + state);
+                image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+            }
+
+            // Only update the up/down rates intermittantly.
+            if (angle == 0) {
+                TransferManager transferManager =
+                        getController().getTransferManager();
+                double totalCPSdownKB = transferManager
+                        .getDownloadCounter().calculateCurrentKBS();
+                double totalCPSupKB = transferManager
+                        .getUploadCounter().calculateCurrentKBS();
+
+                if (totalCPSdownKB > 1024) {
+                    downText = " - " + Translation.getTranslation(
+                            "systray.tooltip.down.mb",
+                            Format.formatDecimal(totalCPSdownKB / 1024));
                 } else {
-                    logSevere("Indeterminate TrayIcon state " + state);
-                    image = Icons.getImageById(Icons.SYSTRAY_DEFAULT);
+                    downText = " - " + Translation.getTranslation(
+                            "systray.tooltip.down",
+                            Format.formatDecimal(totalCPSdownKB));
+                }
+
+                if (totalCPSupKB > 1024) {
+                    upText = " - " + Translation.getTranslation(
+                            "systray.tooltip.up.mb",
+                            Format.formatDecimal(totalCPSupKB / 1024));
+                } else {
+                    upText = " - " + Translation.getTranslation(
+                            "systray.tooltip.up",
+                            Format.formatDecimal(totalCPSupKB));
                 }
             }
-            if (trayIcon != null) {
-                trayIcon.setImage(image);
-            }
-
+            tooltip.append(upText + downText);
         }
-    }
 
-    /**
-     * Can be:
-     * NORMAL (circle icon) or
-     * WARNING (triange icon)
-     *
-     * @param state
-     */
-    public void setState(TrayIconState state) {
-        this.state = state;
-    }
-
-    public void setBlink(boolean blink) {
-        this.blink = blink;
-    }
-
-    private void updateSyncing() {
-        syncUpdater.schedule(new Runnable() {
-            public void run() {
-                boolean anySynchronizing = false;
-                for (Folder folder : getController().getFolderRepository()
-                        .getFolders(true)) {
-                    if (folder.isSyncing()) {
-                        anySynchronizing = true;
-                        break;
-                    }
-                }
-                syncing = anySynchronizing;
-            }
-        });
+        trayIcon.setImage(image);
+        trayIcon.setToolTip(tooltip.toString());
     }
 
     // ////////////////
@@ -190,28 +230,115 @@ public class TrayIconManager extends PFComponent {
         }
     }
 
-    private class MyFolderRepositoryListener implements
-            FolderRepositoryListener {
-
-        public void folderCreated(FolderRepositoryEvent e) {
+    private class MyServerClientListener implements ServerClientListener {
+        public boolean fireInEventDispatchThread() {
+            return true;
         }
 
-        public void folderRemoved(FolderRepositoryEvent e) {
+        public void accountUpdated(ServerClientEvent event) {
+            updateConnectionStatus();
         }
 
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            updateSyncing();
+        public void login(ServerClientEvent event) {
+            updateConnectionStatus();
         }
 
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-            updateSyncing();
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateConnectionStatus();
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            updateConnectionStatus();
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            updateConnectionStatus();
+        }
+    }
+
+    private class MyProblemListener implements ProblemListener {
+
+        public void problemAdded(Problem problem) {
+            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
+                return;
+            }
+            blink = true;
+            blinkText = Translation.getTranslation("systray.tooltip.new_problem");
+        }
+
+        public void problemRemoved(Problem problem) {
+            // Do nothing
         }
 
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 
+    /**
+     * Listen for deiconification to stop flashing icon.
+     */
+    private class MyWindowListener extends WindowAdapter {
+
+        public void windowDeiconified(WindowEvent e) {
+            blink = false;
+        }
+
+        /**
+         * Catch cases where UI gets un-hidden - may not also de-iconify.
+         *
+         * @param e
+         */
+        public void windowActivated(WindowEvent e) {
+            if (!uiController.getMainFrame().isIconifiedOrHidden()) {
+                blink = false;
+            }
+        }
+    }
+
+    /**
+     * Listen for incoming invitations, etc.
+     */
+    private class MyNoticesCountListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+
+            Integer count = (Integer) evt.getNewValue();
+
+            if (count == null || count == 0
+                    || !uiController.getMainFrame().isIconifiedOrHidden()) {
+                return;
+            }
+
+            blink = true;
+            blinkText = Translation.getTranslation("systray.tooltip.new_notice");
+        }
+    }
+
+    /**
+     * Listens for chat messages.
+     */
+    private class MyChatModelListener implements ChatModelListener {
+
+        public void chatChanged(ChatModelEvent event) {
+
+            // Ignore status updates or if ui not iconified
+            if (event.isStatusFlag()
+                    || !uiController.getMainFrame().isIconifiedOrHidden()) {
+                return;
+            }
+            blink = true;
+            blinkText = Translation.getTranslation(
+                    "systray.tooltip.new_chat_message");
+        }
+
+        public void chatAdvice(ChatAdviceEvent event) {
+            // Don't care.
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+    }
 
 }

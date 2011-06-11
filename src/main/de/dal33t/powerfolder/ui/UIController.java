@@ -19,19 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.AWTException;
-import java.awt.CheckboxMenuItem;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Frame;
-import java.awt.MediaTracker;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -125,7 +113,6 @@ import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
-import de.dal33t.powerfolder.ui.render.SysTrayBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -181,8 +168,6 @@ public class UIController extends PFComponent {
 
     private TransferManagerModel transferManagerModel;
 
-    private final AtomicBoolean folderRepositorySynchronizing;
-
     private final AtomicInteger activeFrame;
 
     /**
@@ -201,8 +186,6 @@ public class UIController extends PFComponent {
      */
     public UIController(Controller controller) {
         super(controller);
-
-        folderRepositorySynchronizing = new AtomicBoolean();
 
         activeFrame = new AtomicInteger();
 
@@ -350,7 +333,6 @@ public class UIController extends PFComponent {
         // Start the blinkers later, so the UI is fully displayed first.
         UIUtil.invokeLaterInEDT(new Runnable() {
             public void run() {
-                new SysTrayBlinkManager(UIController.this);
                 new MainFrameBlinkManager(UIController.this);
             }
         });
@@ -377,6 +359,8 @@ public class UIController extends PFComponent {
                 });
         }
 
+        configureDesktopShortcut(false);
+
         getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
@@ -384,7 +368,6 @@ public class UIController extends PFComponent {
         getController().getFolderRepository().addNewFolderCandidateListener(
             new MyNewFolderCandidateListener());
 
-        configureDesktopShortcut(false);
     }
 
     /**
@@ -518,10 +501,13 @@ public class UIController extends PFComponent {
     }
 
     private void initalizeSystray() {
-        trayIconManager = new TrayIconManager(getController());
+        trayIconManager = new TrayIconManager(this);
         PopupMenu menu = new PopupMenu();
 
-        trayIconManager.setPopupMenu(menu);
+        TrayIcon trayIcon = trayIconManager.getTrayIcon();
+        if (trayIcon != null) {
+            trayIcon.setPopupMenu(menu);
+        }
 
         ActionListener systrayActionHandler = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -650,35 +636,34 @@ public class UIController extends PFComponent {
         menu.addSeparator();
 
         if (SystemUtil.isShutdownSupported()) {
-            item = menu.add(new MenuItem(Translation
-                .getTranslation("systray.sync_shutdown")));
+            item = menu.add(new MenuItem(Translation.getTranslation(
+                    "systray.sync_shutdown")));
             item.setActionCommand(COMMAND_SYNC_SHUTDOWN);
             item.addActionListener(systrayActionHandler);
         }
 
-        item = menu
-            .add(new MenuItem(Translation.getTranslation("systray.exit")));
+        item = menu.add(new MenuItem(Translation.getTranslation(
+                "systray.exit")));
         item.setActionCommand(COMMAND_EXIT);
         item.addActionListener(systrayActionHandler);
 
-        trayIconManager.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // Previously was double click, this isn't supported by this
-                // systray implementation
-                // Double clicked, open gui directly
-                mainFrame.getUIComponent().setVisible(true);
-                mainFrame.getUIComponent().setState(Frame.NORMAL);
-            }
-        });
+        if (trayIcon != null) {
+            trayIcon.addActionListener(
+                    new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mainFrame.getUIComponent().setVisible(true);
+                    mainFrame.getUIComponent().setState(Frame.NORMAL);
+                }
+            });
+        }
 
         try {
-            SystemTray.getSystemTray().add(trayIconManager.getTrayIcon());
+            SystemTray.getSystemTray().add(trayIcon);
         } catch (Exception e) {
             logSevere("Exception", e);
             OSUtil.disableSystray();
             return;
         }
-        getController().scheduleAndRepeat(new UpdateSystrayTask(), 5000L);
 
         // Switch Systray show/hide menuitem dynamically
         mainFrame.getUIComponent().addComponentListener(new ComponentAdapter() {
@@ -1155,60 +1140,6 @@ public class UIController extends PFComponent {
         mainFrame.showPendingMessages(show);
     }
 
-    public void blinkTrayIcon(boolean blink) {
-        if (trayIconManager != null) {
-            trayIconManager.setBlink(blink);
-        }
-    }
-
-    // /////////////////
-    // Inner Classes //
-    // /////////////////
-
-    private class UpdateSystrayTask extends TimerTask {
-        public void run() {
-            StringBuilder tooltip = new StringBuilder();
-
-            tooltip.append(Translation
-                .getTranslation("general.application.name"));
-            tooltip.append(' ');
-            if (folderRepositorySynchronizing.get()) {
-                tooltip.append(Translation
-                    .getTranslation("systray.tooltip.syncing"));
-            } else {
-                tooltip.append(Translation
-                    .getTranslation("systray.tooltip.in_sync"));
-            }
-            double totalCPSdownKB = getController().getTransferManager()
-                .getDownloadCounter().calculateCurrentKBS();
-            double totalCPSupKB = getController().getTransferManager()
-                .getUploadCounter().calculateCurrentKBS();
-
-            String downText;
-
-            if (totalCPSdownKB > 1024) {
-                downText = Translation.getTranslation(
-                    "systray.tooltip.down.mb",
-                    Format.formatDecimal(totalCPSdownKB / 1024));
-            } else {
-                downText = Translation.getTranslation("systray.tooltip.down",
-                    Format.formatDecimal(totalCPSdownKB));
-            }
-
-            String upText;
-            if (totalCPSupKB > 1024) {
-                upText = Translation.getTranslation("systray.tooltip.up.mb",
-                    Format.formatDecimal(totalCPSupKB / 1024));
-            } else {
-                upText = Translation.getTranslation("systray.tooltip.up",
-                    Format.formatDecimal(totalCPSupKB));
-            }
-
-            tooltip.append(' ' + upText + ' ' + downText);
-            trayIconManager.setToolTip(tooltip.toString());
-        }
-    }
-
     /**
      * Shuts the ui down
      */
@@ -1253,13 +1184,6 @@ public class UIController extends PFComponent {
      */
     public boolean isShowingFolder() {
         return informationFrame.isShowingFolder();
-    }
-
-    /**
-     * @return the controller
-     */
-    public Controller getController() {
-        return super.getController();
     }
 
     /**
@@ -1311,6 +1235,52 @@ public class UIController extends PFComponent {
             pendingJobs.add(runner);
         }
     }
+
+    /**
+     * Only use this for preview from the DialogSettingsTab. It by-passes all
+     * the usual safty checks.
+     * 
+     * @param title
+     * @param message
+     */
+    public void previewMessage(String title, String message) {
+        NotificationHandler notificationHandler = new NotificationHandler(
+            getController(), title, message, false);
+        notificationHandler.show();
+    }
+
+    /**
+     * Show a chat message popup notification.
+     * 
+     * @param title
+     *            message title
+     * @param message
+     *            the message to popup
+     */
+    public void showChatNotification(String title, String message) {
+        if (started && !getController().isShuttingDown()) {
+            if ((Boolean) applicationModel.getChatNotificationsValueModel()
+                .getValue())
+            {
+                NotificationHandler notificationHandler = new NotificationHandler(
+                    getController(), title, message, true);
+                notificationHandler.show();
+            }
+        }
+    }
+
+    private void notifyComponent(JComponent content, Window owner,
+        int seconds2Display)
+    {
+        Slider slider = new Slider(content, owner, seconds2Display,
+            PreferencesEntry.NOTIFICATION_TRANSLUCENT
+                .getValueInt(getController()), getController().isNotifyLeft());
+        slider.show();
+    }
+
+    // /////////////////
+    // Inner Classes //
+    // /////////////////
 
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
@@ -1395,48 +1365,6 @@ public class UIController extends PFComponent {
                         + text2));
             }
         }
-    }
-
-    /**
-     * Only use this for preview from the DialogSettingsTab. It by-passes all
-     * the usual safty checks.
-     * 
-     * @param title
-     * @param message
-     */
-    public void previewMessage(String title, String message) {
-        NotificationHandler notificationHandler = new NotificationHandler(
-            getController(), title, message, false);
-        notificationHandler.show();
-    }
-
-    /**
-     * Show a chat message popup notification.
-     * 
-     * @param title
-     *            message title
-     * @param message
-     *            the message to popup
-     */
-    public void showChatNotification(String title, String message) {
-        if (started && !getController().isShuttingDown()) {
-            if ((Boolean) applicationModel.getChatNotificationsValueModel()
-                .getValue())
-            {
-                NotificationHandler notificationHandler = new NotificationHandler(
-                    getController(), title, message, true);
-                notificationHandler.show();
-            }
-        }
-    }
-
-    private void notifyComponent(JComponent content, Window owner,
-        int seconds2Display)
-    {
-        Slider slider = new Slider(content, owner, seconds2Display,
-            PreferencesEntry.NOTIFICATION_TRANSLUCENT
-                .getValueInt(getController()), getController().isNotifyLeft());
-        slider.show();
     }
 
     /**
