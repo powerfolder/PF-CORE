@@ -64,14 +64,14 @@ public class TrayIconManager extends PFComponent {
         NOT_LOGGED_IN
     }
 
-    private UIController uiController;
+    private final UIController uiController;
     private TrayIcon trayIcon;
     private volatile int angle = 0;
     private volatile TrayIconState state;
     private volatile boolean blink;
     private volatile String blinkText;
-    private String downText = "";
-    private String upText = "";
+    private volatile String downText = "";
+    private volatile String upText = "";
 
     public TrayIconManager(UIController uiController) {
         super(uiController.getController());
