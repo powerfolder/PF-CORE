@@ -63,6 +63,7 @@ public class UploadsInformationCard extends InformationCard implements
     private JLabel activeUploadCountLabel;
     private JLabel completedUploadCountLabel;
     private DelayedUpdater updater;
+    private Action addIgnoreAction;
 
     /**
      * Constructor
@@ -114,7 +115,7 @@ public class UploadsInformationCard extends InformationCard implements
                 "uploads_information_card.auto_cleanup.frequency_tip"));
         buildToolbar();
         tablePanel = new UploadsTablePanel(getController(),
-            clearCompletedUploadsAction);
+            clearCompletedUploadsAction, addIgnoreAction);
         fileDetailsPanel = new FileDetailsPanel(getController(), true);
         fileVersionsPanel = new FileVersionsPanel(getController());
         detailsPanel = createDetailsPanel();
@@ -182,7 +183,9 @@ public class UploadsInformationCard extends InformationCard implements
 
         clearCompletedUploadsAction = new ClearCompletedUploadsAction(
             getController());
+        addIgnoreAction = new AddIgnoreAction(getController());
 
+        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES        
         Integer x = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
         if (x > 4) {
@@ -215,7 +218,7 @@ public class UploadsInformationCard extends InformationCard implements
         updateCleanupLabel();
     }
 
-    private JButton createButton(Action action) {
+    private static JButton createButton(Action action) {
         JButton b = new JButton(action);
         b.setIcon(null);
         return b;
@@ -265,9 +268,11 @@ public class UploadsInformationCard extends InformationCard implements
      * Update actions and details.
      */
     private void update0() {
-        clearCompletedUploadsAction
-            .setEnabled(getUIController().getTransferManagerModel()
-                .getUploadsTableModel().getRowCount() > 0);
+        clearCompletedUploadsAction.setEnabled(getUIController()
+                .getTransferManagerModel().getUploadsTableModel().getRowCount()
+                > 0);
+        addIgnoreAction.setEnabled(getUIController().getTransferManagerModel()
+                    .getUploadsTableModel().getRowCount() > 0);                
 
         fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
         fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
@@ -370,6 +375,16 @@ public class UploadsInformationCard extends InformationCard implements
 
         public void run() {
             displayStats();
+        }
+    }
+
+    private class AddIgnoreAction extends BaseAction {
+
+        private AddIgnoreAction(Controller controller) {
+            super("action_add_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
         }
     }
 }

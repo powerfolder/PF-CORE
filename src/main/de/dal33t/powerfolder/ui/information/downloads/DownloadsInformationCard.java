@@ -65,6 +65,7 @@ public class DownloadsInformationCard extends InformationCard implements
     private JLabel activeDownloadCountLabel;
     private JLabel completedDownloadCountLabel;
     private DelayedUpdater updater;
+    private Action addIgnoreAction;
 
     /**
      * Constructor
@@ -117,7 +118,7 @@ public class DownloadsInformationCard extends InformationCard implements
         buildToolbar();
         tablePanel = new DownloadsTablePanel(getController(),
             openDownloadAction, abortDownloadsAction,
-            clearCompletedDownloadsAction);
+            clearCompletedDownloadsAction, addIgnoreAction);
         tablePanel.addTableModelListener(new MyTableModelListener());
         tablePanel.addListSelectionListener(new MyListSelectionListener());
         fileDetailsPanel = new FileDetailsPanel(getController(), true);
@@ -158,10 +159,11 @@ public class DownloadsInformationCard extends InformationCard implements
 
         abortDownloadsAction = new AbortDownloadAction();
         openDownloadAction = new OpenFileAction();
-
         clearCompletedDownloadsAction = new ClearCompletedDownloadsAction(
             getController());
+        addIgnoreAction = new AddIgnoreAction(getController());
 
+        // NOTE true cleanup days dereferenced through Constants.CLEANUP_VALUES        
         Integer x = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController());
         if (x > 4) {
@@ -255,6 +257,7 @@ public class DownloadsInformationCard extends InformationCard implements
         openDownloadAction.setEnabled(singleCompleteSelected);
         abortDownloadsAction.setEnabled(incompleteSelected);
         clearCompletedDownloadsAction.setEnabled(rowsExist);
+        addIgnoreAction.setEnabled(incompleteSelected);
 
         fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
         fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
@@ -416,4 +419,16 @@ public class DownloadsInformationCard extends InformationCard implements
             displayStats();
         }
     }
+
+
+    private class AddIgnoreAction extends BaseAction {
+
+        private AddIgnoreAction(Controller controller) {
+            super("action_add_ignore", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
 }

@@ -35,7 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
@@ -68,6 +67,7 @@ public class DownloadsTablePanel extends PFUIComponent {
     private Action openDownloadAction;
     private Action abortDownloadsAction;
     private Action clearCompletedDownloadsAction;
+    private Action addIgnoreAction;
 
     private JPopupMenu fileMenu;
 
@@ -78,12 +78,13 @@ public class DownloadsTablePanel extends PFUIComponent {
      */
     public DownloadsTablePanel(Controller controller,
         Action openDownloadAction, Action abortDownloadsAction,
-        Action clearCompletedDownloadsAction)
+        Action clearCompletedDownloadsAction, Action addIgnoreAction)
     {
         super(controller);
         this.openDownloadAction = openDownloadAction;
         this.abortDownloadsAction = abortDownloadsAction;
         this.clearCompletedDownloadsAction = clearCompletedDownloadsAction;
+        this.addIgnoreAction = addIgnoreAction;
     }
 
     /**
@@ -164,6 +165,7 @@ public class DownloadsTablePanel extends PFUIComponent {
         fileMenu.add(openDownloadAction);
         fileMenu.add(abortDownloadsAction);
         fileMenu.add(clearCompletedDownloadsAction);
+        fileMenu.add(addIgnoreAction);
     }
 
     /**

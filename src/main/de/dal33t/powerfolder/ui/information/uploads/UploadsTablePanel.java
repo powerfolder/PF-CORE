@@ -34,7 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
@@ -61,6 +60,7 @@ public class UploadsTablePanel extends PFUIComponent {
     private UploadsTable table;
     private UploadsTableModel tableModel;
     private Action clearCompletedUploadsAction;
+    private Action addIgnoreAction;
     private JPopupMenu fileMenu;
 
     /**
@@ -69,10 +69,11 @@ public class UploadsTablePanel extends PFUIComponent {
      * @param controller
      */
     public UploadsTablePanel(Controller controller,
-        Action clearCompletedUploadsAction)
+        Action clearCompletedUploadsAction, Action addIgnoreAction)
     {
         super(controller);
         this.clearCompletedUploadsAction = clearCompletedUploadsAction;
+        this.addIgnoreAction = addIgnoreAction;
     }
 
     /**
@@ -197,6 +198,7 @@ public class UploadsTablePanel extends PFUIComponent {
     private void buildPopupMenus() {
         fileMenu = new JPopupMenu();
         fileMenu.add(clearCompletedUploadsAction);
+        fileMenu.add(addIgnoreAction);
     }
 
     public FileInfo getSelectdFile() {
