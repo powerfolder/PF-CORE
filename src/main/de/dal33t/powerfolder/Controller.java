@@ -114,7 +114,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.7.0 - 3.0.0.8";
+    public static final String PROGRAM_VERSION = "4.7.1 - 3.0.0.21";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -1789,7 +1789,7 @@ public class Controller extends PFComponent {
             // connect to defaul port
             logWarning("Unable to connect, port illegal " + address.getPort());
         }
-        logInfo("Connecting to " + address + "...");
+        logFine("Connecting to " + address + "...");
 
         ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
             .tryToConnect(address);
