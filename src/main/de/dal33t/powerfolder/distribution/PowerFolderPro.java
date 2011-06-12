@@ -99,7 +99,7 @@ public class PowerFolderPro extends AbstractDistribution {
                 relay = server;
                 logFine("Using default server as relay: " + relay);
             } else {
-                logFine("Using relay: " + relay);
+                logFiner("Using relay: " + relay);
             }
             return relay;
         }
