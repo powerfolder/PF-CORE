@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
+import de.dal33t.powerfolder.skin.LightSky;
 import de.dal33t.powerfolder.skin.Snowland;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Reject;
@@ -154,7 +155,7 @@ public class Icons {
     public static final String INACTIVE = "inactive.icon";
     public static final String EXPECTED = "expected.icon";
     public static final String CHECKED = "checked.icon";
-    
+
     public static final String STATS = "stats.icon";
 
     public static final String STATUS_TAB_TELL_A_FRIEND = "status_tab_tell_friend_icon";
@@ -162,7 +163,7 @@ public class Icons {
     public static final String FACEBOOK_BUTTON = "facebook.icon";
     public static final String LINKEDIN_BUTTON = "linkedin.icon";
     public static final String EMAIL_BUTTON = "email.icon";
-    
+
     // Sync icons
     public static final String SYNC = "sync.icon";
     public static final String[] SYNC_ANIMATION = {"sync00.icon",
@@ -225,8 +226,8 @@ public class Icons {
     /** Map of Extension - Icon */
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
-    // Snowload is our default.
-    private static final String DEFAULT_PROPERTIES_FILENAME = Snowland.ICON_PROPERTIES_FILENAME;
+    // Lightsky is our default.
+    private static final String DEFAULT_PROPERTIES_FILENAME = LightSky.ICON_PROPERTIES_FILENAME;
 
     private static Properties iconProperties;
 
@@ -690,9 +691,8 @@ public class Icons {
                     }
                     return icon;
                 }
-                log
-                    .severe("Couldn't create temporary file for icon retrieval for extension:'"
-                        + extension + '\'');
+                log.severe("Couldn't create temporary file for icon retrieval for extension:'"
+                    + extension + '\'');
 
             }
         } catch (IOException e) {
@@ -752,8 +752,8 @@ public class Icons {
             return icon;
         }
 
-        return new ImageIcon(colorConvertOp
-            .filter(toBufferedImage(image), null));
+        return new ImageIcon(
+            colorConvertOp.filter(toBufferedImage(image), null));
     }
 
     /**
@@ -845,8 +845,8 @@ public class Icons {
             // Create the buffered image
             GraphicsDevice gs = ge.getDefaultScreenDevice();
             GraphicsConfiguration gc = gs.getDefaultConfiguration();
-            bimage = gc.createCompatibleImage(image.getWidth(null), image
-                .getHeight(null), transparency);
+            bimage = gc.createCompatibleImage(image.getWidth(null),
+                image.getHeight(null), transparency);
         } catch (HeadlessException e) {
             log.log(Level.FINER, "HeadlessException", e);
         }
@@ -857,8 +857,8 @@ public class Icons {
             if (hasAlpha) {
                 type = BufferedImage.TYPE_INT_ARGB;
             }
-            bimage = new BufferedImage(image.getWidth(null), image
-                .getHeight(null), type);
+            bimage = new BufferedImage(image.getWidth(null),
+                image.getHeight(null), type);
         }
 
         // Copy image to buffered image
