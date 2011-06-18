@@ -998,7 +998,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         if (online) {
             if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
-                if (serverClient.getFolderService().hasJoined(folderInfo)) {
+                if (serverClient.isConnected() &&
+                        serverClient.getFolderService().hasJoined(folderInfo)) {
                     contextMenu.add(webdavAction);
                 }
             }
@@ -1389,7 +1390,15 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-            createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            Cursor c = upperPanel.getCursor();
+            try {
+                upperPanel.setCursor(Cursor.getPredefinedCursor(
+                        Cursor.WAIT_CURSOR));
+                createPopupMenu().show(evt.getComponent(), evt.getX(),
+                        evt.getY());
+            } finally {
+                upperPanel.setCursor(c);
+            }
         }
 
         public void mouseClicked(MouseEvent e) {
