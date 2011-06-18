@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -257,7 +260,7 @@ public class DownloadsInformationCard extends InformationCard implements
         openDownloadAction.setEnabled(singleCompleteSelected);
         abortDownloadsAction.setEnabled(incompleteSelected);
         clearCompletedDownloadsAction.setEnabled(rowsExist);
-        addIgnoreAction.setEnabled(incompleteSelected);
+        addIgnoreAction.setEnabled(tablePanel.getSelectedRows().length > 0);
 
         fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
         fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
@@ -420,7 +423,6 @@ public class DownloadsInformationCard extends InformationCard implements
         }
     }
 
-
     private class AddIgnoreAction extends BaseAction {
 
         private AddIgnoreAction(Controller controller) {
@@ -428,6 +430,17 @@ public class DownloadsInformationCard extends InformationCard implements
         }
 
         public void actionPerformed(ActionEvent e) {
+            for (DownloadManager manager : tablePanel.getSelectedRows()) {
+                if (manager != null) {
+                    FileInfo fileInfo = manager.getFileInfo();
+                    Folder folder = getController().getFolderRepository().getFolder(
+                            fileInfo.getFolderInfo());
+                    folder.getDiskItemFilter().addPattern(fileInfo.getRelativeName());
+                    if (manager.isStarted()) {
+                        manager.abort();
+                    }
+                }
+            }
         }
     }
 

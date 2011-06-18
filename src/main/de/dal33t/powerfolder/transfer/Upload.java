@@ -461,7 +461,7 @@ public class Upload extends Transfer {
     /**
      * Aborts this dl if currently transferrings
      */
-    synchronized void abort() {
+    public synchronized void abort() {
         logFiner("Upload aborted: " + this);
         aborted = true;
 

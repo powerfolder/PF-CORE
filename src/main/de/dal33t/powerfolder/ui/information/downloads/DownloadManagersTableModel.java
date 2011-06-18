@@ -32,7 +32,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.transfer.Download;
@@ -117,7 +116,7 @@ public class DownloadManagersTableModel extends PFComponent implements
      * @param downloadManager
      * @return
      */
-    private boolean isMetaFolderDownload(DownloadManager downloadManager) {
+    private static boolean isMetaFolderDownload(DownloadManager downloadManager) {
         return downloadManager.getFileInfo().getFolderInfo().isMetaFolder();
     }
 
@@ -145,6 +144,20 @@ public class DownloadManagersTableModel extends PFComponent implements
             }
         }
         return null;
+    }
+
+    public DownloadManager[] getDownloadManagersAtRows(int[] ints) {
+        DownloadManager[] rows = new DownloadManager[ints.length];
+        synchronized (downloadManagers) {
+            int x = 0;
+            for (int i : ints) {
+                if (i < downloadManagers.size()) {
+                    rows[x] = downloadManagers.get(i);
+                }
+                x++;
+            }
+        }
+        return rows;
     }
 
     public boolean sortBy(int columnIndex) {

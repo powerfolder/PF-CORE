@@ -248,7 +248,7 @@ public class DownloadsTablePanel extends PFUIComponent {
 
     /**
      * Returns true if the table has any selected incomplete downloads.
-     * 
+     *
      * @return
      */
     public boolean isIncompleteSelected() {
@@ -385,6 +385,11 @@ public class DownloadsTablePanel extends PFUIComponent {
             }
         }
         return count;
+    }
+
+    public DownloadManager[] getSelectedRows() {
+        int[] ints = table.getSelectedRows();
+        return tableModel.getDownloadManagersAtRows(ints);
     }
 
     // /////////////////

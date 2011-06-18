@@ -150,9 +150,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     // Application logic ******************************************************
 
-    public boolean sortBy(int modelColumnNo) {
-        sortColumn = modelColumnNo;
-        switch (modelColumnNo) {
+    public boolean sortBy(int columnIndex) {
+        sortColumn = columnIndex;
+        switch (columnIndex) {
             case COLTYPE :
                 return sortMe(TransferComparator.BY_EXT);
             case COLFILE :
@@ -442,6 +442,22 @@ public class UploadsTableModel extends PFComponent implements TableModel,
 
     public void setAscending(boolean ascending) {
         sortAscending = ascending;
+    }
+
+    public Upload[] getUploadsAtRows(int[] ints) {
+        Upload[] rows = new Upload[ints.length];
+        int x = 0;
+        for (int i : ints) {
+            if (i < uploads.size()) {
+                rows[x] = uploads.get(i);
+            }
+            x++;
+        }
+        return rows;
+    }
+
+    public int getSelectedRowCount() {
+        return 0;  //To change body of created methods use File | Settings | File Templates.
     }
 
     // ////////////////

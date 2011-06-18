@@ -26,6 +26,9 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.transfer.Upload;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
@@ -271,8 +274,7 @@ public class UploadsInformationCard extends InformationCard implements
         clearCompletedUploadsAction.setEnabled(getUIController()
                 .getTransferManagerModel().getUploadsTableModel().getRowCount()
                 > 0);
-        addIgnoreAction.setEnabled(getUIController().getTransferManagerModel()
-                    .getUploadsTableModel().getRowCount() > 0);                
+        addIgnoreAction.setEnabled(tablePanel.getSelectedRows().length > 0);                
 
         fileDetailsPanel.setFileInfo(tablePanel.getSelectdFile());
         fileVersionsPanel.setFileInfo(tablePanel.getSelectdFile());
@@ -385,6 +387,17 @@ public class UploadsInformationCard extends InformationCard implements
         }
 
         public void actionPerformed(ActionEvent e) {
+            for (Upload upload : tablePanel.getSelectedRows()) {
+                if (upload != null) {
+                    FileInfo fileInfo = upload.getFile();
+                    Folder folder = getController().getFolderRepository().getFolder(
+                            fileInfo.getFolderInfo());
+                    folder.getDiskItemFilter().addPattern(fileInfo.getRelativeName());
+                    if (upload.isStarted()) {
+                        upload.abort();
+                    }
+                }
+            }
         }
     }
 }

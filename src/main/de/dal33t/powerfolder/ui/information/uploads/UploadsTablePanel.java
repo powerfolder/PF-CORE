@@ -236,6 +236,11 @@ public class UploadsTablePanel extends PFUIComponent {
         return count;
     }
 
+    public Upload[] getSelectedRows() {
+        int[] ints = table.getSelectedRows();
+        return tableModel.getUploadsAtRows(ints);
+    }
+
     /**
      * Listener on table header, takes care about the sorting of table
      * 
