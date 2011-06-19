@@ -1101,6 +1101,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // TODO: I added speed limits above because on my machine the transfer
         // was too fast and the
         // file was completed already. Please check if this test is correct.
+        assertTrue("Tempfile already removed", incompleteFile.exists());
         assertTrue("Temp file should be greater than " + mbUntilBreak
             + "mb already. got " + Format.formatBytes(incompleteFile.length()),
             incompleteFile.length() > mbUntilBreak * 1024 * 1024);
@@ -1245,7 +1246,8 @@ public class FileTransferTest extends TwoControllerTestCase {
             public boolean reached() {
                 return lisaListener.downloadRequested >= 1
                     && lisaListener.downloadCompleted >= 1
-                    && bartListener.uploadCompleted >= 1;
+                    && bartListener.uploadCompleted >= 1
+                    && getFolderAtLisa().getKnownFiles().size() >= 1;
             }
         });
         FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
