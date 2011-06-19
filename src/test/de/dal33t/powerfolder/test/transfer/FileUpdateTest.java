@@ -20,11 +20,14 @@
 package de.dal33t.powerfolder.test.transfer;
 
 import java.io.File;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -110,10 +113,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
             fileInfoAtBart.getModifiedBy());
 
         // Test lisas file (=should be override by barts newer file)
-        FileInfo fileInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
-            .next();
-        assertFileMatch(fileAtLisa, getFolderAtLisa().getKnownFiles()
-            .iterator().next(), getContollerLisa());
+        FileInfo fileInfoAtLisa = FileInfoFactory.lookupInstance(
+            getFolderAtLisa(), fileAtLisa);
+        fileInfoAtLisa = fileInfoAtLisa.getLocalFileInfo(getContollerLisa()
+            .getFolderRepository());
+        assertFileMatch(fileAtLisa, fileInfoAtLisa, getContollerLisa());
         assertTrue(fileInfoAtLisa.inSyncWithDisk(fileAtLisa));
         assertEquals(fileAtBart.getName(), fileInfoAtLisa.getFilenameOnly());
         assertEquals(fileAtBart.length(), fileInfoAtLisa.getSize());
@@ -270,5 +274,34 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertTrue(p instanceof FileConflictProblem);
         cp = (FileConflictProblem) p;
         assertEquals(fInfoAtLisa, cp.getFileInfo());
+    }
+
+    public void testManyUpdatesWhileTransfer() {
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        final File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 5000000);
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getKnownFiles().size() > 0;
+            }
+        });
+        LoggingManager.setConsoleLogging(Level.FINER);
+        for (int i = 0; i < 40; i++) {
+            TestHelper.changeFile(fileAtBart,
+                5000000 + (long) (Math.random() * 10000));
+            TestHelper.waitMilliSeconds(400);
+            scanFolder(getFolderAtBart());
+        }
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                File fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
+                    .next()
+                    .getDiskFile(getContollerLisa().getFolderRepository());
+                return fileAtLisa.length() == fileAtBart.length()
+                    && fileAtBart.lastModified() == fileAtLisa.lastModified();
+            }
+        });
     }
 }
