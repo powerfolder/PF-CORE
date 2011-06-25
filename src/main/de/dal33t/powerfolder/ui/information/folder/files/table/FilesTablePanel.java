@@ -277,7 +277,15 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 File file = fileInfo.getDiskFile(getController()
                     .getFolderRepository());
                 if (file != null && file.exists()) {
+                    // Open file ...
                     FileUtils.openFile(file);
+                    // ... and clear completed download status.
+                    TransferManager transferManager = getController()
+                        .getTransferManager();
+                    if (transferManager.isCompletedDownload(fileInfo)) {
+                        transferManager.clearCompletedDownload(fileInfo);
+                        parent.scheduleDirectoryFiltering();
+                    }
                 }
             }
         }
