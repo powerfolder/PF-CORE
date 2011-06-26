@@ -122,7 +122,7 @@ public enum Feature {
     /**
      * Temporary for #2165 development.
      */
-    AUTO_SPEED_DETECT(true);
+    AUTO_SPEED_DETECT(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
