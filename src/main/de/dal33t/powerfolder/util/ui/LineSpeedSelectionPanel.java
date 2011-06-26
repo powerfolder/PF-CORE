@@ -36,6 +36,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.Feature;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -160,6 +161,9 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for LAN
      */
     public void loadLANSelection() {
+        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
+            addLineSpeed("line_speed.auto_speed", -1, 0);
+        }
         addLineSpeed("line_speed.lan10", 1000, 0);
         addLineSpeed("line_speed.lan100", 10000, 0);
         addLineSpeed("line_speed.lan1000", 100000, 0);
@@ -171,6 +175,9 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for WAN
      */
     public void loadWANSelection() {
+        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
+            addLineSpeed("line_speed.auto_speed", -1, 0);
+        }
         addLineSpeed("line_speed.adsl128", 11, 0);
         addLineSpeed("line_speed.adsl256", 23, 0);
         addLineSpeed("line_speed.adsl512", 46, 0);
