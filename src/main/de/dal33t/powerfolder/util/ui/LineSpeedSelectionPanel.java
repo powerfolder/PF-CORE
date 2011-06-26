@@ -323,7 +323,7 @@ public class LineSpeedSelectionPanel extends JPanel {
     /**
      * Returns the currently selected upload speed.
      * 
-     * @return The upload speed in kb/s or a number < 0 if an error occured
+     * @return The upload speed in kb/s or AUTO_DETECT if an error occured
      */
     public long getUploadSpeedKBPS() {
         try {
@@ -332,14 +332,14 @@ public class LineSpeedSelectionPanel extends JPanel {
         } catch (ParseException e) {
             log.warning("Unable to parse uploadlimit '"
                 + customUploadSpeedField.getText() + '\'');
+            return AUTO_DETECT * 1024;
         }
-        return -1;
     }
 
     /**
      * Returns the currently selected download speed.
      * 
-     * @return The download speed in kb/s or a number < 0 if an error occured
+     * @return The download speed in kb/s or AUTO_DETECT if an error occured
      */
     public long getDownloadSpeedKBPS() {
         try {
@@ -348,8 +348,8 @@ public class LineSpeedSelectionPanel extends JPanel {
         } catch (ParseException e) {
             log.warning("Unable to parse downloadlimit '"
                 + customDownloadSpeedField.getText() + '\'');
+            return AUTO_DETECT * 1024;
         }
-        return -1;
     }
 
     @Override
