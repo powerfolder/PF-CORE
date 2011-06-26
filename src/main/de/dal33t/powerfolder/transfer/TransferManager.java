@@ -1046,12 +1046,6 @@ public class TransferManager extends PFComponent {
      * @param allowedCPS
      */
     public void setAllowedUploadCPSForWAN(long allowedCPS) {
-        if (allowedCPS != 0 && allowedCPS < 3 * 1024
-            && !getController().isVerbose())
-        {
-            logWarning("Setting upload limit to a minimum of 3 KB/s");
-            allowedCPS = 3 * 1024;
-        }
 
         // Store in config
         ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(),
@@ -1077,13 +1071,6 @@ public class TransferManager extends PFComponent {
      * @param allowedCPS
      */
     public void setAllowedDownloadCPSForWAN(long allowedCPS) {
-        // if (allowedCPS != 0 && allowedCPS < 3 * 1024
-        // && !getController().isVerbose())
-        // {
-        // logWarning("Setting download limit to a minimum of 3 KB/s");
-        // allowedCPS = 3 * 1024;
-        // }
-        //
         // Store in config
         ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
@@ -1108,12 +1095,6 @@ public class TransferManager extends PFComponent {
      * @param allowedCPS
      */
     public void setAllowedUploadCPSForLAN(long allowedCPS) {
-        if (allowedCPS != 0 && allowedCPS < 3 * 1024
-            && !getController().isVerbose())
-        {
-            logWarning("Setting upload limit to a minimum of 3 KB/s");
-            allowedCPS = 3 * 1024;
-        }
         // Store in config
         ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
@@ -1138,12 +1119,6 @@ public class TransferManager extends PFComponent {
      * @param allowedCPS
      */
     public void setAllowedDownloadCPSForLAN(long allowedCPS) {
-        // if (allowedCPS != 0 && allowedCPS < 3 * 1024
-        // && !getController().isVerbose())
-        // {
-        // logWarning("Setting upload limit to a minimum of 3 KB/s");
-        // allowedCPS = 3 * 1024;
-        // }
         // Store in config
         ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));

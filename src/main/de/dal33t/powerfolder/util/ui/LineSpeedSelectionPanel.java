@@ -48,6 +48,9 @@ import de.dal33t.powerfolder.Feature;
  */
 public class LineSpeedSelectionPanel extends JPanel {
 
+    private static final int UNLIMITED = 0;
+    private static final int AUTO_DETECT = -1;
+
     private static final Logger log = Logger
         .getLogger(LineSpeedSelectionPanel.class.getName());
 
@@ -162,13 +165,19 @@ public class LineSpeedSelectionPanel extends JPanel {
      */
     public void loadLANSelection() {
         if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            addLineSpeed("line_speed.auto_speed", -1, 0);
+            defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
+                    UNLIMITED);
         }
-        addLineSpeed("line_speed.lan10", 1000, 0);
-        addLineSpeed("line_speed.lan100", 10000, 0);
-        addLineSpeed("line_speed.lan1000", 100000, 0);
-        addLineSpeed("line_speed.unlimited", 0, 0);
-        defaultSpeed = addLineSpeed("line_speed.custom_speed", 0, 0, true);
+        addLineSpeed("line_speed.lan10", 1000, UNLIMITED);
+        addLineSpeed("line_speed.lan100", 10000, UNLIMITED);
+        addLineSpeed("line_speed.lan1000", 100000, UNLIMITED);
+        addLineSpeed("line_speed.unlimited", UNLIMITED, UNLIMITED);
+        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
+            addLineSpeed("line_speed.custom_speed", UNLIMITED, UNLIMITED, true);
+        } else {
+            defaultSpeed = addLineSpeed("line_speed.custom_speed", UNLIMITED,
+                    UNLIMITED, true);
+        }
     }
 
     /**
@@ -176,18 +185,24 @@ public class LineSpeedSelectionPanel extends JPanel {
      */
     public void loadWANSelection() {
         if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            addLineSpeed("line_speed.auto_speed", -1, 0);
+            defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
+                    UNLIMITED);
         }
-        addLineSpeed("line_speed.adsl128", 11, 0);
-        addLineSpeed("line_speed.adsl256", 23, 0);
-        addLineSpeed("line_speed.adsl512", 46, 0);
-        addLineSpeed("line_speed.adsl768", 69, 0);
-        addLineSpeed("line_speed.adsl1024", 128, 0);
-        addLineSpeed("line_speed.adsl1536", 192, 0);
-        addLineSpeed("line_speed.T1", 140, 0);
-        addLineSpeed("line_speed.T3", 3930, 0);
-        addLineSpeed("line_speed.unlimited", 0, 0);
-        defaultSpeed = addLineSpeed("line_speed.custom_speed", 0, 0, true);
+        addLineSpeed("line_speed.adsl128", 11, UNLIMITED);
+        addLineSpeed("line_speed.adsl256", 23, UNLIMITED);
+        addLineSpeed("line_speed.adsl512", 46, UNLIMITED);
+        addLineSpeed("line_speed.adsl768", 69, UNLIMITED);
+        addLineSpeed("line_speed.adsl1024", 128, UNLIMITED);
+        addLineSpeed("line_speed.adsl1536", 192, UNLIMITED);
+        addLineSpeed("line_speed.T1", 140, UNLIMITED);
+        addLineSpeed("line_speed.T3", 3930, UNLIMITED);
+        addLineSpeed("line_speed.unlimited", UNLIMITED, UNLIMITED);
+        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
+            addLineSpeed("line_speed.custom_speed", UNLIMITED, UNLIMITED, true);
+        } else {
+            defaultSpeed = addLineSpeed("line_speed.custom_speed", UNLIMITED,
+                    UNLIMITED, true);
+        }
     }
 
     /**
