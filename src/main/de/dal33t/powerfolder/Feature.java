@@ -21,8 +21,6 @@ package de.dal33t.powerfolder;
 
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.light.MemberInfo;
-
 /**
  * Available features to enable/disable. Primary for testing.
  * <p>
@@ -105,11 +103,6 @@ public enum Feature {
     START_TAB(false),
 
     /**
-     * TRAC #1962 For later use
-     */
-    REGION_SELECTOR(false),
-
-    /**
      * TRAC #1548 for 4.3.0 release
      */
     META_FOLDER(true),
@@ -127,20 +120,20 @@ public enum Feature {
     FOLDER_ATOMIC_COMMIT(false),
 
     /**
-     * Temporary for #656 development.
+     * Temporary for #2165 development.
      */
-    SYNC_SHUTDOWN(false);
+    AUTO_SPEED_DETECT(true);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
     private boolean defValue;
     private Boolean enabled;
 
-    private Feature(boolean enabled) {
+    Feature(boolean enabled) {
         defValue = enabled;
     }
 
-    private Feature() {
+    Feature() {
         this(true);
     }
 
