@@ -35,7 +35,7 @@ public class BandwidthLimiter {
 
     public static final long UNLIMITED = -1;
 
-    public static final BandwidthLimiter WAN_OUTPUT_BANDWIDTH_LIMITER = 
+    public static final BandwidthLimiter WAN_OUTPUT_BANDWIDTH_LIMITER =
             new BandwidthLimiter(BandwidthLimiterInfo.WAN_OUTPUT);
     public static final BandwidthLimiter WAN_INPUT_BANDWIDTH_LIMITER =
             new BandwidthLimiter(BandwidthLimiterInfo.WAN_INPUT);
@@ -56,7 +56,7 @@ public class BandwidthLimiter {
     private long available = UNLIMITED;
 
     private final Object monitor = new Object();
-    private BandwidthLimiterInfo id;
+    private final BandwidthLimiterInfo id;
 
     private BandwidthLimiter(BandwidthLimiterInfo id) {
         this.id = id;
@@ -145,5 +145,28 @@ public class BandwidthLimiter {
                 available += amount;
             }
 		}
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        BandwidthLimiter that = (BandwidthLimiter) obj;
+
+        if (id != that.id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 }

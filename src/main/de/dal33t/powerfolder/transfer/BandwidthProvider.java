@@ -40,6 +40,10 @@ public class BandwidthProvider extends Loggable {
 
     // ms between bandwidth "pushs"
     public static final int PERIOD = 1000;
+    public static final int AUTO_DEFAULT = 10240; // Default auto rate to 10kb/s
+
+    private long autoDetectLan = AUTO_DEFAULT;
+    private long autoDetectWan = AUTO_DEFAULT;
 
     private final Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
     private ScheduledExecutorService scheduledES;
@@ -66,9 +70,20 @@ public class BandwidthProvider extends Loggable {
                         // Set new limit and distribute the stat from the
                         // previous period.
                         Long value = me.getValue();
-                        BandwidthStat stat = limiter.setAvailable(
-                            value > 0 ? PERIOD * value / 1000 :
-                                    BandwidthLimiter.UNLIMITED);
+                        Long actualValue;
+                        if (value == 0) { // Unlimited
+                            // NOTE Unlimited is different in BandwidthLimiter. 
+                            actualValue = BandwidthLimiter.UNLIMITED; // -1
+                        } else if (value < 0) { // Autodetect
+                            if (limiter.getId().isLan()) {
+                                actualValue = PERIOD * autoDetectLan / 1000;
+                            } else {
+                                actualValue = PERIOD * autoDetectWan / 1000;
+                            }
+                        } else {
+                            actualValue = PERIOD * value / 1000;
+                        }
+                        BandwidthStat stat = limiter.setAvailable(actualValue);
                         statListenerSupport.handleBandwidthStat(stat);
                     }
                 }
@@ -87,34 +102,15 @@ public class BandwidthProvider extends Loggable {
      * 
      * @param limiter
      * @param bps
-     *            the number of bandwidth per second to apply. 0 will set the
-     *            limiter to unlimited bandwidth. If you want to stop granting
-     *            bandwidth, remove the limiter. If the parameter is negativ,
-     *            nothing happens.
+     * the number of bandwidth per second to apply.
+     * Zero will set the limiter to unlimited bandwidth.
+     * Negative will set the limiter to auto detect.
      */
     public void setLimitBPS(BandwidthLimiter limiter, long bps) {
-        if (bps >= 0) {
-            synchronized (limits) {
-                limits.put(limiter, bps);
-            }
-            logFiner("Bandwidth limiter initalized, max CPS: " + bps);
-        }
-    }
-
-    /**
-     * Returns the limit for a given limiter.
-     * 
-     * @param limiter
-     * @return the bps limit for the given limiter
-     */
-    public long getLimitBPS(BandwidthLimiter limiter) {
         synchronized (limits) {
-            try {
-                return limits.get(limiter);
-            } catch (NullPointerException npe) {
-                return -1;
-            }
+            limits.put(limiter, bps);
         }
+        logFiner("Bandwidth limiter initalized, max CPS: " + bps);
     }
 
     /**
@@ -130,6 +126,14 @@ public class BandwidthProvider extends Loggable {
         synchronized (limits) {
             limits.remove(limiter);
         }
+    }
+
+    public void setAutoDetectLan(long autoDetectLan) {
+        this.autoDetectLan = autoDetectLan;
+    }
+
+    public void setAutoDetectWan(long autoDetectWan) {
+        this.autoDetectWan = autoDetectWan;
     }
 
     public void addBandwidthStatListener(BandwidthStatsListener listener) {
