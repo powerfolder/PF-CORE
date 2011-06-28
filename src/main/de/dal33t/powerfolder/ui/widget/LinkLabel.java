@@ -98,7 +98,8 @@ public class LinkLabel extends PFComponent {
     }
 
     private void setText() {
-        if (StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text) || StringUtils.isBlank(url)) {
+            uiComponent.setText(null);
             return;
         }
         if (mouseOver

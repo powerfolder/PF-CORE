@@ -94,6 +94,16 @@ public class Help {
 
     /**
      * @param controller
+     * @return true if a wiki is available
+     */
+    public static boolean hasWiki(Controller controller) {
+        String wikiURL = ConfigurationEntry.PROVIDER_WIKI_URL
+            .getValue(controller);
+        return StringUtils.isNotBlank(wikiURL);
+    }
+
+    /**
+     * @param controller
      *            the controller.
      * @param article
      *            the article name, e.g. "Supernode"
@@ -102,8 +112,12 @@ public class Help {
      */
     public static String getWikiArticleURL(Controller controller, String article)
     {
-        return ConfigurationEntry.PROVIDER_WIKI_URL.getValue(controller) + '/'
-            + article;
+        String wikiURL = ConfigurationEntry.PROVIDER_WIKI_URL
+            .getValue(controller);
+        if (StringUtils.isBlank(wikiURL)) {
+            return null;
+        }
+        return wikiURL + '/' + article;
     }
 
     /**

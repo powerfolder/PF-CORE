@@ -234,7 +234,10 @@ public class PreferencesDialog extends BaseDialog {
                 helpAction();
             }
         };
-        return new JButton(action);
+        JButton b = new JButton(action);
+        b.setVisible(Help.hasWiki(getController()));
+        b.setEnabled(Help.hasWiki(getController()));
+        return b;
     }
 
     /**
