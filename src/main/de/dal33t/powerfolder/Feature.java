@@ -118,6 +118,11 @@ public enum Feature {
      * is 100% sync.
      */
     FOLDER_ATOMIC_COMMIT(false),
+    
+    /**
+     * TRAC #1962 For later use
+     */
+    REGION_SELECTOR(false),
 
     /**
      * Temporary for #2165 development.
