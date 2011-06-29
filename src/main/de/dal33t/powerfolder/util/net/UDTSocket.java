@@ -128,7 +128,6 @@ public class UDTSocket {
     private OutputStream out;
 
     // Used in native code!
-    @SuppressWarnings("unused")
     private int sock = -1;
 
     private InetSocketAddress remoteAddress;
@@ -145,7 +144,6 @@ public class UDTSocket {
     }
 
     // Used in native code!
-    @SuppressWarnings("unused")
     private UDTSocket(int sock) {
         this.sock = sock;
         connected = true;
