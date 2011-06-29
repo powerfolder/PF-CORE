@@ -67,6 +67,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
@@ -385,6 +386,24 @@ public class Account implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    /**
+     * Adds a line of info with the current date to the notes of that account.
+     * @param infoText
+     */
+    public void addNotesWithDate(String infoText) {
+        if (StringUtils.isBlank(infoText)) {
+            return;
+        }
+        String infoLine = Format.formatDateCanonical(new Date());
+        infoLine += ": ";
+        infoLine += infoText;
+        if (StringUtils.isBlank(notes)) {
+            setNotes(infoLine);
+        } else {
+            setNotes(notes + "\n" + infoLine);
+        }
     }
 
     public ServerInfo getServer() {
