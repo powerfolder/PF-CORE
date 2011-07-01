@@ -88,20 +88,28 @@ public class LineSpeedSelectionPanel extends JPanel {
         setOpaque(false);
 
         if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            customUploadSpeedSpinnerModel = new SpinnerNumberModel(0, -1, 999999, 1);
-            customDownloadSpeedSpinnerModel = new SpinnerNumberModel(0, -1, 999999, 1);
+            customUploadSpeedSpinnerModel =
+                    new SpinnerNumberModel(0, -1, 999999, 1);
+            customDownloadSpeedSpinnerModel =
+                    new SpinnerNumberModel(0, -1, 999999, 1);
         } else {
-            customUploadSpeedSpinnerModel = new SpinnerNumberModel(0, 0, 999999, 1);
-            customDownloadSpeedSpinnerModel = new SpinnerNumberModel(0, 0, 999999, 1);
+            customUploadSpeedSpinnerModel =
+                    new SpinnerNumberModel(0, 0, 999999, 1);
+            customDownloadSpeedSpinnerModel =
+                    new SpinnerNumberModel(0, 0, 999999, 1);
         }
-        customUploadSpeedSpinner = new JSpinner(customUploadSpeedSpinnerModel);
-        customDownloadSpeedSpinner = new JSpinner(customDownloadSpeedSpinnerModel);
+        customUploadSpeedSpinner =
+                new JSpinner(customUploadSpeedSpinnerModel);
+        customDownloadSpeedSpinner =
+                new JSpinner(customDownloadSpeedSpinnerModel);
 
         customUploadLabel = new JLabel();
         customDownloadLabel = new JLabel();
 
-        customUploadSpeedSpinnerModel.addChangeListener(new MyChangeListener(customUploadLabel));
-        customDownloadSpeedSpinnerModel.addChangeListener(new MyChangeListener(customDownloadLabel));
+        customUploadSpeedSpinnerModel.addChangeListener(new
+                MyChangeListener(customUploadLabel));
+        customDownloadSpeedSpinnerModel.addChangeListener(new
+                MyChangeListener(customDownloadLabel));
 
         speedSelectionBox = new JComboBox();
         speedSelectionBox.addActionListener(new ActionListener() {
@@ -322,7 +330,8 @@ public class LineSpeedSelectionPanel extends JPanel {
 
         customUploadSpeedSpinner.setValue(uploadSpeed);
         customDownloadSpeedSpinner.setValue(downloadSpeed);
-        if (((LineSpeed) speedSelectionBox.getSelectedItem()).getUploadSpeed() != uploadSpeed
+        if (((LineSpeed) speedSelectionBox.getSelectedItem()).getUploadSpeed()
+                != uploadSpeed
             || ((LineSpeed) speedSelectionBox.getSelectedItem())
                 .getDownloadSpeed() != downloadSpeed)
         {
@@ -418,7 +427,7 @@ public class LineSpeedSelectionPanel extends JPanel {
         }
     }
 
-    private class MyChangeListener implements ChangeListener {
+    private static class MyChangeListener implements ChangeListener {
 
         private final JLabel label;
 

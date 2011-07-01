@@ -21,15 +21,11 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.*;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -233,20 +229,20 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 1, row));
             builder.add(networkingMode, cc.xy(3, row));
 
-            if (!getController().isBackupOnly()) {
+            row += 2;
+            builder.add(pairPanel(relayedConnectionBox, udtConnectionBox),
+                    cc.xyw(3, row, 2));
+
+            if (getController().isBackupOnly()) {
                 row += 2;
-                builder.add(useOnlineStorageCB, cc.xyw(3, row, 2));
+                builder.add(ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
+                    cc.xy(3, row));
+            } else {
+                row += 2;
+                builder.add(pairPanel(useOnlineStorageCB,
+                        ButtonBarFactory.buildLeftAlignedBar(httpProxyButton)),
+                        cc.xyw(3, row, 2));
             }
-
-            row += 2;
-            builder.add(relayedConnectionBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(udtConnectionBox, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
-                cc.xy(3, row));
 
             row += 2;
             builder.addLabel(
@@ -280,6 +276,15 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             panel = builder.getPanel();
         }
         return panel;
+    }
+
+    private static Component pairPanel(JComponent left, JComponent right) {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(left, cc.xy(1, 1));
+        builder.add(right, cc.xy(3, 1));
+        return builder.getPanel();
     }
 
     /**
