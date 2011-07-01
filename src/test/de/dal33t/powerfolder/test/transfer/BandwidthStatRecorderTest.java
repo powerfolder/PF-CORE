@@ -50,9 +50,9 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
     public void testBasicStats() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
@@ -71,12 +71,12 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
     public void testStatsByDate() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
         cal.add(Calendar.HOUR, 1);
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
@@ -100,11 +100,11 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
     public void testStatsByInfo() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_UPLOAD, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_OUTPUT, 1001L, 107L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
 
         // Check that it coalesces stats.
@@ -128,12 +128,12 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
     public void testPrune() {
         Calendar cal = Calendar.getInstance();
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1000L, 101L));
+                BandwidthLimiterInfo.LAN_INPUT, 1000L, 101L));
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 1001L, 107L));
+                BandwidthLimiterInfo.LAN_INPUT, 1001L, 107L));
         cal.add(Calendar.HOUR, 2);
         recorder.handleBandwidthStat(new BandwidthStat(cal.getTime(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 999L, 99L));
+                BandwidthLimiterInfo.LAN_INPUT, 999L, 99L));
 
         // Check that it coalesces stats.
         Set<CoalescedBandwidthStat> set = recorder.getBandwidthStats();
@@ -156,7 +156,7 @@ public class BandwidthStatRecorderTest extends ControllerTestCase {
 
     public void testSyntheticFields() {
         CoalescedBandwidthStat stat = new CoalescedBandwidthStat(new Date(),
-                BandwidthLimiterInfo.LAN_DOWNLOAD, 5432L, 3453, 40, 7);
+                BandwidthLimiterInfo.LAN_INPUT, 5432L, 3453, 40, 7);
         assertEquals("Bad used bandwidth", 1979, stat.getUsedBandwidth());
         assertEquals("Bad percent used bandwidth", 36.43225331369661,
                 stat.getPercentageUsedBandwidth());
