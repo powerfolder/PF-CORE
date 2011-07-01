@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -53,6 +55,8 @@ public class LineSpeedSelectionPanel extends JPanel {
     private JSpinner customDownloadSpeedSpinner;
     private LineSpeed defaultSpeed;
     private boolean alwaysShowCustomEntryPanels;
+    private JLabel customUploadLabel;
+    private JLabel customDownloadLabel;
 
     /**
      * Constructs a new LineSpeedSelectionPanel.
@@ -93,6 +97,12 @@ public class LineSpeedSelectionPanel extends JPanel {
         customUploadSpeedSpinner = new JSpinner(customUploadSpeedSpinnerModel);
         customDownloadSpeedSpinner = new JSpinner(customDownloadSpeedSpinnerModel);
 
+        customUploadLabel = new JLabel();
+        customDownloadLabel = new JLabel();
+
+        customUploadSpeedSpinnerModel.addChangeListener(new MyChangeListener(customUploadLabel));
+        customDownloadSpeedSpinnerModel.addChangeListener(new MyChangeListener(customDownloadLabel));
+
         speedSelectionBox = new JComboBox();
         speedSelectionBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -101,6 +111,8 @@ public class LineSpeedSelectionPanel extends JPanel {
                 {
                     customUploadSpeedSpinner.setEnabled(true);
                     customDownloadSpeedSpinner.setEnabled(true);
+                    customUploadLabel.setEnabled(true);
+                    customDownloadLabel.setEnabled(true);
                     if (!alwaysShowCustomEntryPanels) {
                         customSpeedPanel.setVisible(true);
                     }
@@ -108,6 +120,8 @@ public class LineSpeedSelectionPanel extends JPanel {
                 } else {
                     customUploadSpeedSpinner.setEnabled(false);
                     customDownloadSpeedSpinner.setEnabled(false);
+                    customUploadLabel.setEnabled(false);
+                    customDownloadLabel.setEnabled(false);
                     if (!alwaysShowCustomEntryPanels) {
                         customSpeedPanel.setVisible(false);
                     }
@@ -144,14 +158,12 @@ public class LineSpeedSelectionPanel extends JPanel {
         builder.add(new JLabel(Translation
             .getTranslation("line_speed.download_speed")), cc.xy(1, 1));
         builder.add(customDownloadSpeedSpinner, cc.xy(3, 1));
-        builder.add(new JLabel(Translation.getTranslation("general.kbPerS")),
-                cc.xy(5, 1));
+        builder.add(customDownloadLabel, cc.xy(5, 1));
 
         builder.add(new JLabel(Translation
             .getTranslation("line_speed.upload_speed")), cc.xy(1, 3));
         builder.add(customUploadSpeedSpinner, cc.xy(3, 3));
-        builder.add(new JLabel(Translation.getTranslation("general.kbPerS")), 
-                cc.xy(5, 3));
+        builder.add(customUploadLabel, cc.xy(5, 3));
 
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
@@ -333,7 +345,8 @@ public class LineSpeedSelectionPanel extends JPanel {
      * @return The download speed in kb/s or AUTO_DETECT if an error occured
      */
     public long getDownloadSpeedKBPS() {
-            return customDownloadSpeedSpinnerModel.getNumber().longValue() * 1024;
+            return customDownloadSpeedSpinnerModel.getNumber().longValue() *
+                    1024;
     }
 
     @Override
@@ -342,7 +355,21 @@ public class LineSpeedSelectionPanel extends JPanel {
         speedSelectionBox.setEnabled(enabled);
         customUploadSpeedSpinner.setEnabled(enabled);
         customDownloadSpeedSpinner.setEnabled(enabled);
+        customUploadLabel.setEnabled(enabled);
+        customDownloadLabel.setEnabled(enabled);
         super.setEnabled(enabled);
+    }
+
+    private static void updateLabel(JLabel label, long lng) {
+        if (lng == -1) {
+            label.setText('(' +
+                    Translation.getTranslation("line_speed.auto_speed") + ')');
+        } else if (lng == 0) {
+            label.setText('(' +
+                    Translation.getTranslation("line_speed.unlimited") + ')');
+        } else {
+            label.setText(Translation.getTranslation("general.kbPerS"));
+        }
     }
 
     // Inner classes **********************************************************
@@ -388,6 +415,21 @@ public class LineSpeedSelectionPanel extends JPanel {
 
         public long getDownloadSpeed() {
             return downloadSpeed;
+        }
+    }
+
+    private class MyChangeListener implements ChangeListener {
+
+        private final JLabel label;
+
+        private MyChangeListener(JLabel label) {
+            this.label = label;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            long lng = model.getNumber().longValue();
+            updateLabel(label, lng);
         }
     }
 }
