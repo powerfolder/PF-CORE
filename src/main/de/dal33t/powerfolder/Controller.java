@@ -845,10 +845,14 @@ public class Controller extends PFComponent {
      */
     private void setupPeriodicalTasks() {
 
+        // ============
         // Test the connectivity after a while.
+        // ============
         LimitedConnectivityChecker.install(this);
 
-        // Schedule a task to do housekeeping every day.
+        // ============
+        // Schedule a task to do housekeeping every day, just after midnight.
+        // ============
         Calendar cal = new GregorianCalendar();
         long now = cal.getTime().getTime();
 
@@ -871,7 +875,7 @@ public class Controller extends PFComponent {
             public void run() {
                 performHousekeeping(true);
             }
-        }, secondsToMidnight, 24 * 3600, TimeUnit.SECONDS);
+        }, secondsToMidnight, 1, TimeUnit.DAYS);
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(new TimerTask() {
@@ -880,22 +884,57 @@ public class Controller extends PFComponent {
             }
         }, 1, TimeUnit.MINUTES);
 
+        // ============
         // Do profiling
+        // ============
         if (Profiling.ENABLED) {
             threadPool.scheduleWithFixedDelay(new TimerTask() {
                 @Override
                 public void run() {
                     logFine(Profiling.dumpStats());
                 }
-            }, 0, 60L, TimeUnit.SECONDS);
+            }, 0, 1, TimeUnit.MINUTES);
         }
 
+        // ============
         // Monitor the default directory for possible new folders.
+        // ============
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 folderRepository.lookForNewFolders();
             }
         }, 1L, 1L, TimeUnit.MINUTES);
+
+        // ============
+        // Hourly tasks
+        // ============
+        threadPool.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                performHourly();
+            }
+        }, 1, 60, TimeUnit.MINUTES);
+
+    }
+
+    /**
+     * These tasks get performed every hour.
+     */
+    private void performHourly() {
+        recalculateAutomaticRate();
+    }
+
+    /**
+     * Recalculate the up/download bandwidth auto limit.
+     */
+    private void recalculateAutomaticRate() {
+        Date startDate = new Date();
+        // @todo Upload some shit.
+        Date afterUpload = new Date();
+        // @todo Download some shit.
+        Date afterDownload = new Date();
+
+        long uploadTime = afterUpload.getTime() - startDate.getTime();
+        long downloadTime = afterDownload.getTime() - afterUpload.getTime();
     }
 
     /**
