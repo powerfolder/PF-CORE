@@ -317,7 +317,13 @@ public class LineSpeedSelectionPanel extends JPanel {
      */
     public void setSpeedKBPS(long uploadSpeed, long downloadSpeed) {
         // Find the "best" item to select for the given speed
-        // if none matches, falls thru tu "Custom"
+        // if none matches, falls thru to "Custom"
+        if (Feature.AUTO_SPEED_DETECT.isDisabled() && uploadSpeed == -1) {
+            uploadSpeed = 0;
+        }
+        if (Feature.AUTO_SPEED_DETECT.isDisabled() && downloadSpeed == -1) {
+            downloadSpeed = 0;
+        }
         for (int i = 0; i < speedSelectionBox.getItemCount(); i++) {
             LineSpeed ls = (LineSpeed) speedSelectionBox.getItemAt(i);
             if (ls.getUploadSpeed() == uploadSpeed
