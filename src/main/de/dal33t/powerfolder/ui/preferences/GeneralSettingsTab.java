@@ -233,7 +233,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             case 365:
                 archiveCleanupCombo.setSelectedIndex(3);
                 break;
-            case 2147483647:
+            case Integer.MAX_VALUE:
                 archiveCleanupCombo.setSelectedIndex(4);
                 break;
         }
@@ -433,7 +433,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 break;
             case 4: // never
                 ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
-                        2147483647);
+                        Integer.MAX_VALUE);
                 break;
         }
 

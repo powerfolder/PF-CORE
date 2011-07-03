@@ -4322,8 +4322,8 @@ public class Folder extends PFComponent {
     /**
      * Delete any file archives over a specified age.
      */
-    public void cleanupOldArchiveFiles(int period) {
-        archiver.cleanupOldArchiveFiles(period);
+    public void cleanupOldArchiveFiles(Date cleanupDate) {
+        archiver.cleanupOldArchiveFiles(cleanupDate);
     }
 
     // Inner classes **********************************************************

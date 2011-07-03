@@ -24,16 +24,7 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -1284,12 +1275,18 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void cleanupOldArchiveFiles() {
         int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
                 getController());
+        if (period == Integer.MAX_VALUE) {
+            return;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -period);
+        Date cleanupDate = cal.getTime();
         for (Folder folder : getFolders()) {
-            folder.cleanupOldArchiveFiles(period);
+            folder.cleanupOldArchiveFiles(cleanupDate);
         }
     }
 
-    private final class CheckSyncTask implements Runnable {
+    private class CheckSyncTask implements Runnable {
         public void run() {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())

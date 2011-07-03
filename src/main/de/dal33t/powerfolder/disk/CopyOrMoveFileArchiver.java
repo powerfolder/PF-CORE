@@ -408,9 +408,31 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
     /**
      * Delete archives older that a specified number of days.
      *
-     * @param period Age in days of archive files to delete.
+     * @param cleanupDate Age in days of archive files to delete.
      */
-    public void cleanupOldArchiveFiles(int period) {
-        // @todo hghg cleanup
+    public void cleanupOldArchiveFiles(Date cleanupDate) {
+        log.info("Cleaning up " + archiveDirectory + " for files older than " +
+                cleanupDate);
+        
+        cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
     }
+
+    private static void cleanupOldArchiveFiles(File file, Date cleanupDate) {
+        if (file.isDirectory()) {
+            for (File file1 : file.listFiles()) {
+                cleanupOldArchiveFiles(file1, cleanupDate);
+            }
+        } else {
+            Date age = new Date(file.lastModified());
+            if(age.before(cleanupDate)) {
+                log.info("Deleting old archive file " + file + " (" + age + ')');
+                try {
+                    file.delete();
+                } catch (SecurityException e) {
+                    log.severe("Could not delete archive file " + file);
+                }
+            }
+        }
+    }
+
 }

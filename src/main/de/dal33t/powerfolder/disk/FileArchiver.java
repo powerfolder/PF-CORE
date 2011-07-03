@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Date;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -104,7 +105,9 @@ public interface FileArchiver {
     void purge() throws IOException;
 
     /**
-     * Delete any file archives over a specified age.
+     * Delete archives older that a specified number of days.
+     *
+     * @param cleanupDate Age in days of archive files to delete.
      */
-    void cleanupOldArchiveFiles(int period);
+    void cleanupOldArchiveFiles(Date cleanupDate);
 }

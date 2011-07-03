@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Date;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.ArchiveMode;
@@ -77,7 +78,7 @@ public class NullFileArchiver implements FileArchiver {
         return false;
     }
 
-    public void cleanupOldArchiveFiles(int period) {
+    public void cleanupOldArchiveFiles(Date cleanupDate) {
         // Nothing to do
     }
 }
