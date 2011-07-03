@@ -76,4 +76,8 @@ public class NullFileArchiver implements FileArchiver {
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         return false;
     }
+
+    public void cleanupOldArchiveFiles(int period) {
+        // Nothing to do
+    }
 }

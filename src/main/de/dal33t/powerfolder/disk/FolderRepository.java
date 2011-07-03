@@ -1278,6 +1278,17 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings.removeEntries(config, folderEntryId);
     }
 
+    /**
+     * Delete any file archives over a specified age.
+     */
+    public void cleanupOldArchiveFiles() {
+        int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
+                getController());
+        for (Folder folder : getFolders()) {
+            folder.cleanupOldArchiveFiles(period);
+        }
+    }
+
     private final class CheckSyncTask implements Runnable {
         public void run() {
             for (Folder folder : getController().getFolderRepository()

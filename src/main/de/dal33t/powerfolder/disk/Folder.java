@@ -4319,6 +4319,13 @@ public class Folder extends PFComponent {
         metaFolder.scanChangedFile(fInfo);
     }
 
+    /**
+     * Delete any file archives over a specified age.
+     */
+    public void cleanupOldArchiveFiles(int period) {
+        archiver.cleanupOldArchiveFiles(period);
+    }
+
     // Inner classes **********************************************************
 
     /**

@@ -405,4 +405,12 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
         size = 0L;
     }
 
+    /**
+     * Delete archives older that a specified number of days.
+     *
+     * @param period Age in days of archive files to delete.
+     */
+    public void cleanupOldArchiveFiles(int period) {
+        // @todo hghg cleanup
+    }
 }

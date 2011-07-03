@@ -102,4 +102,9 @@ public interface FileArchiver {
     boolean maintain();
 
     void purge() throws IOException;
+
+    /**
+     * Delete any file archives over a specified age.
+     */
+    void cleanupOldArchiveFiles(int period);
 }

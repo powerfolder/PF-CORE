@@ -269,7 +269,6 @@ public class Controller extends PFComponent {
     private boolean limitedConnectivity;
 
     private Controller() {
-        super();
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
         Security.setProperty("networkaddress.cache.negative.ttl", "0");
@@ -978,6 +977,9 @@ public class Controller extends PFComponent {
 
         // Prune stats.
         transferManager.pruneStats();
+
+        // Cleanup old archives.
+        folderRepository.cleanupOldArchiveFiles();
     }
 
     /**
