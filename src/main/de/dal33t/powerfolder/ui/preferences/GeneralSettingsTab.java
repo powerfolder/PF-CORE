@@ -26,12 +26,7 @@ import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -75,11 +70,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox backupOnlyClientBox;
 
     private JCheckBox usePowerFolderIconBox;
-    private JCheckBox usePowerFolderLink;
 
     private ArchiveModeSelectorPanel archiveModeSelectorPanel;
     private ValueModel modeModel;
     private ValueModel versionModel;
+
+    private JComboBox archiveCleanupCombo;
 
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
@@ -197,12 +193,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     new BufferedValueModel(pfiModel, writeTrigger), Translation
                         .getTranslation("preferences.dialog.use_pf_icon"));
 
-                ValueModel pflModel = new ValueHolder(
-                    ConfigurationEntry.USE_PF_LINK
-                        .getValueBoolean(getController()));
-                usePowerFolderLink = BasicComponentFactory.createCheckBox(
-                    new BufferedValueModel(pflModel, writeTrigger), Translation
-                        .getTranslation("preferences.dialog.show_pf_link"));
             }
         }
 
@@ -215,6 +205,18 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getValue(getController())),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
                 .getValueInt(getController()));
+
+        archiveCleanupCombo = new JComboBox();
+        archiveCleanupCombo.addItem(Translation.getTranslation(
+                "preferences.dialog.archive_cleanup_day")); // 1
+        archiveCleanupCombo.addItem(Translation.getTranslation(
+                "preferences.dialog.archive_cleanup_week")); // 7
+        archiveCleanupCombo.addItem(Translation.getTranslation(
+                "preferences.dialog.archive_cleanup_month")); // 31
+        archiveCleanupCombo.addItem(Translation.getTranslation(
+                "preferences.dialog.archive_cleanup_year")); // 365
+        archiveCleanupCombo.addItem(Translation.getTranslation(
+                "preferences.dialog.archive_cleanup_never")); // 2147483647
 
         folderSyncCB = new JCheckBox(
             Translation
@@ -255,7 +257,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -293,13 +295,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2;
                 builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
 
-                // Links only available in Vista
-                if (OSUtil.isWindowsVistaSystem()) {
-                    builder.appendRow("3dlu");
-                    builder.appendRow("pref");
-                    row += 2;
-                    builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
-                }
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
@@ -322,33 +317,41 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder
-                .add(
-                    new JLabel(
-                        Translation
-                            .getTranslation("preferences.dialog.mass_delete_threshold")),
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.mass_delete_threshold")),
                     cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
-            builder
-                .add(
-                    new JLabel(
-                        Translation
-                            .getTranslation("preferences.dialog.default_archive_mode.text")),
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
             builder.add(archiveModeSelectorPanel.getUIComponent(),
                 cc.xyw(3, row, 2));
+
+            row += 2;
+            builder.add(new JLabel(Translation.getTranslation(
+                    "preferences.dialog.archive_cleanup")),
+                    cc.xy(1, row));
+            builder.add(pref(archiveCleanupCombo), cc.xy(3, row));
 
             row += 2;
             builder.add(folderSyncCB, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(folderSyncLabel, cc.xy(1, row));
-            builder.add(getFolderSpinnerPanel(), cc.xy(3, row));
+            builder.add(folderSyncSlider, cc.xy(3, row));
             panel = builder.getPanel();
         }
         return panel;
+    }
+
+    private static Component pref(Component component) {
+        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(component, cc.xy(1, 1));
+        return builder.getPanel();
     }
 
     public void undoChanges() {
@@ -364,15 +367,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private void doFolderChangeEvent() {
         folderSyncLabel.setEnabled(folderSyncCB.isSelected());
         folderSyncSlider.setEnabled(folderSyncCB.isSelected());
-    }
-
-    private Component getFolderSpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
-
-        CellConstraints cc = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.add(folderSyncSlider, cc.xy(1, 1));
-        return builder.getPanel();
     }
 
     public void save() {
@@ -413,14 +407,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 Boolean.toString(usePowerFolderIconBox.isSelected()));
         }
 
-        if (usePowerFolderLink != null) {
-            newValue = usePowerFolderLink.isSelected();
-            configureFavorite(newValue);
-            // PowerFolder favorite
-            ConfigurationEntry.USE_PF_LINK.setValue(getController(),
-                Boolean.toString(usePowerFolderLink.isSelected()));
-        }
-
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
             massDeleteBox.isSelected());
         ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
@@ -454,17 +440,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     logWarning("IOException", e);
                 }
             }
-        }
-    }
-
-    private void configureFavorite(boolean newValue) {
-        if (!WinUtils.isSupported()) {
-            return;
-        }
-        try {
-            WinUtils.getInstance().setPFFavorite(newValue, getController());
-        } catch (IOException e) {
-            logSevere(e);
         }
     }
 

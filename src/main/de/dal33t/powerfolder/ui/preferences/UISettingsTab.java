@@ -79,6 +79,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JSlider transPercSlider;
     private int originalInline;
     private JCheckBox updateCheck;
+    private JCheckBox usePowerFolderLink;
 
     private JLabel skinLabel;
     private JComboBox skinCombo;
@@ -252,6 +253,14 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                         }
                     });
             }
+
+            ValueModel pflModel = new ValueHolder(
+                ConfigurationEntry.USE_PF_LINK
+                    .getValueBoolean(getController()));
+            usePowerFolderLink = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(pflModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.show_pf_link"));
+
         }
 
         if (getUIController().getSkins().length > 1) {
@@ -310,7 +319,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -334,6 +343,14 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
                 row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
+
+            // Links only available in Vista
+            if (OSUtil.isWindowsVistaSystem()) {
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderLink, cc.xyw(3, row, 2));
+            }
 
             row += 2;
             builder.add(minToSysTrayCB, cc.xy(3, row));
@@ -431,6 +448,14 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             needsRestart = true;
         }
 
+        if (usePowerFolderLink != null) {
+            boolean newValue = usePowerFolderLink.isSelected();
+            configureFavorite(newValue);
+            // PowerFolder favorite
+            ConfigurationEntry.USE_PF_LINK.setValue(getController(),
+                Boolean.toString(usePowerFolderLink.isSelected()));
+        }
+
         // Use inline info
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
             inlineInfoCombo.getSelectedIndex());
@@ -463,6 +488,17 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                     (String) skinCombo.getSelectedItem());
                 needsRestart = true;
             }
+        }
+    }
+
+    private void configureFavorite(boolean newValue) {
+        if (!WinUtils.isSupported()) {
+            return;
+        }
+        try {
+            WinUtils.getInstance().setPFFavorite(newValue, getController());
+        } catch (IOException e) {
+            logSevere(e);
         }
     }
 
