@@ -217,6 +217,26 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 "preferences.dialog.archive_cleanup_year")); // 365
         archiveCleanupCombo.addItem(Translation.getTranslation(
                 "preferences.dialog.archive_cleanup_never")); // 2147483647
+        int cleanup = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
+                getController());
+        switch (cleanup) {
+            case 1:
+                archiveCleanupCombo.setSelectedIndex(0);
+                break;
+            case 7:
+                archiveCleanupCombo.setSelectedIndex(1);
+                break;
+            case 31:
+            default:
+                archiveCleanupCombo.setSelectedIndex(2);
+                break;
+            case 365:
+                archiveCleanupCombo.setSelectedIndex(3);
+                break;
+            case 2147483647:
+                archiveCleanupCombo.setSelectedIndex(4);
+                break;
+        }
 
         folderSyncCB = new JCheckBox(
             Translation
@@ -326,14 +346,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation.getTranslation(
                     "preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
-            builder.add(archiveModeSelectorPanel.getUIComponent(),
+            builder.add(threePanel(archiveModeSelectorPanel.getUIComponent(),
+                    new JLabel(Translation.getTranslation(
+                            "preferences.dialog.archive_cleanup")),
+                            archiveCleanupCombo),
                 cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.archive_cleanup")),
-                    cc.xy(1, row));
-            builder.add(pref(archiveCleanupCombo), cc.xy(3, row));
 
             row += 2;
             builder.add(folderSyncCB, cc.xyw(3, row, 2));
@@ -346,11 +363,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return panel;
     }
 
-    private static Component pref(Component component) {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
+    private static Component threePanel(Component component1,
+                                        Component component2,
+                                        Component component3) {
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref",
+                "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
-        builder.add(component, cc.xy(1, 1));
+        builder.add(component1, cc.xy(1, 1));
+        builder.add(component2, cc.xy(3, 1));
+        builder.add(component3, cc.xy(5, 1));
         return builder.getPanel();
     }
 
@@ -390,6 +412,29 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
                 getController(), newValue);
             getUIController().configureDesktopShortcut(false);
+        }
+
+        int index = archiveCleanupCombo.getSelectedIndex();
+        switch (index) {
+            case 0: // 1 day
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(), 1);
+                break;
+            case 1: // 1 week
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(), 7);
+                break;
+            case 2: // 1 month
+            default:
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
+                        31);
+                break;
+            case 3: // 1 year
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
+                        365);
+                break;
+            case 4: // never
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
+                        2147483647);
+                break;
         }
 
         // set bu only

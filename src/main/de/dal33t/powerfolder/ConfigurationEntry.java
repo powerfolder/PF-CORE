@@ -787,7 +787,13 @@ public enum ConfigurationEntry {
         SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
     /** Whether to automatiaclly accept folder invites. */
-    AUTO_ACCEPT_INVITE("auto.accept.invite", false);
+    AUTO_ACCEPT_INVITE("auto.accept.invite", false),
+
+    /**
+     * How many days before an archive file is cleaned up.
+     * Values 1, 7, 31, 365, 2147483647 (== never)
+     */
+    ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31);
 
     // Methods/Constructors ***************************************************
 
