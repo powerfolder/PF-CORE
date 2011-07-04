@@ -114,7 +114,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.7.6"; // 3.0.23
+    public static final String PROGRAM_VERSION = "4.7.7 - 3.5.0";
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -979,7 +979,9 @@ public class Controller extends PFComponent {
         transferManager.pruneStats();
 
         // Cleanup old archives.
-        folderRepository.cleanupOldArchiveFiles();
+        if (midnightRun) {
+            folderRepository.cleanupOldArchiveFiles();
+        }
     }
 
     /**
