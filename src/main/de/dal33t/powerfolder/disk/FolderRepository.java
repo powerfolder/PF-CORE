@@ -1275,7 +1275,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void cleanupOldArchiveFiles() {
         int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
                 getController());
-        if (period == Integer.MAX_VALUE) {
+        if (period == Integer.MAX_VALUE) { // cleanup := never
             return;
         }
         Calendar cal = Calendar.getInstance();

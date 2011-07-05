@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.preferences;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -45,6 +46,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -76,6 +78,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private ValueModel versionModel;
 
     private JComboBox archiveCleanupCombo;
+    private Action cleanupAction;
 
     private JCheckBox folderSyncCB;
     private JLabel folderSyncLabel;
@@ -238,6 +241,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 break;
         }
 
+        cleanupAction = new MyCleanupAction(getController());
+
         folderSyncCB = new JCheckBox(
             Translation
                 .getTranslation("preferences.dialog.folder_sync_warn.use"));
@@ -346,10 +351,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(new JLabel(Translation.getTranslation(
                     "preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
-            builder.add(threePanel(archiveModeSelectorPanel.getUIComponent(),
+            builder.add(fourPanel(archiveModeSelectorPanel.getUIComponent(),
                     new JLabel(Translation.getTranslation(
                             "preferences.dialog.archive_cleanup")),
-                            archiveCleanupCombo),
+                            archiveCleanupCombo,
+                    new JButton(cleanupAction)),
                 cc.xyw(3, row, 2));
 
             row += 2;
@@ -363,16 +369,19 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return panel;
     }
 
-    private static Component threePanel(Component component1,
+    private static Component fourPanel(Component component1,
                                         Component component2,
-                                        Component component3) {
-        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu, pref",
+                                        Component component3,
+                                        Component component4) {
+        FormLayout layout = new FormLayout(
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
                 "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(component1, cc.xy(1, 1));
         builder.add(component2, cc.xy(3, 1));
         builder.add(component3, cc.xy(5, 1));
+        builder.add(component4, cc.xy(7, 1));
         return builder.getPanel();
     }
 
@@ -488,6 +497,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
     }
 
+    // ////////////////
+    // Inner classes //
+    // ////////////////
+
     private class MassDeleteItemListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
             enableMassDeleteSlider();
@@ -497,6 +510,21 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private class FolderChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
             doFolderChangeEvent();
+        }
+    }
+
+    private static class MyCleanupAction extends BaseAction {
+
+        private MyCleanupAction(Controller controller) {
+            super("action_cleanup_archive", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    getController().getFolderRepository().cleanupOldArchiveFiles();
+                }
+            });
         }
     }
 
