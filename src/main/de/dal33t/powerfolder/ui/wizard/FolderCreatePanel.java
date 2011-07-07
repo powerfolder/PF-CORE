@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
@@ -138,13 +137,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             boolean previewFolder = false;
             if (attribute != null && attribute instanceof Boolean) {
                 previewFolder = (Boolean) attribute;
-            }
-
-            // Create desktop shortcut
-            attribute = getWizardContext().getAttribute(CREATE_DESKTOP_SHORTCUT);
-            boolean createDesktopShortcut = false;
-            if (attribute != null && attribute instanceof Boolean) {
-                createDesktopShortcut = (Boolean) attribute;
             }
 
             // Online storage
@@ -291,9 +283,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     .createFolder(folderInfo, folderSettings);
 
                 folder.addDefaultExcludes();
-                if (createDesktopShortcut) {
-                    folder.setDesktopShortcut(true);
-                }
                 createShortcutToFolder(folderInfo, folderSettings);
 
                 folders.add(folder);

@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.CREATE_DESKTOP_SHORTCUT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
@@ -224,7 +223,6 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
 
         getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
-        getWizardContext().setAttribute(CREATE_DESKTOP_SHORTCUT, false);
 
         // Don't allow send after if 2 or more folders.
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,

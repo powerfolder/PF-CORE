@@ -172,8 +172,6 @@ public abstract class TwoControllerTestCase extends TestCase {
         waitForStart(controllerBart);
         assertNotNull(controllerBart.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controllerBart);
-        controllerBart.getPreferences().putBoolean("createdesktopshortcuts",
-            false);
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerBart,
             false);
     }
@@ -185,8 +183,6 @@ public abstract class TwoControllerTestCase extends TestCase {
         waitForStart(controllerLisa);
         assertNotNull(controllerLisa.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controllerLisa);
-        controllerLisa.getPreferences().putBoolean("createdesktopshortcuts",
-            false);
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controllerLisa,
             false);
     }

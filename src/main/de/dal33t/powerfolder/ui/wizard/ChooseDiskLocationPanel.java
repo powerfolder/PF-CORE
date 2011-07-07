@@ -149,8 +149,6 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         getWizardContext().setAttribute(
             WizardContextAttributes.BACKUP_ONLINE_STOARGE,
             backupByOnlineStorageBox.isSelected());
-        getWizardContext().setAttribute(
-            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT, false);
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
             sendInviteAfterCB.isSelected());
 

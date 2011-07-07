@@ -1840,10 +1840,6 @@ public class Folder extends PFComponent {
      * @return true if succeeded
      */
     public boolean setDesktopShortcut(boolean active) {
-        // boolean createRequested =
-        // getController().getPreferences().getBoolean(
-        // "createdesktopshortcuts", !getController().isConsoleMode());
-
         String shortCutName = getName();
         if (getController().isVerbose()) {
             shortCutName = '[' + getController().getMySelf().getNick() + "] "
@@ -1864,12 +1860,6 @@ public class Folder extends PFComponent {
      * Deletes the desktop shortcut of the folder if set in prefs.
      */
     public void removeDesktopShortcut() {
-        boolean createShortCuts = getController().getPreferences().getBoolean(
-            "createdesktopshortcuts", !getController().isConsoleMode());
-        if (!createShortCuts) {
-            return;
-        }
-
         String shortCutName = getName();
         if (getController().isVerbose()) {
             shortCutName = '[' + getController().getMySelf().getNick() + "] "

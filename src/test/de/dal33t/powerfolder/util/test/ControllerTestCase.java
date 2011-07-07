@@ -83,7 +83,6 @@ public abstract class ControllerTestCase extends TestCase {
         waitForStart(controller);
         // Wait for initial maintenance
         // triggerAndWaitForInitialMaitenenace(controller);
-        controller.getPreferences().putBoolean("createdesktopshortcuts", false);
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
 
         System.out.println("Controller started");

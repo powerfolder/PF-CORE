@@ -140,9 +140,6 @@ public class PFWizard extends PFUIComponent {
             WizardContextAttributes.FOLDER_INFOS, folderInfoList);
 
         wizard.getWizardContext().setAttribute(
-            WizardContextAttributes.CREATE_DESKTOP_SHORTCUT, false);
-
-        wizard.getWizardContext().setAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
         // Setup success panel of this wizard path

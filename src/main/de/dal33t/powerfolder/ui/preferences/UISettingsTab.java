@@ -394,7 +394,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
                 row += 2;
                 builder.add(transPercLabel, cc.xy(1, row));
-                builder.add(getTransSpinnerPanel(), cc.xy(3, row));
+                builder.add(transPercSlider, cc.xy(3, row));
             }
 
             panel = builder.getPanel();
@@ -407,15 +407,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private void enableTransPerc() {
         transPercLabel.setEnabled(translucentMainFrameCB.isSelected());
         transPercSlider.setEnabled(translucentMainFrameCB.isSelected());
-    }
-
-    private Component getTransSpinnerPanel() {
-        FormLayout layout = new FormLayout("pref, pref:grow", "pref");
-
-        CellConstraints cc = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout);
-        builder.add(transPercSlider, cc.xy(1, 1));
-        return builder.getPanel();
     }
 
     public void save() {

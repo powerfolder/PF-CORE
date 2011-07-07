@@ -32,7 +32,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
-import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.BufferedValueModel;
 import com.jgoodies.binding.value.Trigger;
 import com.jgoodies.binding.value.ValueHolder;
@@ -59,7 +58,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JPanel panel;
     private JTextField nickField;
     private JCheckBox createPowerFoldersDesktopShortcutsBox;
-    private JCheckBox createDesktopShortcutsBox;
 
     private JCheckBox startWithWindowsBox;
 
@@ -165,14 +163,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
-
-            ValueModel csModel = new PreferencesAdapter(getController()
-                .getPreferences(), "createdesktopshortcuts", Boolean.TRUE);
-            createDesktopShortcutsBox = BasicComponentFactory
-                .createCheckBox(
-                    new BufferedValueModel(csModel, writeTrigger),
-                    Translation
-                        .getTranslation("preferences.dialog.create_desktop_shortcuts"));
 
             boolean createPowerFoldersDesktopShortcut = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
                 .getValueBoolean(getController());
@@ -301,8 +291,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             if (OSUtil.isWindowsSystem()) { // Windows System
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
-                row += 2;
-                builder.add(createDesktopShortcutsBox, cc.xyw(3, row, 2));
 
                 row += 2;
                 builder.add(createPowerFoldersDesktopShortcutsBox,

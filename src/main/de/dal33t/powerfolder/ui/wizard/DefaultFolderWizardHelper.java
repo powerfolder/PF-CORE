@@ -138,9 +138,8 @@ public class DefaultFolderWizardHelper extends PFUIPanel {
 
             // Redirect via folder create of the default sync folder.
             context.setAttribute(
-                WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER, true);
+                SET_DEFAULT_SYNCHRONIZED_FOLDER, true);
             context.setAttribute(FOLDERINFO_ATTRIBUTE, foInfo);
-            context.setAttribute(CREATE_DESKTOP_SHORTCUT, false);
             context.setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
             context.setAttribute(SUCCESS_PANEL, nextPanel);
             context.setAttribute(SYNC_PROFILE_ATTRIBUTE,
