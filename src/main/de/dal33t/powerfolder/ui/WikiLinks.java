@@ -25,13 +25,14 @@ package de.dal33t.powerfolder.ui;
  */
 public interface WikiLinks {
 
-    String SETTINGS_GENERAL = "Settings-General";
-    String SETTINGS_UI = "Settings-UI";
-    String SETTINGS_NETWORK = "Settings-Network";
-    String SETTINGS_DIALOG = "Settings-Dialog";
-    String SETTINGS_DYN_DNS = "DYN-Dns";
-    String SETTINGS_ADVANCED = "Settings-Advanced";
-    String SETTINGS_PLUGIN = "Settings-Plugin";
+    String SETTINGS_GENERAL = "General";
+    String SETTINGS_UI = "User_Interface";
+    String SETTINGS_NETWORK = "Network";
+    String SETTINGS_DYN_DNS = "DynDNS";
+    String SETTINGS_ADVANCED = "Advanced";
+    String SETTINGS_DIALOG = "Dialogs";
+    String SETTINGS_PLUGIN = "Plugins";
+
     String PROBLEM_UNSYNCED_FOLDER = "Unsynchronized-Folder";
     String PROBLEM_DEVICE_DISCONNECTED = "Disconnected-Device";
     String PROBLEM_DUPLICATE_FILENAME = "Duplicate-Filename";
