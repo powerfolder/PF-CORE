@@ -182,14 +182,12 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for LAN
      */
     public void loadLANSelection() {
-        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
-                    UNLIMITED);
-        }
         addLineSpeed("line_speed.lan10", 1000, UNLIMITED);
         addLineSpeed("line_speed.lan100", 10000, UNLIMITED);
         addLineSpeed("line_speed.lan1000", 100000, UNLIMITED);
         addLineSpeed("line_speed.unlimited", UNLIMITED, UNLIMITED);
+        defaultSpeed = addLineSpeed("line_speed.custom_speed", UNLIMITED,
+                UNLIMITED, true);
     }
 
     /**
@@ -198,7 +196,7 @@ public class LineSpeedSelectionPanel extends JPanel {
     public void loadWANSelection() {
         if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
             defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
-                    UNLIMITED);
+                    AUTO_DETECT);
         }
         addLineSpeed("line_speed.adsl128", 11, UNLIMITED);
         addLineSpeed("line_speed.adsl256", 23, UNLIMITED);

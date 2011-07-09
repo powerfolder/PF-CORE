@@ -909,11 +909,7 @@ public class Controller extends PFComponent {
      * These tasks get performed every hour.
      */
     private void performHourly() {
-        // Only do this if up or down load rates are autodetect (negative);
-        if (transferManager.getAllowedDownloadCPSForWAN() < 0 ||
-                transferManager.getAllowedUploadCPSForWAN() < 0) {
-            recalculateAutomaticRate();
-        }
+        recalculateAutomaticRate();
     }
 
     /**
@@ -921,6 +917,14 @@ public class Controller extends PFComponent {
      * Do this by testing upload and download of 100KiB to the server.
      */
     private void recalculateAutomaticRate() {
+
+        // Only do this if up- or down-load rates are autodetect (negative);
+        if (transferManager.getAllowedDownloadCPSForWAN() >= 0 &&
+                transferManager.getAllowedUploadCPSForWAN() >= 0) {
+            return;
+        }
+
+        // Get times.
         Date startDate = new Date();
         if (!testAvailabilityDownload()) {
             return;
@@ -931,16 +935,23 @@ public class Controller extends PFComponent {
         }
         Date afterUpload = new Date();
 
+        // Calculate time differences.
         long downloadTime = afterDownload.getTime() - startDate.getTime();
         long uploadTime = afterUpload.getTime() - afterDownload.getTime();
         logInfo("Test availability download time " + downloadTime);
         logInfo("Test availability upload time " + uploadTime);
 
+        // Calculate rates in KiB/s.
         long downloadRate = 102400 / downloadTime;
         long uploadRate = 102400 / uploadTime;
+        logInfo("Test availability download rate " + downloadRate + "KiB/s");
+        logInfo("Test availability upload rate " + uploadRate + "KiB/s");
 
-        logInfo("Test availability download rate " + downloadRate + "kb/s");
-        logInfo("Test availability upload rate " + uploadRate + "kb/s");
+        // Update bandwidth provider with 80% of new rates.
+        transferManager.getBandwidthProvider().setAutoDetectDownloadRate(
+                80 * downloadRate * 1024 / 100);
+        transferManager.getBandwidthProvider().setAutoDetectUploadRate(
+                80 * uploadRate * 1024 / 100);
     }
 
     /**
@@ -988,7 +999,8 @@ public class Controller extends PFComponent {
             String path = "http://access.powerfolder.com/testavailability?action=download&size=102400";
             URL url = new URL(path);
             URLConnection connection = url.openConnection();
-            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(
+                    connection.getInputStream()));
             String inputLine;
             StringBuilder sb = new StringBuilder();
             while ((inputLine = reader.readLine()) != null) {
@@ -1727,11 +1739,11 @@ public class Controller extends PFComponent {
      * @return true if this is the first start of PowerFolder of this config.
      */
     public boolean isFirstStart() {
-        return getController().getPreferences().getBoolean("openwizard2", true);
+        return getController().preferences.getBoolean("openwizard2", true);
     }
 
     public void setFirstStart(boolean bool) {
-        getController().getPreferences().putBoolean("openwizard2", bool);
+        getController().preferences.putBoolean("openwizard2", bool);
     }
 
     /**

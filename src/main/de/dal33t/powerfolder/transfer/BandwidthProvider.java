@@ -38,18 +38,16 @@ import de.dal33t.powerfolder.event.ListenerSupportFactory;
  */
 public class BandwidthProvider extends Loggable {
 
-    // ms between bandwidth "pushs"
-    public static final int PERIOD = 1000;
-    public static final int AUTO_DEFAULT = 10240; // Default auto rate to 10kb/s
+    private long autoDetectUploadRate = -1; // Default to unlimited
+    private long autoDetectDownloadRate = 10240; // Default to 10KiB/s
 
-    private long autoDetectLan = AUTO_DEFAULT;
-    private long autoDetectWan = AUTO_DEFAULT;
-
-    private final Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
+    private final Map<BandwidthLimiter, Long> limits =
+            new WeakHashMap<BandwidthLimiter, Long>();
     private ScheduledExecutorService scheduledES;
     private ScheduledFuture<?> task;
-    private final BandwidthStatsListener statListenerSupport = ListenerSupportFactory
-            .createListenerSupport(BandwidthStatsListener.class);
+    private final BandwidthStatsListener statListenerSupport =
+            ListenerSupportFactory.createListenerSupport(
+                    BandwidthStatsListener.class);
     
     public BandwidthProvider(ScheduledExecutorService scheduledES) {
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
@@ -72,23 +70,31 @@ public class BandwidthProvider extends Loggable {
                         Long value = me.getValue();
                         Long actualValue;
                         if (value == 0) { // Unlimited
-                            // NOTE Unlimited is different in BandwidthLimiter. 
+                            // NOTE Unlimited is different value in
+                            // BandwidthLimiter 0 <--> -1
                             actualValue = BandwidthLimiter.UNLIMITED; // -1
                         } else if (value < 0) { // Autodetect
                             if (limiter.getId().isLan()) {
-                                actualValue = PERIOD * autoDetectLan / 1000;
+                                // Shouldn't be here, autodetect is for WAN only
+                                logWarning("Setting autodetect for LAN ??? " +
+                                        value);
+                                actualValue = BandwidthLimiter.UNLIMITED; // -1
                             } else {
-                                actualValue = PERIOD * autoDetectWan / 1000;
+                                if (limiter.getId().isInput()) {
+                                    actualValue = autoDetectDownloadRate;
+                                } else {
+                                    actualValue = autoDetectUploadRate;
+                                }
                             }
                         } else {
-                            actualValue = PERIOD * value / 1000;
+                            actualValue = value;
                         }
                         BandwidthStat stat = limiter.setAvailable(actualValue);
                         statListenerSupport.handleBandwidthStat(stat);
                     }
                 }
             }
-        }, 0, PERIOD, TimeUnit.MILLISECONDS);
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     public void shutdown() {
@@ -128,12 +134,22 @@ public class BandwidthProvider extends Loggable {
         }
     }
 
-    public void setAutoDetectLan(long autoDetectLan) {
-        this.autoDetectLan = autoDetectLan;
+    /**
+     * Set the autodetect upload rate bytes/second
+     *
+     * @param autoDetectUploadRate
+     */
+    public void setAutoDetectUploadRate(long autoDetectUploadRate) {
+        this.autoDetectUploadRate = autoDetectUploadRate;
     }
 
-    public void setAutoDetectWan(long autoDetectWan) {
-        this.autoDetectWan = autoDetectWan;
+    /**
+     * Set the autodetect download rate bytes/second
+     *
+     * @param autoDetectDownloadRate
+     */
+    public void setAutoDetectDownloadRate(long autoDetectDownloadRate) {
+        this.autoDetectDownloadRate = autoDetectDownloadRate;
     }
 
     public void addBandwidthStatListener(BandwidthStatsListener listener) {
