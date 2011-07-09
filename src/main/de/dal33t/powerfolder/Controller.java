@@ -22,18 +22,8 @@ package de.dal33t.powerfolder;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -919,21 +909,104 @@ public class Controller extends PFComponent {
      * These tasks get performed every hour.
      */
     private void performHourly() {
-        recalculateAutomaticRate();
+        // Only do this if up or down load rates are autodetect (negative);
+        if (transferManager.getAllowedDownloadCPSForWAN() < 0 ||
+                transferManager.getAllowedUploadCPSForWAN() < 0) {
+            recalculateAutomaticRate();
+        }
     }
 
     /**
      * Recalculate the up/download bandwidth auto limit.
+     * Do this by testing upload and download of 100KiB to the server.
      */
     private void recalculateAutomaticRate() {
         Date startDate = new Date();
-        // @todo Upload some shit.
-        Date afterUpload = new Date();
-        // @todo Download some shit.
+        if (!testAvailabilityDownload()) {
+            return;
+        }
         Date afterDownload = new Date();
+        if (!testAvailabilityUpload()) {
+            return;
+        }
+        Date afterUpload = new Date();
 
-        long uploadTime = afterUpload.getTime() - startDate.getTime();
-        long downloadTime = afterDownload.getTime() - afterUpload.getTime();
+        long downloadTime = afterDownload.getTime() - startDate.getTime();
+        long uploadTime = afterUpload.getTime() - afterDownload.getTime();
+        logInfo("Test availability download time " + downloadTime);
+        logInfo("Test availability upload time " + uploadTime);
+
+        long downloadRate = 102400 / downloadTime;
+        long uploadRate = 102400 / uploadTime;
+
+        logInfo("Test availability download rate " + downloadRate + "kb/s");
+        logInfo("Test availability upload rate " + uploadRate + "kb/s");
+    }
+
+    /**
+     * Test upload rate by uploading 100 KiB to the server.
+     * @return true if it succeeded.
+     */
+    private static boolean testAvailabilityUpload() {
+        OutputStreamWriter writer = null;
+        try {
+            String path = "http://access.powerfolder.com/testavailability?action=upload";
+            URL url = new URL(path);
+            URLConnection connection = url.openConnection();
+            connection.setDoOutput(true);
+            writer = new OutputStreamWriter(connection.getOutputStream());
+            char[] chars = new char[1024];
+            for (int i = 0; i < 1024; i++) {
+                chars[i] = 'x';
+            }
+            for (int i = 0; i < 100; i++) {
+                writer.write(chars);
+            }
+            return true;
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Test availability upload failed", e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    // Dont care.
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Test download rate by downloading 100 KiB from the server.
+     * @return true if it succeeded.
+     */
+    private static boolean testAvailabilityDownload() {
+        BufferedReader reader = null;
+        try {
+            String path = "http://access.powerfolder.com/testavailability?action=download&size=102400";
+            URL url = new URL(path);
+            URLConnection connection = url.openConnection();
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder sb = new StringBuilder();
+            while ((inputLine = reader.readLine()) != null) {
+                sb.append(inputLine);
+            }
+            return true;
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Test availability download failed", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // Dont care.
+                }
+            }
+        }
+        return false;
     }
 
     /**

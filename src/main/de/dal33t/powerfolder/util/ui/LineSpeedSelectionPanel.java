@@ -190,12 +190,6 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("line_speed.lan100", 10000, UNLIMITED);
         addLineSpeed("line_speed.lan1000", 100000, UNLIMITED);
         addLineSpeed("line_speed.unlimited", UNLIMITED, UNLIMITED);
-        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            addLineSpeed("line_speed.custom_speed", UNLIMITED, UNLIMITED, true);
-        } else {
-            defaultSpeed = addLineSpeed("line_speed.custom_speed", UNLIMITED,
-                    UNLIMITED, true);
-        }
     }
 
     /**
