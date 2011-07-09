@@ -122,12 +122,7 @@ public enum Feature {
     /**
      * TRAC #1962 For later use
      */
-    REGION_SELECTOR(false),
-
-    /**
-     * Temporary for #2165 development.
-     */
-    AUTO_SPEED_DETECT(false);
+    REGION_SELECTOR(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

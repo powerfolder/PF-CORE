@@ -32,7 +32,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.Feature;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
