@@ -87,17 +87,10 @@ public class LineSpeedSelectionPanel extends JPanel {
     private void initComponents() {
         setOpaque(false);
 
-        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            customUploadSpeedSpinnerModel =
-                    new SpinnerNumberModel(0, -1, 999999, 1);
-            customDownloadSpeedSpinnerModel =
-                    new SpinnerNumberModel(0, -1, 999999, 1);
-        } else {
-            customUploadSpeedSpinnerModel =
-                    new SpinnerNumberModel(0, 0, 999999, 1);
-            customDownloadSpeedSpinnerModel =
-                    new SpinnerNumberModel(0, 0, 999999, 1);
-        }
+        customUploadSpeedSpinnerModel =
+                new SpinnerNumberModel(0, -1, 999999, 1);
+        customDownloadSpeedSpinnerModel =
+                new SpinnerNumberModel(0, -1, 999999, 1);
         customUploadSpeedSpinner =
                 new JSpinner(customUploadSpeedSpinnerModel);
         customDownloadSpeedSpinner =
@@ -194,10 +187,8 @@ public class LineSpeedSelectionPanel extends JPanel {
      * Loads the selection with the default values for WAN
      */
     public void loadWANSelection() {
-        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
-                    AUTO_DETECT);
-        }
+        defaultSpeed = addLineSpeed("line_speed.auto_speed", AUTO_DETECT,
+                AUTO_DETECT);
         addLineSpeed("line_speed.adsl128", 11, UNLIMITED);
         addLineSpeed("line_speed.adsl256", 23, UNLIMITED);
         addLineSpeed("line_speed.adsl512", 46, UNLIMITED);
@@ -207,12 +198,7 @@ public class LineSpeedSelectionPanel extends JPanel {
         addLineSpeed("line_speed.T1", 140, UNLIMITED);
         addLineSpeed("line_speed.T3", 3930, UNLIMITED);
         addLineSpeed("line_speed.unlimited", UNLIMITED, UNLIMITED);
-        if (Feature.AUTO_SPEED_DETECT.isEnabled()) {
-            addLineSpeed("line_speed.custom_speed", UNLIMITED, UNLIMITED, true);
-        } else {
-            defaultSpeed = addLineSpeed("line_speed.custom_speed", UNLIMITED,
-                    UNLIMITED, true);
-        }
+        addLineSpeed("line_speed.custom_speed", UNLIMITED, UNLIMITED, true);
     }
 
     /**
@@ -310,12 +296,6 @@ public class LineSpeedSelectionPanel extends JPanel {
     public void setSpeedKBPS(long uploadSpeed, long downloadSpeed) {
         // Find the "best" item to select for the given speed
         // if none matches, falls thru to "Custom"
-        if (Feature.AUTO_SPEED_DETECT.isDisabled() && uploadSpeed == -1) {
-            uploadSpeed = 0;
-        }
-        if (Feature.AUTO_SPEED_DETECT.isDisabled() && downloadSpeed == -1) {
-            downloadSpeed = 0;
-        }
         for (int i = 0; i < speedSelectionBox.getItemCount(); i++) {
             LineSpeed ls = (LineSpeed) speedSelectionBox.getItemAt(i);
             if (ls.getUploadSpeed() == uploadSpeed

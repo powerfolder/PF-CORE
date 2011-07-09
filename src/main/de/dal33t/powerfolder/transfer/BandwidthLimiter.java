@@ -99,7 +99,6 @@ public class BandwidthLimiter {
      * and how much was left over.
      */
     public BandwidthStat setAvailable(long amount) {
-
         BandwidthStat bandwidthStat;
 
         synchronized (monitor) {

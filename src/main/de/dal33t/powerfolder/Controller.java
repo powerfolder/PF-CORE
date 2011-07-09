@@ -948,10 +948,18 @@ public class Controller extends PFComponent {
         logInfo("Test availability upload rate " + uploadRate + "KiB/s");
 
         // Update bandwidth provider with 80% of new rates.
+        long modifiedDownloadRate = 80 * downloadRate * 1024 / 100;
         transferManager.getBandwidthProvider().setAutoDetectDownloadRate(
-                80 * downloadRate * 1024 / 100);
+                modifiedDownloadRate);
+        long modifiedUploadRate = 80 * uploadRate * 1024 / 100;
         transferManager.getBandwidthProvider().setAutoDetectUploadRate(
-                80 * uploadRate * 1024 / 100);
+                modifiedUploadRate);
+
+        // Save for next time.
+        PreferencesEntry.AUTO_DETECT_DOWNLOAD.setValue(this,
+                (int) modifiedDownloadRate);
+        PreferencesEntry.AUTO_DETECT_UPLOAD.setValue(this,
+                (int) modifiedUploadRate);
     }
 
     /**
@@ -2189,7 +2197,7 @@ public class Controller extends PFComponent {
 
             // Check if migration is necessary
             if (unixConfigDir.exists()) {
-                boolean migrateConfig = false;
+                boolean migrateConfig;
                 if (windowsConfigDir.exists()) {
                     // APPDATA/PowerFolder does not yet contain a config file OR
                     migrateConfig = windowsConfigDir.list(new FilenameFilter() {
@@ -2292,10 +2300,9 @@ public class Controller extends PFComponent {
         }
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
-            Object[] options;
+            Object[] options = {Translation
+                    .getTranslation("dialog.already_running.exit_button")};
             int exitOption = 0;
-            options = new Object[]{Translation
-                .getTranslation("dialog.already_running.exit_button")};
             if (verbose) {
                 options = new Object[]{
                     Translation
@@ -2424,7 +2431,6 @@ public class Controller extends PFComponent {
      * Distribute invitations.
      * 
      * @param invitation
-     * @param sendIfJoined
      */
     public void invitationReceived(Invitation invitation) {
         for (InvitationHandler handler : invitationHandlers) {
