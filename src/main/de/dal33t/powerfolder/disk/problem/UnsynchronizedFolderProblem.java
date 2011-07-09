@@ -89,4 +89,9 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
             }
         };
     }
+
+    @Override
+    public String toString() {
+        return getDescription() + ". lastSyncDate=" + lastSyncDate;
+    }
 }
