@@ -120,8 +120,7 @@ public class BandwidthLimitTest extends TestCase {
         provider.removeLimiter(bl);
         provider.shutdown();
         assertEquals(
-            1000 / BandwidthProvider.PERIOD * BandwidthProvider.PERIOD, bl
-                .getAvailable());
+            1000, bl.getAvailable());
     }
     
     public static class ReaderThread implements Runnable {

@@ -50,7 +50,7 @@ public class BandwidthProvider extends Loggable {
     private final BandwidthStatsListener statListenerSupport =
             ListenerSupportFactory.createListenerSupport(
                     BandwidthStatsListener.class);
-    
+
     public BandwidthProvider(Controller controller) {
         scheduledES = controller.getThreadPool();
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
@@ -64,6 +64,11 @@ public class BandwidthProvider extends Loggable {
         if (autoDetectUpload > 0) {
             autoDetectUploadRate = autoDetectUpload;
         }
+    }
+
+    // For test case.
+    public BandwidthProvider(ScheduledExecutorService scheduledES) {
+        this.scheduledES = scheduledES;
     }
 
     public void start() {
