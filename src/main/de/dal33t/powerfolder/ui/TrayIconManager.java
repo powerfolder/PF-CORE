@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -31,6 +32,7 @@ import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -72,6 +74,7 @@ public class TrayIconManager extends PFComponent {
     private volatile String blinkText;
     private volatile String downText = "";
     private volatile String upText = "";
+    private volatile boolean connected;
 
     public TrayIconManager(UIController uiController) {
         super(uiController.getController());
@@ -116,10 +119,35 @@ public class TrayIconManager extends PFComponent {
     private void updateConnectionStatus() {
         state = TrayIconManager.TrayIconState.NORMAL;
         ServerClient client = getController().getOSClient();
-        if (!client.isConnected()) {
+        boolean myConnected = client.isConnected();
+        if (!myConnected) {
             state = TrayIconManager.TrayIconState.NOT_CONNECTED;
         } else if (!client.isLoggedIn()) {
             state = TrayIconManager.TrayIconState.NOT_LOGGED_IN;
+        }
+
+        // Do a notification if moved between connected and not connected.
+        if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
+            .getValueBoolean(getController()))
+        {
+            return;
+        }
+
+        if (myConnected ^ connected) {
+            connected = myConnected;
+            // State changed, notify ui.
+            String notificationText;
+            String title = Translation.getTranslation(
+                    "tray_icon_manager.status_change.title");
+            if (connected) {
+                notificationText = Translation.getTranslation(
+                        "tray_icon_manager.status_change.connected");
+            } else {
+                notificationText = Translation.getTranslation(
+                        "tray_icon_manager.status_change.disabled");
+            }
+            uiController.getApplicationModel().getNoticesModel().handleNotice(
+                    new SimpleNotificationNotice(title, notificationText));
         }
     }
 

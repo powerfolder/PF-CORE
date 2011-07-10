@@ -28,7 +28,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -59,7 +58,6 @@ import de.dal33t.powerfolder.net.ConnectionQuality;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.util.Help;
@@ -84,11 +82,6 @@ import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker.CheckTask;
  */
 public class StatusBar extends PFUIComponent implements UIPanel {
 
-    private static final int UNKNOWN = -1;
-    private static final int DISABLED = 0;
-    private static final int CONNECTED = 1;
-    private static final int DISCONNECTED = 2;
-
     private JComponent comp;
     private JButton onlineStateInfo;
     private JButton sleepButton;
@@ -102,9 +95,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
     private JButton pendingMessagesButton;
     private boolean shownQualityWarningToday;
     private boolean shownLimitedConnectivityToday;
-
-    /** Connection state */
-    private final AtomicInteger state = new AtomicInteger(UNKNOWN);
 
     private DelayedUpdater syncUpdater;
     private DelayedUpdater connectLabelUpdater;
@@ -373,30 +363,23 @@ public class StatusBar extends PFUIComponent implements UIPanel {
         // Get connected node count
         int nOnlineUser = controller.getNodeManager().countConnectedNodes();
 
-        int newState;
-
         if (!controller.getNodeManager().isStarted()) {
             // Disabled
             onlineStateInfo.setToolTipText(Translation
                 .getTranslation("online_label.disabled"));
             onlineStateInfo.setIcon(Icons.getIconById(Icons.WARNING));
-            newState = DISABLED;
         } else if (nOnlineUser > 0) {
             if (connectionQualityText == null) {
                 // No connection quality indication yet - just show connected.
                 String text = Translation.getTranslation("online_label.online");
                 if (controller.isLanOnly()) {
-                    text += " ("
-                        + Translation
-                            .getTranslation("general.network_mode.lan_only")
-                        + ')';
+                    text += " (" + Translation.getTranslation(
+                            "general.network_mode.lan_only") + ')';
                 } else if (controller.getNetworkingMode() == NetworkingMode.SERVERONLYMODE
                     && !getController().isBackupOnly())
                 {
-                    text += " ("
-                        + Translation
-                            .getTranslation("general.network_mode.server_only")
-                        + ')';
+                    text += " (" + Translation.getTranslation(
+                            "general.network_mode.server_only") + ')';
                 }
                 onlineStateInfo.setToolTipText(text);
                 onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
@@ -404,7 +387,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
                 onlineStateInfo.setIcon(connectionQualityIcon);
                 onlineStateInfo.setToolTipText(connectionQualityText);
             }
-            newState = CONNECTED;
         } else {
             // Connecting
             String text = Translation.getTranslation("online_label.connecting");
@@ -422,37 +404,6 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             }
             onlineStateInfo.setToolTipText(text);
             onlineStateInfo.setIcon(Icons.getIconById(Icons.DISCONNECTED));
-            newState = DISCONNECTED;
-        }
-
-        if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
-            .getValueBoolean(getController()))
-        {
-            return;
-        }
-
-        synchronized (state) {
-
-            int oldState = state.getAndSet(newState);
-            if (oldState != newState) {
-                // State changed, notify ui.
-                String notificationText;
-                String title = Translation
-                    .getTranslation("status_bar.status_change.title");
-                if (newState == DISABLED) {
-                    notificationText = Translation
-                        .getTranslation("status_bar.status_change.disabled");
-                    getApplicationModel().getNoticesModel().handleNotice(
-                        new SimpleNotificationNotice(title, notificationText));
-                } else if (newState == CONNECTED) {
-                    notificationText = Translation
-                        .getTranslation("status_bar.status_change.connected");
-                    getApplicationModel().getNoticesModel().handleNotice(
-                        new SimpleNotificationNotice(title, notificationText));
-                } else {
-                    // Disconnected
-                }
-            }
         }
 
     }
