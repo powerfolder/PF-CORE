@@ -33,12 +33,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.File;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -103,6 +98,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private ActionLabel upperSyncLink;
     private JButtonMini upperOpenFilesButton;
+    private JButtonMini upperMountWebDavButton;
     private JButtonMini upperInviteButton;
 
     private ResizingJLabel nameLabel;
@@ -257,13 +253,33 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Show the upper links if mouse over and have folder (not online-only).
+     * Show the upper links if mouse over.
      */
     private void updateUpperComponents() {
-        boolean show = mouseOver.get() && folder != null;
-        upperSyncLink.getUIComponent().setVisible(show);
-        upperInviteButton.setVisible(show);
-        upperOpenFilesButton.setVisible(show);
+        boolean showFolder = mouseOver.get() && folder != null;
+        upperSyncLink.getUIComponent().setVisible(showFolder);
+        upperInviteButton.setVisible(showFolder);
+        upperOpenFilesButton.setVisible(showFolder);
+
+        final boolean showNoFolder = mouseOver.get() && folder == null;
+        SwingWorker worker = new SwingWorker() {
+            protected Object doInBackground() throws Exception {
+                if (OSUtil.isWindows7System() ||
+                        OSUtil.isWindowsVistaSystem()) {
+                    if (serverClient.isConnected() &&
+                            serverClient.getFolderService().hasJoined(
+                                    folderInfo)) {
+                        upperMountWebDavButton.setVisible(showNoFolder);
+                    } else {
+                        upperMountWebDavButton.setVisible(false);
+                    }
+                } else {
+                    upperMountWebDavButton.setVisible(false);
+                }
+                return null;
+            }
+        };
+        worker.execute();
     }
 
     /**
@@ -304,6 +320,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
         upperBuilder.add(upperInviteButton, cc.xy(9, 1));
         upperBuilder.add(upperOpenFilesButton, cc.xy(11, 1));
+        upperBuilder.add(upperMountWebDavButton, cc.xy(11, 1));
         upperBuilder.add(problemButton, cc.xy(13, 1));
 
         upperPanel = upperBuilder.getPanel();
@@ -318,6 +335,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncLink.getUIComponent().addMouseListener(moa);
         upperInviteButton.addMouseListener(moa);
         upperOpenFilesButton.addMouseListener(moa);
+        upperMountWebDavButton.addMouseListener(moa);
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
@@ -480,6 +498,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         openFilesInformationButton = new JButtonMini(openFilesInformationAction);
         upperOpenFilesButton = new JButtonMini(openFilesInformationAction);
+        upperMountWebDavButton = new JButtonMini(webdavAction);
 
         inviteButton = new JButtonMini(inviteAction);
         upperInviteButton = new JButtonMini(inviteAction);
@@ -505,6 +524,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncLink.getUIComponent().setVisible(false);
         upperInviteButton.setVisible(false);
         upperOpenFilesButton.setVisible(false);
+        upperMountWebDavButton.setVisible(false);
 
         filesLabel = new ActionLabel(getController(),
             openFilesInformationAction);
@@ -1355,7 +1375,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
             mouseOver.set(true);
-            updateUpperComponents();
             if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
                 if (!expanded.get()) {
                     getController().schedule(new TimerTask() {
@@ -1371,11 +1390,20 @@ public class ExpandableFolderView extends PFUIComponent implements
                     }, 2000);
                 }
             }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateUpperComponents();
+                }
+            });
         }
 
         public void mouseExited(MouseEvent e) {
             mouseOver.set(false);
-            updateUpperComponents();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateUpperComponents();
+                }
+            });
         }
     }
 
