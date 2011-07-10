@@ -341,7 +341,7 @@ public class UIController extends PFComponent {
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
         // Handle promo stuff
-        handlePromo();
+        // #2259: handlePromo();
 
         // Check limits
         if (!ProUtil.isRunningProVersion()) {
