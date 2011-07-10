@@ -292,12 +292,14 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperBuilder.add(primaryButton, cc.xy(1, 1));
         upperBuilder.add(upperSyncFolderButton, cc.xy(1, 1));
 
-        MouseAdapter ma = new MyMouseAdapter();
+        MouseAdapter mca = new MyMouseClickAdapter();
+        MouseAdapter moa = new MyMouseOverAdapter();
         nameLabel = new ResizingJLabel();
         upperBuilder.add(nameLabel, cc.xy(3, 1));
-        nameLabel.addMouseListener(ma);
+        nameLabel.addMouseListener(moa);
+        nameLabel.addMouseListener(mca); // Because this is the biggest blank area where the user might click.
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
-        filesAvailableLabel.getUIComponent().addMouseListener(ma);
+        filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
         upperBuilder.add(upperSyncLink.getUIComponent(), cc.xy(7, 1));
         upperBuilder.add(upperInviteButton, cc.xy(9, 1));
@@ -311,10 +313,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                 .getTranslation("exp_folder_view.expand"));
         }
         upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        upperPanel.addMouseListener(ma);
-        upperSyncLink.getUIComponent().addMouseListener(ma);
-        upperInviteButton.addMouseListener(ma);
-        upperOpenFilesButton.addMouseListener(ma);
+        upperPanel.addMouseListener(moa);
+        upperPanel.addMouseListener(mca);
+        upperSyncLink.getUIComponent().addMouseListener(moa);
+        upperInviteButton.addMouseListener(moa);
+        upperOpenFilesButton.addMouseListener(moa);
 
         // Build lower detials with line border.
         FormLayout lowerLayout;
@@ -1346,10 +1349,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     }
 
-    /**
-     * Class to respond to expand / collapse events.
-     */
-    private class MyMouseAdapter extends MouseAdapter {
+    /** Hover over any component in the upper panel should expand / collapse. */
+    private class MyMouseOverAdapter extends MouseAdapter {
 
         // Auto expand if user hovers for two seconds.
         public void mouseEntered(MouseEvent e) {
@@ -1376,6 +1377,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             mouseOver.set(false);
             updateUpperComponents();
         }
+    }
+
+    /** Click on the upper panel should expand or display context menu */
+    private class MyMouseClickAdapter extends MouseAdapter {
 
         public void mousePressed(MouseEvent e) {
             if (e.isPopupTrigger()) {
