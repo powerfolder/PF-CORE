@@ -74,7 +74,7 @@ public class TrayIconManager extends PFComponent {
     private volatile String blinkText;
     private volatile String downText = "";
     private volatile String upText = "";
-    private volatile boolean connected;
+    private volatile boolean connectedAndLoggedIn;
 
     public TrayIconManager(UIController uiController) {
         super(uiController.getController());
@@ -119,27 +119,27 @@ public class TrayIconManager extends PFComponent {
     private void updateConnectionStatus() {
         state = TrayIconManager.TrayIconState.NORMAL;
         ServerClient client = getController().getOSClient();
-        boolean myConnected = client.isConnected();
-        if (!myConnected) {
+        boolean connected = client.isConnected();
+        boolean loggedIn = client.isLoggedIn();
+        if (!connected) {
             state = TrayIconManager.TrayIconState.NOT_CONNECTED;
-        } else if (!client.isLoggedIn()) {
+        } else if (!loggedIn) {
             state = TrayIconManager.TrayIconState.NOT_LOGGED_IN;
         }
 
         // Do a notification if moved between connected and not connected.
-        if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS
-            .getValueBoolean(getController()))
-        {
+        if (!PreferencesEntry.SHOW_SYSTEM_NOTIFICATIONS.getValueBoolean(
+                getController())) {
             return;
         }
 
-        if (myConnected ^ connected) {
-            connected = myConnected;
+        if ((connected && loggedIn) ^ connectedAndLoggedIn) {
+            connectedAndLoggedIn = connected && loggedIn;
             // State changed, notify ui.
             String notificationText;
             String title = Translation.getTranslation(
                     "tray_icon_manager.status_change.title");
-            if (connected) {
+            if (connectedAndLoggedIn) {
                 notificationText = Translation.getTranslation(
                         "tray_icon_manager.status_change.connected");
             } else {
