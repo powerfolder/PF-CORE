@@ -205,7 +205,7 @@ public class NodeManager extends PFComponent {
 
         // #1976
         if (MemberInfo.INTERNALIZER != null) {
-            logSevere("Overwriting old MemberInfo internalizer: "
+            logFine("Overwriting old MemberInfo internalizer: "
                 + MemberInfo.INTERNALIZER);
         }
         MemberInfo.INTERNALIZER = new MemberInfoInternalizer(this);
