@@ -96,6 +96,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     private boolean local;
     private boolean online;
 
+    private final AtomicBoolean showing100Sync = new AtomicBoolean();
+
     private ActionLabel upperSyncLink;
     private JButtonMini upperOpenFilesButton;
     private JButtonMini upperMountWebDavButton;
@@ -257,7 +259,8 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateUpperComponents() {
         boolean showFolder = mouseOver.get() && folder != null;
-        upperSyncLink.getUIComponent().setVisible(showFolder);
+        upperSyncLink.getUIComponent().setVisible(showFolder ||
+                !showing100Sync.get() );
         upperInviteButton.setVisible(showFolder);
         upperOpenFilesButton.setVisible(showFolder);
 
@@ -521,7 +524,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         upperSyncLink = new ActionLabel(getController(), syncFolderAction);
         upperSyncLink.setText("");
 
-        upperSyncLink.getUIComponent().setVisible(false);
+        upperSyncLink.getUIComponent().setVisible(!showing100Sync.get());
         upperInviteButton.setVisible(false);
         upperOpenFilesButton.setVisible(false);
         upperMountWebDavButton.setVisible(false);
@@ -769,7 +772,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                     syncPercentText = Translation
                         .getTranslation("exp_folder_view.unsynchronized");
                     upperSyncPercent = syncPercentText;
+                    showing100Sync.set(false);
                 } else {
+                    showing100Sync.set(Double.compare(sync, 100) == 0);
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
                         syncPercentText = Translation
                             .getTranslation("exp_folder_view.unsynchronized");
@@ -804,6 +809,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         String.valueOf(count));
                 }
             } else {
+                showing100Sync.set(false);
                 syncPercentText = Translation
                     .getTranslation("exp_folder_view.not_yet_scanned");
                 upperSyncPercent = "?";
@@ -828,6 +834,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             filesAvailableLabel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.files_available_tip"));
         }
+        // Maybe change visibility of upperSyncLink. 
+        updateUpperComponents();
     }
 
     /**
