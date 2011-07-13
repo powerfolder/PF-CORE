@@ -157,11 +157,7 @@ public enum PreferencesEntry {
 
     SHOW_FOLDER_CANDIDATES("show.folder.candidates", true),
 
-    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
-
-    AUTO_DETECT_DOWNLOAD("auto.detect.download", -1),
-
-    AUTO_DETECT_UPLOAD("auto.detect.upload", -1);
+    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
 
     /** String, Boolean, Integer */
     private Class type;

@@ -28,7 +28,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.ConfigurationEntry;
 
 /**
  * A BandwidthProvider can be used to periodically assign BandwidthLimiters a
@@ -55,12 +55,12 @@ public class BandwidthProvider extends Loggable {
         scheduledES = controller.getThreadPool();
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
         int autoDetectDownload =
-                PreferencesEntry.AUTO_DETECT_DOWNLOAD.getValueInt(controller);
+                ConfigurationEntry.AUTO_DETECT_DOWNLOAD.getValueInt(controller);
         if (autoDetectDownload > 0) {
             autoDetectDownloadRate = autoDetectDownload;
         }
         int autoDetectUpload =
-                PreferencesEntry.AUTO_DETECT_UPLOAD.getValueInt(controller);
+                ConfigurationEntry.AUTO_DETECT_UPLOAD.getValueInt(controller);
         if (autoDetectUpload > 0) {
             autoDetectUploadRate = autoDetectUpload;
         }

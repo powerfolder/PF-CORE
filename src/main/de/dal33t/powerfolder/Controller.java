@@ -956,9 +956,9 @@ public class Controller extends PFComponent {
                 modifiedUploadRate);
 
         // Save for next time.
-        PreferencesEntry.AUTO_DETECT_DOWNLOAD.setValue(this,
+        ConfigurationEntry.AUTO_DETECT_DOWNLOAD.setValue(this,
                 (int) modifiedDownloadRate);
-        PreferencesEntry.AUTO_DETECT_UPLOAD.setValue(this,
+        ConfigurationEntry.AUTO_DETECT_UPLOAD.setValue(this,
                 (int) modifiedUploadRate);
     }
 

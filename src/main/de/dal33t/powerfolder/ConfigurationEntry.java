@@ -793,7 +793,12 @@ public enum ConfigurationEntry {
      * How many days before an archive file is cleaned up.
      * Values 1, 7, 31, 365, 2147483647 (== never)
      */
-    ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31);
+    ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31),
+
+    AUTO_DETECT_DOWNLOAD("auto.detect.download", -1),
+
+    AUTO_DETECT_UPLOAD("auto.detect.upload", -1);
+
 
     // Methods/Constructors ***************************************************
 
