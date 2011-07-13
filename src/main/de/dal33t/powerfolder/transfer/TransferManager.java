@@ -19,14 +19,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,6 +39,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.net.URL;
+import java.net.URLConnection;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
@@ -2762,6 +2757,123 @@ public class TransferManager extends PFComponent {
                 logSevere("Exception while cheking pending downloads. " + e, e);
             }
         }
+    }
+
+    /**
+     * Recalculate the up/download bandwidth auto limit.
+     * Do this by testing upload and download of 100KiB to the server.
+     */
+    public void recalculateAutomaticRate() {
+
+        // Only do this if up- or down-load rates are autodetect (negative);
+        if (getAllowedDownloadCPSForWAN() >= 0 &&
+                getAllowedUploadCPSForWAN() >= 0) {
+            return;
+        }
+
+        // Get times.
+        Date startDate = new Date();
+        if (!testAvailabilityDownload()) {
+            return;
+        }
+        Date afterDownload = new Date();
+        if (!testAvailabilityUpload()) {
+            return;
+        }
+        Date afterUpload = new Date();
+
+        // Calculate time differences.
+        long downloadTime = afterDownload.getTime() - startDate.getTime();
+        long uploadTime = afterUpload.getTime() - afterDownload.getTime();
+        logInfo("Test availability download time " + downloadTime);
+        logInfo("Test availability upload time " + uploadTime);
+
+        // Calculate rates in KiB/s.
+        long downloadRate = 102400 / downloadTime;
+        long uploadRate = 102400 / uploadTime;
+        logInfo("Test availability download rate " + downloadRate + "KiB/s");
+        logInfo("Test availability upload rate " + uploadRate + "KiB/s");
+
+        // Update bandwidth provider with 80% of new rates.
+        long modifiedDownloadRate = 80 * downloadRate * 1024 / 100;
+        bandwidthProvider.setAutoDetectDownloadRate(
+                modifiedDownloadRate);
+        long modifiedUploadRate = 80 * uploadRate * 1024 / 100;
+        bandwidthProvider.setAutoDetectUploadRate(
+                modifiedUploadRate);
+
+        // Save for next time.
+        ConfigurationEntry.AUTO_DETECT_DOWNLOAD.setValue(getController(),
+                (int) modifiedDownloadRate);
+        ConfigurationEntry.AUTO_DETECT_UPLOAD.setValue(getController(),
+                (int) modifiedUploadRate);
+    }
+
+    /**
+     * Test upload rate by uploading 100 KiB to the server.
+     * @return true if it succeeded.
+     */
+    private boolean testAvailabilityUpload() {
+        OutputStreamWriter writer = null;
+        try {
+            String path = "http://access.powerfolder.com/testavailability?action=upload";
+            URL url = new URL(path);
+            URLConnection connection = url.openConnection();
+            connection.setDoOutput(true);
+            writer = new OutputStreamWriter(connection.getOutputStream());
+            char[] chars = new char[1024];
+            for (int i = 0; i < 1024; i++) {
+                chars[i] = 'x';
+            }
+            for (int i = 0; i < 100; i++) {
+                writer.write(chars);
+            }
+            return true;
+        } catch (Exception e) {
+            logSevere("Test availability upload failed", e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    // Dont care.
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Test download rate by downloading 100 KiB from the server.
+     * @return true if it succeeded.
+     */
+    private boolean testAvailabilityDownload() {
+        BufferedReader reader = null;
+        try {
+            String path = "http://access.powerfolder.com/testavailability?action=download&size=102400";
+            URL url = new URL(path);
+            URLConnection connection = url.openConnection();
+            reader = new BufferedReader(new InputStreamReader(
+                    connection.getInputStream()));
+            String inputLine;
+            StringBuilder sb = new StringBuilder();
+            while ((inputLine = reader.readLine()) != null) {
+                sb.append(inputLine);
+            }
+            return true;
+        } catch (Exception e) {
+            logSevere("Test availability download failed", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // Dont care.
+                }
+            }
+        }
+        return false;
     }
 
     // Helper code ************************************************************
