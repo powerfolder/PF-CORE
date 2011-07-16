@@ -19,23 +19,23 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
+import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.util.ui.DialogFactory;
-import de.dal33t.powerfolder.util.FileUtils;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.ArchiveMode;
-
-import javax.swing.*;
 
 /**
  * Action which opens folder create wizard.
@@ -52,7 +52,7 @@ public class NewFolderAction extends BaseAction {
     public void actionPerformed(ActionEvent e) {
 
         // Select directory
-        final FolderRepository folderRepository =
+        FolderRepository folderRepository =
                 getController().getFolderRepository();
         List<File> files = DialogFactory.chooseDirectory(getUIController(),
                 folderRepository.getFoldersBasedir(),
@@ -73,21 +73,34 @@ public class NewFolderAction extends BaseAction {
         // FolderInfo
         String name = FileUtils.getSuggestedFolderName(file);
         String folderId = '[' + IdGenerator.makeId() + ']';
-        final FolderInfo fi = new FolderInfo(name, folderId);
+        FolderInfo fi = new FolderInfo(name, folderId);
 
         // FolderSettings
         File localBaseDir = new File(folderRepository.getFoldersBasedir());
-        final FolderSettings fs = new FolderSettings(localBaseDir,
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION, true,
-                ArchiveMode.FULL_BACKUP,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
-                        getController()));
 
-        // Create the new folder
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                folderRepository.createFolder(fi, fs);
-            }
-        });
+        // Setup sucess panel of this wizard path
+        FolderCreatePanel createPanel = new FolderCreatePanel(getController());
+
+        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+            Translation.getTranslation("wizard.setup_success"), Translation
+                .getTranslation("wizard.what_to_do.folder_backup_success")
+                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
+
+        PFWizard wizard = new PFWizard(getController(),
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
+
+        wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+                successPanel);
+
+        wizard.getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBaseDir);
+        wizard.getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+                SyncProfile.AUTOMATIC_DOWNLOAD);
+        wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, fi);
+        wizard.getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+                false);
+        wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
+
+        wizard.open(createPanel);
+
     }
 }
