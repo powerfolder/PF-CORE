@@ -20,11 +20,22 @@
 package de.dal33t.powerfolder.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.ArchiveMode;
+
+import javax.swing.*;
 
 /**
  * Action which opens folder create wizard.
@@ -39,5 +50,44 @@ public class NewFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+
+        // Select directory
+        final FolderRepository folderRepository =
+                getController().getFolderRepository();
+        List<File> files = DialogFactory.chooseDirectory(getUIController(),
+                folderRepository.getFoldersBasedir(),
+                false);
+        if (files == null || files.size() != 1) {
+            return;
+        }
+        File file  = files.get(0);
+
+        // Has user already got this folder?
+        for (Folder folder : folderRepository.getFolders()) {
+            if (folder.getBaseDirectoryInfo().getDiskFile(folderRepository)
+                    .equals(file)) {
+                return;
+            }
+        }
+
+        // FolderInfo
+        String name = FileUtils.getSuggestedFolderName(file);
+        String folderId = '[' + IdGenerator.makeId() + ']';
+        final FolderInfo fi = new FolderInfo(name, folderId);
+
+        // FolderSettings
+        File localBaseDir = new File(folderRepository.getFoldersBasedir());
+        final FolderSettings fs = new FolderSettings(localBaseDir,
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION, true,
+                ArchiveMode.FULL_BACKUP,
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                        getController()));
+
+        // Create the new folder
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                folderRepository.createFolder(fi, fs);
+            }
+        });
     }
 }
