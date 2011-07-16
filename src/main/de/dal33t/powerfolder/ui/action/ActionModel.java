@@ -33,6 +33,7 @@ public class ActionModel extends PFComponent {
         super(controller);
     }
 
+    private FolderWizardAction folderWizardAction;
     private NewFolderAction newFolderAction;
     private FindComputersAction findComputersAction;
     private OpenPreferencesAction openPreferencesAction;
@@ -50,6 +51,14 @@ public class ActionModel extends PFComponent {
             newFolderAction.allowWith(FolderCreatePermission.INSTANCE);
         }
         return newFolderAction;
+    }
+
+    public FolderWizardAction getFolderWizardAction() {
+        if (folderWizardAction == null) {
+            folderWizardAction = new FolderWizardAction(getController());
+            folderWizardAction.allowWith(FolderCreatePermission.INSTANCE);
+        }
+        return folderWizardAction;
     }
 
     public FindComputersAction getFindComputersAction() {

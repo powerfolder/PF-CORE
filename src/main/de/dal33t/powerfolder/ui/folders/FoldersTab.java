@@ -55,6 +55,7 @@ public class FoldersTab extends PFUIComponent {
     private JLabel notLoggedInLabel;
     private ActionLabel loginActionLabel;
     private JLabel noFoldersFoundLabel;
+    private ActionLabel folderWizardActionLabel;
     private ActionLabel newFolderActionLabel;
     private JPanel emptyPanelOuter;
     private ServerClient client;
@@ -75,6 +76,9 @@ public class FoldersTab extends PFUIComponent {
         noFoldersFoundLabel = new JLabel(Translation.getTranslation(
                 "folders_tab.no_folders_found"));
         foldersList = new FoldersList(getController(), this);
+        folderWizardActionLabel = new ActionLabel(getController(), getApplicationModel()
+            .getActionModel().getFolderWizardAction());
+        folderWizardActionLabel.setText(Translation.getTranslation("folders_tab.folder_wizard"));
         newFolderActionLabel = new ActionLabel(getController(), getApplicationModel()
             .getActionModel().getNewFolderAction());
         newFolderActionLabel.setText(Translation.getTranslation("folders_tab.new_folder"));
@@ -150,14 +154,15 @@ public class FoldersTab extends PFUIComponent {
     private void buildEmptyPanel() {
         FormLayout layoutOuter = new FormLayout("center:pref:grow", "center:pref:grow");
         PanelBuilder builderOuter = new PanelBuilder(layoutOuter);
-        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow", "pref");
+        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow, 3dlu, fill:pref:grow", "pref");
         PanelBuilder builderInner = new PanelBuilder(layoutInner);
         CellConstraints cc = new CellConstraints();
         builderInner.add(connectingLabel, cc.xyw(1, 1, 3));
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));
-        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(3, 1));
+        builderInner.add(folderWizardActionLabel.getUIComponent(), cc.xy(3, 1));
+        builderInner.add(newFolderActionLabel.getUIComponent(), cc.xy(5, 1));
         JPanel emptyPanelInner = builderInner.getPanel();
         builderOuter.add(emptyPanelInner, cc.xy(1, 1));
         emptyPanelOuter = builderOuter.getPanel();
@@ -173,6 +178,7 @@ public class FoldersTab extends PFUIComponent {
                         notLoggedInLabel.setVisible(false);
                         loginActionLabel.setVisible(false);
                         noFoldersFoundLabel.setVisible(false);
+                        folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
                     } else if (username == null ||
                             username.trim().length() == 0 ||
@@ -182,12 +188,14 @@ public class FoldersTab extends PFUIComponent {
                         notLoggedInLabel.setVisible(true);
                         loginActionLabel.setVisible(true);
                         noFoldersFoundLabel.setVisible(false);
+                        folderWizardActionLabel.setVisible(false);
                         newFolderActionLabel.setVisible(false);
                     } else {
                         connectingLabel.setVisible(false);
                         notLoggedInLabel.setVisible(false);
                         loginActionLabel.setVisible(false);
                         noFoldersFoundLabel.setVisible(true);
+                        folderWizardActionLabel.setVisible(true);
                         newFolderActionLabel.setVisible(true);
                     }
                 }
@@ -203,25 +211,32 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
+        JButton folderWizardButton = new JButton(getApplicationModel()
+            .getActionModel().getFolderWizardAction());
         JButton newFolderButton = new JButton(getApplicationModel()
             .getActionModel().getNewFolderAction());
 
         // Same width of the buttons please
         JButton searchComputerButton = new JButton(getApplicationModel()
             .getActionModel().getFindComputersAction());
+        folderWizardButton.setMinimumSize(searchComputerButton.getMinimumSize());
+        folderWizardButton.setMaximumSize(searchComputerButton.getMaximumSize());
+        folderWizardButton.setPreferredSize(searchComputerButton
+            .getPreferredSize());
         newFolderButton.setMinimumSize(searchComputerButton.getMinimumSize());
         newFolderButton.setMaximumSize(searchComputerButton.getMaximumSize());
         newFolderButton.setPreferredSize(searchComputerButton
             .getPreferredSize());
         searchComputerButton.setVisible(false);
 
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
+        FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(newFolderButton, cc.xy(2, 1));
-        builder.add(autoAcceptCB, cc.xy(4, 1));
+        builder.add(folderWizardButton, cc.xy(2, 1));
+        builder.add(newFolderButton, cc.xy(4, 1));
+        builder.add(autoAcceptCB, cc.xy(6, 1));
         return builder.getPanel();
     }
 

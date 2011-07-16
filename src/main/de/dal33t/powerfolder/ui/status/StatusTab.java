@@ -35,7 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import com.jgoodies.binding.value.ValueModel;
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -446,19 +445,26 @@ public class StatusTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
         JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getNewFolderAction());
-        bar.addGridded(newFolderButton);
+            .getActionModel().getFolderWizardAction());
+        builder.add(newFolderButton, cc.xy(1, 1));
         if (!getController().isBackupOnly()) {
             JButton searchComputerButton = new JButton(getApplicationModel()
                 .getActionModel().getFindComputersAction());
-            bar.addRelatedGap();
-            bar.addGridded(searchComputerButton);
+            newFolderButton.setMinimumSize(searchComputerButton.getMinimumSize());
+            newFolderButton.setMaximumSize(searchComputerButton.getMaximumSize());
+            newFolderButton.setPreferredSize(searchComputerButton
+                .getPreferredSize());
+
+            builder.add(searchComputerButton, cc.xy(3, 1));
         }
 
-        return bar.getPanel();
+        return builder.getPanel();
     }
 
     /**

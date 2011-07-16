@@ -26,18 +26,22 @@ import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.WhatToDoPanel;
 import de.dal33t.powerfolder.util.Translation;
 
-/**
- * Action which opens folder create wizard.
- * 
- * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
- * @version $Revision: 4.0 $
- */
-public class NewFolderAction extends BaseAction {
+public class FolderWizardAction extends BaseAction {
 
-    public NewFolderAction(Controller controller) {
-        super("action_new_folder", controller);
+    public FolderWizardAction(Controller controller) {
+        super("action_folder_wizard", controller);
     }
 
     public void actionPerformed(ActionEvent e) {
+        getController().getUIController().getApplicationModel()
+            .getServerClientModel().checkAndSetupAccount();
+        if (getController().isBackupOnly()) {
+            PFWizard wizard = new PFWizard(getController(),
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
+            wizard.open(WhatToDoPanel.doBackupOption(getController(),
+                wizard.getWizardContext()));
+        } else {
+            PFWizard.openWhatToDoWizard(getController());
+        }
     }
 }

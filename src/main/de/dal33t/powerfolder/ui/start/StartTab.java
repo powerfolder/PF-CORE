@@ -237,7 +237,7 @@ public class StartTab extends PFUIComponent {
         ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
 
         JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getNewFolderAction());
+            .getActionModel().getFolderWizardAction());
         bar.addGridded(newFolderButton);
         if (!getController().isBackupOnly()) {
             JButton searchComputerButton = new JButton(getApplicationModel()
