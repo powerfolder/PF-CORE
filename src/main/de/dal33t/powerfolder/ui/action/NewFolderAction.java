@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.action;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -27,15 +28,19 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
+import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.util.FileUtils;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Action which opens folder create wizard.
@@ -50,58 +55,66 @@ public class NewFolderAction extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Select directory
+                FolderRepository folderRepository =
+                        getController().getFolderRepository();
+                List<File> files = DialogFactory.chooseDirectory(
+                        getUIController(),
+                        folderRepository.getFoldersBasedir(),
+                        false);
+                if (files == null || files.size() != 1) {
+                    return;
+                }
+                File file  = files.get(0);
 
-        // Select directory
-        FolderRepository folderRepository =
-                getController().getFolderRepository();
-        List<File> files = DialogFactory.chooseDirectory(getUIController(),
-                folderRepository.getFoldersBasedir(),
-                false);
-        if (files == null || files.size() != 1) {
-            return;
-        }
-        File file  = files.get(0);
+                // Has user already got this folder?
+                for (Folder folder : folderRepository.getFolders()) {
+                    if (folder.getBaseDirectoryInfo().getDiskFile(
+                            folderRepository).equals(file)) {
+                        return;
+                    }
+                }
 
-        // Has user already got this folder?
-        for (Folder folder : folderRepository.getFolders()) {
-            if (folder.getBaseDirectoryInfo().getDiskFile(folderRepository)
-                    .equals(file)) {
-                return;
+                // FolderInfo
+                String name = FileUtils.getSuggestedFolderName(file);
+                String folderId = '[' + IdGenerator.makeId() + ']';
+                FolderInfo fi = new FolderInfo(name, folderId);
+
+                // Setup sucess panel of this wizard path
+                FolderCreatePanel createPanel = new FolderCreatePanel(
+                        getController());
+
+                TextPanelPanel successPanel = new TextPanelPanel(getController(),
+                    Translation.getTranslation("wizard.setup_success"), Translation
+                        .getTranslation("wizard.what_to_do.folder_backup_success")
+                        + Translation.getTranslation("wizard.what_to_do.pcs_join"));
+
+                PFWizard wizard = new PFWizard(getController(),
+                    Translation.getTranslation("wizard.pfwizard.folder_title"));
+
+                wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
+                        successPanel);
+                wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY,
+                        false);
+                wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE,
+                        true);
+
+                List<FolderCreateItem> folderCreateItems =
+                        new ArrayList<FolderCreateItem>();
+                FolderCreateItem item = new FolderCreateItem(file);
+                item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                item.setFolderInfo(fi);
+                item.setArchiveHistory(
+                        ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                                getController()));
+                item.setArchiveMode(ArchiveMode.FULL_BACKUP);
+                folderCreateItems.add(item);
+                wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
+                        folderCreateItems);
+                wizard.open(createPanel);
             }
-        }
-
-        // FolderInfo
-        String name = FileUtils.getSuggestedFolderName(file);
-        String folderId = '[' + IdGenerator.makeId() + ']';
-        FolderInfo fi = new FolderInfo(name, folderId);
-
-        // FolderSettings
-        File localBaseDir = new File(folderRepository.getFoldersBasedir());
-
-        // Setup sucess panel of this wizard path
-        FolderCreatePanel createPanel = new FolderCreatePanel(getController());
-
-        TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.getTranslation("wizard.setup_success"), Translation
-                .getTranslation("wizard.what_to_do.folder_backup_success")
-                + Translation.getTranslation("wizard.what_to_do.pcs_join"));
-
-        PFWizard wizard = new PFWizard(getController(),
-            Translation.getTranslation("wizard.pfwizard.folder_title"));
-
-        wizard.getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL,
-                successPanel);
-
-        wizard.getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBaseDir);
-        wizard.getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, fi);
-        wizard.getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
-                false);
-        wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
-        wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
-
-        wizard.open(createPanel);
-
+        });
     }
 }
