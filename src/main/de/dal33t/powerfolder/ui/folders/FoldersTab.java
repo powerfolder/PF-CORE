@@ -154,10 +154,11 @@ public class FoldersTab extends PFUIComponent {
     private void buildEmptyPanel() {
         FormLayout layoutOuter = new FormLayout("center:pref:grow", "center:pref:grow");
         PanelBuilder builderOuter = new PanelBuilder(layoutOuter);
-        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow, 3dlu, fill:pref:grow", "pref");
+        FormLayout layoutInner = new FormLayout("fill:pref:grow, 3dlu, fill:pref:grow, 3dlu, fill:pref:grow",
+                "pref");
         PanelBuilder builderInner = new PanelBuilder(layoutInner);
         CellConstraints cc = new CellConstraints();
-        builderInner.add(connectingLabel, cc.xyw(1, 1, 3));
+        builderInner.add(connectingLabel, cc.xy(1, 1));
         builderInner.add(notLoggedInLabel, cc.xy(1, 1));
         builderInner.add(loginActionLabel.getUIComponent(), cc.xy(3, 1));
         builderInner.add(noFoldersFoundLabel, cc.xy(1, 1));

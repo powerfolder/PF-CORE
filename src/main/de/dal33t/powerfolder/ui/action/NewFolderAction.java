@@ -99,6 +99,7 @@ public class NewFolderAction extends BaseAction {
         wizard.getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 false);
         wizard.getWizardContext().setAttribute(SAVE_INVITE_LOCALLY, false);
+        wizard.getWizardContext().setAttribute(BACKUP_ONLINE_STOARGE, true);
 
         wizard.open(createPanel);
 
