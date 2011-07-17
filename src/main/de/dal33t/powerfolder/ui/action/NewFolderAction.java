@@ -94,7 +94,7 @@ public class NewFolderAction extends BaseAction {
 
         wizard.getWizardContext().setAttribute(FOLDER_LOCAL_BASE, localBaseDir);
         wizard.getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-                SyncProfile.AUTOMATIC_DOWNLOAD);
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         wizard.getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, fi);
         wizard.getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
                 false);
