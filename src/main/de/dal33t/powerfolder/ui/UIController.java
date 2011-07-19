@@ -81,16 +81,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.AskForFriendshipEvent;
-import de.dal33t.powerfolder.event.AskForFriendshipListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.NewFolderCandidateEvent;
-import de.dal33t.powerfolder.event.NewFolderCandidateListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -106,7 +97,6 @@ import de.dal33t.powerfolder.ui.model.TransferManagerModel;
 import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
 import de.dal33t.powerfolder.ui.notices.InvitationNotice;
 import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
-import de.dal33t.powerfolder.ui.notices.NewFolderCandidateNotice;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
@@ -365,8 +355,8 @@ public class UIController extends PFComponent {
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().addAskForFriendshipListener(
             new MyAskForFriendshipListener());
-        getController().getFolderRepository().addNewFolderCandidateListener(
-            new MyNewFolderCandidateListener());
+        getController().getFolderRepository().addFolderAutoCreateListener(
+            new MyFolderAutoCreateListener());
 
     }
 
@@ -817,18 +807,6 @@ public class UIController extends PFComponent {
     }
 
     /**
-     * Handle new folder candidates by adding a notification for the user to
-     * action.
-     */
-    private void handleNewFolderCandidateEvent(NewFolderCandidateEvent event) {
-        applicationModel.getNoticesModel().handleNotice(
-            new NewFolderCandidateNotice(Translation
-                .getTranslation("new_folder_candidate_notice.title"),
-                Translation.getTranslation("new_folder_candidate_notice.text",
-                    event.getDirectory().getName()), event.getDirectory()));
-    }
-
-    /**
      * Shows an OutOfMemoryError to the user.
      * 
      * @param oome
@@ -1270,17 +1248,27 @@ public class UIController extends PFComponent {
     }
 
     private void notifyComponent(JComponent content, Window owner,
-        int seconds2Display)
-    {
-        Slider slider = new Slider(content, owner, seconds2Display,
+        int secondsToDisplay) {
+        Slider slider = new Slider(content, owner, secondsToDisplay,
             PreferencesEntry.NOTIFICATION_TRANSLUCENT
                 .getValueInt(getController()), getController().isNotifyLeft());
         slider.show();
     }
 
-    // /////////////////
+    private void handleFolderAutoCreate(FolderAutoCreateEvent event) {
+        if (PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(
+                getController())) {
+            applicationModel.getNoticesModel().handleNotice(
+                new SimpleNotificationNotice(Translation
+                    .getTranslation("folder_auto_create_notice.title"),
+                    Translation.getTranslation("folder_auto_create_notice.text",
+                        event.getFolderName())));
+        }
+    }
+
+    // ////////////////
     // Inner Classes //
-    // /////////////////
+    // ////////////////
 
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
@@ -1448,20 +1436,15 @@ public class UIController extends PFComponent {
         }
     }
 
-    private class MyNewFolderCandidateListener implements
-        NewFolderCandidateListener
+    private class MyFolderAutoCreateListener implements FolderAutoCreateListener
     {
-        public void newFolderCandidateDetected(NewFolderCandidateEvent event) {
-            if (PreferencesEntry.SHOW_FOLDER_CANDIDATES
-                .getValueBoolean(getController()))
-            {
-                handleNewFolderCandidateEvent(event);
-            }
-        }
 
         public boolean fireInEventDispatchThread() {
-            return false;
+            return true;
+        }
+
+        public void folderAutoCreated(FolderAutoCreateEvent e) {
+            handleFolderAutoCreate(e);
         }
     }
-
 }

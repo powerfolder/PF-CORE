@@ -155,7 +155,7 @@ public enum PreferencesEntry {
      */
     SHOW_TELL_A_FRIEND("show.tell-a-friend", true),
 
-    SHOW_FOLDER_CANDIDATES("show.folder.candidates", true),
+    SHOW_AUTO_CREATED_FOLDERS("show.auto.created.folders", true),
 
     DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
 

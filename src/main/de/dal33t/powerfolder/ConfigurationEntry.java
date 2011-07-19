@@ -797,7 +797,9 @@ public enum ConfigurationEntry {
 
     AUTO_DETECT_DOWNLOAD("auto.detect.download", -1),
 
-    AUTO_DETECT_UPLOAD("auto.detect.upload", -1);
+    AUTO_DETECT_UPLOAD("auto.detect.upload", -1),
+
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true);
 
 
     // Methods/Constructors ***************************************************
@@ -982,7 +984,7 @@ public enum ConfigurationEntry {
     /**
      * @return the key in config
      */
-    public final String getConfigKey() {
+    public String getConfigKey() {
         return configKey;
     }
 }

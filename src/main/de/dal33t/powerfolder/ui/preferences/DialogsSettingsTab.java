@@ -57,8 +57,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
     /** Add personal message with freindship status change */
     private JCheckBox askForFriendshipMessageCB;
 
-    /** Show possible new folder candidates in the PF folder base. */
-    private JCheckBox showCandidateFoldersBox;
+    /** Show folders that have been found in PF folder base & auto-created. */
+    private JCheckBox showAutoCreatedFoldersBox;
 
     /** warn on limited connectivity */
     private JCheckBox warnOnLimitedConnectivityCB;
@@ -137,10 +137,10 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             });
 
         // Show system notifications when minimized
-        showCandidateFoldersBox = new JCheckBox(Translation
-            .getTranslation("preferences.dialog.show_candidate_folders"));
-        showCandidateFoldersBox.setSelected(
-                PreferencesEntry.SHOW_FOLDER_CANDIDATES.getValueBoolean(
+        showAutoCreatedFoldersBox = new JCheckBox(Translation
+            .getTranslation("preferences.dialog.show_auto_created_folders"));
+        showAutoCreatedFoldersBox.setSelected(
+                PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.getValueBoolean(
                         getController()));
 
         notificationDisplaySlider = new JSlider();
@@ -259,7 +259,7 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(askForFriendshipMessageCB, cc.xy(3, row));
 
             row += 2;
-            builder.add(showCandidateFoldersBox, cc.xy(3, row));
+            builder.add(showAutoCreatedFoldersBox, cc.xy(3, row));
 
             row += 2;
             builder.add(warnOnDuplicateFoldersCB, cc.xy(3, row));
@@ -356,8 +356,8 @@ public class DialogsSettingsTab extends PFComponent implements PreferenceTab {
         PreferencesEntry.NOTIFICATION_TRANSLUCENT.setValue(getController(),
             notificationTranslucentSlider.getValue());
 
-        PreferencesEntry.SHOW_FOLDER_CANDIDATES.setValue(getController(),
-            showCandidateFoldersBox.isSelected());
+        PreferencesEntry.SHOW_AUTO_CREATED_FOLDERS.setValue(getController(),
+            showAutoCreatedFoldersBox.isSelected());
 
         PreferencesEntry.NOTIFICATION_DISPLAY.setValue(getController(),
             notificationDisplaySlider.getValue());

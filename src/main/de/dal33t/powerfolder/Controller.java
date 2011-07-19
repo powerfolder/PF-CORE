@@ -303,7 +303,7 @@ public class Controller extends PFComponent {
      *            the command line as specified by the user
      */
     public void startConfig(CommandLine aCommandLine) {
-        this.commandLine = aCommandLine;
+        commandLine = aCommandLine;
         String configName = aCommandLine.getOptionValue("c");
         startConfig(configName);
     }
@@ -888,11 +888,14 @@ public class Controller extends PFComponent {
         // ============
         // Monitor the default directory for possible new folders.
         // ============
-        threadPool.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                folderRepository.lookForNewFolders();
-            }
-        }, 1L, 1L, TimeUnit.MINUTES);
+        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.getValueBoolean(this))
+        {
+            threadPool.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    folderRepository.lookForNewFolders();
+                }
+            }, 1L, 1L, TimeUnit.MINUTES);
+        }
 
         // ============
         // Hourly tasks

@@ -107,7 +107,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final ProblemListener valveProblemListenerSupport;
 
-    private NewFolderCandidateListener newFolderCandidateListenerSupport;
+    private FolderAutoCreateListener folderAutoCreateListener;
 
     /**
      * Constructor
@@ -132,8 +132,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderRepositoryListener.class);
         valveProblemListenerSupport = ListenerSupportFactory
             .createListenerSupport(ProblemListener.class);
-        newFolderCandidateListenerSupport = ListenerSupportFactory
-            .createListenerSupport(NewFolderCandidateListener.class);
+        folderAutoCreateListener = ListenerSupportFactory
+            .createListenerSupport(FolderAutoCreateListener.class);
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -146,18 +146,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             listener);
     }
 
-    public void addNewFolderCandidateListener(
-        NewFolderCandidateListener listener)
-    {
-        ListenerSupportFactory.addListener(newFolderCandidateListenerSupport,
+    public void addFolderAutoCreateListener(FolderAutoCreateListener listener) {
+        ListenerSupportFactory.addListener(folderAutoCreateListener,
             listener);
     }
 
-    public void removeNewFolderCandidateListener(
-        NewFolderCandidateListener listener)
-    {
-        ListenerSupportFactory.removeListener(
-            newFolderCandidateListenerSupport, listener);
+    public void removeFolderAutoCreateListener(FolderAutoCreateListener
+            listener) {
+        ListenerSupportFactory.removeListener(folderAutoCreateListener,
+                listener);
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */
@@ -1083,16 +1080,25 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     }
                     if (!known) {
-                        if (log.isLoggable(Level.FINE)) {
-                            log.fine("Found new folder candidate at " + file);
-                        }
-                        newFolderCandidateListenerSupport
-                            .newFolderCandidateDetected(new NewFolderCandidateEvent(
-                                file));
+                        handleNewFolder(file);
                     }
                 }
             }
         }
+    }
+
+    // Found a new directory in the folder base. Create a new folder.
+    private void handleNewFolder(File file) {
+        FolderInfo fi = new FolderInfo(file.getName(), '[' +
+                IdGenerator.makeId() + ']');
+        FolderSettings fs = new FolderSettings(file,
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                ArchiveMode.FULL_BACKUP,
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                        getController()));
+        createFolder(fi, fs);
+        folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
+                fi.getName()));
     }
 
     /**
