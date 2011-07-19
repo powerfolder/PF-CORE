@@ -104,7 +104,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.7.7 - 3.5.0";
+    public static final String PROGRAM_VERSION = "4.7.7 - 3.5.3"; // 3.5.0
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -864,7 +864,7 @@ public class Controller extends PFComponent {
             public void run() {
                 performHousekeeping(true);
             }
-        }, secondsToMidnight, 1, TimeUnit.DAYS);
+        }, secondsToMidnight, 60 * 60 * 24, TimeUnit.SECONDS);
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(new TimerTask() {
