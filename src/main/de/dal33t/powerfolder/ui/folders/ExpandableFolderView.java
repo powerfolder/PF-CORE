@@ -920,8 +920,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             connectedCountText = "?";
         } else {
             countText = String.valueOf(folder.getMembersCount());
+            // And me!
             connectedCountText = String.valueOf(folder
-                .getConnectedMembersCount());
+                .getConnectedMembersCount() + 1);
         }
         membersLabel.setText(Translation.getTranslation(
             "exp_folder_view.members", countText, connectedCountText));
