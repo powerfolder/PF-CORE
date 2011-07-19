@@ -113,8 +113,8 @@ public class Account implements Serializable {
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
     private boolean proUser;
-    
-    @Column(length=1024)
+
+    @Column(length = 1024)
     private String notes;
 
     /**
@@ -144,7 +144,7 @@ public class Account implements Serializable {
      */
     @CollectionOfElements
     @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
-    @Cascade(value = {CascadeType.ALL, CascadeType.DELETE_ORPHAN})
+    @Cascade(value = {CascadeType.ALL})
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -390,6 +390,7 @@ public class Account implements Serializable {
 
     /**
      * Adds a line of info with the current date to the notes of that account.
+     * 
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
@@ -697,7 +698,7 @@ public class Account implements Serializable {
         return (this.oid.equals(otherAccount.oid));
     }
 
-    public void convertCollections() {
+    public synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
                 permissions);
