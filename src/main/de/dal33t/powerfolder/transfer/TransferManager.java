@@ -2996,6 +2996,9 @@ public class TransferManager extends PFComponent {
                 if (downloadManager != null) {
                     Folder folder = folderRepository.getFolder(fileInfo
                         .getFolderInfo());
+                    if (folder == null) {
+                        continue;
+                    }
                     folder.getStatistic().putPartialSyncStat(fileInfo,
                         getController().getMySelf(),
                         downloadManager.getCounter().getBytesTransferred());
@@ -3003,6 +3006,9 @@ public class TransferManager extends PFComponent {
             }
             for (Upload upload : activeUploads) {
                 Folder folder = upload.getFile().getFolder(folderRepository);
+                if (folder == null) {
+                    continue;
+                }
                 folder.getStatistic().putPartialSyncStat(upload.getFile(),
                     upload.getPartner(),
                     upload.getCounter().getBytesTransferred());
