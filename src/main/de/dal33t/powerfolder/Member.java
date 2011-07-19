@@ -372,7 +372,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
 
-        if (getController().isLanOnly() && !isOnLAN()) {
+        if (!isServer && getController().isLanOnly() && !isOnLAN()) {
             return false;
         }
 
