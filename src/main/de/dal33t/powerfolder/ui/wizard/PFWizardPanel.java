@@ -30,11 +30,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.LayoutMap;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 
 /**
@@ -154,7 +156,9 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return true
      */
     public boolean hasHelp() {
-        return true;
+        return StringUtils
+            .isNotBlank(ConfigurationEntry.PROVIDER_QUICKSTART_URL
+                .getValue(getController()));
     }
 
     /** Always open online docu */
