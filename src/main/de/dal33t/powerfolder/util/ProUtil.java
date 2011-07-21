@@ -47,7 +47,7 @@ public class ProUtil {
     public static final String getBuyNowURL(Controller controller) {
         String simpleURL = ConfigurationEntry.PROVIDER_BUY_URL
             .getValue(controller);
-        if (simpleURL == null) {
+        if (StringUtils.isBlank(simpleURL)) {
             return null;
         } else {
             return simpleURL;
