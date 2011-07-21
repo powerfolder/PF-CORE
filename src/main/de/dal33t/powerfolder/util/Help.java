@@ -50,6 +50,11 @@ public class Help {
      * Opens the quickstart guides
      */
     public static void openQuickstartGuides(Controller controller) {
+        if (StringUtils.isBlank(ConfigurationEntry.PROVIDER_QUICKSTART_URL
+            .getValue(controller)))
+        {
+            return;
+        }
         LOG.fine("Opening quickstart guides");
         try {
             BrowserLauncher.openURL(ConfigurationEntry.PROVIDER_QUICKSTART_URL
@@ -88,8 +93,15 @@ public class Help {
     public static LinkLabel createQuickstartGuideLabel(Controller controller,
         String labelText)
     {
-        return new LinkLabel(controller, labelText,
-            ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
+        String url = ConfigurationEntry.PROVIDER_QUICKSTART_URL
+            .getValue(controller);
+        if (StringUtils.isNotBlank(url)) {
+            return new LinkLabel(controller, labelText,
+                ConfigurationEntry.PROVIDER_QUICKSTART_URL.getValue(controller));
+        } else {
+            return new LinkLabel(controller, "", "");
+        }
+
     }
 
     /**
