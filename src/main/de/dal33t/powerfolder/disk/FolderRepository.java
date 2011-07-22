@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,6 +87,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     // The trigger to start scanning
     private final Object scanTrigger = new Object();
     private boolean triggered;
+    private final AtomicBoolean skipNewFolderSearch = new AtomicBoolean();
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -807,6 +809,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
+        skipNewFolderSearch.set(true);
         Reject.ifNull(folder, "Folder is null");
 
         // Remove the desktop shortcut
@@ -835,7 +838,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.shutdown();
         metaFolders.remove(folder.getInfo());
 
-        // synchronizememberships
+        // synchronize memberships
         triggerSynchronizeAllFolderMemberships();
 
         // Abort scanning
@@ -847,6 +850,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Delete the .PowerFolder dir and contents
         if (deleteSystemSubDir) {
+            // Sleep a couple of seconds for things to settle,
+            // before removing dirs, to avoid conflicts.
+            try {
+                Thread .sleep(2000);
+            } catch (InterruptedException e) {
+            }
+
             try {
                 FileUtils.recursiveDelete(folder.getSystemSubDir());
             } catch (IOException e) {
@@ -866,18 +876,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            // Remove the folder if totally empty or just has desktop.ini.
-            if (folder.getLocalBase().listFiles().length == 0 ||
-                    folder.getLocalBase().listFiles().length == 1 &&
-                            folder.getLocalBase().listFiles()[0].getName()
-                                    .equals("desktop.ini")) {
+            // Remove the folder if totally empty.
+            File[] files = folder.getLocalBase().listFiles();
+            if (files.length == 0) {
                 try {
-                    folder.getLocalBase().delete();
+                    FileUtils.recursiveDelete(folder.getLocalBase());
                 } catch (Exception e) {
                     logSevere("Failed to delete local base: "
                         + folder.getLocalBase().getAbsolutePath(), e);
                 }
             }
+            skipNewFolderSearch.set(false);
         }
 
         // Fire event
@@ -1065,6 +1074,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
+        if (skipNewFolderSearch.get()) {
+            if (isFine()) {
+                logFine("Skipping searching for new folders...");
+            }
+            return;
+        }
         if (isFine()) {
             logFine("Searching for new folders...");
         }
@@ -1100,6 +1115,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
                         getController()));
         createFolder(fi, fs);
+
+        // Make sure it is backed up by the server.
+        CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+            fi, null);
+        task.setArchiveVersions(fs.getVersions());
+        getController().getTaskManager().scheduleTask(task);
+
         folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
                 fi.getName()));
     }
