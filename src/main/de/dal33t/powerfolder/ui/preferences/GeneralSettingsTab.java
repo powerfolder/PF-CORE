@@ -178,15 +178,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     .isPFStartup(getController()));
             }
 
-            if (OSUtil.isWindowsSystem()) {
-                ValueModel pfiModel = new ValueHolder(
-                    ConfigurationEntry.USE_PF_ICON
-                        .getValueBoolean(getController()));
-                usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
-                    new BufferedValueModel(pfiModel, writeTrigger), Translation
-                        .getTranslation("preferences.dialog.use_pf_icon"));
-
-            }
+            ValueModel pfiModel = new ValueHolder(
+                ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
+            usePowerFolderIconBox = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(pfiModel, writeTrigger),
+                Translation.getTranslation("preferences.dialog.use_pf_icon"));
         }
 
         modeModel = new ValueHolder();
