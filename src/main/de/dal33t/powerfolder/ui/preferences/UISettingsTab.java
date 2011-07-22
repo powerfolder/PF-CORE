@@ -262,6 +262,16 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                     .getTranslation("preferences.dialog.show_pf_link"));
 
         }
+        
+        if (OSUtil.isMacOS()) {
+            ValueModel pflModel = new ValueHolder(
+                ConfigurationEntry.USE_PF_LINK
+                    .getValueBoolean(getController()));
+            usePowerFolderLink = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(pflModel, writeTrigger), Translation
+                    .getTranslation("preferences.dialog.show_pf_link"));
+        }
+        
 
         if (getUIController().getSkins().length > 1) {
             skinLabel = new JLabel(Translation
@@ -345,7 +355,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
             // Links only available in Vista
-            if (OSUtil.isWindowsVistaSystem()) {
+            if (usePowerFolderLink != null) {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
