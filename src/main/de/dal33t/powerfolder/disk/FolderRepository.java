@@ -866,8 +866,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            // Remove the folder if totally empty.
-            if (folder.getLocalBase().listFiles().length == 0) {
+            // Remove the folder if totally empty or just has desktop.ini.
+            if (folder.getLocalBase().listFiles().length == 0 ||
+                    folder.getLocalBase().listFiles().length == 1 &&
+                            folder.getLocalBase().listFiles()[0].getName()
+                                    .equals("desktop.ini")) {
                 try {
                     folder.getLocalBase().delete();
                 } catch (Exception e) {
