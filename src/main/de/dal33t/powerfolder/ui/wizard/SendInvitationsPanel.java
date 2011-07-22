@@ -153,32 +153,29 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     private void sendInvite(Collection<Member> candidates, String invitee) {
         RuntimeException rte = null;
-        if (Util.isValidEmail(invitee)) {
-            // Invitation by email
-            try {
-                InvitationUtil.invitationByServer(getController(), invitation,
-                    invitee, false);
-            } catch (RuntimeException e) {
-                LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
-                    + ". " + e, e);
-                rte = e;
+        // Invitation by email
+        try {
+            InvitationUtil.invitationByServer(getController(), invitation,
+                invitee, false);
+        } catch (RuntimeException e) {
+            LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
+                + ". " + e, e);
+            rte = e;
+        }
+        for (Member node : candidates) {
+            AccountInfo aInfo = node.getAccountInfo();
+            if (aInfo != null && aInfo.getUsername() != null
+                && aInfo.getUsername().equalsIgnoreCase(invitee))
+            {
+                InvitationUtil.invitationToNode(getController(), invitation,
+                    node);
             }
-            for (Member node : candidates) {
-                AccountInfo aInfo = node.getAccountInfo();
-                if (aInfo != null && aInfo.getUsername() != null
-                    && aInfo.getUsername().equalsIgnoreCase(invitee))
-                {
-                    InvitationUtil.invitationToNode(getController(),
-                        invitation, node);
-                }
-            }
-        } else {
-            // Invitation by node name
-            for (Member node : candidates) {
-                if (invitee.equalsIgnoreCase(node.getNick())) {
-                    InvitationUtil.invitationToNode(getController(),
-                        invitation, node);
-                }
+        }
+        // Invitation by node name
+        for (Member node : candidates) {
+            if (invitee.equalsIgnoreCase(node.getNick())) {
+                InvitationUtil.invitationToNode(getController(), invitation,
+                    node);
             }
         }
         if (rte != null) {
