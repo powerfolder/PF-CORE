@@ -258,11 +258,11 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Show the upper links if mouse over.
      */
     private void updateUpperComponents() {
-        boolean showFolder = mouseOver.get() && folder != null;
-        upperSyncLink.getUIComponent().setVisible(showFolder ||
-                !showing100Sync.get() );
-        upperInviteButton.setVisible(showFolder);
-        upperOpenFilesButton.setVisible(showFolder);
+        upperSyncLink.getUIComponent().setVisible(folder != null &&
+                (mouseOver.get() || !showing100Sync.get()));
+        boolean showButtons = mouseOver.get() && folder != null;
+        upperInviteButton.setVisible(showButtons);
+        upperOpenFilesButton.setVisible(showButtons);
 
         final boolean showNoFolder = mouseOver.get() && folder == null;
         SwingWorker worker = new SwingWorker() {
