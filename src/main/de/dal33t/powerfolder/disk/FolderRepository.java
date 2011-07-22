@@ -61,6 +61,7 @@ import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
 import de.dal33t.powerfolder.util.ui.NeverAskAgainResponse;
@@ -267,6 +268,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 WinUtils.getInstance().setPFFavorite(useFavLink,
                     getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        }
+        if (useFavLink && MacUtils.isSupported()) {
+            try {
+               MacUtils.getInstance().setPFPlaces(true, getController());
             } catch (IOException e) {
                 logSevere(e);
             }
