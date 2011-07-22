@@ -1307,9 +1307,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Delete any file archives over a specified age.
      */
     public void cleanupOldArchiveFiles() {
-        int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
-                getController());
-        if (period == Integer.MAX_VALUE) { // cleanup := never
+        int period = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS
+            .getValueInt(getController());
+        if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never
             return;
         }
         Calendar cal = Calendar.getInstance();
