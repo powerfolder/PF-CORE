@@ -204,8 +204,8 @@ public class InvitationUtil {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(invitation, "Invitation is null");
 
-        JFrame parent = controller.getUIController().getMainFrame()
-            .getUIComponent();
+        // JFrame parent = controller.getUIController().getMainFrame()
+        // .getUIComponent();
 
         // if (to == null) {
         // to = (String) JOptionPane.showInputDialog(parent, Translation
