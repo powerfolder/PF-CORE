@@ -401,14 +401,17 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.SHOW_ADVANCED_SETTINGS.setValue(getController(),
             showAdvancedSettingsBox.isSelected());
 
-        // Desktop PowerFolders shortcut.
-        boolean oldValue = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
-            .getValueBoolean(getController());
-        boolean newValue = createPowerFoldersDesktopShortcutsBox.isSelected();
-        if (oldValue ^ newValue) {
-            PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
-                getController(), newValue);
-            getUIController().configureDesktopShortcut(false);
+        if (createPowerFoldersDesktopShortcutsBox != null) {
+            // Desktop PowerFolders shortcut.
+            boolean oldValue = PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+                .getValueBoolean(getController());
+            boolean newValue = createPowerFoldersDesktopShortcutsBox
+                .isSelected();
+            if (oldValue ^ newValue) {
+                PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.setValue(
+                    getController(), newValue);
+                getUIController().configureDesktopShortcut(false);
+            }
         }
 
         int index = archiveCleanupCombo.getSelectedIndex();
