@@ -132,6 +132,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private final TransferManager tm;
 
+    private File metaDataBaseDir;
+
     public AbstractDownloadManager(Controller controller, FileInfo file,
         boolean automatic)
     {
@@ -809,14 +811,17 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      *             if the directory couldn't be created
      */
     private File getMetaDataBaseDir() throws IOException {
-        File baseDir = new File(getFileInfo().getFolder(
+        if (metaDataBaseDir != null) {
+            return metaDataBaseDir;
+        }
+        metaDataBaseDir = new File(getFileInfo().getFolder(
             getController().getFolderRepository()).getSystemSubDir(),
             "transfers");
-        if (!baseDir.exists() && !baseDir.mkdirs()) {
+        if (!metaDataBaseDir.exists() && !metaDataBaseDir.mkdirs()) {
             throw new IOException(
                 "Couldn't create base directory for transfer meta data!");
         }
-        return baseDir;
+        return metaDataBaseDir;
     }
 
     private boolean hasMetaFile() {
