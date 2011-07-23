@@ -72,8 +72,8 @@ public class MacUtils extends Loggable {
     }
 
     public void createPlacesLink(String lnkTarget) throws IOException {
-       String cmdLine = placesHelperPath + " p " + lnkTarget;
-       Runtime.getRuntime().exec(cmdLine);
+        String cmdLine = placesHelperPath + " p " + lnkTarget;
+        Runtime.getRuntime().exec(cmdLine);
     }
 
     private boolean init() {
@@ -104,18 +104,37 @@ public class MacUtils extends Loggable {
     public void setPFPlaces(boolean setup, Controller controller)
         throws IOException
     {
-      if (setup) {
-          File baseDir = controller.getFolderRepository().getFoldersAbsoluteDir();
-          createPlacesLink(baseDir.getAbsolutePath());
-      } else {
-          // TODO Remove places link
-      }
+        if (setup) {
+            File baseDir = controller.getFolderRepository()
+                .getFoldersAbsoluteDir();
+            createPlacesLink(baseDir.getAbsolutePath());
+        } else {
+            // TODO Remove link
+        }
     }
 
     public void setPFStartup(boolean setup, Controller controller)
         throws IOException
     {
+        if (setup) {
+            File pfile = new File(new File(
+                System.getProperty("java.class.path")).getParentFile(),
+                controller.getDistribution().getBinaryName() + ".app");
+            if (!pfile.exists()) {
+                pfile = new File(controller.getDistribution().getBinaryName()
+                    + ".app");
+                if (!pfile.exists()) {
+                    logSevere("Couldn't find executable! "
+                        + "Note: Setting up a startup shortcut only works "
+                        + "when PowerFolder was started by PowerFolder.app");
+                    return;
+                }
+            }
 
+            String cmdLine = placesHelperPath + " s " + pfile.getAbsolutePath();
+            Runtime.getRuntime().exec(cmdLine);
+        } else {
+            // TODO Remove link
+        }
     }
-
 }

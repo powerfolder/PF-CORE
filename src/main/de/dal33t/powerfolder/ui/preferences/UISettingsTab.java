@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class UISettingsTab extends PFUIComponent implements PreferenceTab {
@@ -264,6 +265,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         }
         
         if (OSUtil.isMacOS()) {
+            // Places
             ValueModel pflModel = new ValueHolder(
                 ConfigurationEntry.USE_PF_LINK
                     .getValueBoolean(getController()));
@@ -493,13 +495,18 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private void configureFavorite(boolean newValue) {
-        if (!WinUtils.isSupported()) {
-            return;
-        }
-        try {
-            WinUtils.getInstance().setPFFavorite(newValue, getController());
-        } catch (IOException e) {
-            logSevere(e);
+        if (WinUtils.isSupported()) {
+            try {
+                WinUtils.getInstance().setPFFavorite(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
+        } else  if(MacUtils.isSupported()) {
+            try {
+                MacUtils.getInstance().setPFPlaces(newValue, getController());
+            } catch (IOException e) {
+                logSevere(e);
+            }
         }
     }
 

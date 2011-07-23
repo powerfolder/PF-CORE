@@ -31,6 +31,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import sun.nio.cs.ext.MacUkraine;
+
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.BufferedValueModel;
 import com.jgoodies.binding.value.Trigger;
@@ -46,11 +48,13 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.ArchiveModeSelectorPanel;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
@@ -60,6 +64,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox createPowerFoldersDesktopShortcutsBox;
 
     private JCheckBox startWithWindowsBox;
+    private ActionLabel startWithMacOSLabel;
 
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
@@ -185,6 +190,24 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 Translation.getTranslation("preferences.dialog.use_pf_icon"));
         }
 
+        if (MacUtils.isSupported()) {
+            startWithMacOSLabel = new ActionLabel(getController(),
+                new BaseAction("preferences.dialog.start_with_macosx",
+                    getController())
+                {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            MacUtils.getInstance().setPFStartup(true,
+                                getController());
+                        } catch (IOException e1) {
+                            logWarning("Unable to setup auto start on logon. "
+                                + e);
+                        }
+                    }
+                });
+
+        }
+
         modeModel = new ValueHolder();
         versionModel = new ValueHolder();
         archiveModeSelectorPanel = new ArchiveModeSelectorPanel(
@@ -298,7 +321,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     row += 2;
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
-
+                
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
@@ -312,6 +335,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     new JLabel(Translation
                         .getTranslation("preferences.dialog.non_windows_info"),
                         SwingConstants.CENTER), cc.xyw(1, row, 4));
+                if (startWithMacOSLabel != null) {
+                    builder.appendRow("3dlu");
+                    builder.appendRow("pref");
+                    row += 2;
+                    builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
+                }
+
             }
 
             if (!getController().isBackupOnly()) {
