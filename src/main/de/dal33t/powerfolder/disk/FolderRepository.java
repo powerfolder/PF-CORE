@@ -266,15 +266,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController());
         if (useFavLink && WinUtils.isSupported()) {
             try {
-                WinUtils.getInstance().setPFFavorite(useFavLink,
-                    getController());
+                WinUtils.getInstance().setPFFavorite(true, getController());
             } catch (IOException e) {
                 logSevere(e);
             }
         }
         if (useFavLink && MacUtils.isSupported()) {
             try {
-               MacUtils.getInstance().setPFPlaces(true, getController());
+                MacUtils.getInstance().setPFPlaces(true, getController());
             } catch (IOException e) {
                 logSevere(e);
             }
