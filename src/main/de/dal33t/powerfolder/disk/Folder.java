@@ -927,6 +927,8 @@ public class Folder extends PFComponent {
             }
         } while (scannerBusy);
 
+
+        fireScanResultCommited(result);
         if (checkIfDeviceDisconnected()) {
             if (isFiner()) {
                 logFiner("Device disconnected while scanning folder: "

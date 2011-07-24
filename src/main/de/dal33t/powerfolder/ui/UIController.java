@@ -81,6 +81,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -1011,6 +1012,11 @@ public class UIController extends PFComponent {
             // Ask for more sync options on that folder if on project sync
             new SyncFolderPanel(getController(), folder).open();
         } else {
+
+            // Want to be aware when the scan completes.
+            applicationModel.getFolderRepositoryModel().addInterestedFolderInfo(
+                    folder.getInfo());
+
             getController().setSilentMode(false);
 
             // Let other nodes scan now!
@@ -1264,6 +1270,59 @@ public class UIController extends PFComponent {
                     Translation.getTranslation("folder_auto_create_notice.text",
                         event.getFolderName())));
         }
+    }
+
+    /**
+     * Scan results have been created after the user requested folder sync.
+     * So give the user some feedback.
+     *
+     * @param scanResult
+     */
+    public void scanResultCreated(ScanResult scanResult) {
+        // UI hidden?
+        if (mainFrame == null || mainFrame.isIconifiedOrHidden()) {
+            return;
+        }
+        int newSize = scanResult.getNewFiles().size();
+        int changedSize = scanResult.getChangedFiles().size();
+        int deletedSize = scanResult.getDeletedFiles().size();
+        StringBuilder sb = new StringBuilder();
+        sb.append(Translation.getTranslation("uicontroller.sync_info.start") +
+                "\n\n" + '(');
+        boolean addComma = false;
+        if (newSize > 0) {
+            sb.append(Translation.getTranslation("uicontroller.sync_info.new",
+                    String.valueOf(newSize)));
+            addComma = true;
+        }
+        if (changedSize > 0) {
+            if (addComma) {
+                sb.append(", ");
+            }
+            sb.append(Translation.getTranslation("uicontroller.sync_info.changed",
+                    String.valueOf(changedSize)));
+            addComma = true;
+        }
+        if (deletedSize > 0) {
+            if (addComma) {
+                sb.append(", ");
+            }
+            sb.append(Translation.getTranslation("uicontroller.sync_info.deleted",
+                    String.valueOf(deletedSize)));
+        }
+        if (newSize == 0 && changedSize == 0 && deletedSize == 0) {
+            sb.append(Translation.getTranslation(
+                    "uicontroller.sync_info.no_changes_detected"));
+        }
+        sb.append(')');
+        if (newSize > 0 || changedSize > 0) {
+            sb.append("\n\n");
+            sb.append(Translation.getTranslation("uicontroller.sync_info.transfer",
+                    String.valueOf(newSize + changedSize)));
+        }
+        DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("uicontroller.sync_info.title"),
+                sb.toString(), GenericDialogType.INFO);
     }
 
     // ////////////////

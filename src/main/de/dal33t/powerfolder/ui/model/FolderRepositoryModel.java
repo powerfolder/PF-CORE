@@ -1,9 +1,12 @@
 package de.dal33t.powerfolder.ui.model;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderEvent;
@@ -13,6 +16,8 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.OverallFolderStatEvent;
 import de.dal33t.powerfolder.event.OverallFolderStatListener;
+
+import javax.swing.*;
 
 public class FolderRepositoryModel extends PFUIComponent {
 
@@ -34,6 +39,13 @@ public class FolderRepositoryModel extends PFUIComponent {
      * If syncing at the time the dates where calculated.
      */
     private boolean syncingAtDate;
+
+    /**
+     * List of folders where the user has requested a scan. Used to advise the
+     * UI when the next scan arrives so that the user can be notified.
+     */
+    private final List<FolderInfo> interestedFolders =
+            new ArrayList<FolderInfo>();
 
     FolderRepositoryModel(Controller controller) {
         super(controller);
@@ -125,6 +137,12 @@ public class FolderRepositoryModel extends PFUIComponent {
             .statCalculated(new OverallFolderStatEvent(syncing));
     }
 
+    public void addInterestedFolderInfo(FolderInfo info) {
+        synchronized (interestedFolders) {
+            interestedFolders.add(info);
+        }
+    }
+
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {
@@ -164,7 +182,21 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void remoteContentsChanged(FolderEvent folderEvent) {
         }
 
-        public void scanResultCommited(FolderEvent folderEvent) {
+        public void scanResultCommited(final FolderEvent folderEvent) {
+            FolderInfo folderInfo = folderEvent.getFolder().getInfo();
+            synchronized (interestedFolders) {
+                if (interestedFolders.contains(
+                        folderInfo)) {
+                    // Give user feedback on this scan result.
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            getUIController().scanResultCreated(
+                                    folderEvent.getScanResult());
+                        }
+                    });
+                    interestedFolders.remove(folderInfo);
+                }
+            }
         }
 
         public void fileChanged(FolderEvent folderEvent) {
