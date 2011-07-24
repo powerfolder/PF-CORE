@@ -19,24 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.start;
 
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.util.Date;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
-import jwf.WizardContext;
-
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -56,6 +42,12 @@ import de.dal33t.powerfolder.util.Help;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.UIUtil;
+import jwf.WizardContext;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.Date;
 
 /**
  * Class for the Status tab in the main tab area of the UI.
@@ -234,19 +226,21 @@ public class StartTab extends PFUIComponent {
      */
     private JPanel createToolBar() {
 
-        ButtonBarBuilder bar = ButtonBarBuilder.createLeftToRightBuilder();
+        FormLayout layout = new FormLayout("pref, 3dlu, pref, 3dlu:grow",
+            "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
 
-        JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getFolderWizardAction());
-        bar.addGridded(newFolderButton);
+        ActionLabel newFolderLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFolderWizardAction());
+        builder.add(newFolderLink.getUIComponent(), cc.xy(1, 1));
         if (!getController().isBackupOnly()) {
-            JButton searchComputerButton = new JButton(getApplicationModel()
-                .getActionModel().getFindComputersAction());
-            bar.addRelatedGap();
-            bar.addGridded(searchComputerButton);
+            ActionLabel searchComputerLink = new ActionLabel(getController(), 
+                    getApplicationModel().getActionModel().getFindComputersAction());
+            builder.add(searchComputerLink.getUIComponent(), cc.xy(3, 1));
         }
 
-        return bar.getPanel();
+        return builder.getPanel();
     }
 
     private void updateOnlineStorageDetails() {

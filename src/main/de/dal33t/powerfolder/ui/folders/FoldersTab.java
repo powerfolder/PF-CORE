@@ -212,31 +212,18 @@ public class FoldersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton folderWizardButton = new JButton(getApplicationModel()
-            .getActionModel().getFolderWizardAction());
-        JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getNewFolderAction());
-
-        // Same width of the buttons please
-        JButton searchComputerButton = new JButton(getApplicationModel()
-            .getActionModel().getFindComputersAction());
-        folderWizardButton.setMinimumSize(searchComputerButton.getMinimumSize());
-        folderWizardButton.setMaximumSize(searchComputerButton.getMaximumSize());
-        folderWizardButton.setPreferredSize(searchComputerButton
-            .getPreferredSize());
-        newFolderButton.setMinimumSize(searchComputerButton.getMinimumSize());
-        newFolderButton.setMaximumSize(searchComputerButton.getMaximumSize());
-        newFolderButton.setPreferredSize(searchComputerButton
-            .getPreferredSize());
-        searchComputerButton.setVisible(false);
+        ActionLabel folderWizardLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFolderWizardAction());
+        ActionLabel newFolderLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getNewFolderAction());
 
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(folderWizardButton, cc.xy(2, 1));
-        builder.add(newFolderButton, cc.xy(4, 1));
+        builder.add(folderWizardLink.getUIComponent(), cc.xy(2, 1));
+        builder.add(newFolderLink.getUIComponent(), cc.xy(4, 1));
         builder.add(autoAcceptCB, cc.xy(6, 1));
         return builder.getPanel();
     }

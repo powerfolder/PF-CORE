@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.model.NodeManagerModel;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.UIUtil;
 
@@ -120,15 +121,15 @@ public class ComputersTab extends PFUIComponent {
      * @return the toolbar
      */
     private JPanel createToolBar() {
-        JButton searchComputerButton = new JButton(getApplicationModel()
-                .getActionModel().getFindComputersAction());
+        ActionLabel searchComputerLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFindComputersAction());
 
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(searchComputerButton, cc.xy(2, 1));
+        builder.add(searchComputerLink.getUIComponent(), cc.xy(2, 1));
         builder.add(showOfflineCB, cc.xy(4, 1));
 
         return builder.getPanel();

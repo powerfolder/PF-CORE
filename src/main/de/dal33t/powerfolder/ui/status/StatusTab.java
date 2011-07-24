@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.status;
 
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,12 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.TimerTask;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -450,18 +445,38 @@ public class StatusTab extends PFUIComponent {
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JButton newFolderButton = new JButton(getApplicationModel()
-            .getActionModel().getFolderWizardAction());
-        builder.add(newFolderButton, cc.xy(1, 1));
-        if (!getController().isBackupOnly()) {
-            JButton searchComputerButton = new JButton(getApplicationModel()
-                .getActionModel().getFindComputersAction());
-            newFolderButton.setMinimumSize(searchComputerButton.getMinimumSize());
-            newFolderButton.setMaximumSize(searchComputerButton.getMaximumSize());
-            newFolderButton.setPreferredSize(searchComputerButton
-                .getPreferredSize());
+        ActionLabel newFolderLink = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getFolderWizardAction());
+        JComponent newFolderLinkComponent = newFolderLink.getUIComponent();
 
-            builder.add(searchComputerButton, cc.xy(3, 1));
+        // Set the links to the height of a checkbox,
+        // to make the layout similar to Computers and Folders tabs.
+        JCheckBox dummyCB = new JCheckBox("x");
+        int dummyHeight = (int) dummyCB.getPreferredSize().getHeight();
+        newFolderLinkComponent.setMinimumSize(new Dimension(
+                (int) newFolderLinkComponent.getMinimumSize().getWidth(),
+                dummyHeight));
+        newFolderLinkComponent.setMaximumSize(new Dimension(
+                (int) newFolderLinkComponent.getMaximumSize().getWidth(),
+                dummyHeight));
+        newFolderLinkComponent.setPreferredSize(new Dimension(
+                (int) newFolderLinkComponent.getPreferredSize().getWidth(),
+                dummyHeight));
+        builder.add(newFolderLinkComponent, cc.xy(1, 1));
+        if (!getController().isBackupOnly()) {
+            ActionLabel searchComputerLink = new ActionLabel(getController(), 
+                    getApplicationModel().getActionModel().getFindComputersAction());
+            JComponent searchComputerLinkComponent = searchComputerLink.getUIComponent();
+            searchComputerLinkComponent.setMinimumSize(new Dimension(
+                    (int) searchComputerLinkComponent.getMinimumSize().getWidth(),
+                    dummyHeight));
+            searchComputerLinkComponent.setMaximumSize(new Dimension(
+                    (int) searchComputerLinkComponent.getMaximumSize().getWidth(),
+                    dummyHeight));
+            searchComputerLinkComponent.setPreferredSize(new Dimension(
+                    (int) searchComputerLinkComponent.getPreferredSize().getWidth(),
+                    dummyHeight));
+            builder.add(searchComputerLinkComponent, cc.xy(3, 1));
         }
 
         return builder.getPanel();
