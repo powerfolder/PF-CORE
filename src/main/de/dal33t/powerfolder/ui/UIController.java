@@ -619,8 +619,11 @@ public class UIController extends PFComponent {
         item.setActionCommand(COMMAND_SYNCALL);
         item.addActionListener(systrayActionHandler);
 
-        final MenuItem opentUI = menu.add(new MenuItem(Translation
-            .getTranslation("systray.show")));
+        final MenuItem opentUI = new MenuItem(Translation
+            .getTranslation("systray.show"));
+        if (!OSUtil.isMacOS()) {            
+            menu.add(opentUI);
+        }
         opentUI.setActionCommand(COMMAND_OPENUI);
         opentUI.addActionListener(systrayActionHandler);
 

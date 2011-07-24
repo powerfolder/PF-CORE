@@ -231,9 +231,11 @@ public class MainFrame extends PFUIComponent {
                         .getValueBoolean(c);
                     if (quitOnX) {
                         exitProgram();
-                    } else {
+                    } else if (!OSUtil.isMacOS()) {
                         getUIController().hideChildPanels();
                         uiComponent.setVisible(false);
+                    } else {
+                        uiComponent.setState(Frame.ICONIFIED);
                     }
                 } else {
                     // Quit if systray is not Supported by OS.
