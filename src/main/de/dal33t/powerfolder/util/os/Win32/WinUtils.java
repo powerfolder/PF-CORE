@@ -172,9 +172,14 @@ public class WinUtils extends Loggable {
             new File(System.getProperty("java.class.path")).getParentFile(),
             controller.getDistribution().getBinaryName() + ".exe");
         if (!pfile.exists()) {
-            logSevere("Couldn't find PowerFolder executable! "
-                + "Note: Setting up a shortcut only works "
-                + "when PowerFolder was started by PowerFolder.exe");
+            pfile = new File(controller.getDistribution().getBinaryName()
+                + ".exe");
+            if (!pfile.exists()) {
+                throw new IOException("Couldn't find executable! "
+                    + "Note: Setting up a startup shortcut only works "
+                    + "when " + controller.getDistribution().getBinaryName()
+                    + " was started by " + pfile.getName());
+            }
             return;
         }
         logFiner("Found " + pfile.getAbsolutePath());
@@ -187,18 +192,17 @@ public class WinUtils extends Loggable {
             ShellLink sl = new ShellLink("--minimized",
                 Translation.getTranslation("winutils.shortcut.description"),
                 pfile.getAbsolutePath(), pfile.getParent());
-            logFiner("Creating startup link: " + pflnk.getAbsolutePath());
+            logInfo("Creating startup link: " + pflnk.getAbsolutePath());
             createLink(sl, pflnk.getAbsolutePath());
         } else {
-            logFiner("Deleting startup link.");
+            logInfo("Deleting startup link.");
             pflnk.delete();
             pflnkAll.delete();
         }
     }
 
     public boolean isPFStartup(Controller controller) {
-        String shortCutname = controller.getDistribution().getBinaryName()
-            + ".lnk";
+        String shortCutname = controller.getDistribution().getName() + ".lnk";
         File pflnk = new File(getSystemFolderPath(CSIDL_STARTUP, false),
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,

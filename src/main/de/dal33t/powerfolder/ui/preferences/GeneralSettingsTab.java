@@ -219,33 +219,33 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 .getValueInt(getController()));
 
         archiveCleanupCombo = new JComboBox();
-        archiveCleanupCombo.addItem(Translation.getTranslation(
-                "preferences.dialog.archive_cleanup_day")); // 1
-        archiveCleanupCombo.addItem(Translation.getTranslation(
-                "preferences.dialog.archive_cleanup_week")); // 7
-        archiveCleanupCombo.addItem(Translation.getTranslation(
-                "preferences.dialog.archive_cleanup_month")); // 31
-        archiveCleanupCombo.addItem(Translation.getTranslation(
-                "preferences.dialog.archive_cleanup_year")); // 365
-        archiveCleanupCombo.addItem(Translation.getTranslation(
-                "preferences.dialog.archive_cleanup_never")); // 2147483647
-        int cleanup = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.getValueInt(
-                getController());
+        archiveCleanupCombo.addItem(Translation
+            .getTranslation("preferences.dialog.archive_cleanup_day")); // 1
+        archiveCleanupCombo.addItem(Translation
+            .getTranslation("preferences.dialog.archive_cleanup_week")); // 7
+        archiveCleanupCombo.addItem(Translation
+            .getTranslation("preferences.dialog.archive_cleanup_month")); // 31
+        archiveCleanupCombo.addItem(Translation
+            .getTranslation("preferences.dialog.archive_cleanup_year")); // 365
+        archiveCleanupCombo.addItem(Translation
+            .getTranslation("preferences.dialog.archive_cleanup_never")); // 2147483647
+        int cleanup = ConfigurationEntry.ARCHIVE_CLEANUP_DAYS
+            .getValueInt(getController());
         switch (cleanup) {
-            case 1:
+            case 1 :
                 archiveCleanupCombo.setSelectedIndex(0);
                 break;
-            case 7:
+            case 7 :
                 archiveCleanupCombo.setSelectedIndex(1);
                 break;
-            case 31:
-            default:
+            case 31 :
+            default :
                 archiveCleanupCombo.setSelectedIndex(2);
                 break;
-            case 365:
+            case 365 :
                 archiveCleanupCombo.setSelectedIndex(3);
                 break;
-            case Integer.MAX_VALUE:
+            case Integer.MAX_VALUE :
                 archiveCleanupCombo.setSelectedIndex(4);
                 break;
         }
@@ -321,7 +321,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     row += 2;
                     builder.add(startWithWindowsBox, cc.xyw(3, row, 2));
                 }
-                
+
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
@@ -339,7 +339,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
                     row += 2;
-                    builder.add(startWithMacOSLabel.getUIComponent(), cc.xyw(3, row, 2));
+                    builder.add(startWithMacOSLabel.getUIComponent(),
+                        cc.xyw(3, row, 2));
                 }
 
             }
@@ -356,21 +357,28 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.mass_delete_threshold")),
+            builder
+                .add(
+                    new JLabel(
+                        Translation
+                            .getTranslation("preferences.dialog.mass_delete_threshold")),
                     cc.xy(1, row));
             builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
-            builder.add(new JLabel(Translation.getTranslation(
-                    "preferences.dialog.default_archive_mode.text")),
+            builder
+                .add(
+                    new JLabel(
+                        Translation
+                            .getTranslation("preferences.dialog.default_archive_mode.text")),
                     cc.xy(1, row));
-            builder.add(fourPanel(archiveModeSelectorPanel.getUIComponent(),
-                    new JLabel(Translation.getTranslation(
-                            "preferences.dialog.archive_cleanup")),
-                            archiveCleanupCombo,
-                    new JButton(cleanupAction)),
-                cc.xyw(3, row, 2));
+            builder.add(
+                fourPanel(
+                    archiveModeSelectorPanel.getUIComponent(),
+                    new JLabel(Translation
+                        .getTranslation("preferences.dialog.archive_cleanup")),
+                    archiveCleanupCombo, new JButton(cleanupAction)), cc.xyw(3,
+                    row, 2));
 
             row += 2;
             builder.add(folderSyncCB, cc.xyw(3, row, 2));
@@ -384,12 +392,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     }
 
     private static Component fourPanel(Component component1,
-                                        Component component2,
-                                        Component component3,
-                                        Component component4) {
+        Component component2, Component component3, Component component4)
+    {
         FormLayout layout = new FormLayout(
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref",
-                "pref");
+            "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         builder.add(component1, cc.xy(1, 1));
@@ -442,24 +448,26 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         int index = archiveCleanupCombo.getSelectedIndex();
         switch (index) {
-            case 0: // 1 day
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(), 1);
+            case 0 : // 1 day
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), 1);
                 break;
-            case 1: // 1 week
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(), 7);
+            case 1 : // 1 week
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), 7);
                 break;
-            case 2: // 1 month
-            default:
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
-                        31);
+            case 2 : // 1 month
+            default :
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), 31);
                 break;
-            case 3: // 1 year
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
-                        365);
+            case 3 : // 1 year
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), 365);
                 break;
-            case 4: // never
-                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(getController(),
-                        Integer.MAX_VALUE);
+            case 4 : // never
+                ConfigurationEntry.ARCHIVE_CLEANUP_DAYS.setValue(
+                    getController(), Integer.MAX_VALUE);
                 break;
         }
 
@@ -508,7 +516,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                             startWithWindowsBox.isSelected(), getController());
                     }
                 } catch (IOException e) {
-                    logWarning("IOException", e);
+                    logWarning("Unable to setup autostart: " + e);
                 }
             }
         }
@@ -539,7 +547,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         public void actionPerformed(ActionEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    getController().getFolderRepository().cleanupOldArchiveFiles();
+                    getController().getFolderRepository()
+                        .cleanupOldArchiveFiles();
                 }
             });
         }
