@@ -74,10 +74,14 @@ public class FoldersList extends PFUIComponent {
     private volatile boolean populated;
 
     private boolean collapseLocal;
-    private boolean collapseOnline;
-
     private JLabel localLabel;
     private JLabel localIcon;
+
+    private boolean collapseTypical = true;
+    private JLabel typicalLabel;
+    private JLabel typicalIcon;
+
+    private boolean collapseOnline = true;
     private JLabel onlineLabel;
     private JLabel onlineIcon;
 
@@ -105,6 +109,13 @@ public class FoldersList extends PFUIComponent {
         localIcon = new JLabel(Icons.getIconById(Icons.EXPAND));
         localLabel.addMouseListener(new LocalListener());
         localIcon.addMouseListener(new LocalListener());
+
+        typicalLabel = new JLabel(Translation
+            .getTranslation("folders_list.typical_folders"));
+        typicalIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
+        typicalLabel.addMouseListener(new TypicalListener());
+        typicalIcon.addMouseListener(new TypicalListener());
+
         onlineLabel = new JLabel(Translation
             .getTranslation("folders_list.online_folders"));
         onlineIcon = new JLabel(Icons.getIconById(Icons.COLLAPSE));
@@ -191,6 +202,7 @@ public class FoldersList extends PFUIComponent {
 
         // Get combined list of repo and account folders.
         List<FolderBean> localFolders = new ArrayList<FolderBean>();
+        List<FolderBean> typicalFolders = new ArrayList<FolderBean>();
         List<FolderBean> onlineFolders = new ArrayList<FolderBean>();
 
         for (Folder folder : repo.getFolders()) {
@@ -213,7 +225,8 @@ public class FoldersList extends PFUIComponent {
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
 
-        empty = onlineFolders.isEmpty() && localFolders.isEmpty();
+        empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
+                localFolders.isEmpty();
 
         synchronized (views) {
             FolderInfo expandedFolderInfo = null;
@@ -246,7 +259,10 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
+            addSeparator(collapseTypical, typicalIcon, typicalLabel);
+
             addSeparator(collapseOnline, onlineIcon, onlineLabel);
+
             if (!collapseOnline) {
                 for (FolderBean folderBean : onlineFolders) {
                     addView(folderBean, expandedFolderInfo);
@@ -521,6 +537,13 @@ public class FoldersList extends PFUIComponent {
     private class LocalListener extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
             collapseLocal = !collapseLocal;
+            updateFolders();
+        }
+    }
+
+    private class TypicalListener extends MouseAdapter {
+        public void mouseClicked(MouseEvent e) {
+            collapseTypical = !collapseTypical;
             updateFolders();
         }
     }
