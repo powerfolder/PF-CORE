@@ -93,7 +93,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private final FolderInfo folderInfo;
     private Folder folder;
-    private FolderBean.Type type;
+    private ExpandableFolderModel.Type type;
     private boolean online;
 
     private final AtomicBoolean showing100Sync = new AtomicBoolean();
@@ -180,14 +180,14 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
      *
-     * @param folderBean
+     * @param folderModel
      */
-    public void configure(FolderBean folderBean)
+    public void configure(ExpandableFolderModel folderModel)
     {
         boolean changed = false;
-        Folder beanFolder = folderBean.getFolder();
-        FolderBean.Type beanType = folderBean.getType();
-        boolean beanOnline = folderBean.isOnline();
+        Folder beanFolder = folderModel.getFolder();
+        ExpandableFolderModel.Type beanType = folderModel.getType();
+        boolean beanOnline = folderModel.isOnline();
         if (beanFolder != null && folder == null) {
             changed = true;
         } else if (beanFolder == null && folder != null) {
@@ -230,8 +230,8 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Expand this view if collapsed.
      */
     public void expand() {
-        if (type == FolderBean.Type.CloudOnly) {
-            // Don't expand for Cloud folder only.
+        if (type != ExpandableFolderModel.Type.Local) {
+            // Only expand for Local folder only.
             return;
         }
         expanded.set(true);
@@ -261,15 +261,15 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Show the upper links if mouse over.
      */
     private void updateUpperComponents() {
-        upperSyncLink.getUIComponent().setVisible(type == FolderBean.Type.Local &&
+        upperSyncLink.getUIComponent().setVisible(type == ExpandableFolderModel.Type.Local &&
                 (mouseOver.get() || !showing100Sync.get()));
         boolean showLocalButtons = mouseOver.get() &&
-                type == FolderBean.Type.Local;
+                type == ExpandableFolderModel.Type.Local;
         upperInviteButton.setVisible(showLocalButtons);
         upperOpenFilesButton.setVisible(showLocalButtons);
 
         final boolean showCloudOnlyButtons = mouseOver.get() &&
-                type == FolderBean.Type.CloudOnly;
+                type == ExpandableFolderModel.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
                 if (OSUtil.isWindows7System() ||
@@ -333,7 +333,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             upperPanel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.expand"));
         }
@@ -571,7 +571,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateLocalButtons() {
-        boolean enabled = type == FolderBean.Type.Local;
+        boolean enabled = type == ExpandableFolderModel.Type.Local;
 
         openSettingsInformationButton.setEnabled(enabled);
         transferModeLabel.setEnabled(enabled);
@@ -599,7 +599,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateSyncButton() {
-        if (type != FolderBean.Type.Local) {
+        if (type != ExpandableFolderModel.Type.Local) {
             upperSyncFolderButton.setVisible(false);
             upperSyncFolderButton.spin(false);
             primaryButton.setVisible(true);
@@ -607,7 +607,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         syncUpdater.schedule(new Runnable() {
             public void run() {
-                if (type == FolderBean.Type.Local) {
+                if (type == ExpandableFolderModel.Type.Local) {
                     if (folder.isSyncing()) {
                         primaryButton.setVisible(false);
                         upperSyncFolderButton.setVisible(true);
@@ -714,7 +714,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         String localSizeString;
         String totalSizeString;
         String filesAvailableLabelText;
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
 
             Date lastSyncDate = folder.getLastSyncDate();
 
@@ -842,7 +842,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateNumberOfFiles() {
         String filesText;
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             // FIXME: Returns # of files + # of directories
             filesText = Translation.getTranslation("exp_folder_view.files",
                     String.valueOf(folder.getStatistic().getLocalFilesCount()));
@@ -855,7 +855,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateDeletedFiles() {
         String deletedFileText;
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             Collection<FileInfo> allFiles = folder.getDAO().findAllFiles(
                     getController().getMySelf().getId());
             int deletedCount = 0;
@@ -878,7 +878,7 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateTransferMode() {
         String transferMode;
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             transferMode = Translation.getTranslation(
                     "exp_folder_view.transfer_mode", folder.getSyncProfile()
                             .getName());
@@ -914,7 +914,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateFolderMembershipDetails0() {
         String countText;
         String connectedCountText;
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             countText = String.valueOf(folder.getMembersCount());
             // And me!
             connectedCountText = String.valueOf(folder
@@ -929,7 +929,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateIconAndOS() {
 
-        if (type == FolderBean.Type.Local) {
+        if (type == ExpandableFolderModel.Type.Local) {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
@@ -949,7 +949,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_text"));
             }
-        } else if (type == FolderBean.Type.Typical) {
+        } else if (type == ExpandableFolderModel.Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.SETTINGS));
             primaryButton.setToolTipText(Translation
                     .getTranslation("exp_folder_view.folder_typical_text"));
@@ -1002,7 +1002,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     public JPopupMenu createPopupMenu() {
         JPopupMenu contextMenu = new JPopupMenu();
-        if (type == FolderBean.Type.CloudOnly) {
+        if (type == ExpandableFolderModel.Type.CloudOnly) {
             // Cloud-only folder popup
             contextMenu.add(removeFolderAction);
         } else {
@@ -1030,7 +1030,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
-        if (type == FolderBean.Type.CloudOnly) {
+        if (type == ExpandableFolderModel.Type.CloudOnly) {
             if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
                 if (serverClient.isConnected() &&
                         serverClient.getFolderService().hasJoined(folderInfo)) {
@@ -1451,13 +1451,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                     collapse();
                 } else {
                     expand();
-                    if (folder != null
+                    if (type == ExpandableFolderModel.Type.Local
                         && getController().getUIController().isShowingFolder())
                     {
                         getController().getUIController().openFilesInformation(
                             folderInfo);
                     }
-                    if (folder == null && folderInfo != null) {
+                    if (type == ExpandableFolderModel.Type.CloudOnly &&
+                            folderInfo != null) {
                         PFWizard.openSingletonOnlineStorageJoinWizard(
                             getController(),
                             Collections.singletonList(folderInfo));
@@ -1680,17 +1681,20 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private class PrimaryButtonActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            if (folder == null && folderInfo != null) {
+            if (type == ExpandableFolderModel.Type.CloudOnly) {
                 PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
-            } else if (folder != null && folder.isPreviewOnly()) {
-                // Preview
+            } else if (type == ExpandableFolderModel.Type.Local && folder.isPreviewOnly())
+            {
+                // Local Preview
                 SettingsTab.doPreviewChange(getController(), folder);
-            } else {
+            } else if (type == ExpandableFolderModel.Type.Local) {
                 // Local
                 if (Desktop.isDesktopSupported()) {
                     openExplorer();
                 }
+            } else { // Typical
+                // nothing yet...
             }
         }
     }

@@ -21,19 +21,32 @@ package de.dal33t.powerfolder.ui.folders;
 
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.Reject;
 
-public class FolderBean {
+/**
+ * Class to hold data about a folder in the view.
+ */
+public class ExpandableFolderModel {
 
-    public enum Type { Local, Typical, CloudOnly }  
+    public enum Type {
+        Local,
+        Typical,
+        CloudOnly
+    }  
 
     private final Type type;
     private final FolderInfo folderInfo;
-    /** Typical and Online FolderBeans do not have folders. */
+
+    /** Typical and Online models do not have folders. */
     private final Folder folder;
+
+    /** Is folder currently online (connected)? */
     private boolean online;
 
-    public FolderBean(Type type, FolderInfo folderInfo, Folder folder,
-                       boolean online) {
+    public ExpandableFolderModel(Type type, FolderInfo folderInfo,
+                                 Folder folder, boolean online) {
+        Reject.ifNull(type, "Type is required.");
+        Reject.ifNull(folderInfo, "FolderInfo is required.");
         this.type = type;
         this.folderInfo = folderInfo;
         this.folder = folder;
@@ -64,7 +77,7 @@ public class FolderBean {
             return false;
         }
 
-        FolderBean that = (FolderBean) obj;
+        ExpandableFolderModel that = (ExpandableFolderModel) obj;
         return folderInfo.equals(that.folderInfo);
     }
 

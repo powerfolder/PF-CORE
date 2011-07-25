@@ -54,7 +54,6 @@ import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
-import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -203,20 +202,20 @@ public class FoldersList extends PFUIComponent {
         }
 
         // Get combined list of repo and account folders.
-        List<FolderBean> localFolders = new ArrayList<FolderBean>();
-        List<FolderBean> typicalFolders = new ArrayList<FolderBean>();
-        List<FolderBean> onlineFolders = new ArrayList<FolderBean>();
+        List<ExpandableFolderModel> localFolders = new ArrayList<ExpandableFolderModel>();
+        List<ExpandableFolderModel> typicalFolders = new ArrayList<ExpandableFolderModel>();
+        List<ExpandableFolderModel> onlineFolders = new ArrayList<ExpandableFolderModel>();
 
         for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
-            FolderBean bean = new FolderBean(FolderBean.Type.Local, folderInfo,
+            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.Local, folderInfo,
                     folder, getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
-            FolderBean bean = new FolderBean(FolderBean.Type.CloudOnly,
+            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.CloudOnly,
                     folderInfo, null, true);
             if (!localFolders.contains(bean)) {
                 onlineFolders.add(bean);
@@ -227,15 +226,14 @@ public class FoldersList extends PFUIComponent {
         for (String key :
                 UserDirectories.getUserDirectoriesFiltered(
                         getController()).keySet()) {
-            UserDirectory userDirectory = UserDirectories.getUserDirectoriesFiltered(
-                        getController()).get(key);
-            FolderInfo folderInfo = new FolderInfo(key, "..");
-            FolderBean bean = new FolderBean(FolderBean.Type.Typical, folderInfo,
+            FolderInfo folderInfo = new FolderInfo(key, ".");
+            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.Typical, folderInfo,
                     null, false);
             if (!localFolders.contains(bean) && !onlineFolders.contains(bean)) {
                 typicalFolders.add(bean);
             }
         }
+        Collections.sort(typicalFolders, FolderBeanComparator.INSTANCE);
 
         empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
                 localFolders.isEmpty();
@@ -266,7 +264,7 @@ public class FoldersList extends PFUIComponent {
             // Add new folder views.
             addSeparator(collapseLocal, localIcon, localLabel);
             if (!collapseLocal) {
-                for (FolderBean folderBean : localFolders) {
+                for (ExpandableFolderModel folderBean : localFolders) {
                     addView(folderBean, expandedFolderInfo);
                 }
             }
@@ -274,7 +272,7 @@ public class FoldersList extends PFUIComponent {
             addSeparator(collapseTypical, typicalIcon, typicalLabel);
 
             if (!collapseTypical) {
-                for (FolderBean folderBean : typicalFolders) {
+                for (ExpandableFolderModel folderBean : typicalFolders) {
                     addView(folderBean, expandedFolderInfo);
                 }
             }
@@ -282,7 +280,7 @@ public class FoldersList extends PFUIComponent {
             addSeparator(collapseOnline, onlineIcon, onlineLabel);
 
             if (!collapseOnline) {
-                for (FolderBean folderBean : onlineFolders) {
+                for (ExpandableFolderModel folderBean : onlineFolders) {
                     addView(folderBean, expandedFolderInfo);
                 }
             }
@@ -311,7 +309,7 @@ public class FoldersList extends PFUIComponent {
         folderListPanel.add(panel);
     }
 
-    private void addView(FolderBean folderBean, FolderInfo expandedFolderInfo) {
+    private void addView(ExpandableFolderModel folderBean, FolderInfo expandedFolderInfo) {
         ExpandableFolderView newView = new ExpandableFolderView(
             getController(), folderBean.getFolderInfo());
         newView.configure(folderBean);
@@ -470,12 +468,12 @@ public class FoldersList extends PFUIComponent {
         }
     }
 
-    private static class FolderBeanComparator implements Comparator<FolderBean>
+    private static class FolderBeanComparator implements Comparator<ExpandableFolderModel>
     {
 
         private static final FolderBeanComparator INSTANCE = new FolderBeanComparator();
 
-        public int compare(FolderBean o1, FolderBean o2) {
+        public int compare(ExpandableFolderModel o1, ExpandableFolderModel o2) {
             return o1.getFolderInfo().name.compareToIgnoreCase(o2
                 .getFolderInfo().name);
         }
