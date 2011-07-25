@@ -84,6 +84,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.ui.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.ui.UIUnLockDialog;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
@@ -104,7 +105,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.7.7 - 3.5.3"; // 3.5.0
+    public static final String PROGRAM_VERSION = "4.8.0"; // 3.5.0
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -588,6 +589,14 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
+        
+        if (MacUtils.isSupported() && isFirstStart()) {
+            try {
+                MacUtils.getInstance().setPFStartup(true, this);
+            } catch (IOException e) {
+                logWarning("Unable to setup auto start: " + e);
+            }
+        }
     }
 
     /**

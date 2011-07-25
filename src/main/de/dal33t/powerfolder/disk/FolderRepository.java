@@ -256,6 +256,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Set the folders base with a desktop ini.
         File folderBaseDir = new File(getFoldersBasedir());
+        if (!folderBaseDir.exists() && !folderBaseDir.mkdirs()) {
+            logWarning("Unable to create folders base dir: " + folderBaseDir);
+        }
         FileUtils.maintainDesktopIni(getController(), folderBaseDir);
         if (!folderBaseDir.exists()) {
             folderBaseDir.mkdirs();

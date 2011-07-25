@@ -72,8 +72,7 @@ public class MacUtils extends Loggable {
     }
 
     public void createPlacesLink(String lnkTarget) throws IOException {
-        String cmdLine = placesHelperPath + " p " + lnkTarget;
-        Runtime.getRuntime().exec(cmdLine);
+        Runtime.getRuntime().exec(new String[] {placesHelperPath, "p", lnkTarget});
     }
 
     private boolean init() {
@@ -84,7 +83,8 @@ public class MacUtils extends Loggable {
             false);
         placesHelperPath = file.getAbsolutePath();
         try {
-            Runtime.getRuntime().exec("chmod +x " + placesHelperPath);
+            Runtime.getRuntime().exec(
+                new String[]{"chmod", "+x", placesHelperPath});
         } catch (IOException e) {
             LOG.warning("Unable to initialize mac helper files. " + e);
             return false;
@@ -124,15 +124,15 @@ public class MacUtils extends Loggable {
                 pfile = new File(controller.getDistribution().getBinaryName()
                     + ".app");
                 if (!pfile.exists()) {
-                    logSevere("Couldn't find executable! "
+                    throw new IOException("Couldn't find executable! "
                         + "Note: Setting up a startup shortcut only works "
-                        + "when PowerFolder was started by PowerFolder.app");
-                    return;
+                        + "when "
+                        + controller.getDistribution().getBinaryName()
+                        + " was started by " + pfile.getName());
                 }
             }
-
-            String cmdLine = placesHelperPath + " s " + pfile.getAbsolutePath();
-            Runtime.getRuntime().exec(cmdLine);
+            Runtime.getRuntime().exec(
+                new String[]{placesHelperPath, "s", pfile.getAbsolutePath()});
         } else {
             // TODO Remove link
         }
