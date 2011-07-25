@@ -758,6 +758,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             FolderSettings metaFolderSettings = new FolderSettings(new File(
                 systemSubdir, Constants.METAFOLDER_SUBDIR),
                 SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
+            metaFolderSettings.getLocalBaseDir().mkdirs();
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
                 metaFolderSettings);
             metaFolders.put(folderInfo, metaFolder);
@@ -846,7 +847,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Shutdown folder
         folder.shutdown();
-        metaFolders.remove(folder.getInfo());
+
+        // Shutdown meta folder aswell
+        Folder metaFolder = getMetaFolderForParent(folder.getInfo());
+        if (metaFolder != null) {
+            metaFolder.shutdown();
+            metaFolders.remove(metaFolder.getInfo());
+            metaFolders.remove(folder.getInfo());
+        }
 
         // synchronize memberships
         triggerSynchronizeAllFolderMemberships();
@@ -863,7 +871,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Sleep a couple of seconds for things to settle,
             // before removing dirs, to avoid conflicts.
             try {
-                Thread .sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
             }
 
@@ -888,7 +896,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove the folder if totally empty.
             File[] files = folder.getLocalBase().listFiles();
-            if (files.length == 0) {
+            if (files != null && files.length == 0) {
                 try {
                     FileUtils.recursiveDelete(folder.getLocalBase());
                 } catch (Exception e) {
