@@ -206,6 +206,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         udtConnectionBox.setEnabled(!lanOnly && UDTSocket.isSupported());
         udtConnectionBox.setVisible(UDTSocket.isSupported());
         wanSpeed.setEnabled(!lanOnly);
+        useOnlineStorageCB.setSelected(!lanOnly);
     }
 
     /**
