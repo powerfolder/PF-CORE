@@ -72,8 +72,10 @@ public class NoticeHandler extends PFComponent {
         Action acceptAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 slider.close();
-                getController().getUIController().getApplicationModel()
-                    .getNoticesModel().activateNotice(notice);
+                if (notice.isActionable()) {
+                    getController().getUIController().getApplicationModel()
+                        .getNoticesModel().activateNotice(notice);
+                }
             }
         };
 
