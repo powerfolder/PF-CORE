@@ -64,9 +64,11 @@ public class LocalDeleteNotice extends NoticeBase {
                 } else if (response == 1) {
                     // Remove folder locally
                     FolderRepository folderRepository = controller
-                            .getFolderRepository();
+                        .getFolderRepository();
                     Folder folder = folderRepository.getFolder(folderInfo);
-                    folderRepository.removeFolder(folder, false);
+                    if (folder != null) {
+                        folderRepository.removeFolder(folder, false);
+                    }
                 }
             }
         };
