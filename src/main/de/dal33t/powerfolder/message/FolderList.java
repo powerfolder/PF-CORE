@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.ByteSerializer;
@@ -94,7 +93,7 @@ public class FolderList extends Message {
             secretFos.add(secretFolder);
         }
         this.secretFolders = new FolderInfo[secretFos.size()];
-        this.joinedMetaFolders = Feature.META_FOLDER.isEnabled();
+        this.joinedMetaFolders = true;
         secretFos.toArray(secretFolders);
     }
 
