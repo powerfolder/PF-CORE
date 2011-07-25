@@ -1,47 +1,49 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: ProblemsTableModel.java 5457 2008-10-17 14:25:41Z harry $
-*/
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: ProblemsTableModel.java 5457 2008-10-17 14:25:41Z harry $
+ */
 package de.dal33t.powerfolder.ui.information.folder.problems;
 
-import de.dal33t.powerfolder.PFUIComponent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.ui.UIUtil;
-import de.dal33t.powerfolder.ui.model.SortedTableModel;
-
-import javax.swing.table.TableModel;
-import javax.swing.event.TableModelListener;
-import javax.swing.event.TableModelEvent;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Class to model a folder's problems.
- * provides columns for date, description and wiki.
+ * Class to model a folder's problems. provides columns for date, description
+ * and wiki.
  */
 public class ProblemsTableModel extends PFUIComponent implements TableModel,
-        SortedTableModel {
+    SortedTableModel
+{
 
     private static final int COL_DESCRIPTION = 0;
     private static final int COL_DATE = 1;
@@ -49,9 +51,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     private static final int COL_SOLUTION = 3;
 
     private String[] columnHeaders = {
-            Translation.getTranslation("folder_problem.table_model.description"), // 0
-            Translation.getTranslation("folder_problem.table_model.date"), // 1
-            Translation.getTranslation("folder_problem.table_model.solution")}; // 2
+        Translation.getTranslation("folder_problem.table_model.description"), // 0
+        Translation.getTranslation("folder_problem.table_model.date"), // 1
+        Translation.getTranslation("folder_problem.table_model.solution")}; // 2
 
     private final List<Problem> problems;
 
@@ -131,7 +133,9 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
         return true;
     }
 
-    private void sortMe(FolderProblemComparator comparator, boolean newSortColumn) {
+    private void sortMe(FolderProblemComparator comparator,
+        boolean newSortColumn)
+    {
 
         if (!newSortColumn) {
             // Reverse list.
@@ -166,7 +170,10 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
                 }
             }
         };
-        UIUtil.invokeLaterInEDT(runner);
+        try {
+            UIUtil.invokeAndWaitInEDT(runner);
+        } catch (InterruptedException e1) {
+        }
     }
 
     public void setAscending(boolean ascending) {
@@ -177,24 +184,25 @@ public class ProblemsTableModel extends PFUIComponent implements TableModel,
     // Inner classes //
     // ////////////////
 
-    private static class FolderProblemComparator implements Comparator<Problem> {
+    private static class FolderProblemComparator implements Comparator<Problem>
+    {
 
         private static final int TYPE_DESCRIPTION = 0;
         private static final int TYPE_DATE = 1;
         private static final int TYPE_WIKI = 2;
         private static final int TYPE_SOLUTION = 3;
 
-        public static final FolderProblemComparator BY_DESCRIPTION =
-                new FolderProblemComparator(TYPE_DESCRIPTION);
+        public static final FolderProblemComparator BY_DESCRIPTION = new FolderProblemComparator(
+            TYPE_DESCRIPTION);
 
-        public static final FolderProblemComparator BY_DATE =
-                new FolderProblemComparator(TYPE_DATE);
+        public static final FolderProblemComparator BY_DATE = new FolderProblemComparator(
+            TYPE_DATE);
 
-        public static final FolderProblemComparator BY_WIKI =
-                new FolderProblemComparator(TYPE_WIKI);
+        public static final FolderProblemComparator BY_WIKI = new FolderProblemComparator(
+            TYPE_WIKI);
 
-        public static final FolderProblemComparator BY_SOLUTION =
-                new FolderProblemComparator(TYPE_SOLUTION);
+        public static final FolderProblemComparator BY_SOLUTION = new FolderProblemComparator(
+            TYPE_SOLUTION);
 
         private int type;
 

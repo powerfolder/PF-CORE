@@ -157,7 +157,7 @@ public class FolderInformationCard extends InformationCard {
 
     /**
      * Control the folder's problems from here so that the tab can be removed if
-     * there are no poblems.
+     * there are no problems.
      */
     private void updateProblems() {
         if (folderInfo == null) {

@@ -167,7 +167,7 @@ public class ProblemsTab extends PFUIComponent {
             openProblemAction.setEnabled(true);
             resolveProblemAction
                 .setEnabled(selectedProblem instanceof ResolvableProblem);
-            logFine("Selected row: " + problemsTable.getSelectedRow()
+            logFiner("Selected row: " + problemsTable.getSelectedRow()
                 + ". Problem: " + selectedProblem);
         } else {
             selectedProblem = null;
