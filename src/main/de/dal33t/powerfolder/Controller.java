@@ -1482,7 +1482,7 @@ public class Controller extends PFComponent {
                             logFine("Closing port on Firewall.");
                             FirewallUtil.closeport(connectionListener.getPort());
                         } catch (IOException e) {
-                            logWarning("Unable to remove firewall rule in Windows Firewall. "
+                            logFine("Unable to remove firewall rule in Windows Firewall. "
                                 + e);
                         }
                     }
