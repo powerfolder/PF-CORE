@@ -477,7 +477,7 @@ public class SettingsTab extends PFUIComponent {
             .getTranslation("settings_tab.sync_patterns.tip"));
         syncPatternsCheckBox.addActionListener(new MyActionListener());
         bar.add(syncPatternsCheckBox, cc.xy(5, 1));
-        syncPatternsCheckBox.setVisible(Feature.META_FOLDER.isEnabled());
+        syncPatternsCheckBox.setVisible(true);
 
         return bar.getPanel();
     }
