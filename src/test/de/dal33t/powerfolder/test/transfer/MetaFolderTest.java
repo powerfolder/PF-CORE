@@ -23,7 +23,6 @@ import java.io.File;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -43,9 +42,6 @@ public class MetaFolderTest extends TwoControllerTestCase {
     }
 
     public void testSyncSingleFile() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         FolderRepository lisaRepo = getContollerLisa().getFolderRepository();
@@ -101,10 +97,6 @@ public class MetaFolderTest extends TwoControllerTestCase {
      * Test that metafolders sync.
      */
     public void testMetaFolderSync() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
-
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         Folder bartFolder = getFolderAtBart();
@@ -161,8 +153,9 @@ public class MetaFolderTest extends TwoControllerTestCase {
             "MetaTestFile.txt");
         scanFolder(bartMetaFolder);
         TestHelper.waitMilliSeconds(1000);
-        assertEquals("lisa metafolder file count wrong: "
-            + lisaMetaFolder.getKnownFiles(), lisaOriginalMetaCount + 1,
+        assertEquals(
+            "lisa metafolder file count wrong: "
+                + lisaMetaFolder.getKnownFiles(), lisaOriginalMetaCount + 1,
             lisaMetaFolder.getKnownFiles().size());
         assertTrue("lisa metafolder file does not exist", lisaMetaFolder
             .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
@@ -172,9 +165,6 @@ public class MetaFolderTest extends TwoControllerTestCase {
      * Test that metaFolders sync parent patterns.
      */
     public void testMetaFolderSyncPatterns() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         Folder bartFolder = getFolderAtBart();
         bartFolder.getDiskItemFilter().addPattern("test");
