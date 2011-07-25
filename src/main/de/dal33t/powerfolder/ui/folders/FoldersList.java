@@ -38,6 +38,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -82,7 +83,7 @@ public class FoldersList extends PFUIComponent {
     private JLabel typicalLabel;
     private JLabel typicalIcon;
 
-    private boolean collapseOnline = true;
+    private boolean collapseOnline = false;
     private JLabel onlineLabel;
     private JLabel onlineIcon;
 
@@ -269,11 +270,13 @@ public class FoldersList extends PFUIComponent {
                 }
             }
 
-            addSeparator(collapseTypical, typicalIcon, typicalLabel);
+            if (Feature.TYPICAL_FOLDERS.isEnabled()) {
+                addSeparator(collapseTypical, typicalIcon, typicalLabel);
 
-            if (!collapseTypical) {
-                for (ExpandableFolderModel folderBean : typicalFolders) {
-                    addView(folderBean, expandedFolderInfo);
+                if (!collapseTypical) {
+                    for (ExpandableFolderModel folderBean : typicalFolders) {
+                        addView(folderBean, expandedFolderInfo);
+                    }
                 }
             }
 
