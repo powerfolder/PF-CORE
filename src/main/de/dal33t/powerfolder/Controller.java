@@ -105,7 +105,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.8.0"; // 3.5.0
+    public static final String PROGRAM_VERSION = "4.8.1"; // 3.5.0
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -589,7 +589,7 @@ public class Controller extends PFComponent {
 
         // Setup our background working tasks
         setupPeriodicalTasks();
-        
+
         if (MacUtils.isSupported() && isFirstStart()) {
             try {
                 MacUtils.getInstance().setPFStartup(true, this);
@@ -1055,7 +1055,7 @@ public class Controller extends PFComponent {
                             FirewallUtil.openport(connectionListener.getPort());
                             portWasOpened = true;
                         } catch (IOException e) {
-                            logWarning("Unable to open port "
+                            logInfo("Unable to open port "
                                 + connectionListener.getPort()
                                 + "/TCP in Windows Firewall. " + e);
                         }
@@ -2196,7 +2196,7 @@ public class Controller extends PFComponent {
         if (!isStartMinimized() && isUIEnabled() && !commandLine.hasOption('z'))
         {
             Object[] options = {Translation
-                    .getTranslation("dialog.already_running.exit_button")};
+                .getTranslation("dialog.already_running.exit_button")};
             int exitOption = 0;
             if (verbose) {
                 options = new Object[]{
