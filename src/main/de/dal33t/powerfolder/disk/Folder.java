@@ -63,7 +63,12 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.disk.problem.*;
+import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
+import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
+import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.ProblemListener;
+import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
 import de.dal33t.powerfolder.event.FolderEvent;
 import de.dal33t.powerfolder.event.FolderListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
@@ -672,14 +677,22 @@ public class Folder extends PFComponent {
                         + localBase.getAbsolutePath());
             }
 
-            if (!localBase.mkdirs()) {
-                if (!quite) {
-                    logSevere(" not able to create folder(" + getName()
-                        + "), (sub) dir (" + localBase + ") creation failed");
-                }
-                throw new FolderException(currentInfo,
-                    "Unable to create folder at " + localBase.getAbsolutePath());
-            }
+            // #2329
+            throw new FolderException(currentInfo,
+                "Local base dir not available " + localBase.getAbsolutePath());
+
+            // Old code:
+            // if (!localBase.mkdirs()) {
+            // if (!quite) {
+            // logSevere(" not able to create folder(" + getName()
+            // + "), (sub) dir (" + localBase + ") creation failed");
+            // }
+            // throw new FolderException(currentInfo,
+            // "Unable to create folder at " + localBase.getAbsolutePath());
+            // } else {
+            // // logWarning("Created base dir at " + localBase, new
+            // RuntimeException("here"));
+            // }
         } else if (!localBase.isDirectory()) {
             if (!quite) {
                 logSevere(" not able to create folder(" + getName()
@@ -927,8 +940,6 @@ public class Folder extends PFComponent {
             }
         } while (scannerBusy);
 
-
-        fireScanResultCommited(result);
         if (checkIfDeviceDisconnected()) {
             if (isFiner()) {
                 logFiner("Device disconnected while scanning folder: "
@@ -1317,7 +1328,7 @@ public class Folder extends PFComponent {
             return;
         }
 
-        if (dir.equals(getSystemSubDir())) {
+        if (dir.equals(getSystemSubDir0())) {
             logWarning("Ignoring system subdirectory: " + dir);
             return;
         }
@@ -1605,7 +1616,7 @@ public class Folder extends PFComponent {
     private void loadMetadata() {
         loadFolderDB();
         loadLastSyncDate();
-        diskItemFilter.loadPatternsFrom(new File(getSystemSubDir(),
+        diskItemFilter.loadPatternsFrom(new File(getSystemSubDir0(),
             DiskItemFilter.PATTERNS_FILENAME), false);
     }
 
@@ -2323,7 +2334,7 @@ public class Folder extends PFComponent {
         Reject.ifFalse(fileInfo.isDeleted(),
             "Should only be removing deleted infos.");
         dao.delete(null, fileInfo);
-        dirty = true;
+        setDBDirty();
     }
 
     /**
@@ -3186,6 +3197,13 @@ public class Folder extends PFComponent {
         }
         logFiner("Persisting settings");
 
+        if ((hasOwnDatabase || getKnownItemCount() > 0)
+            && !getSystemSubDir0().exists())
+        {
+            logWarning("Not storting folder database. Local system directory does not exists.");
+            return;
+        }
+
         storeFolderDB();
 
         // Write filelist
@@ -3267,10 +3285,11 @@ public class Folder extends PFComponent {
      *         if not exists
      */
     public File getSystemSubDir() {
-        File systemSubDir = new File(localBase,
-            Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        File systemSubDir = getSystemSubDir0();
         if (!systemSubDir.exists()) {
-            if (!deviceDisconnected && systemSubDir.mkdirs()) {
+            if (!checkIfDeviceDisconnected() && systemSubDir.mkdirs()) {
+                // logWarning("Create local directory at: " + systemSubDir,
+                // new RuntimeException("here"));
                 FileUtils.setAttributesOnWindows(systemSubDir, true, true);
             } else if (!deviceDisconnected) {
                 logSevere("Failed to create system subdir: " + systemSubDir);
@@ -3281,6 +3300,10 @@ public class Folder extends PFComponent {
         return systemSubDir;
     }
 
+    private File getSystemSubDir0() {
+        return new File(localBase, Constants.POWERFOLDER_SYSTEM_SUBDIR);
+    }
+
     /**
      * Is this directory the system subdirectory?
      * 
@@ -3289,7 +3312,7 @@ public class Folder extends PFComponent {
      */
     public boolean isSystemSubDir(File aDir) {
         return aDir.isDirectory()
-            && getSystemSubDir().getAbsolutePath().equals(
+            && getSystemSubDir0().getAbsolutePath().equals(
                 aDir.getAbsolutePath());
     }
 
@@ -3348,7 +3371,7 @@ public class Folder extends PFComponent {
         }
         if (addProblem) {
             logInfo("Device disconnected");
-            addProblem(new DeviceDisconnectedProblem());
+            addProblem(new DeviceDisconnectedProblem(currentInfo));
         }
 
         return deviceDisconnected;
@@ -3951,7 +3974,11 @@ public class Folder extends PFComponent {
     }
 
     private void storeLastSyncDate() {
-        File lastSyncFile = new File(getSystemSubDir(), LAST_SYNC_INFO_FILENAME);
+        File lastSyncFile = new File(getSystemSubDir0(),
+            LAST_SYNC_INFO_FILENAME);
+        if (!getSystemSubDir0().exists()) {
+            return;
+        }
         try {
             lastSyncFile.createNewFile();
         } catch (IOException e) {
@@ -3965,7 +3992,8 @@ public class Folder extends PFComponent {
     }
 
     private void loadLastSyncDate() {
-        File lastSyncFile = new File(getSystemSubDir(), LAST_SYNC_INFO_FILENAME);
+        File lastSyncFile = new File(getSystemSubDir0(),
+            LAST_SYNC_INFO_FILENAME);
         if (lastSyncFile.exists()) {
             lastSyncDate = new Date(lastSyncFile.lastModified());
         } else {
