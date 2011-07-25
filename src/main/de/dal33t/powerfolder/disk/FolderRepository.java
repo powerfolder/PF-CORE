@@ -761,6 +761,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolderSettings.getLocalBaseDir().mkdirs();
             Folder metaFolder = new Folder(getController(), metaFolderInfo,
                 metaFolderSettings);
+            metaFolder.getSystemSubDir().mkdirs();
             metaFolders.put(folderInfo, metaFolder);
             if (!metaFolder.hasOwnDatabase()) {
                 // Scan once. To get it working.
@@ -820,95 +821,101 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
-        skipNewFolderSearch.set(true);
         Reject.ifNull(folder, "Folder is null");
+        try {
+            skipNewFolderSearch.set(true);
 
-        // Remove the desktop shortcut
-        folder.removeDesktopShortcut();
+            // Remove the desktop shortcut
+            folder.removeDesktopShortcut();
 
-        // Detach any problem listeners.
-        folder.clearAllProblemListeners();
+            // Detach any problem listeners.
+            folder.clearAllProblemListeners();
 
-        // Remove desktop ini if it exists
-        FileUtils.deleteDesktopIni(folder.getLocalBase());
+            // Remove desktop ini if it exists
+            FileUtils.deleteDesktopIni(folder.getLocalBase());
 
-        // remove folder from config
-        removeConfigEntries(folder.getConfigEntryId());
+            // remove folder from config
+            removeConfigEntries(folder.getConfigEntryId());
 
-        // Save config
-        getController().saveConfig();
+            // Save config
+            getController().saveConfig();
 
-        // Remove internal
-        folders.remove(folder.getInfo());
-        folder.removeProblemListener(valveProblemListenerSupport);
+            // Remove internal
+            folders.remove(folder.getInfo());
+            folder.removeProblemListener(valveProblemListenerSupport);
 
-        // Break transfers
-        getController().getTransferManager().breakTransfers(folder.getInfo());
+            // Break transfers
+            getController().getTransferManager().breakTransfers(
+                folder.getInfo());
 
-        // Shutdown folder
-        folder.shutdown();
+            // Shutdown folder
+            folder.shutdown();
 
-        // Shutdown meta folder aswell
-        Folder metaFolder = getMetaFolderForParent(folder.getInfo());
-        if (metaFolder != null) {
-            metaFolder.shutdown();
-            metaFolders.remove(metaFolder.getInfo());
-            metaFolders.remove(folder.getInfo());
-        }
-
-        // synchronize memberships
-        triggerSynchronizeAllFolderMemberships();
-
-        // Abort scanning
-        boolean folderCurrentlyScannng = folder.equals(folderScanner
-            .getCurrentScanningFolder());
-        if (folderCurrentlyScannng) {
-            folderScanner.abortScan();
-        }
-
-        // Delete the .PowerFolder dir and contents
-        if (deleteSystemSubDir) {
-            // Sleep a couple of seconds for things to settle,
-            // before removing dirs, to avoid conflicts.
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+            // Shutdown meta folder aswell
+            Folder metaFolder = getMetaFolderForParent(folder.getInfo());
+            if (metaFolder != null) {
+                metaFolder.shutdown();
+                metaFolders.remove(metaFolder.getInfo());
+                metaFolders.remove(folder.getInfo());
             }
 
-            try {
-                FileUtils.recursiveDelete(folder.getSystemSubDir());
-            } catch (IOException e) {
-                logSevere("Failed to delete: " + folder.getSystemSubDir());
+            // synchronize memberships
+            triggerSynchronizeAllFolderMemberships();
+
+            // Abort scanning
+            boolean folderCurrentlyScannng = folder.equals(folderScanner
+                .getCurrentScanningFolder());
+            if (folderCurrentlyScannng) {
+                folderScanner.abortScan();
             }
 
-            // Try to delete the invitation.
-            File invite = new File(folder.getLocalBase(), folder.getName()
-                + ".invitation");
-            if (invite.exists()) {
+            // Delete the .PowerFolder dir and contents
+            if (deleteSystemSubDir) {
+                // Sleep a couple of seconds for things to settle,
+                // before removing dirs, to avoid conflicts.
                 try {
-                    invite.delete();
-                } catch (Exception e) {
-                    logSevere(
-                        "Failed to delete invitation: "
-                            + invite.getAbsolutePath(), e);
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+
+                try {
+                    FileUtils.recursiveDelete(folder.getSystemSubDir());
+                } catch (IOException e) {
+                    logSevere("Failed to delete: " + folder.getSystemSubDir());
+                }
+
+                // Try to delete the invitation.
+                File invite = new File(folder.getLocalBase(), folder.getName()
+                    + ".invitation");
+                if (invite.exists()) {
+                    try {
+                        invite.delete();
+                    } catch (Exception e) {
+                        logSevere(
+                            "Failed to delete invitation: "
+                                + invite.getAbsolutePath(), e);
+                    }
+                }
+
+                // Remove the folder if totally empty.
+                File[] files = folder.getLocalBase().listFiles();
+                if (files != null && files.length == 0) {
+                    try {
+                        FileUtils.recursiveDelete(folder.getLocalBase());
+                    } catch (Exception e) {
+                        logSevere("Failed to delete local base: "
+                            + folder.getLocalBase().getAbsolutePath(), e);
+                    }
                 }
             }
-
-            // Remove the folder if totally empty.
-            File[] files = folder.getLocalBase().listFiles();
-            if (files != null && files.length == 0) {
-                try {
-                    FileUtils.recursiveDelete(folder.getLocalBase());
-                } catch (Exception e) {
-                    logSevere("Failed to delete local base: "
-                        + folder.getLocalBase().getAbsolutePath(), e);
-                }
-            }
+        } finally {
             skipNewFolderSearch.set(false);
         }
 
         // Fire event
         fireFolderRemoved(folder);
+
+        logInfo("Folder removed");
     }
 
     /**

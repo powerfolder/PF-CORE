@@ -2181,7 +2181,7 @@ public class Folder extends PFComponent {
         } else {
             changed = true;
         }
-        if (changed) {
+        if (changed && checkIfDeviceDisconnected()) {
             // Write back and scan.
             writewMetaFolderMembers(membersMap, fileInfo);
             metaFolder.scanChangedFile(fileInfo);
@@ -3370,7 +3370,8 @@ public class Folder extends PFComponent {
             }
         }
         if (addProblem) {
-            logInfo("Device disconnected");
+            logInfo("Device disconnected. Folder disappeared from "
+                + getLocalBase());
             addProblem(new DeviceDisconnectedProblem(currentInfo));
         }
 
