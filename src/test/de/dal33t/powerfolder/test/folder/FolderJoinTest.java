@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderException;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -64,9 +63,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
     }
 
     public void testJoinMetaFolder() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         FolderRepository bartRepo = getContollerBart().getFolderRepository();
