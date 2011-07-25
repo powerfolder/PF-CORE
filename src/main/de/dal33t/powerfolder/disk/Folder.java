@@ -2124,9 +2124,6 @@ public class Folder extends PFComponent {
      * change. Also join any new members found in the file.
      */
     public void updateMetaFolderMembers() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
         // Only do this for parent folders.
         if (currentInfo.isMetaFolder()) {
             return;
@@ -4306,9 +4303,6 @@ public class Folder extends PFComponent {
      * Save patterns to metaFolder for transfer to other computers.
      */
     private void savePatternsToMetaFolder() {
-        if (Feature.META_FOLDER.isDisabled()) {
-            return;
-        }
         // Should the patterns be synchronized?
         if (!syncPatterns) {
             return;

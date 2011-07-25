@@ -24,12 +24,22 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,7 +51,11 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
+import de.dal33t.powerfolder.event.FolderAutoCreateListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -750,29 +764,26 @@ public class FolderRepository extends PFComponent implements Runnable {
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        if (Feature.META_FOLDER.isEnabled()) {
-            FolderInfo metaFolderInfo = new FolderInfo(
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
-            File systemSubdir = new File(folderSettings.getLocalBaseDir(),
-                Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            FolderSettings metaFolderSettings = new FolderSettings(new File(
-                systemSubdir, Constants.METAFOLDER_SUBDIR),
-                SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
-            metaFolderSettings.getLocalBaseDir().mkdirs();
-            Folder metaFolder = new Folder(getController(), metaFolderInfo,
-                metaFolderSettings);
-            metaFolder.getSystemSubDir().mkdirs();
-            metaFolders.put(folderInfo, metaFolder);
-            if (!metaFolder.hasOwnDatabase()) {
-                // Scan once. To get it working.
-                metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
-                metaFolder.recommendScanOnNextMaintenance(true);
-            }
-            logInfo("Created metaFolder " + metaFolderInfo.name
-                + ", local copy at '" + metaFolderSettings.getLocalBaseDir()
-                + '\'');
+        FolderInfo metaFolderInfo = new FolderInfo(
+            Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
+            Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
+        File systemSubdir = new File(folderSettings.getLocalBaseDir(),
+            Constants.POWERFOLDER_SYSTEM_SUBDIR);
+        FolderSettings metaFolderSettings = new FolderSettings(new File(
+            systemSubdir, Constants.METAFOLDER_SUBDIR),
+            SyncProfile.META_FOLDER_SYNC, false, ArchiveMode.NO_BACKUP, 0);
+        metaFolderSettings.getLocalBaseDir().mkdirs();
+        Folder metaFolder = new Folder(getController(), metaFolderInfo,
+            metaFolderSettings);
+        metaFolder.getSystemSubDir().mkdirs();
+        metaFolders.put(folderInfo, metaFolder);
+        if (!metaFolder.hasOwnDatabase()) {
+            // Scan once. To get it working.
+            metaFolder.setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
+            metaFolder.recommendScanOnNextMaintenance(true);
         }
+        logInfo("Created metaFolder " + metaFolderInfo.name
+            + ", local copy at '" + metaFolderSettings.getLocalBaseDir() + '\'');
 
         // Synchronize folder memberships
         triggerSynchronizeAllFolderMemberships();
