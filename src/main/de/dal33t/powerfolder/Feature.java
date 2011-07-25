@@ -98,14 +98,9 @@ public enum Feature {
     CREDITS_SYSTEM(false),
 
     /**
-     * TRAC #1940 for 4.3.0 release
+     * #2327
      */
-    START_TAB(false),
-
-    /**
-     * TRAC #1548 for 4.3.0 release
-     */
-    META_FOLDER(true),
+    TYPICAL_FOLDERS(false),
 
     /**
      * #2051: Disable email client directories until fully supported.
@@ -118,7 +113,7 @@ public enum Feature {
      * is 100% sync.
      */
     FOLDER_ATOMIC_COMMIT(false),
-    
+
     /**
      * TRAC #1962 For later use
      */
@@ -175,6 +170,5 @@ public enum Feature {
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.CREDITS_SYSTEM.enable();
-        Feature.META_FOLDER.enable();
     }
 }
