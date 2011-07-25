@@ -53,6 +53,8 @@ import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
+import de.dal33t.powerfolder.util.ui.UserDirectories;
+import de.dal33t.powerfolder.util.ui.UserDirectory;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -207,23 +209,33 @@ public class FoldersList extends PFUIComponent {
 
         for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
-            FolderBean bean = new FolderBean(folderInfo);
-            bean.setFolder(folder);
-            bean.setLocal(true);
-            bean.setOnline(getController().getOSClient().joinedByCloud(folder));
+            FolderBean bean = new FolderBean(FolderBean.Type.Local, folderInfo,
+                    folder, getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
-            FolderBean bean = new FolderBean(folderInfo);
+            FolderBean bean = new FolderBean(FolderBean.Type.CloudOnly,
+                    folderInfo, null, true);
             if (!localFolders.contains(bean)) {
-                // Not locally synced, but available on account.
-                bean.setOnline(true);
                 onlineFolders.add(bean);
             }
         }
         Collections.sort(onlineFolders, FolderBeanComparator.INSTANCE);
+
+        for (String key :
+                UserDirectories.getUserDirectoriesFiltered(
+                        getController()).keySet()) {
+            UserDirectory userDirectory = UserDirectories.getUserDirectoriesFiltered(
+                        getController()).get(key);
+            FolderInfo folderInfo = new FolderInfo(key, "..");
+            FolderBean bean = new FolderBean(FolderBean.Type.Typical, folderInfo,
+                    null, false);
+            if (!localFolders.contains(bean) && !onlineFolders.contains(bean)) {
+                typicalFolders.add(bean);
+            }
+        }
 
         empty = onlineFolders.isEmpty() && typicalFolders.isEmpty() &&
                 localFolders.isEmpty();
@@ -261,6 +273,12 @@ public class FoldersList extends PFUIComponent {
 
             addSeparator(collapseTypical, typicalIcon, typicalLabel);
 
+            if (!collapseTypical) {
+                for (FolderBean folderBean : typicalFolders) {
+                    addView(folderBean, expandedFolderInfo);
+                }
+            }
+
             addSeparator(collapseOnline, onlineIcon, onlineLabel);
 
             if (!collapseOnline) {
@@ -296,8 +314,7 @@ public class FoldersList extends PFUIComponent {
     private void addView(FolderBean folderBean, FolderInfo expandedFolderInfo) {
         ExpandableFolderView newView = new ExpandableFolderView(
             getController(), folderBean.getFolderInfo());
-        newView.configure(folderBean.getFolder(), folderBean.isLocal(),
-            folderBean.isOnline());
+        newView.configure(folderBean);
         folderListPanel.add(newView.getUIComponent());
         folderListPanel.invalidate();
         if (uiComponent != null) {
@@ -430,62 +447,6 @@ public class FoldersList extends PFUIComponent {
             return true;
         }
 
-    }
-
-    private class FolderBean {
-
-        private final FolderInfo folderInfo;
-        private Folder folder;
-        private boolean local;
-        private boolean online;
-
-        private FolderBean(FolderInfo folderInfo) {
-            this.folderInfo = folderInfo;
-        }
-
-        public FolderInfo getFolderInfo() {
-            return folderInfo;
-        }
-
-        public Folder getFolder() {
-            return folder;
-        }
-
-        public boolean isLocal() {
-            return local;
-        }
-
-        public boolean isOnline() {
-            return online;
-        }
-
-        public void setFolder(Folder folder) {
-            this.folder = folder;
-        }
-
-        public void setLocal(boolean local) {
-            this.local = local;
-        }
-
-        public void setOnline(boolean online) {
-            this.online = online;
-        }
-
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            FolderBean that = (FolderBean) obj;
-            return folderInfo.equals(that.folderInfo);
-        }
-
-        public int hashCode() {
-            return folderInfo.hashCode();
-        }
     }
 
     /**

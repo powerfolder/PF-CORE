@@ -93,7 +93,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private final FolderInfo folderInfo;
     private Folder folder;
-    private boolean local;
+    private FolderBean.Type type;
     private boolean online;
 
     private final AtomicBoolean showing100Sync = new AtomicBoolean();
@@ -180,20 +180,23 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
      *
-     * @param folderArg
+     * @param folderBean
      */
-    public void configure(Folder folderArg, boolean localArg, boolean onlineArg)
+    public void configure(FolderBean folderBean)
     {
         boolean changed = false;
-        if (folderArg != null && folder == null) {
+        Folder beanFolder = folderBean.getFolder();
+        FolderBean.Type beanType = folderBean.getType();
+        boolean beanOnline = folderBean.isOnline();
+        if (beanFolder != null && folder == null) {
             changed = true;
-        } else if (folderArg == null && folder != null) {
+        } else if (beanFolder == null && folder != null) {
             changed = true;
-        } else if (folderArg != null && !folder.equals(folderArg)) {
+        } else if (beanFolder != null && !folder.equals(beanFolder)) {
             changed = true;
-        } else if (local ^ localArg) {
+        } else if (beanType != type) {
             changed = true;
-        } else if (online ^ onlineArg) {
+        } else if (beanOnline ^ online) {
             changed = true;
         }
 
@@ -204,17 +207,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         // Something changed - change details.
         unregisterFolderListeners();
 
-        folder = folderArg;
-        local = localArg;
-        online = onlineArg;
-        osComponent.setFolder(folderArg);
+        type = beanType;
+        folder = beanFolder;
+        online = beanOnline;
+        osComponent.setFolder(beanFolder);
 
         updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
         updateFolderMembershipDetails();
         updateIconAndOS();
-        updateButtons();
+        updateLocalButtons();
         updateProblems();
         updateNameLabel();
         updatePermissions();
@@ -227,8 +230,8 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Expand this view if collapsed.
      */
     public void expand() {
-        if (folder == null) {
-            // Don't expand for ONLINE folder only.
+        if (type == FolderBean.Type.CloudOnly) {
+            // Don't expand for Cloud folder only.
             return;
         }
         expanded.set(true);
@@ -258,13 +261,15 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Show the upper links if mouse over.
      */
     private void updateUpperComponents() {
-        upperSyncLink.getUIComponent().setVisible(folder != null &&
+        upperSyncLink.getUIComponent().setVisible(type == FolderBean.Type.Local &&
                 (mouseOver.get() || !showing100Sync.get()));
-        boolean showButtons = mouseOver.get() && folder != null;
-        upperInviteButton.setVisible(showButtons);
-        upperOpenFilesButton.setVisible(showButtons);
+        boolean showLocalButtons = mouseOver.get() &&
+                type == FolderBean.Type.Local;
+        upperInviteButton.setVisible(showLocalButtons);
+        upperOpenFilesButton.setVisible(showLocalButtons);
 
-        final boolean showNoFolder = mouseOver.get() && folder == null;
+        final boolean showCloudOnlyButtons = mouseOver.get() &&
+                type == FolderBean.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
                 if (OSUtil.isWindows7System() ||
@@ -272,7 +277,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     if (serverClient.isConnected() &&
                             serverClient.getFolderService().hasJoined(
                                     folderInfo)) {
-                        upperMountWebDavButton.setVisible(showNoFolder);
+                        upperMountWebDavButton.setVisible(showCloudOnlyButtons);
                     } else {
                         upperMountWebDavButton.setVisible(false);
                     }
@@ -328,7 +333,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         upperPanel = upperBuilder.getPanel();
         upperPanel.setOpaque(false);
-        if (folder != null) {
+        if (type == FolderBean.Type.Local) {
             upperPanel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.expand"));
         }
@@ -550,7 +555,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateStatsDetails();
         updateFolderMembershipDetails();
         updateTransferMode();
-        updateButtons();
+        updateLocalButtons();
         updateProblems();
         updatePermissions();
 
@@ -565,8 +570,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteAction.allowWith(folderAdmin);
     }
 
-    private void updateButtons() {
-        boolean enabled = folder != null;
+    private void updateLocalButtons() {
+        boolean enabled = type == FolderBean.Type.Local;
 
         openSettingsInformationButton.setEnabled(enabled);
         transferModeLabel.setEnabled(enabled);
@@ -594,7 +599,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateSyncButton() {
-        if (folder == null) {
+        if (type != FolderBean.Type.Local) {
             upperSyncFolderButton.setVisible(false);
             upperSyncFolderButton.spin(false);
             primaryButton.setVisible(true);
@@ -602,11 +607,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         syncUpdater.schedule(new Runnable() {
             public void run() {
-                if (folder == null) {
-                    upperSyncFolderButton.setVisible(false);
-                    upperSyncFolderButton.spin(false);
-                    primaryButton.setVisible(true);
-                } else {
+                if (type == FolderBean.Type.Local) {
                     if (folder.isSyncing()) {
                         primaryButton.setVisible(false);
                         upperSyncFolderButton.setVisible(true);
@@ -616,6 +617,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                         upperSyncFolderButton.spin(false);
                         primaryButton.setVisible(true);
                     }
+                } else {
+                    upperSyncFolderButton.setVisible(false);
+                    upperSyncFolderButton.spin(false);
+                    primaryButton.setVisible(true);
                 }
             }
         });
@@ -643,10 +648,6 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
-        // if (myServerClientListener != null) {
-        // getController().getOSClient().addListener(myServerClientListener);
-        // myServerClientListener = null;
-        // }
         if (myNodeManagerListener != null) {
             getController().getNodeManager().removeNodeManagerListener(
                 myNodeManagerListener);
@@ -713,27 +714,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         String localSizeString;
         String totalSizeString;
         String filesAvailableLabelText;
-        if (folder == null) {
-
-            syncPercentText = Translation.getTranslation(
-                "exp_folder_view.synchronized", "?");
-            upperSyncPercent = "?";
-            syncDateText = Translation.getTranslation(
-                "exp_folder_view.last_synchronized", "?");
-            localSizeString = "?";
-            totalSizeString = "?";
-            filesAvailableLabelText = "";
-        } else {
+        if (type == FolderBean.Type.Local) {
 
             Date lastSyncDate = folder.getLastSyncDate();
 
             if (lastSyncDate == null) {
                 syncDateText = Translation
-                    .getTranslation("exp_folder_view.never_synchronized");
+                        .getTranslation("exp_folder_view.never_synchronized");
             } else {
                 String formattedDate = Format.formatDateShort(lastSyncDate);
                 syncDateText = Translation.getTranslation(
-                    "exp_folder_view.last_synchronized", formattedDate);
+                        "exp_folder_view.last_synchronized", formattedDate);
             }
 
             if (folder.hasOwnDatabase()) {
@@ -748,43 +739,41 @@ public class ExpandableFolderView extends PFUIComponent implements
 
                 // Sync in progress? Rewrite date as estimate.
                 if (Double.compare(sync, 100.0) < 0
-                    && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0)
-                {
+                        && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0) {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
                             syncDateText = Translation
-                                .getTranslation("exp_folder_view.estimated_unknown");
+                                    .getTranslation("exp_folder_view.estimated_unknown");
                         } else {
                             String formattedDate = Format.formatDateShort(date);
                             syncDateText = Translation.getTranslation(
-                                "exp_folder_view.estimated_synchronized",
-                                formattedDate);
+                                    "exp_folder_view.estimated_synchronized",
+                                    formattedDate);
                         }
                     }
                 }
 
                 if (lastSyncDate == null
-                    && (Double.compare(sync, 100.0) == 0 || Double.compare(
-                        sync, UNKNOWN_SYNC_STATUS) == 0))
-                {
+                        && (Double.compare(sync, 100.0) == 0 || Double.compare(
+                        sync, UNKNOWN_SYNC_STATUS) == 0)) {
                     // Never synced with others.
                     syncPercentText = Translation
-                        .getTranslation("exp_folder_view.unsynchronized");
+                            .getTranslation("exp_folder_view.unsynchronized");
                     upperSyncPercent = syncPercentText;
                     showing100Sync.set(false);
                 } else {
                     showing100Sync.set(Double.compare(sync, 100) == 0);
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
                         syncPercentText = Translation
-                            .getTranslation("exp_folder_view.unsynchronized");
+                                .getTranslation("exp_folder_view.unsynchronized");
                         upperSyncPercent = syncPercentText;
                         syncPercentTip = Translation
-                            .getTranslation("exp_folder_view.unsynchronized.tip");
+                                .getTranslation("exp_folder_view.unsynchronized.tip");
                     } else {
                         syncPercentText = Translation.getTranslation(
-                            "exp_folder_view.synchronized",
-                            Format.formatDecimal(sync));
+                                "exp_folder_view.synchronized",
+                                Format.formatDecimal(sync));
                         upperSyncPercent = Format.formatDecimal(sync) + '%';
                     }
                 }
@@ -805,18 +794,28 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                        "exp_folder_view.files_available",
-                        String.valueOf(count));
+                            "exp_folder_view.files_available",
+                            String.valueOf(count));
                 }
             } else {
                 showing100Sync.set(false);
                 syncPercentText = Translation
-                    .getTranslation("exp_folder_view.not_yet_scanned");
+                        .getTranslation("exp_folder_view.not_yet_scanned");
                 upperSyncPercent = "?";
                 localSizeString = "?";
                 totalSizeString = "?";
                 filesAvailableLabelText = "";
             }
+        } else {
+
+            syncPercentText = Translation.getTranslation(
+                    "exp_folder_view.synchronized", "?");
+            upperSyncPercent = "?";
+            syncDateText = Translation.getTranslation(
+                    "exp_folder_view.last_synchronized", "?");
+            localSizeString = "?";
+            totalSizeString = "?";
+            filesAvailableLabelText = "";
         }
 
         syncPercentLabel.setText(syncPercentText);
@@ -843,25 +842,22 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateNumberOfFiles() {
         String filesText;
-        if (folder == null) {
-            filesText = Translation
-                .getTranslation("exp_folder_view.files", "?");
-        } else {
+        if (type == FolderBean.Type.Local) {
             // FIXME: Returns # of files + # of directories
             filesText = Translation.getTranslation("exp_folder_view.files",
-                String.valueOf(folder.getStatistic().getLocalFilesCount()));
+                    String.valueOf(folder.getStatistic().getLocalFilesCount()));
+        } else {
+            filesText = Translation
+                    .getTranslation("exp_folder_view.files", "?");
         }
         filesLabel.setText(filesText);
     }
 
     private void updateDeletedFiles() {
         String deletedFileText;
-        if (folder == null) {
-            deletedFileText = Translation.getTranslation(
-                "exp_folder_view.deleted_files", "?");
-        } else {
+        if (type == FolderBean.Type.Local) {
             Collection<FileInfo> allFiles = folder.getDAO().findAllFiles(
-                getController().getMySelf().getId());
+                    getController().getMySelf().getId());
             int deletedCount = 0;
             for (FileInfo file : allFiles) {
                 if (file.isDeleted()) {
@@ -869,7 +865,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
             deletedFileText = Translation.getTranslation(
-                "exp_folder_view.deleted_files", String.valueOf(deletedCount));
+                    "exp_folder_view.deleted_files", String.valueOf(deletedCount));
+        } else {
+            deletedFileText = Translation.getTranslation(
+                    "exp_folder_view.deleted_files", "?");
         }
         deletedFilesLabel.setText(deletedFileText);
     }
@@ -879,21 +878,21 @@ public class ExpandableFolderView extends PFUIComponent implements
      */
     private void updateTransferMode() {
         String transferMode;
-        if (folder == null) {
+        if (type == FolderBean.Type.Local) {
             transferMode = Translation.getTranslation(
-                "exp_folder_view.transfer_mode", "?");
-            localDirectoryLabel.setVisible(false);
-        } else {
-            transferMode = Translation.getTranslation(
-                "exp_folder_view.transfer_mode", folder.getSyncProfile()
-                    .getName());
+                    "exp_folder_view.transfer_mode", folder.getSyncProfile()
+                            .getName());
             String path = folder.getCommitOrLocalDir().getAbsolutePath();
             if (path.length() >= 35) {
                 path = path.substring(0, 15) + "..."
-                    + path.substring(path.length() - 15, path.length());
+                        + path.substring(path.length() - 15, path.length());
             }
             localDirectoryLabel.setVisible(true);
             localDirectoryLabel.setText(path);
+        } else {
+            transferMode = Translation.getTranslation(
+                    "exp_folder_view.transfer_mode", "?");
+            localDirectoryLabel.setVisible(false);
         }
         transferModeLabel.setText(transferMode);
     }
@@ -915,14 +914,14 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateFolderMembershipDetails0() {
         String countText;
         String connectedCountText;
-        if (folder == null) {
-            countText = "?";
-            connectedCountText = "?";
-        } else {
+        if (type == FolderBean.Type.Local) {
             countText = String.valueOf(folder.getMembersCount());
             // And me!
             connectedCountText = String.valueOf(folder
-                .getConnectedMembersCount() + 1);
+                    .getConnectedMembersCount() + 1);
+        } else {
+            countText = "?";
+            connectedCountText = "?";
         }
         membersLabel.setText(Translation.getTranslation(
             "exp_folder_view.members", countText, connectedCountText));
@@ -930,33 +929,38 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void updateIconAndOS() {
 
-        if (folder == null) {
-            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
-            primaryButton.setToolTipText(Translation
-                .getTranslation("exp_folder_view.folder_online_text"));
-            osComponent.getUIComponent().setVisible(
-                PreferencesEntry.USE_ONLINE_STORAGE
-                    .getValueBoolean(getController()));
-        } else {
+        if (type == FolderBean.Type.Local) {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_preview_text"));
+                        .getTranslation("exp_folder_view.folder_preview_text"));
             } else if (online) {
                 primaryButton.setIcon(Icons
-                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+                        .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
                 primaryButton
-                    .setToolTipText(Translation
-                        .getTranslation("exp_folder_view.folder_local_online_text"));
+                        .setToolTipText(Translation
+                                .getTranslation("exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(
-                    PreferencesEntry.USE_ONLINE_STORAGE
-                        .getValueBoolean(getController()));
+                        PreferencesEntry.USE_ONLINE_STORAGE
+                                .getValueBoolean(getController()));
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_local_text"));
+                        .getTranslation("exp_folder_view.folder_local_text"));
             }
+        } else if (type == FolderBean.Type.Typical) {
+            primaryButton.setIcon(Icons.getIconById(Icons.SETTINGS));
+            primaryButton.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_typical_text"));
+            osComponent.getUIComponent().setVisible(false);
+        } else { // CloudOnly
+            primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
+            primaryButton.setToolTipText(Translation
+                    .getTranslation("exp_folder_view.folder_online_text"));
+            osComponent.getUIComponent().setVisible(
+                    PreferencesEntry.USE_ONLINE_STORAGE
+                            .getValueBoolean(getController()));
         }
 
         if (folder != null && folder.isPreviewOnly()) {
@@ -998,8 +1002,8 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     public JPopupMenu createPopupMenu() {
         JPopupMenu contextMenu = new JPopupMenu();
-        if (online && !local) {
-            // Online-only folder popup
+        if (type == FolderBean.Type.CloudOnly) {
+            // Cloud-only folder popup
             contextMenu.add(removeFolderAction);
         } else {
             // Local folder popup
@@ -1017,9 +1021,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             contextMenu.addSeparator();
             contextMenu.add(openSettingsInformationAction);
             contextMenu.add(removeFolderAction);
-            if (folder != null && serverClient.isConnected()
-                && serverClient.isLoggedIn())
-            {
+            if (serverClient.isConnected() && serverClient.isLoggedIn()) {
                 boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
                     contextMenu.add(stopOnlineStorageAction);
@@ -1028,7 +1030,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
         }
-        if (folder == null) {
+        if (type == FolderBean.Type.CloudOnly) {
             if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
                 if (serverClient.isConnected() &&
                         serverClient.getFolderService().hasJoined(folderInfo)) {
@@ -1211,7 +1213,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     updateDeletedFiles();
                     updateStatsDetails();
                     updateIconAndOS();
-                    updateButtons();
+                    updateLocalButtons();
                     updateTransferMode();
                     updatePermissions();
                 }
