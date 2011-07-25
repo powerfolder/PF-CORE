@@ -644,6 +644,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
         FolderSettings folderSettings)
     {
+        folderSettings.getLocalBaseDir().mkdirs();
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
