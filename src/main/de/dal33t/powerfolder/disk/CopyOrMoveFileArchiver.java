@@ -378,6 +378,8 @@ public class CopyOrMoveFileArchiver implements FileArchiver {
             log.fine("Restoring " + versionInfo.getRelativeName() + " to "
                 + target.getAbsolutePath());
             FileUtils.copyFile(archiveFile, target);
+            // #2256: New modification date. Otherwise conflict detection
+            // triggers
             // target.setLastModified(versionInfo.getModifiedDate().getTime());
             return true;
         } else {

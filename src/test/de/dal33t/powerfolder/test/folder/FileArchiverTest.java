@@ -2,13 +2,17 @@ package de.dal33t.powerfolder.test.folder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -215,6 +219,66 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         archived = aBart.getArchivedFilesInfos(fInfo);
         assertEquals(nVersion + 1, archived.size());
+    }
+
+    public void testNoConflictOnRestore() throws IOException {
+        File fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase());
+        scanFolder(getFolderAtBart());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtLisa().getKnownItemCount() == 1;
+            }
+
+            public String message() {
+                return "Files at lisa: " + getFolderAtLisa().getKnownFiles();
+            }
+        });
+        TestHelper.waitMilliSeconds(3000);
+        TestHelper.changeFile(fileAtBart);
+        scanFolder(getFolderAtBart());
+
+        final FileInfo fInfo = getFolderAtBart().getFile(
+            FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtLisa().getFileArchiver()
+                    .getArchivedFilesInfos(fInfo).size() == 1;
+            }
+
+            public String message() {
+                return "Archived files at lisa: "
+                    + getFolderAtLisa().getFileArchiver()
+                        .getArchivedFilesInfos(fInfo);
+            }
+        });
+
+        TestHelper.waitMilliSeconds(2500);
+        File fileAtLisa = fInfo.getDiskFile(getContollerLisa()
+            .getFolderRepository());
+        LoggingManager.setConsoleLogging(Level.FINER);
+        assertTrue(getFolderAtLisa().getFileArchiver().restore(
+            FileInfoFactory.archivedFile(fInfo.getFolderInfo(), fInfo
+                .getRelativeName(), fInfo.getSize(), fInfo.getModifiedBy(),
+                new Date(System.currentTimeMillis() - 10000), 0), fileAtLisa));
+        getFolderAtLisa().scanChangedFile(fInfo);
+
+        TestHelper.waitMilliSeconds(2500);
+        assertEquals(2, getFolderAtLisa().getFile(fInfo).getVersion());
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtBart().getFileArchiver()
+                    .getArchivedFilesInfos(fInfo).size() == 1;
+            }
+
+            public String message() {
+                return "Archived files at bart: "
+                    + getFolderAtBart().getFileArchiver()
+                        .getArchivedFilesInfos(fInfo);
+            }
+        });
+        assertEquals(0, getFolderAtBart().countProblems());
     }
 
     private FileInfo modLisaFile(File file, final FileInfo fInfo) {
