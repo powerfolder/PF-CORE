@@ -20,18 +20,25 @@
 package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import sun.nio.cs.ext.MacUkraine;
 
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.BufferedValueModel;
@@ -66,13 +73,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox startWithWindowsBox;
     private ActionLabel startWithMacOSLabel;
 
+    private JCheckBox conflictDetectionBox;
+
     private JCheckBox massDeleteBox;
     private JSlider massDeleteSlider;
 
     private JCheckBox showAdvancedSettingsBox;
     private ValueModel showAdvancedSettingsModel;
-
-    private JCheckBox backupOnlyClientBox;
 
     private JCheckBox usePowerFolderIconBox;
 
@@ -130,19 +137,12 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         showAdvancedSettingsModel = new ValueHolder(
             PreferencesEntry.SHOW_ADVANCED_SETTINGS
                 .getValueBoolean(getController()));
-        ValueModel backupOnlyClientModel = new ValueHolder(
-            ConfigurationEntry.BACKUP_ONLY_CLIENT
-                .getValueBoolean(getController()));
 
         nickField = new JTextField(getController().getMySelf().getNick());
 
         showAdvancedSettingsBox = BasicComponentFactory.createCheckBox(
             showAdvancedSettingsModel,
             Translation.getTranslation("preferences.dialog.show_advanced"));
-
-        backupOnlyClientBox = BasicComponentFactory
-            .createCheckBox(backupOnlyClientModel, Translation
-                .getTranslation("preferences.dialog.backup_only_clinet"));
 
         ValueModel massDeleteModel = new ValueHolder(
             ConfigurationEntry.MASS_DELETE_PROTECTION
@@ -207,6 +207,11 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 });
 
         }
+
+        conflictDetectionBox = new JCheckBox(
+            Translation.getTranslation("preferences.dialog.use_conflict_handling"));
+        conflictDetectionBox.setSelected(ConfigurationEntry.CONFLICT_DETECTION
+            .getValueBoolean(getController()));
 
         modeModel = new ValueHolder();
         versionModel = new ValueHolder();
@@ -308,13 +313,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             // Add info for non-windows systems
             if (OSUtil.isWindowsSystem()) { // Windows System
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-
-                row += 2;
-                builder.add(createPowerFoldersDesktopShortcutsBox,
-                    cc.xyw(3, row, 2));
-
                 if (startWithWindowsBox != null) {
                     builder.appendRow("3dlu");
                     builder.appendRow("pref");
@@ -325,8 +323,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
                 row += 2;
-                builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
+                builder.add(createPowerFoldersDesktopShortcutsBox,
+                    cc.xyw(3, row, 2));
 
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(usePowerFolderIconBox, cc.xyw(3, row, 2));
             } else {
                 builder.appendRow("3dlu");
                 builder.appendRow("pref");
@@ -342,16 +345,13 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     builder.add(startWithMacOSLabel.getUIComponent(),
                         cc.xyw(3, row, 2));
                 }
-
-            }
-
-            if (!getController().isBackupOnly()) {
-                row += 2;
-                builder.add(backupOnlyClientBox, cc.xyw(3, row, 2));
             }
 
             row += 2;
             builder.add(showAdvancedSettingsBox, cc.xyw(3, row, 2));
+            
+            row += 2;
+            builder.add(conflictDetectionBox, cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(massDeleteBox, cc.xyw(3, row, 2));
@@ -471,20 +471,14 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 break;
         }
 
-        // set bu only
-        if (!ConfigurationEntry.BACKUP_ONLY_CLIENT.getValue(getController())
-            .equals(String.valueOf(backupOnlyClientBox.isSelected())))
-        {
-            needsRestart = true;
-        }
-        ConfigurationEntry.BACKUP_ONLY_CLIENT.setValue(getController(),
-            String.valueOf(backupOnlyClientBox.isSelected()));
-
         if (usePowerFolderIconBox != null) {
             // PowerFolder icon
             ConfigurationEntry.USE_PF_ICON.setValue(getController(),
                 Boolean.toString(usePowerFolderIconBox.isSelected()));
         }
+
+        ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(),
+            conflictDetectionBox.isSelected());
 
         ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
             massDeleteBox.isSelected());
