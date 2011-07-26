@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -79,9 +80,11 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
             dao.store("OTHER", inSyncFile);
             dao.store("OTHER", version(otherInSyncFile, i + 1));
-            dao.store("OTHER", version(otherInSyncFile2, otherInSyncFile2
-                .getVersion(), new Date(otherInSyncFile2.getModifiedDate()
-                .getTime() + 50000L)));
+            dao.store(
+                "OTHER",
+                version(otherInSyncFile2, otherInSyncFile2.getVersion(),
+                    new Date(
+                        otherInSyncFile2.getModifiedDate().getTime() + 50000L)));
             dao.store("OTHER", inSyncDir);
             dao.store("OTHER", version(otherInSyncDir, 9));
             Profiling.end(pe);
@@ -143,8 +146,9 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         int i = n - 1;
         long excludedBytes = i * (i + 1) / 2;
         assertEquals(otherBytesInSync - excludedBytes, dao.bytesInSync("OTHER"));
-        assertTrue("Wrong bytes with ignored file: otherBytesInSync: "
-            + otherBytesInSync + ", dao: " + dao.bytesInSync("OTHER"),
+        assertTrue(
+            "Wrong bytes with ignored file: otherBytesInSync: "
+                + otherBytesInSync + ", dao: " + dao.bytesInSync("OTHER"),
             otherBytesInSync == 0
                 || otherBytesInSync > dao.bytesInSync("OTHER"));
 
@@ -235,8 +239,9 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(1, dao.findNewestVersion(expected, "").getVersion());
         assertNotNull(dao.findNewestVersion(expected, "REMOTE1", "REMOTE2",
             null));
-        assertEquals(2, dao.findNewestVersion(expected, "REMOTE1", "REMOTE2",
-            null).getVersion());
+        assertEquals(2,
+            dao.findNewestVersion(expected, "REMOTE1", "REMOTE2", null)
+                .getVersion());
         assertNotNull(dao.findNewestVersion(expected, "REMOTE1", "REMOTE2"));
         assertEquals(2, dao.findNewestVersion(expected, "REMOTE1", "REMOTE2")
             .getVersion());
@@ -245,8 +250,9 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     protected void testIndexFileInfo(FileInfoDAO dao) {
         FileInfo expected = createRandomFileInfo(10, "MyExcelsheet.xls");
         dao.store(null, expected);
-        FileInfo retrieved = dao.find(FileInfoFactory.lookupInstance(expected
-            .getFolderInfo(), expected.getRelativeName()), null);
+        FileInfo retrieved = dao.find(
+            FileInfoFactory.lookupInstance(expected.getFolderInfo(),
+                expected.getRelativeName()), null);
         assertNotNull("Retrieved FileInfo is null", retrieved);
         assertEquals(expected, retrieved);
 
@@ -261,8 +267,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         // Some random garbage content
         for (int i = 0; i < n; i++) {
             dao.store(null, createRandomFileInfo(i, "MyExcelsheet.xls"));
-            dao.store(null, createRandomFileInfo(i, "A-RandomDirectory", i,
-                true));
+            dao.store(null,
+                createRandomFileInfo(i, "A-RandomDirectory", i, true));
         }
 
         FileInfo dirInfo = createRandomFileInfo(0, "TheDirectory", 0, true);
@@ -273,9 +279,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
             FileInfo fInfo = createRandomFileInfo(i, dirInfo.getFilenameOnly()
                 + "/MyExcelsheet.xls");
             dao.store(null, fInfo);
-            FileInfo fInfo2 = createRandomFileInfo(i, dirInfo2
-                .getFilenameOnly()
-                + "/MyExcelsheet.xls");
+            FileInfo fInfo2 = createRandomFileInfo(i,
+                dirInfo2.getFilenameOnly() + "/MyExcelsheet.xls");
             dao.store(null, fInfo2);
         }
 
@@ -290,10 +295,47 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
             .size());
         assertEquals(nItems, dao
             .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
-        assertEquals(n * 2 + 2, dao.findInDirectory(null, "subdir1/SUBDIR2/",
-            false).size());
-        assertEquals(n, dao.findInDirectory(null, (DirectoryInfo) dirInfo,
-            false).size());
+        assertEquals(n * 2 + 2,
+            dao.findInDirectory(null, "subdir1/SUBDIR2/", false).size());
+        assertEquals(n,
+            dao.findInDirectory(null, (DirectoryInfo) dirInfo, false).size());
+        //
+        // Alexandria/
+        // Alexandria/Alexandria
+        // Alexandria/Alexandria.General
+        //
+        FileInfo alexSubdir = createFileInfo("Alexandria", 1, true);
+        dao.store("ALEX", alexSubdir);
+        dao.store("ALEX", createFileInfo("Alexandria/Alexandria", 1, true));
+        dao.store("ALEX",
+            createFileInfo("Alexandria/Alexandria.General", 1, true));
+        dao.store("ALEX",
+            createFileInfo("Alexandria/Alexandria.General/file.txt", 1, false));
+        FileInfoCriteria crit = new FileInfoCriteria();
+        crit.addDomain("ALEX");
+        crit.setPath("");
+        assertEquals(1, dao.findFiles(crit).size());
+
+        crit = new FileInfoCriteria();
+        crit.addDomain("ALEX");
+        crit.setPath("Alexandria");
+        assertEquals(2, dao.findFiles(crit).size());
+
+        crit = new FileInfoCriteria();
+        crit.addDomain("ALEX");
+        crit.setPath("Alexandria/Alexandria");
+        assertEquals("Found: " + dao.findFiles(crit), 0, dao.findFiles(crit)
+            .size());
+    }
+
+    protected static FileInfo createFileInfo(String name, int version,
+        boolean directory)
+    {
+        FolderInfo foInfo = createRandomFolderInfo();
+        MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
+            IdGenerator.makeId(), IdGenerator.makeId());
+        return FileInfoFactory.unmarshallExistingFile(foInfo, name, 100, mInfo,
+            new Date(), version, directory);
     }
 
     protected static FileInfo createRandomFileInfo(int n, String name,
@@ -307,8 +349,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     {
         FolderInfo foInfo = createRandomFolderInfo();
         String fn = "subdir1/SUBDIR2/" + name + "-" + n;
-        MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(), IdGenerator
-            .makeId(), IdGenerator.makeId());
+        MemberInfo mInfo = new MemberInfo(IdGenerator.makeId(),
+            IdGenerator.makeId(), IdGenerator.makeId());
         return FileInfoFactory.unmarshallExistingFile(foInfo, fn, n, mInfo,
             new Date(), version, directory);
     }

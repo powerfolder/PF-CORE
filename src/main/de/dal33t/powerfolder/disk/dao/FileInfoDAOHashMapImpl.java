@@ -82,8 +82,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
                     continue;
                 }
-                FileInfo newestFileInfo = findNewestVersion(fInfo, domains
-                    .keySet());
+                FileInfo newestFileInfo = findNewestVersion(fInfo,
+                    domains.keySet());
                 if (inSync(fInfo, newestFileInfo)) {
                     c++;
                 }
@@ -241,6 +241,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (path.equals("/")) {
             path = "";
         }
+        if (path.length() > 0 && !path.endsWith("/")) {
+            path += "/";
+        }
         boolean recursive = criteria.isRecursive();
         Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
@@ -348,7 +351,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (recursive) {
             return true;
         }
-        int offset = path != null ? path.length() + 1 : 0;
+        int offset = path.length() + 1;
         int i = fInfo.getRelativeName().indexOf('/', offset);
         // No other subdirectory at end.
         return i < 0;
