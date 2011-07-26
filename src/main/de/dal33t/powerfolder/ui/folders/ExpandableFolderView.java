@@ -1171,6 +1171,17 @@ public class ExpandableFolderView extends PFUIComponent implements
         worker.start();
     }
 
+    /**
+     * See if user wants to create this typical folder.
+     */
+    private void askToCreateFolder() {
+        if (type != ExpandableFolderModel.Type.Typical) {
+            logSevere("Folder " + folderInfo.getName() + " is not Typical");
+            return;
+        }
+        PFWizard.openTypicalFolderJoinWizard(getController(), folderInfo);
+    }
+
     // ////////////////
     // Inner Classes //
     // ////////////////
@@ -1463,6 +1474,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                             getController(),
                             Collections.singletonList(folderInfo));
                     }
+                    if (type == ExpandableFolderModel.Type.Typical) {
+                        askToCreateFolder();
+                    }
                 }
             }
         }
@@ -1694,7 +1708,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                     openExplorer();
                 }
             } else { // Typical
-                // nothing yet...
+                askToCreateFolder();
             }
         }
     }

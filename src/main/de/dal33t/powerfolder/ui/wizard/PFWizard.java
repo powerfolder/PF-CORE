@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.swing.JDialog;
 
@@ -149,6 +150,29 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
 
         wizard.open(new MultiOnlineStorageSetupPanel(controller));
+    }
+
+    public static void openTypicalFolderJoinWizard(
+        Controller controller, FolderInfo folderInfo)
+    {
+
+        PFWizard wizard = new PFWizard(controller,
+            Translation.getTranslation("wizard.pfwizard.online_storage_title"));
+
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.FOLDER_INFOS,
+                Collections.singletonList(folderInfo));
+
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
+
+        // Setup success panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(controller,
+            Translation.getTranslation("wizard.setup_success"),
+            Translation.getTranslation("wizard.success_join"));
+        wizard.getWizardContext().setAttribute(SUCCESS_PANEL, successPanel);
+
+        wizard.open(new TypicalFolderSetupPanel(controller));
     }
 
     /**
