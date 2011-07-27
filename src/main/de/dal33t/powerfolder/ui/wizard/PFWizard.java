@@ -164,6 +164,9 @@ public class PFWizard extends PFUIComponent {
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
 
+        wizard.getWizardContext().setAttribute(
+            WizardContextAttributes.BACKUP_ONLINE_STOARGE, true);
+
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(controller,
             Translation.getTranslation("wizard.setup_success"),

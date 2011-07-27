@@ -35,6 +35,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Reject;
@@ -135,6 +136,18 @@ public class TypicalFolderSetupPanel extends PFWizardPanel {
     public void afterDisplay() {
         folderInfo = (FolderInfo) getWizardContext().getAttribute(
                         WizardContextAttributes.FOLDER_INFO);
+
+        // Try to find a cloud folder with this name, and use that.
+        ServerClient client = getController().getOSClient();
+        if (client.isConnected() && client.isLoggedIn()) {
+            for (FolderInfo accountFolder : client.getAccountFolders()) {
+                if (folderInfo.getName().equals(accountFolder.getName())) {
+                    // Use this cloud folder instead.
+                    folderInfo = accountFolder;
+                    break;
+                }
+            }
+        }
         Reject.ifNull(folderInfo, "Expecting a single folder info");
         folderTextField.setText(folderInfo.name);
         Map<String, UserDirectory> userDirectoryMap =
