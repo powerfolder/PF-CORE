@@ -84,6 +84,11 @@ public interface WizardContextAttributes {
     String MAKE_FRIEND_AFTER = "make.friend.after";
 
     /**
+     * FolderInfo
+     */
+    String FOLDER_INFO = "folder.info";
+
+    /**
      * List<FolderInfo>
      */
     String FOLDER_INFOS = "folder.infos";

@@ -53,6 +53,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
 import de.dal33t.powerfolder.util.ui.UserDirectories;
 
@@ -209,15 +210,17 @@ public class FoldersList extends PFUIComponent {
 
         for (Folder folder : repo.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
-            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.Local, folderInfo,
-                    folder, getController().getOSClient().joinedByCloud(folder));
+            ExpandableFolderModel bean = new ExpandableFolderModel(
+                    ExpandableFolderModel.Type.Local, folderInfo, folder,
+                    getController().getOSClient().joinedByCloud(folder));
             localFolders.add(bean);
         }
         Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
-            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.CloudOnly,
-                    folderInfo, null, true);
+            ExpandableFolderModel bean = new ExpandableFolderModel(
+                    ExpandableFolderModel.Type.CloudOnly, folderInfo, null,
+                    true);
             if (!localFolders.contains(bean)) {
                 onlineFolders.add(bean);
             }
@@ -227,9 +230,11 @@ public class FoldersList extends PFUIComponent {
         for (String key :
                 UserDirectories.getUserDirectoriesFiltered(
                         getController()).keySet()) {
-            FolderInfo folderInfo = new FolderInfo(key, ".");
-            ExpandableFolderModel bean = new ExpandableFolderModel(ExpandableFolderModel.Type.Typical, folderInfo,
-                    null, false);
+            FolderInfo folderInfo = new FolderInfo(key, '[' +
+                    IdGenerator.makeId() + ']');
+            ExpandableFolderModel bean = new ExpandableFolderModel(
+                    ExpandableFolderModel.Type.Typical, folderInfo, null,
+                    false);
             if (!localFolders.contains(bean) && !onlineFolders.contains(bean)) {
                 typicalFolders.add(bean);
             }

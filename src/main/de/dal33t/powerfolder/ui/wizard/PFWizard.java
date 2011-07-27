@@ -26,7 +26,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
 import javax.swing.JDialog;
 
@@ -157,11 +156,10 @@ public class PFWizard extends PFUIComponent {
     {
 
         PFWizard wizard = new PFWizard(controller,
-            Translation.getTranslation("wizard.pfwizard.online_storage_title"));
+            Translation.getTranslation("wizard.pfwizard.folder_title"));
 
         wizard.getWizardContext().setAttribute(
-            WizardContextAttributes.FOLDER_INFOS,
-                Collections.singletonList(folderInfo));
+            WizardContextAttributes.FOLDER_INFO, folderInfo);
 
         wizard.getWizardContext().setAttribute(
             WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE, false);
