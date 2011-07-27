@@ -71,8 +71,8 @@ public class RecycleTest extends ControllerTestCase {
         assertFalse(file.exists());
         assertEquals(fileInfo.getModifiedBy(), getController().getMySelf()
             .getInfo());
-        assertTrue(fileInfo.toDetailString(), fileInfo.getModifiedDate().after(
-            lastModified));
+        assertTrue(fileInfo.toDetailString(),
+            fileInfo.getModifiedDate().after(lastModified));
 
         assertTrue(archiver.hasArchivedFileInfo(fileInfo));
         archiver.restore(origFile, file);
@@ -82,8 +82,9 @@ public class RecycleTest extends ControllerTestCase {
 
         assertTrue(file.exists());
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
-        assertEquals(fileInfo.toDetailString() + ": was modified "
-            + lastModified, lastModified, fileInfo.getModifiedDate());
+        assertTrue(
+            fileInfo.toDetailString() + ": was modified " + lastModified,
+            lastModified.before(fileInfo.getModifiedDate()));
         assertEquals(fileInfo.toDetailString(), 2, fileInfo.getVersion());
         assertEquals(fileInfo.getModifiedDate(), getFolder().getKnownFiles()
             .iterator().next().getModifiedDate());
