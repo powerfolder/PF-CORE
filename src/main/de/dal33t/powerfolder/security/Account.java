@@ -429,7 +429,11 @@ public class Account implements Serializable {
         return lastLoginFrom;
     }
 
-    public void setLastLoginFrom(MemberInfo lastLoginFrom) {
+    /**
+     * @param lastLoginFrom
+     * @return true if this is a new computer. false if not.
+     */
+    public boolean setLastLoginFrom(MemberInfo lastLoginFrom) {
         this.lastLoginFrom = lastLoginFrom;
 
         // Set login date
@@ -439,7 +443,9 @@ public class Account implements Serializable {
         getComputers();
         if (lastLoginFrom != null && !computers.contains(lastLoginFrom)) {
             computers.add(lastLoginFrom);
+            return true;
         }
+        return false;
     }
 
     public Date getLastLoginDate() {
