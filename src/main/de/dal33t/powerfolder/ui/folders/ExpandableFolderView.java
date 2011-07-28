@@ -765,11 +765,17 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     showing100Sync.set(Double.compare(sync, 100) == 0);
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
-                        syncPercentText = Translation
+                        if (folder.getConnectedMembersCount() >= 1) {
+                            syncPercentText = Translation
                                 .getTranslation("exp_folder_view.unsynchronized");
-                        upperSyncPercent = syncPercentText;
-                        syncPercentTip = Translation
+                            upperSyncPercent = syncPercentText;
+                            syncPercentTip = Translation
                                 .getTranslation("exp_folder_view.unsynchronized.tip");
+                        } else {
+                            syncPercentText = "";
+                            upperSyncPercent = "";
+                            syncPercentTip = "";
+                        }
                     } else {
                         syncPercentText = Translation.getTranslation(
                                 "exp_folder_view.synchronized",
