@@ -249,10 +249,10 @@ public class MainFrame extends PFUIComponent {
              * @param e
              */
             public void windowIconified(WindowEvent e) {
-                getUIController().hideChildPanels();
                 boolean minToSysTray = PreferencesEntry.MIN_TO_SYS_TRAY
-                    .getValueBoolean(c);
+                    .getValueBoolean(c) && !OSUtil.isMacOS();
                 if (minToSysTray) {
+                    getUIController().hideChildPanels();
                     uiComponent.setVisible(false);
                 } else {
                     super.windowIconified(e);
