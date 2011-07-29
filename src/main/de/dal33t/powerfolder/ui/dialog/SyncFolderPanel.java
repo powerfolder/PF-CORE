@@ -119,6 +119,10 @@ public class SyncFolderPanel extends BaseDialog {
 
         JButton cancelButton = createCancelButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                // Don't want to be notified when the scan completes.
+                getController().getUIController().getApplicationModel().
+                        getFolderRepositoryModel().removeInterestedFolderInfo(
+                        folder.getInfo());
                 close();
             }
         });

@@ -143,6 +143,12 @@ public class FolderRepositoryModel extends PFUIComponent {
         }
     }
 
+    public void removeInterestedFolderInfo(FolderInfo info) {
+        synchronized (interestedFolders) {
+            interestedFolders.remove(info);
+        }
+    }
+
     private class MyFolderRepositoryListener implements
         FolderRepositoryListener
     {

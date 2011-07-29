@@ -1010,15 +1010,16 @@ public class UIController extends PFComponent {
 
     // TODO Move to ApplicationModel
     public void syncFolder(Folder folder) {
+
+        // Want to be aware when the scan completes.
+        applicationModel.getFolderRepositoryModel().addInterestedFolderInfo(
+                folder.getInfo());
+
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
             // Ask for more sync options on that folder if on project sync
             new SyncFolderPanel(getController(), folder).open();
         } else {
-
-            // Want to be aware when the scan completes.
-            applicationModel.getFolderRepositoryModel().addInterestedFolderInfo(
-                    folder.getInfo());
 
             getController().setSilentMode(false);
 
