@@ -140,9 +140,12 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         ValueModel minToSysTrayModel = new ValueHolder(
             PreferencesEntry.MIN_TO_SYS_TRAY.getValueBoolean(getController()));
-        minToSysTrayCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(minToSysTrayModel, writeTrigger),
-            Translation.getTranslation("preferences.dialog.min_to_sys_tray"));
+        if (!OSUtil.isMacOS()) {
+            minToSysTrayCB = BasicComponentFactory.createCheckBox(
+                new BufferedValueModel(minToSysTrayModel, writeTrigger),
+                Translation
+                    .getTranslation("preferences.dialog.min_to_sys_tray"));
+        }
 
         ValueModel lockedModel = new ValueHolder(
             ConfigurationEntry.USER_INTERFACE_LOCKED
@@ -151,18 +154,18 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             lockedModel, writeTrigger), Translation
             .getTranslation("preferences.dialog.ui_locked"));
 
-        ValueModel ulModel = new ValueHolder(PreferencesEntry.UNDERLINE_LINKS
-            .getValueBoolean(getController()));
+        ValueModel ulModel = new ValueHolder(
+            PreferencesEntry.UNDERLINE_LINKS.getValueBoolean(getController()));
         underlineLinkBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(ulModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.underline_link"));
+            new BufferedValueModel(ulModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.underline_link"));
 
         ValueModel mfModel = new ValueHolder(
             PreferencesEntry.USE_MAGNETIC_FRAMES
                 .getValueBoolean(getController()));
         magneticFrameBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(mfModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.magnetic_frame"));
+            new BufferedValueModel(mfModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.magnetic_frame"));
 
         DefaultComboBoxModel inlineInfoCBM = new DefaultComboBoxModel();
         inlineInfoCBM.addElement(Translation
@@ -181,8 +184,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             PreferencesEntry.TRANSLUCENT_MAIN_FRAME
                 .getValueBoolean(getController()));
         translucentMainFrameCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(transModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.translucent_frame"));
+            new BufferedValueModel(transModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.translucent_frame"));
         translucentMainFrameCB.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 enableTransPerc();
@@ -194,19 +197,19 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             PreferencesEntry.MAIN_ALWAYS_ON_TOP
                 .getValueBoolean(getController()));
         mainAlwaysOnTopCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(onTopModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.main_on_top"));
+            new BufferedValueModel(onTopModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.main_on_top"));
         mainAlwaysOnTopCB.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 doMainOnTop(mainAlwaysOnTopCB.isSelected());
             }
         });
 
-        ValueModel aeModel = new ValueHolder(PreferencesEntry.AUTO_EXPAND
-            .getValueBoolean(getController()));
+        ValueModel aeModel = new ValueHolder(
+            PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController()));
         autoExpandCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(aeModel, writeTrigger), Translation
-                .getTranslation("preferences.dialog.auto_expand"));
+            new BufferedValueModel(aeModel, writeTrigger),
+            Translation.getTranslation("preferences.dialog.auto_expand"));
 
         transPercSlider = new JSlider();
         transPercSlider.setMinimum(10);
@@ -230,8 +233,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
         });
 
-        transPercLabel = new JLabel(Translation
-            .getTranslation("preferences.dialog.translucent_text"));
+        transPercLabel = new JLabel(
+            Translation.getTranslation("preferences.dialog.translucent_text"));
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -256,28 +259,25 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             ValueModel pflModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_LINK
-                    .getValueBoolean(getController()));
+                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()));
             usePowerFolderLink = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pflModel, writeTrigger), Translation
-                    .getTranslation("preferences.dialog.show_pf_link"));
+                new BufferedValueModel(pflModel, writeTrigger),
+                Translation.getTranslation("preferences.dialog.show_pf_link"));
 
         }
-        
+
         if (OSUtil.isMacOS()) {
             // Places
             ValueModel pflModel = new ValueHolder(
-                ConfigurationEntry.USE_PF_LINK
-                    .getValueBoolean(getController()));
+                ConfigurationEntry.USE_PF_LINK.getValueBoolean(getController()));
             usePowerFolderLink = BasicComponentFactory.createCheckBox(
-                new BufferedValueModel(pflModel, writeTrigger), Translation
-                    .getTranslation("preferences.dialog.show_pf_link"));
+                new BufferedValueModel(pflModel, writeTrigger),
+                Translation.getTranslation("preferences.dialog.show_pf_link"));
         }
-        
 
         if (getUIController().getSkins().length > 1) {
-            skinLabel = new JLabel(Translation
-                .getTranslation("preferences.dialog.skin_text"));
+            skinLabel = new JLabel(
+                Translation.getTranslation("preferences.dialog.skin_text"));
             DefaultComboBoxModel skinComboModel = new DefaultComboBoxModel();
             String skinName = PreferencesEntry.SKIN_NAME
                 .getValueString(getController());
@@ -331,7 +331,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         if (panel == null) {
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow",
-                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setBorder(Borders
@@ -340,8 +340,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             CellConstraints cc = new CellConstraints();
             int row = 1;
 
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.language")), cc.xy(1, row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.dialog.language")), cc.xy(1,
+                    row));
             builder.add(languageChooser, cc.xy(3, row));
 
             row += 2;
@@ -351,10 +353,18 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.exit_behavior")), cc.xy(1,
-                row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.dialog.exit_behavior")), cc
+                    .xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
+
+            if (minToSysTrayCB != null) {
+                builder.appendRow("3dlu");
+                builder.appendRow("pref");
+                row += 2;
+                builder.add(minToSysTrayCB, cc.xy(3, row));
+            }
 
             // Links only available in Vista
             if (usePowerFolderLink != null) {
@@ -365,12 +375,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             row += 2;
-            builder.add(minToSysTrayCB, cc.xy(3, row));
-
-            row += 2;
-            builder.add(new JLabel(Translation
-                .getTranslation("preferences.dialog.information_panel")), cc
-                .xy(1, row));
+            builder.add(
+                new JLabel(Translation
+                    .getTranslation("preferences.dialog.information_panel")),
+                cc.xy(1, row));
             builder.add(inlineInfoCombo, cc.xy(3, row));
 
             row += 2;
@@ -469,11 +477,13 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
             mainAlwaysOnTopCB.isSelected());
 
-        PreferencesEntry.AUTO_EXPAND.setValue(getController(), autoExpandCB
-            .isSelected());
+        PreferencesEntry.AUTO_EXPAND.setValue(getController(),
+            autoExpandCB.isSelected());
 
-        PreferencesEntry.MIN_TO_SYS_TRAY.setValue(getController(),
-            minToSysTrayCB.isSelected());
+        if (minToSysTrayCB != null) {
+            PreferencesEntry.MIN_TO_SYS_TRAY.setValue(getController(),
+                minToSysTrayCB.isSelected());
+        }
 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));
@@ -501,7 +511,7 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             } catch (IOException e) {
                 logSevere(e);
             }
-        } else  if(MacUtils.isSupported()) {
+        } else if (MacUtils.isSupported()) {
             try {
                 MacUtils.getInstance().setPFPlaces(newValue, getController());
             } catch (IOException e) {
