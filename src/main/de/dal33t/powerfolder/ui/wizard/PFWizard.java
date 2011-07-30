@@ -306,16 +306,20 @@ public class PFWizard extends PFUIComponent {
 
         dialog.getContentPane().add(
             GradientPanel.create(wizard, GradientPanel.VERY_LIGHT_GRAY));
-        // dialog.getContentPane().add(wizard);
         dialog.pack();
-        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() - dialog
-            .getWidth()) / 2;
-        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() - dialog
-            .getHeight()) / 2;
+        int x = ((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() -
+                dialog.getWidth()) / 2;
+        int y = ((int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() -
+                dialog.getHeight()) / 2;
         dialog.setLocation(x, y);
         wizard.getContext().setAttribute(
             WizardContextAttributes.DIALOG_ATTRIBUTE, dialog);
         getUIController().setWizardDialogReference(dialog);
         getUIController().setActiveFrame(UIController.WIZARD_DIALOG_ID);
+    }
+
+    public static void openFolderAutoCreateWizard(Controller controller,
+                                                  FolderInfo folderInfo) {
+        String s = "";
     }
 }

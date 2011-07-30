@@ -176,12 +176,18 @@ public class NoticesModel extends PFUIComponent {
             SwingUtilities.invokeLater(eventNotice.getPayload(getController()));
         } else if (notice instanceof FolderAutoCreateNotice) {
             FolderAutoCreateNotice eventNotice = (FolderAutoCreateNotice) notice;
-            //SwingUtilities.invokeLater(eventNotice.getPayload(getController())); // @todo deal with it
+            handleFolderAutoCreateNotice(eventNotice);
         } else {
             logWarning("Don't know what to do with notice: "
                 + notice.getClass().getName() + " : " + notice.toString());
         }
         markRead(notice);
+    }
+
+    private void handleFolderAutoCreateNotice(FolderAutoCreateNotice
+            eventNotice) {
+        PFWizard.openFolderAutoCreateWizard(getController(),
+                eventNotice.getFolderInfo());
     }
 
     /**

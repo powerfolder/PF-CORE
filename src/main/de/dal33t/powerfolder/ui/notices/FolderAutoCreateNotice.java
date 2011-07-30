@@ -39,6 +39,10 @@ public class FolderAutoCreateNotice extends NoticeBase {
         this.folderInfo = folderInfo;
     }
 
+    public FolderInfo getFolderInfo() {
+        return folderInfo;
+    }
+
     public NoticeSeverity getNoticeSeverity() {
         return NoticeSeverity.INFORMATION;
     }
