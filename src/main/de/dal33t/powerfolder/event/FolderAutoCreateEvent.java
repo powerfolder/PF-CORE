@@ -19,15 +19,17 @@
 */
 package de.dal33t.powerfolder.event;
 
+import de.dal33t.powerfolder.light.FolderInfo;
+
 public class FolderAutoCreateEvent {
 
-    private final String folderName;
+    private final FolderInfo folderInfo;
 
-    public FolderAutoCreateEvent(String folderName) {
-        this.folderName = folderName;
+    public FolderAutoCreateEvent(FolderInfo folderInfo) {
+        this.folderInfo = folderInfo;
     }
 
-    public String getFolderName() {
-        return folderName;
+    public FolderInfo getFolderInfo() {
+        return folderInfo;
     }
 }

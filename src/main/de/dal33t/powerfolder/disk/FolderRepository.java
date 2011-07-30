@@ -1163,7 +1163,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
-                fi.getName()));
+                fi));
     }
 
     /**
