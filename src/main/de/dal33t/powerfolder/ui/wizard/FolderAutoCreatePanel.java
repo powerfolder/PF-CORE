@@ -21,10 +21,7 @@ package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
-import java.util.logging.Logger;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import jwf.WizardPanel;
 
@@ -33,6 +30,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -48,15 +46,11 @@ import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
  */
 public class FolderAutoCreatePanel extends PFWizardPanel {
 
-    private static final Logger log = Logger
-        .getLogger(FolderAutoCreatePanel.class.getName());
-
     private final FolderInfo folderInfo;
 
-    private JLabel folderHintLabel;
     private JLabel folderNameLabel;
-    private JLabel syncProfileHintLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
+    private JCheckBox useCloudCB;
 
     public FolderAutoCreatePanel(Controller controller, FolderInfo folderInfo)
     {
@@ -77,17 +71,6 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         // Set sync profile
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             syncProfileSelectorPanel.getSyncProfile());
-
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
-
-        // Do not prompt for send invitation afterwards
-        getWizardContext().setAttribute(FOLDER_IS_INVITE, true);
-
-        // Setup choose disk location panel
-        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
-                Translation.getTranslation(
-                        "wizard.what_to_do.invite.select_local"));
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -119,41 +102,51 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
          row += 2;
 
         // Name
-        builder.add(folderHintLabel, cc.xy(1, row));
+        builder.addLabel(Translation.getTranslation("general.folder"),
+                cc.xy(1, row));
         builder.add(folderNameLabel, cc.xy(3, row));
         row += 2;
 
         // Sync
-        builder.add(syncProfileHintLabel, cc.xy(1, row));
+        builder.addLabel(Translation.getTranslation("general.synchonisation"),
+                cc.xy(1, row));
         JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
         p.setOpaque(false);
         builder.add(p, cc.xyw(3, row, 2));
+        row += 2;
+
+        // Cloud space
+        builder.add(useCloudCB, cc.xyw(3, row, 2));
         row += 2;
 
         return builder.getPanel();
     }
 
     /**
-     * Initalizes all nessesary components
+     * Initalizes all necesary components
      */
     @Override
     protected void initComponents() {
 
         // Folder name label
-        folderHintLabel = new JLabel(Translation.getTranslation(
-                "general.folder"));
         folderNameLabel = SimpleComponentFactory.createLabel();
         folderNameLabel.setText(folderInfo.getName());
 
         // Sync profile
-        syncProfileHintLabel = new JLabel(Translation.getTranslation(
-                "general.synchonisation"));
         syncProfileSelectorPanel =
                 new SyncProfileSelectorPanel(getController());
         Folder folder = getController().getFolderRepository().getFolder(
                 folderInfo);
         SyncProfile syncProfile = folder.getSyncProfile();
         syncProfileSelectorPanel.setSyncProfile(syncProfile, false);
+
+        // Cloud space
+        useCloudCB = new JCheckBox(Translation.getTranslation(
+                "wizard.folder_auto_create.cloud_space"));
+        useCloudCB.setOpaque(false);
+        useCloudCB.setSelected(
+                PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
+            getController()));
     }
 
     @Override

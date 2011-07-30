@@ -1153,15 +1153,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                         getController()));
         createFolder(fi, fs);
 
-        if (PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
-                getController())) {
-            // Make sure it is backed up by the server.
-            CreateFolderOnServerTask task = new CreateFolderOnServerTask(fi,
-                    null);
-            task.setArchiveVersions(fs.getVersions());
-            getController().getTaskManager().scheduleTask(task);
-        }
-
         folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
                 fi));
     }
