@@ -43,6 +43,8 @@ import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.widget.GradientPanel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 /**
  * The main wizard class
@@ -320,6 +322,18 @@ public class PFWizard extends PFUIComponent {
 
     public static void openFolderAutoCreateWizard(Controller controller,
                                                   FolderInfo folderInfo) {
-        String s = "";
+        Folder folder = controller.getFolderRepository().getFolder(folderInfo);
+        if (folder == null) {
+            DialogFactory.genericDialog(controller,
+                    Translation.getTranslation("wizard.control.no_folder.title"),
+                    Translation.getTranslation("wizard.control.no_folder.description"),
+                    GenericDialogType.INFO);
+        } else {
+            FolderAutoCreatePanel panel = new FolderAutoCreatePanel(controller,
+                folderInfo);
+            PFWizard wizard = new PFWizard(controller,
+                Translation.getTranslation("wizard.pfwizard.folder_title"));
+            wizard.open(panel);
+        }
     }
 }

@@ -159,7 +159,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     @Override
     protected JPanel buildContent() {
 
-        FormLayout layout = new FormLayout("$wlabel, $lcg, $wfield, 0:g",
+        FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
             "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
 

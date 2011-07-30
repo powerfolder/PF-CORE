@@ -1,0 +1,163 @@
+/*
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
+package de.dal33t.powerfolder.ui.wizard;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+
+import java.util.logging.Logger;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import jwf.WizardPanel;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+
+/**
+ * Class to do folder creation for a specified invite.
+ *
+ * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
+ * @version $Revision: 1.11 $
+ */
+public class FolderAutoCreatePanel extends PFWizardPanel {
+
+    private static final Logger log = Logger
+        .getLogger(FolderAutoCreatePanel.class.getName());
+
+    private final FolderInfo folderInfo;
+
+    private JLabel folderHintLabel;
+    private JLabel folderNameLabel;
+    private JLabel syncProfileHintLabel;
+    private SyncProfileSelectorPanel syncProfileSelectorPanel;
+
+    public FolderAutoCreatePanel(Controller controller, FolderInfo folderInfo)
+    {
+        super(controller);
+        this.folderInfo = folderInfo;
+    }
+
+    /**
+     * Can procede if an invitation exists.
+     */
+    @Override
+    public boolean hasNext() {
+        return folderInfo != null;
+    }
+
+    public WizardPanel next() {
+
+        // Set sync profile
+        getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
+            syncProfileSelectorPanel.getSyncProfile());
+
+        // Do not prompt for send invitation afterwards
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
+
+        // Do not prompt for send invitation afterwards
+        getWizardContext().setAttribute(FOLDER_IS_INVITE, true);
+
+        // Setup choose disk location panel
+        getWizardContext().setAttribute(PROMPT_TEXT_ATTRIBUTE,
+                Translation.getTranslation(
+                        "wizard.what_to_do.invite.select_local"));
+
+        // Setup sucess panel of this wizard path
+        TextPanelPanel successPanel = new TextPanelPanel(getController(),
+            Translation.getTranslation("wizard.setup_success"),
+                Translation.getTranslation("wizard.success_join"));
+        getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
+
+        return (WizardPanel) getWizardContext().getAttribute(
+            PFWizard.SUCCESS_PANEL);
+    }
+
+    @Override
+    protected JPanel buildContent() {
+
+        FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
+            "pref, 30dlu, pref, 3dlu, pref, 3dlu, pref, "
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+
+        PanelBuilder builder = new PanelBuilder(layout);
+        builder.setBorder(createFewContentBorder());
+        CellConstraints cc = new CellConstraints();
+
+        int row = 1;
+
+        // Info
+        builder.addLabel(Translation.getTranslation(
+                "wizard.folder_auto_create.info"),
+                cc.xy(3, row));
+         row += 2;
+
+        // Name
+        builder.add(folderHintLabel, cc.xy(1, row));
+        builder.add(folderNameLabel, cc.xy(3, row));
+        row += 2;
+
+        // Sync
+        builder.add(syncProfileHintLabel, cc.xy(1, row));
+        JPanel p = (JPanel) syncProfileSelectorPanel.getUIComponent();
+        p.setOpaque(false);
+        builder.add(p, cc.xyw(3, row, 2));
+        row += 2;
+
+        return builder.getPanel();
+    }
+
+    /**
+     * Initalizes all nessesary components
+     */
+    @Override
+    protected void initComponents() {
+
+        // Folder name label
+        folderHintLabel = new JLabel(Translation.getTranslation(
+                "general.folder"));
+        folderNameLabel = SimpleComponentFactory.createLabel();
+        folderNameLabel.setText(folderInfo.getName());
+
+        // Sync profile
+        syncProfileHintLabel = new JLabel(Translation.getTranslation(
+                "general.synchonisation"));
+        syncProfileSelectorPanel =
+                new SyncProfileSelectorPanel(getController());
+        Folder folder = getController().getFolderRepository().getFolder(
+                folderInfo);
+        SyncProfile syncProfile = folder.getSyncProfile();
+        syncProfileSelectorPanel.setSyncProfile(syncProfile, false);
+    }
+
+    @Override
+    protected String getTitle() {
+        return Translation.getTranslation("wizard.folder_auto_create.title");
+    }
+}
