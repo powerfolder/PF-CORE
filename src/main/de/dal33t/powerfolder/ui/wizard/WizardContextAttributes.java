@@ -93,4 +93,9 @@ public interface WizardContextAttributes {
      */
     String FOLDER_INFOS = "folder.infos";
 
+    /**
+     * List<FolderInfo>
+     */
+    String USE_CLOUD_STORAGE = "use.cloud.storage";
+
 }

@@ -72,14 +72,23 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             syncProfileSelectorPanel.getSyncProfile());
 
+        // Cloud
+        getWizardContext().setAttribute(USE_CLOUD_STORAGE,
+            useCloudCB.isSelected());
+
+        // FolderInfo
+        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
+            folderInfo);
+
+
+
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
             Translation.getTranslation("wizard.setup_success"),
-                Translation.getTranslation("wizard.success_join"));
+                Translation.getTranslation("wizard.success_configure"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        return (WizardPanel) getWizardContext().getAttribute(
-            PFWizard.SUCCESS_PANEL);
+        return new FolderAutoConfigPanel(getController());
     }
 
     @Override
