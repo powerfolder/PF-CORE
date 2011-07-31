@@ -53,8 +53,15 @@ public class FolderAutoConfigPanel extends SwingWorkerPanel {
 
     @Override
     public WizardPanel next() {
-        return (WizardPanel) getWizardContext().getAttribute(
+        boolean sendInvitations = Boolean.TRUE.equals(
+                getWizardContext().getAttribute(
+                        SEND_INVIATION_AFTER_ATTRIBUTE));
+        if (sendInvitations) {
+            return new SendInvitationsPanel(getController());
+        } else {
+            return (WizardPanel) getWizardContext().getAttribute(
                 PFWizard.SUCCESS_PANEL);
+        }
     }
 
     private class MyFolderCreateWorker implements Runnable {

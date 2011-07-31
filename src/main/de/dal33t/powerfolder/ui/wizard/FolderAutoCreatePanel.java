@@ -51,6 +51,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
     private JLabel folderNameLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox useCloudCB;
+    private JCheckBox inviteCB;
 
     public FolderAutoCreatePanel(Controller controller, FolderInfo folderInfo)
     {
@@ -68,6 +69,10 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
 
     public WizardPanel next() {
 
+        // FolderInfo
+        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
+            folderInfo);
+
         // Set sync profile
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
             syncProfileSelectorPanel.getSyncProfile());
@@ -76,11 +81,9 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         getWizardContext().setAttribute(USE_CLOUD_STORAGE,
             useCloudCB.isSelected());
 
-        // FolderInfo
-        getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE,
-            folderInfo);
-
-
+        // Invite
+        getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE,
+            inviteCB.isSelected());
 
         // Setup sucess panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
@@ -128,6 +131,12 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         builder.add(useCloudCB, cc.xyw(3, row, 2));
         row += 2;
 
+        // Invite
+        if (!getController().isBackupOnly()) {
+            builder.add(inviteCB, cc.xyw(3, row, 2));
+            row += 2;
+        }
+
         return builder.getPanel();
     }
 
@@ -156,6 +165,11 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         useCloudCB.setSelected(
                 PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(
             getController()));
+
+        // Cloud space
+        inviteCB = new JCheckBox(Translation.getTranslation(
+                "wizard.choose_disk_location.send_invitation"));
+        inviteCB.setOpaque(false);
     }
 
     @Override
