@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
+import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 
 import javax.swing.*;
 
@@ -38,6 +40,8 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
 
+import java.awt.event.ActionEvent;
+
 /**
  * Class to do folder creation for a specified invite.
  *
@@ -52,6 +56,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox useCloudCB;
     private JCheckBox inviteCB;
+    private ActionLabel undoLabel;
 
     public FolderAutoCreatePanel(Controller controller, FolderInfo folderInfo)
     {
@@ -137,6 +142,9 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
             row += 2;
         }
 
+        // Undo
+        builder.add(undoLabel.getUIComponent(), cc.xyw(3, row, 2));
+
         return builder.getPanel();
     }
 
@@ -170,10 +178,32 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         inviteCB = new JCheckBox(Translation.getTranslation(
                 "wizard.choose_disk_location.send_invitation"));
         inviteCB.setOpaque(false);
+
+        // Undo link
+        undoLabel = new ActionLabel(getController(),
+                new MyUndoAction(getController()));
     }
 
     @Override
     protected String getTitle() {
         return Translation.getTranslation("wizard.folder_auto_create.title");
+    }
+
+    private void undoAutocreate() {
+        
+    }
+
+    // /////////////
+    // Inner classes
+    // /////////////
+
+    private class MyUndoAction extends BaseAction {
+        MyUndoAction(Controller controller) {
+            super("action_undo_auto_create", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            undoAutocreate();
+        }
     }
 }

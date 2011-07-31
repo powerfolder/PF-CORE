@@ -115,9 +115,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     private FolderAutoCreateListener folderAutoCreateListener;
 
     /**
-     * A list of folder files that have been removed in the past.
+     * A list of folder base directories that have been removed in the past.
      */
-    private final Set<File> removedFolderFiles =
+    private final Set<File> removedFolderDirectories =
             new CopyOnWriteArraySet<File>();
 
     /**
@@ -135,7 +135,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
-        loadRemovdFolderIds();
+        loadRemovdFolderDirectories();
 
         folderScanner = new FolderScanner(getController());
 
@@ -148,14 +148,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderAutoCreateListener.class);
     }
 
-    private void loadRemovdFolderIds() {
+    private void loadRemovdFolderDirectories() {
         String list = ConfigurationEntry.REMOVED_FOLDER_FILES.getValue(
                 getController());
-        String[] parts = list .split("$");
+        String[] parts = list .split("\\$");
         for (String s : parts) {
             File f = new File(s);
             if (f.exists() && f.isDirectory()) {
-                removedFolderFiles.add(f);
+                removedFolderDirectories.add(f);
             }
         }
     }
@@ -810,7 +810,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("Joined folder " + folderInfo.name + ", local copy at '"
             + folderSettings.getLocalBaseDir() + '\'');
 
-        removeFromRemovedFolderFile(folder);
+        removeFromRemovedFolderDirectories(folder);
 
         return folder;
     }
@@ -847,7 +847,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             skipNewFolderSearch.set(true);
 
             // Remember that we have removed this folder.
-            addToRemovedFolderFile(folder);
+            addToRemovedFolderDirectories(folder);
 
             // Remove the desktop shortcut
             folder.removeDesktopShortcut();
@@ -942,10 +942,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("Folder removed");
     }
 
-    private void addToRemovedFolderFile(Folder folder) {
-        if (removedFolderFiles.add(folder.getLocalBase())) {
+    private void addToRemovedFolderDirectories(Folder folder) {
+        if (removedFolderDirectories.add(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderFiles.iterator();
+            for (Iterator<File> iterator = removedFolderDirectories.iterator();
                  iterator.hasNext();) {
                 String s = iterator.next().getAbsolutePath();
                 sb.append(s);
@@ -958,10 +958,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void removeFromRemovedFolderFile(Folder folder) {
-        if (removedFolderFiles.remove(folder.getLocalBase())) {
+    private void removeFromRemovedFolderDirectories(Folder folder) {
+        if (removedFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderFiles.iterator();
+            for (Iterator<File> iterator = removedFolderDirectories.iterator();
                  iterator.hasNext();) {
                 String s = iterator.next().getAbsolutePath();
                 sb.append(s);
@@ -1170,7 +1170,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             File[] files = baseDir.listFiles();
             for (File file : files) {
                 // Don't autocreate if it has been removed previously.
-                if (removedFolderFiles.contains(file)) {
+                if (removedFolderDirectories.contains(file)) {
                     continue;
                 }
                 if (file.isDirectory()) {
