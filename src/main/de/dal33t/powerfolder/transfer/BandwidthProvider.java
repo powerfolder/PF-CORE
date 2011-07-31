@@ -1,25 +1,26 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id$
-*/
+ * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id$
+ */
 package de.dal33t.powerfolder.transfer;
 
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -43,24 +44,22 @@ public class BandwidthProvider extends Loggable {
     private long autoDetectUploadRate = -1; // Default to unlimited
     private long autoDetectDownloadRate = 10240; // Default to 10KiB/s
 
-    private final Map<BandwidthLimiter, Long> limits =
-            new WeakHashMap<BandwidthLimiter, Long>();
+    private final Map<BandwidthLimiter, Long> limits = new WeakHashMap<BandwidthLimiter, Long>();
     private ScheduledExecutorService scheduledES;
     private ScheduledFuture<?> task;
-    private final BandwidthStatsListener statListenerSupport =
-            ListenerSupportFactory.createListenerSupport(
-                    BandwidthStatsListener.class);
+    private final BandwidthStatsListener statListenerSupport = ListenerSupportFactory
+        .createListenerSupport(BandwidthStatsListener.class);
 
     public BandwidthProvider(Controller controller) {
-        scheduledES = controller.getThreadPool();
+        scheduledES = Executors.newScheduledThreadPool(1);
         Reject.ifNull(scheduledES, "ScheduledExecutorService is null");
-        int autoDetectDownload =
-                ConfigurationEntry.AUTO_DETECT_DOWNLOAD.getValueInt(controller);
+        int autoDetectDownload = ConfigurationEntry.AUTO_DETECT_DOWNLOAD
+            .getValueInt(controller);
         if (autoDetectDownload > 0) {
             autoDetectDownloadRate = autoDetectDownload;
         }
-        int autoDetectUpload =
-                ConfigurationEntry.AUTO_DETECT_UPLOAD.getValueInt(controller);
+        int autoDetectUpload = ConfigurationEntry.AUTO_DETECT_UPLOAD
+            .getValueInt(controller);
         if (autoDetectUpload > 0) {
             autoDetectUploadRate = autoDetectUpload;
         }
@@ -75,8 +74,9 @@ public class BandwidthProvider extends Loggable {
         task = scheduledES.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 synchronized (limits) {
-                    for (Map.Entry<BandwidthLimiter, Long> me :
-                            limits.entrySet()) {
+                    for (Map.Entry<BandwidthLimiter, Long> me : limits
+                        .entrySet())
+                    {
                         BandwidthLimiter limiter = me.getKey();
                         if (limiter == null) {
                             continue;
@@ -93,8 +93,8 @@ public class BandwidthProvider extends Loggable {
                         } else if (value < 0) { // Autodetect
                             if (limiter.getId().isLan()) {
                                 // Shouldn't be here, autodetect is for WAN only
-                                logWarning("Setting autodetect for LAN ??? " +
-                                        value);
+                                logWarning("Setting autodetect for LAN ??? "
+                                    + value);
                                 actualValue = BandwidthLimiter.UNLIMITED; // -1
                             } else {
                                 if (limiter.getId().isInput()) {
@@ -118,6 +118,9 @@ public class BandwidthProvider extends Loggable {
         if (task != null) {
             task.cancel(true);
         }
+        if (scheduledES != null) {
+            scheduledES.shutdownNow();
+        }
     }
 
     /**
@@ -125,9 +128,9 @@ public class BandwidthProvider extends Loggable {
      * 
      * @param limiter
      * @param bps
-     * the number of bandwidth per second to apply.
-     * Zero will set the limiter to unlimited bandwidth.
-     * Negative will set the limiter to auto detect.
+     *            the number of bandwidth per second to apply. Zero will set the
+     *            limiter to unlimited bandwidth. Negative will set the limiter
+     *            to auto detect.
      */
     public void setLimitBPS(BandwidthLimiter limiter, long bps) {
         synchronized (limits) {
@@ -153,7 +156,7 @@ public class BandwidthProvider extends Loggable {
 
     /**
      * Set the autodetect upload rate bytes/second
-     *
+     * 
      * @param autoDetectUploadRate
      */
     public void setAutoDetectUploadRate(long autoDetectUploadRate) {
@@ -162,7 +165,7 @@ public class BandwidthProvider extends Loggable {
 
     /**
      * Set the autodetect download rate bytes/second
-     *
+     * 
      * @param autoDetectDownloadRate
      */
     public void setAutoDetectDownloadRate(long autoDetectDownloadRate) {
