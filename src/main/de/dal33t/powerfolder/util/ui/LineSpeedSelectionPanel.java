@@ -87,9 +87,9 @@ public class LineSpeedSelectionPanel extends JPanel {
         setOpaque(false);
 
         customUploadSpeedSpinnerModel =
-                new SpinnerNumberModel(0, -1, 999999, 1);
+                new SpinnerNumberModel(0, 0, 999999, 5);
         customDownloadSpeedSpinnerModel =
-                new SpinnerNumberModel(0, -1, 999999, 1);
+                new SpinnerNumberModel(0, 0, 999999, 5);
         customUploadSpeedSpinner =
                 new JSpinner(customUploadSpeedSpinnerModel);
         customDownloadSpeedSpinner =
@@ -116,7 +116,17 @@ public class LineSpeedSelectionPanel extends JPanel {
                     if (!alwaysShowCustomEntryPanels) {
                         customSpeedPanel.setVisible(true);
                     }
-
+                    
+                    if (customUploadSpeedSpinnerModel.getNumber()
+                        .intValue() == AUTO_DETECT)
+                    {
+                        customUploadSpeedSpinnerModel.setValue(0);
+                    }
+                    if (customDownloadSpeedSpinnerModel.getNumber()
+                        .intValue() == AUTO_DETECT)
+                    {
+                        customDownloadSpeedSpinnerModel.setValue(0);
+                    }
                 } else {
                     customUploadSpeedSpinner.setEnabled(false);
                     customDownloadSpeedSpinner.setEnabled(false);
@@ -314,6 +324,10 @@ public class LineSpeedSelectionPanel extends JPanel {
         {
             speedSelectionBox.setSelectedItem(getDefaultLineSpeed());
         }
+    }
+    
+    public boolean isAutodetect() {
+        return customUploadSpeedSpinnerModel.getNumber().longValue() == AUTO_DETECT;
     }
 
     /**
