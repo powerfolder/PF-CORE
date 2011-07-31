@@ -21,19 +21,27 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.*;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.io.File;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
@@ -73,16 +81,21 @@ import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
 import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
-import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.ui.DelayedUpdater;
-import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
 import de.dal33t.powerfolder.util.ui.GenericDialogType;
+import de.dal33t.powerfolder.util.ui.SyncIconButtonMini;
 
 /**
  * Class to render expandable view of a folder.
@@ -1193,7 +1206,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     // ////////////////
 
     private class MyNodeManagerListener extends NodeManagerAdapter {
-
         private void updateIfRequired(NodeManagerEvent e) {
             if (folder != null && folder.hasMember(e.getNode())) {
                 updateFolderMembershipDetails();
@@ -1214,6 +1226,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void friendRemoved(NodeManagerEvent e) {
+            updateIfRequired(e);
+        }
+
+        @Override
+        public void settingsChanged(NodeManagerEvent e) {
             updateIfRequired(e);
         }
 
