@@ -176,8 +176,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         enableDisableComponents(getController().isLanOnly());
 
         TransferManager tm = getController().getTransferManager();
-        wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
-            tm.getAllowedDownloadCPSForWAN() / 1024);
+        if (ConfigurationEntry.TRANSFERLIMIT_AUTODETECT.getValueBoolean(getController())) {
+            wanSpeed.setSpeedKBPS(-1, -1);
+        } else {
+            wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
+                tm.getAllowedDownloadCPSForWAN() / 1024);
+        }
+        
 
         lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
             tm.getAllowedDownloadCPSForLAN() / 1024);
@@ -191,12 +196,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         int selected = ConfigurationEntry.SERVER_DISCONNECT_SYNC_ANYWAYS
             .getValueBoolean(getController()) ? 0 : 1;
         serverDisconnectBehaviorBox.setSelectedIndex(selected);
-        serverDisconnectBehaviorBox.setToolTipText(String.valueOf(
-                serverDisconnectBehaviorBox.getSelectedItem()));
+        serverDisconnectBehaviorBox.setToolTipText(String
+            .valueOf(serverDisconnectBehaviorBox.getSelectedItem()));
         serverDisconnectBehaviorBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                serverDisconnectBehaviorBox.setToolTipText(String.valueOf(
-                        serverDisconnectBehaviorBox.getSelectedItem()));
+                serverDisconnectBehaviorBox.setToolTipText(String
+                    .valueOf(serverDisconnectBehaviorBox.getSelectedItem()));
             }
         });
     }
@@ -232,17 +237,19 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(pairPanel(relayedConnectionBox, udtConnectionBox),
-                    cc.xyw(3, row, 2));
+                cc.xyw(3, row, 2));
 
             if (getController().isBackupOnly()) {
                 row += 2;
-                builder.add(ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
+                builder.add(
+                    ButtonBarFactory.buildLeftAlignedBar(httpProxyButton),
                     cc.xy(3, row));
             } else {
                 row += 2;
-                builder.add(pairPanel(useOnlineStorageCB,
+                builder.add(
+                    pairPanel(useOnlineStorageCB,
                         ButtonBarFactory.buildLeftAlignedBar(httpProxyButton)),
-                        cc.xyw(3, row, 2));
+                    cc.xyw(3, row, 2));
             }
 
             row += 2;
@@ -302,9 +309,23 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
-        TransferManager tm = getController().getTransferManager();
-        tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
-        tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+        final TransferManager tm = getController().getTransferManager();
+        ConfigurationEntry.TRANSFERLIMIT_AUTODETECT.setValue(getController(),
+            wanSpeed.isAutodetect());
+        if (!wanSpeed.isAutodetect()) {
+            tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+            tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+        } else {
+            // Unlimited
+            tm.setAllowedUploadCPSForWAN(0);
+            tm.setAllowedDownloadCPSForWAN(0);
+            getController().schedule(new Runnable() {
+                public void run() {
+                    tm.recalculateAutomaticRate();
+                }
+            }, 0);
+        }
+
         tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
         tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
         try {
