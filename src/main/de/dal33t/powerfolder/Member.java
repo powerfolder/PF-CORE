@@ -2311,7 +2311,12 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param server
      */
     public void setServer(boolean server) {
+        boolean oldValue = this.server;
         this.server = server;
+        // Fire event on nodemanager
+        if (oldValue != server) {
+            getController().getNodeManager().fireNodeSettingsChanged(this);
+        }
     }
 
     /**
