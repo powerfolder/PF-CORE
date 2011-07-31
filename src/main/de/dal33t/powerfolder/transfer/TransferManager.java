@@ -19,7 +19,21 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,10 +53,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.net.URL;
-import java.net.URLConnection;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -181,7 +197,7 @@ public class TransferManager extends PFComponent {
         listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
-        bandwidthProvider = new BandwidthProvider(getController());
+        bandwidthProvider = new BandwidthProvider();
 
         statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);
@@ -1397,7 +1413,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * @return the number of currently activly transferring uploads.
+     * @return the number of currently actively transferring uploads.
      */
     public int countActiveUploads() {
         return activeUploads.size();
@@ -2760,106 +2776,131 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Recalculate the up/download bandwidth auto limit.
-     * Do this by testing upload and download of 100KiB to the server.
+     * Recalculate the up/download bandwidth auto limit. Do this by testing
+     * upload and download of 100KiB to the server.
      */
     public void recalculateAutomaticRate() {
 
-        // Only do this if up- or down-load rates are autodetect (negative);
-        if (getAllowedDownloadCPSForWAN() >= 0 &&
-                getAllowedUploadCPSForWAN() >= 0) {
+        if (!ConfigurationEntry.TRANSFERLIMIT_AUTODETECT
+            .getValueBoolean(getController()))
+        {
             return;
         }
 
         // Get times.
         Date startDate = new Date();
-        if (!testAvailabilityDownload()) {
-            return;
-        }
+        long downloadSize = 1047552;
+        boolean downloadOk = countActiveDownloads() == 0
+            && testAvailabilityDownload(downloadSize);
         Date afterDownload = new Date();
-        if (!testAvailabilityUpload()) {
-            return;
-        }
+        long uploadSize = 1047552 / 4;
+        boolean uploadOk = countActiveUploads() == 0
+            && testAvailabilityUpload(uploadSize);
         Date afterUpload = new Date();
 
         // Calculate time differences.
         long downloadTime = afterDownload.getTime() - startDate.getTime();
         long uploadTime = afterUpload.getTime() - afterDownload.getTime();
-        logInfo("Test availability download time " + downloadTime);
-        logInfo("Test availability upload time " + uploadTime);
-
+        // logWarning("Test availability download time " + downloadTime);
+        // logWarning("Test availability upload time " + uploadTime);
         // Calculate rates in KiB/s.
-        long downloadRate = 102400 / downloadTime;
-        long uploadRate = 102400 / uploadTime;
-        logInfo("Test availability download rate " + downloadRate + "KiB/s");
-        logInfo("Test availability upload rate " + uploadRate + "KiB/s");
-
+        long downloadRate = downloadTime > 0 ? downloadSize * 1000
+            / downloadTime : 0;
+        long uploadRate = uploadTime > 0 ? uploadSize * 1000 / uploadTime : 0;
+        if (downloadOk) {
+            logFine("Test availability download rate "
+                + Format.formatBytesShort(downloadRate) + "/s");
+        }
+        if (uploadOk) {
+            logFine("Test availability upload rate "
+                + Format.formatBytesShort(uploadRate) + "/s");
+        }
         // Update bandwidth provider with 80% of new rates.
-        long modifiedDownloadRate = 80 * downloadRate * 1024 / 100;
-        bandwidthProvider.setAutoDetectDownloadRate(
-                modifiedDownloadRate);
-        long modifiedUploadRate = 80 * uploadRate * 1024 / 100;
-        bandwidthProvider.setAutoDetectUploadRate(
-                modifiedUploadRate);
+        long modifiedDownloadRate = 90 * downloadRate / 100;
+        long modifiedUploadRate = 80 * uploadRate / 100;
 
-        // Save for next time.
-        ConfigurationEntry.AUTO_DETECT_DOWNLOAD.setValue(getController(),
-                (int) modifiedDownloadRate);
-        ConfigurationEntry.AUTO_DETECT_UPLOAD.setValue(getController(),
-                (int) modifiedUploadRate);
+        if (downloadOk) {
+            setAllowedDownloadCPSForWAN(modifiedDownloadRate);
+        }
+        if (uploadOk) {
+            setAllowedUploadCPSForWAN(modifiedUploadRate);
+        }
     }
 
     /**
      * Test upload rate by uploading 100 KiB to the server.
+     * 
      * @return true if it succeeded.
      */
-    private boolean testAvailabilityUpload() {
-        OutputStreamWriter writer = null;
+    private boolean testAvailabilityUpload(long size) {
+        String boundary = "---------------------------313223033317673";
         try {
-            String path = "http://access.powerfolder.com/testavailability?action=upload";
+            String path = getController().getOSClient().getWebURL()
+                + "/testavailability?action=upload";
             URL url = new URL(path);
+
+            String paramToSend = "action";
+
             URLConnection connection = url.openConnection();
-            connection.setDoOutput(true);
-            writer = new OutputStreamWriter(connection.getOutputStream());
-            char[] chars = new char[1024];
-            for (int i = 0; i < 1024; i++) {
-                chars[i] = 'x';
+            connection.setDoOutput(true); // This sets request method to POST.
+            connection.setRequestProperty("Content-Type",
+                "multipart/form-data; boundary=" + boundary);
+            PrintWriter writer = null;
+            try {
+                writer = new PrintWriter(new OutputStreamWriter(
+                    connection.getOutputStream(), "UTF-8"));
+
+                writer.println("--" + boundary);
+                writer
+                    .println("Content-Disposition: form-data; name=\"upload\"");
+                writer.println("Content-Type: text/plain; charset=UTF-8");
+                writer.println();
+                writer.println(paramToSend);
+
+                writer.println("--" + boundary);
+                writer
+                    .println("Content-Disposition: form-data; name=\"fileToUpload\"; filename=\"file.txt\"");
+                writer.println("Content-Type: text/plain; charset=UTF-8");
+                writer.println();
+
+                for (int i = 0; i < size; i++) {
+                    writer.write('X');
+                }
+
+                writer.println();
+                writer.println("--" + boundary + "--");
+                writer.println();
+            } finally {
+                if (writer != null)
+                    writer.close();
             }
-            for (int i = 0; i < 100; i++) {
-                writer.write(chars);
-            }
-            return true;
+
+            // Connection is lazily executed whenever you request any status.
+            int responseCode = ((HttpURLConnection) connection)
+                .getResponseCode();
+            return responseCode == 200;
         } catch (Exception e) {
             logSevere("Test availability upload failed", e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.flush();
-                    writer.close();
-                } catch (IOException e) {
-                    // Dont care.
-                }
-            }
         }
         return false;
     }
 
     /**
      * Test download rate by downloading 100 KiB from the server.
+     * 
      * @return true if it succeeded.
      */
-    private boolean testAvailabilityDownload() {
+    private boolean testAvailabilityDownload(long size) {
         BufferedReader reader = null;
         try {
-            String path = "http://access.powerfolder.com/testavailability?action=download&size=102400";
+            String path = getController().getOSClient().getWebURL()
+                + "/testavailability?action=download&size=" + size;
             URL url = new URL(path);
             URLConnection connection = url.openConnection();
             reader = new BufferedReader(new InputStreamReader(
-                    connection.getInputStream()));
+                connection.getInputStream()));
             String inputLine;
-            StringBuilder sb = new StringBuilder();
             while ((inputLine = reader.readLine()) != null) {
-                sb.append(inputLine);
             }
             return true;
         } catch (Exception e) {
