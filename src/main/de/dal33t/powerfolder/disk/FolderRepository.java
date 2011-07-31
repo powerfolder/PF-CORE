@@ -1170,7 +1170,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             File[] files = baseDir.listFiles();
             for (File file : files) {
                 // Don't autocreate if it has been removed previously.
-                if (!removedFolderFiles.contains(file)) {
+                if (removedFolderFiles.contains(file)) {
                     continue;
                 }
                 if (file.isDirectory()) {
