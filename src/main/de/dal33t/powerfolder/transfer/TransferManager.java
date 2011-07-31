@@ -2819,6 +2819,10 @@ public class TransferManager extends PFComponent {
         long modifiedDownloadRate = 90 * downloadRate / 100;
         long modifiedUploadRate = 80 * uploadRate / 100;
 
+        logInfo("Speed test finished: Download "
+            + Format.formatBytesShort(downloadRate) + "/s, Upload "
+            + Format.formatBytesShort(uploadRate) + "/s");
+
         if (downloadOk) {
             setAllowedDownloadCPSForWAN(modifiedDownloadRate);
         }
