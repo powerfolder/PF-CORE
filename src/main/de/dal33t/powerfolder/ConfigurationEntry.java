@@ -376,6 +376,11 @@ public enum ConfigurationEntry {
      * The TCP/IP socket buffer size limit for UDT connections in LAN.
      */
     NET_SOCKET_LAN_BUFFER_LIMIT("net.socket.lan.buffer.limit", 1024 * 1024),
+    
+    /**
+     * #2165 Auto detect speeds
+     */
+    TRANSFERLIMIT_AUTODETECT("transfer.limit.autodetect", true),
 
     /**
      * The upload limit for WAN (Internet) connections in KB/s
@@ -794,10 +799,6 @@ public enum ConfigurationEntry {
      * Values 1, 7, 31, 365, 2147483647 (== never)
      */
     ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 31),
-
-    AUTO_DETECT_DOWNLOAD("auto.detect.download", -1),
-
-    AUTO_DETECT_UPLOAD("auto.detect.upload", -1),
 
     LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
 
