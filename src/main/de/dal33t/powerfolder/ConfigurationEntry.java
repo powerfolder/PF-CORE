@@ -799,7 +799,9 @@ public enum ConfigurationEntry {
 
     AUTO_DETECT_UPLOAD("auto.detect.upload", -1),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true);
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+
+    REMOVED_FOLDER_FILES("removed.folder.files", "");
 
 
     // Methods/Constructors ***************************************************

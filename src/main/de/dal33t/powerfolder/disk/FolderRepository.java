@@ -24,20 +24,8 @@ import static de.dal33t.powerfolder.disk.FolderSettings.FOLDER_SETTINGS_PREFIX_V
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -127,6 +115,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     private FolderAutoCreateListener folderAutoCreateListener;
 
     /**
+     * A list of folder files that have been removed in the past.
+     */
+    private final Set<File> removedFolderFiles =
+            new CopyOnWriteArraySet<File>();
+
+    /**
      * Constructor
      * 
      * @param controller
@@ -141,6 +135,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
+        loadRemovdFolderIds();
 
         folderScanner = new FolderScanner(getController());
 
@@ -151,6 +146,18 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(ProblemListener.class);
         folderAutoCreateListener = ListenerSupportFactory
             .createListenerSupport(FolderAutoCreateListener.class);
+    }
+
+    private void loadRemovdFolderIds() {
+        String list = ConfigurationEntry.REMOVED_FOLDER_FILES.getValue(
+                getController());
+        String[] parts = list .split("$");
+        for (String s : parts) {
+            File f = new File(s);
+            if (f.exists() && f.isDirectory()) {
+                removedFolderFiles.add(f);
+            }
+        }
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -803,6 +810,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("Joined folder " + folderInfo.name + ", local copy at '"
             + folderSettings.getLocalBaseDir() + '\'');
 
+        removeFromRemovedFolderFile(folder);
+
         return folder;
     }
 
@@ -836,6 +845,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folder, "Folder is null");
         try {
             skipNewFolderSearch.set(true);
+
+            // Remember that we have removed this folder.
+            addToRemovedFolderFile(folder);
 
             // Remove the desktop shortcut
             folder.removeDesktopShortcut();
@@ -928,6 +940,38 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderRemoved(folder);
 
         logInfo("Folder removed");
+    }
+
+    private void addToRemovedFolderFile(Folder folder) {
+        if (removedFolderFiles.add(folder.getLocalBase())) {
+            StringBuilder sb = new StringBuilder();
+            for (Iterator<File> iterator = removedFolderFiles.iterator();
+                 iterator.hasNext();) {
+                String s = iterator.next().getAbsolutePath();
+                sb.append(s);
+                if (iterator.hasNext()) {
+                    sb.append('$');
+                }
+            }
+            ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
+                    sb.toString());
+        }
+    }
+
+    private void removeFromRemovedFolderFile(Folder folder) {
+        if (removedFolderFiles.remove(folder.getLocalBase())) {
+            StringBuilder sb = new StringBuilder();
+            for (Iterator<File> iterator = removedFolderFiles.iterator();
+                 iterator.hasNext();) {
+                String s = iterator.next().getAbsolutePath();
+                sb.append(s);
+                if (iterator.hasNext()) {
+                    sb.append('$');
+                }
+            }
+            ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
+                    sb.toString());
+        }
     }
 
     /**
@@ -1125,6 +1169,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (baseDir.exists() && baseDir.canRead()) {
             File[] files = baseDir.listFiles();
             for (File file : files) {
+                // Don't autocreate if it has been removed previously.
+                if (!removedFolderFiles.contains(file)) {
+                    continue;
+                }
                 if (file.isDirectory()) {
                     boolean known = false;
                     for (Folder folder : getFolders()) {
@@ -1241,7 +1289,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return Collections.emptyList();
         }
-        Collection<FolderInfo> folders = new ArrayList<FolderInfo>();
+        Collection<FolderInfo> folderInfos = new ArrayList<FolderInfo>();
         for (Iterator<String> it = onLoginFolderEntryIds.iterator(); it
             .hasNext();)
         {
@@ -1252,7 +1300,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getConfig(), folderEntryId);
             if (settings == null) {
                 String folderDirStr = getController().getConfig().getProperty(
-                    FolderSettings.FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
+                    FOLDER_SETTINGS_PREFIX_V4 + folderEntryId
                         + FolderSettings.FOLDER_SETTINGS_DIR);
                 logWarning("Not setting up folder " + folderName + " / "
                     + folderEntryId + " local base dir not found: "
@@ -1288,9 +1336,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove from pending entries.
             it.remove();
-            folders.add(foInfo);
+            folderInfos.add(foInfo);
         }
-        return folders;
+        return folderInfos;
     }
 
     // Event support **********************************************************
