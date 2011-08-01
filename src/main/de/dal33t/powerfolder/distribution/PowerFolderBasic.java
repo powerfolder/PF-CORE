@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.skin.SnowlandBasic;
 public class PowerFolderBasic extends AbstractDistribution {
 
     public String getName() {
-        return "PowerFolder Basic";
+        return "PowerFolder";
     }
 
     public String getBinaryName() {

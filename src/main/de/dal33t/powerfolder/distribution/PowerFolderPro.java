@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.ui.ConfigurationLoaderDialog;
 public class PowerFolderPro extends AbstractDistribution {
 
     public String getName() {
-        return "PowerFolder Pro";
+        return "PowerFolder";
     }
 
     public String getBinaryName() {
