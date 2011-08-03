@@ -105,7 +105,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.8.3"; // 3.5.5
+    public static final String PROGRAM_VERSION = "4.8.4 - 3.5.7"; // 3.5.7
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -909,12 +909,17 @@ public class Controller extends PFComponent {
         // ============
         // Hourly tasks
         // ============
+        boolean alreadyDetected = ConfigurationEntry.TRANSFERLIMIT_AUTODETECT
+            .getValueBoolean(getController())
+            && ConfigurationEntry.UPLOADLIMIT_WAN.getValueInt(getController()) > 0;
+        // If already detected wait 10 mins before next test. Otherwise start
+        // instantly.
+        long initialDelay = alreadyDetected ? 600 : 5;
         threadPool.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 performHourly();
             }
-        }, 1, 60, TimeUnit.MINUTES);
-
+        }, initialDelay, 3600, TimeUnit.SECONDS);
     }
 
     /**
