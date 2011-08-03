@@ -66,6 +66,7 @@ import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
@@ -344,12 +345,17 @@ public class Account implements Serializable {
         return password;
     }
 
-    public char[] getPasswordChars() {
-        return password != null ? password.toCharArray() : null;
+    public void setPassword(String password) {
+        this.password = LoginUtil.hashAndSalt(password);
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    /**
+     * @param pwCandidate
+     * @return true if the password candidate matches the password of the
+     *         account.
+     */
+    public boolean passwordMatches(char[] pwCandidate) {
+        return LoginUtil.matches(pwCandidate, password);
     }
 
     public Date getRegisterDate() {
