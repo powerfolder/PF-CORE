@@ -2823,10 +2823,10 @@ public class TransferManager extends PFComponent {
             + Format.formatBytesShort(downloadRate) + "/s, Upload "
             + Format.formatBytesShort(uploadRate) + "/s");
 
-        if (uploadRate < 10240 / 2) {
+        if (uploadRate < 10240) {
             uploadRate = 0;
         }
-        if (downloadRate < 102400 / 2) {
+        if (downloadRate < 102400) {
             downloadRate = 0;
         }
         if (downloadOk) {
