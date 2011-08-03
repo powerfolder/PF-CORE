@@ -333,8 +333,6 @@ public class Constants {
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
-    public static final String LOGIN_PARAM_PASSWORD_MD5 = "PasswordMD5";
-    public static final String LOGIN_PARAM_SALT = "Salt";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
 
     /** Cleanup immediately, 1, 10, 30, never days. */
