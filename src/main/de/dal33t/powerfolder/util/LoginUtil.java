@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,6 +42,7 @@ public class LoginUtil {
 
     }
     private final static int OBF_BYTE = 0xAA;
+    public final static String HASH_DIGEST = "MD5";
 
     /**
      * Obfuscates a password into String. This does NOT mean the password is
@@ -131,19 +134,6 @@ public class LoginUtil {
                 url += Constants.LOGIN_PARAM_PASSWORD_OBF;
                 url += "=";
                 url += Util.endcodeForURL(obfuscate(password));
-
-                // Old fashioned MD5 encoded login support for old servers.
-                String salt = IdGenerator.makeId() + IdGenerator.makeId();
-                String mix = salt + new String(password).trim() + salt;
-                byte[] passwordMD5 = Util.md5(mix.getBytes(Convert.UTF8));
-                url += "&";
-                url += Constants.LOGIN_PARAM_PASSWORD_MD5;
-                url += "=";
-                url += Util.endcodeForURL(Base64.encodeBytes(passwordMD5));
-                url += "&";
-                url += Constants.LOGIN_PARAM_SALT;
-                url += "=";
-                url += Util.endcodeForURL(Base64.encodeString(salt));
             }
         }
         return url;
@@ -178,6 +168,47 @@ public class LoginUtil {
         return url;
     }
 
+    public static boolean matches(char[] pwCandidate, String hashedPW) {
+        String[] parts = hashedPW.split(":");
+        if (parts.length != 3) {
+            // Legacy for clear text passwords
+            return hashedPW != null && !hashedPW.startsWith(HASH_DIGEST)
+                && Arrays.equals(pwCandidate, Util.toCharArray(hashedPW));
+        }
+        if (!parts[0].equalsIgnoreCase(HASH_DIGEST)) {
+            return false;
+        }
+        String salt = parts[1];
+        String expectedHash = parts[2];
+        String actualHash = hash(Util.toString(pwCandidate), salt);
+        return expectedHash.equals(actualHash);
+    }
+
+    /**
+     * @param password
+     *            the password to process
+     * @return the hashed password and salt.
+     */
+    public static String hashAndSalt(String password) {
+        String salt = IdGenerator.makeId();
+        return getDigest().getAlgorithm() + ":" + salt + ":"
+            + hash(password, salt);
+    }
+
+    /**
+     * @param password
+     *            the password to process
+     * @return the hashed password and salt.
+     */
+    public static String hash(String password, String salt) {
+        String input = password + salt;
+        byte[] in = input.getBytes(Convert.UTF8);
+        for (int i = 0; i < 1597; i++) {
+            in = digest(in);
+        }
+        return Base64.encodeBytes(in);
+    }
+
     /**
      * Clears a password array to avoid keeping the password in plain text in
      * memory.
@@ -193,5 +224,47 @@ public class LoginUtil {
         for (int i = 0; i < password.length; i++) {
             password[i] = (char) (Math.random() * 256);
         }
+    }
+
+    /**
+     * Calculates the SHA digest and returns the value as a 16 element
+     * <code>byte[]</code>.
+     * 
+     * @param data
+     *            Data to digest
+     * @return digest
+     */
+    public static byte[] digest(byte[] data) {
+        return getDigest().digest(data);
+    }
+
+    /**
+     * Returns a MessageDigest for the given <code>algorithm</code>.
+     * 
+     * @param algorithm
+     *            The MessageDigest algorithm name.
+     * @return An MD5 digest instance.
+     * @throws RuntimeException
+     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             caught,
+     */
+    private static MessageDigest getDigest(String algorithm) {
+        try {
+            return MessageDigest.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * Returns an MD5 MessageDigest.
+     * 
+     * @return An MD5 digest instance.
+     * @throws RuntimeException
+     *             when a {@link java.security.NoSuchAlgorithmException} is
+     *             caught,
+     */
+    private static MessageDigest getDigest() {
+        return getDigest(HASH_DIGEST);
     }
 }
