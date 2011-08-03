@@ -33,14 +33,18 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.ui.SyncProfileSelectorPanel;
+import de.dal33t.powerfolder.util.ui.DialogFactory;
+import de.dal33t.powerfolder.util.ui.GenericDialogType;
 
 import java.awt.event.ActionEvent;
+import java.awt.*;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -190,7 +194,33 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
     }
 
     private void undoAutocreate() {
-        
+        int i = DialogFactory.genericDialog(getController(),
+                Translation.getTranslation("wizard.folder_auto_create.undo.title"),
+                Translation.getTranslation("wizard.folder_auto_create.undo.text"),
+                new String[]{
+                        Translation.getTranslation("wizard.folder_auto_create.undo.title"), 
+                        Translation.getTranslation("general.cancel")}, 0,
+                GenericDialogType.QUESTION);
+        if (i == 0) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JDialog diag = (JDialog) getWizardContext().getAttribute(
+                            DIALOG_ATTRIBUTE);
+                    diag.setCursor(Cursor.getPredefinedCursor(
+                            Cursor.WAIT_CURSOR));
+                    Folder folder = getController().getFolderRepository()
+                            .getFolder(folderInfo);
+                    getController().getFolderRepository().removeFolder(folder,
+                            false);
+                    ServerClient client = getController().getOSClient();
+                    if (client.isConnected()) {
+                        client.getFolderService().removeFolder(folderInfo, true,
+                                true);
+                    }
+                    diag.setVisible(false);
+                }
+            });
+        }
     }
 
     // /////////////
