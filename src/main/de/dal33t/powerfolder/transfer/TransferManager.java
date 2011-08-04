@@ -2890,7 +2890,7 @@ public class TransferManager extends PFComponent {
                 .getResponseCode();
             return responseCode == 200;
         } catch (Exception e) {
-            logSevere("Test availability upload failed", e);
+            logWarning("Test availability upload failed: " + e);
         }
         return false;
     }
@@ -2914,7 +2914,7 @@ public class TransferManager extends PFComponent {
             }
             return true;
         } catch (Exception e) {
-            logSevere("Test availability download failed", e);
+            logWarning("Test availability download failed: " + e);
         } finally {
             if (reader != null) {
                 try {
