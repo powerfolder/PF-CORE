@@ -65,6 +65,16 @@ public class OSUtil {
         String os = System.getProperty("os.name");
         return os != null && os.toLowerCase().indexOf("windows 7") >= 0;
     }
+    
+
+    /**
+     * @return if current system is running windows XP
+     */
+    public static boolean isWindowsXPSystem() {
+        String os = System.getProperty("os.name");
+        return os != null && os.toLowerCase().indexOf("windows xp") >= 0;
+    }
+
 
     /**
      * @return true if this is a Google Android system
