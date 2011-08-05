@@ -26,12 +26,16 @@ import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.ui.action.ActionModel;
 import de.dal33t.powerfolder.ui.chat.ChatModel;
 import de.dal33t.powerfolder.ui.chat.ChatModelListener;
 import de.dal33t.powerfolder.ui.chat.ChatModelEvent;
 import de.dal33t.powerfolder.ui.chat.ChatAdviceEvent;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 
 /**
  * Contains all core models for the application.
@@ -106,6 +110,7 @@ public class ApplicationModel extends PFUIComponent {
      */
     public void initialize() {
         transferManagerModel.initialize();
+        getController().getOSClient().addListener(new MyServerClientListener());
     }
 
     // Exposing ***************************************************************
@@ -169,6 +174,38 @@ public class ApplicationModel extends PFUIComponent {
         public boolean fireInEventDispatchThread() {
             return true;
         }
+    }
+    
+    private class MyServerClientListener implements ServerClientListener {
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
+
+        public void login(ServerClientEvent event) {
+            if (event.getAccountDetails().getAccount()
+                .hasPermission(AdminPermission.INSTANCE))
+            {
+                WarningNotice notice = new WarningNotice(
+                    Translation.getTranslation("warning_notice.title"),
+                    Translation.getTranslation("warning_notice.admin_login.summary"),
+                    Translation.getTranslation("warning_notice.admin_login.message"));
+                noticesModel.handleNotice(notice);
+            }
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
+        
     }
 
     public NoticesModel getNoticesModel() {
