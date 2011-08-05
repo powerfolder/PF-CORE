@@ -19,7 +19,19 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.*;
+import java.awt.CheckboxMenuItem;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.MediaTracker;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -80,9 +92,18 @@ import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.ScanResult;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.AskForFriendshipEvent;
+import de.dal33t.powerfolder.event.AskForFriendshipListener;
+import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
+import de.dal33t.powerfolder.event.FolderAutoCreateListener;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.FolderRepositoryListener;
+import de.dal33t.powerfolder.event.InvitationHandler;
+import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
+import de.dal33t.powerfolder.event.MassDeletionHandler;
+import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -95,12 +116,25 @@ import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.ui.information.InformationFrame;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.model.TransferManagerModel;
-import de.dal33t.powerfolder.ui.notices.*;
+import de.dal33t.powerfolder.ui.notices.AskForFriendshipEventNotice;
+import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
+import de.dal33t.powerfolder.ui.notices.InvitationNotice;
+import de.dal33t.powerfolder.ui.notices.LocalDeleteNotice;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.NotificationHandler;
 import de.dal33t.powerfolder.ui.notification.Slider;
 import de.dal33t.powerfolder.ui.render.MainFrameBlinkManager;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.FileUtils;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Help;
+import de.dal33t.powerfolder.util.ProUtil;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -358,21 +392,24 @@ public class UIController extends PFComponent {
 
     /**
      * Creates / removes a desktop shortcut of the folders base dir.
-     *
-     * @param removeFirst remove any shortcut before creating a new one.
+     * 
+     * @param removeFirst
+     *            remove any shortcut before creating a new one.
      */
     public void configureDesktopShortcut(boolean removeFirst) {
-        if (removeFirst ||
-                !PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.getValueBoolean(
-                        getController())) {
-            Util.removeDesktopShortcut(Translation.getTranslation(
-                    "general.powerfolders.name"));
+        String shortcutName = getController().getFolderRepository()
+            .getFoldersAbsoluteDir().getName();
+        if (removeFirst
+            || !PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+                .getValueBoolean(getController()))
+        {
+            Util.removeDesktopShortcut(shortcutName);
         }
-        if (PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT.getValueBoolean(
-                getController())) {
-            Util.createDesktopShortcut(Translation.getTranslation(
-                    "general.powerfolders.name"),
-                    getController().getFolderRepository().getFoldersAbsoluteDir());
+        if (PreferencesEntry.DISPLAY_POWERFOLDERS_SHORTCUT
+            .getValueBoolean(getController()))
+        {
+            Util.createDesktopShortcut(shortcutName, getController()
+                .getFolderRepository().getFoldersAbsoluteDir());
         }
     }
 
