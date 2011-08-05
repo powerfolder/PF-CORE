@@ -75,19 +75,17 @@ public class FolderAutoConfigPanel extends SwingWorkerPanel {
                     (Boolean) getWizardContext().getAttribute(
                             USE_CLOUD_STORAGE);
 
-            SyncProfile syncProfile =
-                    (SyncProfile) getWizardContext().getAttribute(
-                            SYNC_PROFILE_ATTRIBUTE);
+            SyncProfile syncProfile = (SyncProfile) getWizardContext()
+                .getAttribute(SYNC_PROFILE_ATTRIBUTE);
 
-            Folder folder = getController().getFolderRepository()
-                    .getFolder(folderInfo);
+            Folder folder = getController().getFolderRepository().getFolder(
+                folderInfo);
             folder.setSyncProfile(syncProfile);
             ServerClient client = getController().getOSClient();
             if (client.isConnected() && client.isLoggedIn()) {
                 boolean joined = client.joinedByCloud(folder);
                 if (!joined && useCloudStorage) {
-                    client.getFolderService().createFolder(folderInfo,
-                            syncProfile);
+                    client.getFolderService().createFolder(folderInfo, null);
                 }
             }
         }
