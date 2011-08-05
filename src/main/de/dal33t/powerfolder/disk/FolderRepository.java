@@ -38,6 +38,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
 import de.dal33t.powerfolder.event.FolderAutoCreateListener;
@@ -1191,18 +1192,34 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     // Found a new directory in the folder base. Create a new folder.
+    // Only doing this if logged in.
     private void handleNewFolder(File file) {
-        FolderInfo fi = new FolderInfo(file.getName(), '[' +
-                IdGenerator.makeId() + ']');
-        FolderSettings fs = new FolderSettings(file,
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-                ArchiveMode.FULL_BACKUP,
-                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
-                        getController()));
-        createFolder(fi, fs);
+        Controller controller = getController();
+        ServerClient client = controller.getOSClient();
+        if (client.isConnected() && client.isLoggedIn()) {
+            boolean foundSameName = false;
+            FolderInfo fi = null;
+            for (FolderInfo folderInfo : client.getAccountFolders()) {
+                if (folderInfo.getName().equals(file.getName())) {
+                    foundSameName = true;
+                    fi = folderInfo;
+                    break;
+                }
+            }
+            if (!foundSameName) {
+                fi = new FolderInfo(file.getName(), '[' + IdGenerator.makeId()
+                        + ']');
+            }
+            FolderSettings fs = new FolderSettings(file,
+                    SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                    ArchiveMode.FULL_BACKUP,
+                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
+                            controller));
+            createFolder(fi, fs);
 
-        folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
-                fi));
+            folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
+                    fi));
+        }
     }
 
     /**
