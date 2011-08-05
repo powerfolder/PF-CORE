@@ -169,13 +169,17 @@ public class ExpandableFolderView extends PFUIComponent implements
     private StopOnlineStorageAction stopOnlineStorageAction;
     private WebdavAction webdavAction;
 
+    // Performance stuff
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
     private DelayedUpdater folderDetailsUpdater;
+    
+    private boolean folderInCloud;
+    private Date lastFetch;
 
     /**
      * Constructor
-     *
+     * 
      * @param controller
      * @param folderInfo
      */
@@ -192,11 +196,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     /**
      * Set the folder for this view. May be null if online storage only, so
      * update visual components if null --> folder or folder --> null
-     *
+     * 
      * @param folderModel
      */
-    public void configure(ExpandableFolderModel folderModel)
-    {
+    public void configure(ExpandableFolderModel folderModel) {
         boolean changed = false;
         Folder beanFolder = folderModel.getFolder();
         ExpandableFolderModel.Type beanType = folderModel.getType();
@@ -274,22 +277,21 @@ public class ExpandableFolderView extends PFUIComponent implements
      * Show the upper links if mouse over.
      */
     private void updateUpperComponents() {
-        upperSyncLink.getUIComponent().setVisible(type == ExpandableFolderModel.Type.Local &&
-                (mouseOver.get() || !showing100Sync.get()));
-        boolean showLocalButtons = mouseOver.get() &&
-                type == ExpandableFolderModel.Type.Local;
+        upperSyncLink.getUIComponent().setVisible(
+            type == ExpandableFolderModel.Type.Local
+                && (mouseOver.get() || !showing100Sync.get()));
+        boolean showLocalButtons = mouseOver.get()
+            && type == ExpandableFolderModel.Type.Local;
         upperInviteButton.setVisible(showLocalButtons);
         upperOpenFilesButton.setVisible(showLocalButtons);
 
-        final boolean showCloudOnlyButtons = mouseOver.get() &&
-                type == ExpandableFolderModel.Type.CloudOnly;
+        final boolean showCloudOnlyButtons = mouseOver.get()
+            && type == ExpandableFolderModel.Type.CloudOnly;
         SwingWorker worker = new SwingWorker() {
             protected Object doInBackground() throws Exception {
-                if (OSUtil.isWindows7System() ||
-                        OSUtil.isWindowsVistaSystem()) {
-                    if (serverClient.isConnected() &&
-                            serverClient.getFolderService().hasJoined(
-                                    folderInfo)) {
+                if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem())
+                {
+                    if (serverClient.isConnected() && folderInCloud()) {
                         upperMountWebDavButton.setVisible(showCloudOnlyButtons);
                     } else {
                         upperMountWebDavButton.setVisible(false);
@@ -303,9 +305,22 @@ public class ExpandableFolderView extends PFUIComponent implements
         worker.execute();
     }
 
+    private synchronized boolean folderInCloud() {
+        // Cache 60s.
+        if (lastFetch == null
+            || lastFetch.before(new Date(
+                System.currentTimeMillis() - 1000L * 60 * 5)))
+        {
+            folderInCloud = serverClient.getFolderService().hasJoined(
+                folderInfo);
+            lastFetch = new Date();
+        }
+        return folderInCloud;
+    }
+
     /**
      * Gets the ui component, building if required.
-     *
+     * 
      * @return
      */
     public JPanel getUIComponent() {
@@ -334,7 +349,8 @@ public class ExpandableFolderView extends PFUIComponent implements
         nameLabel = new ResizingJLabel();
         upperBuilder.add(nameLabel, cc.xy(3, 1));
         nameLabel.addMouseListener(moa);
-        nameLabel.addMouseListener(mca); // Because this is the biggest blank area where the user might click.
+        nameLabel.addMouseListener(mca); // Because this is the biggest blank
+                                         // area where the user might click.
         upperBuilder.add(filesAvailableLabel.getUIComponent(), cc.xy(5, 1));
         filesAvailableLabel.getUIComponent().addMouseListener(moa);
 
@@ -733,11 +749,11 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             if (lastSyncDate == null) {
                 syncDateText = Translation
-                        .getTranslation("exp_folder_view.never_synchronized");
+                    .getTranslation("exp_folder_view.never_synchronized");
             } else {
                 String formattedDate = Format.formatDateShort(lastSyncDate);
                 syncDateText = Translation.getTranslation(
-                        "exp_folder_view.last_synchronized", formattedDate);
+                    "exp_folder_view.last_synchronized", formattedDate);
             }
 
             if (folder.hasOwnDatabase()) {
@@ -752,27 +768,29 @@ public class ExpandableFolderView extends PFUIComponent implements
 
                 // Sync in progress? Rewrite date as estimate.
                 if (Double.compare(sync, 100.0) < 0
-                        && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0) {
+                    && Double.compare(sync, UNKNOWN_SYNC_STATUS) > 0)
+                {
                     Date date = folder.getStatistic().getEstimatedSyncDate();
                     if (date != null) {
                         if (DateUtil.isDateMoreThanNDaysInFuture(date, 2)) {
                             syncDateText = Translation
-                                    .getTranslation("exp_folder_view.estimated_unknown");
+                                .getTranslation("exp_folder_view.estimated_unknown");
                         } else {
                             String formattedDate = Format.formatDateShort(date);
                             syncDateText = Translation.getTranslation(
-                                    "exp_folder_view.estimated_synchronized",
-                                    formattedDate);
+                                "exp_folder_view.estimated_synchronized",
+                                formattedDate);
                         }
                     }
                 }
 
                 if (lastSyncDate == null
-                        && (Double.compare(sync, 100.0) == 0 || Double.compare(
-                        sync, UNKNOWN_SYNC_STATUS) == 0)) {
+                    && (Double.compare(sync, 100.0) == 0 || Double.compare(
+                        sync, UNKNOWN_SYNC_STATUS) == 0))
+                {
                     // Never synced with others.
                     syncPercentText = Translation
-                            .getTranslation("exp_folder_view.unsynchronized");
+                        .getTranslation("exp_folder_view.unsynchronized");
                     upperSyncPercent = syncPercentText;
                     showing100Sync.set(false);
                 } else {
@@ -791,8 +809,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                         }
                     } else {
                         syncPercentText = Translation.getTranslation(
-                                "exp_folder_view.synchronized",
-                                Format.formatDecimal(sync));
+                            "exp_folder_view.synchronized",
+                            Format.formatDecimal(sync));
                         upperSyncPercent = Format.formatDecimal(sync) + '%';
                     }
                 }
@@ -813,13 +831,13 @@ public class ExpandableFolderView extends PFUIComponent implements
                     filesAvailableLabelText = "";
                 } else {
                     filesAvailableLabelText = Translation.getTranslation(
-                            "exp_folder_view.files_available",
-                            String.valueOf(count));
+                        "exp_folder_view.files_available",
+                        String.valueOf(count));
                 }
             } else {
                 showing100Sync.set(false);
                 syncPercentText = Translation
-                        .getTranslation("exp_folder_view.not_yet_scanned");
+                    .getTranslation("exp_folder_view.not_yet_scanned");
                 upperSyncPercent = "?";
                 localSizeString = "?";
                 totalSizeString = "?";
@@ -828,10 +846,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         } else {
 
             syncPercentText = Translation.getTranslation(
-                    "exp_folder_view.synchronized", "?");
+                "exp_folder_view.synchronized", "?");
             upperSyncPercent = "?";
             syncDateText = Translation.getTranslation(
-                    "exp_folder_view.last_synchronized", "?");
+                "exp_folder_view.last_synchronized", "?");
             localSizeString = "?";
             totalSizeString = "?";
             filesAvailableLabelText = "";
@@ -852,7 +870,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             filesAvailableLabel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.files_available_tip"));
         }
-        // Maybe change visibility of upperSyncLink. 
+        // Maybe change visibility of upperSyncLink.
         updateUpperComponents();
     }
 
@@ -864,10 +882,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (type == ExpandableFolderModel.Type.Local) {
             // FIXME: Returns # of files + # of directories
             filesText = Translation.getTranslation("exp_folder_view.files",
-                    String.valueOf(folder.getStatistic().getLocalFilesCount()));
+                String.valueOf(folder.getStatistic().getLocalFilesCount()));
         } else {
             filesText = Translation
-                    .getTranslation("exp_folder_view.files", "?");
+                .getTranslation("exp_folder_view.files", "?");
         }
         filesLabel.setText(filesText);
     }
@@ -876,7 +894,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         String deletedFileText;
         if (type == ExpandableFolderModel.Type.Local) {
             Collection<FileInfo> allFiles = folder.getDAO().findAllFiles(
-                    getController().getMySelf().getId());
+                getController().getMySelf().getId());
             int deletedCount = 0;
             for (FileInfo file : allFiles) {
                 if (file.isDeleted()) {
@@ -884,10 +902,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             }
             deletedFileText = Translation.getTranslation(
-                    "exp_folder_view.deleted_files", String.valueOf(deletedCount));
+                "exp_folder_view.deleted_files", String.valueOf(deletedCount));
         } else {
             deletedFileText = Translation.getTranslation(
-                    "exp_folder_view.deleted_files", "?");
+                "exp_folder_view.deleted_files", "?");
         }
         deletedFilesLabel.setText(deletedFileText);
     }
@@ -899,18 +917,18 @@ public class ExpandableFolderView extends PFUIComponent implements
         String transferMode;
         if (type == ExpandableFolderModel.Type.Local) {
             transferMode = Translation.getTranslation(
-                    "exp_folder_view.transfer_mode", folder.getSyncProfile()
-                            .getName());
+                "exp_folder_view.transfer_mode", folder.getSyncProfile()
+                    .getName());
             String path = folder.getCommitOrLocalDir().getAbsolutePath();
             if (path.length() >= 35) {
                 path = path.substring(0, 15) + "..."
-                        + path.substring(path.length() - 15, path.length());
+                    + path.substring(path.length() - 15, path.length());
             }
             localDirectoryLabel.setVisible(true);
             localDirectoryLabel.setText(path);
         } else {
             transferMode = Translation.getTranslation(
-                    "exp_folder_view.transfer_mode", "?");
+                "exp_folder_view.transfer_mode", "?");
             localDirectoryLabel.setVisible(false);
         }
         transferModeLabel.setText(transferMode);
@@ -937,7 +955,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             countText = String.valueOf(folder.getMembersCount());
             // And me!
             connectedCountText = String.valueOf(folder
-                    .getConnectedMembersCount() + 1);
+                .getConnectedMembersCount() + 1);
         } else {
             countText = "?";
             connectedCountText = "?";
@@ -953,33 +971,33 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (preview) {
                 primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
                 primaryButton.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.folder_preview_text"));
+                    .getTranslation("exp_folder_view.folder_preview_text"));
             } else if (online) {
                 primaryButton.setIcon(Icons
-                        .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
+                    .getIconById(Icons.LOCAL_AND_ONLINE_FOLDER));
                 primaryButton
-                        .setToolTipText(Translation
-                                .getTranslation("exp_folder_view.folder_local_online_text"));
+                    .setToolTipText(Translation
+                        .getTranslation("exp_folder_view.folder_local_online_text"));
                 osComponent.getUIComponent().setVisible(
-                        PreferencesEntry.USE_ONLINE_STORAGE
-                                .getValueBoolean(getController()));
+                    PreferencesEntry.USE_ONLINE_STORAGE
+                        .getValueBoolean(getController()));
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
-                        .getTranslation("exp_folder_view.folder_local_text"));
+                    .getTranslation("exp_folder_view.folder_local_text"));
             }
         } else if (type == ExpandableFolderModel.Type.Typical) {
             primaryButton.setIcon(Icons.getIconById(Icons.SETTINGS));
             primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_typical_text"));
+                .getTranslation("exp_folder_view.folder_typical_text"));
             osComponent.getUIComponent().setVisible(false);
         } else { // CloudOnly
             primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             primaryButton.setToolTipText(Translation
-                    .getTranslation("exp_folder_view.folder_online_text"));
+                .getTranslation("exp_folder_view.folder_online_text"));
             osComponent.getUIComponent().setVisible(
-                    PreferencesEntry.USE_ONLINE_STORAGE
-                            .getValueBoolean(getController()));
+                PreferencesEntry.USE_ONLINE_STORAGE
+                    .getValueBoolean(getController()));
         }
 
         if (folder != null && folder.isPreviewOnly()) {
@@ -1012,7 +1030,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     /**
      * Is the view expanded?
-     *
+     * 
      * @return
      */
     public boolean isExpanded() {
@@ -1051,8 +1069,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         if (type == ExpandableFolderModel.Type.CloudOnly) {
             if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
-                if (serverClient.isConnected() &&
-                        serverClient.getFolderService().hasJoined(folderInfo)) {
+                if (serverClient.isConnected() && folderInCloud()) {
                     contextMenu.add(webdavAction);
                 }
             }
@@ -1111,30 +1128,36 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Create a WebDAV connection to this folder.
-     * Should be something like 'net use * "https://access.powerfolder.com/node/os004/webdav/afolder" /User:bob@powerfolder.com pazzword'
+     * Create a WebDAV connection to this folder. Should be something like 'net
+     * use * "https://access.powerfolder.com/node/os004/webdav/afolder"
+     * /User:bob@powerfolder.com pazzword'
      */
     private void createWebdavConnection() {
-        ActivityVisualizationWorker worker =
-                new ActivityVisualizationWorker(getUIController()) {
+        ActivityVisualizationWorker worker = new ActivityVisualizationWorker(
+            getUIController())
+        {
             protected String getTitle() {
-                return Translation.getTranslation("exp_folder_view.webdav_title");
+                return Translation
+                    .getTranslation("exp_folder_view.webdav_title");
             }
 
             protected String getWorkingText() {
-                return Translation.getTranslation("exp_folder_view.webdav_working_text");
+                return Translation
+                    .getTranslation("exp_folder_view.webdav_working_text");
             }
 
             public Object construct() throws Throwable {
                 try {
-                    Process process = Runtime.getRuntime().exec("net use * \"" +
-                            serverClient.getWebURL() + "/webdav/" +
-                            folderInfo.getName() + "\" /User:" +
-                            serverClient.getUsername() + ' ' +
-                            serverClient.getPasswordClearText());
-                    byte[] out = StreamUtils.readIntoByteArray(process.getInputStream());
+                    Process process = Runtime.getRuntime().exec(
+                        "net use * \"" + serverClient.getWebURL() + "/webdav/"
+                            + folderInfo.getName() + "\" /User:"
+                            + serverClient.getUsername() + ' '
+                            + serverClient.getPasswordClearText());
+                    byte[] out = StreamUtils.readIntoByteArray(process
+                        .getInputStream());
                     String output = new String(out);
-                    byte[] err = StreamUtils.readIntoByteArray(process.getErrorStream());
+                    byte[] err = StreamUtils.readIntoByteArray(process
+                        .getErrorStream());
                     String error = new String(err);
                     if (StringUtils.isEmpty(error)) {
                         if (!StringUtils.isEmpty(output)) {
@@ -1160,12 +1183,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                 String result = (String) get();
                 if (result != null) {
                     if (result.startsWith("Y")) {
-                        DialogFactory.genericDialog(getController(),
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("exp_folder_view.webdav_success_title"),
                                 Translation.getTranslation(
-                                        "exp_folder_view.webdav_success_title"),
-                                Translation.getTranslation(
-                                        "exp_folder_view.webdav_success_text",
-                                        result.substring(1)),
+                                    "exp_folder_view.webdav_success_text",
+                                    result.substring(1)),
                                 GenericDialogType.INFO);
                         String[] parts = result.substring(1).split("\\s");
                         for (String part : parts) {
@@ -1176,12 +1201,14 @@ public class ExpandableFolderView extends PFUIComponent implements
                             }
                         }
                     } else if (result.startsWith("N")) {
-                        DialogFactory.genericDialog(getController(),
+                        DialogFactory
+                            .genericDialog(
+                                getController(),
+                                Translation
+                                    .getTranslation("exp_folder_view.webdav_failure_title"),
                                 Translation.getTranslation(
-                                        "exp_folder_view.webdav_failure_title"),
-                                Translation.getTranslation(
-                                        "exp_folder_view.webdav_failure_text",
-                                        result.substring(1)),
+                                    "exp_folder_view.webdav_failure_text",
+                                    result.substring(1)),
                                 GenericDialogType.ERROR);
                     }
                 }
@@ -1470,10 +1497,10 @@ public class ExpandableFolderView extends PFUIComponent implements
         private void showContextMenu(MouseEvent evt) {
             Cursor c = upperPanel.getCursor();
             try {
-                upperPanel.setCursor(Cursor.getPredefinedCursor(
-                        Cursor.WAIT_CURSOR));
+                upperPanel.setCursor(Cursor
+                    .getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createPopupMenu().show(evt.getComponent(), evt.getX(),
-                        evt.getY());
+                    evt.getY());
             } finally {
                 upperPanel.setCursor(c);
             }
@@ -1491,8 +1518,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                         getController().getUIController().openFilesInformation(
                             folderInfo);
                     }
-                    if (type == ExpandableFolderModel.Type.CloudOnly &&
-                            folderInfo != null) {
+                    if (type == ExpandableFolderModel.Type.CloudOnly
+                        && folderInfo != null)
+                    {
                         PFWizard.openSingletonOnlineStorageJoinWizard(
                             getController(),
                             Collections.singletonList(folderInfo));
@@ -1721,7 +1749,8 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (type == ExpandableFolderModel.Type.CloudOnly) {
                 PFWizard.openSingletonOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
-            } else if (type == ExpandableFolderModel.Type.Local && folder.isPreviewOnly())
+            } else if (type == ExpandableFolderModel.Type.Local
+                && folder.isPreviewOnly())
             {
                 // Local Preview
                 SettingsTab.doPreviewChange(getController(), folder);
