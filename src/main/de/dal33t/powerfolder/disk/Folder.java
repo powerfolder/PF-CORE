@@ -2150,17 +2150,11 @@ public class Folder extends PFComponent {
         originalMap.putAll(membersMap);
         // Update members with any new ones from this file.
         for (MemberInfo memberInfo : membersMap.values()) {
-            boolean gotThisMember = false;
-            for (Member member : members.keySet()) {
-                if (member.getInfo().equals(memberInfo)) {
-                    gotThisMember = true;
-                    break;
-                }
+            if (members.containsKey(memberInfo.getId())) {
+                break;
             }
-            if (!gotThisMember) {
-                logInfo("Discovered new Member " + memberInfo);
-                join0(memberInfo);
-            }
+            join0(memberInfo);
+            logInfo("Discovered new Member " + memberInfo);
         }
         // Update members map with my members.
         for (Member member : members.keySet()) {
@@ -4038,7 +4032,7 @@ public class Folder extends PFComponent {
         Folder parentFolder = getController().getFolderRepository()
             .getParentFolder(currentInfo);
         if (parentFolder == null) {
-            logSevere("Unable to retrieve parent folder for " + currentInfo);
+            logWarning("Unable to retrieve parent folder for " + currentInfo);
             return currentInfo;
         }
         return parentFolder.currentInfo;
