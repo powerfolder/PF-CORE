@@ -74,6 +74,7 @@ public class ActionLabel extends PFComponent {
                 setEnabled(action.isEnabled());
             }
         });
+        setEnabled(action.isEnabled());
     }
 
     public JComponent getUIComponent() {
