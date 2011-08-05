@@ -88,7 +88,7 @@ public class Constants {
     /**
      * Threads in threadpool of {@link Controller}
      */
-    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 3;
+    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
 
     /**
      * The maximum number of lines in a chat.
