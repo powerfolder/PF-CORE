@@ -210,15 +210,15 @@ public class UserDirectories {
         boolean foundPictures = false;
         boolean foundVideos = false;
         // Hidden by Vista and 7
-        if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()
-            && !OSUtil.isWindows7System())
-        {
+        if (OSUtil.isWindowsSystem()) {
+
             if (USER_DIR_MY_DOCUMENTS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundDocuments = addTargetDirectory(new File(
                     USER_DIR_MY_DOCUMENTS), "user.dir.my_documents", false,
                     "user.dir.documents");
             }
+
             if (USER_DIR_MY_MUSIC != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundMusic = addTargetDirectory(new File(USER_DIR_MY_MUSIC),
