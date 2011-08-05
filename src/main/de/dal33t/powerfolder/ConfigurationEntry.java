@@ -478,9 +478,7 @@ public enum ConfigurationEntry {
             String rootDir = System.getProperty("user.home");
 
             // Also place the base dir into user home on Vista and 7
-            if (OSUtil.isWindowsSystem() && !OSUtil.isWindowsVistaSystem()
-                && !OSUtil.isWindows7System())
-            {
+            if (OSUtil.isWindowsSystem() && OSUtil.isWindowsXPSystem()) {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
                     String can = util.getSystemFolderPath(
