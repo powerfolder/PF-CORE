@@ -222,7 +222,8 @@ public class FolderStatistic extends PFComponent {
         if (fileInfo == null) {
             return false;
         }
-        return !newestFileInfo.isNewerThan(fileInfo);
+        return !newestFileInfo.isNewerThan(fileInfo)
+            && !fileInfo.isNewerThan(newestFileInfo);
     }
 
     /**
