@@ -504,10 +504,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // + folderInfo);
         }
         // TODO: Many temporary objects!!
-        ArrayList<String> domains = new ArrayList<String>(folder
-            .getMembersCount());
+        ArrayList<String> domains = new ArrayList<String>(
+            folder.getMembersCount());
         for (Member member : folder.getMembersAsCollection()) {
-            if (member.isCompletelyConnected()) {
+            if (member.isCompletelyConnected()
+                && folder.hasWritePermission(member))
+            {
                 domains.add(member.getId());
             } else if (member.isMySelf()) {
                 domains.add(null);
