@@ -47,6 +47,7 @@ import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
@@ -281,10 +282,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!folderBaseDir.exists() && !folderBaseDir.mkdirs()) {
             logWarning("Unable to create folders base dir: " + folderBaseDir);
         }
-        FileUtils.maintainDesktopIni(getController(), folderBaseDir);
         if (!folderBaseDir.exists()) {
             folderBaseDir.mkdirs();
         }
+        FileUtils.maintainDesktopIni(getController(), folderBaseDir);
 
         // Maintain link
         boolean useFavLink = ConfigurationEntry.USE_PF_LINK
@@ -1156,7 +1157,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     public void lookForNewFolders() {
-        if (skipNewFolderSearch.get()) {
+        if (skipNewFolderSearch.get()
+            || !getController().getOSClient().isLoggedIn()
+            || !getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
+        {
             if (isFine()) {
                 logFine("Skipping searching for new folders...");
             }
@@ -1211,14 +1216,25 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + ']');
             }
             FolderSettings fs = new FolderSettings(file,
-                    SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
-                    ArchiveMode.FULL_BACKUP,
-                    ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS.getValueInt(
-                            controller));
-            createFolder(fi, fs);
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
+                ArchiveMode.FULL_BACKUP,
+                ConfigurationEntry.DEFAULT_ARCHIVE_VERIONS
+                    .getValueInt(controller));
+            Folder folder = createFolder(fi, fs);
 
-            folderAutoCreateListener.folderAutoCreated(new FolderAutoCreateEvent(
-                    fi));
+            if (PreferencesEntry.USE_ONLINE_STORAGE
+                .getValueBoolean(getController()))
+            {
+                if (client.isConnected() && client.isLoggedIn()) {
+                    boolean joined = client.joinedByCloud(folder);
+                    if (!joined) {
+                        client.getFolderService().createFolder(fi, null);
+                    }
+                }
+            }
+
+            folderAutoCreateListener
+                .folderAutoCreated(new FolderAutoCreateEvent(fi));
         }
     }
 
