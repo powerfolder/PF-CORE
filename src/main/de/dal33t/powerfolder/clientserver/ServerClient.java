@@ -300,7 +300,7 @@ public class ServerClient extends PFComponent {
      * @return if the server is connected
      */
     public boolean isConnected() {
-        return server.isMySelf() || server.isCompletelyConnected();
+        return server.isMySelf() || server.isConnected();
     }
 
     /**
@@ -534,12 +534,12 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     private Account login(String theUsername, String thePasswordObj) {
-        logFine("Login with: " + theUsername);
+        logWarning("Login with: " + theUsername);
         synchronized (loginLock) {
             username = theUsername;
             passwordObf = thePasswordObj;
             saveLastKnowLogin();
-            if (!isConnected() || StringUtils.isBlank(passwordObf)) {
+            if (!server.isConnected() || StringUtils.isBlank(passwordObf)) {
                 setAnonAccount();
                 fireLogin(accountDetails);
                 return accountDetails.getAccount();
@@ -1070,8 +1070,40 @@ public class ServerClient extends PFComponent {
     public String toString() {
         return "ServerClient to " + (server != null ? server : "n/a");
     }
+    
+   
 
     // Inner classes **********************************************************
+
+    public void serverConnected(Member newNode) {
+        // Our server member instance is a temporary one. Lets get real.
+        if (isTempServerNode(server)) {
+            // Got connect to server! Take his ID and name.
+            Member oldServer = server;
+            setNewServerNode(newNode);
+            // Remove old temporary server entry without ID.
+            getController().getNodeManager().removeNode(oldServer);
+            if (updateConfig) {
+                setServerInConfig(server.getInfo());
+                getController().saveConfig();
+            }
+            logFine("Got connect to server: " + server);
+        }
+
+        listenerSupport.serverConnected(new ServerClientEvent(
+            ServerClient.this, newNode));
+
+        if (username != null && StringUtils.isNotBlank(passwordObf)) {
+            try {
+                login(username, passwordObf);
+                getController().schedule(new HostingServerRetriever(),
+                    200L);
+            } catch (RemoteCallException ex) {
+                logWarning("Unable to login. " + ex);
+                logFine(ex);
+            }
+        }
+    }
 
     /**
      * This listener violates the rule "Listener/Event usage". Reason: Even when
@@ -1082,39 +1114,10 @@ public class ServerClient extends PFComponent {
      */
     private class MyNodeManagerListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
-            // logWarning("Is server " + e.getNode() + "? " +
-            // isServer(e.getNode()));
-            if (isServer(e.getNode())) {
-                // Our server member instance is a temporary one. Lets get real.
-                if (isTempServerNode(server)) {
-                    // Got connect to server! Take his ID and name.
-                    Member oldServer = server;
-                    setNewServerNode(e.getNode());
-                    // Remove old temporary server entry without ID.
-                    getController().getNodeManager().removeNode(oldServer);
-                    if (updateConfig) {
-                        setServerInConfig(server.getInfo());
-                        getController().saveConfig();
-                    }
-                    logFine("Got connect to server: " + server);
-                }
-
-                listenerSupport.serverConnected(new ServerClientEvent(
-                    ServerClient.this, e.getNode()));
-
-                if (username != null && StringUtils.isNotBlank(passwordObf)) {
-                    try {
-                        login(username, passwordObf);
-                        getController().schedule(new HostingServerRetriever(),
-                            200L);
-                    } catch (RemoteCallException ex) {
-                        logWarning("Unable to login. " + ex);
-                        logFine(ex);
-                    }
-                }
-            }
+            // #2366: Checked from via serverConnected(Member)
         }
 
+        
         public void nodeDisconnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
                 // Invalidate account.
