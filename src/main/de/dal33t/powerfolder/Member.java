@@ -829,6 +829,11 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (peer == null) {
             return ConnectResult.failure("Peer is not set");
         }
+
+        if (getController().getOSClient().isServer(this)) {
+            getController().getOSClient().serverConnected(this);
+        }
+
         boolean wasHandshaked = handshaked;
         Identity identity = peer.getIdentity();
 
