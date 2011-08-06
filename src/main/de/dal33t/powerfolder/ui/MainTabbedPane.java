@@ -19,7 +19,7 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.Icon;
@@ -125,7 +125,13 @@ public class MainTabbedPane extends PFUIComponent {
             int minHeight = PreferencesEntry.MAIN_FRAME_HEIGHT
                 .getDefaultValueInt();
             uiComponent.setMinimumSize(new Dimension(minWidth, minHeight));
-            
+
+            CursorUtils.setHandCursor(uiComponent);
+            CursorUtils.setDefaultCursor(startTab.getUIComponent());
+            CursorUtils.setDefaultCursor(statusTab.getUIComponent());
+            CursorUtils.setDefaultCursor(foldersTab.getUIComponent());
+            CursorUtils.setDefaultCursor(computersTab.getUIComponent());
+
             setActiveTab(FOLDERS_INDEX);
         }
 

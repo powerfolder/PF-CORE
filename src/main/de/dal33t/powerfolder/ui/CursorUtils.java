@@ -32,6 +32,11 @@ import java.awt.*;
  */
 public class CursorUtils {
 
+    public static Cursor setDefaultCursor(Component component) {
+        return setCursor(component,
+                Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
     public static Cursor setWaitCursor(Component component) {
         return setCursor(component,
                 Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
