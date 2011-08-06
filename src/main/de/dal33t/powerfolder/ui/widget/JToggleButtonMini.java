@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.widget;
 
 import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.CursorUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,7 +52,7 @@ public class JToggleButtonMini extends JToggleButton {
     public JToggleButtonMini(final Action action, boolean act) {
         this((Icon) action.getValue(Action.SMALL_ICON), (String) action
             .getValue(Action.SHORT_DESCRIPTION));
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(this);
         if (act) {
             addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

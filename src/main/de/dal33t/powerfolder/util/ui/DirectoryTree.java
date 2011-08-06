@@ -20,15 +20,17 @@
 package de.dal33t.powerfolder.util.ui;
 
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.ui.CursorUtils;
 
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.Cursor;
 import java.io.File;
 import java.util.*;
+import java.util.List;
+import java.awt.*;
 
 /**
  * Class to render a tree of file system directories.
@@ -77,9 +79,8 @@ class DirectoryTree extends JTree {
         }
 
         // Set cursor to hourglass while drilling.
-        Cursor initialCursor = getCursor();
+        Cursor c = CursorUtils.setWaitCursor(this);
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             StringBuilder sb = new StringBuilder();
 
             // Split the path on file separator.
@@ -156,7 +157,7 @@ class DirectoryTree extends JTree {
                 }
             }
         } finally {
-            setCursor(initialCursor);
+            CursorUtils.returnToOriginal(this, c);
         }
     }
 
@@ -187,13 +188,12 @@ class DirectoryTree extends JTree {
      * @param path
      */
     public void expandPath(TreePath path) {
-        Cursor initialCursor = getCursor();
+        Cursor c = CursorUtils.setWaitCursor(this);
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             scanPath(path);
             super.expandPath(path);
         } finally {
-            setCursor(initialCursor);
+            CursorUtils.returnToOriginal(this, c);
         }
     }
 

@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.transfer.BandwidthLimiterInfo;
 import de.dal33t.powerfolder.transfer.CoalescedBandwidthStat;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.information.InformationCard;
 import de.dal33t.powerfolder.util.Translation;
 import org.jfree.chart.ChartPanel;
@@ -254,9 +255,8 @@ public class StatsInformationCard extends InformationCard {
 
     private void redrawUsedBandwidthStats() {
 
-        Cursor c = uiComponent.getCursor();
+        Cursor c = CursorUtils.setWaitCursor(uiComponent);
         try {
-            uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             int usedGraphType = usedGraphTypeComboBox.getSelectedIndex();
             int usedDataType = usedDataTypeComboBox.getSelectedIndex();
@@ -307,15 +307,14 @@ public class StatsInformationCard extends InformationCard {
                 }
             }
         } finally {
-            uiComponent.setCursor(c);
+            CursorUtils.returnToOriginal(uiComponent, c);
         }
     }
 
     private void redrawPercentageBandwidthStats() {
 
-        Cursor c = uiComponent.getCursor();
+        Cursor c = CursorUtils.setWaitCursor(uiComponent);
         try {
-            uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             int percentDataType = percentDataTypeComboBox.getSelectedIndex();
 
@@ -349,7 +348,7 @@ public class StatsInformationCard extends InformationCard {
                 }
             }
         } finally {
-            uiComponent.setCursor(c);
+            CursorUtils.returnToOriginal(uiComponent, c);
         }
     }
 

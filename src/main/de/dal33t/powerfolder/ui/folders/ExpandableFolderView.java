@@ -21,9 +21,7 @@ package de.dal33t.powerfolder.ui.folders;
 
 import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -76,6 +74,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.FolderRemovePanel;
 import de.dal33t.powerfolder.ui.dialog.PreviewToJoinPanel;
@@ -366,7 +365,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             upperPanel.setToolTipText(Translation
                 .getTranslation("exp_folder_view.expand"));
         }
-        upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(upperPanel);
         upperPanel.addMouseListener(moa);
         upperPanel.addMouseListener(mca);
         upperSyncLink.getUIComponent().addMouseListener(moa);
@@ -1495,14 +1494,12 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         private void showContextMenu(MouseEvent evt) {
-            Cursor c = upperPanel.getCursor();
+            Cursor c = CursorUtils.setWaitCursor(upperPanel);
             try {
-                upperPanel.setCursor(Cursor
-                    .getPredefinedCursor(Cursor.WAIT_CURSOR));
                 createPopupMenu().show(evt.getComponent(), evt.getX(),
                     evt.getY());
             } finally {
-                upperPanel.setCursor(c);
+                CursorUtils.returnToOriginal(upperPanel, c);
             }
         }
 

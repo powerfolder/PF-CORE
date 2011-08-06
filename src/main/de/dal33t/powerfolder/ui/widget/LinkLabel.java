@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
@@ -64,7 +65,7 @@ public class LinkLabel extends PFComponent {
 
         uiComponent.addMouseListener(new MyMouseAdapter());
 
-        uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(uiComponent);
         // FIXME This is a hack because of "Fusch!"
         uiComponent.setBorder(Borders.createEmptyBorder("0, 1px, 0, 0"));
     }

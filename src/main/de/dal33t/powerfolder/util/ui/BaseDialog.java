@@ -35,6 +35,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -166,12 +167,11 @@ public abstract class BaseDialog extends PFUIComponent {
      */
     public final void open() {
         Window window = getUIController().getActiveFrame();
-        Cursor c = window.getCursor();
+        Cursor c = CursorUtils.setWaitCursor(window);
         try {
-            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             getUIComponent().setVisible(true);
         } finally {
-            window.setCursor(c);
+            CursorUtils.returnToOriginal(window, c);
         }
     }
 

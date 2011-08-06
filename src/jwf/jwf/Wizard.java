@@ -26,6 +26,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -297,9 +298,8 @@ public class Wizard extends JPanel implements ActionListener {
      * Basically does the same link pressing "Next >"
      */
     public void next() {
-        Cursor c = getCursor();
+        Cursor c = CursorUtils.setWaitCursor(this);
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (current.validateNext()) {
                 previous.push(current);
                 WizardPanel wp = current.next();
@@ -311,7 +311,7 @@ public class Wizard extends JPanel implements ActionListener {
                 updateButtons();
             }
         } finally {
-            setCursor(c);
+            CursorUtils.returnToOriginal(this, c);
         }
     }
 

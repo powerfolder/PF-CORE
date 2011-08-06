@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.wizard;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.CursorUtils;
 
 import javax.swing.*;
 
@@ -206,8 +207,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
                 public void run() {
                     JDialog diag = (JDialog) getWizardContext().getAttribute(
                             DIALOG_ATTRIBUTE);
-                    diag.setCursor(Cursor.getPredefinedCursor(
-                            Cursor.WAIT_CURSOR));
+                    Cursor c = CursorUtils.setWaitCursor(diag);
                     Folder folder = getController().getFolderRepository()
                             .getFolder(folderInfo);
                     getController().getFolderRepository().removeFolder(folder,
@@ -217,6 +217,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
                         client.getFolderService().removeFolder(folderInfo, true,
                                 true);
                     }
+                    CursorUtils.returnToOriginal(diag, c);
                     diag.setVisible(false);
                 }
             });

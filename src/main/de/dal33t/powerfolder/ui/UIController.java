@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.ui;
 
 import java.awt.CheckboxMenuItem;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
@@ -456,7 +455,7 @@ public class UIController extends PFComponent {
                     BorderFactory.createLineBorder(Color.DARK_GRAY),
                     Borders.createEmptyBorder("15, 15, 15, 15"));
                 promoLabel.setBorder(border);
-                promoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                CursorUtils.setHandCursor(promoLabel);
                 promoLabel.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {

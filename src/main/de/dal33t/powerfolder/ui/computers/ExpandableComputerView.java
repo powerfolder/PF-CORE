@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.computers;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -66,6 +65,7 @@ import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.ExpandableView;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.ConnectDialog;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
@@ -183,7 +183,7 @@ public class ExpandableComputerView extends PFUIComponent implements
             .getTranslation("exp_computer_view.expand"));
         MouseAdapter ma = new MyMouseAdapter();
         upperPanel.addMouseListener(ma);
-        upperPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(upperPanel);
         pictoLabel.addActionListener(new PrimaryButtonActionListener());
 
         // Build lower detials with line border.

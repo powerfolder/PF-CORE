@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.widget;
 
-import java.awt.Cursor;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +34,7 @@ import com.jgoodies.forms.factories.Borders;
 import de.dal33t.powerfolder.event.WeakActionListener;
 import de.dal33t.powerfolder.event.WeakPropertyChangeListener;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.CursorUtils;
 
 /**
  * Class showing image button with no border, except when hover or pressed. Uses
@@ -53,7 +53,7 @@ public class JButtonMini extends JButton {
     public JButtonMini(final Action action) {
         this((Icon) action.getValue(Action.SMALL_ICON), (String) action
             .getValue(Action.SHORT_DESCRIPTION));
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(this);
 
         actionListener = new MyActionListener(action);
         addActionListener(new WeakActionListener(actionListener, this));

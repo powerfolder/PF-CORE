@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.ui.widget;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -37,6 +36,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.CursorUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.ui.ColorUtil;
 import de.dal33t.powerfolder.util.ui.SimpleComponentFactory;
@@ -68,7 +68,7 @@ public class ActionLabel extends PFComponent {
         }
         Reject.ifNull(action, "Action listener is null");
         uiComponent.addMouseListener(new MyMouseAdapter());
-        uiComponent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        CursorUtils.setHandCursor(uiComponent);
         action.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 setEnabled(action.isEnabled());
