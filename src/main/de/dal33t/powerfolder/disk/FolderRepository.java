@@ -119,8 +119,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * A list of folder base directories that have been removed in the past.
      */
-    private final Set<File> removedFolderDirectories =
-            new CopyOnWriteArraySet<File>();
+    private final Set<File> removedFolderDirectories = new CopyOnWriteArraySet<File>();
 
     /**
      * Constructor
@@ -151,9 +150,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private void loadRemovdFolderDirectories() {
-        String list = ConfigurationEntry.REMOVED_FOLDER_FILES.getValue(
-                getController());
-        String[] parts = list .split("\\$");
+        String list = ConfigurationEntry.REMOVED_FOLDER_FILES
+            .getValue(getController());
+        String[] parts = list.split("\\$");
         for (String s : parts) {
             File f = new File(s);
             if (f.exists() && f.isDirectory()) {
@@ -173,14 +172,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void addFolderAutoCreateListener(FolderAutoCreateListener listener) {
-        ListenerSupportFactory.addListener(folderAutoCreateListener,
-            listener);
+        ListenerSupportFactory.addListener(folderAutoCreateListener, listener);
     }
 
-    public void removeFolderAutoCreateListener(FolderAutoCreateListener
-            listener) {
+    public void removeFolderAutoCreateListener(FolderAutoCreateListener listener)
+    {
         ListenerSupportFactory.removeListener(folderAutoCreateListener,
-                listener);
+            listener);
     }
 
     /** @return The folder scanner that performs the scanning of files on disk */
@@ -947,8 +945,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void addToRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.add(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderDirectories.iterator();
-                 iterator.hasNext();) {
+            for (Iterator<File> iterator = removedFolderDirectories.iterator(); iterator
+                .hasNext();)
+            {
                 String s = iterator.next().getAbsolutePath();
                 sb.append(s);
                 if (iterator.hasNext()) {
@@ -956,15 +955,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                    sb.toString());
+                sb.toString());
         }
     }
 
     private void removeFromRemovedFolderDirectories(Folder folder) {
         if (removedFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            for (Iterator<File> iterator = removedFolderDirectories.iterator();
-                 iterator.hasNext();) {
+            for (Iterator<File> iterator = removedFolderDirectories.iterator(); iterator
+                .hasNext();)
+            {
                 String s = iterator.next().getAbsolutePath();
                 sb.append(s);
                 if (iterator.hasNext()) {
@@ -972,7 +972,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
-                    sb.toString());
+                sb.toString());
         }
     }
 
@@ -1158,15 +1158,24 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void lookForNewFolders() {
         if (skipNewFolderSearch.get()
-            || !getController().getOSClient().isLoggedIn()
-            || !getController().getOSClient().getAccount()
-                .hasPermission(FolderCreatePermission.INSTANCE))
+            || !getController().getOSClient().isLoggedIn())
         {
             if (isFine()) {
                 logFine("Skipping searching for new folders...");
             }
             return;
         }
+        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+            .getValueBoolean(getController())
+            && !getController().getOSClient().getAccount()
+                .hasPermission(FolderCreatePermission.INSTANCE))
+        {
+            if (isFine()) {
+                logFine("Skipping searching for new folders (no permission)...");
+            }
+            return;
+        }
+
         if (isFine()) {
             logFine("Searching for new folders...");
         }
@@ -1212,8 +1221,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             if (!foundSameName) {
-                fi = new FolderInfo(file.getName(), '[' + IdGenerator.makeId()
-                        + ']');
+                fi = new FolderInfo(file.getName(),
+                    '[' + IdGenerator.makeId() + ']');
             }
             FolderSettings fs = new FolderSettings(file,
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION, false,
