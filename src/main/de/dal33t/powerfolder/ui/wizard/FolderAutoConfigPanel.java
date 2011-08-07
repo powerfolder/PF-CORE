@@ -86,6 +86,9 @@ public class FolderAutoConfigPanel extends SwingWorkerPanel {
                 boolean joined = client.joinedByCloud(folder);
                 if (!joined && useCloudStorage) {
                     client.getFolderService().createFolder(folderInfo, null);
+                } else if (joined && !useCloudStorage) {
+                    client.getFolderService().removeFolder(folderInfo, true, 
+                            false);
                 }
             }
         }
