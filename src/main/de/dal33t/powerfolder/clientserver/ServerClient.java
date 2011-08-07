@@ -1115,9 +1115,15 @@ public class ServerClient extends PFComponent {
     private class MyNodeManagerListener extends NodeManagerAdapter {
         public void nodeConnected(NodeManagerEvent e) {
             // #2366: Checked from via serverConnected(Member)
+            if (ServerClient.this == getController().getOSClient()) {
+                return;
+            }
+            // For JUnit tests only;
+            if (isServer(e.getNode())) {
+                serverConnected(e.getNode());
+            }
         }
 
-        
         public void nodeDisconnected(NodeManagerEvent e) {
             if (isServer(e.getNode())) {
                 // Invalidate account.
