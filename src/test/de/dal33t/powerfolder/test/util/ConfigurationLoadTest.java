@@ -81,7 +81,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             + TEST_CONFIG_URL, false, false);
         lisaAtBart.sendMessage(r);
 
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(5000);
         assertEquals(NetworkingMode.LANONLYMODE.toString(),
             ConfigurationEntry.NETWORKING_MODE.getValue(getContollerLisa()));
         // Non existing should have been added.
