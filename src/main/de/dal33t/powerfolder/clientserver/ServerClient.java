@@ -534,7 +534,7 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     private Account login(String theUsername, String thePasswordObj) {
-        logWarning("Login with: " + theUsername);
+        logFine("Login with: " + theUsername);
         synchronized (loginLock) {
             username = theUsername;
             passwordObf = thePasswordObj;
