@@ -84,7 +84,7 @@ public class RequestExecutor extends PFComponent {
             waitForResponse(Constants.REQUEST_RESPONSE_TIMEOUT);
 
             if (response == null) {
-                if (!node.isCompletelyConnected()) {
+                if (!node.isConnected()) {
                     throw new ConnectionException(node.getNick()
                         + " disconnected");
                 }
