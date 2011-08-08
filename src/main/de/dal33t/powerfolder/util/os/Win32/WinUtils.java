@@ -207,7 +207,14 @@ public class WinUtils extends Loggable {
             shortCutname);
         File pflnkAll = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
             false), shortCutname);
-        return pflnk.exists() || pflnkAll.exists();
+        String shortCutname2 = controller.getDistribution().getBinaryName()
+            + ".lnk";
+        File pflnk2 = new File(getSystemFolderPath(CSIDL_STARTUP, false),
+            shortCutname2);
+        File pflnkAll2 = new File(getSystemFolderPath(CSIDL_COMMON_STARTUP,
+            false), shortCutname2);
+        return pflnk.exists() || pflnkAll.exists() || pflnk2.exists()
+            || pflnkAll2.exists();
     }
 
     /**
