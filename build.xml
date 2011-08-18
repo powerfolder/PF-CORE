@@ -157,11 +157,6 @@ For creation of the installer:
 		<mkdir dir="${build.dir}" />
 
 		<javac destdir="${build.dir}" source="1.6" target="1.6" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="${Deprecation}">
-
-			<!-- javac 1.5 specific warnings -->
-			<compilerarg value="-Xlint:${Unchecked}" />
-			<compilerarg value="-Xlint:${Fallthrough}" />
-
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
@@ -287,7 +282,7 @@ For creation of the installer:
 			<fileset file="${dist.installer.dir}\**.*" />
 		</copy>
 
-		<available file="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Win32_Installer.exe" property="installer.exe" value="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Win32_Installer.exe" />
+		<available file="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Installer.exe" property="installer.exe" value="${dist.dir}/PowerFolder_v${MajorVersion}.${MinorVersion}.${RevisionVersion}_Installer.exe" />
 
 		<!-- #1497: Sign installer EXE -->
 		<exec executable="${InstallerSignProgram}">
