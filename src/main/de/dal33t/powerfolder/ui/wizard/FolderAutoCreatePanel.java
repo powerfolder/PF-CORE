@@ -205,20 +205,26 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
         if (i == 0) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    JDialog diag = (JDialog) getWizardContext().getAttribute(
-                            DIALOG_ATTRIBUTE);
-                    Cursor c = CursorUtils.setWaitCursor(diag);
-                    Folder folder = getController().getFolderRepository()
-                            .getFolder(folderInfo);
-                    getController().getFolderRepository().removeFolder(folder,
-                            false);
-                    ServerClient client = getController().getOSClient();
-                    if (client.isConnected()) {
-                        client.getFolderService().removeFolder(folderInfo, true,
-                                true);
-                    }
-                    CursorUtils.returnToOriginal(diag, c);
-                    diag.setVisible(false);
+                    SwingWorker sw = new SwingWorker() {
+                        protected Object doInBackground() throws Exception {
+                            JDialog diag = (JDialog) getWizardContext().getAttribute(
+                                    DIALOG_ATTRIBUTE);
+                            Cursor c = CursorUtils.setWaitCursor(diag);
+                            Folder folder = getController().getFolderRepository()
+                                    .getFolder(folderInfo);
+                            getController().getFolderRepository().removeFolder(folder,
+                                    false);
+                            ServerClient client = getController().getOSClient();
+                            if (client.isConnected()) {
+                                client.getFolderService().removeFolder(folderInfo, true,
+                                        true);
+                            }
+                            CursorUtils.returnToOriginal(diag, c);
+                            diag.setVisible(false);
+                            return null;
+                        }
+                    };
+                    sw.execute();
                 }
             });
         }
