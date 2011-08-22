@@ -281,7 +281,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 && (mouseOver.get() || !showing100Sync.get()));
         boolean showLocalButtons = mouseOver.get()
             && type == ExpandableFolderModel.Type.Local;
-        upperInviteButton.setVisible(showLocalButtons);
+        upperInviteButton.setVisible(showLocalButtons
+            && !getController().isBackupOnly());
         upperOpenFilesButton.setVisible(showLocalButtons);
 
         final boolean showCloudOnlyButtons = mouseOver.get()
@@ -609,14 +610,15 @@ public class ExpandableFolderView extends PFUIComponent implements
         openFilesInformationButton.setEnabled(enabled);
         openFilesInformationAction.setEnabled(enabled);
 
-        inviteButton.setEnabled(enabled);
-        inviteAction.setEnabled(enabled);
+        inviteButton.setEnabled(enabled && !getController().isBackupOnly());
+        inviteAction.setEnabled(enabled && !getController().isBackupOnly());
 
         syncDateLabel.setEnabled(enabled);
         mostRecentChangesAction.setEnabled(enabled);
 
         membersLabel.setEnabled(enabled);
-        openMembersInformationAction.setEnabled(enabled);
+        openMembersInformationAction.setEnabled(enabled
+            && !getController().isBackupOnly());
 
         openExplorerAction.setEnabled(enabled && Desktop.isDesktopSupported());
 
