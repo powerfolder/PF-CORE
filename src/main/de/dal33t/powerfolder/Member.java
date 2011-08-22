@@ -1755,7 +1755,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         });
                 }
             } else if (message instanceof ConfigurationLoadRequest) {
-                if (isServer()) {
+                if (isServer() && !getController().getMySelf().isServer()) {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
                     ConfigurationLoader.processMessage(getController(), clr);
                 } else {
