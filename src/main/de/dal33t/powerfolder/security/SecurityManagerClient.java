@@ -452,7 +452,7 @@ public class SecurityManagerClient extends PFComponent implements
 
         public void run() {
             // The server connected!
-            if (client.isServer(node) && node.isCompletelyConnected()) {
+            if (client.isServer(node) && node.isConnected()) {
                 prefetchAccountInfos();
             }
 
