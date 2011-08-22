@@ -594,7 +594,11 @@ public class ServerClient extends PFComponent {
 
                 // Fire login success
                 fireLogin(accountDetails);
-                updateLocalSettings(accountDetails.getAccount());
+                getController().schedule(new Runnable() {
+                    public void run() {
+                        updateLocalSettings(accountDetails.getAccount());
+                    }
+                }, 0);
 
                 // Possible switch to new server
                 ServerInfo targetServer = accountDetails.getAccount()
