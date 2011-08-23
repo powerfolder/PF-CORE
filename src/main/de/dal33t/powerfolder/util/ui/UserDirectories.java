@@ -215,24 +215,24 @@ public class UserDirectories {
             if (USER_DIR_MY_DOCUMENTS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundDocuments = addTargetDirectory(new File(
-                    USER_DIR_MY_DOCUMENTS), "user.dir.my_documents", false,
+                    USER_DIR_MY_DOCUMENTS), "user.dir.documents", false,
                     "user.dir.documents");
             }
 
             if (USER_DIR_MY_MUSIC != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundMusic = addTargetDirectory(new File(USER_DIR_MY_MUSIC),
-                    "user.dir.my_music", false, "user.dir.music");
+                    "user.dir.music", false, "user.dir.music");
             }
             if (USER_DIR_MY_PICTURES != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
                 foundPictures = addTargetDirectory(new File(
-                    USER_DIR_MY_PICTURES), "user.dir.my_pictures", false,
+                    USER_DIR_MY_PICTURES), "user.dir.pictures", false,
                     "user.dir.pictures");
             }
             if (USER_DIR_MY_VIDEOS != null) {
                 // #2203 Use same placeholder as on Vista or Win 7
-                foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
+   foundVideos = addTargetDirectory(new File(USER_DIR_MY_VIDEOS),
                     "user.dir.my_videos", false, "user.dir.videos");
             }
         }
