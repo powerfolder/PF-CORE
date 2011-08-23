@@ -40,6 +40,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -177,8 +178,12 @@ public class StatusBar extends PFUIComponent implements UIPanel {
             public void mouseClicked(MouseEvent e) {
                 // open connect dialog
                 if (getController().getNodeManager().isStarted()) {
-                    PFWizard.openLoginWizard(getController(), getController()
-                        .getOSClient());
+                    boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                        .getValueBoolean(getController());
+                    if (changeLoginAllowed) {
+                        PFWizard.openLoginWizard(getController(),
+                            getController().getOSClient());
+                    }
                 } else if (!ProUtil.isRunningProVersion()) {
                     // Smells like hack(tm).
                     new FreeLimitationDialog(getController()).open();
