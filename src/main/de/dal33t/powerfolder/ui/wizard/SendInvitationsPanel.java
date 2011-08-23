@@ -76,6 +76,7 @@ import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.compare.MemberComparator;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -386,7 +387,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     }
 
     private Set<Member> getCandidates() {
-        Set<Member> candidate = new TreeSet<Member>();
+        Set<Member> candidate = new TreeSet<Member>(MemberComparator.NICK);
         for (Member friend : getController().getNodeManager().getFriends()) {
             candidate.add(friend);
         }
