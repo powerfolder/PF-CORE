@@ -436,6 +436,9 @@ public class AboutDialog extends PFUIComponent {
             });
         }
         activateButton.setBackground(Color.WHITE);
+        boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+            .getValueBoolean(getController());
+        activateButton.setEnabled(changeLoginAllowed);
         return activateButton;
     }
 
