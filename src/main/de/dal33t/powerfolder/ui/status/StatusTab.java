@@ -208,8 +208,12 @@ public class StatusTab extends PFUIComponent {
         onlineStorageAccountLabel = new ActionLabel(getController(),
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    PFWizard.openLoginWizard(getController(), getController()
-                        .getOSClient());
+                    boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                        .getValueBoolean(getController());
+                    if (changeLoginAllowed) {
+                        PFWizard.openLoginWizard(getController(),
+                            getController().getOSClient());
+                    }
                 }
             });
         onlineStorageAccountLabel.getUIComponent().setBorder(
