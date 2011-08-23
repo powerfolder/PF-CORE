@@ -100,7 +100,7 @@ public enum Feature {
     /**
      * #2327
      */
-    TYPICAL_FOLDERS(false),
+    TYPICAL_FOLDERS(true),
 
     /**
      * #2051: Disable email client directories until fully supported.
