@@ -136,7 +136,7 @@ public class NodeManagerModel extends PFUIComponent {
      */
     private void rebuildSet() {
         Collection<Member> nodeCollection = nodeManager.getNodesAsCollection();
-        Set<Member> newSet = new TreeSet<Member>();
+        Set<Member> newSet = new TreeSet<Member>(MemberComparator.NICK);
         for (Member node : nodeCollection) {
             if (required(node)) {
                 newSet.add(node);
