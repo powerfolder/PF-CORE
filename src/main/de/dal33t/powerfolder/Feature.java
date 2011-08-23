@@ -98,11 +98,6 @@ public enum Feature {
     CREDITS_SYSTEM(false),
 
     /**
-     * #2327
-     */
-    TYPICAL_FOLDERS(true),
-
-    /**
      * #2051: Disable email client directories until fully supported.
      */
     USER_DIRECTORIES_EMAIL_CLIENTS(false),
