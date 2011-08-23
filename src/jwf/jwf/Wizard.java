@@ -6,10 +6,10 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -25,8 +25,8 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.CursorUtils;
+import de.dal33t.powerfolder.ui.Icons;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -64,7 +64,7 @@ public class Wizard extends JPanel implements ActionListener {
     private final JButton cancelButton = new JButton("Cancel");
     private final JButton helpButton = new JButton("Help");
 
-    private final Set<WizardListener> listeners = new TreeSet<WizardListener>();
+    private final Set<WizardListener> listeners = new HashSet<WizardListener>();
 
     private Stack<WizardPanel> previous;
     private WizardPanel current;
