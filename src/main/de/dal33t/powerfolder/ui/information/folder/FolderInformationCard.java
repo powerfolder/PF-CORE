@@ -249,6 +249,7 @@ public class FolderInformationCard extends InformationCard {
         if (getController().isBackupOnly()) {
             // Create component anyways to stop UI exceptions if mode changes.
             membersTab.getUIComponent();
+            settingsTab.getUIComponent();
         } else {
             tabbedPane.addTab(Translation
                 .getTranslation("folder_information_card.members.title"),
