@@ -172,7 +172,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private DelayedUpdater syncUpdater;
     private DelayedUpdater folderUpdater;
     private DelayedUpdater folderDetailsUpdater;
-    
+
     private boolean folderInCloud;
     private Date lastFetch;
 
@@ -432,7 +432,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             row += 2;
 
             lowerBuilder.add(localDirectoryLabel.getUIComponent(),
-                cc.xy(5, row));
+                cc.xy(2, row));
 
         } else {
             lowerBuilder.add(membersLabel.getUIComponent(), cc.xy(2, row));
@@ -503,8 +503,11 @@ public class ExpandableFolderView extends PFUIComponent implements
         inviteAction = new MyInviteAction(getController());
         openSettingsInformationAction = new MyOpenSettingsInformationAction(
             getController());
+        openSettingsInformationAction.setEnabled(!getController()
+            .isBackupOnly());
         MyMoveLocalFolderAction moveLocalFolderAction = new MyMoveLocalFolderAction(
             getController());
+        moveLocalFolderAction.setEnabled(!getController().isBackupOnly());
         openMembersInformationAction = new MyOpenMembersInformationAction(
             getController());
         mostRecentChangesAction = new MyMostRecentChangesAction(getController());
@@ -592,6 +595,12 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updatePermissions() {
+        if (getController().isBackupOnly()) {
+            backupOnlineStorageAction.setEnabled(false);
+            stopOnlineStorageAction.setEnabled(false);
+            inviteAction.setEnabled(false);
+            return;
+        }
         // Update permissions
         Permission folderAdmin = FolderPermission.admin(folderInfo);
         backupOnlineStorageAction.allowWith(folderAdmin);
@@ -602,10 +611,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     private void updateLocalButtons() {
         boolean enabled = type == ExpandableFolderModel.Type.Local;
 
-        openSettingsInformationButton.setEnabled(enabled);
-        transferModeLabel.setEnabled(enabled);
-        localDirectoryLabel.setEnabled(enabled);
-        openSettingsInformationAction.setEnabled(enabled);
+        openSettingsInformationButton.setEnabled(enabled&& !getController().isBackupOnly());
+        transferModeLabel.setEnabled(enabled&& !getController().isBackupOnly());
+        localDirectoryLabel.setEnabled(enabled && !getController().isBackupOnly());
+        openSettingsInformationAction.setEnabled(enabled && !getController().isBackupOnly());
 
         openFilesInformationButton.setEnabled(enabled);
         openFilesInformationAction.setEnabled(enabled);
