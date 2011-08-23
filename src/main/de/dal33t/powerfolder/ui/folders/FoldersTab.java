@@ -111,14 +111,15 @@ public class FoldersTab extends PFUIComponent {
         tellFriendLabel.getUIComponent().setBorder(
             Borders.createEmptyBorder("3dlu, 6px, 4px, 3dlu"));
 
-        autoAcceptCB = new JCheckBox(Translation.getTranslation(
-                "folders_tab.auto_accept.text"));
-        autoAcceptCB.setToolTipText(Translation.getTranslation(
-                "folders_tab.auto_accept.tip"));
+        autoAcceptCB = new JCheckBox(
+            Translation.getTranslation("folders_tab.auto_accept.text"));
+        autoAcceptCB.setToolTipText(Translation
+            .getTranslation("folders_tab.auto_accept.tip"));
         autoAcceptCB.addActionListener(new MyActionListener());
-        autoAcceptCB.setSelected(ConfigurationEntry.AUTO_ACCEPT_INVITE.
-                getValueBoolean(getController()));
-
+        autoAcceptCB.setSelected(ConfigurationEntry.AUTO_ACCEPT_INVITE
+            .getValueBoolean(getController())
+            && !getController().isBackupOnly());
+        autoAcceptCB.setVisible(!getController().isBackupOnly());
 
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
@@ -257,9 +258,19 @@ public class FoldersTab extends PFUIComponent {
     }
 
     private class MyLoginAction extends AbstractAction {
+        public MyLoginAction() {
+            boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                .getValueBoolean(getController());
+            setEnabled(changeLoginAllowed);
+        }
+
         public void actionPerformed(ActionEvent e) {
-            PFWizard.openLoginWizard(getController(), getController()
-                .getOSClient());
+            boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
+                .getValueBoolean(getController());
+            if (changeLoginAllowed) {
+                PFWizard.openLoginWizard(getController(), getController()
+                    .getOSClient());
+            }
         }
     }
 
