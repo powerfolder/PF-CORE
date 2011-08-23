@@ -975,7 +975,8 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updateIconAndOS() {
-
+        boolean osComponentVisible = PreferencesEntry.USE_ONLINE_STORAGE
+            .getValueBoolean(getController()) && !getController().isBackupOnly();
         if (type == ExpandableFolderModel.Type.Local) {
             boolean preview = folder.isPreviewOnly();
             if (preview) {
@@ -988,9 +989,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton
                     .setToolTipText(Translation
                         .getTranslation("exp_folder_view.folder_local_online_text"));
-                osComponent.getUIComponent().setVisible(
-                    PreferencesEntry.USE_ONLINE_STORAGE
-                        .getValueBoolean(getController()));
+                osComponent.getUIComponent().setVisible(osComponentVisible);
             } else {
                 primaryButton.setIcon(Icons.getIconById(Icons.LOCAL_FOLDER));
                 primaryButton.setToolTipText(Translation
@@ -1005,16 +1004,12 @@ public class ExpandableFolderView extends PFUIComponent implements
             primaryButton.setIcon(Icons.getIconById(Icons.ONLINE_FOLDER));
             primaryButton.setToolTipText(Translation
                 .getTranslation("exp_folder_view.folder_online_text"));
-            osComponent.getUIComponent().setVisible(
-                PreferencesEntry.USE_ONLINE_STORAGE
-                    .getValueBoolean(getController()));
+            osComponent.getUIComponent().setVisible(osComponentVisible);
         }
 
         if (folder != null && folder.isPreviewOnly()) {
             osComponent.getUIComponent().setVisible(false);
         } else {
-            Boolean osComponentVisible = PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController());
             osComponent.getUIComponent().setVisible(osComponentVisible);
             if (osComponentVisible) {
                 double sync = 0;
