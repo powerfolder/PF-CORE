@@ -257,16 +257,15 @@ public class FolderInformationCard extends InformationCard {
                 .getIconById(Icons.NODE_CONNECTED));
             tabbedPane.setToolTipTextAt(getMembersTabIndex(), Translation
                 .getTranslation("folder_information_card.members.tips"));
+            
+            tabbedPane.addTab(Translation
+                .getTranslation("folder_information_card.settings.title"),
+                settingsTab.getUIComponent());
+            tabbedPane.setIconAt(getSettingsTabIndex(), Icons
+                .getIconById(Icons.SETTINGS));
+            tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
+                .getTranslation("folder_information_card.settings.tips"));
         }
-
-        tabbedPane.addTab(Translation
-            .getTranslation("folder_information_card.settings.title"),
-            settingsTab.getUIComponent());
-        tabbedPane.setIconAt(getSettingsTabIndex(), Icons
-            .getIconById(Icons.SETTINGS));
-        tabbedPane.setToolTipTextAt(getSettingsTabIndex(), Translation
-            .getTranslation("folder_information_card.settings.tips"));
-
     }
 
     /**
