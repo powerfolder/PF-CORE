@@ -2552,8 +2552,8 @@ public class Folder extends PFComponent {
         }
 
         if (isFine()) {
-            logFine("File was deleted by " + member + ", deleting local: "
-                + localFile.toDetailString() + " at "
+            logFine("File was deleted by " + remoteFile.getModifiedBy()
+                + ", deleting local: " + localFile.toDetailString() + " at "
                 + localCopy.getAbsolutePath());
         }
 
