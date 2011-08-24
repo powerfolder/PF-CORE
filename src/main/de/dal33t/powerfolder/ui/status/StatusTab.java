@@ -451,6 +451,7 @@ public class StatusTab extends PFUIComponent {
 
         ActionLabel newFolderLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFolderWizardAction());
+        newFolderLink.convertToBigLabel();
         JComponent newFolderLinkComponent = newFolderLink.getUIComponent();
 
         // Set the links to the height of a checkbox,
@@ -471,6 +472,7 @@ public class StatusTab extends PFUIComponent {
             ActionLabel searchComputerLink = new ActionLabel(getController(), 
                     getApplicationModel().getActionModel().getFindComputersAction());
             JComponent searchComputerLinkComponent = searchComputerLink.getUIComponent();
+            searchComputerLink.convertToBigLabel();
             searchComputerLinkComponent.setMinimumSize(new Dimension(
                     (int) searchComputerLinkComponent.getMinimumSize().getWidth(),
                     dummyHeight));

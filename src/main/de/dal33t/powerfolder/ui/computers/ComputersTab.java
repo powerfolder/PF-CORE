@@ -123,7 +123,7 @@ public class ComputersTab extends PFUIComponent {
     private JPanel createToolBar() {
         ActionLabel searchComputerLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFindComputersAction());
-
+        searchComputerLink.convertToBigLabel();
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);

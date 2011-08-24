@@ -215,9 +215,10 @@ public class FoldersTab extends PFUIComponent {
     private JPanel createToolBar() {
         ActionLabel folderWizardLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getFolderWizardAction());
+        folderWizardLink.convertToBigLabel();
         ActionLabel newFolderLink = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
-
+        newFolderLink.convertToBigLabel();
         FormLayout layout = new FormLayout("3dlu, pref, 3dlu, pref, 3dlu:grow, pref, 3dlu",
             "pref");
         PanelBuilder builder = new PanelBuilder(layout);
