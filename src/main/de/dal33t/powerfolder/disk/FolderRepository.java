@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1297,18 +1298,27 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     // Callbacks from ServerClient on login ***********************************
 
+    private ReentrantLock accountSyncLock = new ReentrantLock();
+    
     public void updateFolders(Account a) {
         Reject.ifNull(a, "Account");
         if (getController().getMySelf().isServer()) {
             return;
         }
 
-        Collection<FolderInfo> created = createLocalFolders(a);
-
-        if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController()))
-        {
-            removeLocalFolders(a, created);
+        accountSyncLock.lock();
+        try {
+            logInfo("Syncing folder setup with account permissions("
+                + a.getFolders().size() + "): " + a.getUsername() + ", "
+                + a.getFolders());
+            Collection<FolderInfo> created = createLocalFolders(a);
+            if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
+                .getValueBoolean(getController()))
+            {
+                removeLocalFolders(a, created);
+            }
+        } finally {
+            accountSyncLock.unlock();
         }
     }
 
