@@ -56,7 +56,7 @@ public class PersistentTaskManager extends PFComponent {
      * Pending tasks that await initialization.
      */
     private List<PersistentTask> pendingTasks;
-    private boolean shuttingDown = false;
+    private volatile boolean shuttingDown = false;
 
     public PersistentTaskManager(Controller controller) {
         super(controller);
