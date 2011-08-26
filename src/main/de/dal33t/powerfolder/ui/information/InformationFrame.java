@@ -30,7 +30,7 @@ import javax.swing.WindowConstants;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.MagneticFrame;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -47,7 +47,7 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 /**
  * The information window.
  */
-public class InformationFrame extends MagneticFrame {
+public class InformationFrame extends PFUIComponent {
 
     private JFrame uiComponent;
 

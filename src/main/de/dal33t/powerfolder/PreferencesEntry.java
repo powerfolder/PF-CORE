@@ -98,11 +98,6 @@ public enum PreferencesEntry {
      */
     SERVER_REMEMBER_PASSWORD("server_remind_password", true),
 
-    /**
-     * Whether to use magnetic frames by default (i.e. not with ctrl key)
-     */
-    USE_MAGNETIC_FRAMES("use.magnetic.frames", true),
-
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
 
     AUTO_EXPAND("auto.expand", false),

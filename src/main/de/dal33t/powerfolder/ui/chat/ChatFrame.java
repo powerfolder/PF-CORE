@@ -46,8 +46,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.MagneticFrame;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.event.NodeManagerAdapter;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -59,7 +59,7 @@ import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 /**
  * The information window.
  */
-public class ChatFrame extends MagneticFrame {
+public class ChatFrame extends PFUIComponent {
 
     private JFrame uiComponent;
     private final JTabbedPane tabbedPane;

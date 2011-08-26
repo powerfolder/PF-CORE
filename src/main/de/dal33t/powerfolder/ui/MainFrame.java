@@ -22,19 +22,12 @@ package de.dal33t.powerfolder.ui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowStateListener;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -54,7 +47,6 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFUIComponent;
@@ -89,9 +81,6 @@ public class MainFrame extends PFUIComponent {
     public static final int MIN_WIDTH = PreferencesEntry.MAIN_FRAME_WIDTH
         .getDefaultValueInt();
 
-    private final AtomicBoolean controlKeyDown = new AtomicBoolean();
-    private final AtomicInteger oldX = new AtomicInteger();
-    private final AtomicInteger oldY = new AtomicInteger();
     /**
      * The width of the main tabbed pane when in NORMAL state
      */
@@ -197,9 +186,6 @@ public class MainFrame extends PFUIComponent {
 
         relocateIfNecessary();
 
-        oldX.set(uiComponent.getX());
-        oldY.set(uiComponent.getY());
-
         // everything is decided in window listener
         uiComponent
             .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -274,15 +260,6 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-    }
-
-    /**
-     * Must do this AFTER mainFrame is constructed else info frame may nudge and
-     * not have a reference to mainframe ui component.
-     */
-    public void attachListeners() {
-        uiComponent.addComponentListener(new MyComponentAdapter());
-        uiComponent.addMouseMotionListener(new MyMouseAdapter());
     }
 
     /**
@@ -730,53 +707,6 @@ public class MainFrame extends PFUIComponent {
 
         public boolean fireInEventDispatchThread() {
             return true;
-        }
-    }
-
-    /**
-     * Listen for control key, to use in MyComponentAdapter. // todo - This is
-     * really ugly. Does any one know a better way of detecting the contol key?
-     */
-    private class MyMouseAdapter extends MouseAdapter {
-
-        public void mouseDragged(MouseEvent e) {
-            detectControlKey(e);
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            detectControlKey(e);
-        }
-
-        public void mouseMoved(MouseEvent e) {
-            detectControlKey(e);
-        }
-
-        private void detectControlKey(MouseEvent e) {
-            controlKeyDown.set((e.getModifiers() & InputEvent.CTRL_MASK) != 0);
-        }
-    }
-
-    /**
-     * Listen to movement of the main frame.
-     */
-    private class MyComponentAdapter extends ComponentAdapter {
-
-        /**
-         * Calculate the change in movement and notify the controller.
-         * 
-         * @param e
-         */
-        public void componentMoved(ComponentEvent e) {
-            synchronized (oldX) {
-                int newX = uiComponent.getX();
-                int newY = uiComponent.getY();
-                int ox = oldX.getAndSet(uiComponent.getX());
-                int oy = oldY.getAndSet(uiComponent.getY());
-                int diffX = newX - ox;
-                int diffY = newY - oy;
-                getUIController().mainFrameMoved(controlKeyDown.get(), diffX,
-                    diffY);
-            }
         }
     }
 

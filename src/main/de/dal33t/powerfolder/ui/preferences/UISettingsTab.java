@@ -56,7 +56,6 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.util.ui.UIUtil;
 
 public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -67,7 +66,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox minToSysTrayCB;
     private JCheckBox lockUICB;
     private JCheckBox underlineLinkBox;
-    private JCheckBox magneticFrameBox;
     private JComboBox inlineInfoCombo;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
@@ -152,13 +150,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         underlineLinkBox = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(ulModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.underline_link"));
-
-        ValueModel mfModel = new ValueHolder(
-            PreferencesEntry.USE_MAGNETIC_FRAMES
-                .getValueBoolean(getController()));
-        magneticFrameBox = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(mfModel, writeTrigger),
-            Translation.getTranslation("preferences.dialog.magnetic_frame"));
 
         DefaultComboBoxModel inlineInfoCBM = new DefaultComboBoxModel();
         inlineInfoCBM.addElement(Translation
@@ -319,9 +310,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(inlineInfoCombo, cc.xy(3, row));
 
             row += 2;
-            builder.add(magneticFrameBox, cc.xyw(3, row, 2));
-
-            row += 2;
             builder.add(lockUICB, cc.xyw(3, row, 2));
 
             row += 2;
@@ -367,10 +355,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         // Use underlines
         PreferencesEntry.UNDERLINE_LINKS.setValue(getController(),
             underlineLinkBox.isSelected());
-
-        // Use magnetic frames
-        PreferencesEntry.USE_MAGNETIC_FRAMES.setValue(getController(),
-            magneticFrameBox.isSelected());
 
         if (originalInline != inlineInfoCombo.getSelectedIndex()) {
             needsRestart = true;

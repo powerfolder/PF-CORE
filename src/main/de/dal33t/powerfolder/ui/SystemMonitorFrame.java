@@ -27,7 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.plaf.RootPaneUI;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.MagneticFrame;
+import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 import de.javasoft.synthetica.addons.SystemMonitor;
@@ -36,7 +36,7 @@ import de.javasoft.synthetica.addons.systemmonitor.CollectorFactory;
 /**
  * This class displays a system monitor frame.
  */
-public class SystemMonitorFrame extends MagneticFrame {
+public class SystemMonitorFrame extends PFUIComponent {
 
     private JFrame uiComponent;
     private SystemMonitor systemMonitor;
