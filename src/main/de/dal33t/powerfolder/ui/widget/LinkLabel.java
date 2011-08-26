@@ -99,7 +99,7 @@ public class LinkLabel extends PFComponent {
     }
 
     private void setText() {
-        if (StringUtils.isBlank(text) || StringUtils.isBlank(url)) {
+        if (StringUtils.isBlank(text)) {
             uiComponent.setText(null);
             return;
         }
@@ -109,8 +109,16 @@ public class LinkLabel extends PFComponent {
         {
             Color color = ColorUtil.getTextForegroundColor();
             String rgb = ColorUtil.getRgbForColor(color);
-            uiComponent.setText("<html><font color=\"" + rgb + "\"><a href=\""
-                + url + "\">" + text + "</a></font></html>");
+            if (StringUtils.isBlank(url)) {
+                // Display link, but action listener will ignore.
+                uiComponent.setText("<html><font color=\"" + rgb +
+                        "\"><a href=\".\">" + text +
+                        "</a></font></html>");
+            } else {
+                uiComponent.setText("<html><font color=\"" + rgb +
+                        "\"><a href=\"" + url + "\">" + text +
+                        "</a></font></html>");
+            }
         } else {
             uiComponent.setText(text);
         }
