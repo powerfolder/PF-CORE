@@ -23,8 +23,6 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Locale;
 
 import javax.swing.DefaultComboBoxModel;
@@ -34,7 +32,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -50,7 +47,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -73,11 +69,8 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
     private JCheckBox underlineLinkBox;
     private JCheckBox magneticFrameBox;
     private JComboBox inlineInfoCombo;
-    private JCheckBox translucentMainFrameCB;
     private JCheckBox mainAlwaysOnTopCB;
     private JCheckBox autoExpandCB;
-    private JLabel transPercLabel;
-    private JSlider transPercSlider;
     private int originalInline;
     private JCheckBox updateCheck;
     private JCheckBox usePowerFolderLink;
@@ -180,19 +173,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
             .getValueInt(getController());
         inlineInfoCombo.setSelectedIndex(originalInline);
 
-        ValueModel transModel = new ValueHolder(
-            PreferencesEntry.TRANSLUCENT_MAIN_FRAME
-                .getValueBoolean(getController()));
-        translucentMainFrameCB = BasicComponentFactory.createCheckBox(
-            new BufferedValueModel(transModel, writeTrigger),
-            Translation.getTranslation("preferences.dialog.translucent_frame"));
-        translucentMainFrameCB.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                enableTransPerc();
-                doMainFrameTranslucency();
-            }
-        });
-
         ValueModel onTopModel = new ValueHolder(
             PreferencesEntry.MAIN_ALWAYS_ON_TOP
                 .getValueBoolean(getController()));
@@ -210,31 +190,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         autoExpandCB = BasicComponentFactory.createCheckBox(
             new BufferedValueModel(aeModel, writeTrigger),
             Translation.getTranslation("preferences.dialog.auto_expand"));
-
-        transPercSlider = new JSlider();
-        transPercSlider.setMinimum(10);
-        transPercSlider.setMaximum(90);
-        transPercSlider.setValue(PreferencesEntry.TRANSLUCENT_PERCENTAGE
-            .getValueInt(getController()));
-        transPercSlider.setMajorTickSpacing(20);
-        transPercSlider.setMinorTickSpacing(5);
-
-        transPercSlider.setPaintTicks(true);
-        transPercSlider.setPaintLabels(true);
-
-        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 10; i <= 90; i += transPercSlider.getMajorTickSpacing()) {
-            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
-        }
-        transPercSlider.setLabelTable(dictionary);
-        transPercSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                doMainFrameTranslucency();
-            }
-        });
-
-        transPercLabel = new JLabel(
-            Translation.getTranslation("preferences.dialog.translucent_text"));
 
         // Windows only...
         if (OSUtil.isWindowsSystem()) {
@@ -304,24 +259,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
     private void doMainOnTop(Boolean onTop) {
         getUIController().getMainFrame().getUIComponent().setAlwaysOnTop(onTop);
-    }
-
-    /**
-     * This temporarily sets the main frame translucency to match the controls.
-     * If user cancels out, the MainFrame's focus listener will fix things.
-     */
-    private void doMainFrameTranslucency() {
-        if (Constants.OPACITY_SUPPORTED) {
-            if (translucentMainFrameCB.isSelected()) {
-                // Translucency is 1 - opacity.
-                float opacity = 1.0f - transPercSlider.getValue() / 100.0f;
-                UIUtil.applyTranslucency(getController().getUIController()
-                    .getMainFrame().getUIComponent(), opacity);
-            } else {
-                UIUtil.applyTranslucency(getController().getUIController()
-                    .getMainFrame().getUIComponent(), 1.0f);
-            }
-        }
     }
 
     /**
@@ -403,30 +340,10 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
                 builder.add(mainAlwaysOnTopCB, cc.xyw(3, row, 2));
             }
 
-            if (Constants.OPACITY_SUPPORTED) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-
-                row += 2;
-                builder.add(translucentMainFrameCB, cc.xyw(3, row, 2));
-
-                row += 2;
-                builder.add(transPercLabel, cc.xy(1, row));
-                builder.add(transPercSlider, cc.xy(3, row));
-            }
-
             panel = builder.getPanel();
 
-            enableTransPerc();
         }
         return panel;
-    }
-
-    private void enableTransPerc() {
-        transPercLabel.setEnabled(translucentMainFrameCB.isSelected());
-        transPercSlider.setEnabled(translucentMainFrameCB.isSelected());
     }
 
     public void save() {
@@ -471,9 +388,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
         PreferencesEntry.INLINE_INFO_MODE.setValue(getController(),
             inlineInfoCombo.getSelectedIndex());
 
-        PreferencesEntry.TRANSLUCENT_MAIN_FRAME.setValue(getController(),
-            translucentMainFrameCB.isSelected());
-
         PreferencesEntry.MAIN_ALWAYS_ON_TOP.setValue(getController(),
             mainAlwaysOnTopCB.isSelected());
 
@@ -487,9 +401,6 @@ public class UISettingsTab extends PFUIComponent implements PreferenceTab {
 
         ConfigurationEntry.USER_INTERFACE_LOCKED.setValue(getController(),
             String.valueOf(lockUICB.isSelected()));
-
-        PreferencesEntry.TRANSLUCENT_PERCENTAGE.setValue(getController(),
-            transPercSlider.getValue());
 
         getController().saveConfig();
 

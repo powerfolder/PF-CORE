@@ -339,22 +339,10 @@ public class MainFrame extends PFUIComponent {
 
             public void windowGainedFocus(WindowEvent e) {
                 getUIController().setActiveFrame(UIController.MAIN_FRAME_ID);
-
-                if (Constants.OPACITY_SUPPORTED) {
-                    UIUtil.applyTranslucency(uiComponent, 1.0f);
-                }
             }
 
             public void windowLostFocus(WindowEvent e) {
-                if (Constants.OPACITY_SUPPORTED
-                    && PreferencesEntry.TRANSLUCENT_MAIN_FRAME
-                        .getValueBoolean(getController()))
-                {
-                    // Translucency is 1 - opacity.
-                    float opacity = 1.0f - PreferencesEntry.TRANSLUCENT_PERCENTAGE
-                        .getValueInt(getController()) / 100.0f;
-                    UIUtil.applyTranslucency(uiComponent, opacity);
-                }
+                // Nothing to do here.
             }
         });
         uiComponent.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));

@@ -110,12 +110,6 @@ public enum PreferencesEntry {
     /** Whether the user uses OS. If not, don't show OS stuff. */
     USE_ONLINE_STORAGE("use.os", true),
 
-    /** Percentage of translucency of main frame when lost focus. */
-    TRANSLUCENT_PERCENTAGE("translucent.percentage", 50),
-
-    /** Whether to show the main frame translucent when lost focus. */
-    TRANSLUCENT_MAIN_FRAME("translucent.main.frame", false),
-
     /** How many seconds the notification should display. */
     NOTIFICATION_DISPLAY("notification.display", 10),
 
