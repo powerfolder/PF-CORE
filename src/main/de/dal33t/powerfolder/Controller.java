@@ -903,7 +903,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     folderRepository.lookForNewFolders();
                 }
-            }, 60L, 10L, TimeUnit.SECONDS);
+            }, 30L, 10L, TimeUnit.SECONDS);
         }
 
         // ============
