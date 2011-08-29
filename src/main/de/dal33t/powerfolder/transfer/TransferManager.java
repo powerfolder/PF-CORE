@@ -2815,9 +2815,10 @@ public class TransferManager extends PFComponent {
             logFine("Test availability upload rate "
                 + Format.formatBytesShort(uploadRate) + "/s");
         }
-        // Update bandwidth provider with 80% of new rates.
+        // Update bandwidth provider with 90% of new rates.
+        // By experience: Measured rates usually lower than actual speed.
         long modifiedDownloadRate = 90 * downloadRate / 100;
-        long modifiedUploadRate = 80 * uploadRate / 100;
+        long modifiedUploadRate = 90 * uploadRate / 100;
 
         logInfo("Speed test finished: Download "
             + Format.formatBytesShort(downloadRate) + "/s, Upload "
