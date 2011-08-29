@@ -139,7 +139,7 @@ public class RequestExecutor extends PFComponent {
                 return;
             }
             // Break request
-            notifyAndcleanup();
+            // notifyAndcleanup();
         }
 
         @Override
