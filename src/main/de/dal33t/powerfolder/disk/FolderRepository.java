@@ -1193,7 +1193,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     boolean known = false;
                     for (Folder folder : getFolders()) {
                         File localBase = folder.getLocalBase();
-                        if (localBase.equals(file)) {
+                        if (localBase.equals(file)
+                            || localBase.getAbsolutePath().startsWith(
+                                file.getAbsolutePath()))
+                        {
                             known = true;
                             break;
                         }
@@ -1242,6 +1245,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
             }
+
+            logInfo("Auto-created new folder: " + folder + " @ "
+                + folder.getLocalBase());
 
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(fi));
