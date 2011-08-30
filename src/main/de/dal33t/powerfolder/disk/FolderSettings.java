@@ -367,11 +367,6 @@ public class FolderSettings {
             .getProperty(FOLDER_SETTINGS_PREFIX_V4 + entryId
                 + FOLDER_SETTINGS_SYNC_PROFILE);
 
-        // Migration for #603
-        if ("autodownload_friends".equals(syncProfConfig)) {
-            syncProfConfig = SyncProfile.AUTO_DOWNLOAD_FRIENDS.getFieldList();
-        }
-
         SyncProfile syncProfile;
         if (PRE_777_BACKUP_TARGET_FIELD_LIST.equals(syncProfConfig)) {
             // Migration for #787 (backup target timeBetweenScans changed

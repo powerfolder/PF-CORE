@@ -78,14 +78,17 @@ public class SyncProfile implements Serializable {
      * Host files preset profile.
      */
     public static final SyncProfile HOST_FILES = new SyncProfile("host_files",
-        false, new SyncProfileConfiguration(false, false, false, false, 30));
+        false, new SyncProfileConfiguration(false, false, false, false, 30,
+            false, 12, 1, SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES,
+            true));
 
     /**
      * Automatic download preset profile.
      */
     public static final SyncProfile AUTOMATIC_DOWNLOAD = new SyncProfile(
         "automatic_download", false, new SyncProfileConfiguration(true, true,
-            false, false, 30));
+            false, false, 30, false, 12, 1,
+            SyncProfileConfiguration.REGULAR_TIME_TYPE_MINUTES, true));
 
     /**
      * Automatic synchronization preset profile. Uses JNotify to do instant.
@@ -122,11 +125,6 @@ public class SyncProfile implements Serializable {
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
         BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
-
-    /** Migration for #603 */
-    public static final SyncProfile AUTO_DOWNLOAD_FRIENDS = new SyncProfile(
-        "autodownload_friends", false, new SyncProfileConfiguration(true, true,
-            true, false, 30));
 
     /** Special no-sync profile for preview folders. Same config as PROJECT_WORK */
     public static final SyncProfile NO_SYNC = new SyncProfile("no_sync", false,
