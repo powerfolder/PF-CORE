@@ -150,8 +150,7 @@ public class MainFrame extends PFUIComponent {
         split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         split.setOneTouchExpandable(false);
 
-        uiComponent.getContentPane().add(
-            GradientPanel.create(builder.getPanel()));
+        uiComponent.getContentPane().add(builder.getPanel());
         uiComponent.setBackground(Color.white);
         uiComponent.setResizable(true);
 
