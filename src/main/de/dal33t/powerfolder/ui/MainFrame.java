@@ -138,7 +138,7 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(menuBar, cc.xyw(1, 1, 4));
 
-        builder.add(logoLabel, cc.xy(1, 2));
+        builder.add(logoLabel, cc.xyw(1, 2, 4));
         builder.add(inlineInfoLabel, cc.xy(2, 2, CellConstraints.DEFAULT,
             CellConstraints.BOTTOM));
         builder.add(inlineInfoCloseButton, cc.xy(4, 2, CellConstraints.DEFAULT,
