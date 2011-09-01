@@ -56,7 +56,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
         String filename = getController().getConfigName() + ".stats";
         File file = new File(Controller.getMiscFilesLocation(), filename);
         if (file.exists()) {
-            logInfo("Loading stats");
+            logFiner("Loading stats");
             ObjectInputStream inputStream = null;
             try {
                 inputStream = new ObjectInputStream(
@@ -65,7 +65,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                     .readObject();
                 coalescedStats.putAll(stats);
                 inputStream.close();
-                logInfo("Loaded " + stats.size() + " stats.");
+                logFine("Loaded " + stats.size() + " stats.");
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
             } catch (IOException e) {
@@ -84,7 +84,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                 }
             }
         } else {
-            logInfo("No stats found - probably first start of PF.");
+            logFine("No stats found - probably first start of PF.");
         }
     }
 
@@ -126,7 +126,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                 }
             }
         }
-        logInfo("Pruned " + prunedCount + " stats.");
+        logFiner("Pruned " + prunedCount + " stats.");
     }
 
     /**
