@@ -569,7 +569,7 @@ public class ServerClient extends PFComponent {
             }
             AccountDetails newAccountDetails = securityService
                 .getAccountDetails();
-            logFine("Login to server " + server.getReconnectAddress()
+            logInfo("Login to server " + server.getReconnectAddress()
                 + " (user " + theUsername + ") result: " + newAccountDetails);
             if (newAccountDetails != null) {
                 accountDetails = newAccountDetails;
