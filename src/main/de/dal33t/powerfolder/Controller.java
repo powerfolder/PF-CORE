@@ -105,7 +105,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.0"; // 3.5.16
+    public static final String PROGRAM_VERSION = "4.9.3"; // 3.5.21
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -2077,8 +2077,7 @@ public class Controller extends PFComponent {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
-        if (OSUtil.isWindowsSystem()
-            && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
+        if (OSUtil.isWindowsSystem())
         {
             String appData;
             if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
@@ -2148,7 +2147,7 @@ public class Controller extends PFComponent {
             log.severe("Failed to create " + windowsBaseDir.getAbsolutePath());
         }
         try {
-            FileUtils.recursiveCopy(unixBaseDir, windowsBaseDir);
+            FileUtils.recursiveMove(unixBaseDir, windowsBaseDir);
             log.warning("Migrated config from " + unixBaseDir + " to "
                 + windowsBaseDir);
             return true;
