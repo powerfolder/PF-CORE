@@ -344,8 +344,8 @@ public class SecurityManagerClient extends PFComponent implements
                     + " nodes");
             }
             if (reqNodes.size() > 50) {
-                logWarning("Pre-fetching account infos for " + nodes.size()
-                    + " nodes");
+                logWarning("Pre-fetching account infos for many nodes ("
+                    + nodes.size() + ")");
             }
             Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                 .getAccountInfos(reqNodes);
