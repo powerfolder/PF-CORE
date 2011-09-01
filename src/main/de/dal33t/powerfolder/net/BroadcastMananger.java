@@ -330,19 +330,23 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         InetSocketAddress address = new InetSocketAddress(packet.getAddress(),
             port);
+        receivedBroadcastsFrom.add(packet.getAddress());
         Member node = getController().getNodeManager().getNode(id);
-        if (node == null || (!node.isMySelf() && !node.isConnected())) {
-            receivedBroadcastsFrom.add(packet.getAddress());
+        if (node == null
+            || (!node.isMySelf() && !node.isConnected() && !node.isConnecting()))
+        {
             logFine("Found user on local network: " + address
                 + ((node != null) ? ", " + node : ""));
             try {
-                if (getController().isStarted()) {
+                // Dont connect outbound to clients as server.
+                if (getController().isStarted()
+                    && !getController().getMySelf().isServer())
+                {
                     // found another new node!!!
                     node = getController().connect(address);
                     node.setOnLAN(true);
                     return true;
                 }
-
             } catch (ConnectionException e) {
                 logWarning("Unable to connect to node on subnet: " + address
                     + ". " + e);
