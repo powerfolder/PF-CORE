@@ -184,7 +184,7 @@ public abstract class AbstractDistribution extends Loggable implements
      * C:\Users\sprajc\myDir.
      * 
      * @param c
-     * @param replacement
+     * @param myDir e.g. "MySierraCloud"
      */
     protected static final void setFoldersBaseDirName(Controller c, String myDir)
     {
