@@ -562,19 +562,12 @@ public class ReconnectManager extends PFComponent {
                                 && otherNodeInfo
                                     .isOnSameNetwork(getController()))
                             {
+                                Member otherNode = otherNodeInfo.getNode(
+                                    getController(), true);
+                                boolean rec = considerReconnectionTo(otherNode);
                                 logFine("Invalid identity from " + currentNode
-                                    + ". Triing to connect to IP. " + e);
-                                logFiner(e);
-                                try {
-                                    ConnectionHandler conHan = getController()
-                                        .getIOProvider()
-                                        .getConnectionHandlerFactory()
-                                        .tryToConnect(otherNodeInfo);
-                                    getController().getNodeManager()
-                                        .acceptConnection(conHan);
-                                } catch (ConnectionException e1) {
-                                    logFiner(e1);
-                                }
+                                    + ". Found: " + otherNode
+                                    + ". Going to reconned it ? " + rec);
                             }
                         }
                     } else {
