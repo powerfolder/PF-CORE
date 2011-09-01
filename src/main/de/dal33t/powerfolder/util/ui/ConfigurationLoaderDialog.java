@@ -317,6 +317,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 getController().saveConfig();
                 preConfig = ConfigurationLoader.loadPreConfiguration(input);
             } catch (IOException e) {
+                logWarning("Unable to load config from " + input + ": " + e);
                 if (StringUtils.isNotBlank(input)) {
                     // Try to connect via TCP directly
                     Socket socket = new Socket();
