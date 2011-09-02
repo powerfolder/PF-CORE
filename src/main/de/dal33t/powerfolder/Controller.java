@@ -105,7 +105,7 @@ public class Controller extends PFComponent {
     /**
      * Program version. include "dev" if its a development version.
      */
-    public static final String PROGRAM_VERSION = "4.9.3"; // 3.5.21
+    public static final String PROGRAM_VERSION = "4.9.4 - 3.5.23"; // 3.5.23
 
     /**
      * the (java beans like) property, listen to changes of the networking mode
@@ -957,7 +957,7 @@ public class Controller extends PFComponent {
      *            start up.
      */
     private void performHousekeeping(boolean midnightRun) {
-        log.info("Performing housekeeping " + midnightRun);
+        log.fine("Performing housekeeping " + midnightRun);
         Date now = new Date();
         if (midnightRun) {
 
@@ -2077,7 +2077,8 @@ public class Controller extends PFComponent {
         File base;
         File unixConfigDir = new File(System.getProperty("user.home")
             + "/.PowerFolder");
-        if (OSUtil.isWindowsSystem())
+        if (OSUtil.isWindowsSystem()
+            && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
         {
             String appData;
             if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
