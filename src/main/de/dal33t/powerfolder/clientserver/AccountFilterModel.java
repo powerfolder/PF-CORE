@@ -40,7 +40,6 @@ public class AccountFilterModel extends Model {
 
     private boolean disabledOnly;
     private boolean proUsersOnly;
-    private boolean payingOSOnly;
     private boolean activeTrial;
     private String username;
 
@@ -76,16 +75,6 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_PRO_USERS_ONLY, oldValue, this.proUsersOnly);
     }
 
-    public boolean isPayingOSOnly() {
-        return payingOSOnly;
-    }
-
-    public void setPayingOSOnly(boolean nonTrial) {
-        Object oldValue = isPayingOSOnly();
-        this.payingOSOnly = nonTrial;
-        firePropertyChange(PROPERTY_PAYING_OS_ONLY, oldValue, this.payingOSOnly);
-    }
-
     public boolean isActiveTrial() {
         return activeTrial;
     }
@@ -111,7 +100,6 @@ public class AccountFilterModel extends Model {
     public void reset() {
         activeTrial = false;
         disabledOnly = false;
-        payingOSOnly = false;
         proUsersOnly = false;
         username = null;
         maxResults = 0;
@@ -120,9 +108,6 @@ public class AccountFilterModel extends Model {
     public boolean matches(Account account) {
         Reject.ifNull(account, "Account is null");
         if (disabledOnly && !account.getOSSubscription().isDisabled()) {
-            return false;
-        }
-        if (payingOSOnly && account.getOSSubscription().isTrial()) {
             return false;
         }
         if (proUsersOnly && !account.isProUser()) {
@@ -136,8 +121,7 @@ public class AccountFilterModel extends Model {
             }
         }
         if (activeTrial) {
-            return account.getOSSubscription().isTrial()
-                && !account.getOSSubscription().isDisabledExpiration();
+            return !account.getOSSubscription().isDisabledExpiration();
         }
         return true;
     }
