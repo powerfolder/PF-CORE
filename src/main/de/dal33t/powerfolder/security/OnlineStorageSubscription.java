@@ -44,7 +44,6 @@ public class OnlineStorageSubscription implements Serializable {
     public static final int UNLIMITED_GB = 9999;
 
     public static final String PROPERTY_TYPE = "type";
-    public static final String PROPERTY_TRIAL = "trial";
     public static final String PROPERTY_STORAGE_SIZE = "storageSize";
     public static final String PROPERTY_STORAGE_SIZE_GB = "storageSizeGB";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
@@ -53,7 +52,6 @@ public class OnlineStorageSubscription implements Serializable {
     public static final String PROPERTY_DISABLED_EXPIRATION_DATE = "disabledExpirationDate";
 
     private long storageSize;
-    private boolean trial;
 
     private Date validFrom;
     private Date validTill;
@@ -242,17 +240,6 @@ public class OnlineStorageSubscription implements Serializable {
         return (int) (getStorageSize() / 1024 / 1024 / 1024);
     }
 
-    public void setTrial(boolean trial) {
-        Object oldValue = isTrial();
-        this.trial = trial;
-        // firePropertyChange(PROPERTY_TRIAL, oldValue, this.trial);
-        setTypeLegacy();
-    }
-
-    public boolean isTrial() {
-        return trial;
-    }
-
     public String getDescription() {
         if (isUnlimited()) {
             return "Unlimited";
@@ -284,10 +271,8 @@ public class OnlineStorageSubscription implements Serializable {
     public void setType(OnlineStorageSubscriptionType type) {
         if (type != null) {
             setStorageSize(type.getStorageSize());
-            setTrial(type.isTrial());
         } else {
             setStorageSize(0);
-            setTrial(false);
         }
         Object oldValue = type;
         this.type = type;
@@ -295,9 +280,7 @@ public class OnlineStorageSubscription implements Serializable {
     }
 
     private OnlineStorageSubscriptionType findLegacyType() {
-        OnlineStorageSubscriptionType best = isTrial()
-            ? OnlineStorageSubscriptionType.TRIAL_5GB
-            : OnlineStorageSubscriptionType.UNLIMITED;
+        OnlineStorageSubscriptionType best = OnlineStorageSubscriptionType.UNLIMITED;
         for (OnlineStorageSubscriptionType legacyType : OnlineStorageSubscriptionType
             .values())
         {
@@ -305,8 +288,7 @@ public class OnlineStorageSubscription implements Serializable {
                 continue;
             }
             if (legacyType.getStorageSize() >= getStorageSize()
-                && legacyType.getStorageSize() < best.getStorageSize()
-                && (isTrial() == legacyType.isTrial()))
+                && legacyType.getStorageSize() < best.getStorageSize())
             {
                 best = legacyType;
             }
@@ -318,9 +300,6 @@ public class OnlineStorageSubscription implements Serializable {
     public String toString() {
         StringBuilder b = new StringBuilder("OS Subscription ");
         b.append(getDescription());
-        if (trial) {
-            b.append(" (trial)");
-        }
         if (validTill != null) {
             b.append(" valid till " + validTill);
         } else {
