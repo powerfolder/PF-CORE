@@ -38,7 +38,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -81,11 +80,11 @@ public class FoldersList extends PFUIComponent {
     private JLabel localLabel;
     private JLabel localIcon;
 
-    private boolean collapseTypical = true;
+    private boolean collapseTypical;
     private JLabel typicalLabel;
     private JLabel typicalIcon;
 
-    private boolean collapseOnline = false;
+    private boolean collapseOnline;
     private JLabel onlineLabel;
     private JLabel onlineIcon;
 
@@ -101,6 +100,12 @@ public class FoldersList extends PFUIComponent {
         super(controller);
         empty = true;
         this.foldersTab = foldersTab;
+        collapseLocal = PreferencesEntry.FOLDER_LOCAL_COLLAPSED.
+                getValueBoolean(getController());
+        collapseTypical = PreferencesEntry.FOLDER_TYPICAL_COLLAPSED.
+                getValueBoolean(getController());
+        collapseOnline = PreferencesEntry.FOLDER_ONLINE_COLLAPSED.
+                getValueBoolean(getController());
         transfersUpdater = new DelayedUpdater(getController());
         foldersUpdater = new DelayedUpdater(getController());
         expansionListener = new MyExpansionListener();
@@ -369,6 +374,15 @@ public class FoldersList extends PFUIComponent {
         for (ExpandableFolderView view : views) {
             view.updateProblems();
         }
+    }
+
+    public void storeValues() {
+        PreferencesEntry.FOLDER_LOCAL_COLLAPSED.setValue(getController(),
+                collapseLocal);
+        PreferencesEntry.FOLDER_TYPICAL_COLLAPSED.setValue(getController(),
+                collapseTypical);
+        PreferencesEntry.FOLDER_ONLINE_COLLAPSED.setValue(getController(),
+                collapseOnline);
     }
 
     // /////////////////

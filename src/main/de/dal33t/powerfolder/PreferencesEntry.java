@@ -151,7 +151,13 @@ public enum PreferencesEntry {
      */
     SHOW_TYPICAL_FOLDERS("show.typical.folders", true),
 
-    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true);
+    DISPLAY_POWERFOLDERS_SHORTCUT("display.powerfolders.shortcut", true),
+
+    FOLDER_LOCAL_COLLAPSED("folder.local.collapsed", false),
+
+    FOLDER_TYPICAL_COLLAPSED("folder.typical.collapsed", true),
+    
+    FOLDER_ONLINE_COLLAPSED("folder.online.collapsed", false);
 
     /** String, Boolean, Integer */
     private Class type;

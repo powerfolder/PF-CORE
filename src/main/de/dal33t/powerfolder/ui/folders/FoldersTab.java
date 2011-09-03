@@ -243,6 +243,10 @@ public class FoldersTab extends PFUIComponent {
         getController().saveConfig();
     }
 
+    public void storeValues() {
+        foldersList.storeValues();
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////

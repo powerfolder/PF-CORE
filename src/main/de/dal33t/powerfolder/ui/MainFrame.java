@@ -450,7 +450,7 @@ public class MainFrame extends PFUIComponent {
                 PreferencesEntry.MAIN_FRAME_HEIGHT.setValue(c, uiComponent
                     .getHeight());
             }
-
+            mainTabbedPane.storeValues();
         }
     }
 
