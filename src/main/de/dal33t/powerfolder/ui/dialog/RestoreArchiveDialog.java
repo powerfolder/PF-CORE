@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.Icons;
+import de.dal33t.powerfolder.ui.information.folder.files.versions.FileInfoVersionTypeHolder;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.ui.BaseDialog;
 import de.dal33t.powerfolder.util.ui.DialogFactory;
@@ -57,6 +58,7 @@ public class RestoreArchiveDialog extends BaseDialog {
 
     private FileInfo fileInfo;
     private FileInfo versionInfo;
+    private boolean online;
     private JRadioButton restoreRB;
     private JRadioButton saveRB;
     private JLabel fileLocationLabel;
@@ -69,20 +71,23 @@ public class RestoreArchiveDialog extends BaseDialog {
      * @param controller
      * @param fileInfo
      *            the original file
-     * @param versionInfo
-     *            the info of the file version to restore
+     * @param fileInfoVersionTypeHolder
+     *            info about the file version to restore.
      */
     public RestoreArchiveDialog(Controller controller, FileInfo fileInfo,
-        FileInfo versionInfo)
+        FileInfoVersionTypeHolder fileInfoVersionTypeHolder)
     {
         super(controller, true);
-        this.versionInfo = versionInfo;
+        versionInfo = fileInfoVersionTypeHolder.getFileInfo();
+        online = fileInfoVersionTypeHolder.isOnline();
         this.fileInfo = fileInfo;
     }
 
     protected JComponent getContent() {
         if (uiComponent == null) {
 
+            JLabel restoreLabel = new JLabel(Translation
+                    .getTranslation("dialog.restore_archive.restore"));
             restoreRB = new JRadioButton(Translation
                 .getTranslation("dialog.restore_archive.restore"));
             saveRB = new JRadioButton(Translation
@@ -112,11 +117,15 @@ public class RestoreArchiveDialog extends BaseDialog {
             });
 
             // Add components
-            builder.add(restoreRB, cc.xyw(1, 1, 6));
-            builder.add(saveRB, cc.xyw(1, 3, 6));
-            builder.add(fileLocationLabel, cc.xy(1, 5));
-            builder.add(fileLocationField, cc.xy(3, 5));
-            builder.add(fileLocationButton, cc.xy(5, 5));
+            if (online) {
+                builder.add(restoreLabel, cc.xyw(1, 1, 6));
+            } else {
+                builder.add(restoreRB, cc.xyw(1, 1, 6));
+                builder.add(saveRB, cc.xyw(1, 3, 6));
+                builder.add(fileLocationLabel, cc.xy(1, 5));
+                builder.add(fileLocationField, cc.xy(3, 5));
+                builder.add(fileLocationButton, cc.xy(5, 5));
+            }
 
             restoreRB.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {

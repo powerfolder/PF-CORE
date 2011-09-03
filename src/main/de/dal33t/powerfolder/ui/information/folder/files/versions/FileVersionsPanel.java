@@ -320,7 +320,7 @@ public class FileVersionsPanel extends PFUIComponent {
      */
     private void restoreFile() {
         if (fileInfo != null) {
-            FileInfo selectedInfo = fileVersionsTable.getSelectedInfo();
+            FileInfoVersionTypeHolder selectedInfo = fileVersionsTable.getSelectedInfo();
             RestoreArchiveDialog dialog = new RestoreArchiveDialog(
                 getController(), fileInfo, selectedInfo);
             dialog.open();

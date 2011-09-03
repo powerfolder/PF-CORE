@@ -89,11 +89,11 @@ public class FileVersionsTable extends JTable {
         column.setPreferredWidth(40);
     }
 
-    public FileInfo getSelectedInfo() {
+    public FileInfoVersionTypeHolder getSelectedInfo() {
         int row = getSelectedRow();
         if (row >= 0) {
             FileVersionsTableModel model = (FileVersionsTableModel) getModel();
-            return ((FileInfoVersionTypeHolder) model.getValueAt(row, 0)).getFileInfo();
+            return (FileInfoVersionTypeHolder) model.getValueAt(row, 0);
         }
         return null;
     }
