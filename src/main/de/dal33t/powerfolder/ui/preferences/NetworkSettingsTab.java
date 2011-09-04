@@ -82,11 +82,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
-        options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
+        options[NetworkingMode.PRIVATE_ONLY_MODE.ordinal()] = Translation
             .getTranslation("general.network_mode.private");
-        options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
+        options[NetworkingMode.LAN_ONLY_MODE.ordinal()] = Translation
             .getTranslation("general.network_mode.lan_only");
-        options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
+        options[NetworkingMode.SERVER_ONLY_MODE.ordinal()] = Translation
             .getTranslation("general.network_mode.server_only");
         networkingMode = new JComboBox(options);
 
@@ -97,10 +97,10 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         networkingMode.setToolTipText(tooltip);
         networkingMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                NetworkingMode selNm = NetworkingMode.values()[networkingMode
+                NetworkingMode selectedNetworkingMode = NetworkingMode.values()[networkingMode
                     .getSelectedIndex()];
-                networkingMode.setToolTipText(getTooltip(selNm));
-                enableDisableComponents(NetworkingMode.LANONLYMODE == selNm);
+                networkingMode.setToolTipText(getTooltip(selectedNetworkingMode));
+                enableDisableComponents(NetworkingMode.LAN_ONLY_MODE == selectedNetworkingMode);
             }
         });
 
@@ -167,22 +167,19 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
 
-        wanSpeed = new LineSpeedSelectionPanel(true);
-        wanSpeed.loadWANSelection();
+        wanSpeed = new LineSpeedSelectionPanel(true, true);
 
-        lanSpeed = new LineSpeedSelectionPanel(true);
-        lanSpeed.loadLANSelection();
+        lanSpeed = new LineSpeedSelectionPanel(false, true);
 
         enableDisableComponents(getController().isLanOnly());
 
         TransferManager tm = getController().getTransferManager();
-        if (ConfigurationEntry.TRANSFERLIMIT_AUTODETECT.getValueBoolean(getController())) {
+        if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(getController())) {
             wanSpeed.setSpeedKBPS(-1, -1);
         } else {
             wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
                 tm.getAllowedDownloadCPSForWAN() / 1024);
         }
-        
 
         lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
             tm.getAllowedDownloadCPSForLAN() / 1024);
@@ -310,12 +307,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
         final TransferManager tm = getController().getTransferManager();
-        ConfigurationEntry.TRANSFERLIMIT_AUTODETECT.setValue(getController(),
+        ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.setValue(getController(),
             wanSpeed.isAutodetect());
-        if (!wanSpeed.isAutodetect()) {
-            tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
-            tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
-        } else {
+        if (wanSpeed.isAutodetect()) {
             // Unlimited
             tm.setAllowedUploadCPSForWAN(0);
             tm.setAllowedDownloadCPSForWAN(0);
@@ -324,6 +318,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                     tm.recalculateAutomaticRate();
                 }
             }, 0);
+        } else {
+            tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+            tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         }
 
         tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
@@ -348,13 +345,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private static String getTooltip(NetworkingMode nm) {
-        if (nm == NetworkingMode.LANONLYMODE) {
+        if (nm == NetworkingMode.LAN_ONLY_MODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
-        } else if (nm == NetworkingMode.PRIVATEMODE) {
+        } else if (nm == NetworkingMode.PRIVATE_ONLY_MODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.private.tooltip");
-        } else if (nm == NetworkingMode.SERVERONLYMODE) {
+        } else if (nm == NetworkingMode.SERVER_ONLY_MODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.server_only.tooltip");
         }

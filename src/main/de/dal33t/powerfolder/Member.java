@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder;
 
 import java.io.Externalizable;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.InetAddress;
@@ -33,7 +32,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -366,7 +364,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean isRelayOrServer = isServer || isRelay;
 
         if (getController().getNetworkingMode().equals(
-            NetworkingMode.SERVERONLYMODE)
+            NetworkingMode.SERVER_ONLY_MODE)
             && !isRelayOrServer)
         {
             return false;

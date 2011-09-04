@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.test.util;
 
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -30,7 +29,6 @@ import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -75,14 +73,14 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
     }
 
     public void testReloadConfig() throws ConnectionException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.LANONLYMODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.LAN_ONLY_MODE);
 
         ConfigurationLoadRequest r = new ConfigurationLoadRequest("http://"
             + TEST_CONFIG_URL, false, false);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitMilliSeconds(5000);
-        assertEquals(NetworkingMode.LANONLYMODE.toString(),
+        assertEquals(NetworkingMode.LAN_ONLY_MODE.toString(),
             ConfigurationEntry.NETWORKING_MODE.getValue(getContollerLisa()));
         // Non existing should have been added.
         assertTrue(ConfigurationEntry.USER_INTERFACE_LOCKED
@@ -102,7 +100,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             public boolean reached() {
                 return ConfigurationEntry.NETWORKING_MODE.getValue(
                     getContollerLisa()).equals(
-                    NetworkingMode.SERVERONLYMODE.toString());
+                    NetworkingMode.SERVER_ONLY_MODE.toString());
             }
         });
     }

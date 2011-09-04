@@ -46,13 +46,13 @@ public enum NetworkingMode {
      * Actually only connects to friends, users on LAN and people, who are on
      * joined folders.
      */
-    PRIVATEMODE,
+    PRIVATE_ONLY_MODE,
 
     /**
      * Restricts connectivity to the server(s) only. This actually disables any
      * peer-to-peer traffic and keeps the connection to the set server(s) only.
      */
-    SERVERONLYMODE,
+    SERVER_ONLY_MODE,
 
     /**
      * Connect only to PowerFolder clients in the Local Area Network.<BR>
@@ -61,5 +61,5 @@ public enum NetworkingMode {
      * ALL-SYSTEMS.MCAST.NET<BR>
      * We use that to detect the other PowerFolder clients in your LAN.
      */
-    LANONLYMODE
+    LAN_ONLY_MODE
 }

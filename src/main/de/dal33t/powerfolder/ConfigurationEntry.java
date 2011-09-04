@@ -315,7 +315,7 @@ public enum ConfigurationEntry {
      * 
      * @see NetworkingMode
      */
-    NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATEMODE.name()),
+    NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATE_ONLY_MODE.name()),
 
     /**
      * The ip/address where powerfolder should bind to.
@@ -380,7 +380,7 @@ public enum ConfigurationEntry {
     /**
      * #2165 Auto detect speeds
      */
-    TRANSFERLIMIT_AUTODETECT("transfer.limit.autodetect", true),
+    TRANSFER_LIMIT_AUTODETECT("transfer.limit.autodetect", true),
 
     /**
      * The upload limit for WAN (Internet) connections in KB/s

@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.test.net;
 
 import java.net.InetSocketAddress;
-import java.util.logging.Level;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
@@ -29,7 +28,6 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.net.RelayFinder;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
@@ -50,9 +48,9 @@ public class UDTConnectionTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
     }
 
     public void testUDTConnection() throws ConnectionException {

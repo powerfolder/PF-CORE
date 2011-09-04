@@ -2781,7 +2781,7 @@ public class TransferManager extends PFComponent {
      */
     public void recalculateAutomaticRate() {
 
-        if (!ConfigurationEntry.TRANSFERLIMIT_AUTODETECT
+        if (!ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
             .getValueBoolean(getController()))
         {
             return;

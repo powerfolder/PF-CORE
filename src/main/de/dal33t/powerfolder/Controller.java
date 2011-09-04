@@ -909,7 +909,7 @@ public class Controller extends PFComponent {
         // ============
         // Hourly tasks
         // ============
-        boolean alreadyDetected = ConfigurationEntry.TRANSFERLIMIT_AUTODETECT
+        boolean alreadyDetected = ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
             .getValueBoolean(getController())
             && ConfigurationEntry.UPLOADLIMIT_WAN.getValueInt(getController()) > 0;
         // If already detected wait 10 mins before next test. Otherwise start
@@ -1274,7 +1274,7 @@ public class Controller extends PFComponent {
      * @return true if in LAN only mode else false
      */
     public boolean isLanOnly() {
-        return getNetworkingMode() == NetworkingMode.LANONLYMODE;
+        return getNetworkingMode() == NetworkingMode.LAN_ONLY_MODE;
     }
 
     /**
@@ -1304,7 +1304,7 @@ public class Controller extends PFComponent {
         if (networkingMode == null) {
             if (isBackupOnly()) {
                 // ALWAYS server only mode.
-                networkingMode = NetworkingMode.SERVERONLYMODE;
+                networkingMode = NetworkingMode.SERVER_ONLY_MODE;
                 return networkingMode;
             }
             // default = private
@@ -1313,18 +1313,18 @@ public class Controller extends PFComponent {
                 networkingMode = NetworkingMode.valueOf(value);
             } catch (Exception e) {
                 logSevere(
-                    "Unable to read networking mode, reverting to PRIVATEMODE: "
+                    "Unable to read networking mode, reverting to PRIVATE_ONLY_MODE: "
                         + e.toString(), e);
-                networkingMode = NetworkingMode.PRIVATEMODE;
+                networkingMode = NetworkingMode.PRIVATE_ONLY_MODE;
             }
         }
         return networkingMode;
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
-        if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
+        if (isBackupOnly() && newMode != NetworkingMode.SERVER_ONLY_MODE) {
             // ALWAYS server only mode if backup-only.
-            newMode = NetworkingMode.SERVERONLYMODE;
+            newMode = NetworkingMode.SERVER_ONLY_MODE;
             logWarning("Backup only client. Only supports server only networking mode");
         }
         logFine("setNetworkingMode: " + newMode);
@@ -2308,7 +2308,7 @@ public class Controller extends PFComponent {
      * @param event
      */
     public void addAskForFriendship(AskForFriendshipEvent event) {
-        if (networkingMode == NetworkingMode.SERVERONLYMODE) {
+        if (networkingMode == NetworkingMode.SERVER_ONLY_MODE) {
             logFine("Ignoring ask for friendship from client "
                 + event.getMemberInfo() + ". Running in server only mode");
             return;

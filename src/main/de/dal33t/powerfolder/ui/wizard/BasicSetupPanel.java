@@ -63,7 +63,6 @@ public class BasicSetupPanel extends PFWizardPanel {
     private ValueModel networkingModeModel;
     private LineSpeedSelectionPanel wanLineSpeed;
     private JTextField nameField;
-    private JComboBox networkingModeChooser;
     private JComboBox languageChooser;
     private DefaultFolderWizardHelper defaultFolderHelper;
     private WizardPanel nextPanel;
@@ -76,10 +75,6 @@ public class BasicSetupPanel extends PFWizardPanel {
 
     public boolean hasNext() {
         return !StringUtils.isBlank((String) nameModel.getValue());
-    }
-
-    public boolean validateNext() {
-        return true;
     }
 
     protected JPanel buildContent() {
@@ -119,9 +114,9 @@ public class BasicSetupPanel extends PFWizardPanel {
         boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
 
         if (privateNetworking) {
-            getController().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+            getController().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
         } else if (lanOnlyNetworking) {
-            getController().setNetworkingMode(NetworkingMode.LANONLYMODE);
+            getController().setNetworkingMode(NetworkingMode.LAN_ONLY_MODE);
         } else {
             throw new IllegalStateException("invalid net working mode");
         }
@@ -169,29 +164,28 @@ public class BasicSetupPanel extends PFWizardPanel {
         // Ensure minimum dimension
         UIUtil.ensureMinimumWidth(107, nameField);
 
-        wanLineSpeed = new LineSpeedSelectionPanel(false);
-        wanLineSpeed.loadWANSelection();
+        wanLineSpeed = new LineSpeedSelectionPanel(true, false);
         TransferManager tm = getController().getTransferManager();
         wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
             tm.getAllowedDownloadCPSForWAN() / 1024);
 
         networkingModeModel = new ValueHolder();
         // Network mode chooser
-        networkingModeChooser = SimpleComponentFactory
-            .createComboBox(networkingModeModel);
+        JComboBox networkingModeChooser = SimpleComponentFactory
+                .createComboBox(networkingModeModel);
         networkingModeChooser.addItem(new PrivateNetworking());
         networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
         switch (mode) {
-            case PRIVATEMODE :
+            case PRIVATE_ONLY_MODE:
                 networkingModeChooser.setSelectedIndex(0);
                 break;
-            case LANONLYMODE :
+            case LAN_ONLY_MODE:
                 networkingModeChooser.setSelectedIndex(1);
                 break;
         }
-        wanLineSpeed
-            .setEnabled(networkingModeChooser.getSelectedItem() instanceof PrivateNetworking);
+        wanLineSpeed.setEnabled(networkingModeChooser.getSelectedItem()
+                instanceof PrivateNetworking);
         networkingModeChooser.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 wanLineSpeed.setEnabled(e.getItem() instanceof PrivateNetworking);
