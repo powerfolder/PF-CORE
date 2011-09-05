@@ -1274,7 +1274,7 @@ public class Controller extends PFComponent {
      * @return true if in LAN only mode else false
      */
     public boolean isLanOnly() {
-        return getNetworkingMode() == NetworkingMode.LAN_ONLY_MODE;
+        return getNetworkingMode() == NetworkingMode.LANONLYMODE;
     }
 
     /**
@@ -1304,7 +1304,7 @@ public class Controller extends PFComponent {
         if (networkingMode == null) {
             if (isBackupOnly()) {
                 // ALWAYS server only mode.
-                networkingMode = NetworkingMode.SERVER_ONLY_MODE;
+                networkingMode = NetworkingMode.SERVERONLYMODE;
                 return networkingMode;
             }
             // default = private
@@ -1315,16 +1315,16 @@ public class Controller extends PFComponent {
                 logSevere(
                     "Unable to read networking mode, reverting to PRIVATE_ONLY_MODE: "
                         + e.toString(), e);
-                networkingMode = NetworkingMode.PRIVATE_ONLY_MODE;
+                networkingMode = NetworkingMode.PRIVATEMODE;
             }
         }
         return networkingMode;
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
-        if (isBackupOnly() && newMode != NetworkingMode.SERVER_ONLY_MODE) {
+        if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
-            newMode = NetworkingMode.SERVER_ONLY_MODE;
+            newMode = NetworkingMode.SERVERONLYMODE;
             logWarning("Backup only client. Only supports server only networking mode");
         }
         logFine("setNetworkingMode: " + newMode);
@@ -2308,7 +2308,7 @@ public class Controller extends PFComponent {
      * @param event
      */
     public void addAskForFriendship(AskForFriendshipEvent event) {
-        if (networkingMode == NetworkingMode.SERVER_ONLY_MODE) {
+        if (networkingMode == NetworkingMode.SERVERONLYMODE) {
             logFine("Ignoring ask for friendship from client "
                 + event.getMemberInfo() + ". Running in server only mode");
             return;

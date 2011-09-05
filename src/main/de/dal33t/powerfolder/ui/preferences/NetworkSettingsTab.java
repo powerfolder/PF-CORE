@@ -82,11 +82,11 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
     private void initComponents() {
         String[] options = new String[NetworkingMode.values().length];
-        options[NetworkingMode.PRIVATE_ONLY_MODE.ordinal()] = Translation
+        options[NetworkingMode.PRIVATEMODE.ordinal()] = Translation
             .getTranslation("general.network_mode.private");
-        options[NetworkingMode.LAN_ONLY_MODE.ordinal()] = Translation
+        options[NetworkingMode.LANONLYMODE.ordinal()] = Translation
             .getTranslation("general.network_mode.lan_only");
-        options[NetworkingMode.SERVER_ONLY_MODE.ordinal()] = Translation
+        options[NetworkingMode.SERVERONLYMODE.ordinal()] = Translation
             .getTranslation("general.network_mode.server_only");
         networkingMode = new JComboBox(options);
 
@@ -100,7 +100,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 NetworkingMode selectedNetworkingMode = NetworkingMode.values()[networkingMode
                     .getSelectedIndex()];
                 networkingMode.setToolTipText(getTooltip(selectedNetworkingMode));
-                enableDisableComponents(NetworkingMode.LAN_ONLY_MODE == selectedNetworkingMode);
+                enableDisableComponents(NetworkingMode.LANONLYMODE == selectedNetworkingMode);
             }
         });
 
@@ -345,13 +345,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     private static String getTooltip(NetworkingMode nm) {
-        if (nm == NetworkingMode.LAN_ONLY_MODE) {
+        if (nm == NetworkingMode.LANONLYMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.lan_only.tooltip");
-        } else if (nm == NetworkingMode.PRIVATE_ONLY_MODE) {
+        } else if (nm == NetworkingMode.PRIVATEMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.private.tooltip");
-        } else if (nm == NetworkingMode.SERVER_ONLY_MODE) {
+        } else if (nm == NetworkingMode.SERVERONLYMODE) {
             return Translation
                 .getTranslation("preferences.dialog.network_mode.server_only.tooltip");
         }

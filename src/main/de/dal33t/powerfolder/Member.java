@@ -364,7 +364,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean isRelayOrServer = isServer || isRelay;
 
         if (getController().getNetworkingMode().equals(
-            NetworkingMode.SERVER_ONLY_MODE)
+            NetworkingMode.SERVERONLYMODE)
             && !isRelayOrServer)
         {
             return false;

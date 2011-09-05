@@ -315,7 +315,7 @@ public enum ConfigurationEntry {
      * 
      * @see NetworkingMode
      */
-    NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATE_ONLY_MODE.name()),
+    NETWORKING_MODE("networkingmode", NetworkingMode.PRIVATEMODE.name()),
 
     /**
      * The ip/address where powerfolder should bind to.

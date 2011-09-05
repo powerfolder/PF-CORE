@@ -196,7 +196,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     && getController().getNodeManager().isStarted())
                 {
                     if (getController().getNetworkingMode().equals(
-                        NetworkingMode.SERVER_ONLY_MODE))
+                        NetworkingMode.SERVERONLYMODE))
                     {
                         logFiner("Ignoring broadcasts in server only networking mode");
                         continue;

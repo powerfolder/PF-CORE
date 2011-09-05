@@ -282,7 +282,7 @@ public class ReconnectManager extends PFComponent {
             return false;
         }
         if (getController().getNetworkingMode().equals(
-            NetworkingMode.SERVER_ONLY_MODE))
+            NetworkingMode.SERVERONLYMODE))
         {
             // Never connect this way to the server, only thru ServerClient.
             return false;

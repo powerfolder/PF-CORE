@@ -38,6 +38,8 @@ package de.dal33t.powerfolder;
  * Private folders will always require an Invitation, regardless of the
  * networking mode.</LI>
  * </UL>
+  *
+ * The names are used as configuration entry values, so should not be changed.
  */
 public enum NetworkingMode {
     /**
@@ -46,13 +48,13 @@ public enum NetworkingMode {
      * Actually only connects to friends, users on LAN and people, who are on
      * joined folders.
      */
-    PRIVATE_ONLY_MODE,
+    PRIVATEMODE,
 
     /**
      * Restricts connectivity to the server(s) only. This actually disables any
      * peer-to-peer traffic and keeps the connection to the set server(s) only.
      */
-    SERVER_ONLY_MODE,
+    SERVERONLYMODE,
 
     /**
      * Connect only to PowerFolder clients in the Local Area Network.<BR>
@@ -61,5 +63,5 @@ public enum NetworkingMode {
      * ALL-SYSTEMS.MCAST.NET<BR>
      * We use that to detect the other PowerFolder clients in your LAN.
      */
-    LAN_ONLY_MODE
+    LANONLYMODE
 }

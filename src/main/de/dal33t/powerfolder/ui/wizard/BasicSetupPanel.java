@@ -114,9 +114,9 @@ public class BasicSetupPanel extends PFWizardPanel {
         boolean lanOnlyNetworking = networkingModeModel.getValue() instanceof LanOnlyNetworking;
 
         if (privateNetworking) {
-            getController().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+            getController().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         } else if (lanOnlyNetworking) {
-            getController().setNetworkingMode(NetworkingMode.LAN_ONLY_MODE);
+            getController().setNetworkingMode(NetworkingMode.LANONLYMODE);
         } else {
             throw new IllegalStateException("invalid net working mode");
         }
@@ -177,10 +177,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         networkingModeChooser.addItem(new LanOnlyNetworking());
         NetworkingMode mode = getController().getNetworkingMode();
         switch (mode) {
-            case PRIVATE_ONLY_MODE:
+            case PRIVATEMODE:
                 networkingModeChooser.setSelectedIndex(0);
                 break;
-            case LAN_ONLY_MODE:
+            case LANONLYMODE:
                 networkingModeChooser.setSelectedIndex(1);
                 break;
         }
