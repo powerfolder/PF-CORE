@@ -392,6 +392,9 @@ public class ServerClient extends PFComponent {
      */
     public String getRegisterURLReferral() {
         String url = getRegisterURL();
+        if (StringUtils.isBlank(url)) {
+            return getWebURL();
+        }
         if (!isLoggedIn()) {
             return url;
         }
