@@ -229,8 +229,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
      * @throws InvalidIdentityException
      */
     public void testFriendAutoConnect() throws InvalidIdentityException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         final MyAskForFriendshipListener handlerAtMarge = new MyAskForFriendshipListener();
         getContollerMarge().addAskForFriendshipListener(handlerAtMarge);
         assertFalse(handlerAtMarge.hasBeenAsked);
@@ -333,8 +333,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     }
 
     public void testFolderConnectInternet() throws InvalidIdentityException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
 
         // All connections should be detected as on internet.
         Feature.CORRECT_LAN_DETECTION.enable();
@@ -406,7 +406,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     }
 
     public void noTestPublicInfrastructureConnect() {
-        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerBart(), "");
         for (int i = 0; i < 10; i++) {
             try {

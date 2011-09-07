@@ -73,14 +73,14 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
     }
 
     public void testReloadConfig() throws ConnectionException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.LAN_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.LANONLYMODE);
 
         ConfigurationLoadRequest r = new ConfigurationLoadRequest("http://"
             + TEST_CONFIG_URL, false, false);
         lisaAtBart.sendMessage(r);
 
         TestHelper.waitMilliSeconds(5000);
-        assertEquals(NetworkingMode.LAN_ONLY_MODE.toString(),
+        assertEquals(NetworkingMode.LANONLYMODE.toString(),
             ConfigurationEntry.NETWORKING_MODE.getValue(getContollerLisa()));
         // Non existing should have been added.
         assertTrue(ConfigurationEntry.USER_INTERFACE_LOCKED
@@ -100,7 +100,7 @@ public class ConfigurationLoadTest extends TwoControllerTestCase {
             public boolean reached() {
                 return ConfigurationEntry.NETWORKING_MODE.getValue(
                     getContollerLisa()).equals(
-                    NetworkingMode.SERVER_ONLY_MODE.toString());
+                    NetworkingMode.SERVERONLYMODE.toString());
             }
         });
     }

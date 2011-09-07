@@ -48,9 +48,9 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
 
         // Don't check limited connectivity.
         PreferencesEntry.TEST_CONNECTIVITY.setValue(getContollerMarge(), false);
-        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
     }
 
     public void testRelayedConnection() throws ConnectionException {
@@ -101,9 +101,9 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
     }
 
     public void noTestPublicRelayedConnection() throws ConnectionException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerMarge(), "");
         assertTrue(getContollerLisa().connect(
             TestHelper.DEV_SYSTEM_CONNECT_STRING).isCompletelyConnected());
@@ -155,7 +155,7 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
     }
 
     public void noTestRelayConnectionToOS() throws ConnectionException {
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         ConfigurationEntry.NET_BIND_ADDRESS.setValue(getContollerLisa(), "");
         assertTrue(getContollerLisa().connect(
             TestHelper.DEV_SYSTEM_CONNECT_STRING).isCompletelyConnected());

@@ -48,9 +48,9 @@ public class UDTConnectionTest extends FiveControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
-        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATE_ONLY_MODE);
+        getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
     }
 
     public void testUDTConnection() throws ConnectionException {
