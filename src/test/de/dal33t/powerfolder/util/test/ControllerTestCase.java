@@ -221,12 +221,14 @@ public abstract class ControllerTestCase extends TestCase {
      */
     protected void assertFileMatch(File diskFile, FileInfo fInfo) {
         boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
-        boolean sizeMatch = diskFile.length() == fInfo.getSize();
+
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
         boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
         boolean lastModifiedMatch = diskFile.lastModified() == fInfo
             .getModifiedDate().getTime();
+        boolean sizeMatch = fInfo.isDeleted()
+            || (diskFile.length() == fInfo.getSize());
 
         // Skip last modification test when diskfile is deleted.
         boolean matches = !diskFile.isDirectory() && nameMatch && sizeMatch
