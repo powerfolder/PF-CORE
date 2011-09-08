@@ -25,22 +25,8 @@ import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.*;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.ServiceLoader;
-import java.util.StringTokenizer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -926,7 +912,12 @@ public class Controller extends PFComponent {
      * These tasks get performed every hour.
      */
     private void performHourly() {
-        transferManager.recalculateAutomaticRate();
+        if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
+            .getValueBoolean(getController())) {
+            FutureTask<Object> recalculateRunnable =
+                    transferManager.getRecalculateAutomaticRate();
+            threadPool.execute(recalculateRunnable);
+        }
     }
 
     /**

@@ -306,17 +306,14 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         NetworkingMode netMode = NetworkingMode.values()[networkingMode
             .getSelectedIndex()];
         getController().setNetworkingMode(netMode);
-        final TransferManager tm = getController().getTransferManager();
+        TransferManager tm = getController().getTransferManager();
         ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.setValue(getController(),
             wanSpeed.isAutodetect());
         if (wanSpeed.isAutodetect()) {
             tm.setNonAutoUploadCPSForWAN(-1024);
             tm.setNonAutoDownloadCPSForWAN(-1024);
-            getController().schedule(new Runnable() {
-                public void run() {
-                    tm.recalculateAutomaticRate();
-                }
-            }, 0);
+            getController().getThreadPool().execute(
+                    tm.getRecalculateAutomaticRate());
         } else {
             tm.setNonAutoUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
             tm.setNonAutoDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());

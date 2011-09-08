@@ -34,6 +34,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Panel with a combobox for selecting the line speed and a textfield for
@@ -155,7 +157,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
             customUploadSpeedSpinnerModel.setValue(0);
             customDownloadSpeedSpinnerModel.setValue(0);
         } else {
-            // Presret line.
+            // Preset line.
             customUploadSpeedSpinner.setVisible(false);
             customDownloadSpeedSpinner.setVisible(false);
             customUploadKbPerSLabel.setVisible(false);
@@ -442,7 +444,28 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            getController().getTransferManager().recalculateAutomaticRate();
+            getController().getThreadPool().execute(new Runnable() {
+                public void run() {
+                    TransferManager transferManager = 
+                            getController().getTransferManager();
+                    FutureTask<Object> task =
+                            transferManager.getRecalculateAutomaticRate();
+                    getController().getThreadPool().execute(task);
+                    try {
+                        task.get();
+                        updateLabel(customUploadSpeedText,
+                                customUploadSpeedSpinnerModel.getNumber().longValue(),
+                                transferManager.getAutoUploadCPSForWAN() / 1000);
+                        updateLabel(customDownloadSpeedText,
+                                customDownloadSpeedSpinnerModel.getNumber().longValue(),
+                                transferManager.getAutoDownloadCPSForWAN() / 1000);
+                    } catch (InterruptedException ex) {
+                        // Don't care
+                    } catch (ExecutionException ex) {
+                        // Don't care
+                    }
+                }
+            });
         }
     }
 }

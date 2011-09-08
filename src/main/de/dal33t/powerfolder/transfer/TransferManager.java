@@ -46,10 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -176,6 +174,9 @@ public class TransferManager extends PFComponent {
     private DownloadManagerFactory downloadManagerFactory = MultiSourceDownloadManager.factory;
 
     private BandwidthStatsRecorder statsRecorder;
+
+    private final AtomicBoolean recalculatingAutomaticRates =
+            new AtomicBoolean();
 
     public TransferManager(Controller controller) {
         super(controller);
@@ -2845,65 +2846,70 @@ public class TransferManager extends PFComponent {
      * Recalculate the up/download bandwidth auto limit. Do this by testing
      * upload and download of 100KiB to the server.
      */
-    public void recalculateAutomaticRate() {
+    public FutureTask<Object> getRecalculateAutomaticRate() {
 
-        if (!ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
-            .getValueBoolean(getController()))
-        {
-            return;
-        }
+        return new FutureTask<Object>(new Callable<Object>() {
+            public Object call() throws Exception {
+                if (recalculatingAutomaticRates.getAndSet(true)) {
+                    // Only one at a time.
+                    return null;
+                }
+                // Get times.
+                Date startDate = new Date();
+                long downloadSize = 1047552;
+                boolean downloadOk = countActiveDownloads() == 0
+                    && testAvailabilityDownload(downloadSize);
+                Date afterDownload = new Date();
+                // @todo please explain why / 4 ?
+                long uploadSize = 1047552 / 4;
+                boolean uploadOk = countActiveUploads() == 0
+                    && testAvailabilityUpload(uploadSize);
+                Date afterUpload = new Date();
 
-        // Get times.
-        Date startDate = new Date();
-        long downloadSize = 1047552;
-        boolean downloadOk = countActiveDownloads() == 0
-            && testAvailabilityDownload(downloadSize);
-        Date afterDownload = new Date();
-        long uploadSize = 1047552 / 4;
-        boolean uploadOk = countActiveUploads() == 0
-            && testAvailabilityUpload(uploadSize);
-        Date afterUpload = new Date();
+                // Calculate time differences.
+                long downloadTime = afterDownload.getTime() - startDate.getTime();
+                long uploadTime = afterUpload.getTime() - afterDownload.getTime();
+                // logWarning("Test availability download time " + downloadTime);
+                // logWarning("Test availability upload time " + uploadTime);
+                // Calculate rates in KiB/s.
+                long downloadRate = downloadTime > 0 ? downloadSize * 1000
+                    / downloadTime : 0;
+                long uploadRate = uploadTime > 0 ? uploadSize * 1000 / uploadTime : 0;
+                if (downloadOk) {
+                    logFine("Test availability download rate "
+                        + Format.formatBytesShort(downloadRate) + "/s");
+                }
+                if (uploadOk) {
+                    logFine("Test availability upload rate "
+                        + Format.formatBytesShort(uploadRate) + "/s");
+                }
+                // Update bandwidth provider with 90% of new rates.
+                // By experience: Measured rates usually lower than actual speed.
+                long modifiedDownloadRate = 90 * downloadRate / 100;
+                long modifiedUploadRate = 90 * uploadRate / 100;
 
-        // Calculate time differences.
-        long downloadTime = afterDownload.getTime() - startDate.getTime();
-        long uploadTime = afterUpload.getTime() - afterDownload.getTime();
-        // logWarning("Test availability download time " + downloadTime);
-        // logWarning("Test availability upload time " + uploadTime);
-        // Calculate rates in KiB/s.
-        long downloadRate = downloadTime > 0 ? downloadSize * 1000
-            / downloadTime : 0;
-        long uploadRate = uploadTime > 0 ? uploadSize * 1000 / uploadTime : 0;
-        if (downloadOk) {
-            logFine("Test availability download rate "
-                + Format.formatBytesShort(downloadRate) + "/s");
-        }
-        if (uploadOk) {
-            logFine("Test availability upload rate "
-                + Format.formatBytesShort(uploadRate) + "/s");
-        }
-        // Update bandwidth provider with 90% of new rates.
-        // By experience: Measured rates usually lower than actual speed.
-        long modifiedDownloadRate = 90 * downloadRate / 100;
-        long modifiedUploadRate = 90 * uploadRate / 100;
+                logInfo("Speed test finished: Download "
+                    + Format.formatBytesShort(downloadRate) + "/s, Upload "
+                    + Format.formatBytesShort(uploadRate) + "/s");
 
-        logInfo("Speed test finished: Download "
-            + Format.formatBytesShort(downloadRate) + "/s, Upload "
-            + Format.formatBytesShort(uploadRate) + "/s");
+                // @todo what is this for, updated values are not used?
+                if (uploadRate < 10240) {
+                    uploadRate = 0;
+                }
+                if (downloadRate < 102400) {
+                    downloadRate = 0;
+                }
 
-        // @todo what is this for, updates are not used?
-        if (uploadRate < 10240) {
-            uploadRate = 0;
-        }
-        if (downloadRate < 102400) {
-            downloadRate = 0;
-        }
-
-        if (downloadOk) {
-            setAutoDownloadCPSForWAN(modifiedDownloadRate);
-        }
-        if (uploadOk) {
-            setAutoUploadCPSForWAN(modifiedUploadRate);
-        }
+                if (downloadOk) {
+                    setAutoDownloadCPSForWAN(modifiedDownloadRate);
+                }
+                if (uploadOk) {
+                    setAutoUploadCPSForWAN(modifiedUploadRate);
+                }
+                recalculatingAutomaticRates.set(false);
+                return null;
+            }
+        });
     }
 
     /**
