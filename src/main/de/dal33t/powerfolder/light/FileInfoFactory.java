@@ -214,8 +214,9 @@ public final class FileInfoFactory {
         Reject.ifTrue(original.isLookupInstance(),
             "Cannot delete template FileInfo!");
         if (original.isFile()) {
-            return new FileInfo(original.getRelativeName(), 0L, delby, delDate,
-                original.getVersion() + 1, true, original.getFolderInfo());
+            return new FileInfo(original.getRelativeName(), original.getSize(),
+                delby, delDate, original.getVersion() + 1, true,
+                original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(original.getRelativeName(), 0L, delby,
                 delDate, original.getVersion() + 1, true,
