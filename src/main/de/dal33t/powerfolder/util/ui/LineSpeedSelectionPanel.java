@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.PFUIComponent;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.transfer.TransferManager;
 
 import javax.swing.*;
@@ -57,9 +58,11 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
     private JLabel customUploadSpeedText;
     private JSpinner customDownloadSpeedSpinner;
     private JLabel customDownloadSpeedText;
-    private boolean showCustomEntry;
+    private final boolean showCustomEntry;
     private JLabel customUploadKbPerSLabel;
     private JLabel customDownloadKbPerSLabel;
+    private final boolean wan;
+    private JButton recalculateAutoButton;
 
     /**
      * Constructs a new LineSpeedSelectionPanel.
@@ -69,10 +72,12 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
      *                                    selection should be shown all the time, otherwise they only
      *                                    visible on demand.
      */
-    public LineSpeedSelectionPanel(Controller controller, boolean wan, boolean showCustomEntry) {
+    public LineSpeedSelectionPanel(Controller controller, boolean wan,
+                                   boolean showCustomEntry) {
         super(controller);
         this.showCustomEntry = showCustomEntry;
-        initComponents(wan);
+        this.wan = wan;
+        initComponents();
     }
 
     public JPanel getUiComponent() {
@@ -82,7 +87,10 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
         return uiComponent;
     }
 
-    private void initComponents(boolean wan) {
+    private void initComponents() {
+
+        Action recalculateAction = new RecalculateAction(getController());
+        recalculateAutoButton = new JButton(recalculateAction);
 
         customUploadSpeedSpinnerModel =
                 new SpinnerNumberModel(0, 0, 999999, 5);
@@ -160,15 +168,21 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
             customDownloadSpeedSpinnerModel.setValue(((LineSpeed)
                     speedSelectionBox.getSelectedItem()).getDownloadSpeed());
         }
+
+        recalculateAutoButton.setVisible(wan &&
+                speedSelectionBox.getSelectedIndex() == 0);
     }
 
     private JPanel createSpeedSelectionPanel() {
         FormLayout layout = new FormLayout(
-                "140dlu, pref:grow", "pref");
+                "80dlu, 3dlu, pref, pref:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
         builder.add(speedSelectionBox, cc.xy(1, 1));
+        if (wan) {
+            builder.add(recalculateAutoButton, cc.xy(3, 1));
+        }
 
         JPanel panel = builder.getPanel();
         panel.setOpaque(false);
@@ -314,7 +328,8 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
     }
 
     public boolean isAutodetect() {
-        return customUploadSpeedSpinnerModel.getNumber().longValue() == AUTO_DETECT;
+        return customUploadSpeedSpinnerModel.getNumber().longValue() ==
+                AUTO_DETECT;
     }
 
     /**
@@ -417,6 +432,17 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
             updateLabel(label, kbPerS, upload ?
                     transferManager.getAutoUploadCPSForWAN() / 1000 :
                     transferManager.getAutoDownloadCPSForWAN() / 1000);
+        }
+    }
+
+    private class RecalculateAction extends BaseAction {
+
+        private RecalculateAction(Controller controller) {
+            super("action_recalculate", controller);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            getController().getTransferManager().recalculateAutomaticRate();
         }
     }
 }
