@@ -36,6 +36,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -78,6 +80,7 @@ public class SecurityManagerClient extends PFComponent implements
         this.permissionsCacheAccounts = new ConcurrentHashMap<AccountInfo, PermissionsCacheSegment>();
         this.listners = ListenerSupportFactory
             .createListenerSupport(SecurityManagerListener.class);
+        this.client.addListener(new MyServerClientListener());
     }
 
     public Account authenticate(String username, char[] password) {
@@ -480,6 +483,34 @@ public class SecurityManagerClient extends PFComponent implements
                     node.synchronizeFolderMemberships();
                 }
             }
+        }
+    }
+    
+    private class MyServerClientListener implements ServerClientListener {
+
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        public void login(ServerClientEvent event) {
+            if (event.isLoginSuccess()) {
+                permissionsCacheAccounts.clear();
+            }
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            if (event.isLoginSuccess()) {
+                permissionsCacheAccounts.clear();
+            }
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
         }
     }
 
