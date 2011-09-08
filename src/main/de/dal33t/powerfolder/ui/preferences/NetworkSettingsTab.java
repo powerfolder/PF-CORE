@@ -167,9 +167,9 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         useOnlineStorageCB.setSelected(PreferencesEntry.USE_ONLINE_STORAGE
             .getValueBoolean(getController()));
 
-        wanSpeed = new LineSpeedSelectionPanel(true, true);
+        wanSpeed = new LineSpeedSelectionPanel(getController(), true, true);
 
-        lanSpeed = new LineSpeedSelectionPanel(false, true);
+        lanSpeed = new LineSpeedSelectionPanel(getController(), false, true);
 
         enableDisableComponents(getController().isLanOnly());
 
@@ -177,12 +177,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         if (ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.getValueBoolean(getController())) {
             wanSpeed.setSpeedKBPS(-1, -1);
         } else {
-            wanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
-                tm.getAllowedDownloadCPSForWAN() / 1024);
+            wanSpeed.setSpeedKBPS(tm.getUploadCPSForWAN() / 1024,
+                tm.getDownloadCPSForWAN() / 1024);
         }
 
-        lanSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForLAN() / 1024,
-            tm.getAllowedDownloadCPSForLAN() / 1024);
+        lanSpeed.setSpeedKBPS(tm.getUploadCPSForLAN() / 1024,
+            tm.getDownloadCPSForLAN() / 1024);
 
         options = new String[]{
             Translation
@@ -253,13 +253,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.addLabel(
                 Translation.getTranslation("preferences.dialog.line_settings"),
                 cc.xywh(1, row, 1, 1, "default, top"));
-            builder.add(wanSpeed, cc.xyw(3, row, 2));
+            builder.add(wanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.addLabel(Translation
                 .getTranslation("preferences.dialog.lan_line_settings"), cc
                 .xywh(1, row, 1, 1, "default, top"));
-            builder.add(lanSpeed, cc.xyw(3, row, 2));
+            builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
             builder.add(silentThrottleLabel,
@@ -310,21 +310,20 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.setValue(getController(),
             wanSpeed.isAutodetect());
         if (wanSpeed.isAutodetect()) {
-            // Unlimited
-            tm.setAllowedUploadCPSForWAN(0);
-            tm.setAllowedDownloadCPSForWAN(0);
+            tm.setNonAutoUploadCPSForWAN(-1024);
+            tm.setNonAutoDownloadCPSForWAN(-1024);
             getController().schedule(new Runnable() {
                 public void run() {
                     tm.recalculateAutomaticRate();
                 }
             }, 0);
         } else {
-            tm.setAllowedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
-            tm.setAllowedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+            tm.setNonAutoUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+            tm.setNonAutoDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         }
 
-        tm.setAllowedUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
-        tm.setAllowedDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
+        tm.setUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());
+        tm.setDownloadCPSForLAN(lanSpeed.getDownloadSpeedKBPS());
         try {
             ConfigurationEntry.UPLOADLIMIT_SILENTMODE_THROTTLE.setValue(
                 getController(),

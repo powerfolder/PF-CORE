@@ -911,7 +911,7 @@ public class Controller extends PFComponent {
         // ============
         boolean alreadyDetected = ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT
             .getValueBoolean(getController())
-            && ConfigurationEntry.UPLOADLIMIT_WAN.getValueInt(getController()) > 0;
+            && ConfigurationEntry.UPLOAD_AUTO_WAN.getValueInt(getController()) > 0;
         // If already detected wait 10 mins before next test. Otherwise start
         // instantly.
         long initialDelay = alreadyDetected ? 600 : 5;

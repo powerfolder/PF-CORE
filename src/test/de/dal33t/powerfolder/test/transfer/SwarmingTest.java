@@ -57,7 +57,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
     public void xtestKillerSwarm() throws IOException {
         nSetupControllers(20);
         setConfigurationEntry(ConfigurationEntry.USE_SWARMING_ON_LAN, "true");
-        setConfigurationEntry(ConfigurationEntry.DOWNLOADLIMIT_LAN, "100");
+        setConfigurationEntry(ConfigurationEntry.DOWNLOAD_LIMIT_LAN, "100");
 
         connectAll();
 
@@ -158,8 +158,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         });
 
         for (Controller c : getControllers()) {
-            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
-            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+            c.getTransferManager().setDownloadCPSForLAN(500000);
+            c.getTransferManager().setUploadCPSForLAN(500000);
         }
         TestHelper.waitMilliSeconds(1000);
         getFolderOf("4").setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
@@ -225,7 +225,7 @@ public class SwarmingTest extends MultipleControllerTestCase {
 
         connectAll();
 
-        setConfigurationEntry(ConfigurationEntry.UPLOADLIMIT_LAN, "0");
+        setConfigurationEntry(ConfigurationEntry.UPLOAD_LIMIT_LAN, "0");
 
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
@@ -369,8 +369,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
 
         for (Controller c : getControllers()) {
-            c.getTransferManager().setAllowedDownloadCPSForLAN(1000000);
-            c.getTransferManager().setAllowedUploadCPSForLAN(1000000);
+            c.getTransferManager().setDownloadCPSForLAN(1000000);
+            c.getTransferManager().setUploadCPSForLAN(1000000);
         }
 
         connectAll();
@@ -542,8 +542,8 @@ public class SwarmingTest extends MultipleControllerTestCase {
         setConfigurationEntry(ConfigurationEntry.USE_DELTA_ON_LAN, "true");
 
         for (Controller c : getControllers()) {
-            c.getTransferManager().setAllowedDownloadCPSForLAN(500000);
-            c.getTransferManager().setAllowedUploadCPSForLAN(500000);
+            c.getTransferManager().setDownloadCPSForLAN(500000);
+            c.getTransferManager().setUploadCPSForLAN(500000);
         }
 
         connectAll();

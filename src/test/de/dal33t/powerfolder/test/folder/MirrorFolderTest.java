@@ -145,7 +145,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
      * TRAC #1960
      */
     public void testNoDbAfterDirectorySync() {
-        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(1000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(1000);
         final Folder foLisa = getFolderAtLisa();
         assertTrue(foLisa.hasOwnDatabase());
         assertTrue(getFolderAtLisa().hasOwnDatabase());

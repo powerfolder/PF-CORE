@@ -149,7 +149,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
-        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getContollerLisa(),
+        ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getContollerLisa(),
             "1000");
 
         assertEquals(0, bartModelListener.events.size());
@@ -209,9 +209,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDisconnectWhileUpload() {
         getContollerBart().getTransferManager()
-            .setAllowedUploadCPSForLAN(40000);
+            .setUploadCPSForLAN(40000);
         getContollerLisa().getTransferManager()
-            .setAllowedUploadCPSForWAN(40000);
+            .setNonAutoUploadCPSForWAN(40000);
 
         // Create a 10 megs file
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);

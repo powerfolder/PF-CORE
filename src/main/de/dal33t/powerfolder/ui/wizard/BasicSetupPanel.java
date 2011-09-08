@@ -92,7 +92,7 @@ public class BasicSetupPanel extends PFWizardPanel {
         builder.addLabel(
             Translation.getTranslation("preferences.dialog.line_settings"),
             cc.xywh(1, 3, 1, 1, "default, top"));
-        builder.add(wanLineSpeed, cc.xy(3, 3));
+        builder.add(wanLineSpeed.getUiComponent(), cc.xy(3, 3));
         builder.addLabel(
             Translation.getTranslation("wizard.basic_setup.language_restart"),
             cc.xy(1, 5));
@@ -122,8 +122,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         }
 
         TransferManager tm = getController().getTransferManager();
-        tm.setAllowedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
-        tm.setAllowedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
+        tm.setNonAutoUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
+        tm.setNonAutoDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {
@@ -164,10 +164,10 @@ public class BasicSetupPanel extends PFWizardPanel {
         // Ensure minimum dimension
         UIUtil.ensureMinimumWidth(107, nameField);
 
-        wanLineSpeed = new LineSpeedSelectionPanel(true, false);
+        wanLineSpeed = new LineSpeedSelectionPanel(getController(), true, false);
         TransferManager tm = getController().getTransferManager();
-        wanLineSpeed.setSpeedKBPS(tm.getAllowedUploadCPSForWAN() / 1024,
-            tm.getAllowedDownloadCPSForWAN() / 1024);
+        wanLineSpeed.setSpeedKBPS(tm.getUploadCPSForWAN() / 1024,
+            tm.getDownloadCPSForWAN() / 1024);
 
         networkingModeModel = new ValueHolder();
         // Network mode chooser

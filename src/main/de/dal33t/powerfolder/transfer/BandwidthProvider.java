@@ -50,7 +50,7 @@ public class BandwidthProvider extends Loggable {
         .createListenerSupport(BandwidthStatsListener.class);
 
     public BandwidthProvider() {
-        this.scheduledES = Executors.newScheduledThreadPool(1);
+        scheduledES = Executors.newScheduledThreadPool(1);
     }
 
     public void start() {
@@ -100,7 +100,7 @@ public class BandwidthProvider extends Loggable {
             synchronized (limits) {
                 limits.put(limiter, bps);
             }
-            logFiner("Bandwidth limiter initalized, max CPS: " + bps);
+            logFiner("Bandwidth limiter " + limiter.toString() + " initalized, max CPS: " + bps);
         }
     }
 

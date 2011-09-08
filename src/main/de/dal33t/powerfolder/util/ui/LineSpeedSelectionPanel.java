@@ -24,6 +24,9 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.PFUIComponent;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.transfer.TransferManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -39,10 +42,12 @@ import java.awt.event.ActionListener;
  * @author Bytekeeper
  * @version $revision$
  */
-public class LineSpeedSelectionPanel extends JPanel {
+public class LineSpeedSelectionPanel extends PFUIComponent {
 
     private static final int UNLIMITED = 0;
     private static final int AUTO_DETECT = -1;
+
+    private JPanel uiComponent;
 
     private JComboBox speedSelectionBox;
     private JComponent customSpeedPanel;
@@ -64,25 +69,20 @@ public class LineSpeedSelectionPanel extends JPanel {
      *                                    selection should be shown all the time, otherwise they only
      *                                    visible on demand.
      */
-    public LineSpeedSelectionPanel(boolean wan, boolean showCustomEntry) {
+    public LineSpeedSelectionPanel(Controller controller, boolean wan, boolean showCustomEntry) {
+        super(controller);
         this.showCustomEntry = showCustomEntry;
         initComponents(wan);
-        buildPanel();
     }
 
-    private void buildPanel() {
-        FormLayout layout = new FormLayout("pref:grow", "pref, 1dlu, pref");
-        setLayout(layout);
-
-        CellConstraints cc = new CellConstraints();
-        customSpeedPanel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
-        JPanel speedSelectionPanel = createSpeedSelectionPanel();
-        add(speedSelectionPanel, cc.xy(1, 1));
-        add(customSpeedPanel, cc.xy(1, 3));
+    public JPanel getUiComponent() {
+        if (uiComponent == null ) {
+            buildPanel();
+        }
+        return uiComponent;
     }
 
     private void initComponents(boolean wan) {
-        setOpaque(false);
 
         customUploadSpeedSpinnerModel =
                 new SpinnerNumberModel(0, 0, 999999, 5);
@@ -101,9 +101,9 @@ public class LineSpeedSelectionPanel extends JPanel {
                 "general.kbPerS"));
 
         customUploadSpeedSpinnerModel.addChangeListener(new
-                MyChangeListener(customUploadSpeedText));
+                MyChangeListener(customUploadSpeedText, true));
         customDownloadSpeedSpinnerModel.addChangeListener(new
-                MyChangeListener(customDownloadSpeedText));
+                MyChangeListener(customDownloadSpeedText, false));
 
         customSpeedPanel = createCustomSpeedInputFieldPanel();
 
@@ -119,6 +119,18 @@ public class LineSpeedSelectionPanel extends JPanel {
             }
         });
         configureUpDownComponents();
+    }
+
+    private void buildPanel() {
+        FormLayout layout = new FormLayout("pref:grow", "pref, 1dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        customSpeedPanel.setBorder(Borders.createEmptyBorder("0, 0, 3dlu, 0"));
+        JPanel speedSelectionPanel = createSpeedSelectionPanel();
+        builder.add(speedSelectionPanel, cc.xy(1, 1));
+        builder.add(customSpeedPanel, cc.xy(1, 3));
+        uiComponent = builder.getPanel();
+        uiComponent.setOpaque(false);
     }
 
     private void configureUpDownComponents() {
@@ -324,7 +336,6 @@ public class LineSpeedSelectionPanel extends JPanel {
                 1024;
     }
 
-    @Override
     public void setEnabled(boolean enabled) {
         customSpeedPanel.setEnabled(enabled);
         speedSelectionBox.setEnabled(enabled);
@@ -332,12 +343,12 @@ public class LineSpeedSelectionPanel extends JPanel {
         customDownloadSpeedSpinner.setEnabled(enabled);
         customUploadSpeedText.setEnabled(enabled);
         customDownloadSpeedText.setEnabled(enabled);
-        super.setEnabled(enabled);
     }
 
-    private static void updateLabel(JLabel label, long kbPerS) {
+    private static void updateLabel(JLabel label, long kbPerS, long autoKbPerS) {
         if (kbPerS == -1) {
-            label.setText(Translation.getTranslation("line_speed.auto_speed"));
+            label.setText(autoKbPerS + " " +
+                    Translation.getTranslation("general.kbPerS"));
         } else if (kbPerS == 0) {
             label.setText(Translation.getTranslation("line_speed.unlimited"));
         } else {
@@ -389,18 +400,23 @@ public class LineSpeedSelectionPanel extends JPanel {
         }
     }
 
-    private static class MyChangeListener implements ChangeListener {
+    private class MyChangeListener implements ChangeListener {
 
         private final JLabel label;
+        private final boolean upload;
 
-        private MyChangeListener(JLabel label) {
+        private MyChangeListener(JLabel label, boolean upload) {
             this.label = label;
+            this.upload = upload;
         }
 
         public void stateChanged(ChangeEvent e) {
             SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
             long kbPerS = model.getNumber().longValue();
-            updateLabel(label, kbPerS);
+            TransferManager transferManager = getController().getTransferManager();
+            updateLabel(label, kbPerS, upload ?
+                    transferManager.getAutoUploadCPSForWAN() / 1000 :
+                    transferManager.getAutoDownloadCPSForWAN() / 1000);
         }
     }
 }

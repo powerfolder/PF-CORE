@@ -383,24 +383,34 @@ public enum ConfigurationEntry {
     TRANSFER_LIMIT_AUTODETECT("transfer.limit.autodetect", true),
 
     /**
+     * The upload automatic limit for WAN (Internet) connections in KB/s
+     */
+    UPLOAD_AUTO_WAN("uploadauto", 0),
+
+    /**
+     * The download automatic limit for WAN (Internet) connections in KB/s
+     */
+    DOWNLOAD_AUTO_WAN("downloadauto", 0),
+
+    /**
      * The upload limit for WAN (Internet) connections in KB/s
      */
-    UPLOADLIMIT_WAN("uploadlimit", 0),
+    UPLOAD_LIMIT_WAN("uploadlimit", 0),
 
     /**
      * The download limit for WAN (Internet) connections in KB/s
      */
-    DOWNLOADLIMIT_WAN("downloadlimit", 0),
+    DOWNLOAD_LIMIT_WAN("downloadlimit", 0),
 
     /**
      * The upload limit for LAN connections in KB/s
      */
-    UPLOADLIMIT_LAN("lanuploadlimit", 0),
+    UPLOAD_LIMIT_LAN("lanuploadlimit", 0),
 
     /**
      * The download limit for LAN connections in KB/s
      */
-    DOWNLOADLIMIT_LAN("landownloadlimit", 0),
+    DOWNLOAD_LIMIT_LAN("landownloadlimit", 0),
 
     /**
      * The percentage to throttle the uploadlimits in silentmode.

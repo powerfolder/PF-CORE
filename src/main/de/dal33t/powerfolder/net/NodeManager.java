@@ -382,15 +382,15 @@ public class NodeManager extends PFComponent {
      */
     public boolean maxConnectionsReached() {
         // Assume unlimited upload
-        if (getController().getTransferManager().getAllowedUploadCPSForWAN() <= 0)
+        if (getController().getTransferManager().getUploadCPSForWAN() <= 0)
         {
             // Unlimited upload
             return false;
         }
         // logWarning("Max allowed: " +
         // getController().getTransferManager().getAllowedUploadCPS());
-        double uploadKBs = ((double) getController().getTransferManager()
-            .getAllowedUploadCPSForWAN()) / 1024;
+        double uploadKBs = (double) getController().getTransferManager()
+            .getUploadCPSForWAN() / 1024;
         int nConnected = countConnectedNodes();
         int maxConnectionsAllowed = (int) (uploadKBs * Constants.MAX_NODES_CONNECTIONS_PER_KBS_UPLOAD);
 

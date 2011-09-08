@@ -869,9 +869,9 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #1904
      */
     public void testRecoverFromMD5Error() {
-        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+        getContollerBart().getTransferManager().setUploadCPSForLAN(
             400000);
-        getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
+        getContollerBart().getTransferManager().setNonAutoUploadCPSForWAN(
             400000);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
@@ -964,9 +964,9 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() {
-        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+        getContollerBart().getTransferManager().setUploadCPSForLAN(
             100000);
-        getContollerBart().getTransferManager().setAllowedUploadCPSForWAN(
+        getContollerBart().getTransferManager().setNonAutoUploadCPSForWAN(
             100000);
         getContollerBart().getReconnectManager().shutdown();
         getContollerLisa().getReconnectManager().shutdown();
@@ -1507,9 +1507,9 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         getContollerBart().setSilentMode(true);
         getContollerLisa().setSilentMode(true);
-        getContollerBart().getTransferManager().setAllowedUploadCPSForLAN(
+        getContollerBart().getTransferManager().setUploadCPSForLAN(
             1000000);
-        getContollerLisa().getTransferManager().setAllowedUploadCPSForLAN(
+        getContollerLisa().getTransferManager().setUploadCPSForLAN(
             1000000);
 
         // Prepare

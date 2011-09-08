@@ -41,7 +41,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -205,23 +204,23 @@ public class TransferManager extends PFComponent {
         sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
         sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;
 
-        checkConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN, 0);
-        checkConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN, 0);
-        checkConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN, 0);
-        checkConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN, 0);
+        checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN, 0);
+        checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN, 0);
+        checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN, 0);
+        checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_LAN, 0);
 
         // bandwidthProvider.setLimitBPS(sharedWANOutputHandler, maxCps);
         // set ul limit
-        setAllowedUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_WAN));
-        setAllowedDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_WAN));
+        // setUploadCPSForWAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN));
+        // setDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN));
 
         sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
         sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
 
         // bandwidthProvider.setLimitBPS(sharedLANOutputHandler, maxCps);
         // set ul limit
-        setAllowedUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOADLIMIT_LAN));
-        setAllowedDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOADLIMIT_LAN));
+        setUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN));
+        setDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_LAN));
 
         if (getMaxFileChunkSize() > OLD_MAX_CHUNK_SIZE) {
             logWarning("Max filechunk size set to "
@@ -242,12 +241,12 @@ public class TransferManager extends PFComponent {
      * value.
      * 
      * @param entry
-     * @param _cps
+     * @param cpsArg
      */
-    private void checkConfigCPS(ConfigurationEntry entry, long _cps) {
+    private void checkConfigCPS(ConfigurationEntry entry, long cpsArg) {
         String cps = entry.getValue(getController());
         if (cps == null) {
-            entry.setValue(getController(), Long.toString(_cps / 1024));
+            entry.setValue(getController(), Long.toString(cpsArg / 1024));
         }
     }
 
@@ -278,7 +277,7 @@ public class TransferManager extends PFComponent {
         long overhead = total - payload;
         logInfo("Total: " + Format.formatBytes(total) + ", Payload: "
             + Format.formatBytes(payload) + ". Overhead: "
-            + (overhead * 100 / payload) + '%');
+            + overhead * 100 / payload + '%');
     }
 
     /**
@@ -483,7 +482,7 @@ public class TransferManager extends PFComponent {
         // Upload status
         transferStatus.activeUploads = activeUploads.size();
         transferStatus.queuedUploads = queuedUploads.size();
-        transferStatus.maxUploadCPS = getAllowedUploadCPSForWAN();
+        transferStatus.maxUploadCPS = getUploadCPSForWAN();
         transferStatus.currentUploadCPS = (long) uploadCounter
             .calculateCurrentCPS();
         transferStatus.uploadedBytesTotal = uploadCounter.getBytesTransferred();
@@ -612,11 +611,11 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        boolean transferFound = false;
         logWarning("Upload broken: " + upload + ' '
             + (transferProblem == null ? "" : transferProblem) + ": "
             + problemInformation);
         uploadsLock.lock();
+        boolean transferFound = false;
         try {
             transferFound = queuedUploads.remove(upload);
             transferFound = transferFound || activeUploads.remove(upload);
@@ -876,8 +875,8 @@ public class TransferManager extends PFComponent {
     }
 
     private boolean abortUploadsOf(FileInfo fInfo) {
-        boolean abortedUL = false;
         uploadsLock.lock();
+        boolean abortedUL = false;
         try {
             for (Upload u : activeUploads) {
                 if (u.getFile().equals(fInfo)) {
@@ -1037,13 +1036,83 @@ public class TransferManager extends PFComponent {
 
         // Any setting that is "unlimited" will stay unlimited!
         bandwidthProvider.setLimitBPS(sharedLANOutputHandler,
-            getAllowedUploadCPSForLAN() * throttle / 100);
+            getUploadCPSForLAN() * throttle / 100);
         bandwidthProvider.setLimitBPS(sharedWANOutputHandler,
-            getAllowedUploadCPSForWAN() * throttle / 100);
+            getUploadCPSForWAN() * throttle / 100);
         bandwidthProvider.setLimitBPS(sharedLANInputHandler,
-            getAllowedDownloadCPSForLAN() * throttle / 100);
+            getDownloadCPSForLAN() * throttle / 100);
         bandwidthProvider.setLimitBPS(sharedWANInputHandler,
-            getAllowedDownloadCPSForWAN() * throttle / 100);
+            getDownloadCPSForWAN() * throttle / 100);
+    }
+
+    /**
+     * Returns the download CPS, unless -ve (auto),
+     * when it returns the auto download CPS.
+     *
+     * @return
+     */
+    public long getDownloadCPSForWAN() {
+        long lng = getNonAutoDownloadCPSForWAN();
+        if (lng < 0) {
+            return getAutoDownloadCPSForWAN();
+        }
+        return lng;
+    }
+
+    /**
+     * Returns the download CPS unless -ve (auto),
+     * when it returns the auto download CPS.
+     *
+     * @return
+     */
+    public long getUploadCPSForWAN() {
+        long lng = getNonAutoUploadCPSForWAN();
+        if (lng < 0) {
+            return getAutoUploadCPSForWAN();
+        }
+        return lng;
+    }
+
+    /**
+     * Get the auto download CPS as calculated be recalculateAutomaticRate
+     *
+     * @return
+     */
+    public long getAutoDownloadCPSForWAN() {
+        return ConfigurationEntry.DOWNLOAD_AUTO_WAN.getValueInt(
+                getController()) * 1024;
+    }
+
+    /**
+     * Sets the auto download rate.
+     *
+     * @param allowedCPS
+     */
+    public void setAutoDownloadCPSForWAN(long allowedCPS) {
+        ConfigurationEntry.DOWNLOAD_AUTO_WAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
+        updateSpeedLimits();
+    }
+
+    /**
+     * Get the auto upload CPS as calculated be recalculateAutomaticRate
+     *
+     * @return
+     */
+    public long getAutoUploadCPSForWAN() {
+        return ConfigurationEntry.UPLOAD_AUTO_WAN.getValueInt(
+                getController()) * 1024;
+    }
+
+    /**
+     * Sets the auto upload rate.
+     *
+     * @param allowedCPS
+     */
+    public void setAutoUploadCPSForWAN(long allowedCPS) {
+        ConfigurationEntry.UPLOAD_AUTO_WAN.setValue(getController(),
+            String.valueOf(allowedCPS / 1024));
+        updateSpeedLimits();
     }
 
     /**
@@ -1051,23 +1120,22 @@ public class TransferManager extends PFComponent {
      * 
      * @param allowedCPS
      */
-    public void setAllowedUploadCPSForWAN(long allowedCPS) {
+    public void setNonAutoUploadCPSForWAN(long allowedCPS) {
 
-        // Store in config
-        ConfigurationEntry.UPLOADLIMIT_WAN.setValue(getController(),
+        ConfigurationEntry.UPLOAD_LIMIT_WAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
         logInfo("Upload limit: "
-            + Format.formatBytesShort(getAllowedUploadCPSForWAN()) + "/s");
+            + Format.formatBytesShort(getNonAutoUploadCPSForWAN()) + "/s");
     }
 
     /**
-     * @return the allowed upload rate (internet) in CPS
+     * @return the upload rate (internet) in CPS
      */
-    public long getAllowedUploadCPSForWAN() {
-        return Integer.parseInt(ConfigurationEntry.UPLOADLIMIT_WAN
+    public long getNonAutoUploadCPSForWAN() {
+        return Integer.parseInt(ConfigurationEntry.UPLOAD_LIMIT_WAN
             .getValue(getController())) * 1024;
     }
 
@@ -1076,22 +1144,22 @@ public class TransferManager extends PFComponent {
      * 
      * @param allowedCPS
      */
-    public void setAllowedDownloadCPSForWAN(long allowedCPS) {
-        // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_WAN.setValue(getController(),
+    public void setNonAutoDownloadCPSForWAN(long allowedCPS) {
+
+        ConfigurationEntry.DOWNLOAD_LIMIT_WAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
         logInfo("Download limit: "
-            + Format.formatBytesShort(getAllowedDownloadCPSForWAN()) + "/s");
+            + Format.formatBytesShort(getNonAutoDownloadCPSForWAN()) + "/s");
     }
 
     /**
-     * @return the allowed download rate (internet) in CPS
+     * @return the download rate (internet) in CPS
      */
-    public long getAllowedDownloadCPSForWAN() {
-        return ConfigurationEntry.DOWNLOADLIMIT_WAN
+    public long getNonAutoDownloadCPSForWAN() {
+        return ConfigurationEntry.DOWNLOAD_LIMIT_WAN
             .getValueInt(getController()) * 1024;
     }
 
@@ -1100,23 +1168,22 @@ public class TransferManager extends PFComponent {
      * 
      * @param allowedCPS
      */
-    public void setAllowedUploadCPSForLAN(long allowedCPS) {
-        // Store in config
-        ConfigurationEntry.UPLOADLIMIT_LAN.setValue(getController(),
+    public void setUploadCPSForLAN(long allowedCPS) {
+
+        ConfigurationEntry.UPLOAD_LIMIT_LAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
         logInfo("LAN Upload limit: "
-            + Format.formatBytesShort(getAllowedUploadCPSForLAN()) + "/s");
+            + Format.formatBytesShort(getUploadCPSForLAN()) + "/s");
     }
 
     /**
-     * @return the allowed upload rate (LAN) in CPS
+     * @return the upload rate (LAN) in CPS
      */
-    public long getAllowedUploadCPSForLAN() {
-        return ConfigurationEntry.UPLOADLIMIT_LAN.getValueInt(getController()) * 1024;
-
+    public long getUploadCPSForLAN() {
+        return ConfigurationEntry.UPLOAD_LIMIT_LAN.getValueInt(getController()) * 1024;
     }
 
     /**
@@ -1124,22 +1191,22 @@ public class TransferManager extends PFComponent {
      * 
      * @param allowedCPS
      */
-    public void setAllowedDownloadCPSForLAN(long allowedCPS) {
-        // Store in config
-        ConfigurationEntry.DOWNLOADLIMIT_LAN.setValue(getController(),
+    public void setDownloadCPSForLAN(long allowedCPS) {
+
+         ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getController(),
             String.valueOf(allowedCPS / 1024));
 
         updateSpeedLimits();
 
         logInfo("LAN Download limit: "
-            + Format.formatBytesShort(getAllowedDownloadCPSForLAN()) + "/s");
+            + Format.formatBytesShort(getDownloadCPSForLAN()) + "/s");
     }
 
     /**
-     * @return the allowed download rate (LAN) in CPS
+     * @return the download rate (LAN) in CPS
      */
-    public long getAllowedDownloadCPSForLAN() {
-        return Integer.parseInt(ConfigurationEntry.DOWNLOADLIMIT_LAN
+    public long getDownloadCPSForLAN() {
+        return Integer.parseInt(ConfigurationEntry.DOWNLOAD_LIMIT_LAN
             .getValue(getController())) * 1024;
     }
 
@@ -1247,7 +1314,7 @@ public class TransferManager extends PFComponent {
         if (!fileInSyncWithDb) {
             logWarning("File not in sync with db: '" + dl.file.toDetailString()
                 + "', but I have "
-                + ((localFile != null) ? localFile.toDetailString() : ""));
+                + (localFile != null ? localFile.toDetailString() : ""));
             return null;
         }
 
@@ -1257,9 +1324,9 @@ public class TransferManager extends PFComponent {
             return null;
         }
 
-        Upload oldUpload = null;
         // Check if we have a old upload to break
         uploadsLock.lock();
+        Upload oldUpload = null;
         try {
             int oldUploadIndex = activeUploads.indexOf(upload);
             if (oldUploadIndex >= 0) {
@@ -1537,12 +1604,12 @@ public class TransferManager extends PFComponent {
                     logSevere("Unable to remove download: " + download, e);
                 }
                 if (!man.hasSources()) {
-                    if (!man.isDone()) {
+                    if (man.isDone()) {
+                        logFine("No further sources in that manager, Not removing it because it's already done");
+                    } else {
                         logFine("No further sources, removing " + man);
                         man.setBroken(TransferProblem.BROKEN_DOWNLOAD,
-                            "Out of sources for download");
-                    } else {
-                        logFine("No further sources in that manager, Not removing it because it's already done");
+                                "Out of sources for download");
                     }
                 }
             }
@@ -1775,8 +1842,7 @@ public class TransferManager extends PFComponent {
      * @param from
      */
     private void requestDownload(Download download, Member from) {
-        final FileInfo fInfo = download.getFile();
-        boolean dlWasRequested = false;
+        FileInfo fInfo = download.getFile();
         // Lock/Disable transfer checker
         DownloadManager man;
         synchronized (dlManagers) {
@@ -1834,6 +1900,7 @@ public class TransferManager extends PFComponent {
                 + fInfo.toDetailString());
         }
 
+        boolean dlWasRequested = false;
         synchronized (man) {
             if (fInfo.isVersionDateAndSizeIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
@@ -2436,24 +2503,23 @@ public class TransferManager extends PFComponent {
             }
             // #1705: Speed up of start
             Map<FileInfo, List<DownloadManager>> tempMap = new HashMap<FileInfo, List<DownloadManager>>();
-            for (Iterator<?> it = storedDownloads.iterator(); it.hasNext();) {
-                Download download = (Download) it.next();
+            for (Object storedDownload : storedDownloads) {
+                Download download = (Download) storedDownload;
 
                 // Initalize after deserialisation
-                download.init(TransferManager.this);
+                download.init(this);
                 if (download.isCompleted()) {
-                    DownloadManager man = null;
                     List<DownloadManager> dlms = tempMap
-                        .get(download.getFile());
+                            .get(download.getFile());
                     if (dlms == null) {
                         dlms = new ArrayList<DownloadManager>(1);
                         tempMap.put(download.getFile(), dlms);
                     }
 
+                    DownloadManager man = null;
                     for (DownloadManager dlm : dlms) {
                         if (dlm.getFileInfo().isVersionDateAndSizeIdentical(
-                            download.getFile()))
-                        {
+                                download.getFile())) {
                             man = dlm;
                             break;
                         }
@@ -2461,12 +2527,12 @@ public class TransferManager extends PFComponent {
 
                     if (man == null) {
                         man = downloadManagerFactory.createDownloadManager(
-                            getController(), download.getFile(),
-                            download.isRequestedAutomatic());
+                                getController(), download.getFile(),
+                                download.isRequestedAutomatic());
                         man.init(true);
                         completedDownloads.put(
-                            new FileInfoKey(man.getFileInfo(),
-                                Type.VERSION_DATE_SIZE), man);
+                                new FileInfoKey(man.getFileInfo(),
+                                        Type.VERSION_DATE_SIZE), man);
                         // For faster loading
                         dlms.add(man);
                     }
@@ -2659,13 +2725,13 @@ public class TransferManager extends PFComponent {
      * Checks the queued uploads and start / breaks them if nessesary.
      */
     private void checkQueuedUploads() {
-        int uploadsStarted = 0;
-        int uploadsBroken = 0;
 
         if (isFiner()) {
             logFiner("Checking " + queuedUploads.size() + " queued uploads");
         }
 
+        int uploadsBroken = 0;
+        int uploadsStarted = 0;
         for (Upload upload : queuedUploads) {
             try {
                 if (upload.isBroken()) {
@@ -2710,12 +2776,12 @@ public class TransferManager extends PFComponent {
 
                         // Enqueue upload to friends and lan members first
 
-                        if (!upload.isAborted()) {
+                        if (upload.isAborted()) {
+                            logWarning("Not starting aborted: " + upload);
+                        } else {
                             logFiner("Starting upload: " + upload);
                             upload.start();
                             uploadsStarted++;
-                        } else {
-                            logWarning("Not starting aborted: " + upload);
                         }
                     }
                 }
@@ -2824,17 +2890,19 @@ public class TransferManager extends PFComponent {
             + Format.formatBytesShort(downloadRate) + "/s, Upload "
             + Format.formatBytesShort(uploadRate) + "/s");
 
+        // @todo what is this for, updates are not used?
         if (uploadRate < 10240) {
             uploadRate = 0;
         }
         if (downloadRate < 102400) {
             downloadRate = 0;
         }
+
         if (downloadOk) {
-            setAllowedDownloadCPSForWAN(modifiedDownloadRate);
+            setAutoDownloadCPSForWAN(modifiedDownloadRate);
         }
         if (uploadOk) {
-            setAllowedUploadCPSForWAN(modifiedUploadRate);
+            setAutoUploadCPSForWAN(modifiedUploadRate);
         }
     }
 
@@ -2844,16 +2912,14 @@ public class TransferManager extends PFComponent {
      * @return true if it succeeded.
      */
     private boolean testAvailabilityUpload(long size) {
-        String boundary = "---------------------------313223033317673";
         try {
             String path = getController().getOSClient().getWebURL()
                 + "/testavailability?action=upload";
             URL url = new URL(path);
 
-            String paramToSend = "action";
-
             URLConnection connection = url.openConnection();
             connection.setDoOutput(true); // This sets request method to POST.
+            String boundary = "---------------------------313223033317673";
             connection.setRequestProperty("Content-Type",
                 "multipart/form-data; boundary=" + boundary);
             PrintWriter writer = null;
@@ -2866,6 +2932,7 @@ public class TransferManager extends PFComponent {
                     .println("Content-Disposition: form-data; name=\"upload\"");
                 writer.println("Content-Type: text/plain; charset=UTF-8");
                 writer.println();
+                String paramToSend = "action";
                 writer.println(paramToSend);
 
                 writer.println("--" + boundary);
@@ -2882,8 +2949,9 @@ public class TransferManager extends PFComponent {
                 writer.println("--" + boundary + "--");
                 writer.println();
             } finally {
-                if (writer != null)
+                if (writer != null) {
                     writer.close();
+                }
             }
 
             // Connection is lazily executed whenever you request any status.
@@ -2944,7 +3012,7 @@ public class TransferManager extends PFComponent {
 
         String memberInfo = "";
         if (member != null) {
-            memberInfo = ((download) ? " from " : " to ") + '\''
+            memberInfo = (download ? " from " : " to ") + '\''
                 + member.getNick() + '\'';
         }
 
@@ -2963,7 +3031,7 @@ public class TransferManager extends PFComponent {
 
         logInfo((download ? "Download" : "Upload") + " completed: "
             + Format.formatDecimal(fInfo.getSize()) + " bytes in "
-            + (took / 1000) + "s (" + cpsStr + " KByte/s): " + fInfo
+            + took / 1000 + "s (" + cpsStr + " KByte/s): " + fInfo
             + memberInfo);
     }
 

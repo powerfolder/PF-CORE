@@ -330,7 +330,7 @@ public class Debug {
                         .calculateCurrentKBS())
                     + " Kbytes/s, "
                     + Format
-                        .formatDecimal(tm.getAllowedUploadCPSForWAN() / 1024)
+                        .formatDecimal(tm.getUploadCPSForWAN() / 1024)
                     + " Kbyte/s allowed, "
                     + Format.formatBytes(tm.getUploadCounter()
                         .getBytesTransferred()) + " bytes total):");
