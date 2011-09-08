@@ -110,10 +110,12 @@ public class PermissionUserType extends Loggable implements UserType {
             FolderInfo fdInfo = FOLDER_INFO_DAO.findByID(fiId);
 
             if (fdInfo == null) {
-                logSevere("FolderInfo with ID " + fiId + " not found!");
+                logSevere("FolderInfo with ID " + fiId + " not found!", new RuntimeException());
                 fdInfo = new FolderInfo(null, fiId);
+            } else {
+                fdInfo = fdInfo.intern();
             }
-            fdInfo = fdInfo.intern();
+            
 
             // choose the right permission implementation
             if (clazzName.equals(FolderAdminPermission.class.getSimpleName())) {
@@ -171,13 +173,13 @@ public class PermissionUserType extends Loggable implements UserType {
             st.setNull(index, Types.VARCHAR);
         } else {
             Permission p = (Permission) value;
-
             st.setString(index, p.getId());
 
-            if (p instanceof FolderPermission) {
-                FolderPermission fp = (FolderPermission) p;
-                FOLDER_INFO_DAO.store(fp.getFolder());
-            }
+            // FolderInfos must not be stored here. Done in DAOs.
+            // if (p instanceof FolderPermission) {
+            // FolderPermission fp = (FolderPermission) p;
+            // FOLDER_INFO_DAO.store(fp.getFolder());
+            // }
         }
     }
 
