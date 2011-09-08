@@ -2069,7 +2069,8 @@ public class Folder extends PFComponent {
      */
     public boolean join(Member member) {
         boolean memberRead = hasReadPermission(member);
-        if (!memberRead || !hasReadPermission(getController().getMySelf())) {
+        boolean mySelfRead = hasReadPermission(getController().getMySelf());
+        if (!memberRead || !mySelfRead) {
             if (memberRead) {
                 if (isInfo()) {
                     logInfo("Not joining " + member + " / "
