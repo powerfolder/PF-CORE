@@ -301,7 +301,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         scanFolder(getFolderAtBart());
         assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
             .getVersion());
-        assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
+        assertEquals(1000, getFolderAtBart().getKnownFiles().iterator().next()
             .getSize());
         assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
             .isDeleted());
