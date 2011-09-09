@@ -190,6 +190,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         File testFileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase());
         scanFolder(getFolderAtBart());
+        long size = testFileBart.length();
 
         FileInfo fInfoBart = getFolderAtBart().getKnownFiles().iterator()
             .next();
@@ -222,7 +223,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         assertEquals(1, fInfoLisaDeleted.getVersion());
         assertTrue(fInfoLisaDeleted.isDeleted());
-        assertEquals(0, fInfoLisaDeleted.getSize());
+        assertEquals(size, fInfoLisaDeleted.getSize());
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
@@ -236,7 +237,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownItemCount());
         assertEquals(1, fInfoBartDeleted.getVersion());
         assertTrue(fInfoBartDeleted.isDeleted());
-        assertEquals(0, fInfoBartDeleted.getSize());
+        assertEquals(size, fInfoBartDeleted.getSize());
 
         // Assume only 1 file (=PowerFolder system dir)
         assertEquals(1, getFolderAtBart().getLocalBase().list().length);
