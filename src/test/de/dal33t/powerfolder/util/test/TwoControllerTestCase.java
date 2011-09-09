@@ -536,7 +536,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         Controller controller)
     {
         boolean nameMatch = diskFile.getName().equals(fInfo.getFilenameOnly());
-        boolean sizeMatch = diskFile.length() == fInfo.getSize();
+        boolean sizeMatch = fInfo.isDeleted() || diskFile.length() == fInfo.getSize();
         boolean fileObjectEquals = diskFile.equals(fInfo.getDiskFile(controller
             .getFolderRepository()));
         boolean deleteStatusMatch = diskFile.exists() == !fInfo.isDeleted();
