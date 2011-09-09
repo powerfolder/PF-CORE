@@ -2139,7 +2139,7 @@ public class Folder extends PFComponent {
             return;
         }
         if (metaFolder.deviceDisconnected) {
-            logFiner("Not writing members. Meta folder disconnected.");
+            logFine("Not writing members. Meta folder disconnected.");
             return;
         }
         // Update in the meta directory.
@@ -2151,8 +2151,9 @@ public class Folder extends PFComponent {
         originalMap.putAll(membersMap);
         // Update members with any new ones from this file.
         for (MemberInfo memberInfo : membersMap.values()) {
-            if (members.containsKey(memberInfo.getId())) {
-                break;
+            Member memberCanidate = memberInfo.getNode(getController(), true);
+            if (members.containsKey(memberCanidate)) {
+                continue;
             }
             join0(memberInfo);
             logInfo("Discovered new Member " + memberInfo);
@@ -2173,7 +2174,7 @@ public class Folder extends PFComponent {
         } else {
             changed = true;
         }
-        if (changed && checkIfDeviceDisconnected()) {
+        if (changed && !checkIfDeviceDisconnected()) {
             // Write back and scan.
             writewMetaFolderMembers(membersMap, fileInfo);
             metaFolder.scanChangedFile(fileInfo);
