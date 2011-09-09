@@ -310,13 +310,13 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.TRANSFER_LIMIT_AUTODETECT.setValue(getController(),
             wanSpeed.isAutodetect());
         if (wanSpeed.isAutodetect()) {
-            tm.setNonAutoUploadCPSForWAN(-1024);
-            tm.setNonAutoDownloadCPSForWAN(-1024);
+            tm.setSelectedUploadCPSForWAN(-1024);
+            tm.setSelectedDownloadCPSForWAN(-1024);
             getController().getThreadPool().execute(
                     tm.getRecalculateAutomaticRate());
         } else {
-            tm.setNonAutoUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
-            tm.setNonAutoDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
+            tm.setSelectedUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());
+            tm.setSelectedDownloadCPSForWAN(wanSpeed.getDownloadSpeedKBPS());
         }
 
         tm.setUploadCPSForLAN(lanSpeed.getUploadSpeedKBPS());

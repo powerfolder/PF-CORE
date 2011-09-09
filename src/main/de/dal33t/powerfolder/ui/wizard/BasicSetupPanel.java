@@ -122,8 +122,8 @@ public class BasicSetupPanel extends PFWizardPanel {
         }
 
         TransferManager tm = getController().getTransferManager();
-        tm.setNonAutoUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
-        tm.setNonAutoDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
+        tm.setSelectedUploadCPSForWAN(wanLineSpeed.getUploadSpeedKBPS());
+        tm.setSelectedDownloadCPSForWAN(wanLineSpeed.getDownloadSpeedKBPS());
 
         // Set locale
         if (languageChooser.getSelectedItem() instanceof Locale) {

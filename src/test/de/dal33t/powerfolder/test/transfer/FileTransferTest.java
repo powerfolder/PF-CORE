@@ -871,7 +871,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testRecoverFromMD5Error() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(
             400000);
-        getContollerBart().getTransferManager().setNonAutoUploadCPSForWAN(
+        getContollerBart().getTransferManager().setSelectedUploadCPSForWAN(
             400000);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
@@ -966,7 +966,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     public void testResumeTransfer() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(
             100000);
-        getContollerBart().getTransferManager().setNonAutoUploadCPSForWAN(
+        getContollerBart().getTransferManager().setSelectedUploadCPSForWAN(
             100000);
         getContollerBart().getReconnectManager().shutdown();
         getContollerLisa().getReconnectManager().shutdown();
